@@ -1,47 +1,142 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
+        {
           "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
-          "text": "Welcome to MarginsTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "All margins: [20, 20, 20, 20]",
+          "margins": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "background": "#FFE0E0",
+          "fontSize": 16
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Left margin: 40",
+          "leftMargin": 40,
+          "topMargin": 10,
+          "background": "#E0FFE0",
+          "fontSize": 16
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Right margin: 40",
+          "rightMargin": 40,
+          "topMargin": 10,
+          "background": "#E0E0FF",
+          "fontSize": 16
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Top margin: 30",
+          "topMargin": 30,
+          "background": "#FFFFE0",
+          "fontSize": 16
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Bottom margin: 30",
+          "bottomMargin": 30,
+          "background": "#FFE0FF",
+          "fontSize": 16
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "leftPadding": 20,
+          "rightPadding": 20,
+          "topMargin": 20,
+          "background": "#DDDDDD",
+          "child": {
+            "type": "Label",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Parent has leftPadding: 20, rightPadding: 20",
+            "fontSize": 14
+          }
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "topMargin": 20,
+          "background": "#CCCCCC",
+          "child": {
+            "type": "Label",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "MaxWidth: 200",
+            "maxWidth": 200,
+            "background": "#FFCCCC",
+            "fontSize": 14
+          }
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "topMargin": 20,
+          "background": "#BBBBBB",
+          "child": {
+            "type": "Label",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "MinWidth: 150",
+            "minWidth": 150,
+            "background": "#CCFFCC",
+            "fontSize": 14
+          }
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'MarginsTest'"
+      "defaultValue": "Margins & Padding Test"
     }
   ]
 }

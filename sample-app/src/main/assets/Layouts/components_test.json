@@ -1,47 +1,314 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
+      "padding": [
+        20,
+        20,
+        20,
+        20
+      ],
       "child": [
         {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
-        },
-        {
-          "type": "Label",
-          "text": "Welcome to ComponentsTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
-        },
-        {
           "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
+          "style": "dynamic_toggle"
+        },
+        {
+          "type": "Text",
+          "text": "New Components Test",
+          "fontSize": 24,
+          "fontColor": "#333333",
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Toggle/Checkbox Components",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Toggle",
+          "id": "toggle1",
+          "text": "Enable Notifications",
+          "isOn": "@{toggle1IsOn}",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Checkbox",
+          "id": "checkbox1",
+          "text": "I agree to terms",
+          "isOn": "@{checkbox1IsOn}",
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Progress & Slider",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Progress",
+          "id": "progress1",
+          "text": "Download Progress",
+          "progress": "@{progress1Value}",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Slider",
+          "id": "slider1",
+          "text": "Volume",
+          "value": "@{slider1Value}",
+          "minValue": 0.0,
+          "maxValue": 1.0,
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Selection Components",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Segment",
+          "id": "segment1",
+          "text": "View Mode",
+          "items": [
+            "List",
+            "Grid",
+            "Map"
           ],
-          "cornerRadius": 8
+          "selectedIndex": "@{selectedSegment1}",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Radio",
+          "id": "radio1",
+          "text": "Select Size",
+          "items": [
+            "Small",
+            "Medium",
+            "Large"
+          ],
+          "selectedValue": "@{selectedRadio1}",
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Loading Indicator",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "Indicator",
+          "text": "Loading...",
+          "indicatorStyle": "circular",
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Circle Image",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "CircleImage",
+          "url": "person.circle.fill",
+          "width": "80",
+          "height": "80",
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Gradient View",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "GradientView",
+          "items": [
+            "#FF6B6B",
+            "#4ECDC4"
+          ],
+          "orientation": "horizontal",
+          "width": "matchParent",
+          "height": "100",
+          "cornerRadius": 10,
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ],
+          "children": [
+            {
+              "type": "Text",
+              "text": "Gradient Background",
+              "fontSize": 20,
+              "fontColor": "#FFFFFF",
+              "centerInParent": true
+            }
+          ]
+        },
+        {
+          "type": "Text",
+          "text": "Blur View",
+          "fontSize": 18,
+          "fontColor": "#666666",
+          "margin": [
+            0,
+            0,
+            10,
+            0
+          ]
+        },
+        {
+          "type": "BlurView",
+          "indicatorStyle": "light",
+          "width": "matchParent",
+          "height": "80",
+          "cornerRadius": 10,
+          "margin": [
+            0,
+            0,
+            20,
+            0
+          ],
+          "children": [
+            {
+              "type": "Text",
+              "text": "Blurred Background",
+              "fontSize": 18,
+              "fontColor": "#333333",
+              "centerInParent": true
+            }
+          ]
         }
       ]
     }
   ],
   "data": [
     {
-      "name": "title",
+      "name": "dynamicModeStatus",
       "class": "String",
-      "defaultValue": "'ComponentsTest'"
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "checkbox1IsOn",
+      "class": "Bool",
+      "defaultValue": false
+    },
+    {
+      "name": "progress1Value",
+      "class": "Double",
+      "defaultValue": 0.6
+    },
+    {
+      "name": "selectedRadio1",
+      "class": "String",
+      "defaultValue": "Medium"
+    },
+    {
+      "name": "selectedSegment1",
+      "class": "Int",
+      "defaultValue": 0
+    },
+    {
+      "name": "slider1Value",
+      "class": "Double",
+      "defaultValue": 0.5
+    },
+    {
+      "name": "toggle1IsOn",
+      "class": "Bool",
+      "defaultValue": false
     }
   ]
 }

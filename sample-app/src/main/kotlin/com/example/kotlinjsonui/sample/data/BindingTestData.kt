@@ -1,21 +1,53 @@
 package com.example.kotlinjsonui.sample.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import com.example.kotlinjsonui.sample.viewmodels.BindingTestViewModel
+
 data class BindingTestData(
-    var title: String = "BindingTest"
-    // Add more data properties as needed based on your JSON structure
+    var dynamicModeStatus: String = "OFF",
+    var counter: Int = 0,
+    var selectedOption: String = "Option 1",
+    var sliderValue: Double = 50.0,
+    var textValue: String = "Type something here",
+    var title: String = "Data Binding Test",
+    var toggleValue: Boolean = false
 ) {
-    // Update properties from map
-    fun update(map: Map<String, Any>) {
-        map["title"]?.let { 
-            if (it is String) title = it 
+    companion object {
+        // Update properties from map
+        fun fromMap(map: Map<String, Any>): BindingTestData {
+            return BindingTestData(
+                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
+                counter = (map["counter"] as? Number)?.toInt() ?: 0,
+                selectedOption = map["selectedOption"] as? String ?: "",
+                sliderValue = (map["sliderValue"] as? Number)?.toDouble() ?: 0.0,
+                textValue = map["textValue"] as? String ?: "",
+                title = map["title"] as? String ?: "",
+                toggleValue = map["toggleValue"] as? Boolean ?: false
+            )
         }
     }
-    
-    // Convert to map for dynamic mode
-    fun toMap(viewModel: Any? = null): Map<String, Any> {
-        return mutableMapOf(
-            "title" to title
-            // Add action handlers if viewModel is provided
-        )
+
+    // Convert properties to map for runtime use
+    fun toMap(viewModel: BindingTestViewModel? = null): MutableMap<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        
+        // Data properties
+        map["dynamicModeStatus"] = dynamicModeStatus
+        map["counter"] = counter
+        map["selectedOption"] = selectedOption
+        map["sliderValue"] = sliderValue
+        map["textValue"] = textValue
+        map["title"] = title
+        map["toggleValue"] = toggleValue
+        
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["decreaseCounter"] = { vm.decreaseCounter() }
+            map["increaseCounter"] = { vm.increaseCounter() }
+            map["toggleChanged"] = { vm.toggleChanged() }
+        }
+        
+        return map
     }
 }

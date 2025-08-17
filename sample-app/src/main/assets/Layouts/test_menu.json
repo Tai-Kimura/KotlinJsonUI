@@ -1,47 +1,251 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
+      "padding": 20,
+      "background": "#F5F5F5",
       "child": [
         {
           "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "text": "SwiftJsonUI Feature Tests",
+          "fontSize": 28,
+          "fontColor": "#333333",
+          "font": "bold",
+          "textAlign": "center",
+          "bottomMargin": 20
         },
         {
-          "type": "Label",
-          "text": "Welcome to TestMenu",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "type": "View",
+          "orientation": "horizontal",
+          "padding": 15,
+          "background": "#E8F4FF",
+          "cornerRadius": 8,
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Dynamic Mode Status:",
+              "fontSize": 16,
+              "fontColor": "#333333",
+              "rightMargin": 10
+            },
+            {
+              "type": "Label",
+              "text": "@{dynamicModeStatus ?? \"OFF\"}",
+              "fontSize": 16,
+              "fontColor": "#007AFF",
+              "font": "bold"
+            }
+          ]
         },
         {
           "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "style": "primary_button",
+          "text": "Toggle Dynamic Mode",
+          "onclick": "toggleDynamicMode",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Layout & Positioning",
+          "fontSize": 20,
+          "fontColor": "#666666",
+          "font": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Margins & Padding Test",
+          "onclick": "navigateToMarginsTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Alignment Test",
+          "onclick": "navigateToAlignmentTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Alignment Combo Test",
+          "onclick": "navigateToAlignmentComboTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Weight Distribution Test",
+          "onclick": "navigateToWeightTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Weight + Fixed Size Test",
+          "onclick": "navigateToWeightTestWithFixed",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Style & Appearance",
+          "fontSize": 20,
+          "fontColor": "#666666",
+          "font": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Visibility & Opacity Test",
+          "onclick": "navigateToVisibilityTest",
+          "background": "#34C759",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Disabled States Test",
+          "onclick": "navigateToDisabledTest",
+          "background": "#34C759",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Text Features",
+          "fontSize": 20,
+          "fontColor": "#666666",
+          "font": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Text Styling Test",
+          "onclick": "navigateToTextStylingTest",
+          "background": "#FF9500",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "New Components Test",
+          "onclick": "navigateToComponentsTest",
+          "background": "#FF9500",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Line Break & Spacing Test",
+          "onclick": "navigateToLineBreakTest",
+          "background": "#FF9500",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Input Components",
+          "fontSize": 20,
+          "fontColor": "#666666",
+          "font": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Secure Field Test",
+          "onclick": "navigateToSecureFieldTest",
+          "background": "#AF52DE",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Date Picker Test",
+          "onclick": "navigateToDatePickerTest",
+          "background": "#AF52DE",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "TextView Hint Test",
+          "onclick": "navigateToTextviewHintTest",
+          "background": "#AF52DE",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Advanced Features",
+          "fontSize": 20,
+          "fontColor": "#666666",
+          "font": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Relative Positioning Test",
+          "onclick": "navigateToRelativeTest",
+          "background": "#FF3B30",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Binding Properties Test",
+          "onclick": "navigateToBindingTest",
+          "background": "#FF3B30",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Converter Components Test",
+          "onclick": "navigateToConverterTest",
+          "background": "#FF3B30",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Include Component Test",
+          "onclick": "navigateToIncludeTest",
+          "background": "#FF3B30",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Forms & Keyboard",
+          "fontSize": 20,
+          "fontColor": "#666666",
+          "font": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Form & Keyboard Avoidance Test",
+          "onclick": "navigateToFormTest",
+          "background": "#5856D6",
+          "bottomMargin": 8
         }
       ]
     }
   ],
   "data": [
     {
-      "name": "title",
+      "name": "dynamicModeStatus",
       "class": "String",
-      "defaultValue": "'TestMenu'"
+      "defaultValue": "OFF"
     }
   ]
 }

@@ -20,6 +20,32 @@ fun BindingTestGeneratedView(
     // Generated Compose code from binding_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-// TODO: Implement component type: SafeAreaView
+Box(
+                    modifier = Modifier.fillMaxSize().systemBarsPadding().background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                ) {
+                    Column(
+                                            modifier = Modifier.padding(16dp)
+                                        ) {
+                                            Text(
+                                                                        text = data.title,
+                                                                        fontSize = 24sp,
+                                                                        color = Color(android.graphics.Color.parseColor("#000000")),
+                                                                        fontWeight = FontWeight.Bold,
+                                                                        modifier = Modifier
+                                                                    )
+                                            Text(
+                                                                        text = "Welcome to BindingTest",
+                                                                        fontSize = 16sp,
+                                                                        color = Color(android.graphics.Color.parseColor("#666666")),
+                                                                        modifier = Modifier
+                                                                    )
+                                            Button(
+                                                                        onClick = { viewModel.onGetStarted() },
+                                                                        modifier = Modifier.padding([12, 24]dp)
+                                                                    ) {
+                                                                        Text("Get Started")
+                                                                    }
+                                        }
+                }
                 // >>> GENERATED_CODE_END
 }

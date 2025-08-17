@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.Included1Data
 import com.example.kotlinjsonui.sample.viewmodels.Included1ViewModel
+import androidx.compose.foundation.background
 
 @Composable
 fun Included1GeneratedView(
@@ -20,6 +21,21 @@ fun Included1GeneratedView(
     // Generated Compose code from included1.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-// TODO: Implement component type: SafeAreaView
-                // >>> GENERATED_CODE_END
+        Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+    ) {
+        Text(
+            text = "${data.title}",
+            fontSize = 24.sp,
+            color = Color(android.graphics.Color.parseColor("#000000")),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .wrapContentWidth()
+                .wrapContentHeight()
+        )
+    }
+    // >>> GENERATED_CODE_END
 }

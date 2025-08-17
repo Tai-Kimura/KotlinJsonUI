@@ -1,47 +1,633 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
-  "child": [
-    {
-      "type": "View",
-      "orientation": "vertical",
-      "padding": 16,
-      "child": [
-        {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
-        },
-        {
-          "type": "Label",
-          "text": "Welcome to RelativeTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
-        },
-        {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
-        }
-      ]
-    }
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "orientation": "vertical",
+  "paddings": [
+    20,
+    20,
+    20,
+    20
   ],
-  "data": [
-    {
-      "name": "title",
-      "class": "String",
-      "defaultValue": "'RelativeTest'"
-    }
-  ]
+  "child": {
+    "type": "View",
+    "width": "matchParent",
+    "height": "wrapContent",
+    "background": "#F5F5F5",
+    "orientation": "vertical",
+    "child": [
+      {
+        "data": [
+          {
+            "name": "dynamicModeStatus",
+            "class": "String",
+            "defaultValue": "OFF"
+          },
+          {
+            "name": "title",
+            "class": "String",
+            "defaultValue": "RelativePosition Test - Margins & Padding"
+          }
+        ]
+      },
+      {
+        "type": "Button",
+        "style": "dynamic_toggle"
+      },
+      {
+        "type": "Label",
+        "id": "main_title",
+        "width": "wrapContent",
+        "height": "wrapContent",
+        "text": "@{title}",
+        "fontSize": 24,
+        "fontColor": "#000000",
+        "font": "bold",
+        "bottomMargin": 20
+      },
+      {
+        "type": "Label",
+        "text": "1. Parent Constraints with Margin + Padding",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 200,
+        "background": "#E0E0E0",
+        "paddings": [
+          20,
+          30,
+          20,
+          30
+        ],
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "parent_top_left",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Top+Left\ntopMargin:10\nleftMargin:15",
+            "background": "#FF6B6B",
+            "fontColor": "#FFFFFF",
+            "padding": 8,
+            "topMargin": 10,
+            "leftMargin": 15,
+            "alignTop": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "parent_top_right",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Top+Right\ntopMargin:15\nrightMargin:20",
+            "background": "#4ECDC4",
+            "fontColor": "#FFFFFF",
+            "padding": 8,
+            "topMargin": 15,
+            "rightMargin": 20,
+            "alignTop": true,
+            "alignRight": true
+          },
+          {
+            "type": "Label",
+            "id": "parent_bottom_left",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Bottom+Left\nbottomMargin:5\nleftMargin:10",
+            "background": "#45B7D1",
+            "fontColor": "#FFFFFF",
+            "padding": 8,
+            "bottomMargin": 5,
+            "leftMargin": 10,
+            "alignBottom": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "parent_bottom_right",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Bottom+Right\nbottomMargin:20\nrightMargin:25",
+            "background": "#96CEB4",
+            "fontColor": "#FFFFFF",
+            "padding": 8,
+            "bottomMargin": 20,
+            "rightMargin": 25,
+            "alignBottom": true,
+            "alignRight": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "2. Edge Alignment (Self Margin Only, Ignore Anchor Margin)",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "#E8E8E8",
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "anchor_with_margin",
+            "width": 120,
+            "height": 60,
+            "text": "Anchor\nmargins:[20,25,20,25]",
+            "background": "#FF6B6B",
+            "textAlign": "center",
+            "fontColor": "#FFFFFF",
+            "margins": [
+              20,
+              25,
+              20,
+              25
+            ],
+            "centerInParent": true
+          },
+          {
+            "type": "Label",
+            "id": "align_top_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignTop\ntopMargin:10",
+            "background": "#4ECDC4",
+            "padding": 5,
+            "topMargin": 10,
+            "alignTopView": "anchor_with_margin",
+            "alignLeft": true,
+            "leftMargin": 10
+          },
+          {
+            "type": "Label",
+            "id": "align_bottom_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignBottom\nbottomMargin:10",
+            "background": "#45B7D1",
+            "padding": 5,
+            "bottomMargin": 10,
+            "alignBottomView": "anchor_with_margin",
+            "alignRight": true,
+            "rightMargin": 10
+          },
+          {
+            "type": "Label",
+            "id": "align_left_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignLeft\nleftMargin:15",
+            "background": "#96CEB4",
+            "padding": 5,
+            "topMargin": 10,
+            "leftMargin": 15,
+            "alignLeftView": "anchor_with_margin",
+            "alignTop": true
+          },
+          {
+            "type": "Label",
+            "id": "align_right_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignRight\nrightMargin:15",
+            "background": "#FFEAA7",
+            "padding": 5,
+            "bottomMargin": 10,
+            "rightMargin": 15,
+            "alignRightView": "anchor_with_margin",
+            "alignBottom": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "3. Relative Position (Both Margins Applied)",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 300,
+        "background": "#D8D8D8",
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "center_anchor",
+            "width": 100,
+            "height": 50,
+            "text": "Center\nmargins:[15,15,15,15]",
+            "background": "#FF6B6B",
+            "textAlign": "center",
+            "fontColor": "#FFFFFF",
+            "margins": [
+              15,
+              15,
+              15,
+              15
+            ],
+            "centerInParent": true
+          },
+          {
+            "type": "Label",
+            "id": "above_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Above\nbottomMargin:10",
+            "background": "#4ECDC4",
+            "padding": 5,
+            "bottomMargin": 10,
+            "alignTopOfView": "center_anchor",
+            "centerHorizontal": true
+          },
+          {
+            "type": "Label",
+            "id": "below_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Below\ntopMargin:10",
+            "background": "#45B7D1",
+            "padding": 5,
+            "topMargin": 10,
+            "alignBottomOfView": "center_anchor",
+            "centerHorizontal": true
+          },
+          {
+            "type": "Label",
+            "id": "left_of_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "LeftOf\nrightMargin:10",
+            "background": "#96CEB4",
+            "padding": 5,
+            "rightMargin": 10,
+            "alignLeftOfView": "center_anchor",
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "right_of_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "RightOf\nleftMargin:10",
+            "background": "#FFEAA7",
+            "padding": 5,
+            "leftMargin": 10,
+            "alignRightOfView": "center_anchor",
+            "centerVertical": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "4. Fixed Size with Both-Side Constraints (Centering)",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 200,
+        "background": "#E0E0E0",
+        "bottomMargin": 20,
+        "paddings": [
+          10,
+          10,
+          10,
+          10
+        ],
+        "child": [
+          {
+            "type": "Label",
+            "id": "fixed_width_center",
+            "width": 100,
+            "height": "wrapContent",
+            "text": "Fixed Width\nLeft+Right\nmargins:[10,10,10,10]",
+            "background": "#A29BFE",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "padding": 10,
+            "margins": [
+              10,
+              10,
+              10,
+              10
+            ],
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true
+          },
+          {
+            "type": "Label",
+            "id": "fixed_height_center",
+            "width": "wrapContent",
+            "height": 50,
+            "text": "Fixed Height\nTop+Bottom",
+            "background": "#6C5CE7",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "padding": 10,
+            "topMargin": 10,
+            "bottomMargin": 10,
+            "leftMargin": 10,
+            "alignTop": true,
+            "alignBottom": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "fixed_both_center",
+            "width": 80,
+            "height": 40,
+            "text": "Fixed Both",
+            "background": "#FD79A8",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "margins": [
+              15,
+              15,
+              15,
+              15
+            ],
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true,
+            "alignBottom": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "5. Dynamic Size (Stretch Between Constraints)",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "#D0D0D0",
+        "bottomMargin": 20,
+        "paddings": [
+          20,
+          30,
+          20,
+          30
+        ],
+        "child": [
+          {
+            "type": "Label",
+            "id": "stretch_horizontal",
+            "height": "wrapContent",
+            "text": "Stretch Horizontal\nleftMargin:10, rightMargin:15",
+            "background": "#00B894",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "padding": 10,
+            "leftMargin": 10,
+            "rightMargin": 15,
+            "topMargin": 10,
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true
+          },
+          {
+            "type": "Label",
+            "id": "stretch_vertical",
+            "width": "wrapContent",
+            "text": "Stretch\nVertical\ntop:10\nbottom:15",
+            "background": "#00CEC9",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "padding": 10,
+            "topMargin": 10,
+            "bottomMargin": 15,
+            "leftMargin": 10,
+            "alignTop": true,
+            "alignBottom": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "stretch_both",
+            "text": "Stretch Both Directions\nmargins:[15,20,15,20]",
+            "background": "#636E72",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "padding": 10,
+            "margins": [
+              15,
+              20,
+              15,
+              20
+            ],
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true,
+            "alignBottom": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "6. Complex Chaining with Different Margins",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "#E8E8E8",
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "chain_start",
+            "width": 60,
+            "height": 40,
+            "text": "Start\nleft:10\nright:5",
+            "background": "#FF6B6B",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "fontSize": 10,
+            "leftMargin": 10,
+            "rightMargin": 5,
+            "alignLeft": true,
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "chain_middle",
+            "width": 60,
+            "height": 40,
+            "text": "Middle\nleft:15\nright:20",
+            "background": "#4ECDC4",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "fontSize": 10,
+            "leftMargin": 15,
+            "rightMargin": 20,
+            "alignRightOfView": "chain_start",
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "chain_end",
+            "width": 60,
+            "height": 40,
+            "text": "End\nleft:10\nright:10",
+            "background": "#45B7D1",
+            "fontColor": "#FFFFFF",
+            "textAlign": "center",
+            "fontSize": 10,
+            "leftMargin": 10,
+            "rightMargin": 10,
+            "alignRightOfView": "chain_middle",
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "chain_above",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Above Middle\nbottom:5",
+            "background": "#FFEAA7",
+            "padding": 5,
+            "bottomMargin": 5,
+            "topMargin": 10,
+            "alignTopOfView": "chain_middle",
+            "alignLeftView": "chain_middle"
+          },
+          {
+            "type": "Label",
+            "id": "chain_below",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Below Start\ntop:8",
+            "background": "#FAB1A0",
+            "padding": 5,
+            "topMargin": 8,
+            "bottomMargin": 10,
+            "alignBottomOfView": "chain_start",
+            "alignRightView": "chain_start"
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "7. Mixed Anchor References",
+        "fontSize": 18,
+        "fontColor": "#333333",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "#D8D8D8",
+        "bottomMargin": 20,
+        "paddings": [
+          15,
+          15,
+          15,
+          15
+        ],
+        "child": [
+          {
+            "type": "Label",
+            "id": "ref1",
+            "width": 60,
+            "height": 30,
+            "text": "Ref1",
+            "background": "#FF6B6B",
+            "textAlign": "center",
+            "fontColor": "#FFFFFF",
+            "alignLeft": true,
+            "alignTop": true,
+            "leftMargin": 20,
+            "topMargin": 20,
+            "rightMargin": 10,
+            "bottomMargin": 10
+          },
+          {
+            "type": "Label",
+            "id": "ref2",
+            "width": 60,
+            "height": 30,
+            "text": "Ref2",
+            "background": "#4ECDC4",
+            "textAlign": "center",
+            "fontColor": "#FFFFFF",
+            "alignRight": true,
+            "alignTop": true,
+            "rightMargin": 20,
+            "topMargin": 20,
+            "leftMargin": 10,
+            "bottomMargin": 10
+          },
+          {
+            "type": "Label",
+            "id": "between_refs",
+            "height": "wrapContent",
+            "text": "Between (stretch)",
+            "background": "#FFD93D",
+            "padding": 5,
+            "leftMargin": 5,
+            "rightMargin": 5,
+            "alignLeftOfView": "ref2",
+            "alignRightOfView": "ref1",
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "aligned_both",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "AlignBoth",
+            "background": "#6BCB77",
+            "padding": 5,
+            "topMargin": 10,
+            "rightMargin": 10,
+            "alignTopView": "ref1",
+            "alignRightView": "ref2"
+          },
+          {
+            "type": "Label",
+            "id": "complex_chain",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Below Ref1",
+            "background": "#FF6B9D",
+            "fontColor": "#FFFFFF",
+            "padding": 5,
+            "topMargin": 10,
+            "alignBottomOfView": "ref1",
+            "alignLeftView": "ref1"
+          }
+        ]
+      }
+    ]
+  }
 }

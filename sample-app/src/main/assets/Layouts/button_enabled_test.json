@@ -1,47 +1,87 @@
 {
-  "type": "SafeAreaView",
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
   "background": "#FFFFFF",
+  "orientation": "vertical",
+  "padding": 20,
   "child": [
     {
-      "type": "View",
-      "orientation": "vertical",
-      "padding": 16,
-      "child": [
-        {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
-        },
-        {
-          "type": "Label",
-          "text": "Welcome to ButtonEnabledTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
-        },
-        {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
-        }
-      ]
+      "type": "Button",
+      "style": "dynamic_toggle"
+    },
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "#000000",
+      "marginBottom": 20
+    },
+    {
+      "type": "Label",
+      "text": "Button enabled state: @{isButtonEnabled}",
+      "fontSize": 16,
+      "fontColor": "#666666",
+      "marginBottom": 10
+    },
+    {
+      "type": "Button",
+      "text": "Test Button (controlled by data)",
+      "enabled": "@{isButtonEnabled}",
+      "onclick": "testAction",
+      "background": "#4CAF50",
+      "fontColor": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 5,
+      "marginBottom": 20
+    },
+    {
+      "type": "Button",
+      "text": "Toggle Enabled State",
+      "onclick": "toggleEnabled",
+      "background": "#2196F3",
+      "fontColor": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 5,
+      "marginBottom": 10
+    },
+    {
+      "type": "Button",
+      "text": "Always Disabled Button",
+      "enabled": false,
+      "onclick": "neverCalled",
+      "background": "#FF5722",
+      "fontColor": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 5,
+      "marginBottom": 10
+    },
+    {
+      "type": "Button",
+      "text": "Always Enabled Button",
+      "enabled": true,
+      "onclick": "alwaysCalled",
+      "background": "#9C27B0",
+      "fontColor": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 5
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "isButtonEnabled",
+      "class": "Bool",
+      "defaultValue": true
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'ButtonEnabledTest'"
+      "defaultValue": "Button Enabled Test"
     }
   ]
 }

@@ -1,1 +1,6 @@
-{}
+{
+  "include_test": [
+    "included1",
+    "included2"
+  ]
+}

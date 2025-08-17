@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.WeightTestData
 import com.example.kotlinjsonui.sample.viewmodels.WeightTestViewModel
+import androidx.compose.foundation.background
 
 @Composable
 fun WeightTestGeneratedView(
@@ -20,6 +21,139 @@ fun WeightTestGeneratedView(
     // Generated Compose code from weight_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-// TODO: Implement component type: SafeAreaView
-                // >>> GENERATED_CODE_END
+        Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+    ) {
+        Button(
+            onClick = { },
+            modifier = Modifier
+        ) {
+            Text("Button")
+        }
+        Text(
+            text = "${data.title}",
+            fontSize = 24.sp,
+            color = Color(android.graphics.Color.parseColor("#000000")),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .wrapContentWidth()
+                .wrapContentHeight()
+        )
+        Text(
+            text = "Horizontal Weight Distribution (1:2:1)",
+            fontSize = 16.sp,
+            color = Color(android.graphics.Color.parseColor("#333333")),
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .wrapContentWidth()
+                .wrapContentHeight()
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(top = 10.dp)
+        ) {
+            Text(
+                text = "Weight: 1",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                    .width(0.dp)
+                    .wrapContentHeight()
+            )
+            Text(
+                text = "Weight: 2",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                    .width(0.dp)
+                    .height(matchParent.dp)
+            )
+            Text(
+                text = "Weight: 1",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
+                    .width(0.dp)
+                    .height(matchParent.dp)
+            )
+        }
+        Text(
+            text = "Vertical Weight Distribution (1:3:2)",
+            fontSize = 16.sp,
+            color = Color(android.graphics.Color.parseColor("#333333")),
+            modifier = Modifier
+                .padding(top = 30.dp)
+                .wrapContentWidth()
+                .wrapContentHeight()
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .padding(top = 10.dp)
+        ) {
+            Text(
+                text = "Weight: 1",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
+                    .fillMaxWidth()
+                    .height(0.dp)
+            )
+            Text(
+                text = "Weight: 3",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
+                    .fillMaxWidth()
+                    .height(0.dp)
+            )
+            Text(
+                text = "Weight: 2",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                    .fillMaxWidth()
+                    .height(0.dp)
+            )
+        }
+        Text(
+            text = "widthWeight Test",
+            fontSize = 16.sp,
+            color = Color(android.graphics.Color.parseColor("#333333")),
+            modifier = Modifier
+                .padding(top = 30.dp)
+                .wrapContentWidth()
+                .wrapContentHeight()
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(top = 10.dp)
+        ) {
+            Text(
+                text = "widthWeight: 1",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                    .width(0.dp)
+                    .height(matchParent.dp)
+            )
+            Text(
+                text = "widthWeight: 1",
+                fontSize = 14.sp,
+                modifier = Modifier
+                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                    .width(0.dp)
+                    .height(matchParent.dp)
+            )
+        }
+    }
+    // >>> GENERATED_CODE_END
 }

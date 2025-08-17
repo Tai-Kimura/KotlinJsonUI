@@ -1,5 +1,68 @@
 {
   "alignment_combo_test": [
     "dynamic_toggle"
+  ],
+  "alignment_test": [
+    "dynamic_toggle"
+  ],
+  "binding_test": [
+    "dynamic_toggle"
+  ],
+  "button_enabled_test": [
+    "dynamic_toggle"
+  ],
+  "components_test": [
+    "dynamic_toggle"
+  ],
+  "converter_test": [
+    "dynamic_toggle"
+  ],
+  "date_picker_test": [
+    "dynamic_toggle"
+  ],
+  "disabled_test": [
+    "dynamic_toggle"
+  ],
+  "form_test": [
+    "dynamic_toggle"
+  ],
+  "include_test": [
+    "dynamic_toggle"
+  ],
+  "keyboard_avoidance_test": [
+    "dynamic_toggle"
+  ],
+  "line_break_test": [
+    "dynamic_toggle"
+  ],
+  "margins_test": [
+    "dynamic_toggle"
+  ],
+  "relative_test": [
+    "dynamic_toggle"
+  ],
+  "secure_field_test": [
+    "dynamic_toggle"
+  ],
+  "test_menu": [
+    "primary_button"
+  ],
+  "text_styling_test": [
+    "dynamic_toggle"
+  ],
+  "text_view_hint_test": [
+    "dynamic_toggle"
+  ],
+  "visibility_test": [
+    "dynamic_toggle"
+  ],
+  "weight_test": [
+    "dynamic_toggle"
+  ],
+  "weight_test_with_fixed": [
+    "dynamic_toggle"
+  ],
+  "width_test": [
+    "dynamic_toggle"
   ]
 }

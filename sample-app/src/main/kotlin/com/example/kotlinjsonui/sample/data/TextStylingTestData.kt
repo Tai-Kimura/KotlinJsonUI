@@ -1,21 +1,30 @@
 package com.example.kotlinjsonui.sample.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+
 data class TextStylingTestData(
-    var title: String = "TextStylingTest"
-    // Add more data properties as needed based on your JSON structure
+    var dynamicModeStatus: String = "OFF",
+    var title: String = "Text Styling Test"
 ) {
-    // Update properties from map
-    fun update(map: Map<String, Any>) {
-        map["title"]?.let { 
-            if (it is String) title = it 
+    companion object {
+        // Update properties from map
+        fun fromMap(map: Map<String, Any>): TextStylingTestData {
+            return TextStylingTestData(
+                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
+                title = map["title"] as? String ?: ""
+            )
         }
     }
-    
-    // Convert to map for dynamic mode
-    fun toMap(viewModel: Any? = null): Map<String, Any> {
-        return mutableMapOf(
-            "title" to title
-            // Add action handlers if viewModel is provided
-        )
+
+    // Convert properties to map for runtime use
+    fun toMap(viewModel: TextStylingTestViewModel? = null): MutableMap<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        
+        // Data properties
+        map["dynamicModeStatus"] = dynamicModeStatus
+        map["title"] = title
+        
+        return map
     }
 }

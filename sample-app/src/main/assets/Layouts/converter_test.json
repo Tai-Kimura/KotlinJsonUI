@@ -1,47 +1,242 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
         {
           "type": "Label",
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
           "fontColor": "#000000",
-          "marginBottom": 20
+          "topMargin": 20,
+          "bottomMargin": 20
         },
         {
           "type": "Label",
-          "text": "Welcome to ConverterTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "text": "GradientView Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 10
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
+          "type": "GradientView",
+          "width": "matchParent",
+          "height": 100,
+          "topMargin": 10,
+          "colors": [
+            "#FF0000",
+            "#00FF00",
+            "#0000FF"
           ],
-          "cornerRadius": 8
+          "startPoint": {
+            "x": 0,
+            "y": 0
+          },
+          "endPoint": {
+            "x": 1,
+            "y": 1
+          },
+          "child": [
+            {
+              "type": "Label",
+              "text": "Diagonal Gradient",
+              "fontSize": 16,
+              "fontColor": "#FFFFFF",
+              "centerInParent": true
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "BlurView Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 150,
+          "topMargin": 10,
+          "background": "#4CAF50",
+          "zIndex": true,
+          "child": [
+            {
+              "type": "View",
+              "width": "matchParent",
+              "height": "matchParent",
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "BACKGROUND TEXT",
+                  "fontSize": 24,
+                  "fontColor": "#FFFFFF",
+                  "fontWeight": "bold",
+                  "centerInParent": true
+                },
+                {
+                  "type": "Label",
+                  "text": "This will be blurred",
+                  "fontSize": 16,
+                  "fontColor": "#FFD700",
+                  "topMargin": 50,
+                  "leftMargin": 20
+                }
+              ]
+            },
+            {
+              "type": "BlurView",
+              "width": "matchParent",
+              "height": 60,
+              "centerInParent": true,
+              "blurRadius": 20,
+              "background": "#00000033",
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "Clear Text on Blur Layer",
+                  "fontSize": 18,
+                  "fontColor": "#FFFFFF",
+                  "fontWeight": "bold",
+                  "centerInParent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "WebView Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "WebView",
+          "width": "matchParent",
+          "height": 200,
+          "topMargin": 10,
+          "url": "https://www.example.com"
+        },
+        {
+          "type": "Label",
+          "text": "TabView Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "TabView",
+          "width": "matchParent",
+          "height": 200,
+          "topMargin": 10,
+          "selectedTabIndex": 0,
+          "tabs": [
+            {
+              "title": "Tab 1",
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "Content of Tab 1",
+                  "fontSize": 14,
+                  "centerInParent": true
+                }
+              ]
+            },
+            {
+              "title": "Tab 2",
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "Content of Tab 2",
+                  "fontSize": 14,
+                  "centerInParent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Collection Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "Collection",
+          "width": "matchParent",
+          "height": 300,
+          "topMargin": 10,
+          "columns": 3,
+          "itemSpacing": 15,
+          "cellClasses": [
+            "ConverterTestCell"
+          ],
+          "items": "@{items}"
+        },
+        {
+          "type": "Label",
+          "text": "Image Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "Image",
+          "width": 100,
+          "height": 100,
+          "topMargin": 10,
+          "srcName": "star.fill",
+          "defaultImage": "exclamationmark.triangle",
+          "contentMode": "scaleAspectFit"
+        },
+        {
+          "type": "Label",
+          "text": "NetworkImage Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "NetworkImage",
+          "width": 200,
+          "height": 150,
+          "topMargin": 10,
+          "src": "https://picsum.photos/400/300",
+          "defaultImage": "photo",
+          "contentMode": "scaleAspectFill",
+          "cornerRadius": 10
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "items",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'ConverterTest'"
+      "defaultValue": "Converter Components Test"
     }
   ]
 }

@@ -1,47 +1,498 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F0F0F0",
+  "keyboardAvoidance": true,
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
       "padding": 16,
       "child": [
         {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "type": "Button",
+          "style": "dynamic_toggle"
         },
         {
           "type": "Label",
-          "text": "Welcome to FormTest",
-          "fontSize": 16,
+          "text": "@{title}",
+          "fontSize": 28,
+          "fontColor": "#333333",
+          "fontWeight": "bold",
+          "bottomMargin": 24
+        },
+        {
+          "type": "Label",
+          "text": "Personal Information",
+          "fontSize": 20,
+          "fontColor": "#007AFF",
+          "fontWeight": "semibold",
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "First Name",
+          "fontSize": 14,
           "fontColor": "#666666",
-          "marginBottom": 30
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "firstName",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "Enter your first name",
+          "text": "@{firstName}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Last Name",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "lastName",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "Enter your last name",
+          "text": "@{lastName}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Email Address",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "email",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "email@example.com",
+          "text": "@{email}",
+          "fontSize": 16,
+          "keyboardType": "email",
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Phone Number",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "phone",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "+1 234 567 8900",
+          "text": "@{phone}",
+          "fontSize": 16,
+          "keyboardType": "phone",
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 24,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Address Information",
+          "fontSize": 20,
+          "fontColor": "#007AFF",
+          "fontWeight": "semibold",
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "Street Address",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "address",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "123 Main Street",
+          "text": "@{address}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "City",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "city",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "New York",
+          "text": "@{city}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "ZIP Code",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "zipCode",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "10001",
+          "text": "@{zipCode}",
+          "fontSize": 16,
+          "keyboardType": "number",
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Country",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "country",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "United States",
+          "text": "@{country}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 24,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Professional Information",
+          "fontSize": 20,
+          "fontColor": "#007AFF",
+          "fontWeight": "semibold",
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "Company",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "company",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "Company Name",
+          "text": "@{company}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Job Title",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextField",
+          "id": "jobTitle",
+          "width": "matchParent",
+          "height": 48,
+          "placeholder": "Software Engineer",
+          "text": "@{jobTitle}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 24,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Additional Information",
+          "fontSize": 20,
+          "fontColor": "#007AFF",
+          "fontWeight": "semibold",
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "Bio (Flexible Height)",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextView",
+          "id": "bio",
+          "width": "matchParent",
+          "flexible": true,
+          "minHeight": 80,
+          "maxHeight": 200,
+          "text": "@{bio}",
+          "hint": "Tell us about yourself...\nThis field will grow as you type",
+          "hintColor": "#999999",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Notes (Fixed Height)",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextView",
+          "id": "notes",
+          "width": "matchParent",
+          "height": 120,
+          "text": "@{notes}",
+          "hint": "Additional notes...\nFixed height field",
+          "hintColor": "#AAAAAA",
+          "hideOnFocused": false,
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 16,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Comments (Very Flexible)",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 6
+        },
+        {
+          "type": "TextView",
+          "id": "comments",
+          "width": "matchParent",
+          "flexible": true,
+          "minHeight": 60,
+          "maxHeight": 300,
+          "text": "@{comments}",
+          "hint": "Any comments?\nThis can grow very tall (up to 300pt)",
+          "hintAttributes": {
+            "fontColor": "#BBBBBB",
+            "fontSize": 14,
+            "fontStyle": "italic"
+          },
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "background": "#FFFFFF",
+          "cornerRadius": 10,
+          "padding": 14,
+          "bottomMargin": 24,
+          "borderColor": "#E0E0E0",
+          "borderWidth": 1
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "orientation": "horizontal",
+          "bottomMargin": 24,
+          "child": [
+            {
+              "type": "Toggle",
+              "id": "agreeToggle",
+              "isOn": "@{agreeToTerms}",
+              "rightMargin": 12
+            },
+            {
+              "type": "Label",
+              "text": "I agree to the Terms and Conditions",
+              "fontSize": 14,
+              "fontColor": "#333333",
+              "width": "wrapContent"
+            }
+          ]
         },
         {
           "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
+          "width": "matchParent",
+          "height": 54,
+          "text": "Submit Form",
+          "fontSize": 18,
           "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "fontWeight": "semibold",
+          "background": "#007AFF",
+          "cornerRadius": 12,
+          "onclick": "submitForm",
+          "bottomMargin": 16
+        },
+        {
+          "type": "Button",
+          "width": "matchParent",
+          "height": 54,
+          "text": "Clear All Fields",
+          "fontSize": 18,
+          "fontColor": "#FF3B30",
+          "fontWeight": "semibold",
+          "background": "#FFFFFF",
+          "cornerRadius": 12,
+          "borderColor": "#FF3B30",
+          "borderWidth": 2,
+          "onclick": "clearForm",
+          "bottomMargin": 40
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "address",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "agreeToTerms",
+      "class": "Bool",
+      "defaultValue": false
+    },
+    {
+      "name": "bio",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "city",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "comments",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "company",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "country",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "email",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "firstName",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "jobTitle",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "lastName",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "notes",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "phone",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'FormTest'"
+      "defaultValue": "Form & Keyboard Test"
+    },
+    {
+      "name": "zipCode",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

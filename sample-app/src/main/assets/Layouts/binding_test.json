@@ -1,47 +1,284 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F8F8F8",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
+        {
           "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
-          "text": "Welcome to BindingTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "text": "Text Binding",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
+          "type": "TextField",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "hint": "Enter text",
+          "text": "@{textValue}",
+          "background": "#FFFFFF",
+          "padding": 10,
+          "cornerRadius": 8,
+          "borderColor": "#CCCCCC",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "You typed: @{textValue}",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Counter Binding",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "child": [
+            {
+              "type": "Button",
+              "width": 0,
+              "weight": 1,
+              "height": 44,
+              "text": "Decrease",
+              "onclick": "decreaseCounter",
+              "background": "#FF3B30",
+              "fontColor": "#FFFFFF",
+              "cornerRadius": 8,
+              "rightMargin": 5
+            },
+            {
+              "type": "Label",
+              "width": 100,
+              "height": 44,
+              "text": "@{counter}",
+              "fontSize": 20,
+              "fontColor": "#000000",
+              "textAlign": "center",
+              "background": "#E0E0E0",
+              "cornerRadius": 8,
+              "leftMargin": 5,
+              "rightMargin": 5
+            },
+            {
+              "type": "Button",
+              "width": 0,
+              "weight": 1,
+              "height": 44,
+              "text": "Increase",
+              "onclick": "increaseCounter",
+              "background": "#34C759",
+              "fontColor": "#FFFFFF",
+              "cornerRadius": 8,
+              "leftMargin": 5
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Toggle Binding",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Switch",
+          "id": "toggle_switch",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "checked": "@{toggleValue}",
+          "onclick": "toggleChanged"
+        },
+        {
+          "type": "Label",
+          "text": "Toggle is: @{toggleValue}",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "background": "#34C759",
+          "cornerRadius": 8,
+          "child": [
+            {
+              "type": "Label",
+              "text": "ON/OFF",
+              "fontSize": 16,
+              "fontColor": "#FFFFFF",
+              "centerInParent": true
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Slider Binding",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Slider",
+          "id": "value_slider",
+          "width": "matchParent",
+          "height": 40,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "value": "@{sliderValue}",
+          "minimumValue": 0,
+          "maximumValue": 100,
+          "onValueChange": "sliderChanged"
+        },
+        {
+          "type": "Label",
+          "text": "Slider value: @{sliderValue}",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 20,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "background": "#E0E0E0",
+          "cornerRadius": 10,
+          "child": [
+            {
+              "type": "View",
+              "width": 100,
+              "height": "matchParent",
+              "background": "#007AFF",
+              "cornerRadius": 10
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "SelectBox Binding",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "SelectBox",
+          "id": "option_select",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedOption}",
+          "items": [
+            "Option 1",
+            "Option 2",
+            "Option 3",
+            "Option 4"
           ],
-          "cornerRadius": 8
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "borderColor": "#CCCCCC",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "Selected: @{selectedOption}",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "bottomMargin": 30
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "counter",
+      "class": "Int",
+      "defaultValue": "0"
+    },
+    {
+      "name": "selectedOption",
+      "class": "String",
+      "defaultValue": "Option 1"
+    },
+    {
+      "name": "sliderValue",
+      "class": "Double",
+      "defaultValue": "50.0"
+    },
+    {
+      "name": "textValue",
+      "class": "String",
+      "defaultValue": "Type something here"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'BindingTest'"
+      "defaultValue": "Data Binding Test"
+    },
+    {
+      "name": "toggleValue",
+      "class": "Bool",
+      "defaultValue": "false"
     }
   ]
 }

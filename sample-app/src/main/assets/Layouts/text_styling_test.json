@@ -1,47 +1,189 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F8F8F8",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
+        {
           "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
-          "text": "Welcome to TextStylingTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "text": "Font Sizes",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "text": "fontSize: 12",
+          "fontSize": 12,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "fontSize: 16",
+          "fontSize": 16,
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "fontSize: 20",
+          "fontSize": 20,
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "fontSize: 24",
+          "fontSize": 24,
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "Font Styles",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "Bold Text",
+          "font": "bold",
+          "fontSize": 16,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Underlined Text",
+          "underline": true,
+          "fontSize": 16,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Text Alignment",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "Left Aligned (default)",
+          "textAlign": "left",
+          "width": "matchParent",
+          "fontSize": 16,
+          "topMargin": 10,
+          "background": "#E0E0E0",
+          "padding": 5
+        },
+        {
+          "type": "Label",
+          "text": "Center Aligned",
+          "textAlign": "center",
+          "width": "matchParent",
+          "fontSize": 16,
+          "topMargin": 10,
+          "background": "#E0E0E0",
+          "padding": 5
+        },
+        {
+          "type": "Label",
+          "text": "Right Aligned",
+          "textAlign": "right",
+          "width": "matchParent",
+          "fontSize": 16,
+          "topMargin": 10,
+          "background": "#E0E0E0",
+          "padding": 5
+        },
+        {
+          "type": "Label",
+          "text": "Line Spacing Test",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "This is a multi-line text with lineSpacing: 5 to demonstrate line spacing",
+          "lineSpacing": 5,
+          "fontSize": 14,
+          "topMargin": 10,
+          "background": "#F0F0F0",
+          "padding": 10
+        },
+        {
+          "type": "Label",
+          "text": "This is another multi-line text with lineSpacing: 10 to demonstrate line spacing (line breaks work with proper spacing)",
+          "lineSpacing": 10,
+          "fontSize": 14,
+          "topMargin": 10,
+          "background": "#F0F0F0",
+          "padding": 10
+        },
+        {
+          "type": "Label",
+          "text": "Font Colors",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "Red Text",
+          "fontColor": "#FF0000",
+          "fontSize": 16,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Green Text",
+          "fontColor": "#00FF00",
+          "fontSize": 16,
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "Blue Text",
+          "fontColor": "#0000FF",
+          "fontSize": 16,
+          "topMargin": 5
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'TextStylingTest'"
+      "defaultValue": "Text Styling Test"
     }
   ]
 }

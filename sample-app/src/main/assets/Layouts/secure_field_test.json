@@ -1,47 +1,164 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F8F8F8",
+  "orientation": "vertical",
   "child": [
     {
+      "type": "Button",
+      "style": "dynamic_toggle"
+    },
+    {
+      "type": "Label",
+      "id": "title_label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "#000000"
+    },
+    {
+      "type": "Label",
+      "text": "Regular TextField (not secure)",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "topMargin": 30
+    },
+    {
+      "type": "TextField",
+      "id": "regular_field",
+      "width": "matchParent",
+      "height": 44,
+      "topMargin": 10,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "hint": "Enter regular text",
+      "text": "@{regularText}",
+      "background": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 8,
+      "borderColor": "#CCCCCC",
+      "borderWidth": 1,
+      "secure": false
+    },
+    {
+      "type": "Label",
+      "text": "Secure TextField (password)",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "topMargin": 20
+    },
+    {
+      "type": "TextField",
+      "id": "password_field",
+      "width": "matchParent",
+      "height": 44,
+      "topMargin": 10,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "hint": "Enter password",
+      "text": "@{password}",
+      "background": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 8,
+      "borderColor": "#CCCCCC",
+      "borderWidth": 1,
+      "secure": true
+    },
+    {
+      "type": "Label",
+      "text": "Confirm Password (also secure)",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "topMargin": 20
+    },
+    {
+      "type": "TextField",
+      "id": "confirm_password_field",
+      "width": "matchParent",
+      "height": 44,
+      "topMargin": 10,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "hint": "Confirm password",
+      "text": "@{confirmPassword}",
+      "background": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 8,
+      "borderColor": "#CCCCCC",
+      "borderWidth": 1,
+      "secure": true
+    },
+    {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "topMargin": 30,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "padding": 15,
+      "background": "#E0E0E0",
+      "cornerRadius": 8,
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
           "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "text": "Values entered:",
+          "fontSize": 14,
+          "fontColor": "#333333",
+          "font": "bold"
         },
         {
           "type": "Label",
-          "text": "Welcome to SecureFieldTest",
-          "fontSize": 16,
+          "text": "Regular: @{regularText}",
+          "fontSize": 12,
           "fontColor": "#666666",
-          "marginBottom": 30
+          "topMargin": 5
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "text": "Password: [hidden]",
+          "fontSize": 12,
+          "fontColor": "#666666",
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "Confirm: [hidden]",
+          "fontSize": 12,
+          "fontColor": "#666666",
+          "topMargin": 5
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "confirmPassword",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "password",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "regularText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'SecureFieldTest'"
+      "defaultValue": "Secure Field Test"
     }
   ]
 }

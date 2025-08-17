@@ -1,47 +1,211 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F8F8F8",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "type": "Button",
+          "style": "dynamic_toggle"
         },
         {
           "type": "Label",
-          "text": "Welcome to DisabledTest",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "#000000"
+        },
+        {
+          "type": "Label",
+          "text": "Enabled Button",
           "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "fontColor": "#333333",
+          "topMargin": 20
         },
         {
           "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "text": "Enabled Button",
+          "background": "#007AFF",
           "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "cornerRadius": 8,
+          "enabled": true,
+          "onclick": "onEnabledButtonTap"
+        },
+        {
+          "type": "Label",
+          "text": "Disabled Button",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "Button",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "text": "Disabled Button",
+          "background": "#007AFF",
+          "disabledBackground": "#CCCCCC",
+          "fontColor": "#FFFFFF",
+          "disabledFontColor": "#999999",
+          "cornerRadius": 8,
+          "enabled": false,
+          "onclick": "onDisabledButtonTap"
+        },
+        {
+          "type": "Label",
+          "text": "TouchDisabledState Button",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "Button",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "text": "Touch Disabled",
+          "background": "#FF9500",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8,
+          "touchDisabledState": true,
+          "onclick": "onTouchDisabledTap"
+        },
+        {
+          "type": "Label",
+          "text": "Enabled TextField",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "TextField",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "hint": "Enabled - can type here",
+          "text": "@{textFieldValue}",
+          "background": "#FFFFFF",
+          "padding": 10,
+          "cornerRadius": 8,
+          "borderColor": "#CCCCCC",
+          "borderWidth": 1,
+          "enabled": true
+        },
+        {
+          "type": "Label",
+          "text": "Disabled TextField",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20
+        },
+        {
+          "type": "TextField",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "hint": "Disabled - cannot type",
+          "text": "Disabled text field",
+          "background": "#F0F0F0",
+          "disabledBackground": "#E0E0E0",
+          "padding": 10,
+          "cornerRadius": 8,
+          "borderColor": "#CCCCCC",
+          "borderWidth": 1,
+          "enabled": false,
+          "fontColor": "#666666",
+          "disabledFontColor": "#999999"
+        },
+        {
+          "type": "Label",
+          "text": "Dynamic Enable/Disable Test",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Button",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "text": "Toggle Enable State",
+          "background": "#34C759",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8,
+          "onclick": "toggleEnableState"
+        },
+        {
+          "type": "Button",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "text": "Dynamic Button",
+          "background": "#5856D6",
+          "disabledBackground": "#D0D0D0",
+          "fontColor": "#FFFFFF",
+          "disabledFontColor": "#888888",
+          "cornerRadius": 8,
+          "enabled": "@{isEnabled}",
+          "onclick": "onDynamicButtonTap"
+        },
+        {
+          "type": "Label",
+          "text": "Current state: @{isEnabled}",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10,
+          "centerHorizontal": true
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "isEnabled",
+      "class": "Bool",
+      "defaultValue": "true"
+    },
+    {
+      "name": "textFieldValue",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'DisabledTest'"
+      "defaultValue": "Disabled State Test"
     }
   ]
 }

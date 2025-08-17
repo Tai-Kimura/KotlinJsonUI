@@ -11,6 +11,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.IncludeTestData
 import com.example.kotlinjsonui.sample.viewmodels.IncludeTestViewModel
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.background
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -20,6 +22,206 @@ fun IncludeTestGeneratedView(
     // Generated Compose code from include_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-// TODO: Implement component type: SafeAreaView
-                // >>> GENERATED_CODE_END
+        LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            ) {
+                Button(
+                    onClick = { },
+                    modifier = Modifier
+                ) {
+                    Text("Button")
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    Text(
+                        text = "${data.title}",
+                        fontSize = 24.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
+                        modifier = Modifier
+                    )
+                    Column(
+                        modifier = Modifier
+                            .padding(15.dp)
+                            .background(Color(android.graphics.Color.parseColor("#E8F4FD")))
+                    ) {
+                        Text(
+                            text = "Control Panel",
+                            fontSize = 18.sp,
+                            color = Color(android.graphics.Color.parseColor("#0066CC")),
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                        )
+                        Row(
+                        ) {
+                            Button(
+                                onClick = { viewModel.incrementCount() },
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) {
+                                Text("Count +")
+                            }
+                            Button(
+                                onClick = { viewModel.decrementCount() },
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) {
+                                Text("Count -")
+                            }
+                            Button(
+                                onClick = { viewModel.resetCount() },
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) {
+                                Text("Reset")
+                            }
+                        }
+                        Row(
+                        ) {
+                            Button(
+                                onClick = { viewModel.changeUserName() },
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) {
+                                Text("Change Name")
+                            }
+                            Button(
+                                onClick = { viewModel.toggleStatus() },
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            ) {
+                                Text("Toggle Status")
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                        ) {
+                            Text(
+                                text = "Current Values: ",
+                                fontSize = 14.sp,
+                                color = Color(android.graphics.Color.parseColor("#333333")),
+                                fontWeight = FontWeight.Semibold,
+                                modifier = Modifier
+                            )
+                            Text(
+                                text = "${data.mainCount}",
+                                fontSize = 14.sp,
+                                color = Color(android.graphics.Color.parseColor("#666666")),
+                                modifier = Modifier
+                            )
+                            Text(
+                                text = "${data.userName}",
+                                fontSize = 14.sp,
+                                color = Color(android.graphics.Color.parseColor("#666666")),
+                                modifier = Modifier
+                            )
+                            Text(
+                                text = "${data.mainStatus}",
+                                fontSize = 14.sp,
+                                color = Color(android.graphics.Color.parseColor("#666666")),
+                                modifier = Modifier
+                            )
+                        }
+                    }
+                    Column(
+                    ) {
+                        Text(
+                            text = "1. Basic Include with static data:",
+                            fontSize = 16.sp,
+                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            modifier = Modifier
+                        )
+Included1View(
+                            viewModel = viewModel.included1ViewModel,
+                            data = Included1Data(
+                                title = "Included View 1",
+                                message = "This is the first included view",
+                                count = "1",
+                            )
+                        )
+                    }
+                    Column(
+                    ) {
+                        Text(
+                            text = "2. Include with data (static values):",
+                            fontSize = 16.sp,
+                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            modifier = Modifier
+                        )
+Included2View(
+                            viewModel = viewModel.included2ViewModel,
+                            data = Included2Data(
+                                viewTitle = "Static Title",
+                                viewStatus = "Static Status",
+                                viewCount = "42",
+                            )
+                        )
+                    }
+                    Column(
+                    ) {
+                        Text(
+                            text = "3. Include with data (using @{} references):",
+                            fontSize = 16.sp,
+                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            modifier = Modifier
+                        )
+Included2View(
+                            viewModel = viewModel.included2ViewModel,
+                            data = Included2Data(
+                                viewTitle = "${data.userName}",
+                                viewStatus = "${data.mainStatus}",
+                                viewCount = "${data.mainCount}",
+                            )
+                        )
+                    }
+                    Column(
+                    ) {
+                        Text(
+                            text = "4. Include with shared_data and data override:",
+                            fontSize = 16.sp,
+                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            modifier = Modifier
+                        )
+Included2View(
+                            viewModel = viewModel.included2ViewModel,
+                            data = Included2Data(
+                                viewStatus = "Overridden Status",
+                            )
+                        )
+                    }
+                    Column(
+                    ) {
+                        Text(
+                            text = "5. Another included_1 with @{} references:",
+                            fontSize = 16.sp,
+                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            modifier = Modifier
+                        )
+Included1View(
+                            viewModel = viewModel.included1ViewModel,
+                            data = Included1Data(
+                                title = "${data.userName}",
+                                message = "${data.mainStatus}",
+                                count = "${data.mainCount}",
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+    // >>> GENERATED_CODE_END
 }

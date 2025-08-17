@@ -13,15 +13,17 @@ module KjuiTools
       def initialize
         @config = Core::ConfigManager.load_config
         @source_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
-        @layouts_dir = File.join(@source_path, @config['layouts_directory'] || 'assets/Layouts')
-        @data_dir = File.join(@source_path, @config['data_directory'] || 'app/src/main/kotlin/data')
-        @package_name = Core::ProjectFinder.get_package_name || 'com.example.app'
+        source_directory = @config['source_directory'] || 'src/main'
+        @layouts_dir = File.join(@source_path, source_directory, @config['layouts_directory'] || 'assets/Layouts')
+        @data_dir = File.join(@source_path, source_directory, @config['data_directory'] || 'kotlin/com/example/kotlinjsonui/sample/data')
+        @package_name = @config['package_name'] || Core::ProjectFinder.get_package_name || 'com.example.app'
       end
 
       def update_data_models
         # Process all JSON files in Layouts directory
         json_files = Dir.glob(File.join(@layouts_dir, '**/*.json'))
         
+        puts "  Updating data models for #{json_files.length} files..."
         json_files.each do |json_file|
           process_json_file(json_file)
         end
@@ -169,9 +171,14 @@ module KjuiTools
 
         import androidx.compose.runtime.MutableState
         import androidx.compose.runtime.mutableStateOf
-
-        data class #{view_name}Data(
         KOTLIN
+        
+        # Add ViewModel import if there are onclick actions
+        if !onclick_actions.empty?
+          content += "import #{@package_name}.viewmodels.#{view_name}ViewModel\n"
+        end
+        
+        content += "\ndata class #{view_name}Data(\n"
         
         if data_properties.empty?
             content += "    // No data properties defined in JSON\n"
@@ -312,8 +319,12 @@ module KjuiTools
           # For String class, add quotes
           "\"#{value}\""
         when 'Bool', 'Boolean'
-          # Convert string to boolean
-          value.downcase == 'true' ? 'true' : 'false'
+          # Convert to boolean
+          if value.is_a?(TrueClass) || value.is_a?(FalseClass)
+            value.to_s
+          else
+            value.to_s.downcase == 'true' ? 'true' : 'false'
+          end
         when 'Int'
           # Ensure it's an integer
           value.to_i.to_s

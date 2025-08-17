@@ -1,47 +1,26 @@
 {
-  "type": "SafeAreaView",
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
   "background": "#FFFFFF",
+  "orientation": "vertical",
   "child": [
     {
-      "type": "View",
-      "orientation": "vertical",
-      "padding": 16,
-      "child": [
-        {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
-        },
-        {
-          "type": "Label",
-          "text": "Welcome to Included1",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
-        },
-        {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
-        }
-      ]
+      "type": "Label",
+      "id": "title_label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "#000000"
     }
   ],
   "data": [
     {
       "name": "title",
       "class": "String",
-      "defaultValue": "'Included1'"
+      "defaultValue": "Included1"
     }
   ]
 }

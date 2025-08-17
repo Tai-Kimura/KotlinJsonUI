@@ -1,21 +1,33 @@
 package com.example.kotlinjsonui.sample.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+
 data class LineBreakTestData(
-    var title: String = "LineBreakTest"
-    // Add more data properties as needed based on your JSON structure
+    var dynamicModeStatus: String = "OFF",
+    var longText: String = "This is a very long text that will be used to demonstrate different line break modes in SwiftJsonUI. The text should be long enough to test truncation and wrapping behaviors.",
+    var title: String = "Line Break Mode Test"
 ) {
-    // Update properties from map
-    fun update(map: Map<String, Any>) {
-        map["title"]?.let { 
-            if (it is String) title = it 
+    companion object {
+        // Update properties from map
+        fun fromMap(map: Map<String, Any>): LineBreakTestData {
+            return LineBreakTestData(
+                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
+                longText = map["longText"] as? String ?: "",
+                title = map["title"] as? String ?: ""
+            )
         }
     }
-    
-    // Convert to map for dynamic mode
-    fun toMap(viewModel: Any? = null): Map<String, Any> {
-        return mutableMapOf(
-            "title" to title
-            // Add action handlers if viewModel is provided
-        )
+
+    // Convert properties to map for runtime use
+    fun toMap(viewModel: LineBreakTestViewModel? = null): MutableMap<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        
+        // Data properties
+        map["dynamicModeStatus"] = dynamicModeStatus
+        map["longText"] = longText
+        map["title"] = title
+        
+        return map
     }
 }

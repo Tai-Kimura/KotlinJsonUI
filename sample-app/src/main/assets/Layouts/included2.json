@@ -1,47 +1,62 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "View",
+  "background": "#FFF4E6",
+  "padding": 15,
+  "cornerRadius": 10,
+  "orientation": "vertical",
   "child": [
     {
+      "type": "Label",
+      "text": "Included View 2",
+      "fontSize": 18,
+      "fontColor": "#FF6600",
+      "marginBottom": 10
+    },
+    {
       "type": "View",
+      "background": "#FFFFFF",
+      "padding": 10,
+      "cornerRadius": 5,
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
           "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "text": "Title: @{viewTitle}",
+          "fontSize": 14,
+          "fontColor": "#333333",
+          "marginBottom": 5
         },
         {
           "type": "Label",
-          "text": "Welcome to Included2",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "text": "Status: @{viewStatus}",
+          "fontSize": 14,
+          "fontColor": "#333333",
+          "marginBottom": 5
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "text": "Count: @{viewCount}",
+          "fontSize": 14,
+          "fontColor": "#333333"
         }
       ]
     }
   ],
   "data": [
     {
-      "name": "title",
+      "name": "viewCount",
+      "class": "Int",
+      "defaultValue": "0"
+    },
+    {
+      "name": "viewStatus",
       "class": "String",
-      "defaultValue": "'Included2'"
+      "defaultValue": "Default Status"
+    },
+    {
+      "name": "viewTitle",
+      "class": "String",
+      "defaultValue": "Default Title"
     }
   ]
 }

@@ -1,47 +1,93 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
   "child": [
     {
+      "type": "Button",
+      "style": "dynamic_toggle"
+    },
+    {
+      "type": "Label",
+      "text": "Width Test",
+      "fontSize": 24,
+      "fontColor": "#000000",
+      "topMargin": 20
+    },
+    {
+      "type": "Label",
+      "text": "matchParent width",
+      "width": "matchParent",
+      "height": 50,
+      "background": "#FF6B6B",
+      "fontColor": "#FFFFFF",
+      "textAlign": "center",
+      "topMargin": 20
+    },
+    {
+      "type": "Label",
+      "text": "Fixed width 200",
+      "width": 200,
+      "height": 50,
+      "background": "#4ECDC4",
+      "fontColor": "#FFFFFF",
+      "textAlign": "center",
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "wrapContent width",
+      "width": "wrapContent",
+      "height": 50,
+      "background": "#45B7D1",
+      "fontColor": "#FFFFFF",
+      "textAlign": "center",
+      "topMargin": 10
+    },
+    {
       "type": "View",
-      "orientation": "vertical",
-      "padding": 16,
+      "width": "matchParent",
+      "height": 100,
+      "orientation": "horizontal",
+      "background": "#E0E0E0",
+      "topMargin": 20,
       "child": [
         {
           "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "text": "Weight 1",
+          "weight": 1,
+          "height": "matchParent",
+          "background": "#96CEB4",
+          "fontColor": "#FFFFFF",
+          "textAlign": "center"
         },
         {
           "type": "Label",
-          "text": "Welcome to WidthTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "text": "Weight 2 (wrap)",
+          "weight": 2,
+          "height": "wrapContent",
+          "background": "#FFEAA7",
+          "fontColor": "#000000",
+          "textAlign": "center"
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "text": "Weight 1",
+          "weight": 1,
+          "height": "matchParent",
+          "background": "#DFE6E9",
+          "fontColor": "#000000",
+          "textAlign": "center"
         }
       ]
     }
   ],
   "data": [
     {
-      "name": "title",
+      "name": "dynamicModeStatus",
       "class": "String",
-      "defaultValue": "'WidthTest'"
+      "defaultValue": "OFF"
     }
   ]
 }

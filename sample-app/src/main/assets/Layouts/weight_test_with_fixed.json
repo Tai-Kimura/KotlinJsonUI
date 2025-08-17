@@ -1,47 +1,503 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
+        {
           "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
-          "text": "Welcome to WeightTestWithFixed",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "Fixed(80) + Weight(1) + Weight(2) + Fixed(60)",
           "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "fontColor": "#333333"
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "View",
+          "width": "matchParent",
+          "height": 60,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": 80,
+              "height": "matchParent",
+              "text": "Fixed: 80",
+              "background": "#FFD0D0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "Weight: 1",
+              "background": "#D0FFD0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 2,
+              "text": "Weight: 2",
+              "background": "#D0D0FF",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 60,
+              "height": "matchParent",
+              "text": "Fixed: 60",
+              "background": "#FFFFD0",
+              "textAlign": "center",
+              "fontSize": 14
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Complex nested weights with fixed",
+          "fontSize": 16,
+          "fontColor": "#333333"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "View",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 0,
+                  "weight": 1,
+                  "text": "1-1",
+                  "background": "#FFE0E0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                },
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 0,
+                  "weight": 2,
+                  "text": "1-2",
+                  "background": "#FFC0C0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "width": 50,
+              "height": "matchParent",
+              "text": "Fix\n50",
+              "background": "#E0E0E0",
+              "textAlign": "center",
+              "fontSize": 12
+            },
+            {
+              "type": "View",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 2,
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 30,
+                  "text": "Fixed 30",
+                  "background": "#E0FFE0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                },
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 0,
+                  "weight": 1,
+                  "text": "Weight 1",
+                  "background": "#C0FFC0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Multiple fixed sizes with weights",
+          "fontSize": 16,
+          "fontColor": "#333333"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 60,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": 40,
+              "height": "matchParent",
+              "text": "40",
+              "background": "#FFD0D0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "W:1",
+              "background": "#D0FFD0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 60,
+              "height": "matchParent",
+              "text": "60",
+              "background": "#FFD0D0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "W:1",
+              "background": "#D0FFD0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 80,
+              "height": "matchParent",
+              "text": "80",
+              "background": "#FFD0D0",
+              "textAlign": "center",
+              "fontSize": 14
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Zero weights test",
+          "fontSize": 16,
+          "fontColor": "#333333"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 60,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 0,
+              "text": "W:0",
+              "background": "#FFA0A0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "W:1",
+              "background": "#A0FFA0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 100,
+              "height": "matchParent",
+              "text": "Fixed:100",
+              "background": "#A0A0FF",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 3,
+              "text": "W:3",
+              "background": "#FFFFA0",
+              "textAlign": "center",
+              "fontSize": 14
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Vertical: Fixed + Weight combinations",
+          "fontSize": 16,
+          "fontColor": "#333333"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 200,
+          "orientation": "vertical",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 30,
+              "text": "Fixed: 30",
+              "background": "#FFE0E0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "Weight: 1",
+              "background": "#E0FFE0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 40,
+              "text": "Fixed: 40",
+              "background": "#E0E0FF",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 2,
+              "text": "Weight: 2",
+              "background": "#FFFFE0",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 50,
+              "text": "Fixed: 50",
+              "background": "#FFE0FF",
+              "textAlign": "center",
+              "fontSize": 14
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Vertical: Nested horizontal weights",
+          "fontSize": 16,
+          "fontColor": "#333333"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 150,
+          "orientation": "vertical",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 25,
+              "text": "Header: Fixed 25",
+              "background": "#666666",
+              "fontColor": "#FFFFFF",
+              "textAlign": "center",
+              "fontSize": 12
+            },
+            {
+              "type": "View",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "orientation": "horizontal",
+              "child": [
+                {
+                  "type": "Label",
+                  "width": 0,
+                  "height": "matchParent",
+                  "weight": 1,
+                  "text": "Col 1",
+                  "background": "#FFD0D0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                },
+                {
+                  "type": "Label",
+                  "width": 60,
+                  "height": "matchParent",
+                  "text": "Fix:60",
+                  "background": "#D0D0D0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                },
+                {
+                  "type": "Label",
+                  "width": 0,
+                  "height": "matchParent",
+                  "weight": 2,
+                  "text": "Col 2",
+                  "background": "#D0FFD0",
+                  "textAlign": "center",
+                  "fontSize": 12
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 25,
+              "text": "Footer: Fixed 25",
+              "background": "#666666",
+              "fontColor": "#FFFFFF",
+              "textAlign": "center",
+              "fontSize": 12
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Vertical: Multiple weights only",
+          "fontSize": 16,
+          "fontColor": "#333333"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "orientation": "vertical",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "W:1",
+              "background": "#FFCCCC",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "W:1",
+              "background": "#CCFFCC",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 2,
+              "text": "W:2",
+              "background": "#CCCCFF",
+              "textAlign": "center",
+              "fontSize": 14
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "W:1",
+              "background": "#FFFFCC",
+              "textAlign": "center",
+              "fontSize": 14
+            }
+          ]
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'WeightTestWithFixed'"
+      "defaultValue": "Weight + Fixed Size Test"
     }
   ]
 }

@@ -1,47 +1,169 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
+  "orientation": "vertical",
   "child": [
     {
+      "type": "Button",
+      "style": "dynamic_toggle"
+    },
+    {
+      "type": "Label",
+      "id": "title_label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "#000000"
+    },
+    {
+      "type": "Label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "Horizontal Weight Distribution (1:2:1)",
+      "fontSize": 16,
+      "fontColor": "#333333"
+    },
+    {
       "type": "View",
-      "orientation": "vertical",
-      "padding": 16,
+      "width": "matchParent",
+      "height": 60,
+      "orientation": "horizontal",
+      "topMargin": 10,
       "child": [
         {
           "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "width": 0,
+          "height": "wrapContent",
+          "weight": 1,
+          "text": "Weight: 1",
+          "background": "#FFD0D0",
+          "textAlign": "center",
+          "fontSize": 14
         },
         {
           "type": "Label",
-          "text": "Welcome to WeightTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "width": 0,
+          "height": "matchParent",
+          "weight": 2,
+          "text": "Weight: 2",
+          "background": "#D0FFD0",
+          "textAlign": "center",
+          "fontSize": 14
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "weight": 1,
+          "text": "Weight: 1",
+          "background": "#D0D0FF",
+          "textAlign": "center",
+          "fontSize": 14
+        }
+      ]
+    },
+    {
+      "type": "Label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 30,
+      "text": "Vertical Weight Distribution (1:3:2)",
+      "fontSize": 16,
+      "fontColor": "#333333"
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 300,
+      "orientation": "vertical",
+      "topMargin": 10,
+      "child": [
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 0,
+          "weight": 1,
+          "text": "Weight: 1",
+          "background": "#FFFFD0",
+          "textAlign": "center",
+          "fontSize": 14
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 0,
+          "weight": 3,
+          "text": "Weight: 3",
+          "background": "#FFD0FF",
+          "textAlign": "center",
+          "fontSize": 14
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 0,
+          "weight": 2,
+          "text": "Weight: 2",
+          "background": "#D0FFFF",
+          "textAlign": "center",
+          "fontSize": 14
+        }
+      ]
+    },
+    {
+      "type": "Label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 30,
+      "text": "widthWeight Test",
+      "fontSize": 16,
+      "fontColor": "#333333"
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 60,
+      "orientation": "horizontal",
+      "topMargin": 10,
+      "child": [
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "widthWeight": 1,
+          "text": "widthWeight: 1",
+          "background": "#FFE0E0",
+          "textAlign": "center",
+          "fontSize": 14
+        },
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "widthWeight": 1,
+          "text": "widthWeight: 1",
+          "background": "#E0FFE0",
+          "textAlign": "center",
+          "fontSize": 14
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'WeightTest'"
+      "defaultValue": "Weight Test"
     }
   ]
 }

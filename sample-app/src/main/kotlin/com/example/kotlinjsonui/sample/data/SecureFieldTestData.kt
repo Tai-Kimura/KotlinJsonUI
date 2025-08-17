@@ -1,21 +1,39 @@
 package com.example.kotlinjsonui.sample.data
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+
 data class SecureFieldTestData(
-    var title: String = "SecureFieldTest"
-    // Add more data properties as needed based on your JSON structure
+    var dynamicModeStatus: String = "OFF",
+    var confirmPassword: String = "",
+    var password: String = "",
+    var regularText: String = "",
+    var title: String = "Secure Field Test"
 ) {
-    // Update properties from map
-    fun update(map: Map<String, Any>) {
-        map["title"]?.let { 
-            if (it is String) title = it 
+    companion object {
+        // Update properties from map
+        fun fromMap(map: Map<String, Any>): SecureFieldTestData {
+            return SecureFieldTestData(
+                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
+                confirmPassword = map["confirmPassword"] as? String ?: "",
+                password = map["password"] as? String ?: "",
+                regularText = map["regularText"] as? String ?: "",
+                title = map["title"] as? String ?: ""
+            )
         }
     }
-    
-    // Convert to map for dynamic mode
-    fun toMap(viewModel: Any? = null): Map<String, Any> {
-        return mutableMapOf(
-            "title" to title
-            // Add action handlers if viewModel is provided
-        )
+
+    // Convert properties to map for runtime use
+    fun toMap(viewModel: SecureFieldTestViewModel? = null): MutableMap<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        
+        // Data properties
+        map["dynamicModeStatus"] = dynamicModeStatus
+        map["confirmPassword"] = confirmPassword
+        map["password"] = password
+        map["regularText"] = regularText
+        map["title"] = title
+        
+        return map
     }
 }

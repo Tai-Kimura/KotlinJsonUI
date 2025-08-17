@@ -1,47 +1,289 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "background": "#FFFFFF",
       "orientation": "vertical",
-      "padding": 16,
+      "padding": 20,
       "child": [
         {
-          "type": "Label",
-          "text": "@{title}",
-          "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
-        },
-        {
-          "type": "Label",
-          "text": "Welcome to IncludeTest",
-          "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
-        },
-        {
           "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "style": "dynamic_toggle"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "text": "@{title}",
+              "fontSize": 24,
+              "fontColor": "#000000",
+              "marginBottom": 20
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "marginBottom": 20,
+              "padding": 15,
+              "background": "#E8F4FD",
+              "cornerRadius": 8,
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "Control Panel",
+                  "fontSize": 18,
+                  "fontWeight": "bold",
+                  "fontColor": "#0066CC",
+                  "marginBottom": 10
+                },
+                {
+                  "type": "View",
+                  "orientation": "horizontal",
+                  "marginBottom": 10,
+                  "child": [
+                    {
+                      "type": "Button",
+                      "text": "Count +",
+                      "onclick": "incrementCount",
+                      "background": "#4CAF50",
+                      "fontColor": "#FFFFFF",
+                      "padding": 10,
+                      "cornerRadius": 5,
+                      "marginRight": 5
+                    },
+                    {
+                      "type": "Button",
+                      "text": "Count -",
+                      "onclick": "decrementCount",
+                      "background": "#FF9800",
+                      "fontColor": "#FFFFFF",
+                      "padding": 10,
+                      "cornerRadius": 5,
+                      "marginRight": 5
+                    },
+                    {
+                      "type": "Button",
+                      "text": "Reset",
+                      "onclick": "resetCount",
+                      "background": "#2196F3",
+                      "fontColor": "#FFFFFF",
+                      "padding": 10,
+                      "cornerRadius": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "View",
+                  "orientation": "horizontal",
+                  "child": [
+                    {
+                      "type": "Button",
+                      "text": "Change Name",
+                      "onclick": "changeUserName",
+                      "background": "#9C27B0",
+                      "fontColor": "#FFFFFF",
+                      "padding": 10,
+                      "cornerRadius": 5,
+                      "marginRight": 5
+                    },
+                    {
+                      "type": "Button",
+                      "text": "Toggle Status",
+                      "onclick": "toggleStatus",
+                      "background": "#607D8B",
+                      "fontColor": "#FFFFFF",
+                      "padding": 10,
+                      "cornerRadius": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "View",
+                  "orientation": "horizontal",
+                  "marginTop": 10,
+                  "padding": 10,
+                  "background": "#FFFFFF",
+                  "cornerRadius": 5,
+                  "child": [
+                    {
+                      "type": "Label",
+                      "text": "Current Values: ",
+                      "fontSize": 14,
+                      "fontWeight": "semibold",
+                      "fontColor": "#333333"
+                    },
+                    {
+                      "type": "Label",
+                      "text": "Count=@{mainCount}, ",
+                      "fontSize": 14,
+                      "fontColor": "#666666"
+                    },
+                    {
+                      "type": "Label",
+                      "text": "User=@{userName}, ",
+                      "fontSize": 14,
+                      "fontColor": "#666666"
+                    },
+                    {
+                      "type": "Label",
+                      "text": "Status=@{mainStatus}",
+                      "fontSize": 14,
+                      "fontColor": "#666666"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "marginBottom": 20,
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "1. Basic Include with static data:",
+                  "fontSize": 16,
+                  "fontColor": "#666666",
+                  "marginBottom": 10
+                },
+                {
+                  "include": "included1",
+                  "data": {
+                    "title": "Included View 1",
+                    "message": "This is the first included view",
+                    "count": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "marginBottom": 20,
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "2. Include with data (static values):",
+                  "fontSize": 16,
+                  "fontColor": "#666666",
+                  "marginBottom": 10
+                },
+                {
+                  "include": "included2",
+                  "data": {
+                    "viewTitle": "Static Title",
+                    "viewStatus": "Static Status",
+                    "viewCount": 42
+                  }
+                }
+              ]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "marginBottom": 20,
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "3. Include with data (using @{} references):",
+                  "fontSize": 16,
+                  "fontColor": "#666666",
+                  "marginBottom": 10
+                },
+                {
+                  "include": "included2",
+                  "data": {
+                    "viewTitle": "@{userName}",
+                    "viewStatus": "@{mainStatus}",
+                    "viewCount": "@{mainCount}"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "marginBottom": 20,
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "4. Include with shared_data and data override:",
+                  "fontSize": 16,
+                  "fontColor": "#666666",
+                  "marginBottom": 10
+                },
+                {
+                  "include": "included2",
+                  "shared_data": {
+                    "viewTitle": "@{userName}",
+                    "viewStatus": "@{mainStatus}",
+                    "viewCount": "@{mainCount}"
+                  },
+                  "data": {
+                    "viewStatus": "Overridden Status"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "marginBottom": 20,
+              "child": [
+                {
+                  "type": "Label",
+                  "text": "5. Another included_1 with @{} references:",
+                  "fontSize": 16,
+                  "fontColor": "#666666",
+                  "marginBottom": 10
+                },
+                {
+                  "include": "included1",
+                  "data": {
+                    "title": "@{userName}",
+                    "message": "@{mainStatus}",
+                    "count": "@{mainCount}"
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "mainCount",
+      "class": "Int",
+      "defaultValue": "100"
+    },
+    {
+      "name": "mainStatus",
+      "class": "String",
+      "defaultValue": "Main Active"
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'IncludeTest'"
+      "defaultValue": "Include Component Test"
+    },
+    {
+      "name": "userName",
+      "class": "String",
+      "defaultValue": "Test User"
     }
   ]
 }

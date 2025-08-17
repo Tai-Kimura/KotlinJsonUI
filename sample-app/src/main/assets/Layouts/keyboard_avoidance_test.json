@@ -1,47 +1,204 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
+  "keyboardAvoidance": true,
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
       "padding": 16,
       "child": [
         {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
+        {
           "type": "Label",
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
           "fontColor": "#000000",
-          "marginBottom": 20
+          "bottomMargin": 20
         },
         {
           "type": "Label",
-          "text": "Welcome to KeyboardAvoidanceTest",
-          "fontSize": 16,
+          "text": "TextField 1",
+          "fontSize": 14,
           "fontColor": "#666666",
-          "marginBottom": 30
+          "bottomMargin": 8
+        },
+        {
+          "type": "TextField",
+          "id": "textfield1",
+          "width": "matchParent",
+          "height": 44,
+          "placeholder": "Enter text here",
+          "text": "@{textField1}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "padding": 12,
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "TextField 2",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 8
+        },
+        {
+          "type": "TextField",
+          "id": "textfield2",
+          "width": "matchParent",
+          "height": 44,
+          "placeholder": "Another text field",
+          "text": "@{textField2}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "padding": 12,
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "TextField 3",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 8
+        },
+        {
+          "type": "TextField",
+          "id": "textfield3",
+          "width": "matchParent",
+          "height": 44,
+          "placeholder": "Keep typing...",
+          "text": "@{textField3}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "padding": 12,
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "TextField 4",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 8
+        },
+        {
+          "type": "TextField",
+          "id": "textfield4",
+          "width": "matchParent",
+          "height": 44,
+          "placeholder": "This should scroll up",
+          "text": "@{textField4}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "padding": 12,
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "TextField 5 (at bottom)",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 8
+        },
+        {
+          "type": "TextField",
+          "id": "textfield5",
+          "width": "matchParent",
+          "height": 44,
+          "placeholder": "This is near the bottom",
+          "text": "@{textField5}",
+          "fontSize": 16,
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "padding": 12,
+          "bottomMargin": 16
+        },
+        {
+          "type": "Label",
+          "text": "TextView (Multi-line)",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "bottomMargin": 8
+        },
+        {
+          "type": "TextView",
+          "id": "textview",
+          "width": "matchParent",
+          "height": 120,
+          "text": "@{textView}",
+          "hint": "Multi-line text input\nType here...",
+          "hintColor": "#999999",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "padding": 12,
+          "bottomMargin": 16
         },
         {
           "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
+          "width": "matchParent",
+          "height": 50,
+          "text": "Submit",
+          "fontSize": 18,
           "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "background": "#007AFF",
+          "cornerRadius": 8,
+          "onclick": "submitForm"
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "textField1",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "textField2",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "textField3",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "textField4",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "textField5",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "textView",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'KeyboardAvoidanceTest'"
+      "defaultValue": "Keyboard Avoidance Test"
     }
   ]
 }

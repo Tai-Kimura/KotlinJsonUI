@@ -1,47 +1,243 @@
 {
-  "type": "SafeAreaView",
-  "background": "#FFFFFF",
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F8F8F8",
   "child": [
     {
       "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
       "orientation": "vertical",
-      "padding": 16,
       "child": [
         {
+          "type": "Button",
+          "style": "dynamic_toggle"
+        },
+        {
           "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontWeight": "bold",
-          "fontColor": "#000000",
-          "marginBottom": 20
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
-          "text": "Welcome to LineBreakTest",
+          "text": "lineBreakMode: Word (default)",
           "fontSize": 16,
-          "fontColor": "#666666",
-          "marginBottom": 30
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
         },
         {
-          "type": "Button",
-          "text": "Get Started",
-          "onclick": "onGetStarted",
-          "background": "#6200EE",
-          "fontColor": "#FFFFFF",
-          "padding": [
-            12,
-            24
-          ],
-          "cornerRadius": 8
+          "type": "Label",
+          "width": "matchParent",
+          "height": 60,
+          "text": "@{longText}",
+          "lineBreakMode": "Word",
+          "lines": 2,
+          "fontSize": 14,
+          "background": "#E0E0E0",
+          "padding": 10,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lineBreakMode: Char",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 60,
+          "text": "@{longText}",
+          "lineBreakMode": "Char",
+          "lines": 2,
+          "fontSize": 14,
+          "background": "#FFE0E0",
+          "padding": 10,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lineBreakMode: Clip",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 60,
+          "text": "@{longText}",
+          "lineBreakMode": "Clip",
+          "lines": 2,
+          "fontSize": 14,
+          "background": "#E0FFE0",
+          "padding": 10,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lineBreakMode: Head",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 60,
+          "text": "@{longText}",
+          "lineBreakMode": "Head",
+          "lines": 2,
+          "fontSize": 14,
+          "background": "#E0E0FF",
+          "padding": 10,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lineBreakMode: Middle",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 60,
+          "text": "@{longText}",
+          "lineBreakMode": "Middle",
+          "lines": 2,
+          "fontSize": 14,
+          "background": "#FFFFE0",
+          "padding": 10,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lineBreakMode: Tail",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 60,
+          "text": "@{longText}",
+          "lineBreakMode": "Tail",
+          "lines": 2,
+          "fontSize": 14,
+          "background": "#FFE0FF",
+          "padding": 10,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Lines Property Test",
+          "fontSize": 16,
+          "fontColor": "#333333",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "lines: 1",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "text": "@{longText}",
+          "lines": 1,
+          "lineBreakMode": "Tail",
+          "fontSize": 14,
+          "background": "#D0FFFF",
+          "padding": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lines: 3",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "text": "@{longText}",
+          "lines": 3,
+          "lineBreakMode": "Tail",
+          "fontSize": 14,
+          "background": "#FFD0D0",
+          "padding": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "lines: 0 (unlimited)",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "text": "@{longText}",
+          "lines": 0,
+          "fontSize": 14,
+          "background": "#D0FFD0",
+          "padding": 10,
+          "leftMargin": 20,
+          "rightMargin": 20
         }
       ]
     }
   ],
   "data": [
     {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "longText",
+      "class": "String",
+      "defaultValue": "This is a very long text that will be used to demonstrate different line break modes in SwiftJsonUI. The text should be long enough to test truncation and wrapping behaviors."
+    },
+    {
       "name": "title",
       "class": "String",
-      "defaultValue": "'LineBreakTest'"
+      "defaultValue": "Line Break Mode Test"
     }
   ]
 }

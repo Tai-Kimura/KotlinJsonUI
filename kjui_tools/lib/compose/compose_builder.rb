@@ -2,6 +2,7 @@
 
 require 'json'
 require 'fileutils'
+require 'set'
 require_relative '../core/config_manager'
 require_relative '../core/project_finder'
 require_relative '../core/logger'
@@ -56,6 +57,9 @@ module KjuiTools
           # Load and merge styles
           json_data = StyleLoader.load_and_merge(json_data)
           
+          # Initialize imports collector
+          @required_imports = Set.new
+          
           # Generate Compose code
           compose_code = generate_compose_code(base_name, json_data)
           
@@ -74,8 +78,11 @@ module KjuiTools
               # Replace the content between markers
               updated_content = existing_content.gsub(
                 /\/\/ >>> GENERATED_CODE_START.*?\/\/ >>> GENERATED_CODE_END/m,
-                "// >>> GENERATED_CODE_START\n#{composable_content}\n                // >>> GENERATED_CODE_END"
+                "// >>> GENERATED_CODE_START\n    #{composable_content}    // >>> GENERATED_CODE_END"
               )
+              
+              # Update imports
+              updated_content = update_imports(updated_content)
               
               File.write(generated_view_file, updated_content)
               Core::Logger.success "Updated: #{generated_view_file}"
@@ -143,6 +150,10 @@ module KjuiTools
         
         # Generate component based on type
         case component_type
+        when 'ScrollView'
+          generate_scroll_view(json_data, depth)
+        when 'SafeAreaView'
+          generate_safe_area_view(json_data, depth)
         when 'View', 'VStack', 'HStack', 'ZStack'
           generate_container(json_data, depth)
         when 'Text', 'Label'
@@ -154,51 +165,91 @@ module KjuiTools
         when 'TextField'
           generate_text_field(json_data, depth)
         when 'Spacer'
-          "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}dp))"
+          "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
           "// TODO: Implement component type: #{component_type}"
         end
       end
       
-      def generate_container(json_data, depth)
-        container_type = json_data['type'] || 'View'
+      def generate_scroll_view(json_data, depth)
+        orientation = json_data['orientation'] || 'vertical'
         
-        layout = case container_type
-        when 'VStack'
-          'Column'
-        when 'HStack'
-          'Row'
-        when 'ZStack'
-          'Box'
+        if orientation == 'horizontal'
+          @required_imports.add(:lazy_row) if @required_imports
+          code = indent("LazyRow(", depth)
         else
-          'Box'
+          @required_imports.add(:lazy_column) if @required_imports
+          code = indent("LazyColumn(", depth)
         end
         
-        code = "#{layout}("
+        # Build modifier chain
+        modifiers = []
+        if json_data['width'] == 'matchParent'
+          modifiers << ".fillMaxWidth()"
+        elsif json_data['width']
+          modifiers << ".width(#{json_data['width']}.dp)"
+        end
+        
+        if json_data['height'] == 'matchParent'
+          modifiers << ".fillMaxHeight()"
+        elsif json_data['height']
+          modifiers << ".height(#{json_data['height']}.dp)"
+        end
+        
+        if json_data['padding']
+          modifiers << ".padding(#{json_data['padding']}.dp)"
+        end
+        
+        if json_data['background']
+          @required_imports.add(:background) if @required_imports
+          modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+        end
+        
+        # Format modifiers
+        if modifiers.any?
+          code += "\n" + indent("modifier = Modifier", depth + 1)
+          modifiers.each do |mod|
+            code += "\n" + indent("    #{mod}", depth + 1)
+          end
+        end
+        
+        code += "\n" + indent(") {", depth)
+        code += "\n" + indent("item {", depth + 1)
+        
+        # Add children
+        children = json_data['child'] || json_data['children'] || []
+        children = [children] unless children.is_a?(Array)
+        
+        children.each do |child|
+          child_code = generate_component(child, depth + 2)
+          code += "\n" + child_code unless child_code.empty?
+        end
+        
+        code += "\n" + indent("}", depth + 1)
+        code += "\n" + indent("}", depth)
+        code
+      end
+      
+      def generate_safe_area_view(json_data, depth)
+        # In Compose, SafeAreaView is typically handled by Scaffold or Box with systemBarsPadding
+        code = "Box("
         
         # Add modifiers
         modifiers = []
         modifiers << "Modifier"
-        modifiers << "fillMaxWidth()" if json_data['fillMaxWidth']
-        modifiers << "fillMaxHeight()" if json_data['fillMaxHeight']
-        modifiers << "padding(#{json_data['padding'] || 0}dp)" if json_data['padding']
+        modifiers << "fillMaxSize()"
+        modifiers << "systemBarsPadding()"
         
-        code += "\n#{indent('modifier = ' + modifiers.join('.'), depth + 1)}"
-        
-        # Add arrangement for Row/Column
-        if layout == 'Column' && json_data['verticalArrangement']
-          code += ",\n#{indent('verticalArrangement = Arrangement.' + json_data['verticalArrangement'], depth + 1)}"
-        elsif layout == 'Row' && json_data['horizontalArrangement']
-          code += ",\n#{indent('horizontalArrangement = Arrangement.' + json_data['horizontalArrangement'], depth + 1)}"
+        if json_data['padding']
+          modifiers << "padding(#{json_data['padding']}.dp)"
         end
         
-        # Add alignment
-        if json_data['alignment']
-          code += ",\n#{indent('horizontalAlignment = Alignment.' + json_data['alignment'], depth + 1)}" if layout == 'Column'
-          code += ",\n#{indent('verticalAlignment = Alignment.' + json_data['alignment'], depth + 1)}" if layout == 'Row'
+        if json_data['background']
+          modifiers << "background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
         end
         
-        code += "\n#{indent(') {', depth)}\n"
+        code += "\n" + indent("modifier = #{modifiers.join('.')}", depth + 1)
+        code += "\n" + indent(") {", depth)
         
         # Add children
         children = json_data['child'] || json_data['children'] || []
@@ -206,31 +257,239 @@ module KjuiTools
         
         children.each do |child|
           child_code = generate_component(child, depth + 1)
-          code += indent(child_code, depth + 1) + "\n" unless child_code.empty?
+          code += "\n" + child_code unless child_code.empty?
         end
         
-        code += indent('}', depth)
+        code += "\n" + indent("}", depth)
+        code
+      end
+      
+      def generate_container(json_data, depth)
+        container_type = json_data['type'] || 'View'
+        orientation = json_data['orientation']
+        
+        # Determine layout type based on type or orientation
+        layout = case container_type
+        when 'VStack'
+          'Column'
+        when 'HStack'
+          'Row'
+        when 'ZStack'
+          'Box'
+        when 'View'
+          if orientation == 'horizontal'
+            'Row'
+          elsif orientation == 'vertical'
+            'Column'
+          else
+            'Box'
+          end
+        else
+          'Box'
+        end
+        
+        code = indent("#{layout}(", depth)
+        
+        # Build modifier chain
+        modifiers = []
+        
+        # Handle width
+        if json_data['width'] == 'matchParent'
+          modifiers << ".fillMaxWidth()"
+        elsif json_data['width'] == 'wrapContent'
+          modifiers << ".wrapContentWidth()"
+        elsif json_data['width']
+          modifiers << ".width(#{json_data['width']}.dp)"
+        end
+        
+        # Handle height
+        if json_data['height'] == 'matchParent'
+          modifiers << ".fillMaxHeight()"
+        elsif json_data['height'] == 'wrapContent'
+          modifiers << ".wrapContentHeight()"
+        elsif json_data['height']
+          modifiers << ".height(#{json_data['height']}.dp)"
+        end
+        
+        # Padding and margins
+        if json_data['padding']
+          modifiers << ".padding(#{json_data['padding']}.dp)"
+        end
+        
+        if json_data['margin']
+          modifiers << ".padding(#{json_data['margin']}.dp)"
+        end
+        
+        if json_data['topMargin']
+          modifiers << ".padding(top = #{json_data['topMargin']}.dp)"
+        end
+        
+        if json_data['bottomMargin']
+          modifiers << ".padding(bottom = #{json_data['bottomMargin']}.dp)"
+        end
+        
+        if json_data['leftMargin']
+          modifiers << ".padding(start = #{json_data['leftMargin']}.dp)"
+        end
+        
+        if json_data['rightMargin']
+          modifiers << ".padding(end = #{json_data['rightMargin']}.dp)"
+        end
+        
+        # Background
+        if json_data['background']
+          @required_imports.add(:background) if @required_imports
+          modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+        end
+        
+        # Format modifiers with line breaks
+        if modifiers.any?
+          code += "\n" + indent("modifier = Modifier", depth + 1)
+          modifiers.each do |mod|
+            code += "\n" + indent("    #{mod}", depth + 1)
+          end
+        end
+        
+        # Add arrangement for Row/Column
+        if layout == 'Column' && json_data['verticalArrangement']
+          code += ",\n" + indent("verticalArrangement = Arrangement.#{json_data['verticalArrangement']}", depth + 1)
+        elsif layout == 'Row' && json_data['horizontalArrangement']
+          code += ",\n" + indent("horizontalArrangement = Arrangement.#{json_data['horizontalArrangement']}", depth + 1)
+        end
+        
+        # Add alignment
+        if json_data['alignment']
+          code += ",\n" + indent("horizontalAlignment = Alignment.#{json_data['alignment']}", depth + 1) if layout == 'Column'
+          code += ",\n" + indent("verticalAlignment = Alignment.#{json_data['alignment']}", depth + 1) if layout == 'Row'
+        end
+        
+        code += "\n" + indent(") {", depth)
+        
+        # Add children
+        children = json_data['child'] || json_data['children'] || []
+        children = [children] unless children.is_a?(Array)
+        
+        children.each do |child|
+          child_code = generate_component(child, depth + 1)
+          code += "\n" + child_code unless child_code.empty?
+        end
+        
+        code += "\n" + indent("}", depth)
         code
       end
       
       def generate_text(json_data, depth)
         text = process_data_binding(json_data['text'] || '')
         
-        code = "Text(\n"
-        code += indent("text = #{text},", depth + 1) + "\n"
+        code = indent("Text(", depth)
+        code += "\n" + indent("text = #{text},", depth + 1)
         
         if json_data['fontSize']
-          code += indent("fontSize = #{json_data['fontSize']}sp,", depth + 1) + "\n"
+          code += "\n" + indent("fontSize = #{json_data['fontSize']}.sp,", depth + 1)
         end
         
-        if json_data['color']
-          code += indent("color = MaterialTheme.colorScheme.#{json_data['color']},", depth + 1) + "\n"
+        if json_data['fontColor']
+          code += "\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\")),", depth + 1)
+        elsif json_data['color']
+          code += "\n" + indent("color = MaterialTheme.colorScheme.#{json_data['color']},", depth + 1)
         end
         
-        code += indent("modifier = Modifier", depth + 1)
+        if json_data['fontWeight'] == 'bold'
+          code += "\n" + indent("fontWeight = FontWeight.Bold,", depth + 1)
+        elsif json_data['fontWeight']
+          code += "\n" + indent("fontWeight = FontWeight.#{json_data['fontWeight'].capitalize},", depth + 1)
+        end
         
+        # Build modifiers
+        modifiers = []
+        
+        # Alignment (only works in Box context)
+        if json_data['alignTop'] && json_data['alignLeft']
+          modifiers << ".align(Alignment.TopStart)"
+        elsif json_data['alignTop'] && json_data['alignRight']
+          modifiers << ".align(Alignment.TopEnd)"
+        elsif json_data['alignBottom'] && json_data['alignLeft']
+          modifiers << ".align(Alignment.BottomStart)"
+        elsif json_data['alignBottom'] && json_data['alignRight']
+          modifiers << ".align(Alignment.BottomEnd)"
+        elsif json_data['alignTop'] && json_data['centerHorizontal']
+          modifiers << ".align(Alignment.TopCenter)"
+        elsif json_data['alignBottom'] && json_data['centerHorizontal']
+          modifiers << ".align(Alignment.BottomCenter)"
+        elsif json_data['alignLeft'] && json_data['centerVertical']
+          modifiers << ".align(Alignment.CenterStart)"
+        elsif json_data['alignRight'] && json_data['centerVertical']
+          modifiers << ".align(Alignment.CenterEnd)"
+        elsif json_data['centerInParent']
+          modifiers << ".align(Alignment.Center)"
+        elsif json_data['alignTop']
+          modifiers << ".align(Alignment.TopCenter)"
+        elsif json_data['alignBottom']
+          modifiers << ".align(Alignment.BottomCenter)"
+        elsif json_data['alignLeft']
+          modifiers << ".align(Alignment.CenterStart)"
+        elsif json_data['alignRight']
+          modifiers << ".align(Alignment.CenterEnd)"
+        elsif json_data['centerVertical']
+          modifiers << ".align(Alignment.CenterStart)"
+        elsif json_data['centerHorizontal']
+          modifiers << ".fillMaxWidth()"
+        end
+        
+        # Padding and margins
         if json_data['padding']
-          code += ".padding(#{json_data['padding']}dp)"
+          modifiers << ".padding(#{json_data['padding']}.dp)"
+        end
+        
+        if json_data['bottomMargin']
+          modifiers << ".padding(bottom = #{json_data['bottomMargin']}.dp)"
+        end
+        
+        if json_data['topMargin']
+          modifiers << ".padding(top = #{json_data['topMargin']}.dp)"
+        end
+        
+        # Background
+        if json_data['background']
+          @required_imports.add(:background) if @required_imports
+          modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+        end
+        
+        # Width and height
+        if json_data['width'] == 'wrapContent'
+          modifiers << ".wrapContentWidth()"
+        elsif json_data['width'] == 'matchParent'
+          modifiers << ".fillMaxWidth()"
+        elsif json_data['width']
+          modifiers << ".width(#{json_data['width']}.dp)"
+        end
+        
+        if json_data['height'] == 'wrapContent'
+          modifiers << ".wrapContentHeight()"
+        elsif json_data['height']
+          modifiers << ".height(#{json_data['height']}.dp)"
+        end
+        
+        # Format modifiers
+        if modifiers.any?
+          code += "\n" + indent("modifier = Modifier", depth + 1)
+          if modifiers.length == 1 && modifiers[0].start_with?('.')
+            # Single modifier on same line
+            code += modifiers[0]
+          else
+            # Multiple modifiers on separate lines
+            modifiers.each do |mod|
+              code += "\n" + indent("    #{mod}", depth + 1)
+            end
+          end
+        else
+          code += "\n" + indent("modifier = Modifier", depth + 1)
+        end
+        
+        # Text alignment
+        if json_data['centerHorizontal']
+          @required_imports.add(:text_align) if @required_imports
+          code += ",\n" + indent("textAlign = TextAlign.Center", depth + 1)
         end
         
         code += "\n" + indent(")", depth)
@@ -241,23 +500,40 @@ module KjuiTools
         text = process_data_binding(json_data['title'] || json_data['text'] || 'Button')
         onclick = json_data['onclick']
         
-        code = "Button(\n"
+        code = indent("Button(", depth)
         
         if onclick
-          code += indent("onClick = { viewModel.#{onclick}() },", depth + 1) + "\n"
+          code += "\n" + indent("onClick = { viewModel.#{onclick}() },", depth + 1)
         else
-          code += indent("onClick = { },", depth + 1) + "\n"
+          code += "\n" + indent("onClick = { },", depth + 1)
         end
         
-        code += indent("modifier = Modifier", depth + 1)
+        # Build modifiers
+        modifiers = []
         
         if json_data['padding']
-          code += ".padding(#{json_data['padding']}dp)"
+          modifiers << ".padding(#{json_data['padding']}.dp)"
         end
         
-        code += "\n" + indent(") {", depth) + "\n"
-        code += indent("Text(#{text})", depth + 1) + "\n"
-        code += indent("}", depth)
+        if json_data['bottomMargin']
+          modifiers << ".padding(bottom = #{json_data['bottomMargin']}.dp)"
+        end
+        
+        if json_data['topMargin']
+          modifiers << ".padding(top = #{json_data['topMargin']}.dp)"
+        end
+        
+        # Format modifiers
+        code += "\n" + indent("modifier = Modifier", depth + 1)
+        if modifiers.any?
+          modifiers.each do |mod|
+            code += "\n" + indent("    #{mod}", depth + 1)
+          end
+        end
+        
+        code += "\n" + indent(") {", depth)
+        code += "\n" + indent("Text(#{text})", depth + 1)
+        code += "\n" + indent("}", depth)
         code
       end
       
@@ -270,13 +546,13 @@ module KjuiTools
         code += indent("modifier = Modifier", depth + 1)
         
         if json_data['width'] && json_data['height']
-          code += ".size(#{json_data['width']}dp, #{json_data['height']}dp)"
+          code += ".size(#{json_data['width']}dp, #{json_data['height']}.dp)"
         elsif json_data['size']
-          code += ".size(#{json_data['size']}dp)"
+          code += ".size(#{json_data['size']}.dp)"
         end
         
         if json_data['padding']
-          code += ".padding(#{json_data['padding']}dp)"
+          code += ".padding(#{json_data['padding']}.dp)"
         end
         
         code += "\n" + indent(")", depth)
@@ -302,7 +578,7 @@ module KjuiTools
         end
         
         if json_data['padding']
-          code += ".padding(#{json_data['padding']}dp)"
+          code += ".padding(#{json_data['padding']}.dp)"
         end
         
         code += "\n" + indent(")", depth)
@@ -336,10 +612,17 @@ module KjuiTools
         # Check for data binding syntax @{variable}
         if text.match(/@\{([^}]+)\}/)
           variable = $1
-          if variable.include?('.')
-            "currentData.value.#{variable}"
+          # Handle Swift's nil-coalescing operator ?? 
+          # In Kotlin, since we define default values in the data class,
+          # we can just use the variable directly without Elvis operator
+          if variable.include?(' ?? ')
+            parts = variable.split(' ?? ')
+            var_name = parts[0].strip
+            # Just use the variable directly since it has a default value in the data class
+            "\"\${data.#{var_name}}\""
           else
-            "currentData.value.#{variable}"
+            # Use string interpolation for Kotlin
+            "\"\${data.#{variable}}\""
           end
         else
           quote(text)
@@ -359,8 +642,11 @@ module KjuiTools
       end
       
       def indent(text, level)
+        return text if level == 0
         spaces = '    ' * level
-        text.split("\n").map { |line| spaces + line }.join("\n")
+        text.split("\n").map { |line| 
+          line.empty? ? line : spaces + line 
+        }.join("\n")
       end
       
       def to_pascal_case(str)
@@ -380,8 +666,74 @@ module KjuiTools
       
       def extract_composable_content(json_data)
         # Generate the content that goes between the markers
-        component_code = generate_component(json_data, 4)
-        component_code
+        # Start with depth 1 (inside the function body)
+        component_code = generate_component(json_data, 1)
+        # Return code with proper line breaks
+        "#{component_code}\n"
+      end
+      
+      def update_imports(content)
+        # Define all necessary imports based on what was used
+        all_imports = [
+          "import androidx.compose.foundation.background",
+          "import androidx.compose.foundation.layout.*",
+          "import androidx.compose.foundation.lazy.LazyColumn",
+          "import androidx.compose.foundation.lazy.LazyRow",
+          "import androidx.compose.material3.*",
+          "import androidx.compose.runtime.Composable",
+          "import androidx.compose.ui.Alignment",
+          "import androidx.compose.ui.Modifier",
+          "import androidx.compose.ui.graphics.Color",
+          "import androidx.compose.ui.text.font.FontWeight",
+          "import androidx.compose.ui.text.style.TextAlign",
+          "import androidx.compose.ui.unit.dp",
+          "import androidx.compose.ui.unit.sp"
+        ]
+        
+        # Add imports that are needed based on @required_imports
+        imports_to_add = []
+        
+        if @required_imports.include?(:lazy_column)
+          imports_to_add << "import androidx.compose.foundation.lazy.LazyColumn" unless content.include?("import androidx.compose.foundation.lazy.LazyColumn")
+        end
+        
+        if @required_imports.include?(:lazy_row)
+          imports_to_add << "import androidx.compose.foundation.lazy.LazyRow" unless content.include?("import androidx.compose.foundation.lazy.LazyRow")
+        end
+        
+        if @required_imports.include?(:background)
+          imports_to_add << "import androidx.compose.foundation.background" unless content.include?("import androidx.compose.foundation.background")
+        end
+        
+        if @required_imports.include?(:text_align)
+          imports_to_add << "import androidx.compose.ui.text.style.TextAlign" unless content.include?("import androidx.compose.ui.text.style.TextAlign")
+        end
+        
+        # Insert new imports after the package declaration
+        if imports_to_add.any?
+          lines = content.split("\n")
+          package_index = lines.find_index { |line| line.start_with?("package ") }
+          
+          if package_index
+            # Find where existing imports end
+            last_import_index = package_index
+            lines.each_with_index do |line, i|
+              if i > package_index && line.start_with?("import ")
+                last_import_index = i
+              end
+            end
+            
+            # Insert new imports after the last import
+            imports_to_add.each do |import|
+              lines.insert(last_import_index + 1, import)
+              last_import_index += 1
+            end
+            
+            content = lines.join("\n")
+          end
+        end
+        
+        content
       end
     end
   end

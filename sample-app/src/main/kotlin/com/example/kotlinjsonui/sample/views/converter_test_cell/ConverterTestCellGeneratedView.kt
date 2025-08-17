@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.ConverterTestCellData
 import com.example.kotlinjsonui.sample.viewmodels.ConverterTestCellViewModel
+import androidx.compose.foundation.background
 
 @Composable
 fun ConverterTestCellGeneratedView(
@@ -20,6 +21,25 @@ fun ConverterTestCellGeneratedView(
     // Generated Compose code from converter_test_cell.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-// TODO: Implement component type: SafeAreaView
-                // >>> GENERATED_CODE_END
+        Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(10.dp)
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+    ) {
+        Text(
+            text = "${data.title}",
+            fontSize = 16.sp,
+            color = Color(android.graphics.Color.parseColor("#333333")),
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+        Text(
+            text = "${data.subtitle}",
+            fontSize = 12.sp,
+            color = Color(android.graphics.Color.parseColor("#666666")),
+            modifier = Modifier
+        )
+    }
+    // >>> GENERATED_CODE_END
 }

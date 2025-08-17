@@ -126,6 +126,11 @@ module KjuiTools
           
           Core::Logger.info "Updating #{files_to_update.length} of #{json_files.length} files..."
           
+          # Update data models first
+          require_relative '../../compose/data_model_updater'
+          data_updater = Compose::DataModelUpdater.new
+          data_updater.update_data_models
+          
           builder = Compose::ComposeBuilder.new
           
           files_to_update.each do |json_file|
