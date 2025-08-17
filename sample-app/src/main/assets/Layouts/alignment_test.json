@@ -1,0 +1,47 @@
+{
+  "type": "SafeAreaView",
+  "background": "#FFFFFF",
+  "child": [
+    {
+      "type": "View",
+      "orientation": "vertical",
+      "padding": 16,
+      "child": [
+        {
+          "type": "Label",
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "fontColor": "#000000",
+          "marginBottom": 20
+        },
+        {
+          "type": "Label",
+          "text": "Welcome to AlignmentTest",
+          "fontSize": 16,
+          "fontColor": "#666666",
+          "marginBottom": 30
+        },
+        {
+          "type": "Button",
+          "text": "Get Started",
+          "onclick": "onGetStarted",
+          "background": "#6200EE",
+          "fontColor": "#FFFFFF",
+          "padding": [
+            12,
+            24
+          ],
+          "cornerRadius": 8
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "'AlignmentTest'"
+    }
+  ]
+}

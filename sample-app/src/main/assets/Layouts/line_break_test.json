@@ -9,7 +9,7 @@
       "child": [
         {
           "type": "Label",
-          "text": "Welcome to KotlinJsonUI",
+          "text": "@{title}",
           "fontSize": 24,
           "fontWeight": "bold",
           "fontColor": "#000000",
@@ -17,7 +17,7 @@
         },
         {
           "type": "Label",
-          "text": "Build native Android UIs with JSON",
+          "text": "Welcome to LineBreakTest",
           "fontSize": 16,
           "fontColor": "#666666",
           "marginBottom": 30
@@ -25,10 +25,13 @@
         {
           "type": "Button",
           "text": "Get Started",
-          "onclick": "getStarted",
+          "onclick": "onGetStarted",
           "background": "#6200EE",
           "fontColor": "#FFFFFF",
-          "padding": [12, 24],
+          "padding": [
+            12,
+            24
+          ],
           "cornerRadius": 8
         }
       ]
@@ -38,7 +41,7 @@
     {
       "name": "title",
       "class": "String",
-      "defaultValue": "'Welcome'"
+      "defaultValue": "'LineBreakTest'"
     }
   ]
 }

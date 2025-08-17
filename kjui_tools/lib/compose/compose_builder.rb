@@ -14,9 +14,10 @@ module KjuiTools
       def initialize
         @config = Core::ConfigManager.load_config
         @source_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
-        @layouts_dir = File.join(@source_path, @config['layouts_directory'] || 'assets/Layouts')
-        @view_dir = File.join(@source_path, @config['view_directory'] || 'app/src/main/kotlin/views')
-        @package_name = Core::ProjectFinder.get_package_name || 'com.example.app'
+        source_directory = @config['source_directory'] || 'src/main'
+        @layouts_dir = File.join(@source_path, source_directory, @config['layouts_directory'] || 'assets/Layouts')
+        @view_dir = File.join(@source_path, source_directory, @config['view_directory'] || 'kotlin/views')
+        @package_name = @config['package_name'] || Core::ProjectFinder.get_package_name || 'com.example.app'
         
         # Create view directory if it doesn't exist
         FileUtils.mkdir_p(@view_dir) unless File.exist?(@view_dir)
@@ -44,6 +45,8 @@ module KjuiTools
       def build_file(json_file)
         relative_path = Pathname.new(json_file).relative_path_from(Pathname.new(@layouts_dir)).to_s
         base_name = File.basename(json_file, '.json')
+        snake_case_name = to_snake_case(base_name)
+        pascal_case_name = to_pascal_case(base_name)
         
         begin
           # Read and parse JSON
@@ -56,11 +59,32 @@ module KjuiTools
           # Generate Compose code
           compose_code = generate_compose_code(base_name, json_data)
           
-          # Write to view file
-          output_file = File.join(@view_dir, "#{to_pascal_case(base_name)}View.kt")
-          File.write(output_file, compose_code)
+          # Find the GeneratedView file for this view (in snake_case folder)
+          generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
           
-          Core::Logger.success "Generated: #{output_file}"
+          if File.exist?(generated_view_file)
+            # Read existing file
+            existing_content = File.read(generated_view_file)
+            
+            # Replace content between GENERATED_CODE_START and GENERATED_CODE_END markers
+            if existing_content.include?('// >>> GENERATED_CODE_START') && existing_content.include?('// >>> GENERATED_CODE_END')
+              # Extract the generated composable content
+              composable_content = extract_composable_content(json_data)
+              
+              # Replace the content between markers
+              updated_content = existing_content.gsub(
+                /\/\/ >>> GENERATED_CODE_START.*?\/\/ >>> GENERATED_CODE_END/m,
+                "// >>> GENERATED_CODE_START\n#{composable_content}\n                // >>> GENERATED_CODE_END"
+              )
+              
+              File.write(generated_view_file, updated_content)
+              Core::Logger.success "Updated: #{generated_view_file}"
+            else
+              Core::Logger.warn "Generated code markers not found in #{generated_view_file}"
+            end
+          else
+            Core::Logger.warn "GeneratedView file not found: #{generated_view_file}"
+          end
           
         rescue JSON::ParserError => e
           Core::Logger.error "Failed to parse #{json_file}: #{e.message}"
@@ -346,6 +370,18 @@ module KjuiTools
       def to_camel_case(str)
         pascal = to_pascal_case(str)
         pascal[0].downcase + pascal[1..-1]
+      end
+      
+      def to_snake_case(str)
+        str.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+           .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+           .downcase
+      end
+      
+      def extract_composable_content(json_data)
+        # Generate the content that goes between the markers
+        component_code = generate_component(json_data, 4)
+        component_code
       end
     end
   end

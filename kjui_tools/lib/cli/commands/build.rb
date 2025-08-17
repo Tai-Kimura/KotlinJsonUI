@@ -76,7 +76,8 @@ module KjuiTools
           
           config = Core::ConfigManager.load_config
           source_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
-          layouts_dir = File.join(source_path, config['layouts_directory'] || 'assets/Layouts')
+          source_directory = config['source_directory'] || 'src/main'
+          layouts_dir = File.join(source_path, source_directory, config['layouts_directory'] || 'assets/Layouts')
           
           # Initialize cache manager
           cache_manager = Compose::BuildCacheManager.new(source_path)

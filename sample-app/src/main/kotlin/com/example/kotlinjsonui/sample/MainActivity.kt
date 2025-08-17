@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.kotlinjsonui.sample.ui.theme.KotlinJsonUITheme
-import com.example.kotlinjsonui.sample.views.TestMenu.TestMenuView
+import com.example.kotlinjsonui.sample.views.test_menu.TestMenuView
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
