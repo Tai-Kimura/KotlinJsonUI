@@ -1,0 +1,20 @@
+{
+  "mode": "compose",
+  "project_name": "sample-app",
+  "source_directory": "src/main",
+  "layouts_directory": "assets/Layouts",
+  "styles_directory": "assets/Styles",
+  "data_directory": "kotlin/com/example/kotlinjsonui/sample/data",
+  "viewmodel_directory": "kotlin/com/example/kotlinjsonui/sample/viewmodels",
+  "view_directory": "kotlin/com/example/kotlinjsonui/sample/views",
+  "package_name": "com.example.kotlinjsonui.sample",
+  "use_network": true,
+  "hotloader": {
+    "ip": "127.0.0.1",
+    "port": 8081,
+    "watch_directories": [
+      "assets/Layouts",
+      "assets/Styles"
+    ]
+  }
+}
