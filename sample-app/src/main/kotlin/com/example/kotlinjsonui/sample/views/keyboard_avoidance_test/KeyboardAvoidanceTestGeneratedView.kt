@@ -147,7 +147,22 @@ fun KeyboardAvoidanceTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-// TODO: Implement component type: TextView
+            OutlinedTextField(
+                value = "\${data.textView}",
+                onValueChange = { newValue -> currentData.value = currentData.value.copy(textView = newValue) },
+                placeholder = { Text("Multi-line text input
+                Type here...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(12.dp)
+                    .padding(bottom = 16.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333"))),
+                maxLines = Int.MAX_VALUE,
+                singleLine = false
+            )
             Button(
                 onClick = { viewModel.submitForm() },
                 modifier = Modifier

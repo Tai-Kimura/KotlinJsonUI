@@ -12,6 +12,10 @@ import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.TextViewHintTestData
 import com.example.kotlinjsonui.sample.viewmodels.TextViewHintTestViewModel
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun TextViewHintTestGeneratedView(
@@ -45,13 +49,41 @@ fun TextViewHintTestGeneratedView(
             color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier.padding(bottom = 8.dp)
         )
-// TODO: Implement component type: TextView
+        OutlinedTextField(
+            value = "\${data.simpleText}",
+            onValueChange = { newValue -> currentData.value = currentData.value.copy(simpleText = newValue) },
+            placeholder = { Text("This is a simple hint") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .padding(bottom = 20.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            maxLines = Int.MAX_VALUE,
+            singleLine = false
+        )
         Text(
             text = "Flexible TextView with multi-line hint:",
             fontSize = 14.sp,
             color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier.padding(bottom = 8.dp)
         )
-// TODO: Implement component type: TextView
+        OutlinedTextField(
+            value = "\${data.flexibleText}",
+            onValueChange = { newValue -> currentData.value = currentData.value.copy(flexibleText = newValue) },
+            placeholder = { Text("Multi-line hint
+            Line 2 of hint
+            Line 3 of hint") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .padding(bottom = 20.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            maxLines = Int.MAX_VALUE,
+            singleLine = false
+        )
     }    // >>> GENERATED_CODE_END
 }

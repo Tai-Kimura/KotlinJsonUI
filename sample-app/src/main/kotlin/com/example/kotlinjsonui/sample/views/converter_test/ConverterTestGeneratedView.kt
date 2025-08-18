@@ -18,6 +18,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -115,7 +118,26 @@ fun ConverterTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier.padding(top = 20.dp)
             )
-// TODO: Implement component type: Collection
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(top = 10.dp)
+            ) {
+                items(data.items) { item ->
+                    Card(
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = item.toString(),
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
             Text(
                 text = "Image Test",
                 fontSize = 18.sp,

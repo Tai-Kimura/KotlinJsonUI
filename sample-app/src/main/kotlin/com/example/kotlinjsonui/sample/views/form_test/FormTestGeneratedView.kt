@@ -276,21 +276,69 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-// TODO: Implement component type: TextView
+            OutlinedTextField(
+                value = "\${data.bio}",
+                onValueChange = { newValue -> currentData.value = currentData.value.copy(bio = newValue) },
+                placeholder = { Text("Tell us about yourself...
+                This field will grow as you type") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(14.dp)
+                    .padding(bottom = 16.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333"))),
+                maxLines = Int.MAX_VALUE,
+                singleLine = false
+            )
             Text(
                 text = "Notes (Fixed Height)",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-// TODO: Implement component type: TextView
+            OutlinedTextField(
+                value = "\${data.notes}",
+                onValueChange = { newValue -> currentData.value = currentData.value.copy(notes = newValue) },
+                placeholder = { Text("Additional notes...
+                Fixed height field") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(14.dp)
+                    .padding(bottom = 16.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333"))),
+                maxLines = Int.MAX_VALUE,
+                singleLine = false
+            )
             Text(
                 text = "Comments (Very Flexible)",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-// TODO: Implement component type: TextView
+            OutlinedTextField(
+                value = "\${data.comments}",
+                onValueChange = { newValue -> currentData.value = currentData.value.copy(comments = newValue) },
+                placeholder = { Text("Any comments?
+                This can grow very tall (up to 300pt)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(14.dp)
+                    .padding(bottom = 24.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333"))),
+                maxLines = Int.MAX_VALUE,
+                singleLine = false
+            )
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

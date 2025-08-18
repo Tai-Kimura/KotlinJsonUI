@@ -132,17 +132,17 @@ Media Components:
 17. ✅ **CircleImage** - Circular image with border support
 18. ✅ **Indicator** - Activity indicator with animating control
 
+Complex Components:
+19. ✅ **TextView** - Multi-line text input with OutlinedTextField
+20. ✅ **Collection** - Grid layout with LazyVerticalGrid/LazyHorizontalGrid
+21. ✅ **Table** - Table view with LazyColumn and custom cells
+22. ✅ **Web** - WebView with AndroidView integration
+
 ### 📝 Still Missing Components
 
-Complex Components:
-- **Table** - Table view (complex, needs RecyclerView)
-- **Collection** - Collection view (complex, needs LazyGrid)
-- **Web** - WebView component
-- **TextView** - Multi-line text input
-
-Visual Components:
+Visual Components (Lower Priority):
 - **GradientView** - Gradient background container
-- **CircleView** - Circular container
+- **CircleView** - Circular container  
 - **Blur** - Blur effect overlay
 - **IconLabel** - Icon with text component
 

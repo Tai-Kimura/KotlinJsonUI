@@ -25,6 +25,10 @@ require_relative 'components/segment_component'
 require_relative 'components/networkimage_component'
 require_relative 'components/circleimage_component'
 require_relative 'components/indicator_component'
+require_relative 'components/textview_component'
+require_relative 'components/collection_component'
+require_relative 'components/table_component'
+require_relative 'components/web_component'
 
 module KjuiTools
   module Compose
@@ -133,6 +137,14 @@ module KjuiTools
           Components::CircleImageComponent.generate(json_data, depth, @required_imports)
         when 'Indicator'
           Components::IndicatorComponent.generate(json_data, depth, @required_imports)
+        when 'TextView'
+          Components::TextViewComponent.generate(json_data, depth, @required_imports)
+        when 'Collection'
+          Components::CollectionComponent.generate(json_data, depth, @required_imports)
+        when 'Table'
+          Components::TableComponent.generate(json_data, depth, @required_imports)
+        when 'Web'
+          Components::WebComponent.generate(json_data, depth, @required_imports)
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
@@ -254,7 +266,14 @@ module KjuiTools
           tab_row: ["import androidx.compose.material3.TabRow",
                     "import androidx.compose.material3.Tab"],
           async_image: "import coil.compose.AsyncImage",
-          content_scale: "import androidx.compose.ui.layout.ContentScale"
+          content_scale: "import androidx.compose.ui.layout.ContentScale",
+          lazy_grid: ["import androidx.compose.foundation.lazy.grid.LazyVerticalGrid",
+                      "import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid",
+                      "import androidx.compose.foundation.lazy.grid.GridCells"],
+          webview: ["import android.webkit.WebView",
+                    "import android.webkit.WebViewClient",
+                    "import android.webkit.WebChromeClient",
+                    "import androidx.compose.ui.viewinterop.AndroidView"]
         }
         
         imports_to_add = []
