@@ -11,6 +11,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.FormTestData
 import com.example.kotlinjsonui.sample.viewmodels.FormTestViewModel
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.background
 
 @Composable
 fun FormTestGeneratedView(
@@ -20,32 +22,221 @@ fun FormTestGeneratedView(
     // Generated Compose code from form_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-Box(
-                    modifier = Modifier.fillMaxSize().systemBarsPadding().background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+        LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+    ) {
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(16.dp)
+            ) {
+                Button(
+                    onClick = { },
+                    modifier = Modifier
                 ) {
-                    Column(
-                                            modifier = Modifier.padding(16dp)
-                                        ) {
-                                            Text(
-                                                                        text = data.title,
-                                                                        fontSize = 24sp,
-                                                                        color = Color(android.graphics.Color.parseColor("#000000")),
-                                                                        fontWeight = FontWeight.Bold,
-                                                                        modifier = Modifier
-                                                                    )
-                                            Text(
-                                                                        text = "Welcome to FormTest",
-                                                                        fontSize = 16sp,
-                                                                        color = Color(android.graphics.Color.parseColor("#666666")),
-                                                                        modifier = Modifier
-                                                                    )
-                                            Button(
-                                                                        onClick = { viewModel.onGetStarted() },
-                                                                        modifier = Modifier.padding([12, 24]dp)
-                                                                    ) {
-                                                                        Text("Get Started")
-                                                                    }
-                                        }
+                    Text("Button")
                 }
-                // >>> GENERATED_CODE_END
+                Text(
+                    text = "${data.title}",
+                    fontSize = 28.sp,
+                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+                Text(
+                    text = "Personal Information",
+                    fontSize = 20.sp,
+                    color = Color(android.graphics.Color.parseColor("#007AFF")),
+                    fontWeight = FontWeight.Semibold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "First Name",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.firstName}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(firstName = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Last Name",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.lastName}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(lastName = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Email Address",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.email}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(email = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Phone Number",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.phone}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(phone = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Address Information",
+                    fontSize = 20.sp,
+                    color = Color(android.graphics.Color.parseColor("#007AFF")),
+                    fontWeight = FontWeight.Semibold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Street Address",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.address}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(address = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "City",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.city}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(city = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "ZIP Code",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.zipCode}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(zipCode = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Country",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.country}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(country = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Professional Information",
+                    fontSize = 20.sp,
+                    color = Color(android.graphics.Color.parseColor("#007AFF")),
+                    fontWeight = FontWeight.Semibold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Company",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.company}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(company = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Job Title",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+TextField(
+                    value = "${data.jobTitle}",
+                    onValueChange = { newValue -> currentData.value = currentData.value.copy(jobTitle = newValue) },
+                    modifier = Modifier.fillMaxWidth().padding(14.dp)
+                )
+                Text(
+                    text = "Additional Information",
+                    fontSize = 20.sp,
+                    color = Color(android.graphics.Color.parseColor("#007AFF")),
+                    fontWeight = FontWeight.Semibold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Bio (Flexible Height)",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+// TODO: Implement component type: TextView
+                Text(
+                    text = "Notes (Fixed Height)",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+// TODO: Implement component type: TextView
+                Text(
+                    text = "Comments (Very Flexible)",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+// TODO: Implement component type: TextView
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(bottom = 24.dp)
+                ) {
+// TODO: Implement component type: Toggle
+                    Text(
+                        text = "I agree to the Terms and Conditions",
+                        fontSize = 14.sp,
+                        color = Color(android.graphics.Color.parseColor("#333333")),
+                        modifier = Modifier.wrapContentWidth()
+                    )
+                }
+                Button(
+                    onClick = { viewModel.submitForm() },
+                    modifier = Modifier
+                        .padding(bottom = 16.dp)
+                ) {
+                    Text("Submit Form")
+                }
+                Button(
+                    onClick = { viewModel.clearForm() },
+                    modifier = Modifier
+                        .padding(bottom = 40.dp)
+                ) {
+                    Text("Clear All Fields")
+                }
+            }
+        }
+    }
+    // >>> GENERATED_CODE_END
 }

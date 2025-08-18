@@ -53,6 +53,7 @@ fun LineBreakTestGeneratedView(
                     text = "lineBreakMode: Word (default)",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -69,6 +70,7 @@ fun LineBreakTestGeneratedView(
                     text = "lineBreakMode: Char",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -85,6 +87,7 @@ fun LineBreakTestGeneratedView(
                     text = "lineBreakMode: Clip",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -101,6 +104,7 @@ fun LineBreakTestGeneratedView(
                     text = "lineBreakMode: Head",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -117,6 +121,7 @@ fun LineBreakTestGeneratedView(
                     text = "lineBreakMode: Middle",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -133,6 +138,7 @@ fun LineBreakTestGeneratedView(
                     text = "lineBreakMode: Tail",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -149,6 +155,7 @@ fun LineBreakTestGeneratedView(
                     text = "Lines Property Test",
                     fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 30.dp)
                 )
                 Text(

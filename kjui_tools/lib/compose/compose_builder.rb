@@ -216,8 +216,8 @@ module KjuiTools
         code += "\n" + indent(") {", depth)
         code += "\n" + indent("item {", depth + 1)
         
-        # Add children
-        children = json_data['child'] || json_data['children'] || []
+        # 'child' is the official attribute (always an array) per wiki
+        children = json_data['child'] || []
         children = [children] unless children.is_a?(Array)
         
         children.each do |child|
@@ -251,8 +251,8 @@ module KjuiTools
         code += "\n" + indent("modifier = #{modifiers.join('.')}", depth + 1)
         code += "\n" + indent(") {", depth)
         
-        # Add children
-        children = json_data['child'] || json_data['children'] || []
+        # 'child' is the official attribute (always an array) per wiki
+        children = json_data['child'] || []
         children = [children] unless children.is_a?(Array)
         
         children.each do |child|
@@ -316,10 +316,7 @@ module KjuiTools
           modifiers << ".padding(#{json_data['padding']}.dp)"
         end
         
-        if json_data['margin']
-          modifiers << ".padding(#{json_data['margin']}.dp)"
-        end
-        
+        # Handle individual margins (official SwiftJsonUI attributes)
         if json_data['topMargin']
           modifiers << ".padding(top = #{json_data['topMargin']}.dp)"
         end
@@ -339,7 +336,40 @@ module KjuiTools
         # Background
         if json_data['background']
           @required_imports.add(:background) if @required_imports
-          modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+          
+          # Check if we need corner radius and/or border
+          if json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
+            @required_imports.add(:border) if @required_imports
+            @required_imports.add(:shape) if @required_imports
+            
+            # Build the modifier chain for background with corner radius
+            if json_data['cornerRadius']
+              modifiers << ".clip(RoundedCornerShape(#{json_data['cornerRadius']}.dp))"
+            end
+            
+            # Add border if specified
+            if json_data['borderColor'] && json_data['borderWidth']
+              border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
+              modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
+            end
+            
+            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+          else
+            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+          end
+        elsif json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
+          # Handle corner radius and border without background
+          @required_imports.add(:border) if @required_imports
+          @required_imports.add(:shape) if @required_imports
+          
+          if json_data['cornerRadius']
+            modifiers << ".clip(RoundedCornerShape(#{json_data['cornerRadius']}.dp))"
+          end
+          
+          if json_data['borderColor'] && json_data['borderWidth']
+            border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
+            modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
+          end
         end
         
         # Format modifiers with line breaks
@@ -350,23 +380,52 @@ module KjuiTools
           end
         end
         
-        # Add arrangement for Row/Column
-        if layout == 'Column' && json_data['verticalArrangement']
-          code += ",\n" + indent("verticalArrangement = Arrangement.#{json_data['verticalArrangement']}", depth + 1)
-        elsif layout == 'Row' && json_data['horizontalArrangement']
-          code += ",\n" + indent("horizontalArrangement = Arrangement.#{json_data['horizontalArrangement']}", depth + 1)
+        # Handle gravity based on SwiftJsonUI gravity attribute
+        # gravity values from wiki: "top", "bottom", "centerVertical", "left", "right", "centerHorizontal"
+        if json_data['gravity']
+          if layout == 'Column'
+            # Vertical gravities work when orientation is horizontal (per wiki)
+            # But in Compose Column, we need to map to vertical arrangement
+            case json_data['gravity']
+            when 'top'
+              code += ",\n" + indent("verticalArrangement = Arrangement.Top", depth + 1)
+            when 'bottom'
+              code += ",\n" + indent("verticalArrangement = Arrangement.Bottom", depth + 1)
+            when 'centerVertical'
+              code += ",\n" + indent("verticalArrangement = Arrangement.Center", depth + 1)
+            when 'left'
+              code += ",\n" + indent("horizontalAlignment = Alignment.Start", depth + 1)
+            when 'right'
+              code += ",\n" + indent("horizontalAlignment = Alignment.End", depth + 1)
+            when 'centerHorizontal'
+              code += ",\n" + indent("horizontalAlignment = Alignment.CenterHorizontally", depth + 1)
+            end
+          elsif layout == 'Row'
+            # Horizontal gravities work when orientation is vertical (per wiki)
+            # But in Compose Row, we need to map to horizontal arrangement
+            case json_data['gravity']
+            when 'left'
+              code += ",\n" + indent("horizontalArrangement = Arrangement.Start", depth + 1)
+            when 'right'
+              code += ",\n" + indent("horizontalArrangement = Arrangement.End", depth + 1)
+            when 'centerHorizontal'
+              code += ",\n" + indent("horizontalArrangement = Arrangement.Center", depth + 1)
+            when 'top'
+              code += ",\n" + indent("verticalAlignment = Alignment.Top", depth + 1)
+            when 'bottom'
+              code += ",\n" + indent("verticalAlignment = Alignment.Bottom", depth + 1)
+            when 'centerVertical'
+              code += ",\n" + indent("verticalAlignment = Alignment.CenterVertically", depth + 1)
+            end
+          end
         end
         
-        # Add alignment
-        if json_data['alignment']
-          code += ",\n" + indent("horizontalAlignment = Alignment.#{json_data['alignment']}", depth + 1) if layout == 'Column'
-          code += ",\n" + indent("verticalAlignment = Alignment.#{json_data['alignment']}", depth + 1) if layout == 'Row'
-        end
+        # alignment is an alternative to gravity per wiki
         
         code += "\n" + indent(") {", depth)
         
-        # Add children
-        children = json_data['child'] || json_data['children'] || []
+        # 'child' is the official attribute (always an array) per wiki
+        children = json_data['child'] || []
         children = [children] unless children.is_a?(Array)
         
         children.each do |child|
@@ -390,11 +449,10 @@ module KjuiTools
         
         if json_data['fontColor']
           code += "\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\")),", depth + 1)
-        elsif json_data['color']
-          code += "\n" + indent("color = MaterialTheme.colorScheme.#{json_data['color']},", depth + 1)
         end
         
-        if json_data['fontWeight'] == 'bold'
+        # Handle font attribute for bold text per wiki
+        if json_data['font'] == 'bold' || json_data['fontWeight'] == 'bold'
           code += "\n" + indent("fontWeight = FontWeight.Bold,", depth + 1)
         elsif json_data['fontWeight']
           code += "\n" + indent("fontWeight = FontWeight.#{json_data['fontWeight'].capitalize},", depth + 1)
@@ -452,7 +510,40 @@ module KjuiTools
         # Background
         if json_data['background']
           @required_imports.add(:background) if @required_imports
-          modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+          
+          # Check if we need corner radius and/or border
+          if json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
+            @required_imports.add(:border) if @required_imports
+            @required_imports.add(:shape) if @required_imports
+            
+            # Build the modifier chain for background with corner radius
+            if json_data['cornerRadius']
+              modifiers << ".clip(RoundedCornerShape(#{json_data['cornerRadius']}.dp))"
+            end
+            
+            # Add border if specified
+            if json_data['borderColor'] && json_data['borderWidth']
+              border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
+              modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
+            end
+            
+            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+          else
+            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+          end
+        elsif json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
+          # Handle corner radius and border without background
+          @required_imports.add(:border) if @required_imports
+          @required_imports.add(:shape) if @required_imports
+          
+          if json_data['cornerRadius']
+            modifiers << ".clip(RoundedCornerShape(#{json_data['cornerRadius']}.dp))"
+          end
+          
+          if json_data['borderColor'] && json_data['borderWidth']
+            border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
+            modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
+          end
         end
         
         # Width and height
@@ -538,7 +629,8 @@ module KjuiTools
       end
       
       def generate_image(json_data, depth)
-        image_name = json_data['name'] || json_data['source'] || 'placeholder'
+        # 'src' is the official attribute for images per wiki
+        image_name = json_data['src'] || 'placeholder'
         
         code = "Image(\n"
         code += indent("painter = painterResource(id = R.drawable.#{image_name}),", depth + 1) + "\n"
@@ -560,21 +652,40 @@ module KjuiTools
       end
       
       def generate_text_field(json_data, depth)
-        value = process_data_binding(json_data['value'] || '')
-        placeholder = json_data['placeholder'] || ''
+        # TextField uses 'text' for value and 'hint' for placeholder per wiki
+        value = process_data_binding(json_data['text'] || '')
+        placeholder = json_data['hint'] || ''
+        is_secure = json_data['secure'] == true
         
-        code = "TextField(\n"
+        code = ""
+        if is_secure
+          # For secure text fields, use OutlinedTextField with password visual transformation
+          @required_imports.add(:visual_transformation) if @required_imports
+          code = "OutlinedTextField(\n"
+        else
+          code = "TextField(\n"
+        end
+        
         code += indent("value = #{value},", depth + 1) + "\n"
-        code += indent("onValueChange = { newValue -> currentData.value = currentData.value.copy(#{extract_variable_name(json_data['value'])} = newValue) },", depth + 1) + "\n"
+        # onTextChange is the official attribute per wiki (not onValueChange)
+        code += indent("onValueChange = { newValue -> currentData.value = currentData.value.copy(#{extract_variable_name(json_data['text'])} = newValue) },", depth + 1) + "\n"
         
-        if placeholder
+        if placeholder && !placeholder.empty?
           code += indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1) + "\n"
+        end
+        
+        # Add password visual transformation for secure fields
+        if is_secure
+          code += indent("visualTransformation = PasswordVisualTransformation(),", depth + 1) + "\n"
         end
         
         code += indent("modifier = Modifier", depth + 1)
         
-        if json_data['fillMaxWidth']
+        # Handle width for text field
+        if json_data['width'] == 'matchParent'
           code += ".fillMaxWidth()"
+        elsif json_data['width']
+          code += ".width(#{json_data['width']}.dp)"
         end
         
         if json_data['padding']
@@ -630,7 +741,7 @@ module KjuiTools
       end
       
       def extract_variable_name(text)
-        if text.match(/@\{([^}]+)\}/)
+        if text && text.match(/@\{([^}]+)\}/)
           $1.split('.').last
         else
           'value'
@@ -676,15 +787,20 @@ module KjuiTools
         # Define all necessary imports based on what was used
         all_imports = [
           "import androidx.compose.foundation.background",
+          "import androidx.compose.foundation.border",
           "import androidx.compose.foundation.layout.*",
           "import androidx.compose.foundation.lazy.LazyColumn",
           "import androidx.compose.foundation.lazy.LazyRow",
+          "import androidx.compose.foundation.shape.RoundedCornerShape",
           "import androidx.compose.material3.*",
           "import androidx.compose.runtime.Composable",
           "import androidx.compose.ui.Alignment",
           "import androidx.compose.ui.Modifier",
+          "import androidx.compose.ui.draw.clip",
           "import androidx.compose.ui.graphics.Color",
+          "import androidx.compose.ui.graphics.RectangleShape",
           "import androidx.compose.ui.text.font.FontWeight",
+          "import androidx.compose.ui.text.input.PasswordVisualTransformation",
           "import androidx.compose.ui.text.style.TextAlign",
           "import androidx.compose.ui.unit.dp",
           "import androidx.compose.ui.unit.sp"
@@ -707,6 +823,19 @@ module KjuiTools
         
         if @required_imports.include?(:text_align)
           imports_to_add << "import androidx.compose.ui.text.style.TextAlign" unless content.include?("import androidx.compose.ui.text.style.TextAlign")
+        end
+        
+        if @required_imports.include?(:border)
+          imports_to_add << "import androidx.compose.foundation.border" unless content.include?("import androidx.compose.foundation.border")
+        end
+        
+        if @required_imports.include?(:shape)
+          imports_to_add << "import androidx.compose.foundation.shape.RoundedCornerShape" unless content.include?("import androidx.compose.foundation.shape.RoundedCornerShape")
+          imports_to_add << "import androidx.compose.ui.draw.clip" unless content.include?("import androidx.compose.ui.draw.clip")
+        end
+        
+        if @required_imports.include?(:visual_transformation)
+          imports_to_add << "import androidx.compose.ui.text.input.PasswordVisualTransformation" unless content.include?("import androidx.compose.ui.text.input.PasswordVisualTransformation")
         end
         
         # Insert new imports after the package declaration

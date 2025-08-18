@@ -53,6 +53,7 @@ fun TextStylingTestGeneratedView(
                     text = "Font Sizes",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -79,11 +80,13 @@ fun TextStylingTestGeneratedView(
                     text = "Font Styles",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
                     text = "Bold Text",
                     fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 10.dp)
                 )
                 Text(
@@ -95,6 +98,7 @@ fun TextStylingTestGeneratedView(
                     text = "Text Alignment",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -128,6 +132,7 @@ fun TextStylingTestGeneratedView(
                     text = "Line Spacing Test",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(
@@ -150,6 +155,7 @@ fun TextStylingTestGeneratedView(
                     text = "Font Colors",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
                 Text(

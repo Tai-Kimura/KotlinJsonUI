@@ -48,6 +48,7 @@ fun RelativeTestGeneratedView(
                     text = "${data.title}",
                     fontSize = 24.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .padding(bottom = 20.dp)
                         .wrapContentWidth()
@@ -57,6 +58,7 @@ fun RelativeTestGeneratedView(
                     text = "1. Parent Constraints with Margin + Padding",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(
@@ -123,6 +125,7 @@ fun RelativeTestGeneratedView(
                     text = "2. Edge Alignment (Self Margin Only, Ignore Anchor Margin)",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(
@@ -191,6 +194,7 @@ fun RelativeTestGeneratedView(
                     text = "3. Relative Position (Both Margins Applied)",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(
@@ -259,6 +263,7 @@ fun RelativeTestGeneratedView(
                     text = "4. Fixed Size with Both-Side Constraints (Centering)",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(
@@ -307,6 +312,7 @@ fun RelativeTestGeneratedView(
                     text = "5. Dynamic Size (Stretch Between Constraints)",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(
@@ -355,6 +361,7 @@ fun RelativeTestGeneratedView(
                     text = "6. Complex Chaining with Different Margins",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(
@@ -427,6 +434,7 @@ fun RelativeTestGeneratedView(
                     text = "7. Mixed Anchor References",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Box(

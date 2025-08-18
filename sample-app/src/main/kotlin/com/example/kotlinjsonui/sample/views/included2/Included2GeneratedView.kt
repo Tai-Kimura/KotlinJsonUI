@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.Included2Data
 import com.example.kotlinjsonui.sample.viewmodels.Included2ViewModel
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun Included2GeneratedView(
@@ -24,6 +27,7 @@ fun Included2GeneratedView(
         Column(
         modifier = Modifier
             .padding(15.dp)
+            .clip(RoundedCornerShape(10.dp))
             .background(Color(android.graphics.Color.parseColor("#FFF4E6")))
     ) {
         Text(
@@ -35,6 +39,7 @@ fun Included2GeneratedView(
         Column(
             modifier = Modifier
                 .padding(10.dp)
+                .clip(RoundedCornerShape(5.dp))
                 .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
         ) {
             Text(

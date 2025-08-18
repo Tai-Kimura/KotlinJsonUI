@@ -13,6 +13,9 @@ import com.example.kotlinjsonui.sample.data.IncludeTestData
 import com.example.kotlinjsonui.sample.viewmodels.IncludeTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -54,6 +57,7 @@ fun IncludeTestGeneratedView(
                     Column(
                         modifier = Modifier
                             .padding(15.dp)
+                            .clip(RoundedCornerShape(8.dp))
                             .background(Color(android.graphics.Color.parseColor("#E8F4FD")))
                     ) {
                         Text(
@@ -107,6 +111,7 @@ fun IncludeTestGeneratedView(
                         Row(
                             modifier = Modifier
                                 .padding(10.dp)
+                                .clip(RoundedCornerShape(5.dp))
                                 .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
                         ) {
                             Text(

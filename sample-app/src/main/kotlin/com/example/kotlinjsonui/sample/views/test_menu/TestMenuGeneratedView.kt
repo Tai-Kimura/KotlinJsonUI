@@ -13,6 +13,9 @@ import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.TestMenuData
 import com.example.kotlinjsonui.sample.viewmodels.TestMenuViewModel
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun TestMenuGeneratedView(
@@ -39,12 +42,14 @@ fun TestMenuGeneratedView(
                     text = "SwiftJsonUI Feature Tests",
                     fontSize = 28.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
                 Row(
                     modifier = Modifier
                         .padding(15.dp)
                         .padding(bottom = 10.dp)
+                        .clip(RoundedCornerShape(8.dp))
                         .background(Color(android.graphics.Color.parseColor("#E8F4FF")))
                 ) {
                     Text(
@@ -57,6 +62,7 @@ fun TestMenuGeneratedView(
                         text = "${data.dynamicModeStatus}",
                         fontSize = 16.sp,
                         color = Color(android.graphics.Color.parseColor("#007AFF")),
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                     )
                 }
@@ -71,6 +77,7 @@ fun TestMenuGeneratedView(
                     text = "Layout & Positioning",
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Button(
@@ -112,6 +119,7 @@ fun TestMenuGeneratedView(
                     text = "Style & Appearance",
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Button(
@@ -132,6 +140,7 @@ fun TestMenuGeneratedView(
                     text = "Text Features",
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Button(
@@ -159,6 +168,7 @@ fun TestMenuGeneratedView(
                     text = "Input Components",
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Button(
@@ -186,6 +196,7 @@ fun TestMenuGeneratedView(
                     text = "Advanced Features",
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Button(
@@ -220,6 +231,7 @@ fun TestMenuGeneratedView(
                     text = "Forms & Keyboard",
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
                 )
                 Button(

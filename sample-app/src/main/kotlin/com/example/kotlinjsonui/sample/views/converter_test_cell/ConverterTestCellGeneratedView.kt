@@ -32,6 +32,7 @@ fun ConverterTestCellGeneratedView(
             text = "${data.title}",
             fontSize = 16.sp,
             color = Color(android.graphics.Color.parseColor("#333333")),
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         Text(

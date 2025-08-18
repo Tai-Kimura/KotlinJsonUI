@@ -13,6 +13,9 @@ import com.example.kotlinjsonui.sample.data.DatePickerTestData
 import com.example.kotlinjsonui.sample.viewmodels.DatePickerTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -53,6 +56,7 @@ fun DatePickerTestGeneratedView(
                     text = "Basic DatePicker",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 20.dp)
                 )
 // TODO: Implement component type: SelectBox
@@ -60,6 +64,7 @@ fun DatePickerTestGeneratedView(
                     text = "DatePicker with Min/Max Dates",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 30.dp)
                 )
                 Text(
@@ -73,6 +78,7 @@ fun DatePickerTestGeneratedView(
                     text = "Time Picker",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 30.dp)
                 )
 // TODO: Implement component type: SelectBox
@@ -80,6 +86,7 @@ fun DatePickerTestGeneratedView(
                     text = "DateTime Picker",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 30.dp)
                 )
 // TODO: Implement component type: SelectBox
@@ -87,6 +94,7 @@ fun DatePickerTestGeneratedView(
                     text = "DatePicker with Minute Interval",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 30.dp)
                 )
                 Text(
@@ -100,6 +108,7 @@ fun DatePickerTestGeneratedView(
                     text = "Calendar Style DatePicker",
                     fontSize = 18.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 30.dp)
                 )
 // TODO: Implement component type: SelectBox
@@ -112,12 +121,14 @@ fun DatePickerTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
+                        .clip(RoundedCornerShape(8.dp))
                         .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
                 ) {
                     Text(
                         text = "Selected Values:",
                         fontSize = 14.sp,
                         color = Color(android.graphics.Color.parseColor("#333333")),
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                     )
                     Text(
