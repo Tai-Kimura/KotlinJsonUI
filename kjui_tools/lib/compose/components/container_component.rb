@@ -29,6 +29,13 @@ module KjuiTools
             code += add_gravity_settings(layout, json_data['gravity'], depth)
           end
           
+          # Add spacing for Column/Row
+          if json_data['spacing'] && (layout == 'Column' || layout == 'Row')
+            required_imports&.add(:arrangement)
+            code += ",\n" + indent("verticalArrangement = Arrangement.spacedBy(#{json_data['spacing']}.dp)", depth + 1) if layout == 'Column'
+            code += ",\n" + indent("horizontalArrangement = Arrangement.spacedBy(#{json_data['spacing']}.dp)", depth + 1) if layout == 'Row'
+          end
+          
           code += "\n" + indent(") {", depth)
           
           # Process children

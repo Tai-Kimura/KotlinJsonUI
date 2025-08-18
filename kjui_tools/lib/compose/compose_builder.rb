@@ -199,7 +199,10 @@ module KjuiTools
           shape: ["import androidx.compose.foundation.shape.RoundedCornerShape",
                   "import androidx.compose.ui.draw.clip"],
           text_align: "import androidx.compose.ui.text.style.TextAlign",
-          visual_transformation: "import androidx.compose.ui.text.input.PasswordVisualTransformation"
+          text_overflow: "import androidx.compose.ui.text.style.TextOverflow",
+          visual_transformation: "import androidx.compose.ui.text.input.PasswordVisualTransformation",
+          shadow: "import androidx.compose.ui.draw.shadow",
+          arrangement: "import androidx.compose.foundation.layout.Arrangement"
         }
         
         imports_to_add = []

@@ -61,6 +61,7 @@ fun VisibilityTestGeneratedView(
                 text = "This label is invisible (takes space)",
                 fontSize = 16.sp,
                 modifier = Modifier
+                    .alpha(0f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
                     .wrapContentWidth()
@@ -72,15 +73,6 @@ fun VisibilityTestGeneratedView(
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
-                    .wrapContentWidth()
-                    .wrapContentHeight()
-            )
-            Text(
-                text = "This label is gone (no space)",
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
             )
@@ -160,6 +152,7 @@ fun VisibilityTestGeneratedView(
                 text = "Alpha: 0.6",
                 fontSize = 16.sp,
                 modifier = Modifier
+                    .alpha(0.6f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
                     .wrapContentWidth()

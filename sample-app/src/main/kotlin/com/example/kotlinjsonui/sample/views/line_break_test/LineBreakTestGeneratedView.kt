@@ -13,6 +13,7 @@ import com.example.kotlinjsonui.sample.data.LineBreakTestData
 import com.example.kotlinjsonui.sample.viewmodels.LineBreakTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import androidx.compose.ui.text.style.TextOverflow
 
 @Composable
 fun LineBreakTestGeneratedView(
@@ -65,7 +66,9 @@ fun LineBreakTestGeneratedView(
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(60.dp),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = "lineBreakMode: Char",
@@ -84,7 +87,8 @@ fun LineBreakTestGeneratedView(
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(60.dp),
+                maxLines = 2
             )
             Text(
                 text = "lineBreakMode: Clip",
@@ -103,7 +107,9 @@ fun LineBreakTestGeneratedView(
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(60.dp),
+                maxLines = 2,
+                overflow = TextOverflow.Clip
             )
             Text(
                 text = "lineBreakMode: Head",
@@ -122,7 +128,8 @@ fun LineBreakTestGeneratedView(
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(60.dp),
+                maxLines = 2
             )
             Text(
                 text = "lineBreakMode: Middle",
@@ -141,7 +148,8 @@ fun LineBreakTestGeneratedView(
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(60.dp),
+                maxLines = 2
             )
             Text(
                 text = "lineBreakMode: Tail",
@@ -160,7 +168,9 @@ fun LineBreakTestGeneratedView(
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .height(60.dp),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = "Lines Property Test",
@@ -183,7 +193,9 @@ fun LineBreakTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = "lines: 3",
@@ -199,7 +211,9 @@ fun LineBreakTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = "lines: 0 (unlimited)",
@@ -215,7 +229,8 @@ fun LineBreakTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                maxLines = Int.MAX_VALUE
             )
         }
         }

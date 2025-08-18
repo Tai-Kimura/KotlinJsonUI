@@ -71,6 +71,17 @@ module KjuiTools
           modifiers
         end
         
+        def self.build_weight(json_data, parent_orientation = nil)
+          modifiers = []
+          
+          # Weight only works in Row/Column contexts
+          if json_data['weight'] && parent_orientation
+            modifiers << ".weight(#{json_data['weight']}f)"
+          end
+          
+          modifiers
+        end
+        
         def self.build_size(json_data)
           modifiers = []
           
@@ -90,6 +101,27 @@ module KjuiTools
             modifiers << ".wrapContentHeight()"
           elsif json_data['height']
             modifiers << ".height(#{json_data['height']}.dp)"
+          end
+          
+          modifiers
+        end
+        
+        def self.build_shadow(json_data, required_imports = nil)
+          modifiers = []
+          
+          if json_data['shadow']
+            required_imports&.add(:shadow)
+            
+            if json_data['shadow'].is_a?(String)
+              # Simple shadow with color
+              modifiers << ".shadow(4.dp, shape = RectangleShape)"
+            elsif json_data['shadow'].is_a?(Hash)
+              # Complex shadow configuration
+              shadow = json_data['shadow']
+              elevation = shadow['radius'] || 4
+              shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
+              modifiers << ".shadow(#{elevation}.dp, shape = #{shape})"
+            end
           end
           
           modifiers
@@ -130,6 +162,39 @@ module KjuiTools
               border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
               modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
             end
+          end
+          
+          modifiers
+        end
+        
+        def self.build_visibility(json_data)
+          modifiers = []
+          
+          # Handle visibility attribute
+          if json_data['visibility']
+            case json_data['visibility']
+            when 'gone'
+              # In Compose, gone is handled by not rendering the component
+              return ['SKIP_RENDER']
+            when 'invisible'
+              modifiers << ".alpha(0f)"
+            # 'visible' is the default, no modifier needed
+            end
+          end
+          
+          # Handle hidden attribute (boolean or data binding)
+          if json_data['hidden']
+            if json_data['hidden'] == true
+              return ['SKIP_RENDER']
+            elsif json_data['hidden'].is_a?(String) && json_data['hidden'].start_with?('@{')
+              # Data binding for hidden - needs to be handled at component level
+              modifiers << ".alpha(if (#{json_data['hidden'].gsub('@{', 'data.').gsub('}', '')}) 0f else 1f)"
+            end
+          end
+          
+          # Handle alpha attribute
+          if json_data['alpha']
+            modifiers << ".alpha(#{json_data['alpha']}f)"
           end
           
           modifiers

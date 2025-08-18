@@ -31,9 +31,16 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
+          
+          # Check visibility first
+          visibility_mods = Helpers::ModifierBuilder.build_visibility(json_data)
+          return "" if visibility_mods.include?('SKIP_RENDER')
+          
+          modifiers.concat(visibility_mods)
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_shadow(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           
@@ -58,6 +65,26 @@ module KjuiTools
           elsif json_data['centerHorizontal']
             required_imports&.add(:text_align)
             code += ",\n" + indent("textAlign = TextAlign.Center", depth + 1)
+          end
+          
+          # Lines (maxLines)
+          if json_data['lines']
+            if json_data['lines'] == 0
+              code += ",\n" + indent("maxLines = Int.MAX_VALUE", depth + 1)
+            else
+              code += ",\n" + indent("maxLines = #{json_data['lines']}", depth + 1)
+            end
+          end
+          
+          # Line break mode (overflow)
+          if json_data['lineBreakMode']
+            required_imports&.add(:text_overflow)
+            case json_data['lineBreakMode'].downcase
+            when 'clip'
+              code += ",\n" + indent("overflow = TextOverflow.Clip", depth + 1)
+            when 'tail', 'word'
+              code += ",\n" + indent("overflow = TextOverflow.Ellipsis", depth + 1)
+            end
           end
           
           code += "\n" + indent(")", depth)

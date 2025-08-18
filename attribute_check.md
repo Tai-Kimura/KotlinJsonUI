@@ -81,6 +81,14 @@ These official SwiftJsonUI attributes have now been added:
 4. ✅ **`borderWidth`** - Border width support
 5. ✅ **`font`** - Support for "bold" font attribute
 6. ✅ **`gravity`** - Properly mapped to Compose arrangements/alignments
+7. ✅ **`visibility`** - "visible", "invisible", "gone" states
+8. ✅ **`hidden`** - Boolean or data binding for hiding views
+9. ✅ **`alpha`** - Transparency (0.0-1.0)
+10. ✅ **`spacing`** - Space between children in containers
+11. ✅ **`weight`** - Layout weight for linear layouts  
+12. ✅ **`shadow`** - Shadow configuration (simple or complex)
+13. ✅ **`lines`** - Max lines for text (0 = unlimited)
+14. ✅ **`lineBreakMode`** - Text overflow handling
 
 ### 📝 Still Missing Official Attributes
 
@@ -88,32 +96,14 @@ Important attributes from SwiftJsonUI that aren't yet implemented:
 
 #### Layout
 - `minWidth`, `maxWidth`, `minHeight`, `maxHeight`
-- `weight` - Layout weight for linear layouts
-- `spacing` - Space between children
-- `direction` - Layout direction
-- `gravity` - Child alignment in container
+- `direction` - Layout direction (topToBottom, bottomToTop, etc.)
 - `distribution` - Child distribution in stack
 
-#### Margins & Padding
-- `margins` - Array format [top, right, bottom, left]
-- `paddings` - Array format [top, right, bottom, left]
-- `paddingLeft`, `paddingRight`, `paddingTop`, `paddingBottom`
-
-#### Visual
-- `cornerRadius` - Corner radius
-- `borderColor`, `borderWidth` - Border styling
-- `alpha` - Transparency
-- `shadow` - Shadow configuration
-- `visibility` - "visible", "invisible", "gone"
-- `hidden` - Hidden state
-
 #### Text
-- `font` - Font family
-- `lines` - Number of lines
-- `lineBreakMode` - Line break mode
-- `textAlign` - Text alignment
 - `edgeInset` - Text padding
-- `hintColor`, `hintFont`, `hintFontSize` - Hint styling
+- `hintColor`, `hintFont`, `hintFontSize` - Hint styling for TextField
+- `textShadow` - Text shadow
+- `underline`, `strikethrough` - Text decoration
 
 #### Button
 - `enabled` - Enabled state
