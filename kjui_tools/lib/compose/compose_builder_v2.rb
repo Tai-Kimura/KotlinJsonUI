@@ -18,8 +18,8 @@ require_relative 'components/scrollview_component'
 
 module KjuiTools
   module Compose
-    # Refactored ComposeBuilder - under 300 lines
-    class ComposeBuilder
+    # Main builder class for converting JSON to Compose - under 300 lines
+    class ComposeBuilderV2
       def initialize
         @config = Core::ConfigManager.load_config
         @source_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
@@ -53,11 +53,18 @@ module KjuiTools
         pascal_case_name = to_pascal_case(base_name)
         
         begin
+          # Read and parse JSON
           json_content = File.read(json_file)
           json_data = JSON.parse(json_content)
+          
+          # Load and merge styles
           json_data = StyleLoader.load_and_merge(json_data)
           
+          # Initialize imports collector
           @required_imports = Set.new
+          
+          # Generate Compose code
+          compose_code = generate_compose_code(base_name, json_data)
           
           # Find the GeneratedView file
           generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
@@ -72,10 +79,43 @@ module KjuiTools
           Core::Logger.error "Failed to parse #{json_file}: #{e.message}"
         rescue => e
           Core::Logger.error "Failed to process #{json_file}: #{e.message}"
+          Core::Logger.debug e.backtrace.join("\n")
         end
       end
       
       private
+      
+      def generate_compose_code(view_name, json_data)
+        pascal_name = to_pascal_case(view_name)
+        
+        code = <<~KOTLIN
+        package #{@package_name}.views
+        
+        import androidx.compose.foundation.layout.*
+        import androidx.compose.material3.*
+        import androidx.compose.runtime.*
+        import androidx.compose.ui.Alignment
+        import androidx.compose.ui.Modifier
+        import androidx.compose.ui.unit.dp
+        import androidx.compose.ui.unit.sp
+        import #{@package_name}.data.#{pascal_name}Data
+        import #{@package_name}.viewmodels.#{pascal_name}ViewModel
+        
+        @Composable
+        fun #{pascal_name}View(
+            viewModel: #{pascal_name}ViewModel = remember { #{pascal_name}ViewModel() },
+            data: #{pascal_name}Data = #{pascal_name}Data()
+        ) {
+            val currentData = remember { mutableStateOf(data) }
+            
+        KOTLIN
+        
+        # Generate component tree
+        component_code = generate_component(json_data, 1)
+        code += indent(component_code, 1)
+        code += "}\n"
+        code
+      end
       
       def generate_component(json_data, depth = 0)
         return "" unless json_data.is_a?(Hash)
@@ -83,18 +123,18 @@ module KjuiTools
         component_type = json_data['type'] || 'View'
         
         # Handle includes
-        return generate_include(json_data, depth) if json_data['include']
+        if json_data['include']
+          return generate_include(json_data, depth)
+        end
         
-        # Generate component based on type
+        # Delegate to specific component generators
         case component_type
         when 'ScrollView'
-          result = Components::ScrollViewComponent.generate(json_data, depth, @required_imports)
-          handle_container_result(result, depth)
+          Components::ScrollViewComponent.generate(json_data, depth, @required_imports)
         when 'SafeAreaView'
           generate_safe_area_view(json_data, depth)
         when 'View', 'VStack', 'HStack', 'ZStack'
-          result = Components::ContainerComponent.generate(json_data, depth, @required_imports)
-          handle_container_result(result, depth)
+          Components::ContainerComponent.generate(json_data, depth, @required_imports)
         when 'Text', 'Label'
           Components::TextComponent.generate(json_data, depth, @required_imports)
         when 'Button'
@@ -110,33 +150,18 @@ module KjuiTools
         end
       end
       
-      def handle_container_result(result, depth)
-        if result.is_a?(Hash)
-          code = result[:code]
-          children = result[:children] || []
-          
-          children.each do |child|
-            child_code = generate_component(child, depth + 1)
-            code += "\n" + child_code unless child_code.empty?
-          end
-          
-          code += result[:closing] if result[:closing]
-          code
-        else
-          result
-        end
-      end
-      
       def generate_safe_area_view(json_data, depth)
-        code = indent("Box(", depth)
+        # SafeAreaView handled as Box with systemBarsPadding
+        code = "Box("
         
-        modifiers = ["Modifier", ".fillMaxSize()", ".systemBarsPadding()"]
+        modifiers = ["Modifier", "fillMaxSize()", "systemBarsPadding()"]
         modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
         modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, @required_imports))
         
-        code += Helpers::ModifierBuilder.format(modifiers, depth)
+        code += "\n" + indent("modifier = #{modifiers.join('.')}", depth + 1)
         code += "\n" + indent(") {", depth)
         
+        # Add children
         children = json_data['child'] || []
         children = [children] unless children.is_a?(Array)
         
@@ -153,19 +178,19 @@ module KjuiTools
         include_name = json_data['include']
         pascal_name = to_pascal_case(include_name)
         
-        code = indent("#{pascal_name}View(", depth)
-        code += "\n" + indent("viewModel = viewModel.#{to_camel_case(include_name)}ViewModel,", depth + 1)
+        code = "#{pascal_name}View(\n"
+        code += indent("viewModel = viewModel.#{to_camel_case(include_name)}ViewModel,", depth + 1) + "\n"
         
         if json_data['data']
-          code += "\n" + indent("data = #{pascal_name}Data(", depth + 1)
+          code += indent("data = #{pascal_name}Data(", depth + 1) + "\n"
           json_data['data'].each do |key, value|
-            processed = process_data_binding(value.to_s)
-            code += "\n" + indent("#{key} = #{processed},", depth + 2)
+            processed_value = process_data_binding(value.to_s)
+            code += indent("#{key} = #{processed_value},", depth + 2) + "\n"
           end
-          code += "\n" + indent(")", depth + 1)
+          code += indent(")", depth + 1) + "\n"
         end
         
-        code += "\n" + indent(")", depth)
+        code += indent(")", depth)
         code
       end
       
@@ -191,37 +216,40 @@ module KjuiTools
       end
       
       def update_imports(content)
-        imports_map = {
-          lazy_column: "import androidx.compose.foundation.lazy.LazyColumn",
-          lazy_row: "import androidx.compose.foundation.lazy.LazyRow",
-          background: "import androidx.compose.foundation.background",
-          border: "import androidx.compose.foundation.border",
-          shape: ["import androidx.compose.foundation.shape.RoundedCornerShape",
-                  "import androidx.compose.ui.draw.clip"],
-          text_align: "import androidx.compose.ui.text.style.TextAlign",
-          visual_transformation: "import androidx.compose.ui.text.input.PasswordVisualTransformation"
-        }
-        
         imports_to_add = []
+        
         @required_imports.each do |import_type|
-          import_lines = imports_map[import_type]
-          if import_lines
-            if import_lines.is_a?(Array)
-              imports_to_add.concat(import_lines)
-            else
-              imports_to_add << import_lines
-            end
+          case import_type
+          when :lazy_column
+            imports_to_add << "import androidx.compose.foundation.lazy.LazyColumn"
+          when :lazy_row
+            imports_to_add << "import androidx.compose.foundation.lazy.LazyRow"
+          when :background
+            imports_to_add << "import androidx.compose.foundation.background"
+          when :border
+            imports_to_add << "import androidx.compose.foundation.border"
+          when :shape
+            imports_to_add << "import androidx.compose.foundation.shape.RoundedCornerShape"
+            imports_to_add << "import androidx.compose.ui.draw.clip"
+          when :text_align
+            imports_to_add << "import androidx.compose.ui.text.style.TextAlign"
+          when :visual_transformation
+            imports_to_add << "import androidx.compose.ui.text.input.PasswordVisualTransformation"
           end
         end
         
+        # Insert new imports after package declaration
         if imports_to_add.any?
           lines = content.split("\n")
           package_index = lines.find_index { |line| line.start_with?("package ") }
           
           if package_index
-            last_import_index = lines.each_with_index.select { |line, i| 
-              i > package_index && line.start_with?("import ")
-            }.map(&:last).max || package_index
+            last_import_index = package_index
+            lines.each_with_index do |line, i|
+              if i > package_index && line.start_with?("import ")
+                last_import_index = i
+              end
+            end
             
             imports_to_add.each do |import|
               unless content.include?(import)
@@ -238,23 +266,20 @@ module KjuiTools
       end
       
       def process_data_binding(text)
-        return quote(text) unless text.is_a?(String)
+        return "\"#{text}\"" unless text.is_a?(String)
         
         if text.match(/@\{([^}]+)\}/)
           variable = $1
           if variable.include?(' ?? ')
-            var_name = variable.split(' ?? ')[0].strip
+            parts = variable.split(' ?? ')
+            var_name = parts[0].strip
             "\"\\${data.#{var_name}}\""
           else
             "\"\\${data.#{variable}}\""
           end
         else
-          quote(text)
+          "\"#{text.gsub('"', '\\"')}\""
         end
-      end
-      
-      def quote(text)
-        "\"#{text.gsub('"', '\\"')}\""
       end
       
       def indent(text, level)

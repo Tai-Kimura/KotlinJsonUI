@@ -29,78 +29,76 @@ fun ComponentsTestGeneratedView(
             .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
     ) {
         item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding([20, 20, 20, 20].dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
+        ) {
+            Button(
+                onClick = { },
             ) {
-                Button(
-                    onClick = { },
-                    modifier = Modifier
-                ) {
-                    Text("Button")
-                }
-                Text(
-                    text = "New Components Test",
-                    fontSize = 24.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    modifier = Modifier
-                )
-                Text(
-                    text = "Toggle/Checkbox Components",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+                Text("Button")
+            }
+            Text(
+                text = "New Components Test",
+                fontSize = 24.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+            )
+            Text(
+                text = "Toggle/Checkbox Components",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: Toggle
 // TODO: Implement component type: Checkbox
-                Text(
-                    text = "Progress & Slider",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+            Text(
+                text = "Progress & Slider",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: Progress
 // TODO: Implement component type: Slider
-                Text(
-                    text = "Selection Components",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+            Text(
+                text = "Selection Components",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: Segment
 // TODO: Implement component type: Radio
-                Text(
-                    text = "Loading Indicator",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+            Text(
+                text = "Loading Indicator",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: Indicator
-                Text(
-                    text = "Circle Image",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+            Text(
+                text = "Circle Image",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: CircleImage
-                Text(
-                    text = "Gradient View",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+            Text(
+                text = "Gradient View",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: GradientView
-                Text(
-                    text = "Blur View",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    modifier = Modifier
-                )
+            Text(
+                text = "Blur View",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier
+            )
 // TODO: Implement component type: BlurView
-            }
         }
-    }
-    // >>> GENERATED_CODE_END
+        }
+    }    // >>> GENERATED_CODE_END
 }

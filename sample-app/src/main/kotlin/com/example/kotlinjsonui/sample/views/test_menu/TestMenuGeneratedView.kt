@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun TestMenuGeneratedView(
@@ -31,218 +32,199 @@ fun TestMenuGeneratedView(
             .fillMaxHeight()
     ) {
         item {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(20.dp)
+                .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+        ) {
+            Text(
+                text = "SwiftJsonUI Feature Tests",
+                fontSize = 28.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 20.dp),
+                textAlign = TextAlign.Center
+            )
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                    .padding(15.dp)
+                    .padding(bottom = 10.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(android.graphics.Color.parseColor("#E8F4FF")))
             ) {
                 Text(
-                    text = "SwiftJsonUI Feature Tests",
-                    fontSize = 28.sp,
+                    text = "Dynamic Mode Status:",
+                    fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 20.dp)
+                    modifier = Modifier.padding(end = 10.dp)
                 )
-                Row(
-                    modifier = Modifier
-                        .padding(15.dp)
-                        .padding(bottom = 10.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(android.graphics.Color.parseColor("#E8F4FF")))
-                ) {
-                    Text(
-                        text = "Dynamic Mode Status:",
-                        fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#333333")),
-                        modifier = Modifier
-                    )
-                    Text(
-                        text = "${data.dynamicModeStatus}",
-                        fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#007AFF")),
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                    )
-                }
-                Button(
-                    onClick = { viewModel.toggleDynamicMode() },
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                ) {
-                    Text("Toggle Dynamic Mode")
-                }
                 Text(
-                    text = "Layout & Positioning",
-                    fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    text = "\${data.dynamicModeStatus}",
+                    fontSize = 16.sp,
+                    color = Color(android.graphics.Color.parseColor("#007AFF")),
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 10.dp)
+                    modifier = Modifier
                 )
-                Button(
-                    onClick = { viewModel.navigateToMarginsTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Margins & Padding Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToAlignmentTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Alignment Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToAlignmentComboTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Alignment Combo Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToWeightTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Weight Distribution Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToWeightTestWithFixed() },
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                ) {
-                    Text("Weight + Fixed Size Test")
-                }
-                Text(
-                    text = "Style & Appearance",
-                    fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-                Button(
-                    onClick = { viewModel.navigateToVisibilityTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Visibility & Opacity Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToDisabledTest() },
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                ) {
-                    Text("Disabled States Test")
-                }
-                Text(
-                    text = "Text Features",
-                    fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-                Button(
-                    onClick = { viewModel.navigateToTextStylingTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Text Styling Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToComponentsTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("New Components Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToLineBreakTest() },
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                ) {
-                    Text("Line Break & Spacing Test")
-                }
-                Text(
-                    text = "Input Components",
-                    fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-                Button(
-                    onClick = { viewModel.navigateToSecureFieldTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Secure Field Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToDatePickerTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Date Picker Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToTextviewHintTest() },
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                ) {
-                    Text("TextView Hint Test")
-                }
-                Text(
-                    text = "Advanced Features",
-                    fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-                Button(
-                    onClick = { viewModel.navigateToRelativeTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Relative Positioning Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToBindingTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Binding Properties Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToConverterTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Converter Components Test")
-                }
-                Button(
-                    onClick = { viewModel.navigateToIncludeTest() },
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                ) {
-                    Text("Include Component Test")
-                }
-                Text(
-                    text = "Forms & Keyboard",
-                    fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 10.dp)
-                )
-                Button(
-                    onClick = { viewModel.navigateToFormTest() },
-                    modifier = Modifier
-                        .padding(bottom = 8.dp)
-                ) {
-                    Text("Form & Keyboard Avoidance Test")
-                }
+            }
+            Button(
+                onClick = { viewModel.toggleDynamicMode() },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text("Toggle Dynamic Mode")
+            }
+            Text(
+                text = "Layout & Positioning",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToMarginsTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Margins & Padding Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToAlignmentTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Alignment Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToAlignmentComboTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Alignment Combo Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToWeightTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Weight Distribution Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToWeightTestWithFixed() },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text("Weight + Fixed Size Test")
+            }
+            Text(
+                text = "Style & Appearance",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToVisibilityTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Visibility & Opacity Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToDisabledTest() },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text("Disabled States Test")
+            }
+            Text(
+                text = "Text Features",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToTextStylingTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Text Styling Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToComponentsTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("New Components Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToLineBreakTest() },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text("Line Break & Spacing Test")
+            }
+            Text(
+                text = "Input Components",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToSecureFieldTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Secure Field Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToDatePickerTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Date Picker Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToTextviewHintTest() },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text("TextView Hint Test")
+            }
+            Text(
+                text = "Advanced Features",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToRelativeTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Relative Positioning Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToBindingTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Binding Properties Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToConverterTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Converter Components Test")
+            }
+            Button(
+                onClick = { viewModel.navigateToIncludeTest() },
+                modifier = Modifier.padding(bottom = 20.dp)
+            ) {
+                Text("Include Component Test")
+            }
+            Text(
+                text = "Forms & Keyboard",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToFormTest() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Text("Form & Keyboard Avoidance Test")
             }
         }
-    }
-    // >>> GENERATED_CODE_END
+        }
+    }    // >>> GENERATED_CODE_END
 }

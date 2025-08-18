@@ -13,6 +13,7 @@ import com.example.kotlinjsonui.sample.data.WeightTestWithFixedData
 import com.example.kotlinjsonui.sample.viewmodels.WeightTestWithFixedViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun WeightTestWithFixedGeneratedView(
@@ -29,417 +30,447 @@ fun WeightTestWithFixedGeneratedView(
             .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
     ) {
         item {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            Button(
+                onClick = { },
+            ) {
+                Text("Button")
+            }
+            Text(
+                text = "\${data.title}",
+                fontSize = 24.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Text(
+                text = "Fixed(80) + Weight(1) + Weight(2) + Fixed(60)",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
+                    .height(60.dp)
+                    .padding(top = 10.dp)
             ) {
-                Button(
-                    onClick = { },
-                    modifier = Modifier
-                ) {
-                    Text("Button")
-                }
                 Text(
-                    text = "${data.title}",
-                    fontSize = 24.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = "Fixed: 80",
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(top = 20.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                        .width(80.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Fixed(80) + Weight(1) + Weight(2) + Fixed(60)",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    text = "Weight: 1",
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(top = 20.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .padding(top = 10.dp)
-                ) {
-                    Text(
-                        text = "Fixed: 80",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                            .width(80.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "Weight: 1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "Weight: 2",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "Fixed: 60",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
-                            .width(60.dp)
-                            .height(matchParent.dp)
-                    )
-                }
                 Text(
-                    text = "Complex nested weights with fixed",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    text = "Weight: 2",
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(top = 30.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .padding(top = 10.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .width(0.dp)
-                            .fillMaxHeight()
-                    ) {
-                        Text(
-                            text = "1-1",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
-                                .fillMaxWidth()
-                                .height(0.dp)
-                        )
-                        Text(
-                            text = "1-2",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#FFC0C0")))
-                                .fillMaxWidth()
-                                .height(0.dp)
-                        )
-                    }
-                    Text(
-                        text = "Fix
-                        50",
-                        fontSize = 12.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                            .width(50.dp)
-                            .height(matchParent.dp)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .width(0.dp)
-                            .fillMaxHeight()
-                    ) {
-                        Text(
-                            text = "Fixed 30",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
-                                .fillMaxWidth()
-                                .height(30.dp)
-                        )
-                        Text(
-                            text = "Weight 1",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#C0FFC0")))
-                                .fillMaxWidth()
-                                .height(0.dp)
-                        )
-                    }
-                }
                 Text(
-                    text = "Multiple fixed sizes with weights",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    text = "Fixed: 60",
+                    fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(top = 30.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
+                        .width(60.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .padding(top = 10.dp)
-                ) {
-                    Text(
-                        text = "40",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                            .width(40.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "W:1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "60",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                            .width(60.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "W:1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "80",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                            .width(80.dp)
-                            .height(matchParent.dp)
-                    )
-                }
-                Text(
-                    text = "Zero weights test",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .padding(top = 10.dp)
-                ) {
-                    Text(
-                        text = "W:0",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFA0A0")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "W:1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#A0FFA0")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "Fixed:100",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#A0A0FF")))
-                            .width(100.dp)
-                            .height(matchParent.dp)
-                    )
-                    Text(
-                        text = "W:3",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFFFA0")))
-                            .width(0.dp)
-                            .height(matchParent.dp)
-                    )
-                }
-                Text(
-                    text = "Vertical: Fixed + Weight combinations",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                )
+            }
+            Text(
+                text = "Complex nested weights with fixed",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(top = 10.dp)
+            ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(top = 10.dp)
+                        .width(0.dp)
+                        .fillMaxHeight()
                 ) {
                     Text(
-                        text = "Fixed: 30",
-                        fontSize = 14.sp,
+                        text = "1-1",
+                        fontSize = 12.sp,
                         modifier = Modifier
                             .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                             .fillMaxWidth()
-                            .height(30.dp)
+                            .height(0.dp),
+                        textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Weight: 1",
-                        fontSize = 14.sp,
+                        text = "1-2",
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(android.graphics.Color.parseColor("#FFC0C0")))
+                            .fillMaxWidth()
+                            .height(0.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Text(
+                    text = "Fix
+                    50",
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                        .width(50.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Column(
+                    modifier = Modifier
+                        .width(0.dp)
+                        .fillMaxHeight()
+                ) {
+                    Text(
+                        text = "Fixed 30",
+                        fontSize = 12.sp,
                         modifier = Modifier
                             .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                             .fillMaxWidth()
-                            .height(0.dp)
+                            .height(30.dp),
+                        textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Fixed: 40",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
-                            .fillMaxWidth()
-                            .height(40.dp)
-                    )
-                    Text(
-                        text = "Weight: 2",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
-                            .fillMaxWidth()
-                            .height(0.dp)
-                    )
-                    Text(
-                        text = "Fixed: 50",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
-                            .fillMaxWidth()
-                            .height(50.dp)
-                    )
-                }
-                Text(
-                    text = "Vertical: Nested horizontal weights",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(top = 10.dp)
-                ) {
-                    Text(
-                        text = "Header: Fixed 25",
+                        text = "Weight 1",
                         fontSize = 12.sp,
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                         modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#666666")))
+                            .background(Color(android.graphics.Color.parseColor("#C0FFC0")))
                             .fillMaxWidth()
-                            .height(25.dp)
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(0.dp)
-                    ) {
-                        Text(
-                            text = "Col 1",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                                .width(0.dp)
-                                .height(matchParent.dp)
-                        )
-                        Text(
-                            text = "Fix:60",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#D0D0D0")))
-                                .width(60.dp)
-                                .height(matchParent.dp)
-                        )
-                        Text(
-                            text = "Col 2",
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                                .width(0.dp)
-                                .height(matchParent.dp)
-                        )
-                    }
-                    Text(
-                        text = "Footer: Fixed 25",
-                        fontSize = 12.sp,
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#666666")))
-                            .fillMaxWidth()
-                            .height(25.dp)
-                    )
-                }
-                Text(
-                    text = "Vertical: Multiple weights only",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .padding(top = 10.dp)
-                ) {
-                    Text(
-                        text = "W:1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
-                            .fillMaxWidth()
-                            .height(0.dp)
-                    )
-                    Text(
-                        text = "W:1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
-                            .fillMaxWidth()
-                            .height(0.dp)
-                    )
-                    Text(
-                        text = "W:2",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#CCCCFF")))
-                            .fillMaxWidth()
-                            .height(0.dp)
-                    )
-                    Text(
-                        text = "W:1",
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(Color(android.graphics.Color.parseColor("#FFFFCC")))
-                            .fillMaxWidth()
-                            .height(0.dp)
+                            .height(0.dp),
+                        textAlign = TextAlign.Center
                     )
                 }
             }
+            Text(
+                text = "Multiple fixed sizes with weights",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = "40",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                        .width(40.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "60",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                        .width(60.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "80",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                        .width(80.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            Text(
+                text = "Zero weights test",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = "W:0",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFA0A0")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#A0FFA0")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Fixed:100",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#A0A0FF")))
+                        .width(100.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:3",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFFFA0")))
+                        .width(0.dp)
+                        .fillMaxHeight(),
+                    textAlign = TextAlign.Center
+                )
+            }
+            Text(
+                text = "Vertical: Fixed + Weight combinations",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = "Fixed: 30",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .fillMaxWidth()
+                        .height(30.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Weight: 1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .fillMaxWidth()
+                        .height(0.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Fixed: 40",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .fillMaxWidth()
+                        .height(40.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Weight: 2",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                        .fillMaxWidth()
+                        .height(0.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Fixed: 50",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+            Text(
+                text = "Vertical: Nested horizontal weights",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = "Header: Fixed 25",
+                    fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#666666")))
+                        .fillMaxWidth()
+                        .height(25.dp),
+                    textAlign = TextAlign.Center
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(0.dp)
+                ) {
+                    Text(
+                        text = "Col 1",
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                            .width(0.dp)
+                            .fillMaxHeight(),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Fix:60",
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(android.graphics.Color.parseColor("#D0D0D0")))
+                            .width(60.dp)
+                            .fillMaxHeight(),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Col 2",
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                            .width(0.dp)
+                            .fillMaxHeight(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+                Text(
+                    text = "Footer: Fixed 25",
+                    fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#666666")))
+                        .fillMaxWidth()
+                        .height(25.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+            Text(
+                text = "Vertical: Multiple weights only",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                modifier = Modifier
+                    .padding(top = 30.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(top = 10.dp)
+            ) {
+                Text(
+                    text = "W:1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
+                        .fillMaxWidth()
+                        .height(0.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
+                        .fillMaxWidth()
+                        .height(0.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:2",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#CCCCFF")))
+                        .fillMaxWidth()
+                        .height(0.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "W:1",
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .background(Color(android.graphics.Color.parseColor("#FFFFCC")))
+                        .fillMaxWidth()
+                        .height(0.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
-    }
-    // >>> GENERATED_CODE_END
+        }
+    }    // >>> GENERATED_CODE_END
 }

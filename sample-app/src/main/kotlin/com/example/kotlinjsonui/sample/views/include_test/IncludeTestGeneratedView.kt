@@ -31,202 +31,210 @@ fun IncludeTestGeneratedView(
             .fillMaxHeight()
     ) {
         item {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+        ) {
+            Button(
+                onClick = { },
+            ) {
+                Text("Button")
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                    .wrapContentHeight()
             ) {
-                Button(
-                    onClick = { },
+                Text(
+                    text = "\${data.title}",
+                    fontSize = 24.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                ) {
-                    Text("Button")
-                }
+                )
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
+                        .padding(15.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(android.graphics.Color.parseColor("#E8F4FD")))
                 ) {
                     Text(
-                        text = "${data.title}",
-                        fontSize = 24.sp,
-                        color = Color(android.graphics.Color.parseColor("#000000")),
+                        text = "Control Panel",
+                        fontSize = 18.sp,
+                        color = Color(android.graphics.Color.parseColor("#0066CC")),
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                     )
-                    Column(
+                    Row(
+                    ) {
+                        Button(
+                            onClick = { viewModel.incrementCount() },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(
+                                text = "Count +",
+                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            )
+                        }
+                        Button(
+                            onClick = { viewModel.decrementCount() },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(
+                                text = "Count -",
+                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            )
+                        }
+                        Button(
+                            onClick = { viewModel.resetCount() },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(
+                                text = "Reset",
+                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            )
+                        }
+                    }
+                    Row(
+                    ) {
+                        Button(
+                            onClick = { viewModel.changeUserName() },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(
+                                text = "Change Name",
+                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            )
+                        }
+                        Button(
+                            onClick = { viewModel.toggleStatus() },
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(
+                                text = "Toggle Status",
+                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            )
+                        }
+                    }
+                    Row(
                         modifier = Modifier
-                            .padding(15.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(android.graphics.Color.parseColor("#E8F4FD")))
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
                     ) {
                         Text(
-                            text = "Control Panel",
-                            fontSize = 18.sp,
-                            color = Color(android.graphics.Color.parseColor("#0066CC")),
-                            fontWeight = FontWeight.Bold,
+                            text = "Current Values: ",
+                            fontSize = 14.sp,
+                            color = Color(android.graphics.Color.parseColor("#333333")),
+                            fontWeight = FontWeight.Semibold,
                             modifier = Modifier
                         )
-                        Row(
-                        ) {
-                            Button(
-                                onClick = { viewModel.incrementCount() },
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) {
-                                Text("Count +")
-                            }
-                            Button(
-                                onClick = { viewModel.decrementCount() },
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) {
-                                Text("Count -")
-                            }
-                            Button(
-                                onClick = { viewModel.resetCount() },
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) {
-                                Text("Reset")
-                            }
-                        }
-                        Row(
-                        ) {
-                            Button(
-                                onClick = { viewModel.changeUserName() },
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) {
-                                Text("Change Name")
-                            }
-                            Button(
-                                onClick = { viewModel.toggleStatus() },
-                                modifier = Modifier
-                                    .padding(10.dp)
-                            ) {
-                                Text("Toggle Status")
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-                        ) {
-                            Text(
-                                text = "Current Values: ",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                fontWeight = FontWeight.Semibold,
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.mainCount}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#666666")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.userName}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#666666")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.mainStatus}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#666666")),
-                                modifier = Modifier
-                            )
-                        }
-                    }
-                    Column(
-                    ) {
                         Text(
-                            text = "1. Basic Include with static data:",
-                            fontSize = 16.sp,
+                            text = "\${data.mainCount}",
+                            fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
                         )
-Included1View(
-                            viewModel = viewModel.included1ViewModel,
-                            data = Included1Data(
-                                title = "Included View 1",
-                                message = "This is the first included view",
-                                count = "1",
-                            )
-                        )
-                    }
-                    Column(
-                    ) {
                         Text(
-                            text = "2. Include with data (static values):",
-                            fontSize = 16.sp,
+                            text = "\${data.userName}",
+                            fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
                         )
-Included2View(
-                            viewModel = viewModel.included2ViewModel,
-                            data = Included2Data(
-                                viewTitle = "Static Title",
-                                viewStatus = "Static Status",
-                                viewCount = "42",
-                            )
-                        )
-                    }
-                    Column(
-                    ) {
                         Text(
-                            text = "3. Include with data (using @{} references):",
-                            fontSize = 16.sp,
+                            text = "\${data.mainStatus}",
+                            fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
                         )
-Included2View(
-                            viewModel = viewModel.included2ViewModel,
-                            data = Included2Data(
-                                viewTitle = "${data.userName}",
-                                viewStatus = "${data.mainStatus}",
-                                viewCount = "${data.mainCount}",
-                            )
-                        )
                     }
-                    Column(
-                    ) {
-                        Text(
-                            text = "4. Include with shared_data and data override:",
-                            fontSize = 16.sp,
-                            color = Color(android.graphics.Color.parseColor("#666666")),
-                            modifier = Modifier
+                }
+                Column(
+                ) {
+                    Text(
+                        text = "1. Basic Include with static data:",
+                        fontSize = 16.sp,
+                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        modifier = Modifier
+                    )
+                    Included1View(
+                        viewModel = viewModel.included1ViewModel,
+                        data = Included1Data(
+                            title = "Included View 1",
+                            message = "This is the first included view",
+                            count = "1",
                         )
-Included2View(
-                            viewModel = viewModel.included2ViewModel,
-                            data = Included2Data(
-                                viewStatus = "Overridden Status",
-                            )
+                    )
+                }
+                Column(
+                ) {
+                    Text(
+                        text = "2. Include with data (static values):",
+                        fontSize = 16.sp,
+                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        modifier = Modifier
+                    )
+                    Included2View(
+                        viewModel = viewModel.included2ViewModel,
+                        data = Included2Data(
+                            viewTitle = "Static Title",
+                            viewStatus = "Static Status",
+                            viewCount = "42",
                         )
-                    }
-                    Column(
-                    ) {
-                        Text(
-                            text = "5. Another included_1 with @{} references:",
-                            fontSize = 16.sp,
-                            color = Color(android.graphics.Color.parseColor("#666666")),
-                            modifier = Modifier
+                    )
+                }
+                Column(
+                ) {
+                    Text(
+                        text = "3. Include with data (using @{} references):",
+                        fontSize = 16.sp,
+                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        modifier = Modifier
+                    )
+                    Included2View(
+                        viewModel = viewModel.included2ViewModel,
+                        data = Included2Data(
+                            viewTitle = "\${data.userName}",
+                            viewStatus = "\${data.mainStatus}",
+                            viewCount = "\${data.mainCount}",
                         )
-Included1View(
-                            viewModel = viewModel.included1ViewModel,
-                            data = Included1Data(
-                                title = "${data.userName}",
-                                message = "${data.mainStatus}",
-                                count = "${data.mainCount}",
-                            )
+                    )
+                }
+                Column(
+                ) {
+                    Text(
+                        text = "4. Include with shared_data and data override:",
+                        fontSize = 16.sp,
+                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        modifier = Modifier
+                    )
+                    Included2View(
+                        viewModel = viewModel.included2ViewModel,
+                        data = Included2Data(
+                            viewStatus = "Overridden Status",
                         )
-                    }
+                    )
+                }
+                Column(
+                ) {
+                    Text(
+                        text = "5. Another included_1 with @{} references:",
+                        fontSize = 16.sp,
+                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        modifier = Modifier
+                    )
+                    Included1View(
+                        viewModel = viewModel.included1ViewModel,
+                        data = Included1Data(
+                            title = "\${data.userName}",
+                            message = "\${data.mainStatus}",
+                            count = "\${data.mainCount}",
+                        )
+                    )
                 }
             }
         }
-    }
-    // >>> GENERATED_CODE_END
+        }
+    }    // >>> GENERATED_CODE_END
 }

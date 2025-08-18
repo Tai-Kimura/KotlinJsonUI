@@ -30,7 +30,6 @@ fun TextViewHintTestGeneratedView(
     ) {
         Button(
             onClick = { },
-            modifier = Modifier
         ) {
             Text("Button")
         }
@@ -54,6 +53,5 @@ fun TextViewHintTestGeneratedView(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 // TODO: Implement component type: TextView
-    }
-    // >>> GENERATED_CODE_END
+    }    // >>> GENERATED_CODE_END
 }

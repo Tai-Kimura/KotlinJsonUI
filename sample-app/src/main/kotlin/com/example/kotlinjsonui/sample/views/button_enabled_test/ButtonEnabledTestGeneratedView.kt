@@ -30,50 +30,59 @@ fun ButtonEnabledTestGeneratedView(
     ) {
         Button(
             onClick = { },
-            modifier = Modifier
         ) {
             Text("Button")
         }
         Text(
-            text = "${data.title}",
+            text = "\${data.title}",
             fontSize = 24.sp,
             color = Color(android.graphics.Color.parseColor("#000000")),
             modifier = Modifier
         )
         Text(
-            text = "${data.isButtonEnabled}",
+            text = "\${data.isButtonEnabled}",
             fontSize = 16.sp,
             color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier
         )
         Button(
             onClick = { viewModel.testAction() },
-            modifier = Modifier
-                .padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            enabled = data.isButtonEnabled
         ) {
-            Text("Test Button (controlled by data)")
+            Text(
+                text = "Test Button (controlled by data)",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
         Button(
             onClick = { viewModel.toggleEnabled() },
-            modifier = Modifier
-                .padding(10.dp)
+            modifier = Modifier.padding(10.dp)
         ) {
-            Text("Toggle Enabled State")
+            Text(
+                text = "Toggle Enabled State",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
         Button(
             onClick = { viewModel.neverCalled() },
-            modifier = Modifier
-                .padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            enabled = false
         ) {
-            Text("Always Disabled Button")
+            Text(
+                text = "Always Disabled Button",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
         Button(
             onClick = { viewModel.alwaysCalled() },
-            modifier = Modifier
-                .padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            enabled = true
         ) {
-            Text("Always Enabled Button")
+            Text(
+                text = "Always Enabled Button",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
-    }
-    // >>> GENERATED_CODE_END
+    }    // >>> GENERATED_CODE_END
 }

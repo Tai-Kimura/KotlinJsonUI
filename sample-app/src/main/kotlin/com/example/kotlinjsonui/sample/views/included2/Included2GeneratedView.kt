@@ -43,24 +43,23 @@ fun Included2GeneratedView(
                 .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
         ) {
             Text(
-                text = "${data.viewTitle}",
+                text = "\${data.viewTitle}",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
             )
             Text(
-                text = "${data.viewStatus}",
+                text = "\${data.viewStatus}",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
             )
             Text(
-                text = "${data.viewCount}",
+                text = "\${data.viewCount}",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
             )
         }
-    }
-    // >>> GENERATED_CODE_END
+    }    // >>> GENERATED_CODE_END
 }

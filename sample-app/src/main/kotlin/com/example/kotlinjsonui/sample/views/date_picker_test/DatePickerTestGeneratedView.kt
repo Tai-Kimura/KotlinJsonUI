@@ -32,120 +32,118 @@ fun DatePickerTestGeneratedView(
             .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
     ) {
         item {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            Button(
+                onClick = { },
+            ) {
+                Text("Button")
+            }
+            Text(
+                text = "\${data.title}",
+                fontSize = 24.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Text(
+                text = "Basic DatePicker",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 20.dp)
+            )
+// TODO: Implement component type: SelectBox
+            Text(
+                text = "DatePicker with Min/Max Dates",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 30.dp)
+            )
+            Text(
+                text = "Min: 2025-01-01, Max: 2025-12-31",
+                fontSize = 12.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier.padding(top = 5.dp)
+            )
+// TODO: Implement component type: SelectBox
+            Text(
+                text = "Time Picker",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 30.dp)
+            )
+// TODO: Implement component type: SelectBox
+            Text(
+                text = "DateTime Picker",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 30.dp)
+            )
+// TODO: Implement component type: SelectBox
+            Text(
+                text = "DatePicker with Minute Interval",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 30.dp)
+            )
+            Text(
+                text = "15 minute intervals",
+                fontSize = 12.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier.padding(top = 5.dp)
+            )
+// TODO: Implement component type: SelectBox
+            Text(
+                text = "Calendar Style DatePicker",
+                fontSize = 18.sp,
+                color = Color(android.graphics.Color.parseColor("#333333")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 30.dp)
+            )
+// TODO: Implement component type: SelectBox
+// TODO: Implement component type: SelectBox
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
+                    .padding(15.dp)
+                    .padding(top = 30.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
             ) {
-                Button(
-                    onClick = { },
-                    modifier = Modifier
-                ) {
-                    Text("Button")
-                }
                 Text(
-                    text = "${data.title}",
-                    fontSize = 24.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .wrapContentWidth()
-                        .wrapContentHeight()
-                )
-                Text(
-                    text = "Basic DatePicker",
-                    fontSize = 18.sp,
+                    text = "Selected Values:",
+                    fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#333333")),
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 20.dp)
-                )
-// TODO: Implement component type: SelectBox
-                Text(
-                    text = "DatePicker with Min/Max Dates",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 30.dp)
+                    modifier = Modifier
                 )
                 Text(
-                    text = "Min: 2025-01-01, Max: 2025-12-31",
+                    text = "\${data.selectedDate}",
                     fontSize = 12.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
                     modifier = Modifier.padding(top = 5.dp)
                 )
-// TODO: Implement component type: SelectBox
                 Text(
-                    text = "Time Picker",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 30.dp)
-                )
-// TODO: Implement component type: SelectBox
-                Text(
-                    text = "DateTime Picker",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 30.dp)
-                )
-// TODO: Implement component type: SelectBox
-                Text(
-                    text = "DatePicker with Minute Interval",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 30.dp)
-                )
-                Text(
-                    text = "15 minute intervals",
+                    text = "\${data.startDate}",
                     fontSize = 12.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
                     modifier = Modifier.padding(top = 5.dp)
                 )
-// TODO: Implement component type: SelectBox
-                Text(
-                    text = "Calendar Style DatePicker",
-                    fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 30.dp)
-                )
-// TODO: Implement component type: SelectBox
-// TODO: Implement component type: SelectBox
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(15.dp)
-                        .padding(top = 30.dp)
-                        .padding(start = 20.dp)
-                        .padding(end = 20.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                ) {
-                    Text(
-                        text = "Selected Values:",
-                        fontSize = 14.sp,
-                        color = Color(android.graphics.Color.parseColor("#333333")),
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                    )
-                    Text(
-                        text = "${data.selectedDate}",
-                        fontSize = 12.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
-                        modifier = Modifier.padding(top = 5.dp)
-                    )
-                    Text(
-                        text = "${data.startDate}",
-                        fontSize = 12.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
-                        modifier = Modifier.padding(top = 5.dp)
-                    )
-                }
             }
         }
-    }
-    // >>> GENERATED_CODE_END
+        }
+    }    // >>> GENERATED_CODE_END
 }
