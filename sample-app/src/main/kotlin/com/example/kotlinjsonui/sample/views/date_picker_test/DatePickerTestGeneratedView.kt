@@ -64,7 +64,7 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             // Dropdown menu state
-            var dropdown_1755496747_388Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_525Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -87,12 +87,12 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_388Expanded = true }
+                        .clickable { dropdown_1755497061_525Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_388Expanded,
-                    onDismissRequest = { dropdown_1755496747_388Expanded = false }
+                    expanded = dropdown_1755497061_525Expanded,
+                    onDismissRequest = { dropdown_1755497061_525Expanded = false }
                 ) {
                 }
             }
@@ -110,7 +110,7 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier.padding(top = 5.dp)
             )
             // Dropdown menu state
-            var dropdown_1755496747_336Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_202Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -133,12 +133,12 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_336Expanded = true }
+                        .clickable { dropdown_1755497061_202Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_336Expanded,
-                    onDismissRequest = { dropdown_1755496747_336Expanded = false }
+                    expanded = dropdown_1755497061_202Expanded,
+                    onDismissRequest = { dropdown_1755497061_202Expanded = false }
                 ) {
                 }
             }
@@ -150,7 +150,7 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier.padding(top = 30.dp)
             )
             // Dropdown menu state
-            var dropdown_1755496747_725Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_545Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -173,12 +173,12 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_725Expanded = true }
+                        .clickable { dropdown_1755497061_545Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_725Expanded,
-                    onDismissRequest = { dropdown_1755496747_725Expanded = false }
+                    expanded = dropdown_1755497061_545Expanded,
+                    onDismissRequest = { dropdown_1755497061_545Expanded = false }
                 ) {
                 }
             }
@@ -190,7 +190,7 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier.padding(top = 30.dp)
             )
             // Dropdown menu state
-            var dropdown_1755496747_102Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_357Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -213,12 +213,12 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_102Expanded = true }
+                        .clickable { dropdown_1755497061_357Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_102Expanded,
-                    onDismissRequest = { dropdown_1755496747_102Expanded = false }
+                    expanded = dropdown_1755497061_357Expanded,
+                    onDismissRequest = { dropdown_1755497061_357Expanded = false }
                 ) {
                 }
             }
@@ -236,7 +236,7 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier.padding(top = 5.dp)
             )
             // Dropdown menu state
-            var dropdown_1755496747_779Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_823Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -259,12 +259,12 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_779Expanded = true }
+                        .clickable { dropdown_1755497061_823Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_779Expanded,
-                    onDismissRequest = { dropdown_1755496747_779Expanded = false }
+                    expanded = dropdown_1755497061_823Expanded,
+                    onDismissRequest = { dropdown_1755497061_823Expanded = false }
                 ) {
                 }
             }
@@ -276,7 +276,7 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier.padding(top = 30.dp)
             )
             // Dropdown menu state
-            var dropdown_1755496747_95Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_659Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -299,17 +299,17 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_95Expanded = true }
+                        .clickable { dropdown_1755497061_659Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_95Expanded,
-                    onDismissRequest = { dropdown_1755496747_95Expanded = false }
+                    expanded = dropdown_1755497061_659Expanded,
+                    onDismissRequest = { dropdown_1755497061_659Expanded = false }
                 ) {
                 }
             }
             // Dropdown menu state
-            var dropdown_1755496747_689Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755497061_178Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -332,12 +332,12 @@ fun DatePickerTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755496747_689Expanded = true }
+                        .clickable { dropdown_1755497061_178Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755496747_689Expanded,
-                    onDismissRequest = { dropdown_1755496747_689Expanded = false }
+                    expanded = dropdown_1755497061_178Expanded,
+                    onDismissRequest = { dropdown_1755497061_178Expanded = false }
                 ) {
                 }
             }

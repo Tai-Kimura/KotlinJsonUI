@@ -20,6 +20,11 @@ require_relative 'components/slider_component'
 require_relative 'components/progress_component'
 require_relative 'components/selectbox_component'
 require_relative 'components/checkbox_component'
+require_relative 'components/radio_component'
+require_relative 'components/segment_component'
+require_relative 'components/networkimage_component'
+require_relative 'components/circleimage_component'
+require_relative 'components/indicator_component'
 
 module KjuiTools
   module Compose
@@ -118,6 +123,16 @@ module KjuiTools
           Components::SelectBoxComponent.generate(json_data, depth, @required_imports)
         when 'Check', 'Checkbox'
           Components::CheckboxComponent.generate(json_data, depth, @required_imports)
+        when 'Radio'
+          Components::RadioComponent.generate(json_data, depth, @required_imports)
+        when 'Segment'
+          Components::SegmentComponent.generate(json_data, depth, @required_imports)
+        when 'NetworkImage'
+          Components::NetworkImageComponent.generate(json_data, depth, @required_imports)
+        when 'CircleImage'
+          Components::CircleImageComponent.generate(json_data, depth, @required_imports)
+        when 'Indicator'
+          Components::IndicatorComponent.generate(json_data, depth, @required_imports)
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
@@ -234,7 +249,12 @@ module KjuiTools
                           "import androidx.compose.material3.DropdownMenuItem",
                           "import androidx.compose.material.icons.Icons",
                           "import androidx.compose.material.icons.filled.ArrowDropDown",
-                          "import androidx.compose.foundation.clickable"]
+                          "import androidx.compose.foundation.clickable"],
+          radio_colors: "import androidx.compose.material3.RadioButtonDefaults",
+          tab_row: ["import androidx.compose.material3.TabRow",
+                    "import androidx.compose.material3.Tab"],
+          async_image: "import coil.compose.AsyncImage",
+          content_scale: "import androidx.compose.ui.layout.ContentScale"
         }
         
         imports_to_add = []

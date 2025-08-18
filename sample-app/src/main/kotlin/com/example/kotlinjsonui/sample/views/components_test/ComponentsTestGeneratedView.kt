@@ -13,6 +13,12 @@ import com.example.kotlinjsonui.sample.data.ComponentsTestData
 import com.example.kotlinjsonui.sample.viewmodels.ComponentsTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Tab
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -82,22 +88,35 @@ fun ComponentsTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: Segment
-// TODO: Implement component type: Radio
+            TabRow(
+                selectedTabIndex = 0,
+            ) {
+            }
+            Column(
+            ) {
+            }
             Text(
                 text = "Loading Indicator",
                 fontSize = 18.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: Indicator
+            CircularProgressIndicator(
+            )
             Text(
                 text = "Circle Image",
                 fontSize = 18.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: CircleImage
+            AsyncImage(
+                model = "person.circle.fill",
+                contentDescription = "Profile Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+            )
             Text(
                 text = "Gradient View",
                 fontSize = 18.sp,

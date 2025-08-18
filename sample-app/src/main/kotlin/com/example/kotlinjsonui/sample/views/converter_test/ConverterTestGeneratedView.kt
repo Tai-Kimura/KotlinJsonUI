@@ -13,6 +13,11 @@ import com.example.kotlinjsonui.sample.data.ConverterTestData
 import com.example.kotlinjsonui.sample.viewmodels.ConverterTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.border
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -130,7 +135,17 @@ fun ConverterTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier.padding(top = 20.dp)
             )
-// TODO: Implement component type: NetworkImage
+            AsyncImage(
+                model = "https://picsum.photos/400/300",
+                contentDescription = "Image",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(150.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .padding(top = 10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+            )
         }
         }
     }    // >>> GENERATED_CODE_END

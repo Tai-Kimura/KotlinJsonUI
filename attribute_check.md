@@ -106,29 +106,45 @@ These official SwiftJsonUI attributes have now been added:
 29. ✅ **`minimumScaleFactor`** - Auto-shrink text (with Compose limitations)
 30. ✅ **`hilightColor`** - Button pressed state color (with Material3 limitations)
 
-### ✅ Newly Implemented Components
+### ✅ Implemented Components
 
-31. ✅ **Switch** - Toggle switch with bind, onTintColor, thumbTintColor
-32. ✅ **Slider** - Value slider with min, max, step, bind
-33. ✅ **Progress** - Progress indicator (linear/circular, determinate/indeterminate)
-34. ✅ **SelectBox** - Dropdown selection with options, placeholder, bind
-35. ✅ **Check/Checkbox** - Checkbox with label, bind, colors
+Basic Components:
+1. ✅ **View** - Container view with orientation support
+2. ✅ **SafeAreaView** - Safe area container
+3. ✅ **Text/Label** - Text display with styling
+4. ✅ **Button** - Button with click handlers
+5. ✅ **TextField** - Single-line text input
+6. ✅ **Image** - Local image display
+7. ✅ **ScrollView** - Scrollable container
+8. ✅ **Spacer** - Spacing component
+
+Input Components:
+9. ✅ **Switch** - Toggle switch with bind, onTintColor, thumbTintColor
+10. ✅ **Slider** - Value slider with min, max, step, bind
+11. ✅ **Progress** - Progress indicator (linear/circular, determinate/indeterminate)
+12. ✅ **SelectBox** - Dropdown selection with options, placeholder, bind
+13. ✅ **Check/Checkbox** - Checkbox with label, bind, colors
+14. ✅ **Radio** - Radio button group with options and binding
+15. ✅ **Segment** - Segmented control (TabRow) with segments
+
+Media Components:
+16. ✅ **NetworkImage** - Remote image loading with AsyncImage
+17. ✅ **CircleImage** - Circular image with border support
+18. ✅ **Indicator** - Activity indicator with animating control
 
 ### 📝 Still Missing Components
 
-Components from SwiftJsonUI that aren't yet implemented:
-- **Radio** - Radio button group
-- **Segment** - Segmented control
-- **Table** - Table view (complex)
-- **Collection** - Collection view (complex)
-- **Web** - WebView
-- **NetworkImage** - Remote image loading
-- **CircleImage** - Circular image
-- **GradientView** - Gradient background
+Complex Components:
+- **Table** - Table view (complex, needs RecyclerView)
+- **Collection** - Collection view (complex, needs LazyGrid)
+- **Web** - WebView component
+- **TextView** - Multi-line text input
+
+Visual Components:
+- **GradientView** - Gradient background container
 - **CircleView** - Circular container
-- **Blur** - Blur effect
-- **IconLabel** - Icon with text
-- **Indicator** - Activity indicator
+- **Blur** - Blur effect overlay
+- **IconLabel** - Icon with text component
 
 ## Recommended Fixes
 
