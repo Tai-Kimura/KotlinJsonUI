@@ -124,6 +124,7 @@ fun MarginsTestGeneratedView(
                         .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .widthIn(max = 200.dp)
                 )
             }
             Box(
@@ -140,6 +141,7 @@ fun MarginsTestGeneratedView(
                         .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .widthIn(min = 150.dp)
                 )
             }
         }

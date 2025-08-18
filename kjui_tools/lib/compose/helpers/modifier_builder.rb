@@ -103,6 +103,34 @@ module KjuiTools
             modifiers << ".height(#{json_data['height']}.dp)"
           end
           
+          # Min/Max constraints
+          if json_data['minWidth']
+            modifiers << ".widthIn(min = #{json_data['minWidth']}.dp)"
+          end
+          
+          if json_data['maxWidth']
+            modifiers << ".widthIn(max = #{json_data['maxWidth']}.dp)"
+          end
+          
+          if json_data['minHeight']
+            modifiers << ".heightIn(min = #{json_data['minHeight']}.dp)"
+          end
+          
+          if json_data['maxHeight']
+            modifiers << ".heightIn(max = #{json_data['maxHeight']}.dp)"
+          end
+          
+          # Combined min/max if both specified
+          if json_data['minWidth'] && json_data['maxWidth']
+            modifiers = modifiers.reject { |m| m.include?('.widthIn') }
+            modifiers << ".widthIn(min = #{json_data['minWidth']}.dp, max = #{json_data['maxWidth']}.dp)"
+          end
+          
+          if json_data['minHeight'] && json_data['maxHeight']
+            modifiers = modifiers.reject { |m| m.include?('.heightIn') }
+            modifiers << ".heightIn(min = #{json_data['minHeight']}.dp, max = #{json_data['maxHeight']}.dp)"
+          end
+          
           modifiers
         end
         

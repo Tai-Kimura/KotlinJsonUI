@@ -31,9 +31,31 @@ module KjuiTools
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end
           
-          # Add placeholder/hint
+          # Add placeholder/hint with styling
           if placeholder && !placeholder.empty?
-            code += "\n" + indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1)
+            if json_data['hintColor'] || json_data['hintFontSize'] || json_data['hintFont']
+              # Complex placeholder with styling
+              placeholder_code = "placeholder = { Text("
+              placeholder_code += "\n" + indent("text = #{quote(placeholder)}", depth + 2)
+              
+              if json_data['hintColor']
+                placeholder_code += ",\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['hintColor']}\"))", depth + 2)
+              end
+              
+              if json_data['hintFontSize']
+                placeholder_code += ",\n" + indent("fontSize = #{json_data['hintFontSize']}.sp", depth + 2)
+              end
+              
+              if json_data['hintFont'] == 'bold'
+                placeholder_code += ",\n" + indent("fontWeight = FontWeight.Bold", depth + 2)
+              end
+              
+              placeholder_code += "\n" + indent(") }", depth + 1)
+              code += "\n" + indent(placeholder_code, depth + 1) + ","
+            else
+              # Simple placeholder
+              code += "\n" + indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1)
+            end
           end
           
           # Add password visual transformation for secure fields
@@ -51,8 +73,47 @@ module KjuiTools
           code += Helpers::ModifierBuilder.format(modifiers, depth)
           
           # Text styling
-          if json_data['fontSize']
-            code += ",\n" + indent("textStyle = TextStyle(fontSize = #{json_data['fontSize']}.sp)", depth + 1)
+          if json_data['fontSize'] || json_data['textAlign']
+            required_imports&.add(:text_style)
+            style_parts = []
+            style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
+            
+            if json_data['textAlign']
+              required_imports&.add(:text_align)
+              case json_data['textAlign'].downcase
+              when 'center'
+                style_parts << "textAlign = TextAlign.Center"
+              when 'right'
+                style_parts << "textAlign = TextAlign.End"
+              when 'left'
+                style_parts << "textAlign = TextAlign.Start"
+              end
+            end
+            
+            if style_parts.any?
+              code += ",\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
+            end
+          end
+          
+          # Keyboard type (input attribute)
+          if json_data['input']
+            required_imports&.add(:keyboard_type)
+            keyboard_type = case json_data['input']
+            when 'email'
+              'KeyboardType.Email'
+            when 'password'
+              'KeyboardType.Password'
+            when 'number'
+              'KeyboardType.Number'
+            when 'decimal'
+              'KeyboardType.Decimal'
+            when 'phone'
+              'KeyboardType.Phone'
+            else
+              'KeyboardType.Text'
+            end
+            
+            code += ",\n" + indent("keyboardOptions = KeyboardOptions(keyboardType = #{keyboard_type})", depth + 1)
           end
           
           code += "\n" + indent(")", depth)

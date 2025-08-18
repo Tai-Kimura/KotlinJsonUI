@@ -29,6 +29,17 @@ module KjuiTools
             code += add_gravity_settings(layout, json_data['gravity'], depth)
           end
           
+          # Add direction settings (reverseLayout)
+          if json_data['direction'] && (layout == 'Column' || layout == 'Row')
+            case json_data['direction']
+            when 'bottomToTop'
+              code += ",\n" + indent("reverseLayout = true", depth + 1) if layout == 'Column'
+            when 'rightToLeft'
+              code += ",\n" + indent("reverseLayout = true", depth + 1) if layout == 'Row'
+            # topToBottom and leftToRight are defaults (reverseLayout = false)
+            end
+          end
+          
           # Add spacing for Column/Row
           if json_data['spacing'] && (layout == 'Column' || layout == 'Row')
             required_imports&.add(:arrangement)

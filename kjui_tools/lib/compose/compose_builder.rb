@@ -200,9 +200,13 @@ module KjuiTools
                   "import androidx.compose.ui.draw.clip"],
           text_align: "import androidx.compose.ui.text.style.TextAlign",
           text_overflow: "import androidx.compose.ui.text.style.TextOverflow",
+          text_style: "import androidx.compose.ui.text.TextStyle",
           visual_transformation: "import androidx.compose.ui.text.input.PasswordVisualTransformation",
           shadow: "import androidx.compose.ui.draw.shadow",
-          arrangement: "import androidx.compose.foundation.layout.Arrangement"
+          arrangement: "import androidx.compose.foundation.layout.Arrangement",
+          keyboard_type: ["import androidx.compose.foundation.text.KeyboardOptions",
+                          "import androidx.compose.ui.text.input.KeyboardType"],
+          button_colors: "import androidx.compose.material3.ButtonDefaults"
         }
         
         imports_to_add = []

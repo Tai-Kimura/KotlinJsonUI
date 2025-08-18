@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun DisabledTestGeneratedView(
@@ -87,6 +88,10 @@ fun DisabledTestGeneratedView(
                     .padding(end = 20.dp)
                     .fillMaxWidth()
                     .height(44.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    disabledContainerColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                                    disabledContentColor = Color(android.graphics.Color.parseColor("#999999"))
+                                ),
                 enabled = false
             ) {
                 Text(
@@ -185,6 +190,10 @@ fun DisabledTestGeneratedView(
                     .padding(end = 20.dp)
                     .fillMaxWidth()
                     .height(44.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    disabledContainerColor = Color(android.graphics.Color.parseColor("#D0D0D0")),
+                                    disabledContentColor = Color(android.graphics.Color.parseColor("#888888"))
+                                ),
                 enabled = data.isEnabled
             ) {
                 Text(

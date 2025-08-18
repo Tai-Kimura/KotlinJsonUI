@@ -89,33 +89,38 @@ These official SwiftJsonUI attributes have now been added:
 12. ✅ **`shadow`** - Shadow configuration (simple or complex)
 13. ✅ **`lines`** - Max lines for text (0 = unlimited)
 14. ✅ **`lineBreakMode`** - Text overflow handling
+15. ✅ **`minWidth`, `maxWidth`, `minHeight`, `maxHeight`** - Size constraints
+16. ✅ **`direction`** - Layout direction (topToBottom, bottomToTop, leftToRight, rightToLeft)
+17. ✅ **`hintColor`, `hintFont`, `hintFontSize`** - Placeholder styling for TextField
+18. ✅ **`disabledFontColor`, `disabledBackground`** - Button disabled state styling
+19. ✅ **`input`** - Keyboard type (email, number, decimal, phone, password)
+20. ✅ **`textAlign`** - Text alignment for TextField
 
 ### 📝 Still Missing Official Attributes
 
 Important attributes from SwiftJsonUI that aren't yet implemented:
 
 #### Layout
-- `minWidth`, `maxWidth`, `minHeight`, `maxHeight`
-- `direction` - Layout direction (topToBottom, bottomToTop, etc.)
 - `distribution` - Child distribution in stack
+- `aspectWidth`, `aspectHeight` - Aspect ratio constraints
 
 #### Text
 - `edgeInset` - Text padding
-- `hintColor`, `hintFont`, `hintFontSize` - Hint styling for TextField
-- `textShadow` - Text shadow
+- `textShadow` - Text shadow  
 - `underline`, `strikethrough` - Text decoration
+- `lineHeightMultiple` - Line height multiplier
+- `minimumScaleFactor` - Auto shrink text
 
 #### Button
-- `enabled` - Enabled state
-- `disabledFontColor`, `disabledBackground` - Disabled state styling
-- `hilightColor` - Highlight color
+- `hilightColor` - Highlight color for pressed state
 
 #### TextField
-- `secure` - Secure text entry
-- `input` - Keyboard type
-- `returnKeyType` - Return key type
-- `borderStyle` - Border style
-- `textAlign` - Text alignment
+- `returnKeyType` - Return key type (Done, Next, Search, etc.)
+- `borderStyle` - Border style (RoundedRect, Line, Bezel)
+- `fieldPadding` - Inner padding
+
+#### Other Components
+- Components not yet implemented: Switch, Slider, Progress, SelectBox, etc.
 
 ## Recommended Fixes
 

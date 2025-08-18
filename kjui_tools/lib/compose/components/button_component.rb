@@ -28,6 +28,23 @@ module KjuiTools
           # Format modifiers
           code += Helpers::ModifierBuilder.format(modifiers, depth)
           
+          # Button colors for disabled state
+          if json_data['disabledBackground'] || json_data['disabledFontColor']
+            required_imports&.add(:button_colors)
+            colors_code = "colors = ButtonDefaults.buttonColors("
+            
+            if json_data['disabledBackground']
+              colors_code += "\n" + indent("disabledContainerColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledBackground']}\"))", depth + 2)
+            end
+            
+            if json_data['disabledFontColor']
+              colors_code += ",\n" + indent("disabledContentColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledFontColor']}\"))", depth + 2)
+            end
+            
+            colors_code += "\n" + indent(")", depth + 1)
+            code += ",\n" + indent(colors_code, depth + 1)
+          end
+          
           # Handle enabled attribute
           if json_data.key?('enabled')
             if json_data['enabled'].is_a?(String) && json_data['enabled'].start_with?('@{')
