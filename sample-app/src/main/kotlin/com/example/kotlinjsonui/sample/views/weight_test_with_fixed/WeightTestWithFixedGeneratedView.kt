@@ -141,8 +141,7 @@ fun WeightTestWithFixedGeneratedView(
                     )
                 }
                 Text(
-                    text = "Fix
-                    50",
+                    text = "Fix\n50",
                     fontSize = 12.sp,
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#E0E0E0")))

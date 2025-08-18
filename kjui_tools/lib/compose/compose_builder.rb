@@ -330,7 +330,13 @@ module KjuiTools
       end
       
       def quote(text)
-        "\"#{text.gsub('"', '\\"')}\""
+        # Escape special characters properly
+        escaped = text.gsub('\\', '\\\\\\\\')  # Escape backslashes first
+                     .gsub('"', '\\"')           # Escape quotes
+                     .gsub("\n", '\\n')           # Escape newlines
+                     .gsub("\r", '\\r')           # Escape carriage returns
+                     .gsub("\t", '\\t')           # Escape tabs
+        "\"#{escaped}\""
       end
       
       def indent(text, level)

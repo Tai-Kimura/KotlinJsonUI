@@ -279,8 +279,7 @@ fun FormTestGeneratedView(
             OutlinedTextField(
                 value = "\${data.bio}",
                 onValueChange = { newValue -> currentData.value = currentData.value.copy(bio = newValue) },
-                placeholder = { Text("Tell us about yourself...
-                This field will grow as you type") },
+                placeholder = { Text("Tell us about yourself...\nThis field will grow as you type") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
@@ -302,8 +301,7 @@ fun FormTestGeneratedView(
             OutlinedTextField(
                 value = "\${data.notes}",
                 onValueChange = { newValue -> currentData.value = currentData.value.copy(notes = newValue) },
-                placeholder = { Text("Additional notes...
-                Fixed height field") },
+                placeholder = { Text("Additional notes...\nFixed height field") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
@@ -325,8 +323,7 @@ fun FormTestGeneratedView(
             OutlinedTextField(
                 value = "\${data.comments}",
                 onValueChange = { newValue -> currentData.value = currentData.value.copy(comments = newValue) },
-                placeholder = { Text("Any comments?
-                This can grow very tall (up to 300pt)") },
+                placeholder = { Text("Any comments?\nThis can grow very tall (up to 300pt)") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)

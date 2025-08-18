@@ -150,8 +150,7 @@ fun KeyboardAvoidanceTestGeneratedView(
             OutlinedTextField(
                 value = "\${data.textView}",
                 onValueChange = { newValue -> currentData.value = currentData.value.copy(textView = newValue) },
-                placeholder = { Text("Multi-line text input
-                Type here...") },
+                placeholder = { Text("Multi-line text input\nType here...") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)

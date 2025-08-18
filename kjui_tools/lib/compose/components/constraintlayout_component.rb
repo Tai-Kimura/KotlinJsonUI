@@ -117,8 +117,10 @@ module KjuiTools
         
         def self.generate_text_component(data, depth, required_imports)
           text = data['text'] || ''
+          # Properly escape text
+          escaped_text = quote(text)
           code = indent("Text(", depth)
-          code += "\n" + indent("text = \"#{text}\"", depth + 1)
+          code += "\n" + indent("text = #{escaped_text}", depth + 1)
           
           if data['fontSize']
             code += ",\n" + indent("fontSize = #{data['fontSize']}.sp", depth + 1)
@@ -135,6 +137,8 @@ module KjuiTools
         def self.generate_button_component(data, depth, required_imports)
           text = data['text'] || 'Button'
           onclick = data['onclick']
+          # Properly escape text
+          escaped_text = quote(text)
           
           code = indent("Button(", depth)
           
@@ -145,7 +149,7 @@ module KjuiTools
           end
           
           code += "\n" + indent(") {", depth)
-          code += "\n" + indent("Text(\"#{text}\")", depth + 1)
+          code += "\n" + indent("Text(#{escaped_text})", depth + 1)
           code += "\n" + indent("}", depth)
           code
         end
@@ -166,6 +170,16 @@ module KjuiTools
           code += "\n" + indent("// Content", depth + 1)
           code += "\n" + indent("}", depth)
           code
+        end
+        
+        def self.quote(text)
+          # Escape special characters properly
+          escaped = text.gsub('\\', '\\\\\\\\')  # Escape backslashes first
+                       .gsub('"', '\\"')           # Escape quotes
+                       .gsub("\n", '\\n')           # Escape newlines
+                       .gsub("\r", '\\r')           # Escape carriage returns
+                       .gsub("\t", '\\t')           # Escape tabs
+          "\"#{escaped}\""
         end
         
         def self.indent(text, level)

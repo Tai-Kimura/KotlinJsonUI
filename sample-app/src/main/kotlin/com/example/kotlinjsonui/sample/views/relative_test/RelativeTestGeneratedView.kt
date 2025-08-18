@@ -72,9 +72,7 @@ fun RelativeTestGeneratedView(
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
             ) {
                 Text(
-                    text = "Top+Left
-                    topMargin:10
-                    leftMargin:15",
+                    text = "Top+Left\ntopMargin:10\nleftMargin:15",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -86,9 +84,7 @@ fun RelativeTestGeneratedView(
                         .wrapContentHeight()
                 )
                 Text(
-                    text = "Top+Right
-                    topMargin:15
-                    rightMargin:20",
+                    text = "Top+Right\ntopMargin:15\nrightMargin:20",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -100,9 +96,7 @@ fun RelativeTestGeneratedView(
                         .wrapContentHeight()
                 )
                 Text(
-                    text = "Bottom+Left
-                    bottomMargin:5
-                    leftMargin:10",
+                    text = "Bottom+Left\nbottomMargin:5\nleftMargin:10",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -114,9 +108,7 @@ fun RelativeTestGeneratedView(
                         .wrapContentHeight()
                 )
                 Text(
-                    text = "Bottom+Right
-                    bottomMargin:20
-                    rightMargin:25",
+                    text = "Bottom+Right\nbottomMargin:20\nrightMargin:25",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -149,37 +141,32 @@ fun RelativeTestGeneratedView(
                 val align_right_test = createRef()
 
                 Text(
-                    text = "Anchor
-                    margins:[20,25,20,25]",
+                    text = "Anchor\nmargins:[20,25,20,25]",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_top_test) {
                         top.linkTo(anchor_with_margin.top)
                     },
-                    text = "alignTop
-                    topMargin:10"
+                    text = "alignTop\ntopMargin:10"
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_bottom_test) {
                         bottom.linkTo(anchor_with_margin.bottom)
                     },
-                    text = "alignBottom
-                    bottomMargin:10"
+                    text = "alignBottom\nbottomMargin:10"
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_left_test) {
                         start.linkTo(anchor_with_margin.start)
                     },
-                    text = "alignLeft
-                    leftMargin:15"
+                    text = "alignLeft\nleftMargin:15"
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_right_test) {
                         end.linkTo(anchor_with_margin.end)
                     },
-                    text = "alignRight
-                    rightMargin:15"
+                    text = "alignRight\nrightMargin:15"
                 )
             }
             Text(
@@ -203,37 +190,32 @@ fun RelativeTestGeneratedView(
                 val right_of_test = createRef()
 
                 Text(
-                    text = "Center
-                    margins:[15,15,15,15]",
+                    text = "Center\nmargins:[15,15,15,15]",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
                     modifier = Modifier.constrainAs(above_test) {
                         top.linkTo(center_anchor.bottom)
                     },
-                    text = "Above
-                    bottomMargin:10"
+                    text = "Above\nbottomMargin:10"
                 )
                 Text(
                     modifier = Modifier.constrainAs(below_test) {
                         bottom.linkTo(center_anchor.top)
                     },
-                    text = "Below
-                    topMargin:10"
+                    text = "Below\ntopMargin:10"
                 )
                 Text(
                     modifier = Modifier.constrainAs(left_of_test) {
                         start.linkTo(center_anchor.end)
                     },
-                    text = "LeftOf
-                    rightMargin:10"
+                    text = "LeftOf\nrightMargin:10"
                 )
                 Text(
                     modifier = Modifier.constrainAs(right_of_test) {
                         end.linkTo(center_anchor.start)
                     },
-                    text = "RightOf
-                    leftMargin:10"
+                    text = "RightOf\nleftMargin:10"
                 )
             }
             Text(
@@ -252,9 +234,7 @@ fun RelativeTestGeneratedView(
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
             ) {
                 Text(
-                    text = "Fixed Width
-                    Left+Right
-                    margins:[10,10,10,10]",
+                    text = "Fixed Width\nLeft+Right\nmargins:[10,10,10,10]",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -266,8 +246,7 @@ fun RelativeTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Fixed Height
-                    Top+Bottom",
+                    text = "Fixed Height\nTop+Bottom",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -308,8 +287,7 @@ fun RelativeTestGeneratedView(
                     .background(Color(android.graphics.Color.parseColor("#D0D0D0")))
             ) {
                 Text(
-                    text = "Stretch Horizontal
-                    leftMargin:10, rightMargin:15",
+                    text = "Stretch Horizontal\nleftMargin:10, rightMargin:15",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -322,10 +300,7 @@ fun RelativeTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Stretch
-                    Vertical
-                    top:10
-                    bottom:15",
+                    text = "Stretch\nVertical\ntop:10\nbottom:15",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -338,8 +313,7 @@ fun RelativeTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Stretch Both Directions
-                    margins:[15,20,15,20]",
+                    text = "Stretch Both Directions\nmargins:[15,20,15,20]",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -370,9 +344,7 @@ fun RelativeTestGeneratedView(
                 val chain_below = createRef()
 
                 Text(
-                    text = "Start
-                    left:10
-                    right:5",
+                    text = "Start\nleft:10\nright:5",
                     fontSize = 10.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
@@ -380,9 +352,7 @@ fun RelativeTestGeneratedView(
                     modifier = Modifier.constrainAs(chain_middle) {
                         end.linkTo(chain_start.start)
                     },
-                    text = "Middle
-                    left:15
-                    right:20",
+                    text = "Middle\nleft:15\nright:20",
                     fontSize = 10.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
@@ -390,9 +360,7 @@ fun RelativeTestGeneratedView(
                     modifier = Modifier.constrainAs(chain_end) {
                         end.linkTo(chain_middle.start)
                     },
-                    text = "End
-                    left:10
-                    right:10",
+                    text = "End\nleft:10\nright:10",
                     fontSize = 10.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
@@ -401,16 +369,14 @@ fun RelativeTestGeneratedView(
                         top.linkTo(chain_middle.bottom)
                         start.linkTo(chain_middle.start)
                     },
-                    text = "Above Middle
-                    bottom:5"
+                    text = "Above Middle\nbottom:5"
                 )
                 Text(
                     modifier = Modifier.constrainAs(chain_below) {
                         bottom.linkTo(chain_start.top)
                         end.linkTo(chain_start.end)
                     },
-                    text = "Below Start
-                    top:8"
+                    text = "Below Start\ntop:8"
                 )
             }
             Text(

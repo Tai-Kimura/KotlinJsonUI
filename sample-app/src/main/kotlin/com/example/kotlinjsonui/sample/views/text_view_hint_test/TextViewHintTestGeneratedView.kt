@@ -72,9 +72,7 @@ fun TextViewHintTestGeneratedView(
         OutlinedTextField(
             value = "\${data.flexibleText}",
             onValueChange = { newValue -> currentData.value = currentData.value.copy(flexibleText = newValue) },
-            placeholder = { Text("Multi-line hint
-            Line 2 of hint
-            Line 3 of hint") },
+            placeholder = { Text("Multi-line hint\nLine 2 of hint\nLine 3 of hint") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp)
