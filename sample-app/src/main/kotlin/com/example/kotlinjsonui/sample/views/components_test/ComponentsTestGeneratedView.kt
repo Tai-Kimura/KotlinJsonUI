@@ -53,15 +53,29 @@ fun ComponentsTestGeneratedView(
                 modifier = Modifier
             )
 // TODO: Implement component type: Toggle
-// TODO: Implement component type: Checkbox
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Checkbox(
+                    checked = false,
+                    onCheckedChange = { }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("I agree to terms")
+            }
             Text(
                 text = "Progress & Slider",
                 fontSize = 18.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: Progress
-// TODO: Implement component type: Slider
+            LinearProgressIndicator(
+            )
+            Slider(
+                value = 0f,
+                onValueChange = { },
+                valueRange = 0f..100f,
+            )
             Text(
                 text = "Selection Components",
                 fontSize = 18.sp,

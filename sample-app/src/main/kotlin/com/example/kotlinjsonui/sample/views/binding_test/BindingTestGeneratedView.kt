@@ -18,6 +18,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.foundation.clickable
 
 @Composable
 fun BindingTestGeneratedView(
@@ -149,7 +154,13 @@ fun BindingTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-// TODO: Implement component type: Switch
+            Switch(
+                checked = false,
+                onCheckedChange = { },
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+            )
             Text(
                 text = "\${data.toggleValue}",
                 fontSize = 14.sp,
@@ -182,7 +193,17 @@ fun BindingTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-// TODO: Implement component type: Slider
+            Slider(
+                value = 0f,
+                onValueChange = { viewModel.sliderChanged(it) },
+                valueRange = 0f..100f,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            )
             Text(
                 text = "\${data.sliderValue}",
                 fontSize = 14.sp,
@@ -217,7 +238,39 @@ fun BindingTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_546Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(44.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_546Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_546Expanded,
+                    onDismissRequest = { dropdown_1755496747_546Expanded = false }
+                ) {
+                }
+            }
             Text(
                 text = "\${data.selectedOption}",
                 fontSize = 14.sp,

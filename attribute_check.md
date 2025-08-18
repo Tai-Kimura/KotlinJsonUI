@@ -95,32 +95,40 @@ These official SwiftJsonUI attributes have now been added:
 18. ✅ **`disabledFontColor`, `disabledBackground`** - Button disabled state styling
 19. ✅ **`input`** - Keyboard type (email, number, decimal, phone, password)
 20. ✅ **`textAlign`** - Text alignment for TextField
+21. ✅ **`returnKeyType`** - Return key type (Done, Next, Search, etc.)
+22. ✅ **`borderStyle`** - Border style (RoundedRect, Line, Bezel) for TextField
+23. ✅ **`underline`, `strikethrough`** - Text decoration
+24. ✅ **`textShadow`** - Text shadow effect
+25. ✅ **`distribution`** - Child distribution in containers
+26. ✅ **`aspectWidth`, `aspectHeight`** - Aspect ratio constraints
+27. ✅ **`edgeInset`** - Text-specific padding
+28. ✅ **`lineHeightMultiple`** - Line height multiplier for Text
+29. ✅ **`minimumScaleFactor`** - Auto-shrink text (with Compose limitations)
+30. ✅ **`hilightColor`** - Button pressed state color (with Material3 limitations)
 
-### 📝 Still Missing Official Attributes
+### ✅ Newly Implemented Components
 
-Important attributes from SwiftJsonUI that aren't yet implemented:
+31. ✅ **Switch** - Toggle switch with bind, onTintColor, thumbTintColor
+32. ✅ **Slider** - Value slider with min, max, step, bind
+33. ✅ **Progress** - Progress indicator (linear/circular, determinate/indeterminate)
+34. ✅ **SelectBox** - Dropdown selection with options, placeholder, bind
+35. ✅ **Check/Checkbox** - Checkbox with label, bind, colors
 
-#### Layout
-- `distribution` - Child distribution in stack
-- `aspectWidth`, `aspectHeight` - Aspect ratio constraints
+### 📝 Still Missing Components
 
-#### Text
-- `edgeInset` - Text padding
-- `textShadow` - Text shadow  
-- `underline`, `strikethrough` - Text decoration
-- `lineHeightMultiple` - Line height multiplier
-- `minimumScaleFactor` - Auto shrink text
-
-#### Button
-- `hilightColor` - Highlight color for pressed state
-
-#### TextField
-- `returnKeyType` - Return key type (Done, Next, Search, etc.)
-- `borderStyle` - Border style (RoundedRect, Line, Bezel)
-- `fieldPadding` - Inner padding
-
-#### Other Components
-- Components not yet implemented: Switch, Slider, Progress, SelectBox, etc.
+Components from SwiftJsonUI that aren't yet implemented:
+- **Radio** - Radio button group
+- **Segment** - Segmented control
+- **Table** - Table view (complex)
+- **Collection** - Collection view (complex)
+- **Web** - WebView
+- **NetworkImage** - Remote image loading
+- **CircleImage** - Circular image
+- **GradientView** - Gradient background
+- **CircleView** - Circular container
+- **Blur** - Blur effect
+- **IconLabel** - Icon with text
+- **Indicator** - Activity indicator
 
 ## Recommended Fixes
 

@@ -16,6 +16,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.foundation.clickable
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -58,7 +63,39 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_388Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_388Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_388Expanded,
+                    onDismissRequest = { dropdown_1755496747_388Expanded = false }
+                ) {
+                }
+            }
             Text(
                 text = "DatePicker with Min/Max Dates",
                 fontSize = 18.sp,
@@ -72,7 +109,39 @@ fun DatePickerTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(top = 5.dp)
             )
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_336Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_336Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_336Expanded,
+                    onDismissRequest = { dropdown_1755496747_336Expanded = false }
+                ) {
+                }
+            }
             Text(
                 text = "Time Picker",
                 fontSize = 18.sp,
@@ -80,7 +149,39 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_725Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_725Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_725Expanded,
+                    onDismissRequest = { dropdown_1755496747_725Expanded = false }
+                ) {
+                }
+            }
             Text(
                 text = "DateTime Picker",
                 fontSize = 18.sp,
@@ -88,7 +189,39 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_102Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_102Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_102Expanded,
+                    onDismissRequest = { dropdown_1755496747_102Expanded = false }
+                ) {
+                }
+            }
             Text(
                 text = "DatePicker with Minute Interval",
                 fontSize = 18.sp,
@@ -102,7 +235,39 @@ fun DatePickerTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(top = 5.dp)
             )
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_779Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_779Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_779Expanded,
+                    onDismissRequest = { dropdown_1755496747_779Expanded = false }
+                ) {
+                }
+            }
             Text(
                 text = "Calendar Style DatePicker",
                 fontSize = 18.sp,
@@ -110,8 +275,72 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-// TODO: Implement component type: SelectBox
-// TODO: Implement component type: SelectBox
+            // Dropdown menu state
+            var dropdown_1755496747_95Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(top = 10.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_95Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_95Expanded,
+                    onDismissRequest = { dropdown_1755496747_95Expanded = false }
+                ) {
+                }
+            }
+            // Dropdown menu state
+            var dropdown_1755496747_689Expanded by remember { mutableStateOf(false) }
+
+            Box(
+                modifier = Modifier
+                    Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 30.dp)
+                    .padding(start = 20.dp)
+                    .padding(end = 20.dp)
+            ) {
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = { },
+                    readOnly = true,
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Dropdown"
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { dropdown_1755496747_689Expanded = true }
+                )
+
+                DropdownMenu(
+                    expanded = dropdown_1755496747_689Expanded,
+                    onDismissRequest = { dropdown_1755496747_689Expanded = false }
+                ) {
+                }
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

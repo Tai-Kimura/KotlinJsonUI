@@ -15,6 +15,11 @@ require_relative 'components/textfield_component'
 require_relative 'components/container_component'
 require_relative 'components/image_component'
 require_relative 'components/scrollview_component'
+require_relative 'components/switch_component'
+require_relative 'components/slider_component'
+require_relative 'components/progress_component'
+require_relative 'components/selectbox_component'
+require_relative 'components/checkbox_component'
 
 module KjuiTools
   module Compose
@@ -103,6 +108,16 @@ module KjuiTools
           Components::ImageComponent.generate(json_data, depth, @required_imports)
         when 'TextField'
           Components::TextFieldComponent.generate(json_data, depth, @required_imports)
+        when 'Switch'
+          Components::SwitchComponent.generate(json_data, depth, @required_imports)
+        when 'Slider'
+          Components::SliderComponent.generate(json_data, depth, @required_imports)
+        when 'Progress'
+          Components::ProgressComponent.generate(json_data, depth, @required_imports)
+        when 'SelectBox'
+          Components::SelectBoxComponent.generate(json_data, depth, @required_imports)
+        when 'Check', 'Checkbox'
+          Components::CheckboxComponent.generate(json_data, depth, @required_imports)
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
@@ -211,7 +226,15 @@ module KjuiTools
           text_decoration: "import androidx.compose.ui.text.style.TextDecoration",
           shadow_style: ["import androidx.compose.ui.text.TextStyle",
                          "import androidx.compose.ui.graphics.Shadow",
-                         "import androidx.compose.ui.geometry.Offset"]
+                         "import androidx.compose.ui.geometry.Offset"],
+          switch_colors: "import androidx.compose.material3.SwitchDefaults",
+          slider_colors: "import androidx.compose.material3.SliderDefaults",
+          checkbox_colors: "import androidx.compose.material3.CheckboxDefaults",
+          dropdown_menu: ["import androidx.compose.material3.DropdownMenu",
+                          "import androidx.compose.material3.DropdownMenuItem",
+                          "import androidx.compose.material.icons.Icons",
+                          "import androidx.compose.material.icons.filled.ArrowDropDown",
+                          "import androidx.compose.foundation.clickable"]
         }
         
         imports_to_add = []
