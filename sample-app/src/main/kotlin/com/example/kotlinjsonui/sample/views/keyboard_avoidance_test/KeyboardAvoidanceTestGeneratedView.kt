@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun KeyboardAvoidanceTestGeneratedView(
@@ -151,7 +152,10 @@ fun KeyboardAvoidanceTestGeneratedView(
                 onClick = { viewModel.submitForm() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Submit",

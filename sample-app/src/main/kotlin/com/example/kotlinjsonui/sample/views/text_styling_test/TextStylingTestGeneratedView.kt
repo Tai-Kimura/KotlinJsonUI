@@ -14,6 +14,7 @@ import com.example.kotlinjsonui.sample.viewmodels.TextStylingTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 
 @Composable
 fun TextStylingTestGeneratedView(
@@ -92,6 +93,7 @@ fun TextStylingTestGeneratedView(
             Text(
                 text = "Underlined Text",
                 fontSize = 16.sp,
+                textDecoration = TextDecoration.Underline,
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(

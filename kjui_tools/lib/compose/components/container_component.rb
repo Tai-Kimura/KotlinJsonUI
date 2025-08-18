@@ -47,6 +47,29 @@ module KjuiTools
             code += ",\n" + indent("horizontalArrangement = Arrangement.spacedBy(#{json_data['spacing']}.dp)", depth + 1) if layout == 'Row'
           end
           
+          # Add distribution for Column/Row
+          if json_data['distribution'] && (layout == 'Column' || layout == 'Row')
+            required_imports&.add(:arrangement)
+            
+            arrangement = case json_data['distribution']
+            when 'fillEqually'
+              'Arrangement.SpaceEvenly'
+            when 'fill'
+              'Arrangement.SpaceBetween'
+            when 'equalSpacing'
+              'Arrangement.SpaceAround'
+            when 'equalCentering'
+              'Arrangement.SpaceEvenly'
+            else
+              nil
+            end
+            
+            if arrangement
+              code += ",\n" + indent("verticalArrangement = #{arrangement}", depth + 1) if layout == 'Column'
+              code += ",\n" + indent("horizontalArrangement = #{arrangement}", depth + 1) if layout == 'Row'
+            end
+          end
+          
           code += "\n" + indent(") {", depth)
           
           # Process children

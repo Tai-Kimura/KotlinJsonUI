@@ -206,7 +206,12 @@ module KjuiTools
           arrangement: "import androidx.compose.foundation.layout.Arrangement",
           keyboard_type: ["import androidx.compose.foundation.text.KeyboardOptions",
                           "import androidx.compose.ui.text.input.KeyboardType"],
-          button_colors: "import androidx.compose.material3.ButtonDefaults"
+          ime_action: "import androidx.compose.ui.text.input.ImeAction",
+          button_colors: "import androidx.compose.material3.ButtonDefaults",
+          text_decoration: "import androidx.compose.ui.text.style.TextDecoration",
+          shadow_style: ["import androidx.compose.ui.text.TextStyle",
+                         "import androidx.compose.ui.graphics.Shadow",
+                         "import androidx.compose.ui.geometry.Offset"]
         }
         
         imports_to_add = []

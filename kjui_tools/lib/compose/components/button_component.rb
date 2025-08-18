@@ -28,21 +28,35 @@ module KjuiTools
           # Format modifiers
           code += Helpers::ModifierBuilder.format(modifiers, depth)
           
-          # Button colors for disabled state
-          if json_data['disabledBackground'] || json_data['disabledFontColor']
+          # Button colors including normal, disabled, and pressed states
+          if json_data['background'] || json_data['disabledBackground'] || json_data['disabledFontColor'] || json_data['hilightColor']
             required_imports&.add(:button_colors)
             colors_code = "colors = ButtonDefaults.buttonColors("
+            color_params = []
+            
+            if json_data['background']
+              color_params << "containerColor = Color(android.graphics.Color.parseColor(\"#{json_data['background']}\"))"
+            end
             
             if json_data['disabledBackground']
-              colors_code += "\n" + indent("disabledContainerColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledBackground']}\"))", depth + 2)
+              color_params << "disabledContainerColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledBackground']}\"))"
             end
             
             if json_data['disabledFontColor']
-              colors_code += ",\n" + indent("disabledContentColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledFontColor']}\"))", depth + 2)
+              color_params << "disabledContentColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledFontColor']}\"))"
             end
             
-            colors_code += "\n" + indent(")", depth + 1)
-            code += ",\n" + indent(colors_code, depth + 1)
+            # Note: hilightColor (pressed state) isn't directly supported in Material3 ButtonDefaults
+            # We'd need a custom button implementation or InteractionSource for true pressed state
+            if json_data['hilightColor']
+              color_params << "// hilightColor: #{json_data['hilightColor']} - Use InteractionSource for pressed state"
+            end
+            
+            if color_params.any?
+              colors_code += "\n" + color_params.map { |param| indent(param, depth + 2) }.join(",\n")
+              colors_code += "\n" + indent(")", depth + 1)
+              code += ",\n" + indent(colors_code, depth + 1)
+            end
           end
           
           # Handle enabled attribute

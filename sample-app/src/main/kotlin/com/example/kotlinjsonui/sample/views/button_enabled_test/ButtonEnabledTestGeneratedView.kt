@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.ButtonEnabledTestData
 import com.example.kotlinjsonui.sample.viewmodels.ButtonEnabledTestViewModel
 import androidx.compose.foundation.background
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun ButtonEnabledTestGeneratedView(
@@ -48,6 +49,9 @@ fun ButtonEnabledTestGeneratedView(
         Button(
             onClick = { viewModel.testAction() },
             modifier = Modifier.padding(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
+                        ),
             enabled = data.isButtonEnabled
         ) {
             Text(
@@ -57,7 +61,10 @@ fun ButtonEnabledTestGeneratedView(
         }
         Button(
             onClick = { viewModel.toggleEnabled() },
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
+                        )
         ) {
             Text(
                 text = "Toggle Enabled State",
@@ -67,6 +74,9 @@ fun ButtonEnabledTestGeneratedView(
         Button(
             onClick = { viewModel.neverCalled() },
             modifier = Modifier.padding(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(android.graphics.Color.parseColor("#FF5722"))
+                        ),
             enabled = false
         ) {
             Text(
@@ -77,6 +87,9 @@ fun ButtonEnabledTestGeneratedView(
         Button(
             onClick = { viewModel.alwaysCalled() },
             modifier = Modifier.padding(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
+                        ),
             enabled = true
         ) {
             Text(

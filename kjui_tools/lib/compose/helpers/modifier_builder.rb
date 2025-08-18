@@ -131,6 +131,12 @@ module KjuiTools
             modifiers << ".heightIn(min = #{json_data['minHeight']}.dp, max = #{json_data['maxHeight']}.dp)"
           end
           
+          # Aspect ratio
+          if json_data['aspectWidth'] && json_data['aspectHeight']
+            ratio = json_data['aspectWidth'].to_f / json_data['aspectHeight'].to_f
+            modifiers << ".aspectRatio(#{ratio}f)"
+          end
+          
           modifiers
         end
         

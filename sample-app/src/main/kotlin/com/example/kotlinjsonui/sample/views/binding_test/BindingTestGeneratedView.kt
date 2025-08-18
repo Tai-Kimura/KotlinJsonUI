@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun BindingTestGeneratedView(
@@ -102,7 +103,10 @@ fun BindingTestGeneratedView(
                     modifier = Modifier
                         .padding(end = 5.dp)
                         .width(0.dp)
-                        .height(44.dp)
+                        .height(44.dp),
+                    colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                        )
                 ) {
                     Text(
                         text = "Decrease",
@@ -127,7 +131,10 @@ fun BindingTestGeneratedView(
                     modifier = Modifier
                         .padding(start = 5.dp)
                         .width(0.dp)
-                        .height(44.dp)
+                        .height(44.dp),
+                    colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                        )
                 ) {
                     Text(
                         text = "Increase",

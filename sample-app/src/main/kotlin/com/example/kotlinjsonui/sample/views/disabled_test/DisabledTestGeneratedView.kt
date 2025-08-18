@@ -67,6 +67,9 @@ fun DisabledTestGeneratedView(
                     .padding(end = 20.dp)
                     .fillMaxWidth()
                     .height(44.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                ),
                 enabled = true
             ) {
                 Text(
@@ -89,6 +92,7 @@ fun DisabledTestGeneratedView(
                     .fillMaxWidth()
                     .height(44.dp),
                 colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF")),
                                     disabledContainerColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
                                     disabledContentColor = Color(android.graphics.Color.parseColor("#999999"))
                                 ),
@@ -112,7 +116,10 @@ fun DisabledTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .fillMaxWidth()
-                    .height(44.dp)
+                    .height(44.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                )
             ) {
                 Text(
                     text = "Touch Disabled",
@@ -175,7 +182,10 @@ fun DisabledTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .fillMaxWidth()
-                    .height(44.dp)
+                    .height(44.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                )
             ) {
                 Text(
                     text = "Toggle Enable State",
@@ -191,6 +201,7 @@ fun DisabledTestGeneratedView(
                     .fillMaxWidth()
                     .height(44.dp),
                 colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
                                     disabledContainerColor = Color(android.graphics.Color.parseColor("#D0D0D0")),
                                     disabledContentColor = Color(android.graphics.Color.parseColor("#888888"))
                                 ),

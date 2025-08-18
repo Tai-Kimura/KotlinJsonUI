@@ -16,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -70,7 +71,10 @@ fun IncludeTestGeneratedView(
                     ) {
                         Button(
                             onClick = { viewModel.incrementCount() },
-                            modifier = Modifier.padding(10.dp)
+                            modifier = Modifier.padding(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
+                                                        )
                         ) {
                             Text(
                                 text = "Count +",
@@ -79,7 +83,10 @@ fun IncludeTestGeneratedView(
                         }
                         Button(
                             onClick = { viewModel.decrementCount() },
-                            modifier = Modifier.padding(10.dp)
+                            modifier = Modifier.padding(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(android.graphics.Color.parseColor("#FF9800"))
+                                                        )
                         ) {
                             Text(
                                 text = "Count -",
@@ -88,7 +95,10 @@ fun IncludeTestGeneratedView(
                         }
                         Button(
                             onClick = { viewModel.resetCount() },
-                            modifier = Modifier.padding(10.dp)
+                            modifier = Modifier.padding(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
+                                                        )
                         ) {
                             Text(
                                 text = "Reset",
@@ -100,7 +110,10 @@ fun IncludeTestGeneratedView(
                     ) {
                         Button(
                             onClick = { viewModel.changeUserName() },
-                            modifier = Modifier.padding(10.dp)
+                            modifier = Modifier.padding(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
+                                                        )
                         ) {
                             Text(
                                 text = "Change Name",
@@ -109,7 +122,10 @@ fun IncludeTestGeneratedView(
                         }
                         Button(
                             onClick = { viewModel.toggleStatus() },
-                            modifier = Modifier.padding(10.dp)
+                            modifier = Modifier.padding(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(android.graphics.Color.parseColor("#607D8B"))
+                                                        )
                         ) {
                             Text(
                                 text = "Toggle Status",

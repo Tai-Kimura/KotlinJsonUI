@@ -29,6 +29,46 @@ module KjuiTools
             code += "\n" + indent("fontWeight = FontWeight.#{json_data['fontWeight'].capitalize},", depth + 1)
           end
           
+          # Text decoration (underline, strikethrough)
+          text_decorations = []
+          if json_data['underline']
+            required_imports&.add(:text_decoration)
+            text_decorations << "TextDecoration.Underline"
+          end
+          
+          if json_data['strikethrough']
+            required_imports&.add(:text_decoration)
+            text_decorations << "TextDecoration.LineThrough"
+          end
+          
+          if text_decorations.any?
+            if text_decorations.length > 1
+              code += "\n" + indent("textDecoration = TextDecoration.combine(listOf(#{text_decorations.join(', ')})),", depth + 1)
+            else
+              code += "\n" + indent("textDecoration = #{text_decorations.first},", depth + 1)
+            end
+          end
+          
+          # Text shadow and line height
+          style_parts = []
+          
+          if json_data['textShadow']
+            required_imports&.add(:shadow_style)
+            style_parts << "shadow = Shadow(color = Color.Black, offset = Offset(2f, 2f), blurRadius = 4f)"
+          end
+          
+          if json_data['lineHeightMultiple']
+            required_imports&.add(:text_style)
+            # Line height multiplier - apply to font size
+            line_height = json_data['fontSize'] ? json_data['fontSize'].to_f * json_data['lineHeightMultiple'].to_f : 14.0 * json_data['lineHeightMultiple'].to_f
+            style_parts << "lineHeight = #{line_height}.sp"
+          end
+          
+          if style_parts.any?
+            required_imports&.add(:text_style)
+            code += "\n" + indent("style = TextStyle(#{style_parts.join(', ')}),", depth + 1)
+          end
+          
           # Build modifiers
           modifiers = []
           
@@ -38,7 +78,19 @@ module KjuiTools
           
           modifiers.concat(visibility_mods)
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          
+          # Handle edgeInset for text-specific padding
+          if json_data['edgeInset']
+            insets = json_data['edgeInset']
+            if insets.is_a?(Array) && insets.length == 4
+              modifiers << ".padding(top = #{insets[0]}.dp, end = #{insets[1]}.dp, bottom = #{insets[2]}.dp, start = #{insets[3]}.dp)"
+            elsif insets.is_a?(Numeric)
+              modifiers << ".padding(#{insets}.dp)"
+            end
+          else
+            modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          end
+          
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_shadow(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
@@ -74,6 +126,17 @@ module KjuiTools
             else
               code += ",\n" + indent("maxLines = #{json_data['lines']}", depth + 1)
             end
+          end
+          
+          # Minimum scale factor (auto-shrink text)
+          # In Compose, this is achieved with softWrap=false and overflow=Visible to allow text to scale
+          if json_data['minimumScaleFactor']
+            # Note: Compose doesn't have direct equivalent, but we can use single line with ellipsis
+            # or recommend using a custom composable. For now, we'll add a comment
+            code += ",\n" + indent("// minimumScaleFactor: #{json_data['minimumScaleFactor']} - Consider using AutoSizeText library", depth + 1)
+            code += ",\n" + indent("maxLines = 1", depth + 1)
+            required_imports&.add(:text_overflow)
+            code += ",\n" + indent("overflow = TextOverflow.Ellipsis", depth + 1)
           end
           
           # Line break mode (overflow)

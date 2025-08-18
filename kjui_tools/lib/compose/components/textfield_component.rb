@@ -13,9 +13,11 @@ module KjuiTools
           is_secure = json_data['secure'] == true
           
           code = ""
-          if is_secure
-            # For secure text fields, use OutlinedTextField with password visual transformation
-            required_imports&.add(:visual_transformation)
+          # Determine TextField variant based on borderStyle
+          use_outlined = is_secure || json_data['borderStyle'] == 'RoundedRect' || json_data['borderStyle'] == 'Line'
+          
+          if use_outlined
+            required_imports&.add(:visual_transformation) if is_secure
             code = indent("OutlinedTextField(", depth)
           else
             code = indent("TextField(", depth)
@@ -95,7 +97,9 @@ module KjuiTools
             end
           end
           
-          # Keyboard type (input attribute)
+          # Keyboard options (input and returnKeyType attributes)
+          keyboard_options = []
+          
           if json_data['input']
             required_imports&.add(:keyboard_type)
             keyboard_type = case json_data['input']
@@ -112,8 +116,30 @@ module KjuiTools
             else
               'KeyboardType.Text'
             end
-            
-            code += ",\n" + indent("keyboardOptions = KeyboardOptions(keyboardType = #{keyboard_type})", depth + 1)
+            keyboard_options << "keyboardType = #{keyboard_type}"
+          end
+          
+          if json_data['returnKeyType']
+            required_imports&.add(:ime_action)
+            ime_action = case json_data['returnKeyType']
+            when 'Done'
+              'ImeAction.Done'
+            when 'Next'
+              'ImeAction.Next'
+            when 'Search'
+              'ImeAction.Search'
+            when 'Send'
+              'ImeAction.Send'
+            when 'Go'
+              'ImeAction.Go'
+            else
+              'ImeAction.Default'
+            end
+            keyboard_options << "imeAction = #{ime_action}"
+          end
+          
+          if keyboard_options.any?
+            code += ",\n" + indent("keyboardOptions = KeyboardOptions(#{keyboard_options.join(', ')})", depth + 1)
           end
           
           code += "\n" + indent(")", depth)

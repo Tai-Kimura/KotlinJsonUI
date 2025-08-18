@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun FormTestGeneratedView(
@@ -309,7 +310,10 @@ fun FormTestGeneratedView(
                 modifier = Modifier
                     .padding(bottom = 16.dp)
                     .fillMaxWidth()
-                    .height(54.dp)
+                    .height(54.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Submit Form",
@@ -322,7 +326,10 @@ fun FormTestGeneratedView(
                 modifier = Modifier
                     .padding(bottom = 40.dp)
                     .fillMaxWidth()
-                    .height(54.dp)
+                    .height(54.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                                )
             ) {
                 Text(
                     text = "Clear All Fields",
