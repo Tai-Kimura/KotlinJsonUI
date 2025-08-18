@@ -92,7 +92,7 @@ module KjuiTools
           handle_container_result(result, depth)
         when 'SafeAreaView'
           generate_safe_area_view(json_data, depth)
-        when 'View', 'VStack', 'HStack', 'ZStack'
+        when 'View'
           result = Components::ContainerComponent.generate(json_data, depth, @required_imports)
           handle_container_result(result, depth)
         when 'Text', 'Label'

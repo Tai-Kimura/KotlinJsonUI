@@ -42,22 +42,22 @@ module KjuiTools
         private
         
         def self.determine_layout(container_type, orientation)
-          case container_type
-          when 'VStack'
-            'Column'
-          when 'HStack'
-            'Row'
-          when 'ZStack'
-            'Box'
-          when 'View'
-            if orientation == 'horizontal'
-              'Row'
-            elsif orientation == 'vertical'
+          # SwiftJsonUI only has 'View' type, not VStack/HStack/ZStack
+          # Layout is determined by orientation attribute:
+          # - orientation: "vertical" → Column (VStack)
+          # - orientation: "horizontal" → Row (HStack)
+          # - no orientation → Box (ZStack)
+          
+          if container_type == 'View'
+            if orientation == 'vertical'
               'Column'
+            elsif orientation == 'horizontal'
+              'Row'
             else
               'Box'
             end
           else
+            # For other types (shouldn't happen with proper View type)
             'Box'
           end
         end
