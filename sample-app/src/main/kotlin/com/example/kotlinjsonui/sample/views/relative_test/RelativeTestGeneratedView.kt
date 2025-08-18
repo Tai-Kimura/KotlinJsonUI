@@ -14,6 +14,8 @@ import com.example.kotlinjsonui.sample.viewmodels.RelativeTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 
 @Composable
 fun RelativeTestGeneratedView(
@@ -133,72 +135,51 @@ fun RelativeTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
-            Box(
+            ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)
                     .padding(bottom = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E8E8E8")))
             ) {
+                val anchor_with_margin = createRef()
+                val align_top_test = createRef()
+                val align_bottom_test = createRef()
+                val align_left_test = createRef()
+                val align_right_test = createRef()
+
                 Text(
                     text = "Anchor
                     margins:[20,25,20,25]",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(top = 20.dp, end = 25.dp, bottom = 20.dp, start = 25.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
-                        .width(120.dp)
-                        .height(60.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
+                    modifier = Modifier.constrainAs(align_top_test) {
+                        top.linkTo(anchor_with_margin.top)
+                    },
                     text = "alignTop
-                    topMargin:10",
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(5.dp)
-                        .padding(top = 10.dp)
-                        .padding(start = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    topMargin:10"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(align_bottom_test) {
+                        bottom.linkTo(anchor_with_margin.bottom)
+                    },
                     text = "alignBottom
-                    bottomMargin:10",
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(5.dp)
-                        .padding(bottom = 10.dp)
-                        .padding(end = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    bottomMargin:10"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(align_left_test) {
+                        start.linkTo(anchor_with_margin.start)
+                    },
                     text = "alignLeft
-                    leftMargin:15",
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(5.dp)
-                        .padding(top = 10.dp)
-                        .padding(start = 15.dp)
-                        .background(Color(android.graphics.Color.parseColor("#96CEB4")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    leftMargin:15"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(align_right_test) {
+                        end.linkTo(anchor_with_margin.end)
+                    },
                     text = "alignRight
-                    rightMargin:15",
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(5.dp)
-                        .padding(bottom = 10.dp)
-                        .padding(end = 15.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    rightMargin:15"
                 )
             }
             Text(
@@ -208,70 +189,51 @@ fun RelativeTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
-            Box(
+            ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp)
                     .padding(bottom = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#D8D8D8")))
             ) {
+                val center_anchor = createRef()
+                val above_test = createRef()
+                val below_test = createRef()
+                val left_of_test = createRef()
+                val right_of_test = createRef()
+
                 Text(
                     text = "Center
                     margins:[15,15,15,15]",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(top = 15.dp, end = 15.dp, bottom = 15.dp, start = 15.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
-                        .width(100.dp)
-                        .height(50.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
+                    modifier = Modifier.constrainAs(above_test) {
+                        top.linkTo(center_anchor.bottom)
+                    },
                     text = "Above
-                    bottomMargin:10",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
-                        .padding(bottom = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
-                        .wrapContentWidth()
-                        .wrapContentHeight(),
-                    textAlign = TextAlign.Center
+                    bottomMargin:10"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(below_test) {
+                        bottom.linkTo(center_anchor.top)
+                    },
                     text = "Below
-                    topMargin:10",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
-                        .padding(top = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1")))
-                        .wrapContentWidth()
-                        .wrapContentHeight(),
-                    textAlign = TextAlign.Center
+                    topMargin:10"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(left_of_test) {
+                        start.linkTo(center_anchor.end)
+                    },
                     text = "LeftOf
-                    rightMargin:10",
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(5.dp)
-                        .padding(end = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#96CEB4")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    rightMargin:10"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(right_of_test) {
+                        end.linkTo(center_anchor.start)
+                    },
                     text = "RightOf
-                    leftMargin:10",
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(5.dp)
-                        .padding(start = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    leftMargin:10"
                 )
             }
             Text(
@@ -394,79 +356,61 @@ fun RelativeTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
-            Box(
+            ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)
                     .padding(bottom = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E8E8E8")))
             ) {
+                val chain_start = createRef()
+                val chain_middle = createRef()
+                val chain_end = createRef()
+                val chain_above = createRef()
+                val chain_below = createRef()
+
                 Text(
                     text = "Start
                     left:10
                     right:5",
                     fontSize = 10.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 10.dp)
-                        .padding(end = 5.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
-                        .width(60.dp)
-                        .height(40.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
+                    modifier = Modifier.constrainAs(chain_middle) {
+                        end.linkTo(chain_start.start)
+                    },
                     text = "Middle
                     left:15
                     right:20",
                     fontSize = 10.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 15.dp)
-                        .padding(end = 20.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
-                        .width(60.dp)
-                        .height(40.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
+                    modifier = Modifier.constrainAs(chain_end) {
+                        end.linkTo(chain_middle.start)
+                    },
                     text = "End
                     left:10
                     right:10",
                     fontSize = 10.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 10.dp)
-                        .padding(end = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1")))
-                        .width(60.dp)
-                        .height(40.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
+                    modifier = Modifier.constrainAs(chain_above) {
+                        top.linkTo(chain_middle.bottom)
+                        start.linkTo(chain_middle.start)
+                    },
                     text = "Above Middle
-                    bottom:5",
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .padding(top = 10.dp)
-                        .padding(bottom = 5.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    bottom:5"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(chain_below) {
+                        bottom.linkTo(chain_start.top)
+                        end.linkTo(chain_start.end)
+                    },
                     text = "Below Start
-                    top:8",
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .padding(top = 8.dp)
-                        .padding(bottom = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FAB1A0")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    top:8"
                 )
             }
             Text(
@@ -476,7 +420,7 @@ fun RelativeTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
-            Box(
+            ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)
@@ -484,63 +428,41 @@ fun RelativeTestGeneratedView(
                     .padding(bottom = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#D8D8D8")))
             ) {
+                val ref1 = createRef()
+                val ref2 = createRef()
+                val between_refs = createRef()
+                val aligned_both = createRef()
+                val complex_chain = createRef()
+
                 Text(
                     text = "Ref1",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(top = 20.dp)
-                        .padding(bottom = 10.dp)
-                        .padding(start = 20.dp)
-                        .padding(end = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
-                        .width(60.dp)
-                        .height(30.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
                     text = "Ref2",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 20.dp)
-                        .padding(bottom = 10.dp)
-                        .padding(start = 10.dp)
-                        .padding(end = 20.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
-                        .width(60.dp)
-                        .height(30.dp),
-                    textAlign = TextAlign.Center
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
                 Text(
-                    text = "Between (stretch)",
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(5.dp)
-                        .padding(start = 5.dp)
-                        .padding(end = 5.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFD93D")))
-                        .wrapContentHeight()
+                    modifier = Modifier.constrainAs(between_refs) {
+                        start.linkTo(ref2.end)
+                        end.linkTo(ref1.start)
+                    },
+                    text = "Between (stretch)"
                 )
                 Text(
-                    text = "AlignBoth",
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .padding(top = 10.dp)
-                        .padding(end = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#6BCB77")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    modifier = Modifier.constrainAs(aligned_both) {
+                        top.linkTo(ref1.top)
+                        end.linkTo(ref2.end)
+                    },
+                    text = "AlignBoth"
                 )
                 Text(
+                    modifier = Modifier.constrainAs(complex_chain) {
+                        bottom.linkTo(ref1.top)
+                        start.linkTo(ref1.start)
+                    },
                     text = "Below Ref1",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .padding(top = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B9D")))
-                        .wrapContentWidth()
-                        .wrapContentHeight()
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
                 )
             }
         }

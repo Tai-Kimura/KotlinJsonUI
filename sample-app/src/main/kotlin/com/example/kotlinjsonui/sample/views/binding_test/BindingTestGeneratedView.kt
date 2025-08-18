@@ -239,7 +239,7 @@ fun BindingTestGeneratedView(
                 modifier = Modifier.padding(top = 30.dp)
             )
             // Dropdown menu state
-            var dropdown_1755497746_288Expanded by remember { mutableStateOf(false) }
+            var dropdown_1755498137_366Expanded by remember { mutableStateOf(false) }
 
             Box(
                 modifier = Modifier
@@ -262,12 +262,12 @@ fun BindingTestGeneratedView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { dropdown_1755497746_288Expanded = true }
+                        .clickable { dropdown_1755498137_366Expanded = true }
                 )
 
                 DropdownMenu(
-                    expanded = dropdown_1755497746_288Expanded,
-                    onDismissRequest = { dropdown_1755497746_288Expanded = false }
+                    expanded = dropdown_1755498137_366Expanded,
+                    onDismissRequest = { dropdown_1755498137_366Expanded = false }
                 ) {
                 }
             }

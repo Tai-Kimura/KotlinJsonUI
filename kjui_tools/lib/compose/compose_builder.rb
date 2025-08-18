@@ -273,7 +273,9 @@ module KjuiTools
           webview: ["import android.webkit.WebView",
                     "import android.webkit.WebViewClient",
                     "import android.webkit.WebChromeClient",
-                    "import androidx.compose.ui.viewinterop.AndroidView"]
+                    "import androidx.compose.ui.viewinterop.AndroidView"],
+          constraint_layout: ["import androidx.constraintlayout.compose.ConstraintLayout",
+                              "import androidx.constraintlayout.compose.Dimension"]
         }
         
         imports_to_add = []

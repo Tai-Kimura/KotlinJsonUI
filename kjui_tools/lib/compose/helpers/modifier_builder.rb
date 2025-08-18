@@ -272,6 +272,59 @@ module KjuiTools
           modifiers
         end
         
+        def self.build_relative_positioning(json_data)
+          # These attributes require ConstraintLayout
+          # They generate constraint references instead of modifiers
+          constraints = []
+          
+          # Relative to other views
+          if json_data['alignTopOfView']
+            constraints << "top.linkTo(#{json_data['alignTopOfView']}.bottom)"
+          end
+          
+          if json_data['alignBottomOfView']
+            constraints << "bottom.linkTo(#{json_data['alignBottomOfView']}.top)"
+          end
+          
+          if json_data['alignLeftOfView']
+            constraints << "start.linkTo(#{json_data['alignLeftOfView']}.end)"
+          end
+          
+          if json_data['alignRightOfView']
+            constraints << "end.linkTo(#{json_data['alignRightOfView']}.start)"
+          end
+          
+          # Align edges with other views
+          if json_data['alignTopView']
+            constraints << "top.linkTo(#{json_data['alignTopView']}.top)"
+          end
+          
+          if json_data['alignBottomView']
+            constraints << "bottom.linkTo(#{json_data['alignBottomView']}.bottom)"
+          end
+          
+          if json_data['alignLeftView']
+            constraints << "start.linkTo(#{json_data['alignLeftView']}.start)"
+          end
+          
+          if json_data['alignRightView']
+            constraints << "end.linkTo(#{json_data['alignRightView']}.end)"
+          end
+          
+          # Center with other views
+          if json_data['alignCenterVerticalView']
+            constraints << "top.linkTo(#{json_data['alignCenterVerticalView']}.top)"
+            constraints << "bottom.linkTo(#{json_data['alignCenterVerticalView']}.bottom)"
+          end
+          
+          if json_data['alignCenterHorizontalView']
+            constraints << "start.linkTo(#{json_data['alignCenterHorizontalView']}.start)"
+            constraints << "end.linkTo(#{json_data['alignCenterHorizontalView']}.end)"
+          end
+          
+          constraints
+        end
+        
         def self.format(modifiers, depth)
           return "" if modifiers.empty?
           

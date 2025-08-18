@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative 'constraintlayout_component'
 
 module KjuiTools
   module Compose
@@ -9,6 +10,15 @@ module KjuiTools
         def self.generate(json_data, depth, required_imports = nil)
           container_type = json_data['type'] || 'View'
           orientation = json_data['orientation']
+          
+          # Check if any child has relative positioning
+          children = json_data['child'] || []
+          children = [children] unless children.is_a?(Array)
+          
+          if has_relative_positioning?(children)
+            # Use ConstraintLayout for relative positioning
+            return ConstraintLayoutComponent.generate(json_data, depth, required_imports)
+          end
           
           # Determine layout type
           layout = determine_layout(container_type, orientation)
@@ -81,6 +91,19 @@ module KjuiTools
         end
         
         private
+        
+        def self.has_relative_positioning?(children)
+          relative_attrs = [
+            'alignTopOfView', 'alignBottomOfView', 'alignLeftOfView', 'alignRightOfView',
+            'alignTopView', 'alignBottomView', 'alignLeftView', 'alignRightView',
+            'alignCenterVerticalView', 'alignCenterHorizontalView'
+          ]
+          
+          children.any? do |child|
+            next false unless child.is_a?(Hash)
+            relative_attrs.any? { |attr| child[attr] }
+          end
+        end
         
         def self.determine_layout(container_type, orientation)
           # SwiftJsonUI only has 'View' type, not VStack/HStack/ZStack

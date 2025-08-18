@@ -138,6 +138,19 @@ Complex Components:
 21. ✅ **Table** - Table view with LazyColumn and custom cells
 22. ✅ **Web** - WebView with AndroidView integration
 
+### ✅ Relative Positioning Attributes (ConstraintLayout)
+
+31. ✅ `alignTopOfView` - Align below specified view ID
+32. ✅ `alignBottomOfView` - Align above specified view ID
+33. ✅ `alignLeftOfView` - Align to right of specified view ID
+34. ✅ `alignRightOfView` - Align to left of specified view ID
+35. ✅ `alignTopView` - Align top edge with specified view
+36. ✅ `alignBottomView` - Align bottom edge with specified view
+37. ✅ `alignLeftView` - Align left edge with specified view
+38. ✅ `alignRightView` - Align right edge with specified view
+39. ✅ `alignCenterVerticalView` - Center vertically with specified view
+40. ✅ `alignCenterHorizontalView` - Center horizontally with specified view
+
 ### 📝 Still Missing Components
 
 Visual Components (Lower Priority):
