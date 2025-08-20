@@ -1,0 +1,85 @@
+# frozen_string_literal: true
+
+require_relative '../helpers/modifier_builder'
+
+module KjuiTools
+  module Compose
+    module Components
+      class ToggleComponent
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
+          # Toggle in iOS maps to Switch in Android
+          code = indent("Switch(", depth)
+          
+          # Checked state
+          checked_value = if json_data['data']
+            "@{#{json_data['data']}}"
+          elsif json_data['isOn']
+            json_data['isOn'].to_s
+          else
+            'false'
+          end
+          
+          # Process data binding
+          if checked_value.start_with?('@{')
+            variable = checked_value[2..-2]
+            code += "\n" + indent("checked = data.#{variable},", depth + 1)
+            code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
+          else
+            code += "\n" + indent("checked = #{checked_value},", depth + 1)
+            
+            # Handle onclick
+            if json_data['onclick']
+              code += "\n" + indent("onCheckedChange = { ${data.toMap(viewModel)[\"#{json_data['onclick']}\"]} },", depth + 1)
+            else
+              code += "\n" + indent("onCheckedChange = { },", depth + 1)
+            end
+          end
+          
+          # Build modifiers
+          modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+          
+          # Add weight modifier if in Row or Column
+          if parent_type == 'Row' || parent_type == 'Column'
+            modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+          end
+          
+          code += Helpers::ModifierBuilder.format(modifiers, depth)
+          
+          # Colors if specified
+          if json_data['tintColor'] || json_data['backgroundColor']
+            required_imports&.add(:switch_colors)
+            code += ",\n" + indent("colors = SwitchDefaults.colors(", depth + 1)
+            
+            if json_data['tintColor']
+              code += "\n" + indent("checkedThumbColor = Color(android.graphics.Color.parseColor(\"#{json_data['tintColor']}\")),", depth + 2)
+              code += "\n" + indent("checkedTrackColor = Color(android.graphics.Color.parseColor(\"#{json_data['tintColor']}\")).copy(alpha = 0.5f)", depth + 2)
+            end
+            
+            if json_data['backgroundColor']
+              code += ",\n" if json_data['tintColor']
+              code += "\n" + indent("uncheckedTrackColor = Color(android.graphics.Color.parseColor(\"#{json_data['backgroundColor']}\"))", depth + 2)
+            end
+            
+            code += "\n" + indent(")", depth + 1)
+          end
+          
+          code += "\n" + indent(")", depth)
+          code
+        end
+        
+        private
+        
+        def self.indent(text, level)
+          return text if level == 0
+          spaces = '    ' * level
+          text.split("\n").map { |line| 
+            line.empty? ? line : spaces + line 
+          }.join("\n")
+        end
+      end
+    end
+  end
+end

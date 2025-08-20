@@ -14,6 +14,8 @@ import com.example.kotlinjsonui.sample.viewmodels.LineBreakTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun LineBreakTestGeneratedView(
@@ -37,11 +39,15 @@ fun LineBreakTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
@@ -57,14 +63,15 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(60.dp),
                 maxLines = 2,
@@ -78,14 +85,15 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(60.dp),
                 maxLines = 2
@@ -98,14 +106,15 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(60.dp),
                 maxLines = 2,
@@ -119,14 +128,15 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(60.dp),
                 maxLines = 2
@@ -139,14 +149,15 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(60.dp),
                 maxLines = 2
@@ -159,14 +170,15 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                    .padding(10.dp)
                     .fillMaxWidth()
                     .height(60.dp),
                 maxLines = 2,
@@ -186,13 +198,14 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                    .padding(10.dp)
                     .fillMaxWidth(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -204,13 +217,14 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                    .padding(10.dp)
                     .fillMaxWidth(),
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
@@ -222,13 +236,14 @@ fun LineBreakTestGeneratedView(
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "\${data.longText}",
+                text = "${data.longText}",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                    .padding(10.dp)
                     .fillMaxWidth(),
                 maxLines = Int.MAX_VALUE
             )

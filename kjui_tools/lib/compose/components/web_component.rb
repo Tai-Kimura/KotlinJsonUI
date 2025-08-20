@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class WebComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           required_imports&.add(:webview)
           
           # Web uses 'url' for the web page URL

@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -36,7 +38,8 @@
             20
           ],
           "background": "#FFE0E0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -46,7 +49,8 @@
           "leftMargin": 40,
           "topMargin": 10,
           "background": "#E0FFE0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -56,7 +60,8 @@
           "rightMargin": 40,
           "topMargin": 10,
           "background": "#E0E0FF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -65,7 +70,8 @@
           "text": "Top margin: 30",
           "topMargin": 30,
           "background": "#FFFFE0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -74,7 +80,31 @@
           "text": "Bottom margin: 30",
           "bottomMargin": 30,
           "background": "#FFE0FF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Label with padding: 20",
+          "padding": 20,
+          "topMargin": 10,
+          "background": "#E0FFFF",
+          "fontSize": 16,
+          "fontColor": "#000000"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Label with leftPadding: 30, rightPadding: 30",
+          "leftPadding": 30,
+          "rightPadding": 30,
+          "topMargin": 10,
+          "background": "#FFCCCC",
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "View",
@@ -89,7 +119,8 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Parent has leftPadding: 20, rightPadding: 20",
-            "fontSize": 14
+            "fontSize": 14,
+            "fontColor": "#000000"
           }
         },
         {
@@ -105,7 +136,8 @@
             "text": "MaxWidth: 200",
             "maxWidth": 200,
             "background": "#FFCCCC",
-            "fontSize": 14
+            "fontSize": 14,
+            "fontColor": "#000000"
           }
         },
         {
@@ -121,7 +153,8 @@
             "text": "MinWidth: 150",
             "minWidth": 150,
             "background": "#CCFFCC",
-            "fontSize": 14
+            "fontSize": 14,
+            "fontColor": "#000000"
           }
         }
       ]

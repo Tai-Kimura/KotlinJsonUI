@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class CircleImageComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # CircleImage can be local or network image
           is_network = json_data['url'] || (json_data['source'] && json_data['source'].start_with?('http'))
           

@@ -17,6 +17,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.ButtonDefaults
+import com.example.kotlinjsonui.sample.views.included1.Included1View
+import com.example.kotlinjsonui.sample.data.Included1Data
+import com.example.kotlinjsonui.sample.viewmodels.Included1ViewModel
+import com.example.kotlinjsonui.sample.views.included2.Included2View
+import com.example.kotlinjsonui.sample.data.Included2Data
+import com.example.kotlinjsonui.sample.viewmodels.Included2ViewModel
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -40,8 +47,12 @@ fun IncludeTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Column(
                 modifier = Modifier
@@ -49,7 +60,7 @@ fun IncludeTestGeneratedView(
                     .wrapContentHeight()
             ) {
                 Text(
-                    text = "\${data.title}",
+                    text = "${data.title}",
                     fontSize = 24.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
@@ -72,6 +83,7 @@ fun IncludeTestGeneratedView(
                         Button(
                             onClick = { viewModel.incrementCount() },
                             modifier = Modifier.padding(10.dp),
+                            shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
                                                         )
@@ -84,6 +96,7 @@ fun IncludeTestGeneratedView(
                         Button(
                             onClick = { viewModel.decrementCount() },
                             modifier = Modifier.padding(10.dp),
+                            shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#FF9800"))
                                                         )
@@ -96,6 +109,7 @@ fun IncludeTestGeneratedView(
                         Button(
                             onClick = { viewModel.resetCount() },
                             modifier = Modifier.padding(10.dp),
+                            shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
                                                         )
@@ -111,6 +125,7 @@ fun IncludeTestGeneratedView(
                         Button(
                             onClick = { viewModel.changeUserName() },
                             modifier = Modifier.padding(10.dp),
+                            shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
                                                         )
@@ -123,6 +138,7 @@ fun IncludeTestGeneratedView(
                         Button(
                             onClick = { viewModel.toggleStatus() },
                             modifier = Modifier.padding(10.dp),
+                            shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#607D8B"))
                                                         )
@@ -143,23 +159,23 @@ fun IncludeTestGeneratedView(
                             text = "Current Values: ",
                             fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#333333")),
-                            fontWeight = FontWeight.Semibold,
+                            fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
                         )
                         Text(
-                            text = "\${data.mainCount}",
+                            text = "${data.mainCount}",
                             fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
                         )
                         Text(
-                            text = "\${data.userName}",
+                            text = "${data.userName}",
                             fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
                         )
                         Text(
-                            text = "\${data.mainStatus}",
+                            text = "${data.mainStatus}",
                             fontSize = 14.sp,
                             color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
@@ -175,12 +191,7 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included1View(
-                        viewModel = viewModel.included1ViewModel,
-                        data = Included1Data(
-                            title = "Included View 1",
-                            message = "This is the first included view",
-                            count = "1",
-                        )
+                        viewModel = viewModel.included1ViewModel
                     )
                 }
                 Column(
@@ -192,12 +203,7 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included2View(
-                        viewModel = viewModel.included2ViewModel,
-                        data = Included2Data(
-                            viewTitle = "Static Title",
-                            viewStatus = "Static Status",
-                            viewCount = "42",
-                        )
+                        viewModel = viewModel.included2ViewModel
                     )
                 }
                 Column(
@@ -209,12 +215,7 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included2View(
-                        viewModel = viewModel.included2ViewModel,
-                        data = Included2Data(
-                            viewTitle = "\${data.userName}",
-                            viewStatus = "\${data.mainStatus}",
-                            viewCount = "\${data.mainCount}",
-                        )
+                        viewModel = viewModel.included2ViewModel
                     )
                 }
                 Column(
@@ -226,10 +227,7 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included2View(
-                        viewModel = viewModel.included2ViewModel,
-                        data = Included2Data(
-                            viewStatus = "Overridden Status",
-                        )
+                        viewModel = viewModel.included2ViewModel
                     )
                 }
                 Column(
@@ -241,12 +239,7 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included1View(
-                        viewModel = viewModel.included1ViewModel,
-                        data = Included1Data(
-                            title = "\${data.userName}",
-                            message = "\${data.mainStatus}",
-                            count = "\${data.mainCount}",
-                        )
+                        viewModel = viewModel.included1ViewModel
                     )
                 }
             }

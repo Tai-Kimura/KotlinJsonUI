@@ -14,6 +14,9 @@ import com.example.kotlinjsonui.sample.viewmodels.AlignmentComboTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.BiasAlignment
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun AlignmentComboTestGeneratedView(
@@ -38,15 +41,19 @@ fun AlignmentComboTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
                     .padding(bottom = 20.dp)
                     .wrapContentWidth()
                     .wrapContentHeight(),
@@ -69,10 +76,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Top-Left",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(8.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                        .padding(8.dp)
                 )
             }
             Box(
@@ -85,10 +93,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Top-Right",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(8.dp)
                         .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                        .padding(8.dp)
                 )
             }
             Box(
@@ -101,10 +110,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Bottom-Left",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(8.dp)
                         .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
+                        .padding(8.dp)
                 )
             }
             Box(
@@ -117,10 +127,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Bottom-Right",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(8.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
+                        .padding(8.dp)
                 )
             }
             Text(
@@ -142,10 +153,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Top-Center",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(8.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFD0FF"))),
+                        .align(BiasAlignment(0f, -1f))
+                        .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -159,10 +171,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Bottom-Center",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(8.dp)
-                        .background(Color(android.graphics.Color.parseColor("#D0FFFF"))),
+                        .align(BiasAlignment(0f, 1f))
+                        .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -176,10 +189,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Left-Center",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .padding(8.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
+                        .padding(8.dp)
                 )
             }
             Box(
@@ -192,10 +206,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Right-Center",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(8.dp)
                         .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
+                        .padding(8.dp)
                 )
             }
             Text(
@@ -217,42 +232,47 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "TL",
                     fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(5.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .padding(5.dp)
                 )
                 Text(
                     text = "TR",
                     fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(5.dp)
                         .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .padding(5.dp)
                 )
                 Text(
                     text = "BL",
                     fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(5.dp)
                         .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .padding(5.dp)
                 )
                 Text(
                     text = "BR",
                     fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(5.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                        .padding(5.dp)
                 )
                 Text(
                     text = "Center",
                     fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .padding(5.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                        .padding(5.dp)
                 )
             }
             Text(
@@ -273,25 +293,28 @@ fun AlignmentComboTestGeneratedView(
             ) {
                 Text(
                     text = "Left-Top",
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
+                        .align(Alignment.Top)
                         .background(Color(android.graphics.Color.parseColor("#FFB0B0")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "Center",
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(8.dp)
-                        .background(Color(android.graphics.Color.parseColor("#B0FFB0"))),
+                        .align(Alignment.CenterVertically)
+                        .background(Color(android.graphics.Color.parseColor("#B0FFB0")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Right-Bottom",
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(8.dp)
+                        .align(Alignment.Bottom)
                         .background(Color(android.graphics.Color.parseColor("#B0B0FF")))
+                        .padding(8.dp)
                 )
             }
             Text(
@@ -311,25 +334,28 @@ fun AlignmentComboTestGeneratedView(
             ) {
                 Text(
                     text = "Top-Left",
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
+                        .align(Alignment.Start)
                         .background(Color(android.graphics.Color.parseColor("#FFC0C0")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "Center",
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(8.dp)
-                        .background(Color(android.graphics.Color.parseColor("#C0FFC0"))),
+                        .align(Alignment.CenterHorizontally)
+                        .background(Color(android.graphics.Color.parseColor("#C0FFC0")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Bottom-Right",
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(8.dp)
+                        .align(Alignment.End)
                         .background(Color(android.graphics.Color.parseColor("#C0C0FF")))
+                        .padding(8.dp)
                 )
             }
             Text(
@@ -351,10 +377,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Only horizontal center",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFE8E8"))),
+                        .align(BiasAlignment(0f, -1f))
+                        .background(Color(android.graphics.Color.parseColor("#FFE8E8")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -367,10 +394,11 @@ fun AlignmentComboTestGeneratedView(
                 Text(
                     text = "Only vertical center",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(8.dp)
+                        .align(BiasAlignment(-1f, 0f))
                         .background(Color(android.graphics.Color.parseColor("#E8FFE8")))
+                        .padding(8.dp)
                 )
             }
         }

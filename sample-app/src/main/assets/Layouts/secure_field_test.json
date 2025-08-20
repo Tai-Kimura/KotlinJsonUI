@@ -7,7 +7,9 @@
   "child": [
     {
       "type": "Button",
-      "style": "dynamic_toggle"
+      "style": "dynamic_toggle",
+      "fontColor": "#FFFFFF",
+      "cornerRadius": 8
     },
     {
       "type": "Label",
@@ -30,17 +32,18 @@
       "type": "TextField",
       "id": "regular_field",
       "width": "matchParent",
-      "height": 44,
+      "height": 50,
       "topMargin": 10,
       "leftMargin": 20,
       "rightMargin": 20,
       "hint": "Enter regular text",
       "text": "@{regularText}",
       "background": "#FFFFFF",
-      "padding": 10,
       "cornerRadius": 8,
       "borderColor": "#CCCCCC",
       "borderWidth": 1,
+      "fontColor": "#000000",
+      "fontSize": 16,
       "secure": false
     },
     {
@@ -54,17 +57,18 @@
       "type": "TextField",
       "id": "password_field",
       "width": "matchParent",
-      "height": 44,
+      "height": 50,
       "topMargin": 10,
       "leftMargin": 20,
       "rightMargin": 20,
       "hint": "Enter password",
       "text": "@{password}",
       "background": "#FFFFFF",
-      "padding": 10,
       "cornerRadius": 8,
       "borderColor": "#CCCCCC",
       "borderWidth": 1,
+      "fontColor": "#000000",
+      "fontSize": 16,
       "secure": true
     },
     {
@@ -78,17 +82,18 @@
       "type": "TextField",
       "id": "confirm_password_field",
       "width": "matchParent",
-      "height": 44,
+      "height": 50,
       "topMargin": 10,
       "leftMargin": 20,
       "rightMargin": 20,
       "hint": "Confirm password",
       "text": "@{confirmPassword}",
       "background": "#FFFFFF",
-      "padding": 10,
       "cornerRadius": 8,
       "borderColor": "#CCCCCC",
       "borderWidth": 1,
+      "fontColor": "#000000",
+      "fontSize": 16,
       "secure": true
     },
     {

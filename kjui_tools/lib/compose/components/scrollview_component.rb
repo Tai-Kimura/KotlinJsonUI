@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class ScrollViewComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           orientation = json_data['orientation'] || 'vertical'
           
           if orientation == 'horizontal'

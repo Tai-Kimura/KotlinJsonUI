@@ -16,6 +16,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun TextViewHintTestGeneratedView(
@@ -34,8 +35,12 @@ fun TextViewHintTestGeneratedView(
     ) {
         Button(
             onClick = { },
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Button")
+            Text(
+                text = "Button",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
         Text(
             text = "TextView Hint Test",
@@ -51,7 +56,7 @@ fun TextViewHintTestGeneratedView(
         )
         OutlinedTextField(
             value = "\${data.simpleText}",
-            onValueChange = { newValue -> currentData.value = currentData.value.copy(simpleText = newValue) },
+            onValueChange = { newValue -> viewModel.updateData(mapOf("simpleText" to newValue)) },
             placeholder = { Text("This is a simple hint") },
             modifier = Modifier
                 .fillMaxWidth()
@@ -71,7 +76,7 @@ fun TextViewHintTestGeneratedView(
         )
         OutlinedTextField(
             value = "\${data.flexibleText}",
-            onValueChange = { newValue -> currentData.value = currentData.value.copy(flexibleText = newValue) },
+            onValueChange = { newValue -> viewModel.updateData(mapOf("flexibleText" to newValue)) },
             placeholder = { Text("Multi-line hint\nLine 2 of hint\nLine 3 of hint") },
             modifier = Modifier
                 .fillMaxWidth()

@@ -2,10 +2,11 @@ package com.example.kotlinjsonui.sample.data
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.example.kotlinjsonui.sample.viewmodels.ConverterTestViewModel
 
 data class ConverterTestData(
     var dynamicModeStatus: String = "OFF",
-    var items: CollectionDataSource = CollectionDataSource(),
+    var items: List<Map<String, Any>> = emptyList(),
     var title: String = "Converter Components Test"
 ) {
     companion object {
@@ -13,7 +14,7 @@ data class ConverterTestData(
         fun fromMap(map: Map<String, Any>): ConverterTestData {
             return ConverterTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
-                items = map["items"] as? CollectionDataSource,
+                items = (map["items"] as? List<Map<String, Any>>) ?: emptyList(),
                 title = map["title"] as? String ?: ""
             )
         }

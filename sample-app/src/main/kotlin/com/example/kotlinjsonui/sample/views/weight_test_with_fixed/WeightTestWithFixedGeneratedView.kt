@@ -14,6 +14,8 @@ import com.example.kotlinjsonui.sample.viewmodels.WeightTestWithFixedViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun WeightTestWithFixedGeneratedView(
@@ -37,11 +39,15 @@ fun WeightTestWithFixedGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
@@ -67,6 +73,7 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Fixed: 80",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
                         .width(80.dp)
@@ -76,24 +83,27 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Weight: 1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Weight: 2",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(2f)
                         .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Fixed: 60",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
                         .width(60.dp)
@@ -118,13 +128,15 @@ fun WeightTestWithFixedGeneratedView(
             ) {
                 Column(
                     modifier = Modifier
-                        .width(0.dp)
+                        .weight(1f)
                         .fillMaxHeight()
                 ) {
                     Text(
                         text = "1-1",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
+                            .weight(1f)
                             .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                             .fillMaxWidth()
                             .height(0.dp),
@@ -133,7 +145,9 @@ fun WeightTestWithFixedGeneratedView(
                     Text(
                         text = "1-2",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
+                            .weight(2f)
                             .background(Color(android.graphics.Color.parseColor("#FFC0C0")))
                             .fillMaxWidth()
                             .height(0.dp),
@@ -143,6 +157,7 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Fix\n50",
                     fontSize = 12.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
                         .width(50.dp)
@@ -151,12 +166,13 @@ fun WeightTestWithFixedGeneratedView(
                 )
                 Column(
                     modifier = Modifier
-                        .width(0.dp)
+                        .weight(2f)
                         .fillMaxHeight()
                 ) {
                     Text(
                         text = "Fixed 30",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
                             .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                             .fillMaxWidth()
@@ -166,7 +182,9 @@ fun WeightTestWithFixedGeneratedView(
                     Text(
                         text = "Weight 1",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
+                            .weight(1f)
                             .background(Color(android.graphics.Color.parseColor("#C0FFC0")))
                             .fillMaxWidth()
                             .height(0.dp),
@@ -192,6 +210,7 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "40",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
                         .width(40.dp)
@@ -201,15 +220,17 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "60",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
                         .width(60.dp)
@@ -219,15 +240,17 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "80",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
                         .width(80.dp)
@@ -253,24 +276,26 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:0",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFA0A0")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "W:1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#A0FFA0")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = "Fixed:100",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#A0A0FF")))
                         .width(100.dp)
@@ -280,9 +305,10 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:3",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(3f)
                         .background(Color(android.graphics.Color.parseColor("#FFFFA0")))
-                        .width(0.dp)
                         .fillMaxHeight(),
                     textAlign = TextAlign.Center
                 )
@@ -305,6 +331,7 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Fixed: 30",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                         .fillMaxWidth()
@@ -314,7 +341,9 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Weight: 1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                         .fillMaxWidth()
                         .height(0.dp),
@@ -323,6 +352,7 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Fixed: 40",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
                         .fillMaxWidth()
@@ -332,7 +362,9 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Weight: 2",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(2f)
                         .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
                         .fillMaxWidth()
                         .height(0.dp),
@@ -341,6 +373,7 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "Fixed: 50",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
                         .fillMaxWidth()
@@ -375,21 +408,24 @@ fun WeightTestWithFixedGeneratedView(
                 )
                 Row(
                     modifier = Modifier
+                        .weight(1f)
                         .fillMaxWidth()
                         .height(0.dp)
                 ) {
                     Text(
                         text = "Col 1",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
+                            .weight(1f)
                             .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                            .width(0.dp)
                             .fillMaxHeight(),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Fix:60",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
                             .background(Color(android.graphics.Color.parseColor("#D0D0D0")))
                             .width(60.dp)
@@ -399,9 +435,10 @@ fun WeightTestWithFixedGeneratedView(
                     Text(
                         text = "Col 2",
                         fontSize = 12.sp,
+                        color = Color(android.graphics.Color.parseColor("#000000")),
                         modifier = Modifier
+                            .weight(2f)
                             .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                            .width(0.dp)
                             .fillMaxHeight(),
                         textAlign = TextAlign.Center
                     )
@@ -435,7 +472,9 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                         .fillMaxWidth()
                         .height(0.dp),
@@ -444,7 +483,9 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
                         .fillMaxWidth()
                         .height(0.dp),
@@ -453,7 +494,9 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:2",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(2f)
                         .background(Color(android.graphics.Color.parseColor("#CCCCFF")))
                         .fillMaxWidth()
                         .height(0.dp),
@@ -462,7 +505,9 @@ fun WeightTestWithFixedGeneratedView(
                 Text(
                     text = "W:1",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .weight(1f)
                         .background(Color(android.graphics.Color.parseColor("#FFFFCC")))
                         .fillMaxWidth()
                         .height(0.dp),

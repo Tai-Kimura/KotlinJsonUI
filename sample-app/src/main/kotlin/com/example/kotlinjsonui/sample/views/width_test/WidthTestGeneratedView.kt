@@ -13,6 +13,8 @@ import com.example.kotlinjsonui.sample.data.WidthTestData
 import com.example.kotlinjsonui.sample.viewmodels.WidthTestViewModel
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun WidthTestGeneratedView(
@@ -30,19 +32,26 @@ fun WidthTestGeneratedView(
     ) {
         Button(
             onClick = { },
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Button")
+            Text(
+                text = "Button",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
         Text(
             text = "Width Test",
             fontSize = 24.sp,
             color = Color(android.graphics.Color.parseColor("#000000")),
-            modifier = Modifier.padding(top = 20.dp)
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 20.dp)
         )
         Text(
             text = "matchParent width",
             color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             modifier = Modifier
+                .align(Alignment.TopStart)
                 .padding(top = 20.dp)
                 .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
                 .fillMaxWidth()
@@ -53,6 +62,7 @@ fun WidthTestGeneratedView(
             text = "Fixed width 200",
             color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             modifier = Modifier
+                .align(Alignment.TopStart)
                 .padding(top = 10.dp)
                 .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
                 .width(200.dp)
@@ -63,6 +73,7 @@ fun WidthTestGeneratedView(
             text = "wrapContent width",
             color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             modifier = Modifier
+                .align(Alignment.TopStart)
                 .padding(top = 10.dp)
                 .background(Color(android.graphics.Color.parseColor("#45B7D1")))
                 .wrapContentWidth()
@@ -80,6 +91,7 @@ fun WidthTestGeneratedView(
                 text = "Weight 1",
                 color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 modifier = Modifier
+                    .weight(1f)
                     .background(Color(android.graphics.Color.parseColor("#96CEB4")))
                     .fillMaxHeight(),
                 textAlign = TextAlign.Center
@@ -88,6 +100,7 @@ fun WidthTestGeneratedView(
                 text = "Weight 2 (wrap)",
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(2f)
                     .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
                     .wrapContentHeight(),
                 textAlign = TextAlign.Center
@@ -96,6 +109,7 @@ fun WidthTestGeneratedView(
                 text = "Weight 1",
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(1f)
                     .background(Color(android.graphics.Color.parseColor("#DFE6E9")))
                     .fillMaxHeight(),
                 textAlign = TextAlign.Center

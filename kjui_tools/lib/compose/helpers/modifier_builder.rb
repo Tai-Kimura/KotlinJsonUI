@@ -334,38 +334,59 @@ module KjuiTools
           # They generate constraint references instead of modifiers
           constraints = []
           
+          # Extract margins for use in constraints
+          top_margin = json_data['topMargin'] || 0
+          bottom_margin = json_data['bottomMargin'] || 0
+          start_margin = json_data['leftMargin'] || 0
+          end_margin = json_data['rightMargin'] || 0
+          
+          if json_data['margins'] && json_data['margins'].is_a?(Array) && json_data['margins'].length == 4
+            top_margin = json_data['margins'][0] unless json_data['topMargin']
+            end_margin = json_data['margins'][1] unless json_data['rightMargin']
+            bottom_margin = json_data['margins'][2] unless json_data['bottomMargin']
+            start_margin = json_data['margins'][3] unless json_data['leftMargin']
+          end
+          
           # Relative to other views
           if json_data['alignTopOfView']
-            constraints << "bottom.linkTo(#{json_data['alignTopOfView']}.top)"
+            margin = bottom_margin > 0 ? ", margin = #{bottom_margin}.dp" : ""
+            constraints << "bottom.linkTo(#{json_data['alignTopOfView']}.top#{margin})"
           end
           
           if json_data['alignBottomOfView']
-            constraints << "top.linkTo(#{json_data['alignBottomOfView']}.bottom)"
+            margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
+            constraints << "top.linkTo(#{json_data['alignBottomOfView']}.bottom#{margin})"
           end
           
           if json_data['alignLeftOfView']
-            constraints << "end.linkTo(#{json_data['alignLeftOfView']}.start)"
+            margin = end_margin > 0 ? ", margin = #{end_margin}.dp" : ""
+            constraints << "end.linkTo(#{json_data['alignLeftOfView']}.start#{margin})"
           end
           
           if json_data['alignRightOfView']
-            constraints << "start.linkTo(#{json_data['alignRightOfView']}.end)"
+            margin = start_margin > 0 ? ", margin = #{start_margin}.dp" : ""
+            constraints << "start.linkTo(#{json_data['alignRightOfView']}.end#{margin})"
           end
           
           # Align edges with other views
           if json_data['alignTopView']
-            constraints << "top.linkTo(#{json_data['alignTopView']}.top)"
+            margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
+            constraints << "top.linkTo(#{json_data['alignTopView']}.top#{margin})"
           end
           
           if json_data['alignBottomView']
-            constraints << "bottom.linkTo(#{json_data['alignBottomView']}.bottom)"
+            margin = bottom_margin > 0 ? ", margin = #{bottom_margin}.dp" : ""
+            constraints << "bottom.linkTo(#{json_data['alignBottomView']}.bottom#{margin})"
           end
           
           if json_data['alignLeftView']
-            constraints << "start.linkTo(#{json_data['alignLeftView']}.start)"
+            margin = start_margin > 0 ? ", margin = #{start_margin}.dp" : ""
+            constraints << "start.linkTo(#{json_data['alignLeftView']}.start#{margin})"
           end
           
           if json_data['alignRightView']
-            constraints << "end.linkTo(#{json_data['alignRightView']}.end)"
+            margin = end_margin > 0 ? ", margin = #{end_margin}.dp" : ""
+            constraints << "end.linkTo(#{json_data['alignRightView']}.end#{margin})"
           end
           
           # Center with other views
@@ -381,19 +402,23 @@ module KjuiTools
           
           # Parent constraints
           if json_data['alignTop']
-            constraints << "top.linkTo(parent.top)"
+            margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
+            constraints << "top.linkTo(parent.top#{margin})"
           end
           
           if json_data['alignBottom']
-            constraints << "bottom.linkTo(parent.bottom)"
+            margin = bottom_margin > 0 ? ", margin = #{bottom_margin}.dp" : ""
+            constraints << "bottom.linkTo(parent.bottom#{margin})"
           end
           
           if json_data['alignLeft']
-            constraints << "start.linkTo(parent.start)"
+            margin = start_margin > 0 ? ", margin = #{start_margin}.dp" : ""
+            constraints << "start.linkTo(parent.start#{margin})"
           end
           
           if json_data['alignRight']
-            constraints << "end.linkTo(parent.end)"
+            margin = end_margin > 0 ? ", margin = #{end_margin}.dp" : ""
+            constraints << "end.linkTo(parent.end#{margin})"
           end
           
           if json_data['centerHorizontal']

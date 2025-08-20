@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class ProgressComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Progress can have a value (determinate) or be indeterminate
           has_value = json_data['value'] || json_data['bind']
           

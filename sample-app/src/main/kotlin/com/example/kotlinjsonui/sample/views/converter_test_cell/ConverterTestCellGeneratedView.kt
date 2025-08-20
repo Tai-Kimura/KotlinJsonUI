@@ -29,14 +29,14 @@ fun ConverterTestCellGeneratedView(
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         Text(
-            text = "\${data.title}",
+            text = "${data.title}",
             fontSize = 16.sp,
             color = Color(android.graphics.Color.parseColor("#333333")),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
         Text(
-            text = "\${data.subtitle}",
+            text = "${data.subtitle}",
             fontSize = 12.sp,
             color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier

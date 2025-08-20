@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class NetworkImageComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           required_imports&.add(:async_image)
           
           # NetworkImage uses 'source' or 'url' for image URL

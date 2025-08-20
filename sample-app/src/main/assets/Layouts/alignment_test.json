@@ -13,7 +13,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -49,7 +51,8 @@
               "alignTop": true,
               "background": "#FFD0D0",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -66,7 +69,8 @@
               "alignBottom": true,
               "background": "#D0FFD0",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -83,7 +87,8 @@
               "alignLeft": true,
               "background": "#D0D0FF",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -102,7 +107,8 @@
               "alignRight": true,
               "background": "#FFFFD0",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -121,7 +127,8 @@
               "centerHorizontal": true,
               "background": "#FFD0FF",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -140,7 +147,8 @@
               "centerVertical": true,
               "background": "#D0FFFF",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -157,7 +165,8 @@
               "centerInParent": true,
               "background": "#FFCCCC",
               "fontSize": 14,
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -185,7 +194,8 @@
               "text": "Top",
               "alignTop": true,
               "background": "#FFE0E0",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -193,7 +203,8 @@
               "height": "wrapContent",
               "text": "Default",
               "background": "#E0E0E0",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -202,7 +213,8 @@
               "text": "Bottom",
               "alignBottom": true,
               "background": "#E0E0FF",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -211,7 +223,8 @@
               "text": "Center",
               "centerVertical": true,
               "background": "#E0FFE0",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -238,7 +251,8 @@
               "text": "alignLeft",
               "alignLeft": true,
               "background": "#FFE0E0",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -246,7 +260,8 @@
               "height": "wrapContent",
               "text": "Default",
               "background": "#E0E0E0",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -255,7 +270,8 @@
               "text": "alignRight",
               "alignRight": true,
               "background": "#E0E0FF",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -264,7 +280,8 @@
               "text": "centerHorizontal",
               "centerHorizontal": true,
               "background": "#E0FFE0",
-              "padding": 8
+              "padding": 8,
+              "fontColor": "#000000"
             }
           ]
         }

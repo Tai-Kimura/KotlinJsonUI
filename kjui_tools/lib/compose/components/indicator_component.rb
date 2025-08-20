@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class IndicatorComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Indicator can be circular or linear based on style
           style = json_data['style'] || 'medium'
           is_animating = json_data['animating']
@@ -53,7 +53,12 @@ module KjuiTools
           
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+          
+          # Add weight modifier if in Row or Column
+          if parent_type == 'Row' || parent_type == 'Column'
+            modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+          end
           
           code += Helpers::ModifierBuilder.format(modifiers, actual_depth) if modifiers.any?
           

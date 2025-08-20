@@ -7,7 +7,7 @@ module KjuiTools
   module Compose
     module Components
       class ContainerComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           container_type = json_data['type'] || 'View'
           orientation = json_data['orientation']
           
@@ -27,6 +27,12 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
+          
+          # Add weight modifier if in Row or Column
+          if parent_type == 'Row' || parent_type == 'Column'
+            modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+          end
+          
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
@@ -87,7 +93,7 @@ module KjuiTools
           children = [children] unless children.is_a?(Array)
           
           # Return structure for parent to process children
-          { code: code, children: children, closing: "\n" + indent("}", depth) }
+          { code: code, children: children, closing: "\n" + indent("}", depth), layout_type: layout }
         end
         
         private

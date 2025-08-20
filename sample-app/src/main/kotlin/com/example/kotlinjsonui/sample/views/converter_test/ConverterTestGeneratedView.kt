@@ -21,6 +21,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -44,11 +48,15 @@ fun ConverterTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
@@ -92,6 +100,7 @@ fun ConverterTestGeneratedView(
                         fontSize = 16.sp,
                         color = Color(android.graphics.Color.parseColor("#FFD700")),
                         modifier = Modifier
+                            .align(Alignment.TopStart)
                             .padding(top = 50.dp)
                             .padding(start = 20.dp)
                     )
@@ -125,7 +134,8 @@ fun ConverterTestGeneratedView(
                     .height(300.dp)
                     .padding(top = 10.dp)
             ) {
-                items(data.items) { item ->
+                items(data.items.size) { index ->
+                    val item = data.items[index]
                     Card(
                         modifier = Modifier
                             .padding(4.dp)

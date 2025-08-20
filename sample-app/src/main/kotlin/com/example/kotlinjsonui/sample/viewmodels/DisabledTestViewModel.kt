@@ -15,13 +15,36 @@ class DisabledTestViewModel : ViewModel() {
     val data: StateFlow<DisabledTestData> = _data.asStateFlow()
     
     // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
+    fun onEnabledButtonTap() {
+        println("Enabled button tapped")
+    }
+    
+    fun onDisabledButtonTap() {
+        // This should never be called
+        println("ERROR: Disabled button was tapped!")
+    }
+    
+    fun onTouchDisabledTap() {
+        // This should never be called
+        println("ERROR: Touch disabled button was tapped!")
+    }
+    
+    fun toggleEnableState() {
+        _data.value = _data.value.copy(isEnabled = !_data.value.isEnabled)
+    }
+    
+    fun onDynamicButtonTap() {
+        if (_data.value.isEnabled) {
+            println("Dynamic button tapped - was enabled")
+        } else {
+            println("ERROR: Dynamic button tapped when disabled!")
+        }
     }
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        currentDataMap.putAll(updates)
+        _data.value = DisabledTestData.fromMap(currentDataMap)
     }
 }

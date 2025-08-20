@@ -7,7 +7,9 @@
   "child": [
     {
       "type": "Button",
-      "style": "dynamic_toggle"
+      "style": "dynamic_toggle",
+      "fontColor": "#FFFFFF",
+      "cornerRadius": 8
     },
     {
       "type": "Label",
@@ -43,7 +45,8 @@
           "text": "Weight: 1",
           "background": "#FFD0D0",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -53,7 +56,8 @@
           "text": "Weight: 2",
           "background": "#D0FFD0",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -63,7 +67,8 @@
           "text": "Weight: 1",
           "background": "#D0D0FF",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         }
       ]
     },
@@ -91,7 +96,8 @@
           "text": "Weight: 1",
           "background": "#FFFFD0",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -101,7 +107,8 @@
           "text": "Weight: 3",
           "background": "#FFD0FF",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -111,7 +118,8 @@
           "text": "Weight: 2",
           "background": "#D0FFFF",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         }
       ]
     },
@@ -139,7 +147,8 @@
           "text": "widthWeight: 1",
           "background": "#FFE0E0",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -149,7 +158,8 @@
           "text": "widthWeight: 1",
           "background": "#E0FFE0",
           "textAlign": "center",
-          "fontSize": 14
+          "fontSize": 14,
+          "fontColor": "#000000"
         }
       ]
     }

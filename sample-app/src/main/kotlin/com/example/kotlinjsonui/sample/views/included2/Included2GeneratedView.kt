@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun Included2GeneratedView(
@@ -43,19 +44,19 @@ fun Included2GeneratedView(
                 .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
         ) {
             Text(
-                text = "\${data.viewTitle}",
+                text = "${data.viewTitle}",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
             )
             Text(
-                text = "\${data.viewStatus}",
+                text = "${data.viewStatus}",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
             )
             Text(
-                text = "\${data.viewCount}",
+                text = "${data.viewCount}",
                 fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier

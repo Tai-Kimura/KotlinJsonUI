@@ -6,9 +6,14 @@ module KjuiTools
   module Compose
     module Components
       class ImageComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # 'src' is the official attribute for images per wiki
           image_name = json_data['src'] || 'placeholder'
+          
+          # Add required imports
+          required_imports&.add(:image)
+          required_imports&.add(:painter_resource)
+          required_imports&.add(:r_class)
           
           code = indent("Image(", depth)
           code += "\n" + indent("painter = painterResource(id = R.drawable.#{image_name}),", depth + 1)
@@ -36,6 +41,7 @@ module KjuiTools
           
           # Content mode
           if json_data['contentMode']
+            required_imports&.add(:content_scale)
             case json_data['contentMode'].downcase
             when 'aspectfill'
               code += ",\n" + indent("contentScale = ContentScale.Crop", depth + 1)

@@ -13,6 +13,8 @@ import com.example.kotlinjsonui.sample.data.MarginsTestData
 import com.example.kotlinjsonui.sample.viewmodels.MarginsTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun MarginsTestGeneratedView(
@@ -36,11 +38,15 @@ fun MarginsTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
@@ -51,6 +57,7 @@ fun MarginsTestGeneratedView(
             Text(
                 text = "All margins: [20, 20, 20, 20]",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
@@ -60,6 +67,7 @@ fun MarginsTestGeneratedView(
             Text(
                 text = "Left margin: 40",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 40.dp)
@@ -70,6 +78,7 @@ fun MarginsTestGeneratedView(
             Text(
                 text = "Right margin: 40",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(end = 40.dp)
@@ -80,6 +89,7 @@ fun MarginsTestGeneratedView(
             Text(
                 text = "Top margin: 30",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(top = 30.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
@@ -89,9 +99,31 @@ fun MarginsTestGeneratedView(
             Text(
                 text = "Bottom margin: 30",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(bottom = 30.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Text(
+                text = "Label with padding: 20",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#E0FFFF")))
+                    .padding(20.dp)
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+            )
+            Text(
+                text = "Label with leftPadding: 30, rightPadding: 30",
+                fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                     .wrapContentWidth()
                     .wrapContentHeight()
             )
@@ -105,7 +137,9 @@ fun MarginsTestGeneratedView(
                 Text(
                     text = "Parent has leftPadding: 20, rightPadding: 20",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .align(Alignment.TopStart)
                         .wrapContentWidth()
                         .wrapContentHeight()
                 )
@@ -120,7 +154,9 @@ fun MarginsTestGeneratedView(
                 Text(
                     text = "MaxWidth: 200",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .align(Alignment.TopStart)
                         .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                         .wrapContentWidth()
                         .wrapContentHeight()
@@ -137,7 +173,9 @@ fun MarginsTestGeneratedView(
                 Text(
                     text = "MinWidth: 150",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .align(Alignment.TopStart)
                         .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
                         .wrapContentWidth()
                         .wrapContentHeight()

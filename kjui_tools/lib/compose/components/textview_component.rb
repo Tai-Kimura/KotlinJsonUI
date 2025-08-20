@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class TextViewComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # TextView is multi-line text input (like TextArea)
           # Uses 'text' for value and 'placeholder' for hint
           value = process_data_binding(json_data['text'] || '')
@@ -18,7 +18,7 @@ module KjuiTools
           # onValueChange handler
           if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
             variable = extract_variable_name(json_data['text'])
-            code += "\n" + indent("onValueChange = { newValue -> currentData.value = currentData.value.copy(#{variable} = newValue) },", depth + 1)
+            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
           elsif json_data['onTextChange']
             code += "\n" + indent("onValueChange = { viewModel.#{json_data['onTextChange']}(it) },", depth + 1)
           else

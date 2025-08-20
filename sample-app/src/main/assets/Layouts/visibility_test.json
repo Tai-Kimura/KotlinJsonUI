@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -32,7 +34,8 @@
           "text": "Visibility: visible (default)",
           "visibility": "visible",
           "background": "#D0FFD0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -42,7 +45,8 @@
           "text": "This label is invisible (takes space)",
           "visibility": "invisible",
           "background": "#FFD0D0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -51,7 +55,8 @@
           "topMargin": 10,
           "text": "After invisible label",
           "background": "#D0D0FF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -61,7 +66,8 @@
           "text": "This label is gone (no space)",
           "visibility": "gone",
           "background": "#FFFFD0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -70,7 +76,8 @@
           "topMargin": 10,
           "text": "After gone label (no gap)",
           "background": "#FFD0FF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -89,7 +96,8 @@
           "text": "Opacity: 1.0 (fully visible)",
           "opacity": 1.0,
           "background": "#FFE0E0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -99,7 +107,8 @@
           "text": "Opacity: 0.7",
           "opacity": 0.7,
           "background": "#E0FFE0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -109,7 +118,8 @@
           "text": "Opacity: 0.5",
           "opacity": 0.5,
           "background": "#E0E0FF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -119,7 +129,8 @@
           "text": "Opacity: 0.3",
           "opacity": 0.3,
           "background": "#FFFFE0",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -129,7 +140,8 @@
           "text": "Opacity: 0.1",
           "opacity": 0.1,
           "background": "#FFD0FF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -148,7 +160,62 @@
           "text": "Alpha: 0.6",
           "alpha": 0.6,
           "background": "#D0FFFF",
-          "fontSize": 16
+          "fontSize": 16,
+          "fontColor": "#000000"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Dynamic Visibility Tests",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "Button",
+          "text": "Toggle Visibility",
+          "onClick": "toggleVisibility",
+          "topMargin": 10,
+          "background": "#007AFF",
+          "textColor": "#FFFFFF",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "This text uses dynamic visibility",
+          "visibility": "@{textVisibility}",
+          "background": "#FFE0E0",
+          "fontSize": 16,
+          "fontColor": "#000000",
+          "padding": 10
+        },
+        {
+          "type": "Button",
+          "text": "Toggle Hidden",
+          "onClick": "toggleHidden",
+          "topMargin": 20,
+          "background": "#34C759",
+          "textColor": "#FFFFFF",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "This text uses dynamic hidden attribute",
+          "hidden": "@{isHidden}",
+          "background": "#E0FFE0",
+          "fontSize": 16,
+          "fontColor": "#000000",
+          "padding": 10
         }
       ]
     }
@@ -163,6 +230,16 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Visibility & Opacity Test"
+    },
+    {
+      "name": "textVisibility",
+      "class": "String",
+      "defaultValue": "visible"
+    },
+    {
+      "name": "isHidden",
+      "class": "Boolean",
+      "defaultValue": false
     }
   ]
 }

@@ -18,6 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.CircleShape
+import com.kotlinjsonui.components.CustomTextField
+import com.kotlinjsonui.components.CustomTextFieldWithMargins
 
 @Composable
 fun FormTestGeneratedView(
@@ -42,11 +45,15 @@ fun FormTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 28.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 fontWeight = FontWeight.Bold,
@@ -56,7 +63,7 @@ fun FormTestGeneratedView(
                 text = "Personal Information",
                 fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#007AFF")),
-                fontWeight = FontWeight.Semibold,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
@@ -65,17 +72,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.firstName}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(firstName = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.firstName}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("firstName" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -84,17 +92,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.lastName}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(lastName = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.lastName}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("lastName" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -103,17 +112,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.email}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(email = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.email}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("email" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -122,24 +132,25 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.phone}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(phone = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.phone}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("phone" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 24.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 24.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
                 text = "Address Information",
                 fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#007AFF")),
-                fontWeight = FontWeight.Semibold,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
@@ -148,17 +159,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.address}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(address = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.address}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("address" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -167,17 +179,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.city}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(city = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.city}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("city" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -186,17 +199,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.zipCode}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(zipCode = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.zipCode}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("zipCode" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -205,24 +219,25 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.country}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(country = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.country}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("country" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 24.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 24.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
                 text = "Professional Information",
                 fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#007AFF")),
-                fontWeight = FontWeight.Semibold,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
@@ -231,17 +246,18 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.company}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(company = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.company}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("company" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -250,24 +266,25 @@ fun FormTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
-            TextField(
-                value = "\${data.jobTitle}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(jobTitle = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.jobTitle}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("jobTitle" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 24.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
-                    .padding(14.dp)
-                    .padding(bottom = 24.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(14.dp),
+                shape = RoundedCornerShape(10.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
                 text = "Additional Information",
                 fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#007AFF")),
-                fontWeight = FontWeight.Semibold,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
@@ -278,7 +295,7 @@ fun FormTestGeneratedView(
             )
             OutlinedTextField(
                 value = "\${data.bio}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(bio = newValue) },
+                onValueChange = { newValue -> viewModel.updateData(mapOf("bio" to newValue)) },
                 placeholder = { Text("Tell us about yourself...\nThis field will grow as you type") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -300,7 +317,7 @@ fun FormTestGeneratedView(
             )
             OutlinedTextField(
                 value = "\${data.notes}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(notes = newValue) },
+                onValueChange = { newValue -> viewModel.updateData(mapOf("notes" to newValue)) },
                 placeholder = { Text("Additional notes...\nFixed height field") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -322,7 +339,7 @@ fun FormTestGeneratedView(
             )
             OutlinedTextField(
                 value = "\${data.comments}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(comments = newValue) },
+                onValueChange = { newValue -> viewModel.updateData(mapOf("comments" to newValue)) },
                 placeholder = { Text("Any comments?\nThis can grow very tall (up to 300pt)") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -356,6 +373,7 @@ fun FormTestGeneratedView(
                     .padding(bottom = 16.dp)
                     .fillMaxWidth()
                     .height(54.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
                                 )
@@ -372,6 +390,7 @@ fun FormTestGeneratedView(
                     .padding(bottom = 40.dp)
                     .fillMaxWidth()
                     .height(54.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
                                 )
@@ -379,7 +398,7 @@ fun FormTestGeneratedView(
                 Text(
                     text = "Clear All Fields",
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#FF3B30")),
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
         }

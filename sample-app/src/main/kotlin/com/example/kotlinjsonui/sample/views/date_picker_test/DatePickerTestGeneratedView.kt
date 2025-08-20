@@ -21,6 +21,15 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.foundation.clickable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.OutlinedTextField
+import com.kotlinjsonui.components.SelectBox
+import com.kotlinjsonui.components.DateSelectBox
+import com.kotlinjsonui.components.SimpleDateSelectBox
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -44,11 +53,15 @@ fun DatePickerTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
@@ -63,39 +76,20 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
-            // Dropdown menu state
-            var dropdown_1755498355_519Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            DateSelectBox(
+                value = data.selectedDate,
+                onValueChange = { newValue ->
+                    viewModel.updateData(mapOf("selectedDate" to newValue))
+                },
+                datePickerMode = "date",
+                dateFormat = "yyyy-MM-dd",
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_519Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_519Expanded,
-                    onDismissRequest = { dropdown_1755498355_519Expanded = false }
-                ) {
-                }
-            }
+            )
             Text(
                 text = "DatePicker with Min/Max Dates",
                 fontSize = 18.sp,
@@ -109,39 +103,22 @@ fun DatePickerTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(top = 5.dp)
             )
-            // Dropdown menu state
-            var dropdown_1755498355_241Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            DateSelectBox(
+                value = data.selectedDate2,
+                onValueChange = { newValue ->
+                    viewModel.updateData(mapOf("selectedDate2" to newValue))
+                },
+                datePickerMode = "date",
+                dateFormat = "yyyy-MM-dd",
+                minimumDate = "2025-01-01",
+                maximumDate = "2025-12-31",
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_241Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_241Expanded,
-                    onDismissRequest = { dropdown_1755498355_241Expanded = false }
-                ) {
-                }
-            }
+            )
             Text(
                 text = "Time Picker",
                 fontSize = 18.sp,
@@ -149,39 +126,20 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-            // Dropdown menu state
-            var dropdown_1755498355_467Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            DateSelectBox(
+                value = data.selectedTime,
+                onValueChange = { newValue ->
+                    viewModel.updateData(mapOf("selectedTime" to newValue))
+                },
+                datePickerMode = "time",
+                dateFormat = "HH:mm",
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_467Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_467Expanded,
-                    onDismissRequest = { dropdown_1755498355_467Expanded = false }
-                ) {
-                }
-            }
+            )
             Text(
                 text = "DateTime Picker",
                 fontSize = 18.sp,
@@ -189,39 +147,20 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-            // Dropdown menu state
-            var dropdown_1755498355_299Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            DateSelectBox(
+                value = data.selectedDateTime,
+                onValueChange = { newValue ->
+                    viewModel.updateData(mapOf("selectedDateTime" to newValue))
+                },
+                datePickerMode = "dateAndTime",
+                dateFormat = "yyyy-MM-dd HH:mm",
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_299Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_299Expanded,
-                    onDismissRequest = { dropdown_1755498355_299Expanded = false }
-                ) {
-                }
-            }
+            )
             Text(
                 text = "DatePicker with Minute Interval",
                 fontSize = 18.sp,
@@ -235,39 +174,21 @@ fun DatePickerTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(top = 5.dp)
             )
-            // Dropdown menu state
-            var dropdown_1755498355_412Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            DateSelectBox(
+                value = data.selectedTimeInterval,
+                onValueChange = { newValue ->
+                    viewModel.updateData(mapOf("selectedTimeInterval" to newValue))
+                },
+                datePickerMode = "time",
+                dateFormat = "HH:mm",
+                minuteInterval = 15,
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_412Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_412Expanded,
-                    onDismissRequest = { dropdown_1755498355_412Expanded = false }
-                ) {
-                }
-            }
+            )
             Text(
                 text = "Calendar Style DatePicker",
                 fontSize = 18.sp,
@@ -275,72 +196,32 @@ fun DatePickerTestGeneratedView(
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
-            // Dropdown menu state
-            var dropdown_1755498355_185Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            DateSelectBox(
+                value = data.selectedCalendarDate,
+                onValueChange = { newValue ->
+                    viewModel.updateData(mapOf("selectedCalendarDate" to newValue))
+                },
+                datePickerMode = "date",
+                datePickerStyle = "graphical",
+                dateFormat = "yyyy-MM-dd",
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(300.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_185Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_185Expanded,
-                    onDismissRequest = { dropdown_1755498355_185Expanded = false }
-                ) {
-                }
-            }
-            // Dropdown menu state
-            var dropdown_1755498355_752Expanded by remember { mutableStateOf(false) }
-
-            Box(
+            )
+            DateSelectBox(
+                value = "",
+                onValueChange = { },
+                placeholder = "Select Date Range",
                 modifier = Modifier
-                    Modifier
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 30.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-            ) {
-                OutlinedTextField(
-                    value = "",
-                    onValueChange = { },
-                    readOnly = true,
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = "Dropdown"
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { dropdown_1755498355_752Expanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = dropdown_1755498355_752Expanded,
-                    onDismissRequest = { dropdown_1755498355_752Expanded = false }
-                ) {
-                }
-            }
+            )
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -360,13 +241,13 @@ fun DatePickerTestGeneratedView(
                     modifier = Modifier
                 )
                 Text(
-                    text = "\${data.selectedDate}",
+                    text = "${data.selectedDate}",
                     fontSize = 12.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
                     modifier = Modifier.padding(top = 5.dp)
                 )
                 Text(
-                    text = "\${data.startDate}",
+                    text = "${data.startDate}",
                     fontSize = 12.sp,
                     color = Color(android.graphics.Color.parseColor("#666666")),
                     modifier = Modifier.padding(top = 5.dp)

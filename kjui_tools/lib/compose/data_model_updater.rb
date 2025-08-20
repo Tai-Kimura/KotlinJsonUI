@@ -171,12 +171,8 @@ module KjuiTools
 
         import androidx.compose.runtime.MutableState
         import androidx.compose.runtime.mutableStateOf
+        import #{@package_name}.viewmodels.#{view_name}ViewModel
         KOTLIN
-        
-        # Add ViewModel import if there are onclick actions
-        if !onclick_actions.empty?
-          content += "import #{@package_name}.viewmodels.#{view_name}ViewModel\n"
-        end
         
         content += "\ndata class #{view_name}Data(\n"
         
@@ -232,6 +228,8 @@ module KjuiTools
               content += "(map[\"#{name}\"] as? Number)?.toFloat() ?: 0f"
             when 'Bool', 'Boolean'
               content += "map[\"#{name}\"] as? Boolean ?: false"
+            when 'CollectionDataSource'
+              content += "(map[\"#{name}\"] as? List<Map<String, Any>>) ?: emptyList()"
             else
               # For custom types, try to cast directly
               content += "map[\"#{name}\"] as? #{kotlin_type}"
@@ -307,6 +305,9 @@ module KjuiTools
           'Boolean'
         when 'CGFloat'
           'Float'
+        when 'CollectionDataSource'
+          # Map CollectionDataSource to a List of maps
+          'List<Map<String, Any>>'
         else
           # Return as-is for custom types
           json_class
@@ -334,6 +335,9 @@ module KjuiTools
         when 'Float', 'CGFloat'
           # Ensure it's a float with f suffix
           "#{value.to_f}f"
+        when 'CollectionDataSource'
+          # Return an empty list for CollectionDataSource
+          'emptyList()'
         else
           # For all other cases, use value as-is
           value

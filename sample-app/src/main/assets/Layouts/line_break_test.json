@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -44,7 +46,8 @@
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -66,7 +69,8 @@
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -88,7 +92,8 @@
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -110,7 +115,8 @@
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -132,7 +138,8 @@
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -154,7 +161,8 @@
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -181,7 +189,8 @@
           "background": "#D0FFFF",
           "padding": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -200,7 +209,8 @@
           "background": "#FFD0D0",
           "padding": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         },
         {
           "type": "Label",
@@ -218,7 +228,8 @@
           "background": "#D0FFD0",
           "padding": 10,
           "leftMargin": 20,
-          "rightMargin": 20
+          "rightMargin": 20,
+          "fontColor": "#000000"
         }
       ]
     }

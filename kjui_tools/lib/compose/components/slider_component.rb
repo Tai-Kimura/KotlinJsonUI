@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class SliderComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Slider uses 'bind' for two-way binding
           value = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
@@ -24,7 +24,7 @@ module KjuiTools
           # onValueChange handler
           if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
-            code += "\n" + indent("onValueChange = { newValue -> currentData.value = currentData.value.copy(#{variable} = newValue.toInt()) },", depth + 1)
+            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue.toInt())) },", depth + 1)
           elsif json_data['onValueChange']
             code += "\n" + indent("onValueChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
           else

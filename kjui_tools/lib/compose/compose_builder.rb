@@ -8,6 +8,7 @@ require_relative '../core/project_finder'
 require_relative '../core/logger'
 require_relative 'style_loader'
 require_relative 'data_model_updater'
+require_relative 'helpers/import_manager'
 require_relative 'helpers/modifier_builder'
 require_relative 'components/text_component'
 require_relative 'components/button_component'
@@ -72,6 +73,7 @@ module KjuiTools
           json_data = StyleLoader.load_and_merge(json_data)
           
           @required_imports = Set.new
+          @included_views = Set.new
           
           # Find the GeneratedView file
           generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
@@ -91,7 +93,7 @@ module KjuiTools
       
       private
       
-      def generate_component(json_data, depth = 0)
+      def generate_component(json_data, depth = 0, parent_type = nil)
         return "" unless json_data.is_a?(Hash)
         
         component_type = json_data['type'] || 'View'
@@ -102,49 +104,49 @@ module KjuiTools
         # Generate component based on type
         case component_type
         when 'ScrollView'
-          result = Components::ScrollViewComponent.generate(json_data, depth, @required_imports)
-          handle_container_result(result, depth)
+          result = Components::ScrollViewComponent.generate(json_data, depth, @required_imports, parent_type)
+          handle_container_result(result, depth, parent_type)
         when 'SafeAreaView'
           generate_safe_area_view(json_data, depth)
         when 'View'
-          result = Components::ContainerComponent.generate(json_data, depth, @required_imports)
-          handle_container_result(result, depth)
+          result = Components::ContainerComponent.generate(json_data, depth, @required_imports, parent_type)
+          handle_container_result(result, depth, parent_type)
         when 'Text', 'Label'
-          Components::TextComponent.generate(json_data, depth, @required_imports)
+          Components::TextComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Button'
-          Components::ButtonComponent.generate(json_data, depth, @required_imports)
+          Components::ButtonComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Image'
-          Components::ImageComponent.generate(json_data, depth, @required_imports)
+          Components::ImageComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'TextField'
-          Components::TextFieldComponent.generate(json_data, depth, @required_imports)
+          Components::TextFieldComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Switch'
-          Components::SwitchComponent.generate(json_data, depth, @required_imports)
+          Components::SwitchComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Slider'
-          Components::SliderComponent.generate(json_data, depth, @required_imports)
+          Components::SliderComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Progress'
-          Components::ProgressComponent.generate(json_data, depth, @required_imports)
+          Components::ProgressComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'SelectBox'
-          Components::SelectBoxComponent.generate(json_data, depth, @required_imports)
+          Components::SelectBoxComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Check', 'Checkbox'
-          Components::CheckboxComponent.generate(json_data, depth, @required_imports)
+          Components::CheckboxComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Radio'
-          Components::RadioComponent.generate(json_data, depth, @required_imports)
+          Components::RadioComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Segment'
-          Components::SegmentComponent.generate(json_data, depth, @required_imports)
+          Components::SegmentComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'NetworkImage'
-          Components::NetworkImageComponent.generate(json_data, depth, @required_imports)
+          Components::NetworkImageComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'CircleImage'
-          Components::CircleImageComponent.generate(json_data, depth, @required_imports)
+          Components::CircleImageComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Indicator'
-          Components::IndicatorComponent.generate(json_data, depth, @required_imports)
+          Components::IndicatorComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'TextView'
-          Components::TextViewComponent.generate(json_data, depth, @required_imports)
+          Components::TextViewComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Collection'
-          Components::CollectionComponent.generate(json_data, depth, @required_imports)
+          Components::CollectionComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Table'
-          Components::TableComponent.generate(json_data, depth, @required_imports)
+          Components::TableComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Web'
-          Components::WebComponent.generate(json_data, depth, @required_imports)
+          Components::WebComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
@@ -152,13 +154,14 @@ module KjuiTools
         end
       end
       
-      def handle_container_result(result, depth)
+      def handle_container_result(result, depth, parent_type = nil)
         if result.is_a?(Hash)
           code = result[:code]
           children = result[:children] || []
+          layout_type = result[:layout_type] || parent_type
           
           children.each do |child|
-            child_code = generate_component(child, depth + 1)
+            child_code = generate_component(child, depth + 1, layout_type)
             code += "\n" + child_code unless child_code.empty?
           end
           
@@ -194,20 +197,17 @@ module KjuiTools
       def generate_include(json_data, depth)
         include_name = json_data['include']
         pascal_name = to_pascal_case(include_name)
+        snake_name = to_snake_case(include_name)
         
+        # Track this included view for imports
+        @included_views&.add(snake_name)
+        
+        # Simply call the view with the viewModel parameter
+        # Data passing should be handled differently (e.g., through ViewModel initialization)
         code = indent("#{pascal_name}View(", depth)
-        code += "\n" + indent("viewModel = viewModel.#{to_camel_case(include_name)}ViewModel,", depth + 1)
-        
-        if json_data['data']
-          code += "\n" + indent("data = #{pascal_name}Data(", depth + 1)
-          json_data['data'].each do |key, value|
-            processed = process_data_binding(value.to_s)
-            code += "\n" + indent("#{key} = #{processed},", depth + 2)
-          end
-          code += "\n" + indent(")", depth + 1)
-        end
-        
+        code += "\n" + indent("viewModel = viewModel.#{to_camel_case(include_name)}ViewModel", depth + 1)
         code += "\n" + indent(")", depth)
+        
         code
       end
       
@@ -233,50 +233,7 @@ module KjuiTools
       end
       
       def update_imports(content)
-        imports_map = {
-          lazy_column: "import androidx.compose.foundation.lazy.LazyColumn",
-          lazy_row: "import androidx.compose.foundation.lazy.LazyRow",
-          background: "import androidx.compose.foundation.background",
-          border: "import androidx.compose.foundation.border",
-          shape: ["import androidx.compose.foundation.shape.RoundedCornerShape",
-                  "import androidx.compose.ui.draw.clip"],
-          text_align: "import androidx.compose.ui.text.style.TextAlign",
-          text_overflow: "import androidx.compose.ui.text.style.TextOverflow",
-          text_style: "import androidx.compose.ui.text.TextStyle",
-          visual_transformation: "import androidx.compose.ui.text.input.PasswordVisualTransformation",
-          shadow: "import androidx.compose.ui.draw.shadow",
-          arrangement: "import androidx.compose.foundation.layout.Arrangement",
-          keyboard_type: ["import androidx.compose.foundation.text.KeyboardOptions",
-                          "import androidx.compose.ui.text.input.KeyboardType"],
-          ime_action: "import androidx.compose.ui.text.input.ImeAction",
-          button_colors: "import androidx.compose.material3.ButtonDefaults",
-          text_decoration: "import androidx.compose.ui.text.style.TextDecoration",
-          shadow_style: ["import androidx.compose.ui.text.TextStyle",
-                         "import androidx.compose.ui.graphics.Shadow",
-                         "import androidx.compose.ui.geometry.Offset"],
-          switch_colors: "import androidx.compose.material3.SwitchDefaults",
-          slider_colors: "import androidx.compose.material3.SliderDefaults",
-          checkbox_colors: "import androidx.compose.material3.CheckboxDefaults",
-          dropdown_menu: ["import androidx.compose.material3.DropdownMenu",
-                          "import androidx.compose.material3.DropdownMenuItem",
-                          "import androidx.compose.material.icons.Icons",
-                          "import androidx.compose.material.icons.filled.ArrowDropDown",
-                          "import androidx.compose.foundation.clickable"],
-          radio_colors: "import androidx.compose.material3.RadioButtonDefaults",
-          tab_row: ["import androidx.compose.material3.TabRow",
-                    "import androidx.compose.material3.Tab"],
-          async_image: "import coil.compose.AsyncImage",
-          content_scale: "import androidx.compose.ui.layout.ContentScale",
-          lazy_grid: ["import androidx.compose.foundation.lazy.grid.LazyVerticalGrid",
-                      "import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid",
-                      "import androidx.compose.foundation.lazy.grid.GridCells"],
-          webview: ["import android.webkit.WebView",
-                    "import android.webkit.WebViewClient",
-                    "import android.webkit.WebChromeClient",
-                    "import androidx.compose.ui.viewinterop.AndroidView"],
-          constraint_layout: ["import androidx.constraintlayout.compose.ConstraintLayout",
-                              "import androidx.constraintlayout.compose.Dimension"]
-        }
+        imports_map = Helpers::ImportManager.get_imports_map
         
         imports_to_add = []
         @required_imports.each do |import_type|
@@ -287,6 +244,20 @@ module KjuiTools
             else
               imports_to_add << import_lines
             end
+          end
+        end
+        
+        # Add imports for included views
+        if @included_views && @included_views.any?
+          @included_views.each do |view_name|
+            pascal_name = to_pascal_case(view_name)
+            view_import = "import #{@package_name}.views.#{view_name}.#{pascal_name}View"
+            data_import = "import #{@package_name}.data.#{pascal_name}Data"
+            viewmodel_import = "import #{@package_name}.viewmodels.#{pascal_name}ViewModel"
+            
+            imports_to_add << view_import unless imports_to_add.include?(view_import)
+            imports_to_add << data_import unless imports_to_add.include?(data_import)
+            imports_to_add << viewmodel_import unless imports_to_add.include?(viewmodel_import)
           end
         end
         

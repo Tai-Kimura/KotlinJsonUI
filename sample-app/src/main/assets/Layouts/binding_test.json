@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -225,16 +227,107 @@
             "Option 1",
             "Option 2",
             "Option 3",
-            "Option 4"
+            "Option 4",
+            "Option 5",
+            "Option 6",
+            "Option 7",
+            "Option 8",
+            "Option 9",
+            "Option 10",
+            "Option 11",
+            "Option 12",
+            "Option 13",
+            "Option 14",
+            "Option 15",
+            "Option 16",
+            "Option 17",
+            "Option 18",
+            "Option 19",
+            "Option 20",
+            "Option 21",
+            "Option 22",
+            "Option 23",
+            "Option 24",
+            "Option 25",
+            "Option 26",
+            "Option 27",
+            "Option 28",
+            "Option 29",
+            "Option 30"
           ],
           "background": "#FFFFFF",
           "cornerRadius": 8,
           "borderColor": "#CCCCCC",
-          "borderWidth": 1
+          "borderWidth": 1,
+          "fontColor": "#000000",
+          "hintColor": "#999999",
+          "hint": "選択してください"
         },
         {
           "type": "Label",
           "text": "Selected: @{selectedOption}",
+          "fontSize": 14,
+          "fontColor": "#666666",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Date Picker (Wheels Style)",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "fontWeight": "bold",
+          "topMargin": 30
+        },
+        {
+          "type": "SelectBox",
+          "selectItemType": "Date",
+          "selectedItem": "@{selectedDate}",
+          "datePickerStyle": "wheels",
+          "dateFormat": "yyyy年MM月dd日",
+          "minimumDate": "2020-01-01",
+          "maximumDate": "2030-12-31",
+          "hint": "日付を選択",
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "borderColor": "#CCCCCC",
+          "borderWidth": 1,
+          "fontColor": "#000000",
+          "hintColor": "#999999",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "height": 44
+        },
+        {
+          "type": "Label",
+          "text": "Date Picker (Compact Style)",
+          "fontSize": 18,
+          "fontColor": "#333333",
+          "fontWeight": "bold",
+          "topMargin": 30
+        },
+        {
+          "type": "SelectBox",
+          "selectItemType": "Date",
+          "selectedItem": "@{selectedDate2}",
+          "datePickerStyle": "compact",
+          "dateFormat": "MM/dd/yyyy",
+          "hint": "Select date",
+          "background": "#FFFFFF",
+          "cornerRadius": 8,
+          "borderColor": "#CCCCCC",
+          "borderWidth": 1,
+          "fontColor": "#000000",
+          "hintColor": "#999999",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "height": 44
+        },
+        {
+          "type": "Label",
+          "text": "@{selectedDate} / @{selectedDate2}",
           "fontSize": 14,
           "fontColor": "#666666",
           "topMargin": 10,
@@ -279,6 +372,16 @@
       "name": "toggleValue",
       "class": "Bool",
       "defaultValue": "false"
+    },
+    {
+      "name": "selectedDate",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedDate2",
+      "class": "String",
+      "defaultValue": "2024-01-15"
     }
   ]
 }

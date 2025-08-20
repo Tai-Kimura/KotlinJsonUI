@@ -13,6 +13,8 @@ import com.example.kotlinjsonui.sample.data.WeightTestData
 import com.example.kotlinjsonui.sample.viewmodels.WeightTestViewModel
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun WeightTestGeneratedView(
@@ -30,11 +32,15 @@ fun WeightTestGeneratedView(
     ) {
         Button(
             onClick = { },
+            shape = RoundedCornerShape(8.dp)
         ) {
-            Text("Button")
+            Text(
+                text = "Button",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
         Text(
-            text = "\${data.title}",
+            text = "${data.title}",
             fontSize = 24.sp,
             color = Color(android.graphics.Color.parseColor("#000000")),
             modifier = Modifier
@@ -60,27 +66,30 @@ fun WeightTestGeneratedView(
             Text(
                 text = "Weight: 1",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(1f)
                     .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
-                    .width(0.dp)
                     .wrapContentHeight(),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Weight: 2",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(2f)
                     .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
-                    .width(0.dp)
                     .fillMaxHeight(),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Weight: 1",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(1f)
                     .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
-                    .width(0.dp)
                     .fillMaxHeight(),
                 textAlign = TextAlign.Center
             )
@@ -103,7 +112,9 @@ fun WeightTestGeneratedView(
             Text(
                 text = "Weight: 1",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(1f)
                     .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
                     .fillMaxWidth()
                     .height(0.dp),
@@ -112,7 +123,9 @@ fun WeightTestGeneratedView(
             Text(
                 text = "Weight: 3",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(3f)
                     .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
                     .fillMaxWidth()
                     .height(0.dp),
@@ -121,7 +134,9 @@ fun WeightTestGeneratedView(
             Text(
                 text = "Weight: 2",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .weight(2f)
                     .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
                     .fillMaxWidth()
                     .height(0.dp),
@@ -146,6 +161,7 @@ fun WeightTestGeneratedView(
             Text(
                 text = "widthWeight: 1",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                     .width(0.dp)
@@ -155,6 +171,7 @@ fun WeightTestGeneratedView(
             Text(
                 text = "widthWeight: 1",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                     .width(0.dp)

@@ -21,7 +21,8 @@ class Included1ViewModel : ViewModel() {
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        currentDataMap.putAll(updates)
+        _data.value = Included1Data.fromMap(currentDataMap)
     }
 }

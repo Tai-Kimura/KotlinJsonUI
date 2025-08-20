@@ -32,7 +32,9 @@
       },
       {
         "type": "Button",
-        "style": "dynamic_toggle"
+        "style": "dynamic_toggle",
+        "fontColor": "#FFFFFF",
+        "cornerRadius": 8
       },
       {
         "type": "Label",
@@ -167,7 +169,8 @@
             "topMargin": 10,
             "alignTopView": "anchor_with_margin",
             "alignLeft": true,
-            "leftMargin": 10
+            "leftMargin": 10,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -180,7 +183,8 @@
             "bottomMargin": 10,
             "alignBottomView": "anchor_with_margin",
             "alignRight": true,
-            "rightMargin": 10
+            "rightMargin": 10,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -193,7 +197,8 @@
             "topMargin": 10,
             "leftMargin": 15,
             "alignLeftView": "anchor_with_margin",
-            "alignTop": true
+            "alignTop": true,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -206,7 +211,8 @@
             "bottomMargin": 10,
             "rightMargin": 15,
             "alignRightView": "anchor_with_margin",
-            "alignBottom": true
+            "alignBottom": true,
+            "fontColor": "#000000"
           }
         ]
       },
@@ -252,7 +258,8 @@
             "padding": 5,
             "bottomMargin": 10,
             "alignTopOfView": "center_anchor",
-            "centerHorizontal": true
+            "centerHorizontal": true,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -264,7 +271,8 @@
             "padding": 5,
             "topMargin": 10,
             "alignBottomOfView": "center_anchor",
-            "centerHorizontal": true
+            "centerHorizontal": true,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -276,7 +284,8 @@
             "padding": 5,
             "rightMargin": 10,
             "alignLeftOfView": "center_anchor",
-            "centerVertical": true
+            "centerVertical": true,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -288,7 +297,8 @@
             "padding": 5,
             "leftMargin": 10,
             "alignRightOfView": "center_anchor",
-            "centerVertical": true
+            "centerVertical": true,
+            "fontColor": "#000000"
           }
         ]
       },
@@ -517,7 +527,8 @@
             "bottomMargin": 5,
             "topMargin": 10,
             "alignTopOfView": "chain_middle",
-            "alignLeftView": "chain_middle"
+            "alignLeftView": "chain_middle",
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -530,7 +541,8 @@
             "topMargin": 8,
             "bottomMargin": 10,
             "alignBottomOfView": "chain_start",
-            "alignRightView": "chain_start"
+            "alignRightView": "chain_start",
+            "fontColor": "#000000"
           }
         ]
       },
@@ -598,7 +610,8 @@
             "rightMargin": 5,
             "alignLeftOfView": "ref2",
             "alignRightOfView": "ref1",
-            "centerVertical": true
+            "centerVertical": true,
+            "fontColor": "#000000"
           },
           {
             "type": "Label",
@@ -611,7 +624,8 @@
             "topMargin": 10,
             "rightMargin": 10,
             "alignTopView": "ref1",
-            "alignRightView": "ref2"
+            "alignRightView": "ref2",
+            "fontColor": "#000000"
           },
           {
             "type": "Label",

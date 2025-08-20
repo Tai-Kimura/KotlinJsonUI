@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -47,7 +49,8 @@
               "text": "Fixed: 80",
               "background": "#FFD0D0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -57,7 +60,8 @@
               "text": "Weight: 1",
               "background": "#D0FFD0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -67,7 +71,8 @@
               "text": "Weight: 2",
               "background": "#D0D0FF",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -76,7 +81,8 @@
               "text": "Fixed: 60",
               "background": "#FFFFD0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -111,7 +117,8 @@
                   "text": "1-1",
                   "background": "#FFE0E0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 },
                 {
                   "type": "Label",
@@ -121,7 +128,8 @@
                   "text": "1-2",
                   "background": "#FFC0C0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 }
               ]
             },
@@ -132,7 +140,8 @@
               "text": "Fix\n50",
               "background": "#E0E0E0",
               "textAlign": "center",
-              "fontSize": 12
+              "fontSize": 12,
+              "fontColor": "#000000"
             },
             {
               "type": "View",
@@ -148,7 +157,8 @@
                   "text": "Fixed 30",
                   "background": "#E0FFE0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 },
                 {
                   "type": "Label",
@@ -158,7 +168,8 @@
                   "text": "Weight 1",
                   "background": "#C0FFC0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 }
               ]
             }
@@ -187,7 +198,8 @@
               "text": "40",
               "background": "#FFD0D0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -197,7 +209,8 @@
               "text": "W:1",
               "background": "#D0FFD0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -206,7 +219,8 @@
               "text": "60",
               "background": "#FFD0D0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -216,7 +230,8 @@
               "text": "W:1",
               "background": "#D0FFD0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -225,7 +240,8 @@
               "text": "80",
               "background": "#FFD0D0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -253,7 +269,8 @@
               "text": "W:0",
               "background": "#FFA0A0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -263,7 +280,8 @@
               "text": "W:1",
               "background": "#A0FFA0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -272,7 +290,8 @@
               "text": "Fixed:100",
               "background": "#A0A0FF",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -282,7 +301,8 @@
               "text": "W:3",
               "background": "#FFFFA0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -309,7 +329,8 @@
               "text": "Fixed: 30",
               "background": "#FFE0E0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -319,7 +340,8 @@
               "text": "Weight: 1",
               "background": "#E0FFE0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -328,7 +350,8 @@
               "text": "Fixed: 40",
               "background": "#E0E0FF",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -338,7 +361,8 @@
               "text": "Weight: 2",
               "background": "#FFFFE0",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -347,7 +371,8 @@
               "text": "Fixed: 50",
               "background": "#FFE0FF",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             }
           ]
         },
@@ -392,7 +417,8 @@
                   "text": "Col 1",
                   "background": "#FFD0D0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 },
                 {
                   "type": "Label",
@@ -401,7 +427,8 @@
                   "text": "Fix:60",
                   "background": "#D0D0D0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 },
                 {
                   "type": "Label",
@@ -411,7 +438,8 @@
                   "text": "Col 2",
                   "background": "#D0FFD0",
                   "textAlign": "center",
-                  "fontSize": 12
+                  "fontSize": 12,
+                  "fontColor": "#000000"
                 }
               ]
             },
@@ -451,7 +479,8 @@
               "text": "W:1",
               "background": "#FFCCCC",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -461,7 +490,8 @@
               "text": "W:1",
               "background": "#CCFFCC",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -471,7 +501,8 @@
               "text": "W:2",
               "background": "#CCCCFF",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             },
             {
               "type": "Label",
@@ -481,7 +512,8 @@
               "text": "W:1",
               "background": "#FFFFCC",
               "textAlign": "center",
-              "fontSize": 14
+              "fontSize": 14,
+              "fontColor": "#000000"
             }
           ]
         }

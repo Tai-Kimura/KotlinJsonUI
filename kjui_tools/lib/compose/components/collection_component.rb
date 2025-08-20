@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class CollectionComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           required_imports&.add(:lazy_grid)
           
           # Collection uses data binding for items
@@ -62,8 +62,9 @@ module KjuiTools
           
           code += "\n" + indent(") {", depth)
           
-          # Items
-          code += "\n" + indent("items(#{items}) { item ->", depth + 1)
+          # Items - use the list version of items()
+          code += "\n" + indent("items(#{items}.size) { index ->", depth + 1)
+          code += "\n" + indent("val item = #{items}[index]", depth + 2)
           
           # Cell content
           if json_data['cell']

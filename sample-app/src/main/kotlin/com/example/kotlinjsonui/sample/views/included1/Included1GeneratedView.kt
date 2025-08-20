@@ -28,7 +28,7 @@ fun Included1GeneratedView(
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         Text(
-            text = "\${data.title}",
+            text = "${data.title}",
             fontSize = 24.sp,
             color = Color(android.graphics.Color.parseColor("#000000")),
             modifier = Modifier

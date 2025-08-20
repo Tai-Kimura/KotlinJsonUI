@@ -11,7 +11,9 @@ data class BindingTestData(
     var sliderValue: Double = 50.0,
     var textValue: String = "Type something here",
     var title: String = "Data Binding Test",
-    var toggleValue: Boolean = false
+    var toggleValue: Boolean = false,
+    var selectedDate: String = "",
+    var selectedDate2: String = "2024-01-15"
 ) {
     companion object {
         // Update properties from map
@@ -23,7 +25,9 @@ data class BindingTestData(
                 sliderValue = (map["sliderValue"] as? Number)?.toDouble() ?: 0.0,
                 textValue = map["textValue"] as? String ?: "",
                 title = map["title"] as? String ?: "",
-                toggleValue = map["toggleValue"] as? Boolean ?: false
+                toggleValue = map["toggleValue"] as? Boolean ?: false,
+                selectedDate = map["selectedDate"] as? String ?: "",
+                selectedDate2 = map["selectedDate2"] as? String ?: ""
             )
         }
     }
@@ -40,6 +44,8 @@ data class BindingTestData(
         map["textValue"] = textValue
         map["title"] = title
         map["toggleValue"] = toggleValue
+        map["selectedDate"] = selectedDate
+        map["selectedDate2"] = selectedDate2
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->

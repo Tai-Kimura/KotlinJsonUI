@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun TextStylingTestGeneratedView(
@@ -38,11 +40,15 @@ fun TextStylingTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
@@ -60,21 +66,25 @@ fun TextStylingTestGeneratedView(
             Text(
                 text = "fontSize: 12",
                 fontSize = 12.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
                 text = "fontSize: 16",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
                 text = "fontSize: 20",
                 fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
                 text = "fontSize: 24",
                 fontSize = 24.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
@@ -87,12 +97,14 @@ fun TextStylingTestGeneratedView(
             Text(
                 text = "Bold Text",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
                 text = "Underlined Text",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.padding(top = 10.dp)
             )
@@ -106,30 +118,33 @@ fun TextStylingTestGeneratedView(
             Text(
                 text = "Left Aligned (default)",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(5.dp)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .padding(5.dp)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
             Text(
                 text = "Center Aligned",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(5.dp)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .padding(5.dp)
                     .fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = "Right Aligned",
                 fontSize = 16.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(5.dp)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .padding(5.dp)
                     .fillMaxWidth(),
                 textAlign = TextAlign.End
             )
@@ -143,18 +158,20 @@ fun TextStylingTestGeneratedView(
             Text(
                 text = "This is a multi-line text with lineSpacing: 5 to demonstrate line spacing",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                    .padding(10.dp)
             )
             Text(
                 text = "This is another multi-line text with lineSpacing: 10 to demonstrate line spacing (line breaks work with proper spacing)",
                 fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(10.dp)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                    .padding(10.dp)
             )
             Text(
                 text = "Font Colors",

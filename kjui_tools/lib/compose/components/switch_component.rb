@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class SwitchComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Switch uses 'bind' for two-way binding
           checked = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
@@ -21,7 +21,7 @@ module KjuiTools
           # onCheckedChange handler
           if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
-            code += "\n" + indent("onCheckedChange = { newValue -> currentData.value = currentData.value.copy(#{variable} = newValue) },", depth + 1)
+            code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
           elsif json_data['onValueChange']
             code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
           else
@@ -32,7 +32,12 @@ module KjuiTools
           modifiers = []
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+          
+          # Add weight modifier if in Row or Column
+          if parent_type == 'Row' || parent_type == 'Column'
+            modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+          end
           
           code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
           

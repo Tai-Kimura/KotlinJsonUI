@@ -15,13 +15,26 @@ class BindingTestViewModel : ViewModel() {
     val data: StateFlow<BindingTestData> = _data.asStateFlow()
     
     // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
+    fun decreaseCounter() {
+        _data.value = _data.value.copy(counter = _data.value.counter - 1)
+    }
+    
+    fun increaseCounter() {
+        _data.value = _data.value.copy(counter = _data.value.counter + 1)
+    }
+    
+    fun toggleChanged() {
+        _data.value = _data.value.copy(toggleValue = !_data.value.toggleValue)
+    }
+    
+    fun sliderChanged(value: Float) {
+        _data.value = _data.value.copy(sliderValue = value.toDouble())
     }
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        currentDataMap.putAll(updates)
+        _data.value = BindingTestData.fromMap(currentDataMap)
     }
 }

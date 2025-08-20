@@ -2,6 +2,7 @@ package com.example.kotlinjsonui.sample.data
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.example.kotlinjsonui.sample.viewmodels.WeightTestViewModel
 
 data class WeightTestData(
     var dynamicModeStatus: String = "OFF",

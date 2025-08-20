@@ -2,6 +2,7 @@ package com.example.kotlinjsonui.sample.data
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import com.example.kotlinjsonui.sample.viewmodels.TextStylingTestViewModel
 
 data class TextStylingTestData(
     var dynamicModeStatus: String = "OFF",

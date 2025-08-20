@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -40,7 +42,7 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "selectedDate": "@{selectedDate}",
+          "selectedItem": "@{selectedDate}",
           "selectItemType": "Date",
           "datePickerMode": "date",
           "dateStringFormat": "yyyy-MM-dd"
@@ -68,7 +70,7 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "selectedDate": "@{selectedDate}",
+          "selectedItem": "@{selectedDate2}",
           "minimumDate": "2025-01-01",
           "maximumDate": "2025-12-31",
           "selectItemType": "Date",
@@ -91,6 +93,7 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
+          "selectedItem": "@{selectedTime}",
           "selectItemType": "Date",
           "datePickerMode": "time",
           "dateStringFormat": "HH:mm"
@@ -111,6 +114,7 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
+          "selectedItem": "@{selectedDateTime}",
           "selectItemType": "Date",
           "datePickerMode": "dateAndTime",
           "dateStringFormat": "yyyy-MM-dd HH:mm"
@@ -138,6 +142,7 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
+          "selectedItem": "@{selectedTimeInterval}",
           "selectItemType": "Date",
           "datePickerMode": "time",
           "minuteInterval": 15,
@@ -159,6 +164,7 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
+          "selectedItem": "@{selectedCalendarDate}",
           "selectItemType": "Date",
           "datePickerMode": "date",
           "datePickerStyle": "graphical",
@@ -230,6 +236,31 @@
       "name": "selectedDate",
       "class": "String",
       "defaultValue": "2025-08-11"
+    },
+    {
+      "name": "selectedDate2",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedTime",
+      "class": "String",
+      "defaultValue": "14:30"
+    },
+    {
+      "name": "selectedDateTime",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedTimeInterval",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedCalendarDate",
+      "class": "String",
+      "defaultValue": ""
     },
     {
       "name": "startDate",

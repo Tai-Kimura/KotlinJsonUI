@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class ButtonComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Button uses 'text' attribute per SwiftJsonUI spec
           text = process_data_binding(json_data['text'] || 'Button')
           onclick = json_data['onclick']
@@ -14,9 +14,9 @@ module KjuiTools
           code = indent("Button(", depth)
           
           if onclick
-            code += "\n" + indent("onClick = { viewModel.#{onclick}() },", depth + 1)
+            code += "\n" + indent("onClick = { viewModel.#{onclick}() }", depth + 1)
           else
-            code += "\n" + indent("onClick = { },", depth + 1)
+            code += "\n" + indent("onClick = { }", depth + 1)
           end
           
           # Build modifiers
@@ -25,8 +25,17 @@ module KjuiTools
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           
-          # Format modifiers
-          code += Helpers::ModifierBuilder.format(modifiers, depth)
+          # Format modifiers only if there are modifiers
+          if modifiers.any?
+            code += ","
+            code += Helpers::ModifierBuilder.format(modifiers, depth)
+          end
+          
+          # Add shape with cornerRadius if specified
+          if json_data['cornerRadius']
+            required_imports&.add(:shape)
+            code += ",\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp)", depth + 1)
+          end
           
           # Button colors including normal, disabled, and pressed states
           if json_data['background'] || json_data['disabledBackground'] || json_data['disabledFontColor'] || json_data['hilightColor']

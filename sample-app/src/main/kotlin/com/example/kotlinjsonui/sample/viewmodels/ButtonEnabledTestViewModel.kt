@@ -15,13 +15,29 @@ class ButtonEnabledTestViewModel : ViewModel() {
     val data: StateFlow<ButtonEnabledTestData> = _data.asStateFlow()
     
     // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
+    fun testAction() {
+        // Test button action
+        println("Test action called")
+    }
+    
+    fun toggleEnabled() {
+        _data.value = _data.value.copy(isButtonEnabled = !_data.value.isButtonEnabled)
+    }
+    
+    fun neverCalled() {
+        // This should never be called when button is disabled
+        println("This shouldn't be called when disabled")
+    }
+    
+    fun alwaysCalled() {
+        // This should always be called
+        println("Always called")
     }
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        currentDataMap.putAll(updates)
+        _data.value = ButtonEnabledTestData.fromMap(currentDataMap)
     }
 }

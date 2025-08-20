@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class RadioComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Radio uses 'bind' for selected value
           selected = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
@@ -40,7 +40,7 @@ module KjuiTools
                 
                 if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                   variable = $1
-                  code += "\n" + indent("        currentData.value = currentData.value.copy(#{variable} = \"#{option_value}\")", depth + 2)
+                  code += "\n" + indent("        viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 2)
                 elsif json_data['onValueChange']
                   code += "\n" + indent("        viewModel.#{json_data['onValueChange']}(\"#{option_value}\")", depth + 2)
                 end
@@ -55,7 +55,7 @@ module KjuiTools
                 
                 if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                   variable = $1
-                  code += "\n" + indent("currentData.value = currentData.value.copy(#{variable} = \"#{option_value}\")", depth + 4)
+                  code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 4)
                 elsif json_data['onValueChange']
                   code += "\n" + indent("viewModel.#{json_data['onValueChange']}(\"#{option_value}\")", depth + 4)
                 end
@@ -100,7 +100,7 @@ module KjuiTools
               
               if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                 variable = $1
-                code += "\n" + indent("currentData.value = currentData.value.copy(#{variable} = option)", depth + 4)
+                code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to option))", depth + 4)
               end
               
               code += "\n" + indent("}", depth + 3)
@@ -111,7 +111,7 @@ module KjuiTools
               
               if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                 variable = $1
-                code += "\n" + indent("currentData.value = currentData.value.copy(#{variable} = option)", depth + 5)
+                code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to option))", depth + 5)
               end
               
               code += "\n" + indent("}", depth + 4)

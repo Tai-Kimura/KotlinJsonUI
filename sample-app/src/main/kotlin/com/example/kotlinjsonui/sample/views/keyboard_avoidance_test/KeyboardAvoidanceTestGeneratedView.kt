@@ -18,6 +18,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.shape.CircleShape
+import com.kotlinjsonui.components.CustomTextField
+import com.kotlinjsonui.components.CustomTextFieldWithMargins
 
 @Composable
 fun KeyboardAvoidanceTestGeneratedView(
@@ -42,11 +45,15 @@ fun KeyboardAvoidanceTestGeneratedView(
         ) {
             Button(
                 onClick = { },
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Button")
+                Text(
+                    text = "Button",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
             }
             Text(
-                text = "\${data.title}",
+                text = "${data.title}",
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier.padding(bottom = 20.dp)
@@ -57,16 +64,17 @@ fun KeyboardAvoidanceTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            TextField(
-                value = "\${data.textField1}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(textField1 = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.textField1}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("textField1" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .padding(12.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(12.dp),
+                shape = RoundedCornerShape(8.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -75,16 +83,17 @@ fun KeyboardAvoidanceTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            TextField(
-                value = "\${data.textField2}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(textField2 = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.textField2}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("textField2" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .padding(12.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(12.dp),
+                shape = RoundedCornerShape(8.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -93,16 +102,17 @@ fun KeyboardAvoidanceTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            TextField(
-                value = "\${data.textField3}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(textField3 = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.textField3}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("textField3" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .padding(12.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(12.dp),
+                shape = RoundedCornerShape(8.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -111,16 +121,17 @@ fun KeyboardAvoidanceTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            TextField(
-                value = "\${data.textField4}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(textField4 = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.textField4}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("textField4" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .padding(12.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(12.dp),
+                shape = RoundedCornerShape(8.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -129,16 +140,17 @@ fun KeyboardAvoidanceTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            TextField(
-                value = "\${data.textField5}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(textField5 = newValue) },
-                modifier = Modifier
+            CustomTextFieldWithMargins(
+                value = "${data.textField5}",
+                onValueChange = { newValue -> viewModel.updateData(mapOf("textField5" to newValue)) },
+                boxModifier = Modifier
+                    .padding(bottom = 16.dp),
+                textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .padding(12.dp)
-                    .padding(bottom = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
+                    .padding(12.dp),
+                shape = RoundedCornerShape(8.dp),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 textStyle = TextStyle(fontSize = 16.sp)
             )
             Text(
@@ -149,7 +161,7 @@ fun KeyboardAvoidanceTestGeneratedView(
             )
             OutlinedTextField(
                 value = "\${data.textView}",
-                onValueChange = { newValue -> currentData.value = currentData.value.copy(textView = newValue) },
+                onValueChange = { newValue -> viewModel.updateData(mapOf("textView" to newValue)) },
                 placeholder = { Text("Multi-line text input\nType here...") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -167,6 +179,7 @@ fun KeyboardAvoidanceTestGeneratedView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
                                 )

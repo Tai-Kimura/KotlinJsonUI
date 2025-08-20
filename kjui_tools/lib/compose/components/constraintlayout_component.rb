@@ -140,9 +140,11 @@ module KjuiTools
           code = indent("Text(", depth)
           
           # Add modifier with constraints
+          # In ConstraintLayout, margins are handled in constraints, not as padding modifiers
+          # Correct order: constrainAs -> size -> background -> padding
           modifiers = []
           modifiers.concat(Helpers::ModifierBuilder.build_size(data))
-          modifiers.concat(Helpers::ModifierBuilder.build_margins(data))
+          # Skip margins here - they're handled in build_relative_positioning
           modifiers.concat(Helpers::ModifierBuilder.build_background(data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(data))
           

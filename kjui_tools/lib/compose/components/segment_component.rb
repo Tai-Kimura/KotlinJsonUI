@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class SegmentComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           required_imports&.add(:tab_row)
           
           # Segment uses 'bind' for selected index
@@ -58,7 +58,7 @@ module KjuiTools
               
               if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                 variable = $1
-                code += "\n" + indent("currentData.value = currentData.value.copy(#{variable} = #{index})", depth + 3)
+                code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to #{index}))", depth + 3)
               elsif json_data['onValueChange']
                 code += "\n" + indent("viewModel.#{json_data['onValueChange']}(#{index})", depth + 3)
               end
@@ -77,7 +77,7 @@ module KjuiTools
             
             if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
               variable = $1
-              code += "\n" + indent("currentData.value = currentData.value.copy(#{variable} = index)", depth + 4)
+              code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to index))", depth + 4)
             end
             
             code += "\n" + indent("},", depth + 3)

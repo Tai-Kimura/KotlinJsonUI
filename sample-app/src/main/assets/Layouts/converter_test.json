@@ -12,7 +12,9 @@
       "child": [
         {
           "type": "Button",
-          "style": "dynamic_toggle"
+          "style": "dynamic_toggle",
+          "fontColor": "#FFFFFF",
+          "cornerRadius": 8
         },
         {
           "type": "Label",
@@ -150,7 +152,8 @@
                   "type": "Label",
                   "text": "Content of Tab 1",
                   "fontSize": 14,
-                  "centerInParent": true
+                  "centerInParent": true,
+                  "fontColor": "#000000"
                 }
               ]
             },
@@ -161,7 +164,8 @@
                   "type": "Label",
                   "text": "Content of Tab 2",
                   "fontSize": 14,
-                  "centerInParent": true
+                  "centerInParent": true,
+                  "fontColor": "#000000"
                 }
               ]
             }

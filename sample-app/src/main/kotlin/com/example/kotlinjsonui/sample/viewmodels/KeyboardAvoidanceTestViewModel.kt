@@ -15,13 +15,22 @@ class KeyboardAvoidanceTestViewModel : ViewModel() {
     val data: StateFlow<KeyboardAvoidanceTestData> = _data.asStateFlow()
     
     // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
+    fun submitForm() {
+        // Submit form with keyboard avoidance test
+        val data = _data.value
+        println("Keyboard Avoidance Test Submitted:")
+        println("  Field 1: ${data.textField1}")
+        println("  Field 2: ${data.textField2}")
+        println("  Field 3: ${data.textField3}")
+        println("  Field 4: ${data.textField4}")
+        println("  Field 5: ${data.textField5}")
+        println("  Text View: ${data.textView}")
     }
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        currentDataMap.putAll(updates)
+        _data.value = KeyboardAvoidanceTestData.fromMap(currentDataMap)
     }
 }
