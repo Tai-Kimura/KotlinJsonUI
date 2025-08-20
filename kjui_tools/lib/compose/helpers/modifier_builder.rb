@@ -75,7 +75,8 @@ module KjuiTools
           modifiers = []
           
           # Weight only works in Row/Column contexts
-          if json_data['weight'] && parent_orientation
+          # Weight must be greater than 0 in Compose
+          if json_data['weight'] && parent_orientation && json_data['weight'].to_f > 0
             modifiers << ".weight(#{json_data['weight']}f)"
           end
           
@@ -85,21 +86,21 @@ module KjuiTools
         def self.build_size(json_data)
           modifiers = []
           
-          # Width
+          # Width - skip if weight is present and width is 0
           if json_data['width'] == 'matchParent'
             modifiers << ".fillMaxWidth()"
           elsif json_data['width'] == 'wrapContent'
             modifiers << ".wrapContentWidth()"
-          elsif json_data['width']
+          elsif json_data['width'] && !(json_data['weight'] && json_data['width'] == 0)
             modifiers << ".width(#{json_data['width']}.dp)"
           end
           
-          # Height
+          # Height - skip if heightWeight is present and height is 0
           if json_data['height'] == 'matchParent'
             modifiers << ".fillMaxHeight()"
           elsif json_data['height'] == 'wrapContent'
             modifiers << ".wrapContentHeight()"
-          elsif json_data['height']
+          elsif json_data['height'] && !(json_data['heightWeight'] && json_data['height'] == 0)
             modifiers << ".height(#{json_data['height']}.dp)"
           end
           
@@ -201,72 +202,128 @@ module KjuiTools
           modifiers
         end
         
-        def self.build_visibility(json_data)
+        def self.build_visibility(json_data, required_imports = nil)
           modifiers = []
+          visibility_info = {}
           
-          # Handle visibility attribute
+          # Handle visibility attribute (static or data-bound)
           if json_data['visibility']
-            case json_data['visibility']
-            when 'gone'
-              # In Compose, gone is handled by not rendering the component
-              return ['SKIP_RENDER']
-            when 'invisible'
-              modifiers << ".alpha(0f)"
-            # 'visible' is the default, no modifier needed
+            if json_data['visibility'].is_a?(String) && json_data['visibility'].start_with?('@{')
+              # Data binding for visibility
+              variable = json_data['visibility'].gsub('@{', '').gsub('}', '')
+              visibility_info[:visibility_binding] = "data.#{variable}"
+              required_imports&.add(:visibility_wrapper)
+            else
+              # Static visibility
+              visibility_info[:visibility] = json_data['visibility']
+              required_imports&.add(:visibility_wrapper)
             end
           end
           
           # Handle hidden attribute (boolean or data binding)
           if json_data['hidden']
-            if json_data['hidden'] == true
-              return ['SKIP_RENDER']
-            elsif json_data['hidden'].is_a?(String) && json_data['hidden'].start_with?('@{')
-              # Data binding for hidden - needs to be handled at component level
-              modifiers << ".alpha(if (#{json_data['hidden'].gsub('@{', 'data.').gsub('}', '')}) 0f else 1f)"
+            if json_data['hidden'].is_a?(String) && json_data['hidden'].start_with?('@{')
+              # Data binding for hidden
+              variable = json_data['hidden'].gsub('@{', '').gsub('}', '')
+              visibility_info[:hidden_binding] = "data.#{variable}"
+              required_imports&.add(:visibility_wrapper)
+            elsif json_data['hidden'] == true
+              visibility_info[:hidden] = true
+              required_imports&.add(:visibility_wrapper)
             end
           end
           
-          # Handle alpha attribute
+          # Handle alpha attribute separately (not part of visibility wrapper)
           if json_data['alpha']
+            required_imports&.add(:alpha)
             modifiers << ".alpha(#{json_data['alpha']}f)"
           end
           
-          modifiers
+          # Return both visibility info and modifiers
+          { modifiers: modifiers, visibility_info: visibility_info }
         end
         
-        def self.build_alignment(json_data)
+        def self.build_alignment(json_data, required_imports = nil, parent_type = nil)
           modifiers = []
           
-          if json_data['alignTop'] && json_data['alignLeft']
-            modifiers << ".align(Alignment.TopStart)"
-          elsif json_data['alignTop'] && json_data['alignRight']
-            modifiers << ".align(Alignment.TopEnd)"
-          elsif json_data['alignBottom'] && json_data['alignLeft']
-            modifiers << ".align(Alignment.BottomStart)"
-          elsif json_data['alignBottom'] && json_data['alignRight']
-            modifiers << ".align(Alignment.BottomEnd)"
-          elsif json_data['alignTop'] && json_data['centerHorizontal']
-            modifiers << ".align(Alignment.TopCenter)"
-          elsif json_data['alignBottom'] && json_data['centerHorizontal']
-            modifiers << ".align(Alignment.BottomCenter)"
-          elsif json_data['alignLeft'] && json_data['centerVertical']
-            modifiers << ".align(Alignment.CenterStart)"
-          elsif json_data['alignRight'] && json_data['centerVertical']
-            modifiers << ".align(Alignment.CenterEnd)"
-          elsif json_data['centerInParent']
-            modifiers << ".align(Alignment.Center)"
-          elsif json_data['alignTop']
-            modifiers << ".align(Alignment.TopCenter)"
-          elsif json_data['alignBottom']
-            modifiers << ".align(Alignment.BottomCenter)"
-          elsif json_data['alignLeft']
-            modifiers << ".align(Alignment.CenterStart)"
-          elsif json_data['alignRight']
-            modifiers << ".align(Alignment.CenterEnd)"
-          elsif json_data['centerVertical']
-            modifiers << ".align(Alignment.CenterStart)"
-          elsif json_data['centerHorizontal']
-            modifiers << ".fillMaxWidth()"
+          # For Row, only vertical alignment is allowed
+          if parent_type == 'Row'
+            if json_data['alignTop']
+              modifiers << ".align(Alignment.Top)"
+            elsif json_data['alignBottom']
+              modifiers << ".align(Alignment.Bottom)"
+            elsif json_data['centerVertical']
+              modifiers << ".align(Alignment.CenterVertically)"
+            end
+          # For Column, only horizontal alignment is allowed
+          elsif parent_type == 'Column'
+            if json_data['alignLeft']
+              modifiers << ".align(Alignment.Start)"
+            elsif json_data['alignRight']
+              modifiers << ".align(Alignment.End)"
+            elsif json_data['centerHorizontal']
+              modifiers << ".align(Alignment.CenterHorizontally)"
+            end
+          # For Box and other containers, full alignment options
+          elsif parent_type == 'Box'
+            # Check if any alignment is specified
+            has_alignment = json_data['alignTop'] || json_data['alignBottom'] || 
+                          json_data['alignLeft'] || json_data['alignRight'] || 
+                          json_data['centerHorizontal'] || json_data['centerVertical'] || 
+                          json_data['centerInParent']
+            
+            # Handle combined alignments first
+            if json_data['alignTop'] && json_data['alignLeft']
+              modifiers << ".align(Alignment.TopStart)"
+            elsif json_data['alignTop'] && json_data['alignRight']
+              modifiers << ".align(Alignment.TopEnd)"
+            elsif json_data['alignBottom'] && json_data['alignLeft']
+              modifiers << ".align(Alignment.BottomStart)"
+            elsif json_data['alignBottom'] && json_data['alignRight']
+              modifiers << ".align(Alignment.BottomEnd)"
+            elsif json_data['alignTop'] && json_data['centerHorizontal']
+              # TopCenter doesn't exist in BoxScope, use BiasAlignment
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, -1f))"
+            elsif json_data['alignBottom'] && json_data['centerHorizontal']
+              # BottomCenter doesn't exist in BoxScope, use BiasAlignment
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, 1f))"
+            elsif json_data['alignLeft'] && json_data['centerVertical']
+              modifiers << ".align(Alignment.CenterStart)"
+            elsif json_data['alignRight'] && json_data['centerVertical']
+              modifiers << ".align(Alignment.CenterEnd)"
+            elsif json_data['centerInParent']
+              modifiers << ".align(Alignment.Center)"
+            # Handle single alignments for Box
+            elsif json_data['alignTop']
+              # Just top alignment - align to top-left
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(-1f, -1f))"
+            elsif json_data['alignBottom']
+              # Just bottom alignment - align to bottom-left
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(-1f, 1f))"
+            elsif json_data['alignLeft']
+              # Just left alignment - align to top-left
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(-1f, -1f))"
+            elsif json_data['alignRight']
+              # Just right alignment - align to top-right
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(1f, -1f))"
+            elsif json_data['centerHorizontal']
+              # Center horizontally only - align to top-center
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, -1f))"
+            elsif json_data['centerVertical']
+              # Center vertically only - align to center-left
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(-1f, 0f))"
+            elsif !has_alignment
+              # No alignment specified - default to TopStart (top-left)
+              modifiers << ".align(Alignment.TopStart)"
+            end
           end
           
           modifiers
@@ -279,19 +336,19 @@ module KjuiTools
           
           # Relative to other views
           if json_data['alignTopOfView']
-            constraints << "top.linkTo(#{json_data['alignTopOfView']}.bottom)"
+            constraints << "bottom.linkTo(#{json_data['alignTopOfView']}.top)"
           end
           
           if json_data['alignBottomOfView']
-            constraints << "bottom.linkTo(#{json_data['alignBottomOfView']}.top)"
+            constraints << "top.linkTo(#{json_data['alignBottomOfView']}.bottom)"
           end
           
           if json_data['alignLeftOfView']
-            constraints << "start.linkTo(#{json_data['alignLeftOfView']}.end)"
+            constraints << "end.linkTo(#{json_data['alignLeftOfView']}.start)"
           end
           
           if json_data['alignRightOfView']
-            constraints << "end.linkTo(#{json_data['alignRightOfView']}.start)"
+            constraints << "start.linkTo(#{json_data['alignRightOfView']}.end)"
           end
           
           # Align edges with other views
@@ -320,6 +377,40 @@ module KjuiTools
           if json_data['alignCenterHorizontalView']
             constraints << "start.linkTo(#{json_data['alignCenterHorizontalView']}.start)"
             constraints << "end.linkTo(#{json_data['alignCenterHorizontalView']}.end)"
+          end
+          
+          # Parent constraints
+          if json_data['alignTop']
+            constraints << "top.linkTo(parent.top)"
+          end
+          
+          if json_data['alignBottom']
+            constraints << "bottom.linkTo(parent.bottom)"
+          end
+          
+          if json_data['alignLeft']
+            constraints << "start.linkTo(parent.start)"
+          end
+          
+          if json_data['alignRight']
+            constraints << "end.linkTo(parent.end)"
+          end
+          
+          if json_data['centerHorizontal']
+            constraints << "start.linkTo(parent.start)"
+            constraints << "end.linkTo(parent.end)"
+          end
+          
+          if json_data['centerVertical']
+            constraints << "top.linkTo(parent.top)"
+            constraints << "bottom.linkTo(parent.bottom)"
+          end
+          
+          if json_data['centerInParent']
+            constraints << "top.linkTo(parent.top)"
+            constraints << "bottom.linkTo(parent.bottom)"
+            constraints << "start.linkTo(parent.start)"
+            constraints << "end.linkTo(parent.end)"
           end
           
           constraints

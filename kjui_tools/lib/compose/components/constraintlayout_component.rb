@@ -6,7 +6,7 @@ module KjuiTools
   module Compose
     module Components
       class ConstraintLayoutComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           required_imports&.add(:constraint_layout)
           
           # Check if any child has relative positioning attributes
@@ -31,7 +31,9 @@ module KjuiTools
           relative_attrs = [
             'alignTopOfView', 'alignBottomOfView', 'alignLeftOfView', 'alignRightOfView',
             'alignTopView', 'alignBottomView', 'alignLeftView', 'alignRightView',
-            'alignCenterVerticalView', 'alignCenterHorizontalView'
+            'alignCenterVerticalView', 'alignCenterHorizontalView',
+            'alignTop', 'alignBottom', 'alignLeft', 'alignRight',
+            'centerHorizontal', 'centerVertical', 'centerInParent'
           ]
           
           relative_attrs.any? { |attr| component[attr] }
@@ -96,20 +98,30 @@ module KjuiTools
           # Add constrainAs modifier
           constraints = Helpers::ModifierBuilder.build_relative_positioning(child_data)
           
-          if constraints.any? || has_relative_positioning?(child_data)
-            # Insert constrainAs modifier
-            modifier_line = "modifier = Modifier.constrainAs(#{ref_name}) {"
-            constraint_block = constraints.map { |c| indent(c, depth + 2) }.join("\n")
-            constraint_close = indent("}", depth + 1)
-            
-            # Insert the constraint modifier into the component code
-            if component_code.include?("modifier = Modifier")
-              component_code.sub!(/modifier = Modifier/, "#{modifier_line}\n#{constraint_block}\n#{constraint_close}")
-            else
-              # Add modifier if not present
-              insert_pos = component_code.index("(") + 1
-              component_code.insert(insert_pos, "\n" + indent(modifier_line, depth + 1) + "\n" + constraint_block + "\n" + constraint_close + ",")
+          # Always add constrainAs for all children in ConstraintLayout
+          # Insert constrainAs modifier
+          constraint_content = if constraints.any?
+            constraints.map { |c| indent(c, depth + 2) }.join("\n")
+          else
+            "" # Empty constraint block
+          end
+          
+          # Find where to insert the constrainAs modifier
+          if component_code.include?("modifier = Modifier")
+            # Replace existing modifier with constrainAs
+            component_code.sub!(/modifier = Modifier(.*?)(?=,\n|\n)/m) do |match|
+              existing_modifiers = $1
+              "modifier = Modifier.constrainAs(#{ref_name}) {\n#{constraint_content}\n" + indent("}", depth + 1) + existing_modifiers
             end
+          else
+            # Add new modifier after the opening parenthesis
+            insert_pos = component_code.index("(") + 1
+            modifier_code = "\n" + indent("modifier = Modifier.constrainAs(#{ref_name}) {", depth + 1)
+            if constraint_content.length > 0
+              modifier_code += "\n#{constraint_content}"
+            end
+            modifier_code += "\n" + indent("}", depth + 1) + ","
+            component_code.insert(insert_pos, modifier_code)
           end
           
           component_code
@@ -117,17 +129,56 @@ module KjuiTools
         
         def self.generate_text_component(data, depth, required_imports)
           text = data['text'] || ''
-          # Properly escape text
-          escaped_text = quote(text)
+          # Check for data binding
+          if text.start_with?('@{')
+            variable_name = text[2..-2]
+            escaped_text = "\"${data.#{variable_name}}\""
+          else
+            escaped_text = quote(text)
+          end
+          
           code = indent("Text(", depth)
+          
+          # Add modifier with constraints
+          modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_size(data))
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(data))
+          modifiers.concat(Helpers::ModifierBuilder.build_background(data, required_imports))
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(data))
+          
+          if modifiers.any?
+            code += "\n" + indent("modifier = Modifier", depth + 1)
+            modifiers.each do |mod|
+              code += "\n" + indent("    #{mod}", depth + 1)
+            end
+            code += ","
+          end
+          
           code += "\n" + indent("text = #{escaped_text}", depth + 1)
           
           if data['fontSize']
             code += ",\n" + indent("fontSize = #{data['fontSize']}.sp", depth + 1)
           end
           
-          if data['fontColor']
-            code += ",\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{data['fontColor']}\"))", depth + 1)
+          if data['fontColor'] || data['color']
+            color = data['fontColor'] || data['color']
+            code += ",\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{color}\"))", depth + 1)
+          end
+          
+          if data['font'] == 'bold' || data['fontWeight'] == 'bold'
+            required_imports&.add(:font_weight)
+            code += ",\n" + indent("fontWeight = FontWeight.Bold", depth + 1)
+          end
+          
+          if data['textAlign']
+            required_imports&.add(:text_align)
+            align = case data['textAlign']
+            when 'center' then 'TextAlign.Center'
+            when 'left' then 'TextAlign.Left'
+            when 'right' then 'TextAlign.Right'
+            else 'TextAlign.Start'
+            end
+            code += ",\n" + indent("textAlign = #{align}", depth + 1)
           end
           
           code += "\n" + indent(")", depth)
