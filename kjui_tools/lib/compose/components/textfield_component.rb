@@ -6,21 +6,26 @@ module KjuiTools
   module Compose
     module Components
       class TextFieldComponent
-        def self.generate(json_data, depth, required_imports = nil)
+        def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # TextField uses 'text' for value and 'hint' for placeholder per SwiftJsonUI spec
           value = process_data_binding(json_data['text'] || '')
           placeholder = json_data['hint'] || ''
           is_secure = json_data['secure'] == true
           
-          code = ""
-          # Determine TextField variant based on borderStyle
-          use_outlined = is_secure || json_data['borderStyle'] == 'RoundedRect' || json_data['borderStyle'] == 'Line'
+          # Check if we need to wrap in Box for margins
+          has_margins = json_data['margins'] || json_data['topMargin'] || json_data['bottomMargin'] || 
+                       json_data['leftMargin'] || json_data['rightMargin']
           
-          if use_outlined
-            required_imports&.add(:visual_transformation) if is_secure
-            code = indent("OutlinedTextField(", depth)
+          # Always use CustomTextField
+          required_imports&.add(:custom_textfield)
+          required_imports&.add(:visual_transformation) if is_secure
+          
+          code = ""
+          if has_margins
+            required_imports&.add(:box)
+            code = indent("CustomTextFieldWithMargins(", depth)
           else
-            code = indent("TextField(", depth)
+            code = indent("CustomTextField(", depth)
           end
           
           code += "\n" + indent("value = #{value},", depth + 1)
@@ -28,9 +33,50 @@ module KjuiTools
           # onTextChange is the official attribute per wiki
           if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
             variable = extract_variable_name(json_data['text'])
-            code += "\n" + indent("onValueChange = { newValue -> currentData.value = currentData.value.copy(#{variable} = newValue) },", depth + 1)
+            # Use a map update to notify the viewModel
+            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
+          end
+          
+          # For CustomTextFieldWithMargins, we need to specify modifiers differently
+          if has_margins
+            # Box modifier with margins
+            box_modifiers = []
+            box_modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+            if box_modifiers.any?
+              code += "\n" + indent("boxModifier = Modifier", depth + 1)
+              box_modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
+              code += ","
+            end
+            
+            # TextField modifier
+            textfield_modifiers = []
+            textfield_modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+            textfield_modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+            if textfield_modifiers.any?
+              code += "\n" + indent("textFieldModifier = Modifier", depth + 1)
+              textfield_modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
+              code += ","
+            end
+          else
+            # Regular modifiers for CustomTextField
+            modifiers = []
+            modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+            modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+            modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+            
+            if modifiers.any?
+              code += "\n" + indent("modifier = Modifier", depth + 1)
+              modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
+              code += ","
+            end
           end
           
           # Add placeholder/hint with styling
@@ -60,25 +106,56 @@ module KjuiTools
             end
           end
           
-          # Add password visual transformation for secure fields
+          # Add visual transformation for secure fields
           if is_secure
             code += "\n" + indent("visualTransformation = PasswordVisualTransformation(),", depth + 1)
           end
           
-          # Build modifiers
-          modifiers = []
-          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
+          # Add custom TextField parameters
           
-          code += Helpers::ModifierBuilder.format(modifiers, depth)
+          # Shape with corner radius
+          if json_data['cornerRadius']
+            required_imports&.add(:shape)
+            code += "\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp),", depth + 1)
+          end
           
-          # Text styling
-          if json_data['fontSize'] || json_data['textAlign']
+          # Background colors
+          if json_data['background']
+            code += "\n" + indent("backgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")),", depth + 1)
+          end
+          
+          if json_data['highlightBackground']
+            code += "\n" + indent("highlightBackgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['highlightBackground']}\")),", depth + 1)
+          end
+          
+          # Border color for outlined text fields
+          if json_data['borderColor']
+            code += "\n" + indent("borderColor = Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")),", depth + 1)
+          end
+          
+          # Set isOutlined and isSecure flags
+          if json_data['outlined'] == true
+            code += "\n" + indent("isOutlined = true,", depth + 1)
+          end
+          
+          if is_secure
+            code += "\n" + indent("isSecure = true,", depth + 1)
+          end
+          
+          # Text styling - always add this last before closing
+          if json_data['fontSize'] || json_data['textAlign'] || json_data['fontColor']
             required_imports&.add(:text_style)
             style_parts = []
             style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
+            
+            if json_data['fontColor']
+              color = json_data['fontColor']
+              if color.start_with?('#')
+                style_parts << "color = Color(android.graphics.Color.parseColor(\"#{color}\"))"
+              else
+                style_parts << "color = Color.#{color}"
+              end
+            end
             
             if json_data['textAlign']
               required_imports&.add(:text_align)
@@ -93,6 +170,10 @@ module KjuiTools
             end
             
             if style_parts.any?
+              # Remove trailing comma before adding textStyle
+              if code.end_with?(',')
+                code = code[0..-2]
+              end
               code += ",\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
             end
           end
@@ -142,7 +223,13 @@ module KjuiTools
             code += ",\n" + indent("keyboardOptions = KeyboardOptions(#{keyboard_options.join(', ')})", depth + 1)
           end
           
+          # Remove trailing comma and close
+          if code.end_with?(',')
+            code = code[0..-2]
+          end
+          
           code += "\n" + indent(")", depth)
+          
           code
         end
         
@@ -156,9 +243,9 @@ module KjuiTools
             if variable.include?(' ?? ')
               parts = variable.split(' ?? ')
               var_name = parts[0].strip
-              "\"\\${data.#{var_name}}\""
+              "\"\${data.#{var_name}}\""
             else
-              "\"\\${data.#{variable}}\""
+              "\"\${data.#{variable}}\""
             end
           else
             quote(text)
