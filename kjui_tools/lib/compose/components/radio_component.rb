@@ -283,7 +283,7 @@ module KjuiTools
         def self.map_icon_name(icon_name)
           # Map iOS SF Symbols to Material Icons
           icon_map = {
-            'circle' => 'Icons.Outlined.Circle',
+            'circle' => 'Icons.Outlined.RadioButtonUnchecked',
             'checkmark.circle.fill' => 'Icons.Filled.CheckCircle',
             'star' => 'Icons.Outlined.Star',
             'star.fill' => 'Icons.Filled.Star',
@@ -293,7 +293,7 @@ module KjuiTools
             'checkmark.square.fill' => 'Icons.Filled.CheckBox'
           }
           
-          icon_map[icon_name] || 'Icons.Outlined.Circle'
+          icon_map[icon_name] || 'Icons.Outlined.RadioButtonUnchecked'
         end
         
         def self.indent(text, level)

@@ -198,11 +198,6 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included1View(
-                        data = Included1Data(
-                            title = "Included View 1",
-                            message = "This is the first included view",
-                            count = 1
-                        ),
                         viewModel = Included1ViewModel()
                     )
                 }
@@ -215,11 +210,6 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included2View(
-                        data = Included2Data(
-                            viewTitle = "Static Title",
-                            viewStatus = "Static Status",
-                            viewCount = 42
-                        ),
                         viewModel = Included2ViewModel()
                     )
                 }
@@ -232,11 +222,6 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included2View(
-                        data = Included2Data(
-                            viewTitle = data.userName,
-                            viewStatus = data.mainStatus,
-                            viewCount = data.mainCount
-                        ),
                         viewModel = Included2ViewModel()
                     )
                 }
@@ -249,9 +234,6 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included2View(
-                        data = Included2Data(
-                            viewStatus = "Overridden Status"
-                        ),
                         viewModel = Included2ViewModel()
                     )
                 }
@@ -264,11 +246,6 @@ fun IncludeTestGeneratedView(
                         modifier = Modifier
                     )
                     Included1View(
-                        data = Included1Data(
-                            title = data.userName,
-                            message = data.mainStatus,
-                            count = data.mainCount
-                        ),
                         viewModel = Included1ViewModel()
                     )
                 }
