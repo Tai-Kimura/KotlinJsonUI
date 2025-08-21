@@ -214,6 +214,9 @@ module KjuiTools
           items = json_data['items']
           selected_value = json_data['selectedValue']
           
+          # Add required import for clickable
+          required_imports&.add(:clickable)
+          
           # Extract binding variable
           selected_var = if selected_value && selected_value.match(/@\{([^}]+)\}/)
             "data.#{$1}"
@@ -280,7 +283,7 @@ module KjuiTools
         def self.map_icon_name(icon_name)
           # Map iOS SF Symbols to Material Icons
           icon_map = {
-            'circle' => 'Icons.Outlined.RadioButtonUnchecked',
+            'circle' => 'Icons.Default.RadioButtonUnchecked',
             'checkmark.circle.fill' => 'Icons.Filled.CheckCircle',
             'star' => 'Icons.Outlined.Star',
             'star.fill' => 'Icons.Filled.Star',

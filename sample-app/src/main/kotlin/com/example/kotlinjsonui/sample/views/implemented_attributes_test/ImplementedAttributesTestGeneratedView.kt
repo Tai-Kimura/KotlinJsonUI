@@ -33,6 +33,9 @@ import android.webkit.WebChromeClient
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 
 @Composable
 fun ImplementedAttributesTestGeneratedView(
@@ -292,7 +295,7 @@ fun ImplementedAttributesTestGeneratedView(
                             onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio1")) }
                         ) {
                             Icon(
-                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Default.RadioButtonUnchecked,
                                 contentDescription = "Option 1",
                                 tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
                             )
@@ -310,7 +313,7 @@ fun ImplementedAttributesTestGeneratedView(
                             onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio2")) }
                         ) {
                             Icon(
-                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Default.RadioButtonUnchecked,
                                 contentDescription = "Option 2",
                                 tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
                             )

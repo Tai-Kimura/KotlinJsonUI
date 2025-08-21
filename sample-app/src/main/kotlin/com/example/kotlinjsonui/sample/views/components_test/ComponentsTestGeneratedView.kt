@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.blur
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.clickable
 
 @Composable
 fun ComponentsTestGeneratedView(
