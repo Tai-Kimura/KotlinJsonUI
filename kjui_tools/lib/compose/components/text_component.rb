@@ -11,6 +11,11 @@ module KjuiTools
           # Check if component should be skipped entirely (static gone/hidden)
           return "" if Helpers::VisibilityHelper.should_skip_render?(json_data)
           
+          # Check if we need to use AnnotatedString for partial attributes
+          if json_data['partialAttributes'] && json_data['partialAttributes'].any?
+            return generate_with_partial_attributes(json_data, depth, required_imports, parent_type)
+          end
+          
           text = process_data_binding(json_data['text'] || '')
           
           component_code = indent("Text(", depth)
@@ -184,6 +189,164 @@ module KjuiTools
         end
         
         private
+        
+        def self.generate_with_partial_attributes(json_data, depth, required_imports, parent_type)
+          required_imports&.add(:annotated_string)
+          required_imports&.add(:clickable_text)
+          required_imports&.add(:remember_state)
+          
+          text = json_data['text'] || ''
+          partial_attrs = json_data['partialAttributes']
+          
+          # Build AnnotatedString as a variable first
+          code = indent("val annotatedText = buildAnnotatedString {", depth)
+          code += "\n" + indent("append(\"#{escape_string(text)}\")", depth + 1)
+          
+          # Apply partial attributes
+          partial_attrs.each do |attr|
+            range = attr['range']
+            next unless range && range.is_a?(Array) && range.length == 2
+            
+            start_idx = range[0]
+            end_idx = range[1]
+            
+            # Build SpanStyle for this range
+            span_styles = []
+            
+            if attr['fontColor']
+              span_styles << "color = Color(android.graphics.Color.parseColor(\"#{attr['fontColor']}\"))"
+            end
+            
+            if attr['fontSize']
+              span_styles << "fontSize = #{attr['fontSize']}.sp"
+            end
+            
+            if attr['fontWeight']
+              weight_mapping = {
+                'bold' => 'Bold',
+                'semibold' => 'SemiBold',
+                'medium' => 'Medium',
+                'light' => 'Light'
+              }
+              weight = weight_mapping[attr['fontWeight'].downcase] || 'Normal'
+              span_styles << "fontWeight = FontWeight.#{weight}"
+            end
+            
+            if attr['background']
+              span_styles << "background = Color(android.graphics.Color.parseColor(\"#{attr['background']}\"))"
+            end
+            
+            if attr['underline']
+              required_imports&.add(:text_decoration)
+              span_styles << "textDecoration = TextDecoration.Underline"
+            end
+            
+            if attr['strikethrough']
+              required_imports&.add(:text_decoration)
+              span_styles << "textDecoration = TextDecoration.LineThrough"
+            end
+            
+            if span_styles.any?
+              code += "\n" + indent("addStyle(", depth + 1)
+              code += "\n" + indent("style = SpanStyle(#{span_styles.join(', ')}),", depth + 2)
+              code += "\n" + indent("start = #{start_idx},", depth + 2)
+              code += "\n" + indent("end = #{end_idx}", depth + 2)
+              code += "\n" + indent(")", depth + 1)
+            end
+            
+            # Add clickable annotation if onclick is specified
+            if attr['onclick']
+              code += "\n" + indent("addStringAnnotation(", depth + 1)
+              code += "\n" + indent("tag = \"CLICKABLE\",", depth + 2)
+              code += "\n" + indent("annotation = \"#{attr['onclick']}\",", depth + 2)
+              code += "\n" + indent("start = #{start_idx},", depth + 2)
+              code += "\n" + indent("end = #{end_idx}", depth + 2)
+              code += "\n" + indent(")", depth + 1)
+            end
+          end
+          
+          code += "\n" + indent("}", depth)
+          code += "\n"
+          
+          # Now use ClickableText with the annotatedString
+          code += indent("ClickableText(", depth)
+          code += "\n" + indent("text = annotatedText,", depth + 1)
+          
+          # Add onClick handler for clickable ranges
+          if partial_attrs.any? { |attr| attr['onclick'] }
+            code += "\n" + indent("onClick = { offset ->", depth + 1)
+            code += "\n" + indent("annotatedText.getStringAnnotations(\"CLICKABLE\", offset, offset)", depth + 2)
+            code += "\n" + indent(".firstOrNull()?.let { annotation ->", depth + 3)
+            code += "\n" + indent("viewModel.handlePartialClick(annotation.item)", depth + 4)
+            code += "\n" + indent("}", depth + 3)
+            code += "\n" + indent("},", depth + 1)
+          else
+            code += "\n" + indent("onClick = { },", depth + 1)
+          end
+          
+          # Add style (fontSize, color, etc. for the whole text)
+          style_code = build_text_style(json_data, depth + 1, required_imports)
+          if style_code
+            code += style_code
+          end
+          
+          # Build modifiers
+          modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          
+          if modifiers.any?
+            code += Helpers::ModifierBuilder.format(modifiers, depth)
+          else
+            code += "\n" + indent("modifier = Modifier", depth + 1)
+          end
+          
+          code += "\n" + indent(")", depth)
+          
+          # Wrap with VisibilityWrapper if needed
+          Helpers::VisibilityHelper.wrap_with_visibility(json_data, code, depth, required_imports)
+        end
+        
+        def self.build_text_style(json_data, depth, required_imports)
+          style_parts = []
+          
+          if json_data['fontSize']
+            style_parts << "fontSize = #{json_data['fontSize']}.sp"
+          end
+          
+          if json_data['fontColor']
+            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))"
+          end
+          
+          if json_data['textAlign']
+            required_imports&.add(:text_align)
+            case json_data['textAlign'].downcase
+            when 'center'
+              style_parts << "textAlign = TextAlign.Center"
+            when 'right'
+              style_parts << "textAlign = TextAlign.End"
+            when 'left'
+              style_parts << "textAlign = TextAlign.Start"
+            end
+          end
+          
+          if style_parts.any?
+            required_imports&.add(:text_style)
+            return ",\n" + indent("style = TextStyle(#{style_parts.join(', ')})", depth)
+          end
+          
+          nil
+        end
+        
+        def self.escape_string(text)
+          text.gsub('\\', '\\\\\\\\')
+              .gsub('"', '\\"')
+              .gsub("\n", '\\n')
+              .gsub("\r", '\\r')
+              .gsub("\t", '\\t')
+        end
         
         def self.process_data_binding(text)
           return quote(text) unless text.is_a?(String)

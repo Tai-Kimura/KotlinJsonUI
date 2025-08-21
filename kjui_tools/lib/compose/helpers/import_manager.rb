@@ -72,7 +72,12 @@ module KjuiTools
             simple_date_selectbox_component: "import com.kotlinjsonui.components.SimpleDateSelectBox",
             visibility_wrapper: "import com.kotlinjsonui.components.VisibilityWrapper",
             custom_textfield: ["import com.kotlinjsonui.components.CustomTextField",
-                               "import com.kotlinjsonui.components.CustomTextFieldWithMargins"]
+                               "import com.kotlinjsonui.components.CustomTextFieldWithMargins"],
+            annotated_string: ["import androidx.compose.ui.text.AnnotatedString",
+                               "import androidx.compose.ui.text.buildAnnotatedString",
+                               "import androidx.compose.ui.text.SpanStyle",
+                               "import androidx.compose.ui.text.withStyle"],
+            clickable_text: "import androidx.compose.foundation.text.ClickableText"
           }
         end
         
