@@ -372,7 +372,11 @@ fun FormTestGeneratedView(
                     .wrapContentHeight()
                     .padding(bottom = 24.dp)
             ) {
-// TODO: Implement component type: Toggle
+                Switch(
+                    checked = false,
+                    onCheckedChange = { },
+                    modifier = Modifier.padding(end = 12.dp)
+                )
                 Text(
                     text = "I agree to the Terms and Conditions",
                     fontSize = 14.sp,

@@ -30,6 +30,99 @@ fun RadioIconsTestGeneratedView(
             .fillMaxSize()
             .systemBarsPadding()
     ) {
-// TODO: Implement component type: Scroll
+        LazyColumn(
+        ) {
+            item {
+            Column(
+                modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+            ) {
+                Text(
+                    text = "Radio Custom Icons Test",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 20.dp)
+                        .padding(bottom = 20.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Default Radio Group",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                ) {
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                ) {
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                ) {
+                }
+                Text(
+                    text = "Custom Icon Radio Group",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 30.dp)
+                        .padding(start = 20.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                ) {
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                ) {
+                }
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                ) {
+                }
+                Text(
+                    text = "Radio with Items",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 30.dp)
+                        .padding(start = 20.dp)
+                )
+                Column(
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                        .padding(end = 20.dp)
+                ) {
+                }
+                Text(
+                    text = "${data.selectedColor}",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                )
+            }
+            }
+        }
     }    // >>> GENERATED_CODE_END
 }

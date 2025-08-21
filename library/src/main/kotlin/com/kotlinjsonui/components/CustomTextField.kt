@@ -3,8 +3,11 @@ package com.kotlinjsonui.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
@@ -30,17 +33,43 @@ fun CustomTextField(
     isOutlined: Boolean = false,
     isSecure: Boolean = false,
     singleLine: Boolean = true,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    onFocus: (() -> Unit)? = null,
+    onBlur: (() -> Unit)? = null,
+    onBeginEditing: (() -> Unit)? = null,
+    onEndEditing: (() -> Unit)? = null
 ) {
     // Determine background colors
     val unfocusedBackground = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
     val focusedBackground = highlightBackgroundColor ?: backgroundColor ?: Configuration.TextField.defaultHighlightBackgroundColor
     
+    // Track focus state
+    var isFocused by remember { mutableStateOf(false) }
+    var hasStartedEditing by remember { mutableStateOf(false) }
+    
+    // Create focus modifier
+    val focusModifier = modifier.onFocusChanged { focusState ->
+        if (focusState.isFocused && !isFocused) {
+            onFocus?.invoke()
+            if (!hasStartedEditing) {
+                onBeginEditing?.invoke()
+                hasStartedEditing = true
+            }
+        } else if (!focusState.isFocused && isFocused) {
+            onBlur?.invoke()
+            if (hasStartedEditing) {
+                onEndEditing?.invoke()
+                hasStartedEditing = false
+            }
+        }
+        isFocused = focusState.isFocused
+    }
+    
     if (isOutlined || isSecure) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = modifier,
+            modifier = focusModifier,
             placeholder = placeholder,
             isError = isError,
             visualTransformation = visualTransformation,
@@ -61,7 +90,7 @@ fun CustomTextField(
         TextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = modifier,
+            modifier = focusModifier,
             placeholder = placeholder,
             isError = isError,
             visualTransformation = visualTransformation,
@@ -100,7 +129,11 @@ fun CustomTextFieldWithMargins(
     isOutlined: Boolean = false,
     isSecure: Boolean = false,
     singleLine: Boolean = true,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    onFocus: (() -> Unit)? = null,
+    onBlur: (() -> Unit)? = null,
+    onBeginEditing: (() -> Unit)? = null,
+    onEndEditing: (() -> Unit)? = null
 ) {
     Box(modifier = boxModifier) {
         CustomTextField(
@@ -118,7 +151,11 @@ fun CustomTextFieldWithMargins(
             isOutlined = isOutlined,
             isSecure = isSecure,
             singleLine = singleLine,
-            maxLines = maxLines
+            maxLines = maxLines,
+            onFocus = onFocus,
+            onBlur = onBlur,
+            onBeginEditing = onBeginEditing,
+            onEndEditing = onEndEditing
         )
     }
 }

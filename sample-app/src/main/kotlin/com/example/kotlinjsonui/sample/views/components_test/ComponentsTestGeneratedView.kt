@@ -63,7 +63,10 @@ fun ComponentsTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: Toggle
+            Switch(
+                checked = false,
+                onCheckedChange = { },
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {

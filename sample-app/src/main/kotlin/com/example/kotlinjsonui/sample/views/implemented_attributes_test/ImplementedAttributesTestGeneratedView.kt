@@ -266,7 +266,11 @@ fun ImplementedAttributesTestGeneratedView(
                     boxModifier = Modifier
                         .padding(bottom = 10.dp),
                     placeholder = { Text("Type something...") },
-                    textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                    textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+                    onFocus = { viewModel.handleFocus() },
+                    onBlur = { viewModel.handleBlur() },
+                    onBeginEditing = { viewModel.handleBeginEditing() },
+                    onEndEditing = { viewModel.handleEndEditing() }
                 )
                 Text(
                     text = "8. Radio Custom Icons",

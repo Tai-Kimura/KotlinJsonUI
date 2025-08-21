@@ -54,32 +54,55 @@ module KjuiTools
           end
         end
         
-        # Map iOS/SwiftUI types to Android/Compose types
+        # Map JSON types to Compose component types
+        # Based on SwiftJsonUI's VIEW_TYPE_SET keys
         case type
-        when 'UILabel', 'UITextView'
+        when 'Label'
           'Text'
-        when 'UIButton'
+        when 'TextView'
+          'TextView'
+        when 'Button'
           'Button'
-        when 'UIImageView'
+        when 'Image', 'NetworkImage', 'CircleImage'
           'Image'
-        when 'UITextField'
+        when 'TextField'
           'TextField'
-        when 'UISwitch'
+        when 'Switch'
           'Switch'
-        when 'UISlider'
+        when 'Toggle'
+          'Switch'  # Map Toggle to Switch
+        when 'Slider'
           'Slider'
-        when 'UIProgressView'
+        when 'Progress', 'ProgressBar'
           'ProgressBar'
-        when 'UIScrollView'
+        when 'Scroll', 'ScrollView'
           'ScrollView'
-        when 'UITableView', 'UICollectionView'
+        when 'Table', 'Collection'
           'LazyColumn'
-        when 'UIStackView'
-          if component['axis'] == 'horizontal'
-            'Row'
-          else
-            'Column'
-          end
+        when 'Web', 'WebView'
+          'Web'
+        when 'Radio'
+          'Radio'
+        when 'Check', 'CheckBox'
+          'CheckBox'
+        when 'Segment'
+          'Segment'
+        when 'SelectBox', 'Spinner'
+          'SelectBox'
+        when 'Indicator'
+          'Indicator'
+        when 'GradientView'
+          'GradientView'
+        when 'Blur', 'BlurView'
+          'BlurView'
+        when 'CircleView'
+          'CircleView'
+        when 'IconLabel'
+          'IconLabel'
+        when 'Triangle'
+          'Triangle'
+        when 'SafeAreaView'
+          'View'  # SafeAreaView maps to regular View in Compose
         else
           type
         end

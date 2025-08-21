@@ -103,7 +103,7 @@ module KjuiTools
         
         # Generate component based on type
         case component_type
-        when 'ScrollView'
+        when 'ScrollView', 'Scroll'
           result = Components::ScrollViewComponent.generate(json_data, depth, @required_imports, parent_type)
           handle_container_result(result, depth, parent_type)
         when 'SafeAreaView'
@@ -119,7 +119,7 @@ module KjuiTools
           Components::ImageComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'TextField'
           Components::TextFieldComponent.generate(json_data, depth, @required_imports, parent_type)
-        when 'Switch'
+        when 'Switch', 'Toggle'
           Components::SwitchComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Slider'
           Components::SliderComponent.generate(json_data, depth, @required_imports, parent_type)

@@ -30,8 +30,13 @@ module KjuiTools
           
           code += "\n" + indent("value = #{value},", depth + 1)
           
-          # onTextChange is the official attribute per wiki
-          if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
+          # Handle onValueChange/onTextChange
+          # Priority: onTextChange (explicit handler) > data binding > empty
+          if json_data['onTextChange']
+            # Explicit event handler
+            code += "\n" + indent("onValueChange = { newValue -> viewModel.#{json_data['onTextChange']}(newValue) },", depth + 1)
+          elsif json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
+            # Data binding update
             variable = extract_variable_name(json_data['text'])
             # Use a map update to notify the viewModel
             code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
@@ -181,6 +186,23 @@ module KjuiTools
               code = code[0..-2]
             end
             code += ",\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
+          end
+          
+          # Add focus/blur event handlers
+          if json_data['onFocus']
+            code += ",\n" + indent("onFocus = { viewModel.#{json_data['onFocus']}() }", depth + 1)
+          end
+          
+          if json_data['onBlur']
+            code += ",\n" + indent("onBlur = { viewModel.#{json_data['onBlur']}() }", depth + 1)
+          end
+          
+          if json_data['onBeginEditing']
+            code += ",\n" + indent("onBeginEditing = { viewModel.#{json_data['onBeginEditing']}() }", depth + 1)
+          end
+          
+          if json_data['onEndEditing']
+            code += ",\n" + indent("onEndEditing = { viewModel.#{json_data['onEndEditing']}() }", depth + 1)
           end
           
           # Keyboard options (input and returnKeyType attributes)

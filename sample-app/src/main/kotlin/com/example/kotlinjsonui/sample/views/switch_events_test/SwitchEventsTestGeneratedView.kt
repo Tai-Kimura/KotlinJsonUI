@@ -30,6 +30,113 @@ fun SwitchEventsTestGeneratedView(
             .fillMaxSize()
             .systemBarsPadding()
     ) {
-// TODO: Implement component type: Scroll
+        LazyColumn(
+        ) {
+            item {
+            Column(
+                modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+            ) {
+                Text(
+                    text = "Switch Events Test",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 20.dp)
+                        .padding(bottom = 20.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Switch with onValueChange",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                )
+                Switch(
+                    checked = false,
+                    onCheckedChange = { viewModel.handleNotificationChange(it) },
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                        .padding(end = 20.dp)
+                )
+                Text(
+                    text = "${data.notificationStatus}",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                )
+                Text(
+                    text = "Switch with Custom Tint",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 30.dp)
+                        .padding(start = 20.dp)
+                )
+                Switch(
+                    checked = false,
+                    onCheckedChange = { viewModel.handleDarkModeChange(it) },
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                        .padding(end = 20.dp)
+                )
+                Text(
+                    text = "${data.darkModeStatus}",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                )
+                Text(
+                    text = "Multiple Switches with Events",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 30.dp)
+                        .padding(start = 20.dp)
+                )
+                Switch(
+                    checked = false,
+                    onCheckedChange = { viewModel.handleWifiChange(it) },
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                        .padding(end = 20.dp)
+                )
+                Switch(
+                    checked = false,
+                    onCheckedChange = { viewModel.handleBluetoothChange(it) },
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                        .padding(end = 20.dp)
+                )
+                Switch(
+                    checked = false,
+                    onCheckedChange = { viewModel.handleLocationChange(it) },
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .padding(start = 20.dp)
+                        .padding(end = 20.dp)
+                )
+                Text(
+                    text = "${data.connectionStatus}",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .padding(start = 20.dp)
+                )
+            }
+            }
+        }
     }    // >>> GENERATED_CODE_END
 }
