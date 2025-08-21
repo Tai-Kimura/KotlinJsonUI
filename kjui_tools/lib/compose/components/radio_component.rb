@@ -167,13 +167,21 @@ module KjuiTools
           code += "\n" + indent(") {", depth)
           
           # Handle custom icons or default RadioButton
-          if json_data['icon'] || json_data['selectedIcon']
-            # Use IconButton with custom icons
+          # If icon is "circle" or selectedIcon is "checkmark.circle.fill", use default RadioButton
+          if (json_data['icon'] == 'circle' || !json_data['icon']) && 
+             (json_data['selectedIcon'] == 'checkmark.circle.fill' || !json_data['selectedIcon'])
+            # Use default RadioButton for standard radio appearance
+            code += "\n" + indent("    RadioButton(", depth)
+            code += "\n" + indent("        selected = data.#{selected_var} == \"#{id}\",", depth)
+            code += "\n" + indent("        onClick = { viewModel.updateData(mapOf(\"#{selected_var}\" to \"#{id}\")) }", depth)
+            code += "\n" + indent("    )", depth)
+          elsif json_data['icon'] || json_data['selectedIcon']
+            # Use IconButton with custom icons only for non-standard icons
             required_imports&.add(:icon_button)
             required_imports&.add(:icons)
             
-            icon = map_icon_name(json_data['icon'] || 'circle')
-            selected_icon = map_icon_name(json_data['selectedIcon'] || 'checkmark.circle.fill')
+            icon = map_icon_name(json_data['icon'] || 'star')
+            selected_icon = map_icon_name(json_data['selectedIcon'] || 'star.fill')
             
             code += "\n" + indent("    val isSelected = data.#{selected_var} == \"#{id}\"", depth)
             code += "\n" + indent("    IconButton(", depth)
