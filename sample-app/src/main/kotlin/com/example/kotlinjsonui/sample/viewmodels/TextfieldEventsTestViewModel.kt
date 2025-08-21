@@ -14,6 +14,27 @@ class TextfieldEventsTestViewModel : ViewModel() {
     private val _data = MutableStateFlow(TextfieldEventsTestData())
     val data: StateFlow<TextfieldEventsTestData> = _data.asStateFlow()
     
+    // TextField event handlers
+    fun handleUsernameChange(value: String) {
+        println("Username changed: $value")
+        updateData(mapOf("username" to value))
+    }
+    
+    fun handleEmailChange(value: String) {
+        println("Email changed: $value")
+        updateData(mapOf("email" to value))
+    }
+    
+    fun handlePasswordChange(value: String) {
+        println("Password changed: $value")
+        updateData(mapOf("password" to value))
+    }
+    
+    fun handleNotesChange(value: String) {
+        println("Notes changed: $value")
+        updateData(mapOf("notes" to value))
+    }
+    
     // Action handlers
     fun onGetStarted() {
         // Handle button tap
