@@ -78,10 +78,13 @@ module KjuiTools
         actions.to_a
       end
 
-      def extract_data_properties(json_data, properties = [], is_root = true)
+      def extract_data_properties(json_data, properties = [], depth = 0)
         if json_data.is_a?(Hash)
-          # Only check for data section at root level
-          if is_root && json_data['data']
+          # Stop if this is an include - includes have their own data models
+          return properties if json_data['include']
+          
+          # Check for data section at any level, but only process the first one found
+          if json_data['data'] && properties.empty?
             if json_data['data'].is_a?(Array)
               json_data['data'].each do |data_item|
                 if data_item.is_a?(Hash) && data_item['name']
@@ -116,12 +119,23 @@ module KjuiTools
             end
           end
           
-          # Don't recursively extract data from includes or children
-          # as they have their own data models
+          # If we haven't found data yet, continue searching in children
+          if properties.empty? && json_data['child']
+            if json_data['child'].is_a?(Array)
+              json_data['child'].each do |child|
+                extract_data_properties(child, properties, depth + 1)
+                # Stop after finding the first data section
+                break unless properties.empty?
+              end
+            else
+              extract_data_properties(json_data['child'], properties, depth + 1)
+            end
+          end
         elsif json_data.is_a?(Array)
-          # This shouldn't happen at root level, but handle it just in case
           json_data.each do |item|
-            extract_data_properties(item, properties, is_root)
+            extract_data_properties(item, properties, depth)
+            # Stop after finding the first data section
+            break unless properties.empty?
           end
         end
         
