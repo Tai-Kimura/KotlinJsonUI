@@ -295,7 +295,7 @@ fun ImplementedAttributesTestGeneratedView(
                             onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio1")) }
                         ) {
                             Icon(
-                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                                 contentDescription = "Option 1",
                                 tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
                             )
@@ -313,7 +313,7 @@ fun ImplementedAttributesTestGeneratedView(
                             onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio2")) }
                         ) {
                             Icon(
-                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                                 contentDescription = "Option 2",
                                 tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
                             )
