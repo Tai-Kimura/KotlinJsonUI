@@ -41,6 +41,11 @@ data class ComponentsTestData(
         map["slider1Value"] = slider1Value
         map["toggle1IsOn"] = toggle1IsOn
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }

@@ -29,6 +29,11 @@ data class LineBreakTestData(
         map["longText"] = longText
         map["title"] = title
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }

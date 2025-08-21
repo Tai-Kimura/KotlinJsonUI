@@ -49,6 +49,7 @@ data class BindingTestData(
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
             map["decreaseCounter"] = { vm.decreaseCounter() }
             map["increaseCounter"] = { vm.increaseCounter() }
             map["toggleChanged"] = { vm.toggleChanged() }

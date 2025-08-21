@@ -30,6 +30,7 @@ import androidx.compose.material3.OutlinedTextField
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.components.SimpleDateSelectBox
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -52,11 +53,18 @@ fun DatePickerTestGeneratedView(
                 .wrapContentHeight()
         ) {
             Button(
-                onClick = { },
-                shape = RoundedCornerShape(8.dp)
+                onClick = { viewModel.toggleDynamicMode() },
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(32.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
             ) {
                 Text(
-                    text = "Button",
+                    text = "\${data.dynamicModeStatus}",
+                    fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }

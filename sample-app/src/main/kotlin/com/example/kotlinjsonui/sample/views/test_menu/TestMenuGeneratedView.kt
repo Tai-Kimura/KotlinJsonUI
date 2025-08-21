@@ -45,7 +45,7 @@ fun TestMenuGeneratedView(
             Text(
                 text = "KotlinJsonUI Feature Tests",
                 fontSize = 28.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = Color(android.graphics.Color.parseColor("#000000")),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 20.dp),
                 textAlign = TextAlign.Center
@@ -60,8 +60,9 @@ fun TestMenuGeneratedView(
             Button(
                 onClick = { viewModel.navigateToMarginsTest() },
                 modifier = Modifier
-                    .padding(12.dp)
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp)
+                    .wrapContentWidth()
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
@@ -69,14 +70,16 @@ fun TestMenuGeneratedView(
             ) {
                 Text(
                     text = "Margins & Padding Test",
+                    fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
             Button(
                 onClick = { viewModel.navigateToAlignmentTest() },
                 modifier = Modifier
-                    .padding(12.dp)
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp)
+                    .wrapContentWidth()
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
@@ -84,14 +87,16 @@ fun TestMenuGeneratedView(
             ) {
                 Text(
                     text = "Alignment Test",
+                    fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
             Button(
                 onClick = { viewModel.navigateToAlignmentComboTest() },
                 modifier = Modifier
-                    .padding(12.dp)
-                    .padding(bottom = 8.dp),
+                    .padding(bottom = 8.dp)
+                    .wrapContentWidth()
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
@@ -99,6 +104,7 @@ fun TestMenuGeneratedView(
             ) {
                 Text(
                     text = "Alignment Combo Test",
+                    fontSize = 16.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }

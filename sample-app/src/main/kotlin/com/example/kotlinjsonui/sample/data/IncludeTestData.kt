@@ -9,7 +9,18 @@ data class IncludeTestData(
     var mainCount: Int = 100,
     var mainStatus: String = "Main Active",
     var title: String = "Include Component Test",
-    var userName: String = "Test User"
+    var userName: String = "Test User",
+    var title: String = "Included1",
+    var viewCount: Int = 0,
+    var viewStatus: String = "Default Status",
+    var viewTitle: String = "Default Title",
+    var viewCount: Int = 0,
+    var viewStatus: String = "Default Status",
+    var viewTitle: String = "Default Title",
+    var viewCount: Int = 0,
+    var viewStatus: String = "Default Status",
+    var viewTitle: String = "Default Title",
+    var title: String = "Included1"
 ) {
     companion object {
         // Update properties from map
@@ -19,7 +30,18 @@ data class IncludeTestData(
                 mainCount = (map["mainCount"] as? Number)?.toInt() ?: 0,
                 mainStatus = map["mainStatus"] as? String ?: "",
                 title = map["title"] as? String ?: "",
-                userName = map["userName"] as? String ?: ""
+                userName = map["userName"] as? String ?: "",
+                title = map["title"] as? String ?: "",
+                viewCount = (map["viewCount"] as? Number)?.toInt() ?: 0,
+                viewStatus = map["viewStatus"] as? String ?: "",
+                viewTitle = map["viewTitle"] as? String ?: "",
+                viewCount = (map["viewCount"] as? Number)?.toInt() ?: 0,
+                viewStatus = map["viewStatus"] as? String ?: "",
+                viewTitle = map["viewTitle"] as? String ?: "",
+                viewCount = (map["viewCount"] as? Number)?.toInt() ?: 0,
+                viewStatus = map["viewStatus"] as? String ?: "",
+                viewTitle = map["viewTitle"] as? String ?: "",
+                title = map["title"] as? String ?: ""
             )
         }
     }
@@ -34,9 +56,21 @@ data class IncludeTestData(
         map["mainStatus"] = mainStatus
         map["title"] = title
         map["userName"] = userName
+        map["title"] = title
+        map["viewCount"] = viewCount
+        map["viewStatus"] = viewStatus
+        map["viewTitle"] = viewTitle
+        map["viewCount"] = viewCount
+        map["viewStatus"] = viewStatus
+        map["viewTitle"] = viewTitle
+        map["viewCount"] = viewCount
+        map["viewStatus"] = viewStatus
+        map["viewTitle"] = viewTitle
+        map["title"] = title
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
             map["incrementCount"] = { vm.incrementCount() }
             map["decrementCount"] = { vm.decrementCount() }
             map["resetCount"] = { vm.resetCount() }

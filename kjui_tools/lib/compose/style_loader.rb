@@ -45,7 +45,9 @@ module KjuiTools
         
         def load_style(style_name)
           config = Core::ConfigManager.load_config
-          source_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
+          project_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
+          source_dir = config['source_directory'] || 'src/main'
+          source_path = File.join(project_path, source_dir)
           styles_dir = File.join(source_path, config['styles_directory'] || 'assets/Styles')
           
           style_file = File.join(styles_dir, "#{style_name}.json")
@@ -67,7 +69,9 @@ module KjuiTools
         def process_include(json_data)
           include_name = json_data['include']
           config = Core::ConfigManager.load_config
-          source_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
+          project_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
+          source_dir = config['source_directory'] || 'src/main'
+          source_path = File.join(project_path, source_dir)
           layouts_dir = File.join(source_path, config['layouts_directory'] || 'assets/Layouts')
           
           include_file = File.join(layouts_dir, "#{include_name}.json")

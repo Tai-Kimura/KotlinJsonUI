@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun WidthTestGeneratedView(
@@ -31,11 +32,18 @@ fun WidthTestGeneratedView(
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         Button(
-            onClick = { },
-            shape = RoundedCornerShape(8.dp)
+            onClick = { viewModel.toggleDynamicMode() },
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(32.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                        )
         ) {
             Text(
-                text = "Button",
+                text = "\${data.dynamicModeStatus}",
+                fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             )
         }

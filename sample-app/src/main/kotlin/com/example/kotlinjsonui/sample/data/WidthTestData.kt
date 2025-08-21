@@ -23,6 +23,11 @@ data class WidthTestData(
         // Data properties
         map["dynamicModeStatus"] = dynamicModeStatus
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }

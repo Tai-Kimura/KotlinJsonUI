@@ -14,10 +14,9 @@
       "child": [
         {
           "type": "Label",
+          "style": "title_label",
           "text": "KotlinJsonUI Feature Tests",
           "fontSize": 28,
-          "fontColor": "#333333",
-          "fontWeight": "bold",
           "textAlign": "center",
           "bottomMargin": 20
         },
@@ -31,32 +30,23 @@
         },
         {
           "type": "Button",
+          "style": "primary_button",
           "text": "Margins & Padding Test",
           "onclick": "navigateToMarginsTest",
-          "background": "#007AFF",
-          "fontColor": "#FFFFFF",
-          "padding": 12,
-          "cornerRadius": 8,
           "bottomMargin": 8
         },
         {
           "type": "Button",
+          "style": "primary_button",
           "text": "Alignment Test",
           "onclick": "navigateToAlignmentTest",
-          "background": "#007AFF",
-          "fontColor": "#FFFFFF",
-          "padding": 12,
-          "cornerRadius": 8,
           "bottomMargin": 8
         },
         {
           "type": "Button",
+          "style": "primary_button",
           "text": "Alignment Combo Test",
           "onclick": "navigateToAlignmentComboTest",
-          "background": "#007AFF",
-          "fontColor": "#FFFFFF",
-          "padding": 12,
-          "cornerRadius": 8,
           "bottomMargin": 8
         },
         {

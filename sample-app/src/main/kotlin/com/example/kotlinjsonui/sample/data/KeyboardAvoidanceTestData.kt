@@ -46,6 +46,7 @@ data class KeyboardAvoidanceTestData(
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
             map["submitForm"] = { vm.submitForm() }
         }
         

@@ -1,0 +1,13 @@
+{
+  "type": "Button",
+  "text": "Dynamic: @{dynamicModeStatus}",
+  "onclick": "toggleDynamicMode",
+  "background": "#5856D6",
+  "fontColor": "#FFFFFF",
+  "fontSize": 14,
+  "fontWeight": "medium",
+  "cornerRadius": 6,
+  "padding": [8, 12],
+  "height": 32,
+  "width": "wrapContent"
+}

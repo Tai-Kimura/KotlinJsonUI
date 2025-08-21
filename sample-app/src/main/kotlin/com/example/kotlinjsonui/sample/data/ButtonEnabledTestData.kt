@@ -31,6 +31,7 @@ data class ButtonEnabledTestData(
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
             map["testAction"] = { vm.testAction() }
             map["toggleEnabled"] = { vm.toggleEnabled() }
             map["neverCalled"] = { vm.neverCalled() }

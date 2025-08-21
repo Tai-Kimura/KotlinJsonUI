@@ -32,6 +32,11 @@ data class VisibilityTestData(
         map["textVisibility"] = textVisibility
         map["isHidden"] = isHidden
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }

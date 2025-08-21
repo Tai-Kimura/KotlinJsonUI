@@ -50,6 +50,11 @@ data class DatePickerTestData(
         map["startDate"] = startDate
         map["title"] = title
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }

@@ -26,6 +26,11 @@ data class AlignmentTestData(
         map["dynamicModeStatus"] = dynamicModeStatus
         map["title"] = title
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }

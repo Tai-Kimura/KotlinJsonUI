@@ -34,6 +34,7 @@ data class DisabledTestData(
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
             map["onEnabledButtonTap"] = { vm.onEnabledButtonTap() }
             map["onDisabledButtonTap"] = { vm.onDisabledButtonTap() }
             map["onTouchDisabledTap"] = { vm.onTouchDisabledTap() }

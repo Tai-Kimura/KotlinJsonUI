@@ -44,11 +44,18 @@ fun KeyboardAvoidanceTestGeneratedView(
                 .padding(16.dp)
         ) {
             Button(
-                onClick = { },
-                shape = RoundedCornerShape(8.dp)
+                onClick = { viewModel.toggleDynamicMode() },
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(32.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
             ) {
                 Text(
-                    text = "Button",
+                    text = "\${data.dynamicModeStatus}",
+                    fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }

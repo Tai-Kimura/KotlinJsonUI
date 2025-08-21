@@ -35,6 +35,11 @@ data class SecureFieldTestData(
         map["regularText"] = regularText
         map["title"] = title
         
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
+        
         return map
     }
 }
