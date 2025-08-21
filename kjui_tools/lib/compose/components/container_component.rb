@@ -45,15 +45,12 @@ module KjuiTools
             code += add_gravity_settings(layout, json_data['gravity'], depth)
           end
           
-          # Add direction settings (reverseLayout)
+          # Add direction settings
+          # Note: reverseLayout is only supported by LazyColumn/LazyRow, not Column/Row
+          # For regular Row/Column, we need to manually reverse the children order
           if json_data['direction'] && (layout == 'Column' || layout == 'Row')
-            case json_data['direction']
-            when 'bottomToTop'
-              code += ",\n" + indent("reverseLayout = true", depth + 1) if layout == 'Column'
-            when 'rightToLeft'
-              code += ",\n" + indent("reverseLayout = true", depth + 1) if layout == 'Row'
-            # topToBottom and leftToRight are defaults (reverseLayout = false)
-            end
+            # Direction handling will be done by reversing children order
+            # No reverseLayout parameter for regular Row/Column
           end
           
           # Add spacing for Column/Row
@@ -91,6 +88,16 @@ module KjuiTools
           # Process children
           children = json_data['child'] || []
           children = [children] unless children.is_a?(Array)
+          
+          # Reverse children order if direction requires it
+          if json_data['direction']
+            case json_data['direction']
+            when 'bottomToTop'
+              children = children.reverse if layout == 'Column'
+            when 'rightToLeft'
+              children = children.reverse if layout == 'Row'
+            end
+          end
           
           # Return structure for parent to process children
           { code: code, children: children, closing: "\n" + indent("}", depth), layout_type: layout }

@@ -161,12 +161,12 @@ fun ImplementedAttributesTestGeneratedView(
                     modifier = Modifier
                         .height(50.dp)
                         .background(Color(android.graphics.Color.parseColor("#ccccff"))),
-                    reverseLayout = true,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Text(
-                        text = "1",
-                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#ff6666"))),
+                        text = "3",
+                        color = Color(android.graphics.Color.parseColor("#ffffff")),
+                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#6666ff"))),
                         textAlign = TextAlign.Center
                     )
                     Text(
@@ -175,9 +175,8 @@ fun ImplementedAttributesTestGeneratedView(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "3",
-                        color = Color(android.graphics.Color.parseColor("#ffffff")),
-                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#6666ff"))),
+                        text = "1",
+                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#ff6666"))),
                         textAlign = TextAlign.Center
                     )
                 }

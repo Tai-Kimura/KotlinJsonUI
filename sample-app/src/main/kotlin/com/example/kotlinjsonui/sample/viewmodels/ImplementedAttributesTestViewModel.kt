@@ -19,9 +19,31 @@ class ImplementedAttributesTestViewModel : ViewModel() {
         // Handle button tap
     }
     
+    // TextField event handlers
+    fun handleFocus() {
+        println("TextField focused")
+    }
+    
+    fun handleBlur() {
+        println("TextField blurred")
+    }
+    
+    fun handleBeginEditing() {
+        println("TextField begin editing")
+    }
+    
+    fun handleEndEditing() {
+        println("TextField end editing")
+    }
+    
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value = _data.value.copy()
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentData = _data.value
+        val newData = currentData.copy(
+            textFieldValue = updates["textFieldValue"] as? String ?: currentData.textFieldValue,
+            selectedRadiogroup = updates["selectedRadiogroup"] as? String ?: currentData.selectedRadiogroup,
+            selectedSegment = updates["selectedSegment"] as? Int ?: currentData.selectedSegment
+        )
+        _data.value = newData
     }
 }
