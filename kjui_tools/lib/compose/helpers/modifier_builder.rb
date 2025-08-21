@@ -485,13 +485,22 @@ module KjuiTools
         def self.format(modifiers, depth)
           return "" if modifiers.empty?
           
-          code = "\n" + indent("modifier = Modifier", depth + 1)
-          
-          if modifiers.length == 1 && modifiers[0].start_with?('.')
-            code += modifiers[0]
-          else
-            modifiers.each do |mod|
+          # Check if first modifier is already "Modifier"
+          if modifiers[0] == "Modifier"
+            code = "\n" + indent("modifier = Modifier", depth + 1)
+            # Skip the first "Modifier" and process the rest
+            modifiers[1..-1].each do |mod|
               code += "\n" + indent("    #{mod}", depth + 1)
+            end
+          else
+            code = "\n" + indent("modifier = Modifier", depth + 1)
+            
+            if modifiers.length == 1 && modifiers[0].start_with?('.')
+              code += modifiers[0]
+            else
+              modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
             end
           end
           

@@ -11,6 +11,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.core.Configuration
 
@@ -25,6 +26,7 @@ fun CustomTextField(
     placeholder: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textStyle: TextStyle = LocalTextStyle.current,
     shape: RoundedCornerShape? = null,
     backgroundColor: Color? = null,
@@ -73,6 +75,7 @@ fun CustomTextField(
             placeholder = placeholder,
             isError = isError,
             visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
             textStyle = textStyle,
             singleLine = singleLine,
             maxLines = maxLines,
@@ -94,6 +97,7 @@ fun CustomTextField(
             placeholder = placeholder,
             isError = isError,
             visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
             textStyle = textStyle,
             singleLine = singleLine,
             maxLines = maxLines,
@@ -121,6 +125,7 @@ fun CustomTextFieldWithMargins(
     placeholder: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textStyle: TextStyle = LocalTextStyle.current,
     shape: RoundedCornerShape? = null,
     backgroundColor: Color? = null,
@@ -143,6 +148,7 @@ fun CustomTextFieldWithMargins(
             placeholder = placeholder,
             isError = isError,
             visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
             textStyle = textStyle,
             shape = shape,
             backgroundColor = backgroundColor,

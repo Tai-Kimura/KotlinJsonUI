@@ -39,7 +39,6 @@ fun PartialAttributesTestGeneratedView(
     // >>> GENERATED_CODE_START
         Box(
         modifier = Modifier
-            Modifier
             .fillMaxSize()
             .systemBarsPadding()
     ) {

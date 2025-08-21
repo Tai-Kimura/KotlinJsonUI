@@ -29,7 +29,6 @@ fun ButtonTestGeneratedView(
     // >>> GENERATED_CODE_START
         Box(
         modifier = Modifier
-            Modifier
             .fillMaxSize()
             .systemBarsPadding()
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
