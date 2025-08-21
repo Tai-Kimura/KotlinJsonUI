@@ -197,22 +197,14 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-                    ) {
-                        Text(
-                            text = "${data.title}",
-                            fontSize = 24.sp,
-                            color = Color(android.graphics.Color.parseColor("#000000")),
-                            modifier = Modifier
-                                .padding(top = 20.dp)
-                                .wrapContentWidth()
-                                .wrapContentHeight()
-                        )
-                    }
+                    Included1View(
+                        data = Included1Data(
+                            title = "Included View 1",
+                            message = "This is the first included view",
+                            count = 1
+                        ),
+                        viewModel = Included1ViewModel()
+                    )
                 }
                 Column(
                 ) {
@@ -222,44 +214,14 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    Column(
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(android.graphics.Color.parseColor("#FFF4E6")))
-                    ) {
-                        Text(
-                            text = "Included View 2",
-                            fontSize = 18.sp,
-                            color = Color(android.graphics.Color.parseColor("#FF6600")),
-                            modifier = Modifier
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-                        ) {
-                            Text(
-                                text = "${data.viewTitle}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.viewStatus}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.viewCount}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                        }
-                    }
+                    Included2View(
+                        data = Included2Data(
+                            viewTitle = "Static Title",
+                            viewStatus = "Static Status",
+                            viewCount = 42
+                        ),
+                        viewModel = Included2ViewModel()
+                    )
                 }
                 Column(
                 ) {
@@ -269,44 +231,14 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    Column(
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(android.graphics.Color.parseColor("#FFF4E6")))
-                    ) {
-                        Text(
-                            text = "Included View 2",
-                            fontSize = 18.sp,
-                            color = Color(android.graphics.Color.parseColor("#FF6600")),
-                            modifier = Modifier
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-                        ) {
-                            Text(
-                                text = "${data.viewTitle}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.viewStatus}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.viewCount}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                        }
-                    }
+                    Included2View(
+                        data = Included2Data(
+                            viewTitle = data.userName,
+                            viewStatus = data.mainStatus,
+                            viewCount = data.mainCount
+                        ),
+                        viewModel = Included2ViewModel()
+                    )
                 }
                 Column(
                 ) {
@@ -316,44 +248,12 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    Column(
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(android.graphics.Color.parseColor("#FFF4E6")))
-                    ) {
-                        Text(
-                            text = "Included View 2",
-                            fontSize = 18.sp,
-                            color = Color(android.graphics.Color.parseColor("#FF6600")),
-                            modifier = Modifier
-                        )
-                        Column(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(5.dp))
-                                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-                        ) {
-                            Text(
-                                text = "${data.viewTitle}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.viewStatus}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                            Text(
-                                text = "${data.viewCount}",
-                                fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
-                                modifier = Modifier
-                            )
-                        }
-                    }
+                    Included2View(
+                        data = Included2Data(
+                            viewStatus = "Overridden Status"
+                        ),
+                        viewModel = Included2ViewModel()
+                    )
                 }
                 Column(
                 ) {
@@ -363,22 +263,14 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-                    ) {
-                        Text(
-                            text = "${data.title}",
-                            fontSize = 24.sp,
-                            color = Color(android.graphics.Color.parseColor("#000000")),
-                            modifier = Modifier
-                                .padding(top = 20.dp)
-                                .wrapContentWidth()
-                                .wrapContentHeight()
-                        )
-                    }
+                    Included1View(
+                        data = Included1Data(
+                            title = data.userName,
+                            message = data.mainStatus,
+                            count = data.mainCount
+                        ),
+                        viewModel = Included1ViewModel()
+                    )
                 }
             }
         }

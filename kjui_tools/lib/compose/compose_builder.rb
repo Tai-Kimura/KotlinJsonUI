@@ -210,10 +210,55 @@ module KjuiTools
         # Track this included view for imports
         @included_views&.add(snake_name)
         
-        # Simply call the view with the viewModel parameter
-        # Data passing should be handled differently (e.g., through ViewModel initialization)
+        # Generate the included view call with its own data and viewModel
         code = indent("#{pascal_name}View(", depth)
-        code += "\n" + indent("viewModel = viewModel.#{to_camel_case(include_name)}ViewModel", depth + 1)
+        
+        # Pass data to the included view
+        if json_data['data']
+          # Create a data object for the included view
+          code += "\n" + indent("data = #{pascal_name}Data(", depth + 1)
+          
+          # Process each data field
+          data_fields = []
+          json_data['data'].each do |key, value|
+            # Handle @{} references to parent data
+            if value.is_a?(String) && value.include?('@{')
+              # Replace @{variable} with data.variable
+              processed_value = value.gsub(/@\{([^}]+)\}/) do |match|
+                variable = $1
+                "\\${data.#{variable}}"
+              end
+              # If the entire value is a reference, don't quote it
+              if value == "@{#{$1}}"
+                data_fields << "#{key} = data.#{$1}"
+              else
+                data_fields << "#{key} = \"#{processed_value}\""
+              end
+            elsif value.is_a?(String)
+              data_fields << "#{key} = \"#{value}\""
+            elsif value.is_a?(Numeric)
+              data_fields << "#{key} = #{value}"
+            elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
+              data_fields << "#{key} = #{value}"
+            else
+              data_fields << "#{key} = \"#{value}\""
+            end
+          end
+          
+          if data_fields.any?
+            data_fields.each_with_index do |field, i|
+              code += "\n" + indent(field + (i < data_fields.length - 1 ? "," : ""), depth + 2)
+            end
+          end
+          
+          code += "\n" + indent("),", depth + 1)
+        else
+          # Use the default data from the included view
+          code += "\n" + indent("data = #{pascal_name}Data(),", depth + 1)
+        end
+        
+        # Pass the viewModel for the included view
+        code += "\n" + indent("viewModel = #{pascal_name}ViewModel()", depth + 1)
         code += "\n" + indent(")", depth)
         
         code

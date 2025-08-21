@@ -67,50 +67,9 @@ module KjuiTools
         end
         
         def process_include(json_data)
-          include_name = json_data['include']
-          config = Core::ConfigManager.load_config
-          project_path = Core::ProjectFinder.get_full_source_path || Dir.pwd
-          source_dir = config['source_directory'] || 'src/main'
-          source_path = File.join(project_path, source_dir)
-          layouts_dir = File.join(source_path, config['layouts_directory'] || 'assets/Layouts')
-          
-          include_file = File.join(layouts_dir, "#{include_name}.json")
-          
-          if File.exist?(include_file)
-            begin
-              include_content = File.read(include_file)
-              include_data = JSON.parse(include_content)
-              
-              # Recursively process the included file
-              include_data = load_and_merge(include_data)
-              
-              # Handle data passing to includes
-              if json_data['data']
-                # Pass data to the included component
-                include_data['passed_data'] = json_data['data']
-              end
-              
-              if json_data['shared_data']
-                # Share data with the included component
-                include_data['shared_data'] = json_data['shared_data']
-              end
-              
-              # Merge any other attributes from the include directive
-              # (except 'include', 'data', and 'shared_data')
-              json_data.each do |key, value|
-                next if ['include', 'data', 'shared_data'].include?(key)
-                include_data[key] = value unless include_data.key?(key)
-              end
-              
-              include_data
-            rescue JSON::ParserError => e
-              puts "Warning: Failed to parse include file #{include_file}: #{e.message}"
-              json_data
-            end
-          else
-            puts "Warning: Include file not found: #{include_file}"
-            json_data
-          end
+          # For Compose generation, don't expand includes inline
+          # They should be handled as component calls in compose_builder
+          json_data
         end
       end
     end
