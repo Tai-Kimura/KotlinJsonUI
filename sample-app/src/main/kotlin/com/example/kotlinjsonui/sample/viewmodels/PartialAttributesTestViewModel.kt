@@ -42,7 +42,8 @@ class PartialAttributesTestViewModel : ViewModel() {
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
+        // For now, just trigger recomposition
+        // In a real app, you would update the data fields based on the updates map
         _data.value = _data.value.copy() // Trigger recomposition
     }
 }

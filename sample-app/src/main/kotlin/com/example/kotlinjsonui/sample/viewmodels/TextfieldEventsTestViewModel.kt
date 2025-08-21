@@ -42,7 +42,13 @@ class TextfieldEventsTestViewModel : ViewModel() {
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentData = _data.value
+        val newData = currentData.copy(
+            username = updates["username"] as? String ?: currentData.username,
+            email = updates["email"] as? String ?: currentData.email,
+            password = updates["password"] as? String ?: currentData.password,
+            notes = updates["notes"] as? String ?: currentData.notes
+        )
+        _data.value = newData
     }
 }
