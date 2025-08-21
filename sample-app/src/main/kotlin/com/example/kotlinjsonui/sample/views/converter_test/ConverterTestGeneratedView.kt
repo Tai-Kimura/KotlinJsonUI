@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.graphics.Brush
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -69,7 +70,20 @@ fun ConverterTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier.padding(top = 10.dp)
             )
-// TODO: Implement component type: GradientView
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(top = 10.dp)
+                    .background(Brush.linearGradient(listOf(Color(android.graphics.Color.parseColor("#FF0000")), Color(android.graphics.Color.parseColor("#00FF00")), Color(android.graphics.Color.parseColor("#0000FF")))))
+            ) {
+                Text(
+                    text = "Diagonal Gradient",
+                    fontSize = 16.sp,
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    modifier = Modifier
+                )
+            }
             Text(
                 text = "BlurView Test",
                 fontSize = 18.sp,
@@ -105,7 +119,16 @@ fun ConverterTestGeneratedView(
                             .padding(start = 20.dp)
                     )
                 }
-// TODO: Implement component type: BlurView
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .background(Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.8f))
+                        .align(Alignment.Center)
+                ) {
+                    // Child content would be generated here
+                    // Note: Blur effect is simulated with transparency. Use Modifier.blur() for real blur.
+                }
             }
             Text(
                 text = "WebView Test",

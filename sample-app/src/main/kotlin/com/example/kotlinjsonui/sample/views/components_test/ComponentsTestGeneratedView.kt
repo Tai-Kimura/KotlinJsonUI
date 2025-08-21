@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -159,14 +160,28 @@ fun ComponentsTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: GradientView
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(Brush.horizontalGradient(listOf(Color(android.graphics.Color.parseColor("#FF6B6B")), Color(android.graphics.Color.parseColor("#4ECDC4")))))
+                    .clip(RoundedCornerShape(10.dp))
+            ) {
+            }
             Text(
                 text = "Blur View",
                 fontSize = 18.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-// TODO: Implement component type: BlurView
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.5f))
+                    .clip(RoundedCornerShape(10.dp))
+            ) {
+            }
         }
         }
     }    // >>> GENERATED_CODE_END

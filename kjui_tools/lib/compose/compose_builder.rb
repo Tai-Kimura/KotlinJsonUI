@@ -30,6 +30,8 @@ require_relative 'components/textview_component'
 require_relative 'components/collection_component'
 require_relative 'components/table_component'
 require_relative 'components/web_component'
+require_relative 'components/gradientview_component'
+require_relative 'components/blurview_component'
 
 module KjuiTools
   module Compose
@@ -147,6 +149,12 @@ module KjuiTools
           Components::TableComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Web'
           Components::WebComponent.generate(json_data, depth, @required_imports, parent_type)
+        when 'GradientView'
+          result = Components::GradientviewComponent.generate(json_data, depth, @required_imports, parent_type)
+          handle_container_result(result, depth, parent_type)
+        when 'BlurView'
+          result = Components::BlurviewComponent.generate(json_data, depth, @required_imports, parent_type)
+          handle_container_result(result, depth, parent_type)
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
