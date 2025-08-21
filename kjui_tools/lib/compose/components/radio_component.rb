@@ -283,7 +283,7 @@ module KjuiTools
         def self.map_icon_name(icon_name)
           # Map iOS SF Symbols to Material Icons
           icon_map = {
-            'circle' => 'Icons.Outlined.RadioButtonUnchecked',
+            'circle' => 'Icons.Outlined.PanoramaFishEye',  # Using PanoramaFishEye as it's a hollow circle
             'checkmark.circle.fill' => 'Icons.Filled.CheckCircle',
             'star' => 'Icons.Outlined.Star',
             'star.fill' => 'Icons.Filled.Star',
@@ -293,7 +293,7 @@ module KjuiTools
             'checkmark.square.fill' => 'Icons.Filled.CheckBox'
           }
           
-          icon_map[icon_name] || 'Icons.Outlined.RadioButtonUnchecked'
+          icon_map[icon_name] || 'Icons.Outlined.PanoramaFishEye'
         end
         
         def self.indent(text, level)
