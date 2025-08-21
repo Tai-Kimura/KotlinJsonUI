@@ -40,6 +40,16 @@ import com.example.kotlinjsonui.sample.views.text_view_hint_test.TextViewHintTes
 import com.example.kotlinjsonui.sample.views.weight_test.WeightTestView
 import com.example.kotlinjsonui.sample.views.weight_test_with_fixed.WeightTestWithFixedView
 import com.example.kotlinjsonui.sample.views.width_test.WidthTestView
+import com.example.kotlinjsonui.sample.views.button_test.ButtonTestView
+import com.example.kotlinjsonui.sample.views.implemented_attributes_test.ImplementedAttributesTestView
+import com.example.kotlinjsonui.sample.views.partial_attributes_test.PartialAttributesTestView
+import com.example.kotlinjsonui.sample.views.radio_icons_test.RadioIconsTestView
+import com.example.kotlinjsonui.sample.views.scroll_test.ScrollTestView
+import com.example.kotlinjsonui.sample.views.segment_test.SegmentTestView
+import com.example.kotlinjsonui.sample.views.switch_events_test.SwitchEventsTestView
+import com.example.kotlinjsonui.sample.views.text_decoration_test.TextDecorationTestView
+import com.example.kotlinjsonui.sample.views.textfield_events_test.TextfieldEventsTestView
+import com.example.kotlinjsonui.sample.views.textfield_test.TextfieldTestView
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -132,6 +142,36 @@ fun AppNavigation() {
         }
         composable("width_test") {
             WidthTestView()
+        }
+        composable("button_test") {
+            ButtonTestView()
+        }
+        composable("implemented_attributes_test") {
+            ImplementedAttributesTestView()
+        }
+        composable("partial_attributes_test") {
+            PartialAttributesTestView()
+        }
+        composable("radio_icons_test") {
+            RadioIconsTestView()
+        }
+        composable("scroll_test") {
+            ScrollTestView()
+        }
+        composable("segment_test") {
+            SegmentTestView()
+        }
+        composable("switch_events_test") {
+            SwitchEventsTestView()
+        }
+        composable("text_decoration_test") {
+            TextDecorationTestView()
+        }
+        composable("textfield_events_test") {
+            TextfieldEventsTestView()
+        }
+        composable("textfield_test") {
+            TextfieldTestView()
         }
     }
 }
