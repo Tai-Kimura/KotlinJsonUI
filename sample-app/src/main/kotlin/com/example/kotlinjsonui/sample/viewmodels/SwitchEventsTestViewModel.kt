@@ -23,42 +23,50 @@ class SwitchEventsTestViewModel : ViewModel() {
     fun handleNotificationChange(enabled: Boolean) {
         println("Notifications: $enabled")
         val currentData = _data.value
-        _data.value = currentData.copy(enableNotifications = enabled)
+        _data.value = currentData.copy(
+            notificationStatus = if (enabled) "Notifications are enabled" else "Notifications are disabled"
+        )
     }
     
     fun handleDarkModeChange(enabled: Boolean) {
         println("Dark mode: $enabled")
         val currentData = _data.value
-        _data.value = currentData.copy(enableDarkMode = enabled)
+        _data.value = currentData.copy(
+            darkModeStatus = if (enabled) "Dark mode is on" else "Dark mode is off"
+        )
     }
     
     fun handleWifiChange(enabled: Boolean) {
         println("WiFi: $enabled")
-        val currentData = _data.value
-        _data.value = currentData.copy(wifiEnabled = enabled)
+        updateConnectionStatus()
     }
     
     fun handleBluetoothChange(enabled: Boolean) {
         println("Bluetooth: $enabled")
-        val currentData = _data.value
-        _data.value = currentData.copy(bluetoothEnabled = enabled)
+        updateConnectionStatus()
     }
     
     fun handleLocationChange(enabled: Boolean) {
         println("Location: $enabled")
+        updateConnectionStatus()
+    }
+    
+    private fun updateConnectionStatus() {
+        // For now, just keep the default status
+        // In a real app, you'd track the actual states
         val currentData = _data.value
-        _data.value = currentData.copy(locationEnabled = enabled)
+        _data.value = currentData.copy(
+            connectionStatus = "Connection status updated"
+        )
     }
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
         val currentData = _data.value
         val newData = currentData.copy(
-            enableNotifications = updates["enableNotifications"] as? Boolean ?: currentData.enableNotifications,
-            enableDarkMode = updates["enableDarkMode"] as? Boolean ?: currentData.enableDarkMode,
-            wifiEnabled = updates["wifiEnabled"] as? Boolean ?: currentData.wifiEnabled,
-            bluetoothEnabled = updates["bluetoothEnabled"] as? Boolean ?: currentData.bluetoothEnabled,
-            locationEnabled = updates["locationEnabled"] as? Boolean ?: currentData.locationEnabled
+            notificationStatus = updates["notificationStatus"] as? String ?: currentData.notificationStatus,
+            darkModeStatus = updates["darkModeStatus"] as? String ?: currentData.darkModeStatus,
+            connectionStatus = updates["connectionStatus"] as? String ?: currentData.connectionStatus
         )
         _data.value = newData
     }
