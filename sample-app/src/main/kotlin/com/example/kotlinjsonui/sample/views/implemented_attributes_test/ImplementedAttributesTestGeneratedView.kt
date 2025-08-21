@@ -328,9 +328,31 @@ fun ImplementedAttributesTestGeneratedView(
                         .padding(bottom = 10.dp)
                 )
                 TabRow(
-                    selectedTabIndex = 0,
+                    selectedTabIndex = data.selectedSegment,
+                    contentColor = Color(android.graphics.Color.parseColor("#0000ff")),
                     modifier = Modifier.padding(bottom = 10.dp)
                 ) {
+                    Tab(
+                        selected = (data.selectedSegment == 0),
+                        onClick = {
+                            viewModel.updateData(mapOf("selectedSegment" to 0))
+                        },
+                        text = { Text("First") }
+                    )
+                    Tab(
+                        selected = (data.selectedSegment == 1),
+                        onClick = {
+                            viewModel.updateData(mapOf("selectedSegment" to 1))
+                        },
+                        text = { Text("Second") }
+                    )
+                    Tab(
+                        selected = (data.selectedSegment == 2),
+                        onClick = {
+                            viewModel.updateData(mapOf("selectedSegment" to 2))
+                        },
+                        text = { Text("Third") }
+                    )
                 }
                 Text(
                     text = "10. SelectBox Attributes",

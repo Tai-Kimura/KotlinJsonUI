@@ -97,8 +97,29 @@ fun ComponentsTestGeneratedView(
                 modifier = Modifier
             )
             TabRow(
-                selectedTabIndex = 0,
+                selectedTabIndex = data.selectedSegment1,
             ) {
+                Tab(
+                    selected = (data.selectedSegment1 == 0),
+                    onClick = {
+                        viewModel.updateData(mapOf("selectedSegment1" to 0))
+                    },
+                    text = { Text("List") }
+                )
+                Tab(
+                    selected = (data.selectedSegment1 == 1),
+                    onClick = {
+                        viewModel.updateData(mapOf("selectedSegment1" to 1))
+                    },
+                    text = { Text("Grid") }
+                )
+                Tab(
+                    selected = (data.selectedSegment1 == 2),
+                    onClick = {
+                        viewModel.updateData(mapOf("selectedSegment1" to 2))
+                    },
+                    text = { Text("Map") }
+                )
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,

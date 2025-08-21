@@ -9,25 +9,36 @@ module KjuiTools
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           required_imports&.add(:tab_row)
           
-          # Segment uses 'bind' for selected index
-          selected_index = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+          # Segment uses 'selectedIndex' or 'bind' for selected index
+          selected_index = if json_data['selectedIndex']
+            if json_data['selectedIndex'].is_a?(String) && json_data['selectedIndex'].match(/@\{([^}]+)\}/)
+              variable = $1
+              "data.#{variable}"
+            else
+              # Direct integer value
+              json_data['selectedIndex'].to_s
+            end
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
             "data.#{variable}"
           else
             '0'
           end
           
-          segments = json_data['segments'] || []
+          # Support both 'items' and 'segments' attribute names
+          segments = json_data['items'] || json_data['segments'] || []
           
           code = indent("TabRow(", depth)
           code += "\n" + indent("selectedTabIndex = #{selected_index},", depth + 1)
           
           # Tab colors
-          if json_data['selectedSegmentTintColor'] || json_data['backgroundColor']
+          if json_data['selectedColor'] || json_data['tintColor'] || json_data['selectedSegmentTintColor'] || json_data['backgroundColor']
             colors_params = []
             
-            if json_data['selectedSegmentTintColor']
-              colors_params << "contentColor = Color(android.graphics.Color.parseColor(\"#{json_data['selectedSegmentTintColor']}\"))"
+            # tintColor and selectedColor both map to contentColor
+            if json_data['selectedColor'] || json_data['tintColor'] || json_data['selectedSegmentTintColor']
+              color = json_data['selectedColor'] || json_data['tintColor'] || json_data['selectedSegmentTintColor']
+              colors_params << "contentColor = Color(android.graphics.Color.parseColor(\"#{color}\"))"
             end
             
             if json_data['backgroundColor']
@@ -56,11 +67,17 @@ module KjuiTools
               code += "\n" + indent("selected = (#{selected_index} == #{index}),", depth + 2)
               code += "\n" + indent("onClick = {", depth + 2)
               
-              if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+              if json_data['selectedIndex'] && json_data['selectedIndex'].is_a?(String) && json_data['selectedIndex'].match(/@\{([^}]+)\}/)
+                variable = $1
+                code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to #{index}))", depth + 3)
+              elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                 variable = $1
                 code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to #{index}))", depth + 3)
               elsif json_data['onValueChange']
                 code += "\n" + indent("viewModel.#{json_data['onValueChange']}(#{index})", depth + 3)
+              else
+                # No action if selectedIndex is a static value
+                code += "\n" + indent("// Static selected index", depth + 3)
               end
               
               code += "\n" + indent("},", depth + 2)
@@ -75,9 +92,14 @@ module KjuiTools
             code += "\n" + indent("selected = (#{selected_index} == index),", depth + 3)
             code += "\n" + indent("onClick = {", depth + 3)
             
-            if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+            if json_data['selectedIndex'] && json_data['selectedIndex'].is_a?(String) && json_data['selectedIndex'].match(/@\{([^}]+)\}/)
               variable = $1
               code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to index))", depth + 4)
+            elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+              variable = $1
+              code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to index))", depth + 4)
+            else
+              code += "\n" + indent("// Static selected index", depth + 4)
             end
             
             code += "\n" + indent("},", depth + 3)

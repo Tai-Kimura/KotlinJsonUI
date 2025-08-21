@@ -62,6 +62,27 @@ fun SegmentTestGeneratedView(
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
+                    Tab(
+                        selected = (0 == 0),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Option 1") }
+                    )
+                    Tab(
+                        selected = (0 == 1),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Option 2") }
+                    )
+                    Tab(
+                        selected = (0 == 2),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Option 3") }
+                    )
                 }
                 Text(
                     text = "Segment with Custom Colors",
@@ -72,12 +93,34 @@ fun SegmentTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 TabRow(
-                    selectedTabIndex = 0,
+                    selectedTabIndex = 1,
+                    contentColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
+                    Tab(
+                        selected = (1 == 0),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Red") }
+                    )
+                    Tab(
+                        selected = (1 == 1),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Green") }
+                    )
+                    Tab(
+                        selected = (1 == 2),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Blue") }
+                    )
                 }
                 Text(
                     text = "Segment with onChange Event",
@@ -88,12 +131,40 @@ fun SegmentTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 TabRow(
-                    selectedTabIndex = 0,
+                    selectedTabIndex = 1,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
+                    Tab(
+                        selected = (1 == 0),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Small") }
+                    )
+                    Tab(
+                        selected = (1 == 1),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Medium") }
+                    )
+                    Tab(
+                        selected = (1 == 2),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Large") }
+                    )
+                    Tab(
+                        selected = (1 == 3),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Extra Large") }
+                    )
                 }
                 Text(
                     text = "${data.selectedSize}",
@@ -112,12 +183,33 @@ fun SegmentTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 TabRow(
-                    selectedTabIndex = 0,
+                    selectedTabIndex = 2,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
+                    Tab(
+                        selected = (2 == 0),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Disabled 1") }
+                    )
+                    Tab(
+                        selected = (2 == 1),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Disabled 2") }
+                    )
+                    Tab(
+                        selected = (2 == 2),
+                        onClick = {
+                            // Static selected index
+                        },
+                        text = { Text("Disabled 3") }
+                    )
                 }
             }
             }
