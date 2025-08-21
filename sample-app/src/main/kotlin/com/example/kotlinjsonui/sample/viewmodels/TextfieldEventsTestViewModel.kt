@@ -15,24 +15,27 @@ class TextfieldEventsTestViewModel : ViewModel() {
     val data: StateFlow<TextfieldEventsTestData> = _data.asStateFlow()
     
     // TextField event handlers
-    fun handleUsernameChange(value: String) {
-        println("Username changed: $value")
-        updateData(mapOf("username" to value))
-    }
-    
     fun handleEmailChange(value: String) {
         println("Email changed: $value")
-        updateData(mapOf("email" to value))
+        val currentData = _data.value
+        _data.value = currentData.copy(
+            email = value,
+            emailDisplay = if (value.isEmpty()) "(not entered)" else value
+        )
     }
     
     fun handlePasswordChange(value: String) {
         println("Password changed: $value")
-        updateData(mapOf("password" to value))
+        val currentData = _data.value
+        _data.value = currentData.copy(
+            password = value,
+            passwordLength = value.length.toString()
+        )
     }
     
     fun handleNotesChange(value: String) {
         println("Notes changed: $value")
-        updateData(mapOf("notes" to value))
+        _data.value = _data.value.copy(notes = value)
     }
     
     // Action handlers
@@ -44,9 +47,10 @@ class TextfieldEventsTestViewModel : ViewModel() {
     fun updateData(updates: Map<String, Any>) {
         val currentData = _data.value
         val newData = currentData.copy(
-            username = updates["username"] as? String ?: currentData.username,
             email = updates["email"] as? String ?: currentData.email,
+            emailDisplay = updates["emailDisplay"] as? String ?: currentData.emailDisplay,
             password = updates["password"] as? String ?: currentData.password,
+            passwordLength = updates["passwordLength"] as? String ?: currentData.passwordLength,
             notes = updates["notes"] as? String ?: currentData.notes
         )
         _data.value = newData
