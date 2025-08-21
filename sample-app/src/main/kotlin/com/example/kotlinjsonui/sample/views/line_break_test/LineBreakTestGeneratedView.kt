@@ -49,7 +49,7 @@ fun LineBreakTestGeneratedView(
                                 )
             ) {
                 Text(
-                    text = "\${data.dynamicModeStatus}",
+                    text = "Dynamic: \${data.dynamicModeStatus}",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )

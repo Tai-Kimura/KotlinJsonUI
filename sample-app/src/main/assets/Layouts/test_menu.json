@@ -21,6 +21,11 @@
           "bottomMargin": 20
         },
         {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "bottomMargin": 20
+        },
+        {
           "type": "Label",
           "text": "Layout & Positioning",
           "fontSize": 20,
@@ -387,5 +392,8 @@
         }
       ]
     }
-  ]
+  ],
+  "data": {
+    "dynamicModeStatus": "OFF"
+  }
 }

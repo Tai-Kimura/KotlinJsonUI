@@ -13,6 +13,13 @@ class FormTestViewModel : ViewModel() {
     // Data model
     private val _data = MutableStateFlow(FormTestData())
     val data: StateFlow<FormTestData> = _data.asStateFlow()
+
+    // Dynamic mode toggle
+    fun toggleDynamicMode() {
+        val currentStatus = _data.value.dynamicModeStatus
+        val newStatus = if (currentStatus == "ON") "OFF" else "ON"
+        _data.value = _data.value.copy(dynamicModeStatus = newStatus)
+    }
     
     // Action handlers
     fun submitForm() {

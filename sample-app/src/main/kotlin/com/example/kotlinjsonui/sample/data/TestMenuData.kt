@@ -5,14 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.kotlinjsonui.sample.viewmodels.TestMenuViewModel
 
 data class TestMenuData(
-    // No data properties defined in JSON
-    val placeholder: String = "placeholder"
+    var dynamicModeStatus: String = "OFF"
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): TestMenuData {
             return TestMenuData(
-                placeholder = "placeholder"
+                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: ""
             )
         }
     }
@@ -21,8 +20,12 @@ data class TestMenuData(
     fun toMap(viewModel: TestMenuViewModel? = null): MutableMap<String, Any> {
         val map = mutableMapOf<String, Any>()
         
+        // Data properties
+        map["dynamicModeStatus"] = dynamicModeStatus
+        
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
             map["navigateToMarginsTest"] = { vm.navigateToMarginsTest() }
             map["navigateToAlignmentTest"] = { vm.navigateToAlignmentTest() }
             map["navigateToAlignmentComboTest"] = { vm.navigateToAlignmentComboTest() }

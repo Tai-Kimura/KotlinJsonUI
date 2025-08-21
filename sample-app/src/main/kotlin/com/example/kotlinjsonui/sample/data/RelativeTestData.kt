@@ -5,15 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.kotlinjsonui.sample.viewmodels.RelativeTestViewModel
 
 data class RelativeTestData(
-    var dynamicModeStatus: String = "OFF",
-    var title: String = "RelativePosition Test - Margins & Padding"
+    // No data properties defined in JSON
+    val placeholder: String = "placeholder"
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): RelativeTestData {
             return RelativeTestData(
-                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
-                title = map["title"] as? String ?: ""
+                placeholder = "placeholder"
             )
         }
     }
@@ -21,10 +20,6 @@ data class RelativeTestData(
     // Convert properties to map for runtime use
     fun toMap(viewModel: RelativeTestViewModel? = null): MutableMap<String, Any> {
         val map = mutableMapOf<String, Any>()
-        
-        // Data properties
-        map["dynamicModeStatus"] = dynamicModeStatus
-        map["title"] = title
         
         // Add onclick action lambdas if viewModel is provided
         viewModel?.let { vm ->

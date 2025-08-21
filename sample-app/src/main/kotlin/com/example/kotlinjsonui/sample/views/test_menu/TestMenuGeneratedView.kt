@@ -50,6 +50,23 @@ fun TestMenuGeneratedView(
                 modifier = Modifier.padding(bottom = 20.dp),
                 textAlign = TextAlign.Center
             )
+            Button(
+                onClick = { viewModel.toggleDynamicMode() },
+                modifier = Modifier
+                    .padding(bottom = 20.dp)
+                    .wrapContentWidth()
+                    .height(32.dp),
+                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
+            ) {
+                Text(
+                    text = "Dynamic: \${data.dynamicModeStatus}",
+                    fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
             Text(
                 text = "Layout & Positioning",
                 fontSize = 20.sp,

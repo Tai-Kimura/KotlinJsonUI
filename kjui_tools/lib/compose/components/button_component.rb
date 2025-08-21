@@ -108,15 +108,20 @@ module KjuiTools
         def self.process_data_binding(text)
           return quote(text) unless text.is_a?(String)
           
-          if text.match(/@\{([^}]+)\}/)
-            variable = $1
-            if variable.include?(' ?? ')
-              parts = variable.split(' ?? ')
-              var_name = parts[0].strip
-              "\"\\${data.#{var_name}}\""
-            else
-              "\"\\${data.#{variable}}\""
+          # Process template strings with @{} placeholders
+          if text.include?('@{')
+            # Replace all @{variable} with ${data.variable} within the string
+            processed = text.gsub(/@\{([^}]+)\}/) do |match|
+              variable = $1
+              if variable.include?(' ?? ')
+                parts = variable.split(' ?? ')
+                var_name = parts[0].strip
+                "\\${data.#{var_name}}"
+              else
+                "\\${data.#{variable}}"
+              end
             end
+            quote(processed)
           else
             quote(text)
           end

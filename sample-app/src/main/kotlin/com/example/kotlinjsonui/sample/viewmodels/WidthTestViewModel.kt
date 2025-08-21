@@ -13,6 +13,13 @@ class WidthTestViewModel : ViewModel() {
     // Data model
     private val _data = MutableStateFlow(WidthTestData())
     val data: StateFlow<WidthTestData> = _data.asStateFlow()
+
+    // Dynamic mode toggle
+    fun toggleDynamicMode() {
+        val currentStatus = _data.value.dynamicModeStatus
+        val newStatus = if (currentStatus == "ON") "OFF" else "ON"
+        _data.value = _data.value.copy(dynamicModeStatus = newStatus)
+    }
     
     // Action handlers
     fun onGetStarted() {

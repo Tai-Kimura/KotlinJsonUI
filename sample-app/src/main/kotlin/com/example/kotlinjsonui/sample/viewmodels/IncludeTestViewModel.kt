@@ -13,6 +13,13 @@ class IncludeTestViewModel : ViewModel() {
     // Data model
     private val _data = MutableStateFlow(IncludeTestData())
     val data: StateFlow<IncludeTestData> = _data.asStateFlow()
+
+    // Dynamic mode toggle
+    fun toggleDynamicMode() {
+        val currentStatus = _data.value.dynamicModeStatus
+        val newStatus = if (currentStatus == "ON") "OFF" else "ON"
+        _data.value = _data.value.copy(dynamicModeStatus = newStatus)
+    }
     
     // Child ViewModels for included views
     val included1ViewModel = Included1ViewModel()

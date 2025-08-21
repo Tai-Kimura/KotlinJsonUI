@@ -13,6 +13,13 @@ class VisibilityTestViewModel : ViewModel() {
     // Data model
     private val _data = MutableStateFlow(VisibilityTestData())
     val data: StateFlow<VisibilityTestData> = _data.asStateFlow()
+
+    // Dynamic mode toggle
+    fun toggleDynamicMode() {
+        val currentStatus = _data.value.dynamicModeStatus
+        val newStatus = if (currentStatus == "ON") "OFF" else "ON"
+        _data.value = _data.value.copy(dynamicModeStatus = newStatus)
+    }
     
     // Action handlers
     fun onGetStarted() {

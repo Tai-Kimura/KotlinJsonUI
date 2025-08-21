@@ -78,30 +78,50 @@ module KjuiTools
         actions.to_a
       end
 
-      def extract_data_properties(json_data, properties = [])
+      def extract_data_properties(json_data, properties = [], is_root = true)
         if json_data.is_a?(Hash)
-          # Check for data section
-          if json_data['data'] && json_data['data'].is_a?(Array)
-            json_data['data'].each do |data_item|
-              if data_item.is_a?(Hash)
-                properties << data_item
+          # Only check for data section at root level
+          if is_root && json_data['data']
+            if json_data['data'].is_a?(Array)
+              json_data['data'].each do |data_item|
+                if data_item.is_a?(Hash) && data_item['name']
+                  # Check if property already exists (by name) to avoid duplicates
+                  unless properties.any? { |p| p['name'] == data_item['name'] }
+                    properties << data_item
+                  end
+                end
+              end
+            elsif json_data['data'].is_a?(Hash)
+              # Handle simple data object format from styles
+              json_data['data'].each do |name, value|
+                unless properties.any? { |p| p['name'] == name }
+                  # Infer type from value
+                  class_type = if value.is_a?(Integer)
+                    'Int'
+                  elsif value.is_a?(Float)
+                    'Float'
+                  elsif value.is_a?(TrueClass) || value.is_a?(FalseClass)
+                    'Boolean'
+                  else
+                    'String'
+                  end
+                  
+                  properties << {
+                    'name' => name,
+                    'class' => class_type,
+                    'defaultValue' => value
+                  }
+                end
               end
             end
           end
           
-          # Process children
-          if json_data['child']
-            if json_data['child'].is_a?(Array)
-              json_data['child'].each do |child|
-                extract_data_properties(child, properties)
-              end
-            else
-              extract_data_properties(json_data['child'], properties)
-            end
-          end
+          # Don't recursively extract data from includes or children
+          # as they have their own data models
         elsif json_data.is_a?(Array)
+          # This shouldn't happen at root level, but handle it just in case
           json_data.each do |item|
-            extract_data_properties(item, properties)
+            extract_data_properties(item, properties, is_root)
           end
         end
         
