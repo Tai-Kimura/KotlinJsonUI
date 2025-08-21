@@ -32,7 +32,7 @@ fun TestMenuGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
     ) {
         item {
         Column(
@@ -40,47 +40,16 @@ fun TestMenuGeneratedView(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(20.dp)
-                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
         ) {
             Text(
-                text = "SwiftJsonUI Feature Tests",
+                text = "KotlinJsonUI Feature Tests",
                 fontSize = 28.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 20.dp),
                 textAlign = TextAlign.Center
             )
-            Row(
-                modifier = Modifier
-                    .padding(15.dp)
-                    .padding(bottom = 10.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#E8F4FF")))
-            ) {
-                Text(
-                    text = "Dynamic Mode Status:",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
-                    modifier = Modifier.padding(end = 10.dp)
-                )
-                Text(
-                    text = "${data.dynamicModeStatus}",
-                    fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#007AFF")),
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                )
-            }
-            Button(
-                onClick = { viewModel.toggleDynamicMode() },
-                modifier = Modifier.padding(bottom = 20.dp),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "Toggle Dynamic Mode",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                )
-            }
             Text(
                 text = "Layout & Positioning",
                 fontSize = 20.sp,
@@ -90,8 +59,13 @@ fun TestMenuGeneratedView(
             )
             Button(
                 onClick = { viewModel.navigateToMarginsTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
-                shape = RoundedCornerShape(8.dp)
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Margins & Padding Test",
@@ -100,8 +74,13 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToAlignmentTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
-                shape = RoundedCornerShape(8.dp)
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Alignment Test",
@@ -110,8 +89,13 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToAlignmentComboTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
-                shape = RoundedCornerShape(8.dp)
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Alignment Combo Test",
@@ -120,8 +104,13 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToWeightTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
-                shape = RoundedCornerShape(8.dp)
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Weight Distribution Test",
@@ -130,11 +119,46 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToWeightTestWithFixed() },
-                modifier = Modifier.padding(bottom = 20.dp),
-                shape = RoundedCornerShape(8.dp)
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
             ) {
                 Text(
                     text = "Weight + Fixed Size Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToWidthTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
+            ) {
+                Text(
+                    text = "Width Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToRelativeTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
+            ) {
+                Text(
+                    text = "Relative Positioning Test",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
@@ -147,7 +171,9 @@ fun TestMenuGeneratedView(
             )
             Button(
                 onClick = { viewModel.navigateToVisibilityTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#34C759"))
@@ -160,7 +186,9 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToDisabledTest() },
-                modifier = Modifier.padding(bottom = 20.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#34C759"))
@@ -180,7 +208,9 @@ fun TestMenuGeneratedView(
             )
             Button(
                 onClick = { viewModel.navigateToTextStylingTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
@@ -192,21 +222,25 @@ fun TestMenuGeneratedView(
                 )
             }
             Button(
-                onClick = { viewModel.navigateToComponentsTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                onClick = { viewModel.navigateToTextDecorationTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
                                 )
             ) {
                 Text(
-                    text = "New Components Test",
+                    text = "Text Decoration Test",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
             Button(
                 onClick = { viewModel.navigateToLineBreakTest() },
-                modifier = Modifier.padding(bottom = 20.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
@@ -214,6 +248,21 @@ fun TestMenuGeneratedView(
             ) {
                 Text(
                     text = "Line Break & Spacing Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToPartialAttributesTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                )
+            ) {
+                Text(
+                    text = "Partial Attributes Test",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
@@ -225,8 +274,40 @@ fun TestMenuGeneratedView(
                 modifier = Modifier.padding(bottom = 10.dp)
             )
             Button(
+                onClick = { viewModel.navigateToTextFieldTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                )
+            ) {
+                Text(
+                    text = "TextField Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToTextFieldEventsTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                )
+            ) {
+                Text(
+                    text = "TextField Events Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
                 onClick = { viewModel.navigateToSecureFieldTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
@@ -238,8 +319,25 @@ fun TestMenuGeneratedView(
                 )
             }
             Button(
+                onClick = { viewModel.navigateToTextViewHintTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                )
+            ) {
+                Text(
+                    text = "TextView Hint Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
                 onClick = { viewModel.navigateToDatePickerTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
@@ -250,16 +348,100 @@ fun TestMenuGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
+            Text(
+                text = "UI Components",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
             Button(
-                onClick = { viewModel.navigateToTextviewHintTest() },
-                modifier = Modifier.padding(bottom = 20.dp),
+                onClick = { viewModel.navigateToComponentsTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                 )
             ) {
                 Text(
-                    text = "TextView Hint Test",
+                    text = "Components Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToButtonTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
+            ) {
+                Text(
+                    text = "Button Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToButtonEnabledTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
+            ) {
+                Text(
+                    text = "Button Enabled Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToSwitchEventsTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
+            ) {
+                Text(
+                    text = "Switch Events Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToRadioIconsTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
+            ) {
+                Text(
+                    text = "Radio Custom Icons Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToSegmentTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                )
+            ) {
+                Text(
+                    text = "Segment Control Test",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
@@ -271,21 +453,10 @@ fun TestMenuGeneratedView(
                 modifier = Modifier.padding(bottom = 10.dp)
             )
             Button(
-                onClick = { viewModel.navigateToRelativeTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
-                                )
-            ) {
-                Text(
-                    text = "Relative Positioning Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                )
-            }
-            Button(
                 onClick = { viewModel.navigateToBindingTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
@@ -298,7 +469,9 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToConverterTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
@@ -311,7 +484,9 @@ fun TestMenuGeneratedView(
             }
             Button(
                 onClick = { viewModel.navigateToIncludeTest() },
-                modifier = Modifier.padding(bottom = 20.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
@@ -323,7 +498,7 @@ fun TestMenuGeneratedView(
                 )
             }
             Text(
-                text = "Forms & Keyboard",
+                text = "Forms & Scrolling",
                 fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 fontWeight = FontWeight.Bold,
@@ -331,14 +506,68 @@ fun TestMenuGeneratedView(
             )
             Button(
                 onClick = { viewModel.navigateToFormTest() },
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
                                 )
             ) {
                 Text(
-                    text = "Form & Keyboard Avoidance Test",
+                    text = "Form Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToKeyboardAvoidanceTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                )
+            ) {
+                Text(
+                    text = "Keyboard Avoidance Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToScrollTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                )
+            ) {
+                Text(
+                    text = "Scroll Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Text(
+                text = "🔥 Complete Test Suite",
+                fontSize = 20.sp,
+                color = Color(android.graphics.Color.parseColor("#FF0000")),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 10.dp)
+            )
+            Button(
+                onClick = { viewModel.navigateToImplementedAttributesTest() },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .padding(bottom = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#00C853"))
+                                )
+            ) {
+                Text(
+                    text = "🔥 All Implemented Attributes Test",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }

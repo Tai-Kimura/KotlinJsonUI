@@ -108,12 +108,56 @@ class TestMenuViewModel : ViewModel() {
     }
     
     // Additional test screens
+    fun navigateToButtonTest() {
+        _navigationEvent.value = "button_test"
+    }
+    
     fun navigateToButtonEnabledTest() {
         _navigationEvent.value = "button_enabled_test"
     }
     
     fun navigateToWidthTest() {
         _navigationEvent.value = "width_test"
+    }
+    
+    fun navigateToScrollTest() {
+        _navigationEvent.value = "scroll_test"
+    }
+    
+    fun navigateToTextFieldTest() {
+        _navigationEvent.value = "textfield_test"
+    }
+    
+    fun navigateToTextFieldEventsTest() {
+        _navigationEvent.value = "textfield_events_test"
+    }
+    
+    fun navigateToTextDecorationTest() {
+        _navigationEvent.value = "text_decoration_test"
+    }
+    
+    fun navigateToPartialAttributesTest() {
+        _navigationEvent.value = "partial_attributes_test"
+    }
+    
+    fun navigateToTextViewHintTest() {
+        _navigationEvent.value = "text_view_hint_test"
+    }
+    
+    fun navigateToSwitchEventsTest() {
+        _navigationEvent.value = "switch_events_test"
+    }
+    
+    fun navigateToRadioIconsTest() {
+        _navigationEvent.value = "radio_icons_test"
+    }
+    
+    fun navigateToSegmentTest() {
+        _navigationEvent.value = "segment_test"
+    }
+    
+    fun navigateToImplementedAttributesTest() {
+        _navigationEvent.value = "implemented_attributes_test"
     }
     
     // Clear navigation event after handling

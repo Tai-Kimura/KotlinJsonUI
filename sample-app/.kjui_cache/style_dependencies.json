@@ -44,9 +44,6 @@
   "secure_field_test": [
     "dynamic_toggle"
   ],
-  "test_menu": [
-    "primary_button"
-  ],
   "text_styling_test": [
     "dynamic_toggle"
   ],
