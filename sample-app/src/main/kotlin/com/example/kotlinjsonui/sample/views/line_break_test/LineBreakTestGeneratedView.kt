@@ -29,7 +29,7 @@ fun LineBreakTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(

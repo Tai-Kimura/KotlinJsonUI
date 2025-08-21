@@ -30,7 +30,7 @@ fun AlignmentComboTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(

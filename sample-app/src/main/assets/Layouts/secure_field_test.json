@@ -2,7 +2,7 @@
   "type": "View",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#F8F8F8",
+  "background": "#FFFFFF",
   "orientation": "vertical",
   "child": [
     {

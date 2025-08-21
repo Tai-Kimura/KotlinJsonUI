@@ -2,11 +2,11 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
+  "background": "#FFFFFF",
   "child": [
     {
       "type": "View",
       "width": "matchParent",
-      "background": "#FFFFFF",
       "orientation": "vertical",
       "padding": 20,
       "child": [

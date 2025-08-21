@@ -1,0 +1,137 @@
+{
+  "type": "SafeAreaView",
+  "child": {
+    "type": "Scroll",
+    "child": {
+      "type": "View",
+      "id": "container",
+      "orientation": "vertical",
+      "background": "#F5F5F5",
+      "child": [
+    {
+      "type": "Label",
+      "text": "Radio Custom Icons Test",
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "topMargin": 20,
+      "bottomMargin": 20,
+      "centerHorizontal": true
+    },
+    {
+      "type": "Label",
+      "text": "Default Radio Group",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 10,
+      "leftMargin": 20
+    },
+    {
+      "type": "Radio",
+      "id": "option1",
+      "text": "Option 1",
+      "group": "defaultGroup",
+      "checked": true,
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Radio",
+      "id": "option2",
+      "text": "Option 2",
+      "group": "defaultGroup",
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Radio",
+      "id": "option3",
+      "text": "Option 3",
+      "group": "defaultGroup",
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "Custom Icon Radio Group",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 30,
+      "leftMargin": 20
+    },
+    {
+      "type": "Radio",
+      "id": "custom1",
+      "text": "Star Option",
+      "group": "customGroup",
+      "icon": "star",
+      "selectedIcon": "star.fill",
+      "checked": true,
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Radio",
+      "id": "custom2",
+      "text": "Heart Option",
+      "group": "customGroup",
+      "icon": "heart",
+      "selectedIcon": "heart.fill",
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Radio",
+      "id": "custom3",
+      "text": "Square Option",
+      "group": "customGroup",
+      "icon": "square",
+      "selectedIcon": "checkmark.square.fill",
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "Radio with Items",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 30,
+      "leftMargin": 20
+    },
+    {
+      "type": "Radio",
+      "text": "Select Color:",
+      "items": ["Red", "Green", "Blue", "Yellow"],
+      "selectedValue": "@{selectedColor}",
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "Selected: @{selectedColor}",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "leftMargin": 20,
+      "topMargin": 10
+    }
+      ]
+    }
+  },
+  "data": [
+    {
+      "name": "selectedDefaultgroup",
+      "class": "String",
+      "defaultValue": "option1"
+    },
+    {
+      "name": "selectedCustomgroup",
+      "class": "String",
+      "defaultValue": "red"
+    },
+    {
+      "name": "selectedColor",
+      "class": "String",
+      "defaultValue": "Red"
+    }
+  ]
+}

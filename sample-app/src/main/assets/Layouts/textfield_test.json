@@ -1,0 +1,139 @@
+{
+  "type": "View",
+  "background": "#FFFFFF",
+  "orientation": "vertical",
+  "padding": 20,
+  "child": [
+    {
+      "type": "Label",
+      "text": "TextField Test",
+      "fontSize": 20,
+      "fontColor": "#000000",
+      "font": "bold",
+      "marginBottom": 20
+    },
+    {
+      "type": "TextField",
+      "hint": "Enter email",
+      "text": "@{email}",
+      "fontSize": 16,
+      "input": "email",
+      "returnKeyType": "next",
+      "borderStyle": "roundedRect",
+      "marginBottom": 15
+    },
+    {
+      "type": "TextField",
+      "hint": "Enter password",
+      "text": "@{password}",
+      "fontSize": 16,
+      "secure": true,
+      "returnKeyType": "done",
+      "borderStyle": "roundedRect",
+      "marginBottom": 15
+    },
+    {
+      "type": "TextField",
+      "hint": "Phone number",
+      "text": "@{phone}",
+      "fontSize": 16,
+      "input": "phone",
+      "returnKeyType": "next",
+      "borderStyle": "roundedRect",
+      "marginBottom": 15
+    },
+    {
+      "type": "TextField",
+      "hint": "Enter number",
+      "text": "@{number}",
+      "fontSize": 16,
+      "input": "number",
+      "returnKeyType": "done",
+      "borderStyle": "plain",
+      "padding": 10,
+      "background": "#F0F0F0",
+      "marginBottom": 15
+    },
+    {
+      "type": "TextField",
+      "hint": "Search...",
+      "text": "@{search}",
+      "fontSize": 16,
+      "returnKeyType": "search",
+      "borderStyle": "roundedRect",
+      "marginBottom": 15
+    },
+    {
+      "type": "TextField",
+      "hint": "Website URL",
+      "text": "@{url}",
+      "fontSize": 16,
+      "input": "url",
+      "returnKeyType": "go",
+      "borderStyle": "roundedRect",
+      "marginBottom": 15
+    },
+    {
+      "type": "Label",
+      "text": "Entered Values:",
+      "fontSize": 16,
+      "fontColor": "#000000",
+      "font": "bold",
+      "marginTop": 20,
+      "marginBottom": 10
+    },
+    {
+      "type": "Label",
+      "text": "Email: @{email}",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "marginBottom": 5
+    },
+    {
+      "type": "Label",
+      "text": "Password: @{password}",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "marginBottom": 5
+    },
+    {
+      "type": "Label",
+      "text": "Phone: @{phone}",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "marginBottom": 5
+    }
+  ],
+  "data": [
+    {
+      "name": "email",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "password",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "phone",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "number",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "search",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "url",
+      "class": "String",
+      "defaultValue": ""
+    }
+  ]
+}

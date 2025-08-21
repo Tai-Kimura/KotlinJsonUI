@@ -78,7 +78,7 @@ class TestMenuViewModel : ViewModel() {
     }
     
     fun navigateToTextviewHintTest() {
-        _navigationEvent.value = "textview_hint_test"
+        _navigationEvent.value = "text_view_hint_test"
     }
     
     // Advanced Features navigation
@@ -101,6 +101,19 @@ class TestMenuViewModel : ViewModel() {
     // Forms & Keyboard navigation
     fun navigateToFormTest() {
         _navigationEvent.value = "form_test"
+    }
+    
+    fun navigateToKeyboardAvoidanceTest() {
+        _navigationEvent.value = "keyboard_avoidance_test"
+    }
+    
+    // Additional test screens
+    fun navigateToButtonEnabledTest() {
+        _navigationEvent.value = "button_enabled_test"
+    }
+    
+    fun navigateToWidthTest() {
+        _navigationEvent.value = "width_test"
     }
     
     // Clear navigation event after handling

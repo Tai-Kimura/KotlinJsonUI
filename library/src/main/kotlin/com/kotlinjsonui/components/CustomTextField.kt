@@ -28,7 +28,9 @@ fun CustomTextField(
     highlightBackgroundColor: Color? = null,
     borderColor: Color? = null,
     isOutlined: Boolean = false,
-    isSecure: Boolean = false
+    isSecure: Boolean = false,
+    singleLine: Boolean = true,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
 ) {
     // Determine background colors
     val unfocusedBackground = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
@@ -43,15 +45,17 @@ fun CustomTextField(
             isError = isError,
             visualTransformation = visualTransformation,
             textStyle = textStyle,
+            singleLine = singleLine,
+            maxLines = maxLines,
             shape = shape ?: RoundedCornerShape(Configuration.TextField.defaultCornerRadius.dp),
-            colors = if (borderColor != null) {
-                OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor,
-                    unfocusedBorderColor = borderColor
-                )
-            } else {
-                OutlinedTextFieldDefaults.colors()
-            }
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                focusedTextColor = textStyle.color,
+                unfocusedTextColor = textStyle.color,
+                focusedContainerColor = backgroundColor ?: Color.Transparent,
+                unfocusedContainerColor = backgroundColor ?: Color.Transparent
+            )
         )
     } else {
         TextField(
@@ -62,6 +66,8 @@ fun CustomTextField(
             isError = isError,
             visualTransformation = visualTransformation,
             textStyle = textStyle,
+            singleLine = singleLine,
+            maxLines = maxLines,
             shape = shape ?: RoundedCornerShape(Configuration.TextField.defaultCornerRadius.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = focusedBackground,
@@ -92,7 +98,9 @@ fun CustomTextFieldWithMargins(
     highlightBackgroundColor: Color? = null,
     borderColor: Color? = null,
     isOutlined: Boolean = false,
-    isSecure: Boolean = false
+    isSecure: Boolean = false,
+    singleLine: Boolean = true,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
 ) {
     Box(modifier = boxModifier) {
         CustomTextField(
@@ -108,7 +116,9 @@ fun CustomTextFieldWithMargins(
             highlightBackgroundColor = highlightBackgroundColor,
             borderColor = borderColor,
             isOutlined = isOutlined,
-            isSecure = isSecure
+            isSecure = isSecure,
+            singleLine = singleLine,
+            maxLines = maxLines
         )
     }
 }

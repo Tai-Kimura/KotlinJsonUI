@@ -10,7 +10,7 @@
       "height": "wrapContent",
       "orientation": "vertical",
       "padding": 20,
-      "background": "#F5F5F5",
+      "background": "#FFFFFF",
       "child": [
         {
           "type": "Label",

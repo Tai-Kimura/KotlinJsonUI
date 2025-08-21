@@ -2,6 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
+  "background": "#FFFFFF",
   "orientation": "vertical",
   "paddings": [
     20,
@@ -13,7 +14,6 @@
     "type": "View",
     "width": "matchParent",
     "height": "wrapContent",
-    "background": "#F5F5F5",
     "orientation": "vertical",
     "child": [
       {

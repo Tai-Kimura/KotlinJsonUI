@@ -35,7 +35,7 @@ fun DisabledTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(
@@ -144,7 +144,7 @@ fun DisabledTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.textFieldValue}",
+                value = data.textFieldValue,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textFieldValue" to newValue)) },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -157,7 +157,9 @@ fun DisabledTestGeneratedView(
                 placeholder = { Text("Enabled - can type here") },
                 shape = RoundedCornerShape(8.dp),
                 backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC"))
+                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                isOutlined = true,
+                textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000")))
             )
             Text(
                 text = "Disabled TextField",
@@ -178,8 +180,9 @@ fun DisabledTestGeneratedView(
                     .padding(10.dp),
                 placeholder = { Text("Disabled - cannot type") },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#F0F0F0")),
+                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                isOutlined = true,
                 textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#666666")))
             )
             Text(

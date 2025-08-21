@@ -30,7 +30,7 @@ fun TextStylingTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(
@@ -161,7 +161,7 @@ fun TextStylingTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
                     .padding(10.dp)
             )
             Text(
@@ -170,7 +170,7 @@ fun TextStylingTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
                     .padding(10.dp)
             )
             Text(

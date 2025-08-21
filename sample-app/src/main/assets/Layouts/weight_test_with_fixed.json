@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#F5F5F5",
+  "background": "#FFFFFF",
   "child": [
     {
       "type": "View",

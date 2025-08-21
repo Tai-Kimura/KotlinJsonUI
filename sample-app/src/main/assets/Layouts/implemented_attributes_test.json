@@ -1,0 +1,332 @@
+{
+  "type": "SafeAreaView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "child": {
+    "type": "ScrollView",
+    "width": "matchParent",
+    "height": "matchParent",
+    "background": "#F0F0F0",
+    "keyboardAvoidance": true,
+    "child": {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "padding": 16,
+      "data": [
+        {
+          "name": "textFieldValue",
+          "class": "String",
+          "defaultValue": ""
+        },
+        {
+          "name": "selectedRadiogroup",
+          "class": "String",
+          "defaultValue": "radio1"
+        },
+        {
+          "name": "selectedSegment",
+          "class": "Int",
+          "defaultValue": 0
+        }
+      ],
+      "child": [
+        {
+          "type": "Label",
+          "text": "Implemented Attributes Test",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "1. alignCenterVerticalView & alignCenterHorizontalView",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "height": 200,
+          "background": "#f0f0f0",
+          "child": [
+            {
+              "type": "Label",
+              "id": "target1",
+              "text": "Target View",
+              "background": "#ff0000",
+              "fontColor": "#ffffff",
+              "padding": 10,
+              "alignTop": true,
+              "alignLeft": true,
+              "leftMargin": 50,
+              "topMargin": 50
+            },
+            {
+              "type": "Label",
+              "text": "Centered V",
+              "background": "#00ff00",
+              "padding": 10,
+              "alignCenterVerticalView": "target1",
+              "alignRight": true,
+              "rightMargin": 20
+            },
+            {
+              "type": "Label",
+              "text": "Centered H",
+              "background": "#0000ff",
+              "fontColor": "#ffffff",
+              "padding": 10,
+              "alignCenterHorizontalView": "target1",
+              "alignBottom": true,
+              "bottomMargin": 20
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "2. idealWidth & idealHeight",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "idealWidth": 200,
+          "idealHeight": 100,
+          "background": "#ffcccc",
+          "padding": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Ideal Size View (200x100)"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "3. clipToBounds",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": 150,
+          "height": 50,
+          "background": "#ccffcc",
+          "clipToBounds": true,
+          "child": [
+            {
+              "type": "Label",
+              "text": "This text is very long and should be clipped to the bounds of the parent view",
+              "fontSize": 16
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "4. direction & distribution",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "orientation": "horizontal",
+          "direction": "rightToLeft",
+          "distribution": "fillEqually",
+          "height": 50,
+          "background": "#ccccff",
+          "child": [
+            {
+              "type": "Label",
+              "text": "1",
+              "background": "#ff6666",
+              "textAlign": "center"
+            },
+            {
+              "type": "Label",
+              "text": "2",
+              "background": "#66ff66",
+              "textAlign": "center"
+            },
+            {
+              "type": "Label",
+              "text": "3",
+              "background": "#6666ff",
+              "fontColor": "#ffffff",
+              "textAlign": "center"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "5. edgeInset (Label padding)",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Text with edgeInset",
+          "edgeInset": 20,
+          "background": "#ffffcc",
+          "fontSize": 16
+        },
+        {
+          "type": "Label",
+          "text": "6. Button State Attributes",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Tap Me (tapBackground)",
+          "tapBackground": "#ff00ff",
+          "background": "#cccccc",
+          "fontColor": "#000000",
+          "padding": 10,
+          "cornerRadius": 8,
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Highlight Me",
+          "hilightColor": "#ff0000",
+          "background": "#0000ff",
+          "fontColor": "#ffffff",
+          "padding": 10,
+          "cornerRadius": 8,
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Disabled Button",
+          "disabledFontColor": "#999999",
+          "disabledBackground": "#f0f0f0",
+          "background": "#0000ff",
+          "fontColor": "#ffffff",
+          "enabled": false,
+          "padding": 10,
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "text": "7. TextField Events",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "TextField",
+          "id": "textField1",
+          "hint": "Type something...",
+          "text": "@{textFieldValue}",
+          "fontSize": 16,
+          "borderStyle": "roundedRect",
+          "onFocus": "handleFocus",
+          "onBlur": "handleBlur",
+          "onBeginEditing": "handleBeginEditing",
+          "onEndEditing": "handleEndEditing",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "8. Radio Custom Icons",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Radio",
+              "id": "radio1",
+              "text": "Option 1",
+              "group": "radioGroup",
+              "icon": "circle",
+              "selectedIcon": "checkmark.circle.fill",
+              "bottomMargin": 5
+            },
+            {
+              "type": "Radio",
+              "id": "radio2",
+              "text": "Option 2",
+              "group": "radioGroup",
+              "icon": "circle",
+              "selectedIcon": "checkmark.circle.fill",
+              "bottomMargin": 5
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "9. Segment Control",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "Segment",
+          "id": "segment",
+          "items": ["First", "Second", "Third"],
+          "selectedIndex": "@{selectedSegment}",
+          "normalColor": "#000000",
+          "selectedColor": "#0000ff",
+          "tintColor": "#0000ff",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "10. SelectBox Attributes",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "SelectBox",
+          "background": "#FFFFFF",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "prompt": "Choose an option",
+          "items": ["Option A", "Option B", "Option C"],
+          "defaultIndex": 0,
+          "fontSize": 16,
+          "fontColor": "#0000ff",
+          "bottomMargin": 10,
+          "padding": [15, 10]
+        },
+        {
+          "type": "Label",
+          "text": "11. Web Component",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "Web",
+          "url": "https://www.example.com",
+          "height": 200,
+          "scalesPageToFit": true,
+          "javascriptEnabled": true,
+          "bottomMargin": 20
+        }
+      ]
+    }
+  }
+}

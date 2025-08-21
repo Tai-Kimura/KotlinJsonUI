@@ -1,0 +1,62 @@
+{
+  "type": "View",
+  "background": "#FFFFFF",
+  "child": [
+    {
+      "type": "View",
+      "orientation": "vertical",
+      "padding": 20,
+      "child": [
+        {
+          "type": "Label",
+          "text": "Normal text without links",
+          "fontSize": 16,
+          "fontColor": "#000000",
+          "marginBottom": 20
+        },
+        {
+          "type": "Label",
+          "text": "Visit https://www.apple.com for more info",
+          "fontSize": 16,
+          "fontColor": "#000000",
+          "linkable": true,
+          "marginBottom": 20
+        },
+        {
+          "type": "Label",
+          "text": "Multiple links: https://github.com and https://google.com are popular sites",
+          "fontSize": 16,
+          "fontColor": "#000000",
+          "linkable": true,
+          "marginBottom": 20
+        },
+        {
+          "type": "Label",
+          "text": "Email: support@example.com\nWebsite: https://example.com",
+          "fontSize": 16,
+          "fontColor": "#0000FF",
+          "linkable": true,
+          "marginBottom": 20
+        },
+        {
+          "type": "Label",
+          "text": "Linkable with edgeInset: Check out https://anthropic.com",
+          "fontSize": 16,
+          "fontColor": "#FFFFFF",
+          "background": "#FF0000",
+          "edgeInset": 10,
+          "linkable": true,
+          "marginBottom": 20
+        },
+        {
+          "type": "Label",
+          "text": "No linkable flag: https://www.test.com won't be clickable",
+          "fontSize": 16,
+          "fontColor": "#808080",
+          "linkable": false,
+          "marginBottom": 20
+        }
+      ]
+    }
+  ]
+}

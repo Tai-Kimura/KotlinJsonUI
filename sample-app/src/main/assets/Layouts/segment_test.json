@@ -1,0 +1,132 @@
+{
+  "type": "SafeAreaView",
+  "child": {
+    "type": "Scroll",
+    "child": {
+      "type": "View",
+      "id": "container",
+      "orientation": "vertical",
+      "background": "#F5F5F5",
+      "child": [
+    {
+      "type": "Label",
+      "text": "Segment Control Test",
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "topMargin": 20,
+      "bottomMargin": 20,
+      "centerHorizontal": true
+    },
+    {
+      "type": "Label",
+      "text": "Basic Segment",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 10,
+      "leftMargin": 20
+    },
+    {
+      "type": "Segment",
+      "id": "basicSegment",
+      "items": ["Option 1", "Option 2", "Option 3"],
+      "selectedIndex": 0,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "Segment with Custom Colors",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 30,
+      "leftMargin": 20
+    },
+    {
+      "type": "Segment",
+      "id": "colorSegment",
+      "items": ["Red", "Green", "Blue"],
+      "selectedIndex": 1,
+      "tintColor": "#FF0000",
+      "normalColor": "#666666",
+      "selectedColor": "#FFFFFF",
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "Segment with onChange Event",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 30,
+      "leftMargin": 20
+    },
+    {
+      "type": "Segment",
+      "id": "eventSegment",
+      "items": ["Small", "Medium", "Large", "Extra Large"],
+      "selectedIndex": 1,
+      "onChange": "handleSegmentChange",
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "id": "segmentStatus",
+      "text": "Selected: @{selectedSize}",
+      "fontSize": 14,
+      "fontColor": "#666666",
+      "leftMargin": 20,
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "Disabled Segment",
+      "fontSize": 18,
+      "fontWeight": "semibold",
+      "topMargin": 30,
+      "leftMargin": 20
+    },
+    {
+      "type": "Segment",
+      "id": "disabledSegment",
+      "items": ["Disabled 1", "Disabled 2", "Disabled 3"],
+      "selectedIndex": 2,
+      "enabled": false,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "topMargin": 10
+    }
+      ]
+    }
+  },
+  "data": [
+    {
+      "name": "selectedBasicsegment",
+      "class": "Int",
+      "defaultValue": 0
+    },
+    {
+      "name": "selectedColorsegment",
+      "class": "Int", 
+      "defaultValue": 1
+    },
+    {
+      "name": "selectedEventsegment",
+      "class": "Int",
+      "defaultValue": 0
+    },
+    {
+      "name": "selectedDisabledsegment",
+      "class": "Int",
+      "defaultValue": 0
+    },
+    {
+      "name": "selectedSize",
+      "class": "String",
+      "defaultValue": "Medium"
+    }
+  ]
+}

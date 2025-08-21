@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.shape.CircleShape
+import com.kotlinjsonui.components.CustomTextField
+import com.kotlinjsonui.components.CustomTextFieldWithMargins
 
 @Composable
 fun TextViewHintTestGeneratedView(
@@ -31,7 +33,7 @@ fun TextViewHintTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .padding(20.dp)
-            .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         Button(
             onClick = { },
@@ -54,19 +56,21 @@ fun TextViewHintTestGeneratedView(
             color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        OutlinedTextField(
-            value = "\${data.simpleText}",
+        CustomTextFieldWithMargins(
+            value = data.simpleText,
             onValueChange = { newValue -> viewModel.updateData(mapOf("simpleText" to newValue)) },
-            placeholder = { Text("This is a simple hint") },
-            modifier = Modifier
+            boxModifier = Modifier
+                .padding(bottom = 20.dp),
+            textFieldModifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
-                .padding(bottom = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+                .height(100.dp),
+            placeholder = { Text("This is a simple hint") },
+            shape = RoundedCornerShape(8.dp),
+            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            isOutlined = true,
             maxLines = Int.MAX_VALUE,
-            singleLine = false
+            singleLine = false,
+            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
         )
         Text(
             text = "Flexible TextView with multi-line hint:",
@@ -74,19 +78,21 @@ fun TextViewHintTestGeneratedView(
             color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        OutlinedTextField(
-            value = "\${data.flexibleText}",
+        CustomTextFieldWithMargins(
+            value = data.flexibleText,
             onValueChange = { newValue -> viewModel.updateData(mapOf("flexibleText" to newValue)) },
-            placeholder = { Text("Multi-line hint\nLine 2 of hint\nLine 3 of hint") },
-            modifier = Modifier
+            boxModifier = Modifier
+                .padding(bottom = 20.dp),
+            textFieldModifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
-                .padding(bottom = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(android.graphics.Color.parseColor("#FFFFFF"))),
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+                .height(120.dp),
+            placeholder = { Text("Multi-line hint\nLine 2 of hint\nLine 3 of hint") },
+            shape = RoundedCornerShape(8.dp),
+            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            isOutlined = true,
             maxLines = Int.MAX_VALUE,
-            singleLine = false
+            singleLine = false,
+            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
         )
     }    // >>> GENERATED_CODE_END
 }

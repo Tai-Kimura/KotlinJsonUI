@@ -1,0 +1,188 @@
+{
+  "type": "View",
+  "background": "#FFFFFF",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Label",
+      "text": "ScrollView Test",
+      "fontSize": 20,
+      "fontColor": "#000000",
+      "font": "bold",
+      "padding": 10,
+      "marginBottom": 10
+    },
+    {
+      "type": "ScrollView",
+      "height": 200,
+      "background": "#F0F0F0",
+      "showsVerticalScrollIndicator": false,
+      "marginBottom": 10,
+      "child": {
+        "type": "View",
+        "orientation": "vertical",
+        "padding": 10,
+        "child": [
+          {
+            "type": "Label",
+            "text": "No vertical indicator",
+            "fontSize": 16,
+            "fontColor": "#000000",
+            "marginBottom": 20
+          },
+          {
+            "type": "Label",
+            "text": "Item 1",
+            "fontSize": 16,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFE0E0",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 2",
+            "fontSize": 16,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#E0FFE0",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 3",
+            "fontSize": 16,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#E0E0FF",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 4",
+            "fontSize": 16,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFFFE0",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 5",
+            "fontSize": 16,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFE0FF",
+            "marginBottom": 10
+          }
+        ]
+      }
+    },
+    {
+      "type": "ScrollView",
+      "height": 150,
+      "background": "#F0F0F0",
+      "scrollEnabled": false,
+      "marginBottom": 10,
+      "child": {
+        "type": "View",
+        "orientation": "vertical",
+        "padding": 10,
+        "child": [
+          {
+            "type": "Label",
+            "text": "Scroll Disabled",
+            "fontSize": 16,
+            "fontColor": "#FF0000",
+            "font": "bold",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "This ScrollView cannot be scrolled",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 1",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 2",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "marginBottom": 10
+          },
+          {
+            "type": "Label",
+            "text": "Item 3 (Hidden below)",
+            "fontSize": 14,
+            "fontColor": "#000000"
+          }
+        ]
+      }
+    },
+    {
+      "type": "ScrollView",
+      "height": 100,
+      "background": "#F0F0F0",
+      "showsHorizontalScrollIndicator": false,
+      "child": {
+        "type": "View",
+        "orientation": "horizontal",
+        "padding": 10,
+        "child": [
+          {
+            "type": "Label",
+            "text": "Horizontal",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFE0E0",
+            "marginRight": 10
+          },
+          {
+            "type": "Label",
+            "text": "Scroll",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#E0FFE0",
+            "marginRight": 10
+          },
+          {
+            "type": "Label",
+            "text": "Without",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#E0E0FF",
+            "marginRight": 10
+          },
+          {
+            "type": "Label",
+            "text": "Indicator",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFFFE0",
+            "marginRight": 10
+          },
+          {
+            "type": "Label",
+            "text": "End",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFE0FF"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -39,6 +39,32 @@ module KjuiTools
           relative_attrs.any? { |attr| component[attr] }
         end
         
+        def self.has_positioning_constraints?(component)
+          return false unless component.is_a?(Hash)
+          
+          # These are constraints that use margins in linkTo()
+          # For alignXxxView, margins should be applied as padding modifiers
+          # For alignTop/Bottom/Left/Right to parent, margins are applied in linkTo()
+          positioning_attrs = [
+            'alignTopOfView', 'alignBottomOfView', 'alignLeftOfView', 'alignRightOfView',
+            'alignTopView', 'alignBottomView', 'alignLeftView', 'alignRightView',
+            'alignCenterVerticalView', 'alignCenterHorizontalView',
+            'alignTop', 'alignBottom', 'alignLeft', 'alignRight'
+          ]
+          
+          # centerInParent, centerHorizontal, centerVertical don't use margins in linkTo()
+          # so they should still apply margins as padding
+          positioning_attrs.any? { |attr| component[attr] }
+        end
+        
+        def self.should_apply_margins_as_padding?(component)
+          return false unless component.is_a?(Hash)
+          
+          # Don't apply margins as padding if they're already handled in linkTo()
+          # All positioning constraints now handle margins in linkTo()
+          return !has_positioning_constraints?(component)
+        end
+        
         def self.generate_constraint_layout(json_data, children, depth, required_imports)
           code = indent("ConstraintLayout(", depth)
           
@@ -140,11 +166,18 @@ module KjuiTools
           code = indent("Text(", depth)
           
           # Add modifier with constraints
-          # In ConstraintLayout, margins are handled in constraints, not as padding modifiers
-          # Correct order: constrainAs -> size -> background -> padding
+          # In ConstraintLayout:
+          # - If element has relative positioning constraints, margins are handled ONLY in linkTo()
+          # - If element has no constraints (just centerInParent etc), margins are applied as padding
           modifiers = []
+          
+          # Apply margins BEFORE size so they act as outer spacing
+          # This ensures the size is the actual content size, not reduced by margins
+          if should_apply_margins_as_padding?(data)
+            modifiers.concat(Helpers::ModifierBuilder.build_margins(data))
+          end
+          
           modifiers.concat(Helpers::ModifierBuilder.build_size(data))
-          # Skip margins here - they're handled in build_relative_positioning
           modifiers.concat(Helpers::ModifierBuilder.build_background(data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(data))
           

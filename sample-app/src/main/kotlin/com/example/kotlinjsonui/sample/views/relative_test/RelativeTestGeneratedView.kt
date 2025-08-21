@@ -18,6 +18,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.BiasAlignment
 
 @Composable
 fun RelativeTestGeneratedView(
@@ -32,13 +33,13 @@ fun RelativeTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
         ) {
             Box(
             ) {
@@ -153,6 +154,7 @@ fun RelativeTestGeneratedView(
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
+                        .padding(top = 20.dp, end = 25.dp, bottom = 20.dp, start = 25.dp)
                         .width(120.dp)
                         .height(60.dp)
                         .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
@@ -162,7 +164,7 @@ fun RelativeTestGeneratedView(
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_top_test) {
-                        top.linkTo(anchor_with_margin.top, margin = 10.dp)
+                        top.linkTo(anchor_with_margin.top, margin = (-10).dp)
                         start.linkTo(parent.start, margin = 10.dp)
                     }
                         .wrapContentWidth()
@@ -174,7 +176,7 @@ fun RelativeTestGeneratedView(
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_bottom_test) {
-                        bottom.linkTo(anchor_with_margin.bottom, margin = 10.dp)
+                        bottom.linkTo(anchor_with_margin.bottom, margin = (-10).dp)
                         end.linkTo(parent.end, margin = 10.dp)
                     }
                         .wrapContentWidth()
@@ -186,7 +188,7 @@ fun RelativeTestGeneratedView(
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_left_test) {
-                        start.linkTo(anchor_with_margin.start, margin = 15.dp)
+                        start.linkTo(anchor_with_margin.start, margin = (-15).dp)
                         top.linkTo(parent.top, margin = 10.dp)
                     }
                         .wrapContentWidth()
@@ -198,7 +200,7 @@ fun RelativeTestGeneratedView(
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_right_test) {
-                        end.linkTo(anchor_with_margin.end, margin = 15.dp)
+                        end.linkTo(anchor_with_margin.end, margin = (-15).dp)
                         bottom.linkTo(parent.bottom, margin = 10.dp)
                     }
                         .wrapContentWidth()
@@ -236,6 +238,7 @@ fun RelativeTestGeneratedView(
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
                     }
+                        .padding(top = 15.dp, end = 15.dp, bottom = 15.dp, start = 15.dp)
                         .width(100.dp)
                         .height(50.dp)
                         .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
@@ -315,7 +318,7 @@ fun RelativeTestGeneratedView(
                     text = "Fixed Width\nLeft+Right\nmargins:[10,10,10,10]",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(BiasAlignment(0f, -1f))
                         .padding(top = 10.dp, end = 10.dp, bottom = 10.dp, start = 10.dp)
                         .background(Color(android.graphics.Color.parseColor("#A29BFE")))
                         .padding(10.dp)
@@ -327,7 +330,7 @@ fun RelativeTestGeneratedView(
                     text = "Fixed Height\nTop+Bottom",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.CenterStart)
                         .padding(top = 10.dp)
                         .padding(bottom = 10.dp)
                         .padding(start = 10.dp)
@@ -341,7 +344,7 @@ fun RelativeTestGeneratedView(
                     text = "Fixed Both",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.Center)
                         .padding(top = 15.dp, end = 15.dp, bottom = 15.dp, start = 15.dp)
                         .background(Color(android.graphics.Color.parseColor("#FD79A8")))
                         .width(80.dp)
@@ -368,7 +371,7 @@ fun RelativeTestGeneratedView(
                     text = "Stretch Horizontal\nleftMargin:10, rightMargin:15",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(BiasAlignment(0f, -1f))
                         .padding(top = 10.dp)
                         .padding(start = 10.dp)
                         .padding(end = 15.dp)
@@ -381,7 +384,7 @@ fun RelativeTestGeneratedView(
                     text = "Stretch\nVertical\ntop:10\nbottom:15",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.CenterStart)
                         .padding(top = 10.dp)
                         .padding(bottom = 15.dp)
                         .padding(start = 10.dp)
@@ -394,7 +397,7 @@ fun RelativeTestGeneratedView(
                     text = "Stretch Both Directions\nmargins:[15,20,15,20]",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.Center)
                         .padding(top = 15.dp, end = 20.dp, bottom = 15.dp, start = 20.dp)
                         .background(Color(android.graphics.Color.parseColor("#636E72")))
                         .padding(10.dp),
@@ -548,8 +551,8 @@ fun RelativeTestGeneratedView(
                 )
                 Text(
                     modifier = Modifier.constrainAs(aligned_both) {
-                        top.linkTo(ref1.top, margin = 10.dp)
-                        end.linkTo(ref2.end, margin = 10.dp)
+                        top.linkTo(ref1.top, margin = (-10).dp)
+                        end.linkTo(ref2.end, margin = (-10).dp)
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()

@@ -12,7 +12,20 @@ module KjuiTools
           value = process_data_binding(json_data['text'] || '')
           placeholder = json_data['placeholder'] || json_data['hint'] || ''
           
-          code = indent("OutlinedTextField(", depth)
+          # Check if we need to wrap in Box for margins
+          has_margins = json_data['margins'] || json_data['topMargin'] || json_data['bottomMargin'] || 
+                       json_data['leftMargin'] || json_data['rightMargin']
+          
+          # Always use CustomTextField
+          required_imports&.add(:custom_textfield)
+          
+          code = ""
+          if has_margins
+            required_imports&.add(:box)
+            code = indent("CustomTextFieldWithMargins(", depth)
+          else
+            code = indent("CustomTextField(", depth)
+          end
           code += "\n" + indent("value = #{value},", depth + 1)
           
           # onValueChange handler
@@ -25,40 +38,126 @@ module KjuiTools
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end
           
+          # For CustomTextFieldWithMargins, we need to specify modifiers differently
+          if has_margins
+            # Box modifier with margins
+            box_modifiers = []
+            box_modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+            if box_modifiers.any?
+              code += "\n" + indent("boxModifier = Modifier", depth + 1)
+              box_modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
+              code += ","
+            end
+            
+            # TextField modifier
+            textfield_modifiers = []
+            # Size - default to fillMaxWidth for text areas
+            if json_data['width'] == 'matchParent' || !json_data['width']
+              textfield_modifiers << ".fillMaxWidth()"
+            else
+              textfield_modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+            end
+            
+            # Height for multi-line
+            if json_data['height']
+              if json_data['height'] == 'matchParent'
+                textfield_modifiers << ".fillMaxHeight()"
+              elsif json_data['height'] == 'wrapContent'
+                textfield_modifiers << ".wrapContentHeight()"
+              else
+                textfield_modifiers << ".height(#{json_data['height']}.dp)"
+              end
+            else
+              # Default height for text area
+              textfield_modifiers << ".height(120.dp)"
+            end
+            
+            textfield_modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+            
+            if textfield_modifiers.any?
+              code += "\n" + indent("textFieldModifier = Modifier", depth + 1)
+              textfield_modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
+              code += ","
+            end
+          else
+            # Regular modifiers for CustomTextField
+            modifiers = []
+            
+            # Size - default to fillMaxWidth for text areas
+            if json_data['width'] == 'matchParent' || !json_data['width']
+              modifiers << ".fillMaxWidth()"
+            else
+              modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+            end
+            
+            # Height for multi-line
+            if json_data['height']
+              if json_data['height'] == 'matchParent'
+                modifiers << ".fillMaxHeight()"
+              elsif json_data['height'] == 'wrapContent'
+                modifiers << ".wrapContentHeight()"
+              else
+                modifiers << ".height(#{json_data['height']}.dp)"
+              end
+            else
+              # Default height for text area
+              modifiers << ".height(120.dp)"
+            end
+            
+            modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+            modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+            
+            if modifiers.any?
+              code += "\n" + indent("modifier = Modifier", depth + 1)
+              modifiers.each do |mod|
+                code += "\n" + indent("    #{mod}", depth + 1)
+              end
+              code += ","
+            end
+          end
+          
           # Placeholder
           if placeholder && !placeholder.empty?
             code += "\n" + indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1)
           end
           
-          # Build modifiers
-          modifiers = []
-          
-          # Size - default to fillMaxWidth for text areas
-          if json_data['width'] == 'matchParent' || !json_data['width']
-            modifiers << ".fillMaxWidth()"
-          else
-            modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          # Shape with corner radius
+          if json_data['cornerRadius']
+            required_imports&.add(:shape)
+            code += "\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp),", depth + 1)
           end
           
-          # Height for multi-line
-          if json_data['height']
-            if json_data['height'] == 'matchParent'
-              modifiers << ".fillMaxHeight()"
-            elsif json_data['height'] == 'wrapContent'
-              modifiers << ".wrapContentHeight()"
-            else
-              modifiers << ".height(#{json_data['height']}.dp)"
-            end
-          else
-            # Default height for text area
-            modifiers << ".height(120.dp)"
+          # Background colors
+          if json_data['background']
+            code += "\n" + indent("backgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")),", depth + 1)
           end
           
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
+          if json_data['highlightBackground']
+            code += "\n" + indent("highlightBackgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['highlightBackground']}\")),", depth + 1)
+          end
           
-          code += Helpers::ModifierBuilder.format(modifiers, depth)
+          # Border color for outlined text fields
+          if json_data['borderColor']
+            code += "\n" + indent("borderColor = Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")),", depth + 1)
+          end
+          
+          # Set isOutlined flag (TextView usually wants outlined style)
+          code += "\n" + indent("isOutlined = true,", depth + 1)
+          
+          # Max lines for TextView
+          if json_data['maxLines']
+            code += "\n" + indent("maxLines = #{json_data['maxLines']},", depth + 1)
+          else
+            # Default to multiple lines
+            code += "\n" + indent("maxLines = Int.MAX_VALUE,", depth + 1)
+          end
+          
+          # Single line false for multi-line
+          code += "\n" + indent("singleLine = false,", depth + 1)
           
           # Text styling
           if json_data['fontSize'] || json_data['fontColor']
@@ -68,20 +167,9 @@ module KjuiTools
             style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))" if json_data['fontColor']
             
             if style_parts.any?
-              code += ",\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
+              code += "\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
             end
           end
-          
-          # Max lines for TextView
-          if json_data['maxLines']
-            code += ",\n" + indent("maxLines = #{json_data['maxLines']}", depth + 1)
-          else
-            # Default to multiple lines
-            code += ",\n" + indent("maxLines = Int.MAX_VALUE", depth + 1)
-          end
-          
-          # Single line false for multi-line
-          code += ",\n" + indent("singleLine = false", depth + 1)
           
           # Keyboard options
           if json_data['returnKeyType']
@@ -109,6 +197,11 @@ module KjuiTools
             end
           end
           
+          # Remove trailing comma and close
+          if code.end_with?(',')
+            code = code[0..-2]
+          end
+          
           code += "\n" + indent(")", depth)
           code
         end
@@ -123,9 +216,9 @@ module KjuiTools
             if variable.include?(' ?? ')
               parts = variable.split(' ?? ')
               var_name = parts[0].strip
-              "\"\\${data.#{var_name}}\""
+              "data.#{var_name}"
             else
-              "\"\\${data.#{variable}}\""
+              "data.#{variable}"
             end
           else
             quote(text)

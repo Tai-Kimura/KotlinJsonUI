@@ -34,6 +34,7 @@ import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.components.SimpleDateSelectBox
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun BindingTestGeneratedView(
@@ -47,7 +48,7 @@ fun BindingTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(
@@ -81,7 +82,7 @@ fun BindingTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.textValue}",
+                value = data.textValue,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textValue" to newValue)) },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -94,7 +95,9 @@ fun BindingTestGeneratedView(
                 placeholder = { Text("Enter text") },
                 shape = RoundedCornerShape(8.dp),
                 backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC"))
+                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                isOutlined = true,
+                textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000")))
             )
             Text(
                 text = "${data.textValue}",

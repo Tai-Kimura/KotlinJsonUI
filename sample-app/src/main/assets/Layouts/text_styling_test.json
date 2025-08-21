@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#F8F8F8",
+  "background": "#FFFFFF",
   "child": [
     {
       "type": "View",
@@ -141,7 +141,7 @@
           "lineSpacing": 5,
           "fontSize": 14,
           "topMargin": 10,
-          "background": "#F0F0F0",
+          "background": "#FFFFFF",
           "padding": 10,
           "fontColor": "#000000"
         },
@@ -151,7 +151,7 @@
           "lineSpacing": 10,
           "fontSize": 14,
           "topMargin": 10,
-          "background": "#F0F0F0",
+          "background": "#FFFFFF",
           "padding": 10,
           "fontColor": "#000000"
         },

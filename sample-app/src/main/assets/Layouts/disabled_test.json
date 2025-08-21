@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#F8F8F8",
+  "background": "#FFFFFF",
   "child": [
     {
       "type": "View",
@@ -130,7 +130,7 @@
           "rightMargin": 20,
           "hint": "Disabled - cannot type",
           "text": "Disabled text field",
-          "background": "#F0F0F0",
+          "background": "#FFFFFF",
           "disabledBackground": "#E0E0E0",
           "padding": 10,
           "cornerRadius": 8,

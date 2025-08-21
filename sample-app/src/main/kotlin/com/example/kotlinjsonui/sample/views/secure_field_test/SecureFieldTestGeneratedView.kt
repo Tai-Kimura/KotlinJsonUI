@@ -33,7 +33,7 @@ fun SecureFieldTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         Button(
             onClick = { },
@@ -60,7 +60,7 @@ fun SecureFieldTestGeneratedView(
             modifier = Modifier.padding(top = 30.dp)
         )
         CustomTextFieldWithMargins(
-            value = "${data.regularText}",
+            value = data.regularText,
             onValueChange = { newValue -> viewModel.updateData(mapOf("regularText" to newValue)) },
             boxModifier = Modifier
                 .padding(top = 10.dp)
@@ -73,6 +73,7 @@ fun SecureFieldTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
             borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+            isOutlined = true,
             textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
         )
         Text(
@@ -82,7 +83,7 @@ fun SecureFieldTestGeneratedView(
             modifier = Modifier.padding(top = 20.dp)
         )
         CustomTextFieldWithMargins(
-            value = "${data.password}",
+            value = data.password,
             onValueChange = { newValue -> viewModel.updateData(mapOf("password" to newValue)) },
             boxModifier = Modifier
                 .padding(top = 10.dp)
@@ -96,6 +97,7 @@ fun SecureFieldTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
             borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+            isOutlined = true,
             isSecure = true,
             textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
         )
@@ -106,7 +108,7 @@ fun SecureFieldTestGeneratedView(
             modifier = Modifier.padding(top = 20.dp)
         )
         CustomTextFieldWithMargins(
-            value = "${data.confirmPassword}",
+            value = data.confirmPassword,
             onValueChange = { newValue -> viewModel.updateData(mapOf("confirmPassword" to newValue)) },
             boxModifier = Modifier
                 .padding(top = 10.dp)
@@ -120,6 +122,7 @@ fun SecureFieldTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
             borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+            isOutlined = true,
             isSecure = true,
             textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
         )

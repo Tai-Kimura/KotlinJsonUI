@@ -40,7 +40,7 @@ fun TestMenuGeneratedView(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(20.dp)
-                .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
         ) {
             Text(
                 text = "SwiftJsonUI Feature Tests",

@@ -37,13 +37,13 @@ fun IncludeTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
-                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
         ) {
             Button(
                 onClick = { },

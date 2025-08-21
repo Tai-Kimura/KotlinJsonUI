@@ -7,9 +7,9 @@ module KjuiTools
     module Components
       class TextFieldComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
-          # TextField uses 'text' for value and 'hint' for placeholder per SwiftJsonUI spec
+          # TextField uses 'text' for value and supports both 'hint' and 'placeholder'
           value = process_data_binding(json_data['text'] || '')
-          placeholder = json_data['hint'] || ''
+          placeholder = json_data['hint'] || json_data['placeholder'] || ''
           is_secure = json_data['secure'] == true
           
           # Check if we need to wrap in Box for margins
@@ -134,7 +134,8 @@ module KjuiTools
           end
           
           # Set isOutlined and isSecure flags
-          if json_data['outlined'] == true
+          # Automatically use outlined style if borderColor or borderWidth is specified
+          if json_data['outlined'] == true || json_data['borderColor'] || json_data['borderWidth']
             code += "\n" + indent("isOutlined = true,", depth + 1)
           end
           
@@ -142,40 +143,44 @@ module KjuiTools
             code += "\n" + indent("isSecure = true,", depth + 1)
           end
           
+          
           # Text styling - always add this last before closing
-          if json_data['fontSize'] || json_data['textAlign'] || json_data['fontColor']
-            required_imports&.add(:text_style)
-            style_parts = []
-            style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
-            
-            if json_data['fontColor']
-              color = json_data['fontColor']
-              if color.start_with?('#')
-                style_parts << "color = Color(android.graphics.Color.parseColor(\"#{color}\"))"
-              else
-                style_parts << "color = Color.#{color}"
-              end
+          # Always include textStyle with at least a default color
+          required_imports&.add(:text_style)
+          style_parts = []
+          style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
+          
+          # Use fontColor if specified, otherwise default to black
+          if json_data['fontColor']
+            color = json_data['fontColor']
+            if color.start_with?('#')
+              style_parts << "color = Color(android.graphics.Color.parseColor(\"#{color}\"))"
+            else
+              style_parts << "color = Color.#{color}"
             end
-            
-            if json_data['textAlign']
-              required_imports&.add(:text_align)
-              case json_data['textAlign'].downcase
-              when 'center'
-                style_parts << "textAlign = TextAlign.Center"
-              when 'right'
-                style_parts << "textAlign = TextAlign.End"
-              when 'left'
-                style_parts << "textAlign = TextAlign.Start"
-              end
+          else
+            # Default to black text
+            style_parts << "color = Color(android.graphics.Color.parseColor(\"#000000\"))"
+          end
+          
+          if json_data['textAlign']
+            required_imports&.add(:text_align)
+            case json_data['textAlign'].downcase
+            when 'center'
+              style_parts << "textAlign = TextAlign.Center"
+            when 'right'
+              style_parts << "textAlign = TextAlign.End"
+            when 'left'
+              style_parts << "textAlign = TextAlign.Start"
             end
-            
-            if style_parts.any?
-              # Remove trailing comma before adding textStyle
-              if code.end_with?(',')
-                code = code[0..-2]
-              end
-              code += ",\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
+          end
+          
+          if style_parts.any?
+            # Remove trailing comma before adding textStyle
+            if code.end_with?(',')
+              code = code[0..-2]
             end
+            code += ",\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)
           end
           
           # Keyboard options (input and returnKeyType attributes)
@@ -243,9 +248,9 @@ module KjuiTools
             if variable.include?(' ?? ')
               parts = variable.split(' ?? ')
               var_name = parts[0].strip
-              "\"\${data.#{var_name}}\""
+              "data.#{var_name}"
             else
-              "\"\${data.#{variable}}\""
+              "data.#{variable}"
             end
           else
             quote(text)

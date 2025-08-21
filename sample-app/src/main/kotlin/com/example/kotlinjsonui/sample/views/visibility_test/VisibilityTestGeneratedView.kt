@@ -31,7 +31,7 @@ fun VisibilityTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F8F8F8")))
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         item {
         Column(
@@ -119,6 +119,7 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .alpha(1.0f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                     .wrapContentWidth()
@@ -129,6 +130,7 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .alpha(0.7f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                     .wrapContentWidth()
@@ -139,6 +141,7 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .alpha(0.5f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
                     .wrapContentWidth()
@@ -149,6 +152,7 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .alpha(0.3f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
                     .wrapContentWidth()
@@ -159,6 +163,7 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .alpha(0.1f)
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
                     .wrapContentWidth()

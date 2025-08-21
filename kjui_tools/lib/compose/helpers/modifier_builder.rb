@@ -233,10 +233,12 @@ module KjuiTools
             end
           end
           
-          # Handle alpha attribute separately (not part of visibility wrapper)
-          if json_data['alpha']
+          # Handle alpha/opacity attribute separately (not part of visibility wrapper)
+          # Support both 'alpha' and 'opacity' for compatibility
+          alpha_value = json_data['alpha'] || json_data['opacity']
+          if alpha_value
             required_imports&.add(:alpha)
-            modifiers << ".alpha(#{json_data['alpha']}f)"
+            modifiers << ".alpha(#{alpha_value}f)"
           end
           
           # Return both visibility info and modifiers
@@ -272,8 +274,37 @@ module KjuiTools
                           json_data['centerHorizontal'] || json_data['centerVertical'] || 
                           json_data['centerInParent']
             
-            # Handle combined alignments first
-            if json_data['alignTop'] && json_data['alignLeft']
+            # First check for both-direction constraints (centering behavior)
+            has_horizontal_both = json_data['alignLeft'] && json_data['alignRight']
+            has_vertical_both = json_data['alignTop'] && json_data['alignBottom']
+            
+            # Handle combined alignments
+            if has_horizontal_both && has_vertical_both
+              # Both horizontal and vertical constraints - center completely
+              modifiers << ".align(Alignment.Center)"
+            elsif has_horizontal_both && json_data['alignTop']
+              # Center horizontally, align top
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, -1f))"
+            elsif has_horizontal_both && json_data['alignBottom']
+              # Center horizontally, align bottom
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, 1f))"
+            elsif has_horizontal_both
+              # Just center horizontally
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, 0f))"
+            elsif has_vertical_both && json_data['alignLeft']
+              # Center vertically, align left
+              modifiers << ".align(Alignment.CenterStart)"
+            elsif has_vertical_both && json_data['alignRight']
+              # Center vertically, align right
+              modifiers << ".align(Alignment.CenterEnd)"
+            elsif has_vertical_both
+              # Just center vertically
+              required_imports&.add(:bias_alignment)
+              modifiers << ".align(BiasAlignment(0f, 0f))"
+            elsif json_data['alignTop'] && json_data['alignLeft']
               modifiers << ".align(Alignment.TopStart)"
             elsif json_data['alignTop'] && json_data['alignRight']
               modifiers << ".align(Alignment.TopEnd)"
@@ -369,23 +400,32 @@ module KjuiTools
           end
           
           # Align edges with other views
+          # For align operations, use negative margins to move in the expected direction
           if json_data['alignTopView']
-            margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
+            # alignTop with topMargin means move DOWN from the aligned position
+            # linkTo margin pushes away, so use negative to pull closer (move down)
+            margin = top_margin > 0 ? ", margin = (-#{top_margin}).dp" : ""
             constraints << "top.linkTo(#{json_data['alignTopView']}.top#{margin})"
           end
           
           if json_data['alignBottomView']
-            margin = bottom_margin > 0 ? ", margin = #{bottom_margin}.dp" : ""
+            # alignBottom with bottomMargin means move UP from the aligned position  
+            # linkTo margin pushes away, so use negative to pull closer (move up)
+            margin = bottom_margin > 0 ? ", margin = (-#{bottom_margin}).dp" : ""
             constraints << "bottom.linkTo(#{json_data['alignBottomView']}.bottom#{margin})"
           end
           
           if json_data['alignLeftView']
-            margin = start_margin > 0 ? ", margin = #{start_margin}.dp" : ""
+            # alignLeft with leftMargin means move RIGHT from the aligned position
+            # linkTo margin pushes away, so use negative to pull closer (move right)
+            margin = start_margin > 0 ? ", margin = (-#{start_margin}).dp" : ""
             constraints << "start.linkTo(#{json_data['alignLeftView']}.start#{margin})"
           end
           
           if json_data['alignRightView']
-            margin = end_margin > 0 ? ", margin = #{end_margin}.dp" : ""
+            # alignRight with rightMargin means move LEFT from the aligned position
+            # linkTo margin pushes away, so use negative to pull closer (move left)
+            margin = end_margin > 0 ? ", margin = (-#{end_margin}).dp" : ""
             constraints << "end.linkTo(#{json_data['alignRightView']}.end#{margin})"
           end
           
@@ -401,6 +441,7 @@ module KjuiTools
           end
           
           # Parent constraints
+          # For parent alignment, margins should work normally as offsets
           if json_data['alignTop']
             margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
             constraints << "top.linkTo(parent.top#{margin})"
