@@ -21,7 +21,10 @@ class RadioIconsTestViewModel : ViewModel() {
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentData = _data.value
+        val newData = currentData.copy(
+            selectedColor = updates["selectedColor"] as? String ?: currentData.selectedColor
+        )
+        _data.value = newData
     }
 }
