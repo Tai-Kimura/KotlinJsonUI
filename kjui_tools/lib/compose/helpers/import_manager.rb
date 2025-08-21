@@ -77,7 +77,9 @@ module KjuiTools
                                "import androidx.compose.ui.text.buildAnnotatedString",
                                "import androidx.compose.ui.text.SpanStyle",
                                "import androidx.compose.ui.text.withStyle"],
-            clickable_text: "import androidx.compose.foundation.text.ClickableText"
+            clickable_text: "import androidx.compose.foundation.text.ClickableText",
+            partial_attributes_text: ["import com.kotlinjsonui.components.PartialAttributesText",
+                                      "import com.kotlinjsonui.components.PartialAttribute"]
           }
         end
         

@@ -11,9 +11,9 @@ module KjuiTools
           # Check if component should be skipped entirely (static gone/hidden)
           return "" if Helpers::VisibilityHelper.should_skip_render?(json_data)
           
-          # Check if we need to use AnnotatedString for partial attributes
+          # Check if we need to use PartialAttributesText for partial attributes
           if json_data['partialAttributes'] && json_data['partialAttributes'].any?
-            return generate_with_partial_attributes(json_data, depth, required_imports, parent_type)
+            return generate_with_partial_attributes_component(json_data, depth, required_imports, parent_type)
           end
           
           text = process_data_binding(json_data['text'] || '')
@@ -189,6 +189,106 @@ module KjuiTools
         end
         
         private
+        
+        def self.generate_with_partial_attributes_component(json_data, depth, required_imports, parent_type)
+          required_imports&.add(:partial_attributes_text)
+          
+          text = json_data['text'] || ''
+          partial_attrs = json_data['partialAttributes']
+          
+          code = indent("PartialAttributesText(", depth)
+          code += "\n" + indent("text = \"#{escape_string(text)}\",", depth + 1)
+          
+          # Build partial attributes list
+          code += "\n" + indent("partialAttributes = listOf(", depth + 1)
+          
+          partial_attrs.each_with_index do |attr, index|
+            code += "\n" + indent("PartialAttribute.fromJsonRange(", depth + 2)
+            
+            # Handle range - can be array or string
+            range = attr['range']
+            if range.is_a?(Array)
+              code += "\n" + indent("range = listOf(#{range.join(', ')}),", depth + 3)
+            elsif range.is_a?(String)
+              code += "\n" + indent("range = \"#{escape_string(range)}\",", depth + 3)
+            end
+            
+            code += "\n" + indent("text = \"#{escape_string(text)}\",", depth + 3)
+            
+            # Add optional attributes
+            if attr['fontColor']
+              code += "\n" + indent("fontColor = \"#{attr['fontColor']}\",", depth + 3)
+            end
+            if attr['fontSize']
+              code += "\n" + indent("fontSize = #{attr['fontSize']},", depth + 3)
+            end
+            if attr['fontWeight']
+              code += "\n" + indent("fontWeight = \"#{attr['fontWeight']}\",", depth + 3)
+            end
+            if attr['background']
+              code += "\n" + indent("background = \"#{attr['background']}\",", depth + 3)
+            end
+            if attr['underline']
+              code += "\n" + indent("underline = #{attr['underline']},", depth + 3)
+            end
+            if attr['strikethrough']
+              code += "\n" + indent("strikethrough = #{attr['strikethrough']},", depth + 3)
+            end
+            if attr['onclick']
+              code += "\n" + indent("onClick = { viewModel.#{attr['onclick']}() }", depth + 3)
+            else
+              code += "\n" + indent("onClick = null", depth + 3)
+            end
+            
+            code += "\n" + indent(")!!", depth + 2) # !! because fromJsonRange returns nullable
+            code += "," if index < partial_attrs.length - 1
+          end
+          
+          code += "\n" + indent("),", depth + 1)
+          
+          # Build modifiers
+          modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          
+          if modifiers.any?
+            code += Helpers::ModifierBuilder.format(modifiers, depth)
+          else
+            code += "\n" + indent("modifier = Modifier", depth + 1)
+          end
+          
+          # Add style
+          style_parts = []
+          style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
+          
+          if json_data['fontColor']
+            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))"
+          end
+          
+          if json_data['textAlign']
+            required_imports&.add(:text_align)
+            case json_data['textAlign'].downcase
+            when 'center'
+              style_parts << "textAlign = TextAlign.Center"
+            when 'right'
+              style_parts << "textAlign = TextAlign.End"
+            when 'left'
+              style_parts << "textAlign = TextAlign.Start"
+            end
+          end
+          
+          if style_parts.any?
+            required_imports&.add(:text_style)
+            code += ",\n" + indent("style = TextStyle(#{style_parts.join(', ')})", depth + 1)
+          end
+          
+          code += "\n" + indent(")", depth)
+          
+          # Wrap with VisibilityWrapper if needed
+          Helpers::VisibilityHelper.wrap_with_visibility(json_data, code, depth, required_imports)
+        end
         
         def self.generate_with_partial_attributes(json_data, depth, required_imports, parent_type)
           required_imports&.add(:annotated_string)

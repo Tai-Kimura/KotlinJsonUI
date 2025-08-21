@@ -26,6 +26,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.TextStyle
+import com.kotlinjsonui.components.PartialAttributesText
+import com.kotlinjsonui.components.PartialAttribute
 
 @Composable
 fun PartialAttributesTestGeneratedView(
@@ -64,103 +66,109 @@ fun PartialAttributesTestGeneratedView(
                     fontSize = 16.sp,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
-                val annotatedText = buildAnnotatedString {
-                    append("This text has partial styling applied to different parts of the text.")
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#FF0000")), fontWeight = FontWeight.Bold),
-                        start = 14,
-                        end = 21
-                    )
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#00FF00")), textDecoration = TextDecoration.Underline),
-                        start = 22,
-                        end = 29
-                    )
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#0000FF")), fontSize = 20.sp, background = Color(android.graphics.Color.parseColor("#FFFF00"))),
-                        start = 50,
-                        end = 55
-                    )
-                }
-                ClickableText(
-                    text = annotatedText,
-                    onClick = { },,
+                PartialAttributesText(
+                    text = "This text has partial styling applied to different parts of the text.",
+                    partialAttributes = listOf(
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(14, 21),
+                            text = "This text has partial styling applied to different parts of the text.",
+                            fontColor = "#FF0000",
+                            fontWeight = "bold",
+                            onClick = null
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(22, 29),
+                            text = "This text has partial styling applied to different parts of the text.",
+                            fontColor = "#00FF00",
+                            underline = true,
+                            onClick = null
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(50, 55),
+                            text = "This text has partial styling applied to different parts of the text.",
+                            fontColor = "#0000FF",
+                            fontSize = 20,
+                            background = "#FFFF00",
+                            onClick = null
+                        )!!
+                    ),
+                    modifier = Modifier.padding(bottom = 20.dp),
                     style = TextStyle(fontSize = 16.sp)
-                    modifier = Modifier.padding(bottom = 20.dp)
                 )
-                val annotatedText = buildAnnotatedString {
-                    append("Click here to navigate or here for another action.")
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#0000FF")), textDecoration = TextDecoration.Underline),
-                        start = 6,
-                        end = 10
-                    )
-                    addStringAnnotation(
-                        tag = "CLICKABLE",
-                        annotation = "navigateToPage1",
-                        start = 6,
-                        end = 10
-                    )
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#0000FF")), textDecoration = TextDecoration.Underline),
-                        start = 27,
-                        end = 31
-                    )
-                    addStringAnnotation(
-                        tag = "CLICKABLE",
-                        annotation = "navigateToPage2",
-                        start = 27,
-                        end = 31
-                    )
-                }
-                ClickableText(
-                    text = annotatedText,
-                    onClick = { offset ->
-                        annotatedText.getStringAnnotations("CLICKABLE", offset, offset)
-                            .firstOrNull()?.let { annotation ->
-                                viewModel.handlePartialClick(annotation.item)
-                            }
-                    },,
+                PartialAttributesText(
+                    text = "Click here to navigate or here for another action.",
+                    partialAttributes = listOf(
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(6, 10),
+                            text = "Click here to navigate or here for another action.",
+                            fontColor = "#0000FF",
+                            underline = true,
+                            onClick = { viewModel.navigateToPage1() }
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(27, 31),
+                            text = "Click here to navigate or here for another action.",
+                            fontColor = "#0000FF",
+                            underline = true,
+                            onClick = { viewModel.navigateToPage2() }
+                        )!!
+                    ),
+                    modifier = Modifier.padding(bottom = 20.dp),
                     style = TextStyle(fontSize = 16.sp)
-                    modifier = Modifier.padding(bottom = 20.dp)
                 )
-                val annotatedText = buildAnnotatedString {
-                    append("Mixed styles: bold, italic, underline, strikethrough")
-                    addStyle(
-                        style = SpanStyle(fontWeight = FontWeight.Bold),
-                        start = 14,
-                        end = 18
-                    )
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#FF00FF"))),
-                        start = 20,
-                        end = 26
-                    )
-                    addStyle(
-                        style = SpanStyle(textDecoration = TextDecoration.Underline),
-                        start = 28,
-                        end = 37
-                    )
-                    addStyle(
-                        style = SpanStyle(color = Color(android.graphics.Color.parseColor("#999999")), textDecoration = TextDecoration.LineThrough),
-                        start = 39,
-                        end = 53
-                    )
-                }
-                ClickableText(
-                    text = annotatedText,
-                    onClick = { },,
+                PartialAttributesText(
+                    text = "Mixed styles: bold, italic, underline, strikethrough",
+                    partialAttributes = listOf(
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(14, 18),
+                            text = "Mixed styles: bold, italic, underline, strikethrough",
+                            fontWeight = "bold",
+                            onClick = null
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(20, 26),
+                            text = "Mixed styles: bold, italic, underline, strikethrough",
+                            fontColor = "#FF00FF",
+                            onClick = null
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(28, 37),
+                            text = "Mixed styles: bold, italic, underline, strikethrough",
+                            underline = true,
+                            onClick = null
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = listOf(39, 53),
+                            text = "Mixed styles: bold, italic, underline, strikethrough",
+                            fontColor = "#999999",
+                            strikethrough = true,
+                            onClick = null
+                        )!!
+                    ),
+                    modifier = Modifier,
                     style = TextStyle(fontSize = 16.sp)
-                    modifier = Modifier
                 )
-                val annotatedText = buildAnnotatedString {
-                    append("今日は天気がいいですね。明日も晴れるといいです。")
-                }
-                ClickableText(
-                    text = annotatedText,
-                    onClick = { },,
+                PartialAttributesText(
+                    text = "今日は天気がいいですね。明日も晴れるといいです。",
+                    partialAttributes = listOf(
+                        PartialAttribute.fromJsonRange(
+                            range = "天気",
+                            text = "今日は天気がいいですね。明日も晴れるといいです。",
+                            fontColor = "#FF0000",
+                            fontSize = 20,
+                            fontWeight = "bold",
+                            onClick = null
+                        )!!,
+                        PartialAttribute.fromJsonRange(
+                            range = "晴れる",
+                            text = "今日は天気がいいですね。明日も晴れるといいです。",
+                            fontColor = "#0000FF",
+                            underline = true,
+                            onClick = null
+                        )!!
+                    ),
+                    modifier = Modifier.padding(bottom = 20.dp),
                     style = TextStyle(fontSize = 16.sp)
-                    modifier = Modifier.padding(bottom = 20.dp)
                 )
             }
             }
