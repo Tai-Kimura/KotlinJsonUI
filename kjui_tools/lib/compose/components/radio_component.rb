@@ -298,10 +298,10 @@ module KjuiTools
             'heart' => 'Icons.Outlined.FavoriteBorder',
             'heart.fill' => 'Icons.Filled.Favorite',
             'square' => 'Icons.Outlined.CheckBoxOutlineBlank',
-            'checkmark.square.fill' => 'Icons.Filled.CheckBox'
+            'checkmark.square.fill' => 'Icons.Default.CheckBox'  # Use Default.CheckBox instead of Filled.CheckBox
           }
           
-          icon_map[icon_name] || 'Icons.Outlined.PanoramaFishEye'
+          icon_map[icon_name] || 'Icons.Outlined.Star'  # Default fallback to star
         end
         
         def self.indent(text, level)

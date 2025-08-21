@@ -155,7 +155,7 @@ fun RadioIconsTestGeneratedView(
                         onClick = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom3")) }
                     ) {
                         Icon(
-                            imageVector = if (isSelected) Icons.Filled.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
+                            imageVector = if (isSelected) Icons.Default.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
                             contentDescription = "Square Option",
                             tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
                         )
