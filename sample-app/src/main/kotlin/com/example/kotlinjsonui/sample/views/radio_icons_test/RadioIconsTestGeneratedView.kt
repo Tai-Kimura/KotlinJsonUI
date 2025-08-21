@@ -150,16 +150,10 @@ fun RadioIconsTestGeneratedView(
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
-                    val isSelected = data.selectedCustomgroup == "custom3"
-                    IconButton(
-                        onClick = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom3")) }
-                    ) {
-                        Icon(
-                            imageVector = if (isSelected) Icons.Default.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
-                            contentDescription = "Square Option",
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
-                        )
-                    }
+                    Checkbox(
+                        checked = data.selectedCustomgroup == "custom3",
+                        onCheckedChange = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom3")) }
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Square Option")
                 }

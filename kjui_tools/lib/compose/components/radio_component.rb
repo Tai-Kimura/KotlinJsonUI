@@ -166,7 +166,7 @@ module KjuiTools
           
           code += "\n" + indent(") {", depth)
           
-          # Handle custom icons or default RadioButton
+          # Handle custom icons or default components
           # If icon is "circle" or selectedIcon is "checkmark.circle.fill", use default RadioButton
           if (json_data['icon'] == 'circle' || !json_data['icon']) && 
              (json_data['selectedIcon'] == 'checkmark.circle.fill' || !json_data['selectedIcon'])
@@ -174,6 +174,14 @@ module KjuiTools
             code += "\n" + indent("    RadioButton(", depth)
             code += "\n" + indent("        selected = data.#{selected_var} == \"#{id}\",", depth)
             code += "\n" + indent("        onClick = { viewModel.updateData(mapOf(\"#{selected_var}\" to \"#{id}\")) }", depth)
+            code += "\n" + indent("    )", depth)
+          elsif json_data['icon'] == 'square' && 
+                (json_data['selectedIcon'] == 'checkmark.square.fill' || !json_data['selectedIcon'])
+            # Use default Checkbox for square appearance
+            required_imports&.add(:checkbox)
+            code += "\n" + indent("    Checkbox(", depth)
+            code += "\n" + indent("        checked = data.#{selected_var} == \"#{id}\",", depth)
+            code += "\n" + indent("        onCheckedChange = { viewModel.updateData(mapOf(\"#{selected_var}\" to \"#{id}\")) }", depth)
             code += "\n" + indent("    )", depth)
           elsif json_data['icon'] || json_data['selectedIcon']
             # Use IconButton with custom icons only for non-standard icons
