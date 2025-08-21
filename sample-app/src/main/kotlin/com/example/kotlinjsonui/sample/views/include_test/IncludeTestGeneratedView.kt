@@ -24,6 +24,7 @@ import com.example.kotlinjsonui.sample.views.included2.Included2View
 import com.example.kotlinjsonui.sample.data.Included2Data
 import com.example.kotlinjsonui.sample.viewmodels.Included2ViewModel
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -51,6 +52,7 @@ fun IncludeTestGeneratedView(
                     .wrapContentWidth()
                     .height(32.dp),
                 shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                 )
@@ -89,8 +91,8 @@ fun IncludeTestGeneratedView(
                     ) {
                         Button(
                             onClick = { viewModel.incrementCount() },
-                            modifier = Modifier.padding(10.dp),
                             shape = RoundedCornerShape(5.dp),
+                            contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
                                                         )
@@ -102,8 +104,8 @@ fun IncludeTestGeneratedView(
                         }
                         Button(
                             onClick = { viewModel.decrementCount() },
-                            modifier = Modifier.padding(10.dp),
                             shape = RoundedCornerShape(5.dp),
+                            contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#FF9800"))
                                                         )
@@ -115,8 +117,8 @@ fun IncludeTestGeneratedView(
                         }
                         Button(
                             onClick = { viewModel.resetCount() },
-                            modifier = Modifier.padding(10.dp),
                             shape = RoundedCornerShape(5.dp),
+                            contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
                                                         )
@@ -131,8 +133,8 @@ fun IncludeTestGeneratedView(
                     ) {
                         Button(
                             onClick = { viewModel.changeUserName() },
-                            modifier = Modifier.padding(10.dp),
                             shape = RoundedCornerShape(5.dp),
+                            contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
                                                         )
@@ -144,8 +146,8 @@ fun IncludeTestGeneratedView(
                         }
                         Button(
                             onClick = { viewModel.toggleStatus() },
-                            modifier = Modifier.padding(10.dp),
                             shape = RoundedCornerShape(5.dp),
+                            contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
                                                             containerColor = Color(android.graphics.Color.parseColor("#607D8B"))
                                                         )

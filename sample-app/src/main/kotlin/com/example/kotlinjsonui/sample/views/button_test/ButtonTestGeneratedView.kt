@@ -18,6 +18,7 @@ import com.example.kotlinjsonui.sample.viewmodels.ButtonTestViewModel
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun ButtonTestGeneratedView(
@@ -52,6 +53,7 @@ fun ButtonTestGeneratedView(
             Button(
                 onClick = { viewModel.onGetStarted() },
                 shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 24.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#6200EE"))
                                 )

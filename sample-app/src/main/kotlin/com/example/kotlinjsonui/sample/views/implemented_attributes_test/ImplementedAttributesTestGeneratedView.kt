@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun ImplementedAttributesTestGeneratedView(
@@ -210,10 +211,9 @@ fun ImplementedAttributesTestGeneratedView(
                 )
                 Button(
                     onClick = { },
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .padding(bottom = 10.dp),
+                    modifier = Modifier.padding(bottom = 10.dp),
                     shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(10.dp),
                     colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(android.graphics.Color.parseColor("#cccccc"))
                                         )
@@ -225,10 +225,9 @@ fun ImplementedAttributesTestGeneratedView(
                 }
                 Button(
                     onClick = { },
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .padding(bottom = 10.dp),
+                    modifier = Modifier.padding(bottom = 10.dp),
                     shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(10.dp),
                     colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(android.graphics.Color.parseColor("#0000ff")),
                                             // hilightColor: #ff0000 - Use InteractionSource for pressed state
@@ -241,8 +240,8 @@ fun ImplementedAttributesTestGeneratedView(
                 }
                 Button(
                     onClick = { },
-                    modifier = Modifier.padding(10.dp),
                     shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(10.dp),
                     colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(android.graphics.Color.parseColor("#0000ff")),
                                             disabledContainerColor = Color(android.graphics.Color.parseColor("#f0f0f0")),

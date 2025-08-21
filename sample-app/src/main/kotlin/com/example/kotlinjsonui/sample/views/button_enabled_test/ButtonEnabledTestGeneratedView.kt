@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun ButtonEnabledTestGeneratedView(
@@ -37,6 +38,7 @@ fun ButtonEnabledTestGeneratedView(
                 .wrapContentWidth()
                 .height(32.dp),
             shape = RoundedCornerShape(8.dp),
+            contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                         )
@@ -61,8 +63,8 @@ fun ButtonEnabledTestGeneratedView(
         )
         Button(
             onClick = { viewModel.testAction() },
-            modifier = Modifier.padding(10.dp),
             shape = RoundedCornerShape(5.dp),
+            contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
                         ),
@@ -75,8 +77,8 @@ fun ButtonEnabledTestGeneratedView(
         }
         Button(
             onClick = { viewModel.toggleEnabled() },
-            modifier = Modifier.padding(10.dp),
             shape = RoundedCornerShape(5.dp),
+            contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
                         )
@@ -88,8 +90,8 @@ fun ButtonEnabledTestGeneratedView(
         }
         Button(
             onClick = { viewModel.neverCalled() },
-            modifier = Modifier.padding(10.dp),
             shape = RoundedCornerShape(5.dp),
+            contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#FF5722"))
                         ),
@@ -102,8 +104,8 @@ fun ButtonEnabledTestGeneratedView(
         }
         Button(
             onClick = { viewModel.alwaysCalled() },
-            modifier = Modifier.padding(10.dp),
             shape = RoundedCornerShape(5.dp),
+            contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
                         ),

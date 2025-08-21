@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.blur
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -52,6 +53,7 @@ fun ComponentsTestGeneratedView(
                     .wrapContentWidth()
                     .height(32.dp),
                 shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                 )

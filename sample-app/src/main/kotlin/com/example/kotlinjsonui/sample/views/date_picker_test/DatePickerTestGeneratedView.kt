@@ -31,6 +31,7 @@ import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.components.SimpleDateSelectBox
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -58,6 +59,7 @@ fun DatePickerTestGeneratedView(
                     .wrapContentWidth()
                     .height(32.dp),
                 shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                 )

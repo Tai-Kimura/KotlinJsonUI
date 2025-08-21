@@ -21,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.shape.CircleShape
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun KeyboardAvoidanceTestGeneratedView(
@@ -49,6 +50,7 @@ fun KeyboardAvoidanceTestGeneratedView(
                     .wrapContentWidth()
                     .height(32.dp),
                 shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                 )

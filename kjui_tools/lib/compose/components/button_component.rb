@@ -19,9 +19,8 @@ module KjuiTools
             code += "\n" + indent("onClick = { }", depth + 1)
           end
           
-          # Build modifiers
+          # Build modifiers (only margins and size, not padding)
           modifiers = []
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           
@@ -35,6 +34,72 @@ module KjuiTools
           if json_data['cornerRadius']
             required_imports&.add(:shape)
             code += ",\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp)", depth + 1)
+          end
+          
+          # Add contentPadding for internal padding
+          # Support both 'padding' (number), 'paddings' (array), and individual padding attributes
+          padding_data = json_data['paddings'] || json_data['padding']
+          
+          if padding_data || json_data['paddingTop'] || json_data['paddingBottom'] || 
+             json_data['paddingLeft'] || json_data['paddingRight'] || json_data['paddingStart'] || 
+             json_data['paddingEnd'] || json_data['paddingHorizontal'] || json_data['paddingVertical']
+            required_imports&.add(:button_padding)
+            
+            padding_values = []
+            
+            if padding_data
+              # Handle paddings array or padding number
+              if padding_data.is_a?(Array)
+                case padding_data.length
+                when 1
+                  # One value: all sides
+                  padding_values << "#{padding_data[0]}.dp"
+                when 2
+                  # Two values: [vertical, horizontal]
+                  padding_values << "vertical = #{padding_data[0]}.dp"
+                  padding_values << "horizontal = #{padding_data[1]}.dp"
+                when 3
+                  # Three values: [top, horizontal, bottom]
+                  padding_values << "top = #{padding_data[0]}.dp"
+                  padding_values << "horizontal = #{padding_data[1]}.dp"
+                  padding_values << "bottom = #{padding_data[2]}.dp"
+                when 4
+                  # Four values: [top, right, bottom, left]
+                  padding_values << "top = #{padding_data[0]}.dp"
+                  padding_values << "end = #{padding_data[1]}.dp"
+                  padding_values << "bottom = #{padding_data[2]}.dp"
+                  padding_values << "start = #{padding_data[3]}.dp"
+                end
+              else
+                # Single number: all sides
+                padding_values << "#{padding_data}.dp"
+              end
+            else
+              # Handle individual padding attributes
+              top_padding = json_data['paddingTop'] || json_data['paddingVertical'] || 0
+              bottom_padding = json_data['paddingBottom'] || json_data['paddingVertical'] || 0
+              start_padding = json_data['paddingStart'] || json_data['paddingLeft'] || json_data['paddingHorizontal'] || 0
+              end_padding = json_data['paddingEnd'] || json_data['paddingRight'] || json_data['paddingHorizontal'] || 0
+              
+              if top_padding == bottom_padding && start_padding == end_padding && top_padding == start_padding
+                # All same, use single value
+                padding_values << "#{top_padding}.dp" if top_padding > 0
+              elsif top_padding == bottom_padding && start_padding == end_padding
+                # Different horizontal and vertical
+                padding_values << "horizontal = #{start_padding}.dp" if start_padding > 0
+                padding_values << "vertical = #{top_padding}.dp" if top_padding > 0
+              else
+                # All different, need to specify each
+                padding_values << "start = #{start_padding}.dp" if start_padding > 0
+                padding_values << "top = #{top_padding}.dp" if top_padding > 0
+                padding_values << "end = #{end_padding}.dp" if end_padding > 0
+                padding_values << "bottom = #{bottom_padding}.dp" if bottom_padding > 0
+              end
+            end
+            
+            if padding_values.any?
+              code += ",\n" + indent("contentPadding = PaddingValues(#{padding_values.join(', ')})", depth + 1)
+            end
           end
           
           # Button colors including normal, disabled, and pressed states

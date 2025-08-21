@@ -35,6 +35,7 @@ import com.kotlinjsonui.components.SimpleDateSelectBox
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.foundation.layout.PaddingValues
 
 @Composable
 fun BindingTestGeneratedView(
@@ -62,6 +63,7 @@ fun BindingTestGeneratedView(
                     .wrapContentWidth()
                     .height(32.dp),
                 shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                 )
