@@ -17,14 +17,19 @@ module KjuiTools
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           
-          # Add blur effect (using semi-transparent background as fallback)
-          # In production, you'd use Modifier.blur() from Compose 1.3+ or a library
+          # Add blur effect
           blur_radius = json_data['blurRadius'] || 10
-          opacity = [0.8, blur_radius.to_f / 20].min  # Convert blur to opacity
           
-          # Background color with transparency
-          bg_color = json_data['backgroundColor'] || '#FFFFFF'
-          modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{bg_color}\")).copy(alpha = #{opacity}f))"
+          # Try to use real blur modifier (available in Compose 1.3+)
+          required_imports&.add(:blur)
+          modifiers << ".blur(#{blur_radius}.dp)"
+          
+          # Background color
+          if json_data['backgroundColor']
+            bg_color = json_data['backgroundColor']
+            opacity = json_data['opacity'] || 0.8
+            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{bg_color}\")).copy(alpha = #{opacity}f))"
+          end
           
           # Add corner radius if specified
           if json_data['cornerRadius']
@@ -34,20 +39,15 @@ module KjuiTools
           
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
           
-          # Note: Real blur would use .blur() modifier if available
-          # modifiers << ".blur(#{blur_radius}.dp)"
-          
-          code += Helpers::ModifierBuilder.format(modifiers, depth)
+          code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
           code += "\n" + indent(") {", depth)
           
-          # Add child content if present
-          if json_data['child']
-            code += "\n" + indent("// Child content would be generated here", depth + 1)
-            code += "\n" + indent("// Note: Blur effect is simulated with transparency. Use Modifier.blur() for real blur.", depth + 1)
-          end
+          # Process children
+          children = json_data['child'] || []
+          children = [children] unless children.is_a?(Array)
           
-          code += "\n" + indent("}", depth)
-          code
+          # Return structure for parent to process children
+          { code: code, children: children, closing: "\n" + indent("}", depth) }
         end
         
         private

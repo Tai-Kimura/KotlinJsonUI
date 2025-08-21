@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.blur
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -178,7 +179,7 @@ fun ComponentsTestGeneratedView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(80.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.5f))
+                    .blur(10.dp)
                     .clip(RoundedCornerShape(10.dp))
             ) {
             }

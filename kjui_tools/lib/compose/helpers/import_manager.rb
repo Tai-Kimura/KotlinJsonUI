@@ -63,6 +63,7 @@ module KjuiTools
             painter_resource: "import androidx.compose.ui.res.painterResource",
             r_class: "import com.example.kotlinjsonui.sample.R",
             gradient: "import androidx.compose.ui.graphics.Brush",
+            blur: "import androidx.compose.ui.draw.blur",
             navigation: ["import androidx.navigation.NavController",
                          "import androidx.navigation.compose.NavHost",
                          "import androidx.navigation.compose.composable",

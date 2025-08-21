@@ -175,8 +175,8 @@ fun RadioIconsTestGeneratedView(
                         .padding(end = 20.dp)
                 ) {
                     RadioButton(
-                        selected = data.selectedRadiogroup == "radio_473",
-                        onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio_473")) }
+                        selected = data.selectedRadiogroup == "radio_566",
+                        onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio_566")) }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Select Color:")

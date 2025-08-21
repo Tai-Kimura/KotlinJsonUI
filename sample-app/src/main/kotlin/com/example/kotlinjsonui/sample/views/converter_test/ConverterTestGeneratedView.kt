@@ -26,6 +26,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.blur
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -123,11 +124,16 @@ fun ConverterTestGeneratedView(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.8f))
+                        .blur(20.dp)
                         .align(Alignment.Center)
                 ) {
-                    // Child content would be generated here
-                    // Note: Blur effect is simulated with transparency. Use Modifier.blur() for real blur.
+                    Text(
+                        text = "Clear Text on Blur Layer",
+                        fontSize = 18.sp,
+                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
             Text(
