@@ -100,8 +100,15 @@ fun ComponentsTestGeneratedView(
                 selectedTabIndex = 0,
             ) {
             }
-            Column(
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                RadioButton(
+                    selected = data.selectedRadiogroup == "radio1",
+                    onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio1")) }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Select Size")
             }
             Text(
                 text = "Loading Indicator",

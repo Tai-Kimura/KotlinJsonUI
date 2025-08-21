@@ -31,6 +31,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebChromeClient
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 
 @Composable
 fun ImplementedAttributesTestGeneratedView(
@@ -280,13 +282,41 @@ fun ImplementedAttributesTestGeneratedView(
                 )
                 Column(
                 ) {
-                    Column(
-                        modifier = Modifier.padding(bottom = 5.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
                     ) {
+                        val isSelected = data.selectedRadiogroup == "radio1"
+                        IconButton(
+                            onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio1")) }
+                        ) {
+                            Icon(
+                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                contentDescription = "Option 1",
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Option 1")
                     }
-                    Column(
-                        modifier = Modifier.padding(bottom = 5.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(bottom = 5.dp)
                     ) {
+                        val isSelected = data.selectedRadiogroup == "radio2"
+                        IconButton(
+                            onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio2")) }
+                        ) {
+                            Icon(
+                                imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                contentDescription = "Option 2",
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Option 2")
                     }
                 }
                 Text(

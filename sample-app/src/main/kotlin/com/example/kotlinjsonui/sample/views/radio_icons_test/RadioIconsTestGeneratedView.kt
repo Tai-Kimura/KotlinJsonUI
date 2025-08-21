@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.RadioIconsTestData
 import com.example.kotlinjsonui.sample.viewmodels.RadioIconsTestViewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 
 @Composable
 fun RadioIconsTestGeneratedView(
@@ -53,23 +55,44 @@ fun RadioIconsTestGeneratedView(
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
+                    RadioButton(
+                        selected = data.selectedDefaultgroup == "option1",
+                        onClick = { viewModel.updateData(mapOf("selectedDefaultgroup" to "option1")) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Option 1")
                 }
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
+                    RadioButton(
+                        selected = data.selectedDefaultgroup == "option2",
+                        onClick = { viewModel.updateData(mapOf("selectedDefaultgroup" to "option2")) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Option 2")
                 }
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
+                    RadioButton(
+                        selected = data.selectedDefaultgroup == "option3",
+                        onClick = { viewModel.updateData(mapOf("selectedDefaultgroup" to "option3")) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Option 3")
                 }
                 Text(
                     text = "Custom Icon Radio Group",
@@ -79,23 +102,62 @@ fun RadioIconsTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                 )
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
+                    val isSelected = data.selectedCustomgroup == "custom1"
+                    IconButton(
+                        onClick = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom1")) }
+                    ) {
+                        Icon(
+                            imageVector = if (isSelected) Icons.Filled.Star else Icons.Outlined.Star,
+                            contentDescription = "Star Option",
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Star Option")
                 }
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
+                    val isSelected = data.selectedCustomgroup == "custom2"
+                    IconButton(
+                        onClick = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom2")) }
+                    ) {
+                        Icon(
+                            imageVector = if (isSelected) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "Heart Option",
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Heart Option")
                 }
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 ) {
+                    val isSelected = data.selectedCustomgroup == "custom3"
+                    IconButton(
+                        onClick = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom3")) }
+                    ) {
+                        Icon(
+                            imageVector = if (isSelected) Icons.Filled.CheckBox else Icons.Outlined.CheckBoxOutlineBlank,
+                            contentDescription = "Square Option",
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Square Option")
                 }
                 Text(
                     text = "Radio with Items",
@@ -105,12 +167,19 @@ fun RadioIconsTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                 )
-                Column(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
+                    RadioButton(
+                        selected = data.selectedRadiogroup == "radio_547",
+                        onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio_547")) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Select Color:")
                 }
                 Text(
                     text = "${data.selectedColor}",
