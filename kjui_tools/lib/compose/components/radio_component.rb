@@ -7,14 +7,14 @@ module KjuiTools
     module Components
       class RadioComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
+          # Handle Radio group with items FIRST (higher priority)
+          if json_data['items']
+            return generate_radio_group_with_items(json_data, depth, required_imports, parent_type)
+          end
+          
           # Handle individual Radio item (not a group)
           if json_data['group'] || json_data['text']
             return generate_radio_item(json_data, depth, required_imports, parent_type)
-          end
-          
-          # Handle Radio group with items
-          if json_data['items']
-            return generate_radio_group_with_items(json_data, depth, required_imports, parent_type)
           end
           # Radio uses 'bind' for selected value
           selected = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)

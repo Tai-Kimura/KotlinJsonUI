@@ -167,19 +167,82 @@ fun RadioIconsTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                Column(
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
-                    RadioButton(
-                        selected = data.selectedRadiogroup == "radio_565",
-                        onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio_565")) }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text("Select Color:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.updateData(mapOf("selectedColor" to "Red"))
+                            }
+                    ) {
+                        RadioButton(
+                            selected = data.selectedColor == "Red",
+                            onClick = {
+                                viewModel.updateData(mapOf("selectedColor" to "Red"))
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Red")
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.updateData(mapOf("selectedColor" to "Green"))
+                            }
+                    ) {
+                        RadioButton(
+                            selected = data.selectedColor == "Green",
+                            onClick = {
+                                viewModel.updateData(mapOf("selectedColor" to "Green"))
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Green")
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.updateData(mapOf("selectedColor" to "Blue"))
+                            }
+                    ) {
+                        RadioButton(
+                            selected = data.selectedColor == "Blue",
+                            onClick = {
+                                viewModel.updateData(mapOf("selectedColor" to "Blue"))
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Blue")
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.updateData(mapOf("selectedColor" to "Yellow"))
+                            }
+                    ) {
+                        RadioButton(
+                            selected = data.selectedColor == "Yellow",
+                            onClick = {
+                                viewModel.updateData(mapOf("selectedColor" to "Yellow"))
+                            }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Yellow")
+                    }
                 }
                 Text(
                     text = "${data.selectedColor}",

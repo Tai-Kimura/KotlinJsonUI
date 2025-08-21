@@ -131,15 +131,61 @@ fun ComponentsTestGeneratedView(
                     text = { Text("Map") }
                 )
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
             ) {
-                RadioButton(
-                    selected = data.selectedRadiogroup == "radio1",
-                    onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio1")) }
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text("Select Size")
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            viewModel.updateData(mapOf("selectedRadio1" to "Small"))
+                        }
+                ) {
+                    RadioButton(
+                        selected = data.selectedRadio1 == "Small",
+                        onClick = {
+                            viewModel.updateData(mapOf("selectedRadio1" to "Small"))
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Small")
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            viewModel.updateData(mapOf("selectedRadio1" to "Medium"))
+                        }
+                ) {
+                    RadioButton(
+                        selected = data.selectedRadio1 == "Medium",
+                        onClick = {
+                            viewModel.updateData(mapOf("selectedRadio1" to "Medium"))
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Medium")
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            viewModel.updateData(mapOf("selectedRadio1" to "Large"))
+                        }
+                ) {
+                    RadioButton(
+                        selected = data.selectedRadio1 == "Large",
+                        onClick = {
+                            viewModel.updateData(mapOf("selectedRadio1" to "Large"))
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Large")
+                }
             }
             Text(
                 text = "Loading Indicator",
