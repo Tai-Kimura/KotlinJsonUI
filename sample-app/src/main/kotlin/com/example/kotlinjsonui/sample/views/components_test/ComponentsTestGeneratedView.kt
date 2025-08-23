@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
+import com.kotlinjsonui.components.Segment
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -77,8 +78,8 @@ fun ComponentsTestGeneratedView(
                 modifier = Modifier
             )
             Switch(
-                checked = false,
-                onCheckedChange = { },
+                checked = data.toggle1IsOn,
+                onCheckedChange = { newValue -> viewModel.updateData(mapOf("toggle1IsOn" to newValue)) },
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -109,7 +110,7 @@ fun ComponentsTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#666666")),
                 modifier = Modifier
             )
-            TabRow(
+            Segment(
                 selectedTabIndex = data.selectedSegment1,
             ) {
                 Tab(

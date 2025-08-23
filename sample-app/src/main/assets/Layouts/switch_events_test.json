@@ -29,7 +29,7 @@
       "type": "Switch",
       "id": "notificationSwitch",
       "text": "Enable Notifications",
-      "isOn": true,
+      "isOn": "@{notificationEnabled}",
       "onValueChange": "handleNotificationChange",
       "leftMargin": 20,
       "rightMargin": 20,
@@ -56,7 +56,7 @@
       "type": "Switch",
       "id": "darkModeSwitch",
       "text": "Dark Mode",
-      "isOn": false,
+      "isOn": "@{darkModeEnabled}",
       "tint": "#FF6B6B",
       "onValueChange": "handleDarkModeChange",
       "leftMargin": 20,
@@ -83,7 +83,7 @@
       "type": "Switch",
       "id": "wifiSwitch",
       "text": "Wi-Fi",
-      "isOn": true,
+      "isOn": "@{wifiEnabled}",
       "tintColor": "#4CAF50",
       "onValueChange": "handleWifiChange",
       "leftMargin": 20,
@@ -94,7 +94,7 @@
       "type": "Switch",
       "id": "bluetoothSwitch",
       "text": "Bluetooth",
-      "isOn": false,
+      "isOn": "@{bluetoothEnabled}",
       "tintColor": "#2196F3",
       "onValueChange": "handleBluetoothChange",
       "leftMargin": 20,
@@ -105,7 +105,7 @@
       "type": "Switch",
       "id": "locationSwitch",
       "text": "Location Services",
-      "isOn": true,
+      "isOn": "@{locationEnabled}",
       "tintColor": "#FF9800",
       "onValueChange": "handleLocationChange",
       "leftMargin": 20,
@@ -125,6 +125,31 @@
     }
   },
   "data": [
+    {
+      "name": "notificationEnabled",
+      "class": "Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "darkModeEnabled",
+      "class": "Boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "wifiEnabled",
+      "class": "Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "bluetoothEnabled",
+      "class": "Boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "locationEnabled",
+      "class": "Boolean",
+      "defaultValue": true
+    },
     {
       "name": "notificationStatus",
       "class": "String",

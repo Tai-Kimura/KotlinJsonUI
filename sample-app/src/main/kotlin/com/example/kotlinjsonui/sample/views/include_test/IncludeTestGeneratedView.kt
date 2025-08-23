@@ -25,6 +25,8 @@ import com.example.kotlinjsonui.sample.data.Included2Data
 import com.example.kotlinjsonui.sample.viewmodels.Included2ViewModel
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -199,8 +201,10 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
+                    val included1Instance5 = remember { Included1ViewModel() }
+
                     Included1View(
-                        viewModel = Included1ViewModel()
+                        viewModel = included1Instance5
                     )
                 }
                 Column(
@@ -211,8 +215,10 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
+                    val included2Instance5 = remember { Included2ViewModel() }
+
                     Included2View(
-                        viewModel = Included2ViewModel()
+                        viewModel = included2Instance5
                     )
                 }
                 Column(
@@ -223,8 +229,18 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
+                    val included2Instance5 = remember { Included2ViewModel() }
+
+                    // Update included view when parent data changes
+                    LaunchedEffect(data.userName, data.mainStatus, data.mainCount) {
+                        val updates = mutableMapOf<String, Any>()
+                        updates["viewTitle"] = data.userName
+                        updates["viewStatus"] = data.mainStatus
+                        updates["viewCount"] = data.mainCount
+                        included2Instance5.updateData(updates)
+                    }
                     Included2View(
-                        viewModel = Included2ViewModel()
+                        viewModel = included2Instance5
                     )
                 }
                 Column(
@@ -235,8 +251,20 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
+                    val included2Instance5 = remember { Included2ViewModel() }
+
+                    // Update included view when parent data changes
+                    LaunchedEffect(data.userName, data.mainStatus, data.mainCount) {
+                        val updates = mutableMapOf<String, Any>()
+                        updates["viewStatus"] = "Overridden Status"
+                        // Shared data for two-way binding
+                        updates["viewTitle"] = data.userName
+                        updates["viewStatus"] = data.mainStatus
+                        updates["viewCount"] = data.mainCount
+                        included2Instance5.updateData(updates)
+                    }
                     Included2View(
-                        viewModel = Included2ViewModel()
+                        viewModel = included2Instance5
                     )
                 }
                 Column(
@@ -247,8 +275,18 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
+                    val included1Instance5 = remember { Included1ViewModel() }
+
+                    // Update included view when parent data changes
+                    LaunchedEffect(data.userName, data.mainStatus, data.mainCount) {
+                        val updates = mutableMapOf<String, Any>()
+                        updates["title"] = data.userName
+                        updates["message"] = data.mainStatus
+                        updates["count"] = data.mainCount
+                        included1Instance5.updateData(updates)
+                    }
                     Included1View(
-                        viewModel = Included1ViewModel()
+                        viewModel = included1Instance5
                     )
                 }
             }

@@ -24,6 +24,7 @@ class SwitchEventsTestViewModel : ViewModel() {
         println("Notifications: $enabled")
         val currentData = _data.value
         _data.value = currentData.copy(
+            notificationEnabled = enabled,
             notificationStatus = if (enabled) "Notifications are enabled" else "Notifications are disabled"
         )
     }
@@ -32,31 +33,54 @@ class SwitchEventsTestViewModel : ViewModel() {
         println("Dark mode: $enabled")
         val currentData = _data.value
         _data.value = currentData.copy(
+            darkModeEnabled = enabled,
             darkModeStatus = if (enabled) "Dark mode is on" else "Dark mode is off"
         )
     }
     
     fun handleWifiChange(enabled: Boolean) {
         println("WiFi: $enabled")
+        val currentData = _data.value
+        _data.value = currentData.copy(
+            wifiEnabled = enabled
+        )
         updateConnectionStatus()
     }
     
     fun handleBluetoothChange(enabled: Boolean) {
         println("Bluetooth: $enabled")
+        val currentData = _data.value
+        _data.value = currentData.copy(
+            bluetoothEnabled = enabled
+        )
         updateConnectionStatus()
     }
     
     fun handleLocationChange(enabled: Boolean) {
         println("Location: $enabled")
+        val currentData = _data.value
+        _data.value = currentData.copy(
+            locationEnabled = enabled
+        )
         updateConnectionStatus()
     }
     
     private fun updateConnectionStatus() {
-        // For now, just keep the default status
-        // In a real app, you'd track the actual states
         val currentData = _data.value
+        val activeConnections = mutableListOf<String>()
+        
+        if (currentData.wifiEnabled) activeConnections.add("Wi-Fi")
+        if (currentData.bluetoothEnabled) activeConnections.add("Bluetooth")
+        if (currentData.locationEnabled) activeConnections.add("Location")
+        
+        val status = if (activeConnections.isNotEmpty()) {
+            "Active: ${activeConnections.joinToString(", ")}"
+        } else {
+            "No active connections"
+        }
+        
         _data.value = currentData.copy(
-            connectionStatus = "Connection status updated"
+            connectionStatus = status
         )
     }
     
@@ -64,6 +88,11 @@ class SwitchEventsTestViewModel : ViewModel() {
     fun updateData(updates: Map<String, Any>) {
         val currentData = _data.value
         val newData = currentData.copy(
+            notificationEnabled = updates["notificationEnabled"] as? Boolean ?: currentData.notificationEnabled,
+            darkModeEnabled = updates["darkModeEnabled"] as? Boolean ?: currentData.darkModeEnabled,
+            wifiEnabled = updates["wifiEnabled"] as? Boolean ?: currentData.wifiEnabled,
+            bluetoothEnabled = updates["bluetoothEnabled"] as? Boolean ?: currentData.bluetoothEnabled,
+            locationEnabled = updates["locationEnabled"] as? Boolean ?: currentData.locationEnabled,
             notificationStatus = updates["notificationStatus"] as? String ?: currentData.notificationStatus,
             darkModeStatus = updates["darkModeStatus"] as? String ?: currentData.darkModeStatus,
             connectionStatus = updates["connectionStatus"] as? String ?: currentData.connectionStatus

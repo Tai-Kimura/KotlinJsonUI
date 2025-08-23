@@ -32,7 +32,7 @@
         },
         {
           "type": "Label",
-          "text": "Email: support@example.com\nWebsite: https://example.com",
+          "text": "Email: support@example.com\nWebsite: https://example.com\nPhone: 555-123-4567",
           "fontSize": 16,
           "fontColor": "#0000FF",
           "linkable": true,

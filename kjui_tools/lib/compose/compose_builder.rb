@@ -210,17 +210,118 @@ module KjuiTools
         # Track this included view for imports
         @included_views&.add(snake_name)
         
-        # Generate the included view call - only pass viewModel, not data
-        # The View will get its data from the viewModel
-        code = indent("#{pascal_name}View(", depth)
-        code += "\n" + indent("viewModel = #{pascal_name}ViewModel()", depth + 1)
+        # Track required imports for LaunchedEffect if we have data bindings
+        has_data_bindings = false
         
-        # TODO: In the future, we should pass initial data to the ViewModel constructor
-        # For now, the ViewModels will use their default data
+        # Check if there's data or shared_data to pass
+        include_data = json_data['data'] || {}
+        shared_data = json_data['shared_data'] || {}
         
+        # Check for @{} bindings in data
+        include_data.each do |key, value|
+          if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+            has_data_bindings = true
+            @required_imports.add(:LaunchedEffect)
+            @required_imports.add(:remember)
+            break
+          end
+        end
+        
+        # Generate unique instance ID for this include
+        instance_id = "#{to_camel_case(include_name)}Instance#{depth}"
+        
+        code = ""
+        
+        # Create a remember block for the ViewModel instance
+        code += indent("val #{instance_id} = remember { #{pascal_name}ViewModel() }", depth)
+        code += "\n"
+        
+        # If we have data bindings, add LaunchedEffect to update on parent data changes
+        if has_data_bindings || shared_data.any?
+          code += "\n" + indent("// Update included view when parent data changes", depth)
+          code += "\n" + indent("LaunchedEffect(", depth)
+          
+          # Add keys for all bound variables
+          keys = []
+          include_data.each do |key, value|
+            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+              variable = $1
+              keys << "data.#{variable}"
+            end
+          end
+          shared_data.each do |key, value|
+            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+              variable = $1
+              keys << "data.#{variable}"
+            end
+          end
+          
+          if keys.any?
+            code += keys.join(", ")
+          else
+            code += "Unit"
+          end
+          
+          code += ") {"
+          code += "\n" + indent("val updates = mutableMapOf<String, Any>()", depth + 1)
+          
+          # Process data (one-way binding from parent to child)
+          include_data.each do |key, value|
+            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+              # This is a data binding reference to parent data
+              variable = $1
+              code += "\n" + indent("updates[\"#{key}\"] = data.#{variable}", depth + 1)
+            else
+              # This is a static value
+              formatted_value = format_value_for_kotlin(value)
+              code += "\n" + indent("updates[\"#{key}\"] = #{formatted_value}", depth + 1)
+            end
+          end
+          
+          # Process shared_data (two-way binding)
+          if shared_data.any?
+            code += "\n" + indent("// Shared data for two-way binding", depth + 1)
+            shared_data.each do |key, value|
+              if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+                # This creates a two-way binding
+                variable = $1
+                code += "\n" + indent("updates[\"#{key}\"] = data.#{variable}", depth + 1)
+                # TODO: Also need to update parent when child changes
+              else
+                # Static value for shared_data
+                formatted_value = format_value_for_kotlin(value)
+                code += "\n" + indent("updates[\"#{key}\"] = #{formatted_value}", depth + 1)
+              end
+            end
+          end
+          
+          code += "\n" + indent("#{instance_id}.updateData(updates)", depth + 1)
+          code += "\n" + indent("}", depth)
+        end
+        
+        # Generate the included view call
+        code += "\n" + indent("#{pascal_name}View(", depth)
+        code += "\n" + indent("viewModel = #{instance_id}", depth + 1)
         code += "\n" + indent(")", depth)
         
         code
+      end
+      
+      def format_value_for_kotlin(value)
+        case value
+        when String
+          "\"#{value.gsub('"', '\\"')}\""
+        when Integer
+          value.to_s
+        when Float
+          "#{value}f"
+        when TrueClass, FalseClass
+          value.to_s
+        when nil
+          "null"
+        else
+          "\"#{value}\""
+        end
       end
       
       def update_generated_file(file_path, json_data)

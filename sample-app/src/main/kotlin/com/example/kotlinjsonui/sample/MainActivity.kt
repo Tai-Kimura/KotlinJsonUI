@@ -50,10 +50,19 @@ import com.example.kotlinjsonui.sample.views.switch_events_test.SwitchEventsTest
 import com.example.kotlinjsonui.sample.views.text_decoration_test.TextDecorationTestView
 import com.example.kotlinjsonui.sample.views.textfield_events_test.TextfieldEventsTestView
 import com.example.kotlinjsonui.sample.views.textfield_test.TextfieldTestView
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.graphics.Color
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Configure link color globally (optional - you can customize this)
+        // Default is blue (0xFF0000EE), but you can change it to any color
+        // Configuration.Colors.linkColor = Color(0xFF007AFF)  // iOS style blue
+        // Configuration.Colors.linkColor = Color(0xFF1976D2)  // Material blue
+        // Configuration.Colors.linkColor = Color.Red  // Red links
+        
         setContent {
             KotlinJsonUITheme {
                 Surface(

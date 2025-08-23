@@ -29,7 +29,7 @@
       "type": "Segment",
       "id": "basicSegment",
       "items": ["Option 1", "Option 2", "Option 3"],
-      "selectedIndex": 0,
+      "selectedIndex": "@{selectedBasic}",
       "leftMargin": 20,
       "rightMargin": 20,
       "topMargin": 10
@@ -46,10 +46,9 @@
       "type": "Segment",
       "id": "colorSegment",
       "items": ["Red", "Green", "Blue"],
-      "selectedIndex": 1,
-      "tintColor": "#FF0000",
+      "selectedIndex": "@{selectedColor}",
       "normalColor": "#666666",
-      "selectedColor": "#FFFFFF",
+      "selectedColor": "#FF0000",
       "leftMargin": 20,
       "rightMargin": 20,
       "topMargin": 10
@@ -66,8 +65,8 @@
       "type": "Segment",
       "id": "eventSegment",
       "items": ["Small", "Medium", "Large", "Extra Large"],
-      "selectedIndex": 1,
-      "onChange": "handleSegmentChange",
+      "selectedIndex": "@{selectedEvent}",
+      "onValueChange": "handleSegmentChange",
       "leftMargin": 20,
       "rightMargin": 20,
       "topMargin": 10
@@ -93,7 +92,7 @@
       "type": "Segment",
       "id": "disabledSegment",
       "items": ["Disabled 1", "Disabled 2", "Disabled 3"],
-      "selectedIndex": 2,
+      "selectedIndex": "@{selectedDisabled}",
       "enabled": false,
       "leftMargin": 20,
       "rightMargin": 20,
@@ -104,24 +103,24 @@
   },
   "data": [
     {
-      "name": "selectedBasicsegment",
+      "name": "selectedBasic",
       "class": "Int",
       "defaultValue": 0
     },
     {
-      "name": "selectedColorsegment",
+      "name": "selectedColor",
       "class": "Int", 
       "defaultValue": 1
     },
     {
-      "name": "selectedEventsegment",
+      "name": "selectedEvent",
       "class": "Int",
-      "defaultValue": 0
+      "defaultValue": 1
     },
     {
-      "name": "selectedDisabledsegment",
+      "name": "selectedDisabled",
       "class": "Int",
-      "defaultValue": 0
+      "defaultValue": 2
     },
     {
       "name": "selectedSize",

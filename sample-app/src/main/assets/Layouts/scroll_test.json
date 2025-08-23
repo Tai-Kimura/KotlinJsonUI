@@ -139,47 +139,82 @@
         "child": [
           {
             "type": "Label",
-            "text": "Horizontal",
+            "text": "Horizontal Scroll Item 1",
             "fontSize": 14,
             "fontColor": "#000000",
             "padding": 10,
             "background": "#FFE0E0",
-            "marginRight": 10
+            "marginRight": 10,
+            "width": 150
           },
           {
             "type": "Label",
-            "text": "Scroll",
+            "text": "Horizontal Scroll Item 2",
             "fontSize": 14,
             "fontColor": "#000000",
             "padding": 10,
             "background": "#E0FFE0",
-            "marginRight": 10
+            "marginRight": 10,
+            "width": 150
           },
           {
             "type": "Label",
-            "text": "Without",
+            "text": "Horizontal Scroll Item 3",
             "fontSize": 14,
             "fontColor": "#000000",
             "padding": 10,
             "background": "#E0E0FF",
-            "marginRight": 10
+            "marginRight": 10,
+            "width": 150
           },
           {
             "type": "Label",
-            "text": "Indicator",
+            "text": "Horizontal Scroll Item 4",
             "fontSize": 14,
             "fontColor": "#000000",
             "padding": 10,
             "background": "#FFFFE0",
-            "marginRight": 10
+            "marginRight": 10,
+            "width": 150
           },
           {
             "type": "Label",
-            "text": "End",
+            "text": "Horizontal Scroll Item 5",
             "fontSize": 14,
             "fontColor": "#000000",
             "padding": 10,
-            "background": "#FFE0FF"
+            "background": "#FFE0FF",
+            "marginRight": 10,
+            "width": 150
+          },
+          {
+            "type": "Label",
+            "text": "Horizontal Scroll Item 6",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#E0FFFF",
+            "marginRight": 10,
+            "width": 150
+          },
+          {
+            "type": "Label",
+            "text": "Horizontal Scroll Item 7",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#FFF0E0",
+            "marginRight": 10,
+            "width": 150
+          },
+          {
+            "type": "Label",
+            "text": "Horizontal Scroll Item 8 (End)",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "padding": 10,
+            "background": "#F0E0FF",
+            "width": 150
           }
         ]
       }

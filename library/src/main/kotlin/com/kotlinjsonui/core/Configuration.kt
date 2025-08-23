@@ -17,6 +17,7 @@ object Configuration {
         val error = Color(0xFFFF3B30)
         val disabled = Color(0xFFC7C7CC)
         val shadow = Color.Black.copy(alpha = 0.1f)
+        var linkColor = Color(0xFF0000EE)  // Default blue color for links (customizable)
     }
     
     // Global size defaults
@@ -108,5 +109,16 @@ object Configuration {
             const val defaultFontSize = 17  // sp
             const val defaultFontWeight = 700  // Bold
         }
+    }
+    
+    // Segment (TabLayout) specific defaults
+    object Segment {
+        var defaultBackgroundColor = Color.White
+        var defaultTextColor = Color.Black
+        var defaultSelectedBackgroundColor = Colors.primary
+        var defaultSelectedTextColor = Color.White
+        var defaultBorderColor = Colors.border
+        const val defaultCornerRadius = Sizes.cornerRadius
+        const val defaultHeight = 44
     }
 }

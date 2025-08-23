@@ -17,6 +17,7 @@ import com.example.kotlinjsonui.sample.data.SegmentTestData
 import com.example.kotlinjsonui.sample.viewmodels.SegmentTestViewModel
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
+import com.kotlinjsonui.components.Segment
 
 @Composable
 fun SegmentTestGeneratedView(
@@ -55,31 +56,31 @@ fun SegmentTestGeneratedView(
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
-                TabRow(
-                    selectedTabIndex = 0,
+                Segment(
+                    selectedTabIndex = data.selectedBasic,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
                     Tab(
-                        selected = (0 == 0),
+                        selected = (data.selectedBasic == 0),
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedBasic" to 0))
                         },
                         text = { Text("Option 1") }
                     )
                     Tab(
-                        selected = (0 == 1),
+                        selected = (data.selectedBasic == 1),
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedBasic" to 1))
                         },
                         text = { Text("Option 2") }
                     )
                     Tab(
-                        selected = (0 == 2),
+                        selected = (data.selectedBasic == 2),
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedBasic" to 2))
                         },
                         text = { Text("Option 3") }
                     )
@@ -92,34 +93,50 @@ fun SegmentTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                 )
-                TabRow(
-                    selectedTabIndex = 1,
-                    contentColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                Segment(
+                    selectedTabIndex = data.selectedColor,
+                    contentColor = Color(android.graphics.Color.parseColor("#666666")),
+                    selectedContentColor = Color(android.graphics.Color.parseColor("#FF0000")),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
                     Tab(
-                        selected = (1 == 0),
+                        selected = (data.selectedColor == 0),
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedColor" to 0))
                         },
-                        text = { Text("Red") }
+                        text = {
+                            Text(
+                                "Red",
+                                color = if (data.selectedColor == 0) Color(android.graphics.Color.parseColor("#FF0000")) else Color(android.graphics.Color.parseColor("#666666"))
+                            )
+                        }
                     )
                     Tab(
-                        selected = (1 == 1),
+                        selected = (data.selectedColor == 1),
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedColor" to 1))
                         },
-                        text = { Text("Green") }
+                        text = {
+                            Text(
+                                "Green",
+                                color = if (data.selectedColor == 1) Color(android.graphics.Color.parseColor("#FF0000")) else Color(android.graphics.Color.parseColor("#666666"))
+                            )
+                        }
                     )
                     Tab(
-                        selected = (1 == 2),
+                        selected = (data.selectedColor == 2),
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedColor" to 2))
                         },
-                        text = { Text("Blue") }
+                        text = {
+                            Text(
+                                "Blue",
+                                color = if (data.selectedColor == 2) Color(android.graphics.Color.parseColor("#FF0000")) else Color(android.graphics.Color.parseColor("#666666"))
+                            )
+                        }
                     )
                 }
                 Text(
@@ -130,38 +147,38 @@ fun SegmentTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                 )
-                TabRow(
-                    selectedTabIndex = 1,
+                Segment(
+                    selectedTabIndex = data.selectedEvent,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
                     Tab(
-                        selected = (1 == 0),
+                        selected = (data.selectedEvent == 0),
                         onClick = {
-                            // Static selected index
+                            viewModel.handleSegmentChange(0)
                         },
                         text = { Text("Small") }
                     )
                     Tab(
-                        selected = (1 == 1),
+                        selected = (data.selectedEvent == 1),
                         onClick = {
-                            // Static selected index
+                            viewModel.handleSegmentChange(1)
                         },
                         text = { Text("Medium") }
                     )
                     Tab(
-                        selected = (1 == 2),
+                        selected = (data.selectedEvent == 2),
                         onClick = {
-                            // Static selected index
+                            viewModel.handleSegmentChange(2)
                         },
                         text = { Text("Large") }
                     )
                     Tab(
-                        selected = (1 == 3),
+                        selected = (data.selectedEvent == 3),
                         onClick = {
-                            // Static selected index
+                            viewModel.handleSegmentChange(3)
                         },
                         text = { Text("Extra Large") }
                     )
@@ -182,31 +199,35 @@ fun SegmentTestGeneratedView(
                         .padding(top = 30.dp)
                         .padding(start = 20.dp)
                 )
-                TabRow(
-                    selectedTabIndex = 2,
+                Segment(
+                    selectedTabIndex = data.selectedDisabled,
+                    enabled = false,
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
                     Tab(
-                        selected = (2 == 0),
+                        selected = (data.selectedDisabled == 0),
+                        enabled = false,
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedDisabled" to 0))
                         },
                         text = { Text("Disabled 1") }
                     )
                     Tab(
-                        selected = (2 == 1),
+                        selected = (data.selectedDisabled == 1),
+                        enabled = false,
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedDisabled" to 1))
                         },
                         text = { Text("Disabled 2") }
                     )
                     Tab(
-                        selected = (2 == 2),
+                        selected = (data.selectedDisabled == 2),
+                        enabled = false,
                         onClick = {
-                            // Static selected index
+                            viewModel.updateData(mapOf("selectedDisabled" to 2))
                         },
                         text = { Text("Disabled 3") }
                     )

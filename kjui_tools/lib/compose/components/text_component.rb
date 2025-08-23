@@ -16,6 +16,11 @@ module KjuiTools
             return generate_with_partial_attributes_component(json_data, depth, required_imports, parent_type)
           end
           
+          # Check if we need to use PartialAttributesText for linkable attribute
+          if json_data['linkable']
+            return generate_with_partial_attributes_for_linkable(json_data, depth, required_imports, parent_type)
+          end
+          
           text = process_data_binding(json_data['text'] || '')
           
           component_code = indent("Text(", depth)
@@ -189,6 +194,94 @@ module KjuiTools
         end
         
         private
+        
+        def self.generate_with_partial_attributes_for_linkable(json_data, depth, required_imports, parent_type)
+          required_imports&.add(:partial_attributes_text)
+          
+          text = json_data['text'] || ''
+          
+          code = indent("PartialAttributesText(", depth)
+          code += "\n" + indent("text = \"#{escape_string(text)}\",", depth + 1)
+          code += "\n" + indent("linkable = true,", depth + 1)
+          
+          # Build style
+          style_parts = []
+          
+          if json_data['fontSize']
+            style_parts << "fontSize = #{json_data['fontSize']}.sp"
+          end
+          
+          if json_data['fontColor']
+            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))"
+          end
+          
+          if json_data['font'] == 'bold' || json_data['fontWeight'] == 'bold'
+            style_parts << "fontWeight = FontWeight.Bold"
+          elsif json_data['fontWeight']
+            weight_mapping = {
+              'thin' => 'Thin',
+              'extralight' => 'ExtraLight',
+              'light' => 'Light',
+              'normal' => 'Normal',
+              'medium' => 'Medium',
+              'semibold' => 'SemiBold',
+              'bold' => 'Bold',
+              'extrabold' => 'ExtraBold',
+              'black' => 'Black'
+            }
+            weight = weight_mapping[json_data['fontWeight'].downcase] || json_data['fontWeight'].capitalize
+            style_parts << "fontWeight = FontWeight.#{weight}"
+          end
+          
+          if json_data['textAlign']
+            required_imports&.add(:text_align)
+            case json_data['textAlign'].downcase
+            when 'center'
+              style_parts << "textAlign = TextAlign.Center"
+            when 'right'
+              style_parts << "textAlign = TextAlign.End"
+            when 'left'
+              style_parts << "textAlign = TextAlign.Start"
+            end
+          end
+          
+          if style_parts.any?
+            required_imports&.add(:text_style)
+            code += "\n" + indent("style = TextStyle(#{style_parts.join(', ')}),", depth + 1)
+          end
+          
+          # Build modifiers
+          modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          
+          # Handle edgeInset for text-specific padding
+          if json_data['edgeInset']
+            insets = json_data['edgeInset']
+            if insets.is_a?(Array) && insets.length == 4
+              modifiers << ".padding(top = #{insets[0]}.dp, end = #{insets[1]}.dp, bottom = #{insets[2]}.dp, start = #{insets[3]}.dp)"
+            elsif insets.is_a?(Numeric)
+              modifiers << ".padding(#{insets}.dp)"
+            end
+          else
+            modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          end
+          
+          # Add background
+          modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
+          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          
+          if modifiers.any?
+            code += Helpers::ModifierBuilder.format(modifiers, depth)
+          else
+            code += "\n" + indent("modifier = Modifier", depth + 1)
+          end
+          
+          code += "\n" + indent(")", depth)
+          
+          # Wrap with VisibilityWrapper if needed
+          Helpers::VisibilityHelper.wrap_with_visibility(json_data, code, depth, required_imports)
+        end
         
         def self.generate_with_partial_attributes_component(json_data, depth, required_imports, parent_type)
           required_imports&.add(:partial_attributes_text)

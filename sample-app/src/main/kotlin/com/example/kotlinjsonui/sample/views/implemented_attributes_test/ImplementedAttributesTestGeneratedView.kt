@@ -37,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.foundation.layout.PaddingValues
+import com.kotlinjsonui.components.Segment
 
 @Composable
 fun ImplementedAttributesTestGeneratedView(
@@ -317,9 +318,10 @@ fun ImplementedAttributesTestGeneratedView(
                         .padding(top = 20.dp)
                         .padding(bottom = 10.dp)
                 )
-                TabRow(
+                Segment(
                     selectedTabIndex = data.selectedSegment,
-                    contentColor = Color(android.graphics.Color.parseColor("#0000ff")),
+                    contentColor = Color(android.graphics.Color.parseColor("#000000")),
+                    selectedContentColor = Color(android.graphics.Color.parseColor("#0000ff")),
                     modifier = Modifier.padding(bottom = 10.dp)
                 ) {
                     Tab(
@@ -327,21 +329,36 @@ fun ImplementedAttributesTestGeneratedView(
                         onClick = {
                             viewModel.updateData(mapOf("selectedSegment" to 0))
                         },
-                        text = { Text("First") }
+                        text = {
+                            Text(
+                                "First",
+                                color = if (data.selectedSegment == 0) Color(android.graphics.Color.parseColor("#0000ff")) else Color(android.graphics.Color.parseColor("#000000"))
+                            )
+                        }
                     )
                     Tab(
                         selected = (data.selectedSegment == 1),
                         onClick = {
                             viewModel.updateData(mapOf("selectedSegment" to 1))
                         },
-                        text = { Text("Second") }
+                        text = {
+                            Text(
+                                "Second",
+                                color = if (data.selectedSegment == 1) Color(android.graphics.Color.parseColor("#0000ff")) else Color(android.graphics.Color.parseColor("#000000"))
+                            )
+                        }
                     )
                     Tab(
                         selected = (data.selectedSegment == 2),
                         onClick = {
                             viewModel.updateData(mapOf("selectedSegment" to 2))
                         },
-                        text = { Text("Third") }
+                        text = {
+                            Text(
+                                "Third",
+                                color = if (data.selectedSegment == 2) Color(android.graphics.Color.parseColor("#0000ff")) else Color(android.graphics.Color.parseColor("#000000"))
+                            )
+                        }
                     )
                 }
                 Text(

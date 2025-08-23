@@ -59,6 +59,8 @@ module KjuiTools
                              "import androidx.compose.runtime.mutableStateOf",
                              "import androidx.compose.runtime.getValue",
                              "import androidx.compose.runtime.setValue"],
+            remember: "import androidx.compose.runtime.remember",
+            LaunchedEffect: "import androidx.compose.runtime.LaunchedEffect",
             bias_alignment: "import androidx.compose.ui.BiasAlignment",
             circle_shape: "import androidx.compose.foundation.shape.CircleShape",
             alpha: "import androidx.compose.ui.draw.alpha",
@@ -83,7 +85,8 @@ module KjuiTools
                                "import androidx.compose.ui.text.withStyle"],
             clickable_text: "import androidx.compose.foundation.text.ClickableText",
             partial_attributes_text: ["import com.kotlinjsonui.components.PartialAttributesText",
-                                      "import com.kotlinjsonui.components.PartialAttribute"]
+                                      "import com.kotlinjsonui.components.PartialAttribute"],
+            segment: "import com.kotlinjsonui.components.Segment"
           }
         end
         

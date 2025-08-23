@@ -7,8 +7,16 @@ module KjuiTools
     module Components
       class SwitchComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
-          # Switch uses 'bind' for two-way binding
-          checked = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+          # Switch uses 'isOn' or 'bind' for binding
+          checked = if json_data['isOn']
+            if json_data['isOn'].is_a?(String) && json_data['isOn'].match(/@\{([^}]+)\}/)
+              variable = $1
+              "data.#{variable}"
+            else
+              # Direct boolean value
+              json_data['isOn'].to_s
+            end
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
             "data.#{variable}"
           else
@@ -19,11 +27,19 @@ module KjuiTools
           code += "\n" + indent("checked = #{checked},", depth + 1)
           
           # onCheckedChange handler
-          if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
-            variable = $1
-            code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
-          elsif json_data['onValueChange']
+          binding_variable = nil
+          if json_data['isOn'] && json_data['isOn'].is_a?(String) && json_data['isOn'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          end
+          
+          if json_data['onValueChange']
+            # Use custom handler if specified
             code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
+          elsif binding_variable
+            # Update the bound variable
+            code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) },", depth + 1)
           else
             code += "\n" + indent("onCheckedChange = { },", depth + 1)
           end

@@ -15,6 +15,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.TextDecorationTestData
 import com.example.kotlinjsonui.sample.viewmodels.TextDecorationTestViewModel
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
+import com.kotlinjsonui.components.PartialAttributesText
+import com.kotlinjsonui.components.PartialAttribute
 
 @Composable
 fun TextDecorationTestGeneratedView(
@@ -36,31 +49,31 @@ fun TextDecorationTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
             )
-            Text(
+            PartialAttributesText(
                 text = "Visit https://www.apple.com for more info",
-                fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                linkable = true,
+                style = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
                 modifier = Modifier
             )
-            Text(
+            PartialAttributesText(
                 text = "Multiple links: https://github.com and https://google.com are popular sites",
-                fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                linkable = true,
+                style = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
                 modifier = Modifier
             )
-            Text(
-                text = "Email: support@example.com\nWebsite: https://example.com",
-                fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#0000FF")),
+            PartialAttributesText(
+                text = "Email: support@example.com\nWebsite: https://example.com\nPhone: 555-123-4567",
+                linkable = true,
+                style = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#0000FF"))),
                 modifier = Modifier
             )
-            Text(
+            PartialAttributesText(
                 text = "Linkable with edgeInset: Check out https://anthropic.com",
-                fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                linkable = true,
+                style = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#FFFFFF"))),
                 modifier = Modifier
-                    .background(Color(android.graphics.Color.parseColor("#FF0000")))
                     .padding(10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FF0000")))
             )
             Text(
                 text = "No linkable flag: https://www.test.com won't be clickable",

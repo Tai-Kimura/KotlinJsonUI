@@ -15,13 +15,26 @@ class SegmentTestViewModel : ViewModel() {
     val data: StateFlow<SegmentTestData> = _data.asStateFlow()
     
     // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
+    fun handleSegmentChange(index: Int) {
+        // Update the selected size based on the segment index
+        val sizes = listOf("Small", "Medium", "Large", "Extra Large")
+        val newData = _data.value.copy(
+            selectedEvent = index,
+            selectedSize = sizes.getOrElse(index) { "Unknown" }
+        )
+        _data.value = newData
     }
     
-    // Add more action handlers as needed
+    // Update data from binding
     fun updateData(updates: Map<String, Any>) {
-        _data.value = _data.value.copy()
-        _data.value = _data.value.copy() // Trigger recomposition
+        val currentData = _data.value
+        val newData = currentData.copy(
+            selectedBasic = updates["selectedBasic"] as? Int ?: currentData.selectedBasic,
+            selectedColor = updates["selectedColor"] as? Int ?: currentData.selectedColor,
+            selectedEvent = updates["selectedEvent"] as? Int ?: currentData.selectedEvent,
+            selectedDisabled = updates["selectedDisabled"] as? Int ?: currentData.selectedDisabled,
+            selectedSize = updates["selectedSize"] as? String ?: currentData.selectedSize
+        )
+        _data.value = newData
     }
 }

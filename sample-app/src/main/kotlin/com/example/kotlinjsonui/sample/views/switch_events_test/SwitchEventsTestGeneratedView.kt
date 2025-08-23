@@ -54,7 +54,7 @@ fun SwitchEventsTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 Switch(
-                    checked = false,
+                    checked = data.notificationEnabled,
                     onCheckedChange = { viewModel.handleNotificationChange(it) },
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -78,7 +78,7 @@ fun SwitchEventsTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 Switch(
-                    checked = false,
+                    checked = data.darkModeEnabled,
                     onCheckedChange = { viewModel.handleDarkModeChange(it) },
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -102,7 +102,7 @@ fun SwitchEventsTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 Switch(
-                    checked = false,
+                    checked = data.wifiEnabled,
                     onCheckedChange = { viewModel.handleWifiChange(it) },
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -110,7 +110,7 @@ fun SwitchEventsTestGeneratedView(
                         .padding(end = 20.dp)
                 )
                 Switch(
-                    checked = false,
+                    checked = data.bluetoothEnabled,
                     onCheckedChange = { viewModel.handleBluetoothChange(it) },
                     modifier = Modifier
                         .padding(top = 10.dp)
@@ -118,7 +118,7 @@ fun SwitchEventsTestGeneratedView(
                         .padding(end = 20.dp)
                 )
                 Switch(
-                    checked = false,
+                    checked = data.locationEnabled,
                     onCheckedChange = { viewModel.handleLocationChange(it) },
                     modifier = Modifier
                         .padding(top = 10.dp)

@@ -382,8 +382,8 @@ fun FormTestGeneratedView(
                     .padding(bottom = 24.dp)
             ) {
                 Switch(
-                    checked = false,
-                    onCheckedChange = { },
+                    checked = data.agreeToTerms,
+                    onCheckedChange = { newValue -> viewModel.updateData(mapOf("agreeToTerms" to newValue)) },
                     modifier = Modifier.padding(end = 12.dp)
                 )
                 Text(
