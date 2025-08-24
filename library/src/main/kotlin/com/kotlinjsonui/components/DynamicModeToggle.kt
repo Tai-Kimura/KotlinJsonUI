@@ -8,9 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.BuildConfig
 import com.kotlinjsonui.core.DynamicModeManager
@@ -40,6 +40,7 @@ fun DynamicModeToggle(
     val isAvailable by DynamicModeManager.isDynamicModeAvailable.collectAsState()
     
     if (isAvailable) {
+        val context = LocalContext.current
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically
@@ -49,7 +50,7 @@ fun DynamicModeToggle(
             Switch(
                 checked = isEnabled,
                 onCheckedChange = { checked ->
-                    DynamicModeManager.setDynamicModeEnabled(checked)
+                    DynamicModeManager.setDynamicModeEnabled(context, checked)
                     onToggle?.invoke(checked)
                 }
             )

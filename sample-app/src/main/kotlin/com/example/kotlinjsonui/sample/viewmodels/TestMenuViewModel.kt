@@ -1,33 +1,30 @@
 package com.example.kotlinjsonui.sample.viewmodels
-
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.TestMenuData
 import com.kotlinjsonui.core.DynamicModeManager
-class TestMenuViewModel : ViewModel() {
+class TestMenuViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "test_menu"
     
     // Data model
     private val _data = MutableStateFlow(TestMenuData())
     val data: StateFlow<TestMenuData> = _data.asStateFlow()
-    
     // Navigation event
     private val _navigationEvent = MutableStateFlow<String?>(null)
     val navigationEvent: StateFlow<String?> = _navigationEvent.asStateFlow()
-    
     // Dynamic mode toggle
     fun toggleDynamicMode() {
         // Toggle the actual DynamicModeManager
-        val newState = DynamicModeManager.toggleDynamicMode()
+        val newState = DynamicModeManager.toggleDynamicMode(getApplication())
         
         // Update the UI status based on actual state
         val statusText = if (newState == true) "ON" else "OFF"
         _data.value = _data.value.copy(dynamicModeStatus = statusText)
     }
-    
     // Layout & Positioning navigation
     fun navigateToMarginsTest() {
         _navigationEvent.value = "margins_test"

@@ -8,13 +8,16 @@ import kotlinx.coroutines.flow.StateFlow
 import okhttp3.*
 import org.json.JSONObject
 import java.io.File
+import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
 /**
  * HotLoader client for real-time UI updates during development
  * Only active in DEBUG builds
  */
-class HotLoader private constructor(private val context: Context) {
+class HotLoader private constructor(context: Context) {
+    // Use WeakReference to avoid memory leaks
+    private val contextRef = WeakReference(context)
     
     companion object {
         private const val TAG = "KjuiHotLoader"
@@ -30,6 +33,14 @@ class HotLoader private constructor(private val context: Context) {
                     instance = it
                 }
             }
+        }
+        
+        /**
+         * Clear the singleton instance to allow garbage collection
+         */
+        fun clearInstance() {
+            instance?.stop()
+            instance = null
         }
     }
     
@@ -90,8 +101,9 @@ class HotLoader private constructor(private val context: Context) {
     
     private fun loadConfig(): Config {
         return try {
+            val ctx = contextRef.get() ?: return Config()
             // Try to load from assets
-            val configJson = context.assets.open(CONFIG_FILE).bufferedReader().use { it.readText() }
+            val configJson = ctx.assets.open(CONFIG_FILE).bufferedReader().use { it.readText() }
             val json = JSONObject(configJson)
             
             Config(
@@ -104,7 +116,8 @@ class HotLoader private constructor(private val context: Context) {
             
             // Try to load from local.properties
             try {
-                val localProps = File(context.filesDir.parentFile?.parentFile, "local.properties")
+                val ctx = contextRef.get() ?: return Config()
+                val localProps = File(ctx.filesDir.parentFile?.parentFile, "local.properties")
                 if (localProps.exists()) {
                     val props = localProps.readLines()
                     val ip = props.find { it.startsWith("hotloader.ip=") }?.substringAfter("=")
@@ -267,7 +280,8 @@ class HotLoader private constructor(private val context: Context) {
     
     private fun saveLayoutToCache(layoutName: String, content: String) {
         try {
-            val cacheDir = File(context.cacheDir, "hotloader_layouts")
+            val ctx = contextRef.get() ?: return
+            val cacheDir = File(ctx.cacheDir, "hotloader_layouts")
             cacheDir.mkdirs()
             
             val file = File(cacheDir, "$layoutName.json")
@@ -281,7 +295,8 @@ class HotLoader private constructor(private val context: Context) {
     
     fun getCachedLayout(layoutName: String): String? {
         return try {
-            val cacheDir = File(context.cacheDir, "hotloader_layouts")
+            val ctx = contextRef.get() ?: return null
+            val cacheDir = File(ctx.cacheDir, "hotloader_layouts")
             val file = File(cacheDir, "$layoutName.json")
             
             if (file.exists()) {
@@ -297,7 +312,8 @@ class HotLoader private constructor(private val context: Context) {
     
     fun clearCache() {
         try {
-            val cacheDir = File(context.cacheDir, "hotloader_layouts")
+            val ctx = contextRef.get() ?: return
+            val cacheDir = File(ctx.cacheDir, "hotloader_layouts")
             cacheDir.deleteRecursively()
             Log.i(TAG, "Cache cleared")
         } catch (e: Exception) {

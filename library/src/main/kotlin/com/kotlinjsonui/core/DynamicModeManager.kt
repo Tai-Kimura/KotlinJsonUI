@@ -25,7 +25,8 @@ object DynamicModeManager {
     private val _isDynamicModeAvailable = MutableStateFlow(BuildConfig.DEBUG)
     val isDynamicModeAvailable: StateFlow<Boolean> = _isDynamicModeAvailable.asStateFlow()
     
-    private var context: Context? = null
+    // Don't store Context as a static field to avoid memory leaks
+    // Instead, pass Context when needed or use WeakReference
     
     /**
      * Check if the manager has been initialized
@@ -43,12 +44,11 @@ object DynamicModeManager {
             return
         }
         
-        this.context = context.applicationContext
         isInitialized = true
         
         // Load saved preference only in DEBUG builds
         if (BuildConfig.DEBUG) {
-            loadPreference()
+            loadPreference(context.applicationContext)
         } else {
             Log.i(TAG, "Dynamic Mode is not available in release builds")
             _isDynamicModeEnabled.value = false
@@ -58,10 +58,11 @@ object DynamicModeManager {
     
     /**
      * Enable or disable Dynamic Mode
+     * @param context Context for accessing SharedPreferences and HotLoader
      * @param enabled true to enable, false to disable
      * @return true if the operation was successful, false if Dynamic Mode is not available
      */
-    fun setDynamicModeEnabled(enabled: Boolean): Boolean {
+    fun setDynamicModeEnabled(context: Context, enabled: Boolean): Boolean {
         if (!BuildConfig.DEBUG) {
             Log.w(TAG, "Cannot enable Dynamic Mode in release build")
             return false
@@ -74,13 +75,13 @@ object DynamicModeManager {
         
         Log.d(TAG, "Setting Dynamic Mode enabled: $enabled")
         _isDynamicModeEnabled.value = enabled
-        savePreference(enabled)
+        savePreference(context.applicationContext, enabled)
         
         // Start or stop HotLoader based on the setting
         if (enabled) {
-            startDynamicMode()
+            startDynamicMode(context.applicationContext)
         } else {
-            stopDynamicMode()
+            stopDynamicMode(context.applicationContext)
         }
         
         return true
@@ -88,16 +89,17 @@ object DynamicModeManager {
     
     /**
      * Toggle Dynamic Mode on/off
+     * @param context Context for accessing SharedPreferences and HotLoader
      * @return the new state, or null if Dynamic Mode is not available
      */
-    fun toggleDynamicMode(): Boolean? {
+    fun toggleDynamicMode(context: Context): Boolean? {
         if (!BuildConfig.DEBUG) {
             Log.w(TAG, "Cannot toggle Dynamic Mode in release build")
             return null
         }
         
         val newState = !_isDynamicModeEnabled.value
-        return if (setDynamicModeEnabled(newState)) {
+        return if (setDynamicModeEnabled(context, newState)) {
             newState
         } else {
             null
@@ -128,26 +130,22 @@ object DynamicModeManager {
         )
     }
     
-    private fun loadPreference() {
-        context?.let {
-            val prefs = it.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            val enabled = prefs.getBoolean(KEY_ENABLED, false) // Default to false
-            _isDynamicModeEnabled.value = enabled
-            
-            if (enabled) {
-                startDynamicMode()
-            }
+    private fun loadPreference(context: Context) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        val enabled = prefs.getBoolean(KEY_ENABLED, false) // Default to false
+        _isDynamicModeEnabled.value = enabled
+        
+        if (enabled) {
+            startDynamicMode(context)
         }
     }
     
-    private fun savePreference(enabled: Boolean) {
-        context?.let {
-            val prefs = it.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            prefs.edit().putBoolean(KEY_ENABLED, enabled).apply()
-        }
+    private fun savePreference(context: Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_ENABLED, enabled).apply()
     }
     
-    private fun startDynamicMode() {
+    private fun startDynamicMode(context: Context) {
         if (!BuildConfig.DEBUG) {
             return
         }
@@ -156,8 +154,15 @@ object DynamicModeManager {
             Log.i(TAG, "Starting Dynamic Mode")
             // Use reflection to avoid compile-time dependency on DEBUG-only classes
             val hotLoaderClass = Class.forName("com.kotlinjsonui.dynamic.hotloader.HotLoader")
-            val getInstanceMethod = hotLoaderClass.getDeclaredMethod("getInstance", Context::class.java)
-            val hotLoader = getInstanceMethod.invoke(null, context)
+            
+            // Get the Companion object
+            val companionClass = Class.forName("com.kotlinjsonui.dynamic.hotloader.HotLoader\$Companion")
+            val companionField = hotLoaderClass.getDeclaredField("Companion")
+            val companionInstance = companionField.get(null)
+            
+            // Call getInstance on the companion object
+            val getInstanceMethod = companionClass.getDeclaredMethod("getInstance", Context::class.java)
+            val hotLoader = getInstanceMethod.invoke(companionInstance, context)
             
             val startMethod = hotLoaderClass.getDeclaredMethod("start")
             startMethod.invoke(hotLoader)
@@ -170,7 +175,7 @@ object DynamicModeManager {
         }
     }
     
-    private fun stopDynamicMode() {
+    private fun stopDynamicMode(context: Context) {
         if (!BuildConfig.DEBUG) {
             return
         }
@@ -179,8 +184,15 @@ object DynamicModeManager {
             Log.i(TAG, "Stopping Dynamic Mode")
             // Use reflection to avoid compile-time dependency on DEBUG-only classes
             val hotLoaderClass = Class.forName("com.kotlinjsonui.dynamic.hotloader.HotLoader")
-            val getInstanceMethod = hotLoaderClass.getDeclaredMethod("getInstance", Context::class.java)
-            val hotLoader = getInstanceMethod.invoke(null, context)
+            
+            // Get the Companion object
+            val companionClass = Class.forName("com.kotlinjsonui.dynamic.hotloader.HotLoader\$Companion")
+            val companionField = hotLoaderClass.getDeclaredField("Companion")
+            val companionInstance = companionField.get(null)
+            
+            // Call getInstance on the companion object
+            val getInstanceMethod = companionClass.getDeclaredMethod("getInstance", Context::class.java)
+            val hotLoader = getInstanceMethod.invoke(companionInstance, context)
             
             val stopMethod = hotLoaderClass.getDeclaredMethod("stop")
             stopMethod.invoke(hotLoader)
@@ -215,17 +227,16 @@ object DynamicModeManager {
     /**
      * Reset all settings to defaults
      * Only works in DEBUG builds
+     * @param context Context for accessing SharedPreferences
      */
-    fun reset() {
+    fun reset(context: Context) {
         if (!BuildConfig.DEBUG) {
             return
         }
         
-        setDynamicModeEnabled(false)
-        context?.let {
-            val prefs = it.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-            prefs.edit().clear().apply()
-        }
+        setDynamicModeEnabled(context, false)
+        val prefs = context.applicationContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().clear().apply()
     }
     
     /**
@@ -297,7 +308,7 @@ object DynamicModeManager {
                 Context::class.java
             )
             
-            return constructor.newInstance(layoutName, context ?: this.context)
+            return constructor.newInstance(layoutName, context)
         } catch (e: ClassNotFoundException) {
             Log.d(TAG, "DynamicView class not found - this is expected in release builds")
             return null

@@ -181,9 +181,9 @@ module KjuiTools
               if variable.include?(' ?? ')
                 parts = variable.split(' ?? ')
                 var_name = parts[0].strip
-                "\\${data.#{var_name}}"
+                "\${data.#{var_name}}"
               else
-                "\\${data.#{variable}}"
+                "\${data.#{variable}}"
               end
             end
             quote(processed)

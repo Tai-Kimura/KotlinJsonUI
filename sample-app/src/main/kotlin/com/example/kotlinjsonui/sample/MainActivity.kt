@@ -51,11 +51,16 @@ import com.example.kotlinjsonui.sample.views.text_decoration_test.TextDecoration
 import com.example.kotlinjsonui.sample.views.textfield_events_test.TextfieldEventsTestView
 import com.example.kotlinjsonui.sample.views.textfield_test.TextfieldTestView
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.DynamicModeManager
 import androidx.compose.ui.graphics.Color
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Initialize DynamicModeManager for the application
+        DynamicModeManager.initialize(applicationContext)
+        DynamicModeManager.setDynamicModeEnabled(this, false)
         
         // Configure link color globally (optional - you can customize this)
         // Default is blue (0xFF0000EE), but you can change it to any color

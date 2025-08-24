@@ -1,19 +1,18 @@
 package com.example.kotlinjsonui.sample.viewmodels
-
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.Included1Data
 
-class Included1ViewModel : ViewModel() {
+class Included1ViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "included1"
     
     // Data model
     private val _data = MutableStateFlow(Included1Data())
     val data: StateFlow<Included1Data> = _data.asStateFlow()
-    
     // Action handlers
     fun onGetStarted() {
         // Handle button tap

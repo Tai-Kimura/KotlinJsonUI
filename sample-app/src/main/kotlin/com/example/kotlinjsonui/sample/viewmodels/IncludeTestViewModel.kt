@@ -1,12 +1,12 @@
 package com.example.kotlinjsonui.sample.viewmodels
-
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.IncludeTestData
 import com.kotlinjsonui.core.DynamicModeManager
-class IncludeTestViewModel : ViewModel() {
+class IncludeTestViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "include_test"
     
@@ -17,17 +17,15 @@ class IncludeTestViewModel : ViewModel() {
     // Dynamic mode toggle
     fun toggleDynamicMode() {
         // Toggle the actual DynamicModeManager
-        val newState = DynamicModeManager.toggleDynamicMode()
+        val newState = DynamicModeManager.toggleDynamicMode(getApplication())
         
         // Update the UI status based on actual state
         val statusText = if (newState == true) "ON" else "OFF"
         _data.value = _data.value.copy(dynamicModeStatus = statusText)
     }
-    
     // Child ViewModels for included views
-    val included1ViewModel = Included1ViewModel()
-    val included2ViewModel = Included2ViewModel()
-    
+    val included1ViewModel = Included1ViewModel(getApplication())
+    val included2ViewModel = Included2ViewModel(getApplication())
     // Action handlers
     fun incrementCount() {
         _data.value = _data.value.copy(mainCount = _data.value.mainCount + 1)

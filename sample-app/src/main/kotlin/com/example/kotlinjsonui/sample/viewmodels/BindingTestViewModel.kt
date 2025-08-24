@@ -1,6 +1,5 @@
 package com.example.kotlinjsonui.sample.viewmodels
 
-import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,19 +10,17 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-
-class BindingTestViewModel : ViewModel() {
+class BindingTestViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "binding_test"
     
     // Data model
     private val _data = MutableStateFlow(BindingTestData())
     val data: StateFlow<BindingTestData> = _data.asStateFlow()
-
     // Dynamic mode toggle
     fun toggleDynamicMode() {
         // Toggle the actual DynamicModeManager
-        val newState = DynamicModeManager.toggleDynamicMode()
+        val newState = DynamicModeManager.toggleDynamicMode(getApplication())
         
         // Update the UI status based on actual state
         val statusText = if (newState == true) "ON" else "OFF"

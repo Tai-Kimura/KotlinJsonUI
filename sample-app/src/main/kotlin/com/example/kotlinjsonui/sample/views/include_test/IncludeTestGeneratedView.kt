@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Application
+import androidx.compose.ui.platform.LocalContext
 import com.example.kotlinjsonui.sample.data.IncludeTestData
 import com.example.kotlinjsonui.sample.viewmodels.IncludeTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
@@ -101,7 +103,7 @@ fun IncludeTestGeneratedView(
                                 )
             ) {
                 Text(
-                    text = "Dynamic: \${data.dynamicModeStatus}",
+                    text = "Dynamic: ${data.dynamicModeStatus}",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
@@ -242,7 +244,8 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    val included1Instance5 = remember { Included1ViewModel() }
+                    val context = LocalContext.current
+                    val included1Instance5 = remember { Included1ViewModel(context.applicationContext as Application) }
 
                     Included1View(
                         viewModel = included1Instance5
@@ -256,7 +259,8 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    val included2Instance5 = remember { Included2ViewModel() }
+                    val context = LocalContext.current
+                    val included2Instance5 = remember { Included2ViewModel(context.applicationContext as Application) }
 
                     Included2View(
                         viewModel = included2Instance5
@@ -270,7 +274,8 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    val included2Instance5 = remember { Included2ViewModel() }
+                    val context = LocalContext.current
+                    val included2Instance5 = remember { Included2ViewModel(context.applicationContext as Application) }
 
                     // Update included view when parent data changes
                     LaunchedEffect(data.userName, data.mainStatus, data.mainCount) {
@@ -292,7 +297,8 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    val included2Instance5 = remember { Included2ViewModel() }
+                    val context = LocalContext.current
+                    val included2Instance5 = remember { Included2ViewModel(context.applicationContext as Application) }
 
                     // Update included view when parent data changes
                     LaunchedEffect(data.userName, data.mainStatus, data.mainCount) {
@@ -316,7 +322,8 @@ fun IncludeTestGeneratedView(
                         color = Color(android.graphics.Color.parseColor("#666666")),
                         modifier = Modifier
                     )
-                    val included1Instance5 = remember { Included1ViewModel() }
+                    val context = LocalContext.current
+                    val included1Instance5 = remember { Included1ViewModel(context.applicationContext as Application) }
 
                     // Update included view when parent data changes
                     LaunchedEffect(data.userName, data.mainStatus, data.mainCount) {

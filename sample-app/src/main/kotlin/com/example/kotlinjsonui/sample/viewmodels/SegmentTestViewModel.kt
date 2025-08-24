@@ -1,19 +1,18 @@
 package com.example.kotlinjsonui.sample.viewmodels
-
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.SegmentTestData
 
-class SegmentTestViewModel : ViewModel() {
+class SegmentTestViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "segment_test"
     
     // Data model
     private val _data = MutableStateFlow(SegmentTestData())
     val data: StateFlow<SegmentTestData> = _data.asStateFlow()
-    
     // Action handlers
     fun handleSegmentChange(index: Int) {
         // Update the selected size based on the segment index
@@ -24,7 +23,6 @@ class SegmentTestViewModel : ViewModel() {
         )
         _data.value = newData
     }
-    
     // Update data from binding
     fun updateData(updates: Map<String, Any>) {
         val currentData = _data.value

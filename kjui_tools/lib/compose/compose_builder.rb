@@ -233,7 +233,9 @@ module KjuiTools
         code = ""
         
         # Create a remember block for the ViewModel instance
-        code += indent("val #{instance_id} = remember { #{pascal_name}ViewModel() }", depth)
+        code += indent("val context = LocalContext.current", depth)
+        code += "\n"
+        code += indent("val #{instance_id} = remember { #{pascal_name}ViewModel(context.applicationContext as Application) }", depth)
         code += "\n"
         
         # If we have data bindings, add LaunchedEffect to update on parent data changes
@@ -433,6 +435,10 @@ module KjuiTools
         
         # Add imports for included views
         if @included_views && @included_views.any?
+          # Add necessary imports for creating ViewModels
+          imports_to_add << "import android.app.Application" unless imports_to_add.include?("import android.app.Application")
+          imports_to_add << "import androidx.compose.ui.platform.LocalContext" unless imports_to_add.include?("import androidx.compose.ui.platform.LocalContext")
+          
           @included_views.each do |view_name|
             pascal_name = to_pascal_case(view_name)
             view_import = "import #{@package_name}.views.#{view_name}.#{pascal_name}View"
@@ -475,9 +481,9 @@ module KjuiTools
           variable = $1
           if variable.include?(' ?? ')
             var_name = variable.split(' ?? ')[0].strip
-            "\"\\${data.#{var_name}}\""
+            "\"\${data.#{var_name}}\""
           else
-            "\"\\${data.#{variable}}\""
+            "\"\${data.#{variable}}\""
           end
         else
           quote(text)

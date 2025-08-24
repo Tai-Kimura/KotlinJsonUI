@@ -1,12 +1,12 @@
 package com.example.kotlinjsonui.sample.viewmodels
-
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.ConverterTestCellData
 
-class ConverterTestCellViewModel : ViewModel() {
+class ConverterTestCellViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "converter_test_cell"
     
@@ -18,7 +18,7 @@ class ConverterTestCellViewModel : ViewModel() {
     fun onGetStarted() {
         // Handle button tap
     }
-    
+
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
         val currentDataMap = _data.value.toMap(this).toMutableMap()

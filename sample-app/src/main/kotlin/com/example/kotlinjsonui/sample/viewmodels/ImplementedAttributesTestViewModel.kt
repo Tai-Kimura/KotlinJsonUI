@@ -1,12 +1,12 @@
 package com.example.kotlinjsonui.sample.viewmodels
-
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.ImplementedAttributesTestData
 
-class ImplementedAttributesTestViewModel : ViewModel() {
+class ImplementedAttributesTestViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "implemented_attributes_test"
     
@@ -18,7 +18,7 @@ class ImplementedAttributesTestViewModel : ViewModel() {
     fun onGetStarted() {
         // Handle button tap
     }
-    
+
     // TextField event handlers
     fun handleFocus() {
         println("TextField focused")
@@ -31,11 +31,11 @@ class ImplementedAttributesTestViewModel : ViewModel() {
     fun handleBeginEditing() {
         println("TextField begin editing")
     }
-    
+
     fun handleEndEditing() {
         println("TextField end editing")
     }
-    
+
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
         val currentData = _data.value

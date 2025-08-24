@@ -306,13 +306,14 @@ module KjuiTools
           template = <<~KOTLIN
             package #{viewmodel_package}
 
-            import androidx.lifecycle.ViewModel
+            import android.app.Application
+            import androidx.lifecycle.AndroidViewModel
             import kotlinx.coroutines.flow.MutableStateFlow
             import kotlinx.coroutines.flow.StateFlow
             import kotlinx.coroutines.flow.asStateFlow
             import #{package_name}.data.#{view_name}Data
 
-            class #{view_name}ViewModel : ViewModel() {
+            class #{view_name}ViewModel(application: Application) : AndroidViewModel(application) {
                 // JSON file reference for hot reload
                 val jsonFileName = "#{json_reference}"
                 
