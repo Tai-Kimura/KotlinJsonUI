@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.kotlinjsonui"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 21
@@ -48,7 +48,7 @@ android {
     // composeOptions is no longer needed with Kotlin 2.0+ Compose plugin
     
     testOptions {
-        targetSdk = 35
+        targetSdk = 36
     }
 }
 
