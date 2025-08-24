@@ -1,5 +1,6 @@
 package com.kotlinjsonui.core
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
 
@@ -15,6 +16,19 @@ object Configuration {
      * The function should return null if it cannot parse the color
      */
     var colorParser: ((JsonObject, String) -> Color?)? = null
+    
+    /**
+     * Whether to show error components in debug mode
+     * When true, components that fail to render will show an error message
+     * When false, errors are silently logged
+     */
+    var showErrorsInDebug: Boolean = true
+    
+    /**
+     * Custom fallback component to render when an unknown component type is encountered
+     * The function receives the JsonObject and data map
+     */
+    var fallbackComponent: (@Composable (JsonObject, Map<String, Any>) -> Unit)? = null
     // Global color defaults
     object Colors {
         val background = Color.White
