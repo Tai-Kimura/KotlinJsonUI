@@ -1,27 +1,13 @@
 package com.kotlinjsonui.dynamic.components
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
-import java.text.SimpleDateFormat
-import java.util.*
+import com.kotlinjsonui.components.SelectBox
+import com.kotlinjsonui.components.DateSelectBox
 
 /**
  * Dynamic SelectBox Component Converter
@@ -32,7 +18,7 @@ import java.util.*
  * - items/options: Array or @{variable} for dropdown options
  * - selectItemType: "Date" for date picker mode
  * - datePickerMode: "date" | "time" | "dateAndTime" 
- * - datePickerStyle: Style variant for date picker
+ * - datePickerStyle: "wheels" | "inline" | "compact" | "graphical"
  * - dateFormat/dateStringFormat: Date format pattern
  * - minuteInterval: Integer interval for time picker
  * - minimumDate/maximumDate: Date range constraints
@@ -113,9 +99,6 @@ class DynamicSelectBoxComponent {
             // Parse options
             val options = parseOptions(json, data)
             
-            // State for dropdown expansion
-            var expanded by remember { mutableStateOf(false) }
-            
             // Parse enabled state
             val isEnabled = when {
                 json.get("disabled")?.asBoolean == true -> false
@@ -125,114 +108,77 @@ class DynamicSelectBoxComponent {
             
             // Parse placeholder
             val placeholder = json.get("hint")?.asString 
-                ?: json.get("placeholder")?.asString 
-                ?: "Select an option"
+                ?: json.get("placeholder")?.asString
             
             // Parse colors
             val backgroundColor = json.get("background")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color.White }
+            } ?: Color.White
             
             val borderColor = json.get("borderColor")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color(0xFFCCCCCC) }
+            } ?: Color(0xFFCCCCCC)
             
             val textColor = json.get("fontColor")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color.Black }
+            } ?: Color.Black
             
             val hintColor = json.get("hintColor")?.asString?.let {
+                try { Color(android.graphics.Color.parseColor(it)) }
+                catch (e: Exception) { Color(0xFF999999) }
+            } ?: Color(0xFF999999)
+            
+            val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
+            
+            val cancelButtonBackgroundColor = json.get("cancelButtonBackgroundColor")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
                 catch (e: Exception) { null }
             }
             
-            val cornerRadius = json.get("cornerRadius")?.asFloat ?: 4f
+            val cancelButtonTextColor = json.get("cancelButtonTextColor")?.asString?.let {
+                try { Color(android.graphics.Color.parseColor(it)) }
+                catch (e: Exception) { null }
+            }
             
             // Build modifier
-            var modifier = buildModifier(json)
+            val modifier = buildModifier(json)
             
-            // Apply background
-            backgroundColor?.let {
-                modifier = modifier.background(it, RoundedCornerShape(cornerRadius.dp))
-            }
-            
-            // Apply border
-            borderColor?.let {
-                val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                modifier = modifier.border(borderWidth.dp, it, RoundedCornerShape(cornerRadius.dp))
-            }
-            
-            // Apply clip for corner radius
-            if (cornerRadius > 0) {
-                modifier = modifier.clip(RoundedCornerShape(cornerRadius.dp))
-            }
-            
-            // Create the dropdown
-            Box(modifier = modifier) {
-                // Trigger button
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(enabled = isEnabled) { expanded = !expanded }
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (selectedValue.isEmpty()) placeholder else selectedValue,
-                        color = if (selectedValue.isEmpty()) {
-                            hintColor ?: MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            textColor ?: MaterialTheme.colorScheme.onSurface
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Dropdown arrow",
-                        tint = textColor ?: MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                
-                // Dropdown menu
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    options.forEach { option ->
-                        DropdownMenuItem(
-                            text = { 
-                                Text(
-                                    text = option,
-                                    color = textColor ?: MaterialTheme.colorScheme.onSurface
+            // Create the SelectBox using the existing component
+            SelectBox(
+                value = selectedValue,
+                onValueChange = { newValue ->
+                    selectedValue = newValue
+                    
+                    // Update bound variable
+                    if (bindingVariable != null) {
+                        val updateData = data["updateData"]
+                        if (updateData is Function<*>) {
+                            try {
+                                @Suppress("UNCHECKED_CAST")
+                                (updateData as (Map<String, Any>) -> Unit)(
+                                    mapOf(bindingVariable to newValue)
                                 )
-                            },
-                            onClick = {
-                                selectedValue = option
-                                expanded = false
-                                
-                                // Update bound variable
-                                if (bindingVariable != null) {
-                                    val updateData = data["updateData"]
-                                    if (updateData is Function<*>) {
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (updateData as (Map<String, Any>) -> Unit)(
-                                                mapOf(bindingVariable to option)
-                                            )
-                                        } catch (e: Exception) {
-                                            // Update function doesn't match expected signature
-                                        }
-                                    }
-                                }
+                            } catch (e: Exception) {
+                                // Update function doesn't match expected signature
                             }
-                        )
+                        }
                     }
-                }
-            }
+                },
+                options = options,
+                modifier = modifier,
+                placeholder = placeholder,
+                enabled = isEnabled,
+                backgroundColor = backgroundColor,
+                borderColor = borderColor,
+                textColor = textColor,
+                hintColor = hintColor,
+                cornerRadius = cornerRadius,
+                cancelButtonBackgroundColor = cancelButtonBackgroundColor ?: backgroundColor,
+                cancelButtonTextColor = cancelButtonTextColor ?: textColor
+            )
         }
         
         @Composable
@@ -240,9 +186,6 @@ class DynamicSelectBoxComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            val context = LocalContext.current
-            val calendar = Calendar.getInstance()
-            
             // Parse binding variable
             val bindingVariable = when {
                 json.get("selectedItem")?.asString?.contains("@{") == true -> {
@@ -255,12 +198,6 @@ class DynamicSelectBoxComponent {
                 }
                 else -> null
             }
-            
-            // Parse date format
-            val dateFormatPattern = json.get("dateFormat")?.asString 
-                ?: json.get("dateStringFormat")?.asString 
-                ?: "yyyy-MM-dd"
-            val dateFormat = SimpleDateFormat(dateFormatPattern, Locale.getDefault())
             
             // Get initial value
             val initialValue = when {
@@ -288,8 +225,15 @@ class DynamicSelectBoxComponent {
                 }
             }
             
-            // Parse date picker mode
+            // Parse date picker attributes
             val datePickerMode = json.get("datePickerMode")?.asString ?: "date"
+            val datePickerStyle = json.get("datePickerStyle")?.asString ?: "compact"
+            val dateFormat = json.get("dateFormat")?.asString 
+                ?: json.get("dateStringFormat")?.asString 
+                ?: "yyyy-MM-dd"
+            val minuteInterval = json.get("minuteInterval")?.asInt ?: 1
+            val minimumDate = json.get("minimumDate")?.asString
+            val maximumDate = json.get("maximumDate")?.asString
             
             // Parse enabled state
             val isEnabled = when {
@@ -300,201 +244,70 @@ class DynamicSelectBoxComponent {
             
             // Parse placeholder
             val placeholder = json.get("hint")?.asString 
-                ?: json.get("placeholder")?.asString 
-                ?: "Select date"
+                ?: json.get("placeholder")?.asString
             
             // Parse colors
             val backgroundColor = json.get("background")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color.White }
+            } ?: Color.White
             
             val borderColor = json.get("borderColor")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color(0xFFCCCCCC) }
+            } ?: Color(0xFFCCCCCC)
             
             val textColor = json.get("fontColor")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color.Black }
+            } ?: Color.Black
             
             val hintColor = json.get("hintColor")?.asString?.let {
                 try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+                catch (e: Exception) { Color(0xFF999999) }
+            } ?: Color(0xFF999999)
             
-            val cornerRadius = json.get("cornerRadius")?.asFloat ?: 4f
+            val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
             
             // Build modifier
-            var modifier = buildModifier(json)
+            val modifier = buildModifier(json)
             
-            // Apply background
-            backgroundColor?.let {
-                modifier = modifier.background(it, RoundedCornerShape(cornerRadius.dp))
-            }
-            
-            // Apply border
-            borderColor?.let {
-                val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                modifier = modifier.border(borderWidth.dp, it, RoundedCornerShape(cornerRadius.dp))
-            }
-            
-            // Apply clip for corner radius
-            if (cornerRadius > 0) {
-                modifier = modifier.clip(RoundedCornerShape(cornerRadius.dp))
-            }
-            
-            // Date picker click handler
-            val showDatePicker = {
-                when (datePickerMode) {
-                    "time" -> {
-                        val minuteInterval = json.get("minuteInterval")?.asInt ?: 1
-                        TimePickerDialog(
-                            context,
-                            { _, hourOfDay, minute ->
-                                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                calendar.set(Calendar.MINUTE, minute)
-                                selectedDate = dateFormat.format(calendar.time)
-                                
-                                // Update bound variable
-                                if (bindingVariable != null) {
-                                    val updateData = data["updateData"]
-                                    if (updateData is Function<*>) {
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (updateData as (Map<String, Any>) -> Unit)(
-                                                mapOf(bindingVariable to selectedDate)
-                                            )
-                                        } catch (e: Exception) {
-                                            // Update function doesn't match expected signature
-                                        }
-                                    }
-                                }
-                            },
-                            calendar.get(Calendar.HOUR_OF_DAY),
-                            calendar.get(Calendar.MINUTE),
-                            true
-                        ).show()
-                    }
-                    "dateAndTime" -> {
-                        // First show date picker, then time picker
-                        DatePickerDialog(
-                            context,
-                            { _, year, month, dayOfMonth ->
-                                calendar.set(year, month, dayOfMonth)
-                                
-                                // Then show time picker
-                                TimePickerDialog(
-                                    context,
-                                    { _, hourOfDay, minute ->
-                                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                                        calendar.set(Calendar.MINUTE, minute)
-                                        selectedDate = dateFormat.format(calendar.time)
-                                        
-                                        // Update bound variable
-                                        if (bindingVariable != null) {
-                                            val updateData = data["updateData"]
-                                            if (updateData is Function<*>) {
-                                                try {
-                                                    @Suppress("UNCHECKED_CAST")
-                                                    (updateData as (Map<String, Any>) -> Unit)(
-                                                        mapOf(bindingVariable to selectedDate)
-                                                    )
-                                                } catch (e: Exception) {
-                                                    // Update function doesn't match expected signature
-                                                }
-                                            }
-                                        }
-                                    },
-                                    calendar.get(Calendar.HOUR_OF_DAY),
-                                    calendar.get(Calendar.MINUTE),
-                                    true
-                                ).show()
-                            },
-                            calendar.get(Calendar.YEAR),
-                            calendar.get(Calendar.MONTH),
-                            calendar.get(Calendar.DAY_OF_MONTH)
-                        ).show()
-                    }
-                    else -> { // "date" mode
-                        DatePickerDialog(
-                            context,
-                            { _, year, month, dayOfMonth ->
-                                calendar.set(year, month, dayOfMonth)
-                                selectedDate = dateFormat.format(calendar.time)
-                                
-                                // Update bound variable
-                                if (bindingVariable != null) {
-                                    val updateData = data["updateData"]
-                                    if (updateData is Function<*>) {
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (updateData as (Map<String, Any>) -> Unit)(
-                                                mapOf(bindingVariable to selectedDate)
-                                            )
-                                        } catch (e: Exception) {
-                                            // Update function doesn't match expected signature
-                                        }
-                                    }
-                                }
-                            },
-                            calendar.get(Calendar.YEAR),
-                            calendar.get(Calendar.MONTH),
-                            calendar.get(Calendar.DAY_OF_MONTH)
-                        ).apply {
-                            // Apply minimum date if specified
-                            json.get("minimumDate")?.asString?.let { minDateStr ->
-                                try {
-                                    val minDate = dateFormat.parse(minDateStr)
-                                    minDate?.let { datePicker.minDate = it.time }
-                                } catch (e: Exception) {
-                                    // Invalid date format
-                                }
+            // Create the DateSelectBox using the existing component
+            DateSelectBox(
+                value = selectedDate,
+                onValueChange = { newValue ->
+                    selectedDate = newValue
+                    
+                    // Update bound variable
+                    if (bindingVariable != null) {
+                        val updateData = data["updateData"]
+                        if (updateData is Function<*>) {
+                            try {
+                                @Suppress("UNCHECKED_CAST")
+                                (updateData as (Map<String, Any>) -> Unit)(
+                                    mapOf(bindingVariable to newValue)
+                                )
+                            } catch (e: Exception) {
+                                // Update function doesn't match expected signature
                             }
-                            
-                            // Apply maximum date if specified
-                            json.get("maximumDate")?.asString?.let { maxDateStr ->
-                                try {
-                                    val maxDate = dateFormat.parse(maxDateStr)
-                                    maxDate?.let { datePicker.maxDate = it.time }
-                                } catch (e: Exception) {
-                                    // Invalid date format
-                                }
-                            }
-                        }.show()
+                        }
                     }
-                }
-            }
-            
-            // Create the date picker trigger
-            Box(
-                modifier = modifier
-                    .clickable(enabled = isEnabled) { showDatePicker() }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (selectedDate.isEmpty()) placeholder else selectedDate,
-                        color = if (selectedDate.isEmpty()) {
-                            hintColor ?: MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            textColor ?: MaterialTheme.colorScheme.onSurface
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Date picker",
-                        tint = textColor ?: MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
+                },
+                datePickerMode = datePickerMode,
+                datePickerStyle = datePickerStyle,
+                dateFormat = dateFormat,
+                minuteInterval = minuteInterval,
+                minimumDate = minimumDate,
+                maximumDate = maximumDate,
+                modifier = modifier,
+                placeholder = placeholder,
+                enabled = isEnabled,
+                backgroundColor = backgroundColor,
+                borderColor = borderColor,
+                textColor = textColor,
+                hintColor = hintColor,
+                cornerRadius = cornerRadius
+            )
         }
         
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<String> {
@@ -591,25 +404,8 @@ class DynamicSelectBoxComponent {
                 )
             }
             
-            // Apply padding
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                modifier = when (paddings.size()) {
-                    1 -> modifier.padding(paddings[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            } ?: json.get("padding")?.asFloat?.let { padding ->
-                modifier = modifier.padding(padding.dp)
-            }
+            // Note: Padding is handled internally by the SelectBox/DateSelectBox components
+            // So we don't apply padding to the modifier here
             
             return modifier
         }

@@ -204,16 +204,19 @@ This checklist tracks the implementation status of all dynamic component convert
 - [x] Change event handling (onValueChange)
 - [x] Data binding (@{} syntax with two-way binding)
 
-### DynamicSelectBoxComponent
-- [ ] Options list
-- [ ] Selected value
-- [ ] Placeholder
-- [ ] Dropdown styling
+### DynamicSelectBoxComponent ✅
+- [x] Options list (items/options attributes, static or @{} dynamic)
+- [x] Selected value (selectedItem/bind attributes)
+- [x] Placeholder (hint/placeholder attributes)
+- [x] Dropdown styling (background, border, colors, corner radius)
 - [ ] Search/filter support
 - [ ] Multi-select
 - [ ] Custom item rendering
-- [ ] Change event handling
-- [ ] Data binding
+- [x] Change event handling (updateData callback)
+- [x] Data binding (@{} syntax with two-way binding)
+- [x] Date picker mode (selectItemType="Date")
+- [x] Date/time picker modes (date, time, dateAndTime)
+- [x] Date format and min/max date constraints
 
 ### DynamicSegmentComponent
 - [ ] Segment items
