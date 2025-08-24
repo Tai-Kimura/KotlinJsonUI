@@ -1,17 +1,26 @@
 package com.kotlinjsonui.dynamic
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import android.util.Log
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.components.*
+import com.kotlinjsonui.dynamic.hotloader.HotLoader
 
 /**
  * Main entry point for rendering dynamic UI from JSON.
@@ -240,5 +249,123 @@ fun DynamicViews(
 ) {
     components.forEach { component ->
         DynamicView(component, data, onError)
+    }
+}
+
+/**
+ * DynamicView with hot reload support using layout name
+ * This version loads JSON from assets/cache and supports WebSocket-based hot reload
+ * 
+ * @param layoutName Name of the layout file (without .json extension)
+ * @param data Map of data for binding
+ * @param hotReloadEnabled Whether to enable hot reload via WebSocket (default: true in debug)
+ * @param onError Optional error handler
+ */
+@Composable
+fun DynamicView(
+    layoutName: String,
+    data: Map<String, Any> = emptyMap(),
+    hotReloadEnabled: Boolean = Configuration.showErrorsInDebug, // Use debug flag as default
+    onError: ((Exception) -> Unit)? = null
+) {
+    val context = LocalContext.current
+    var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
+    
+    DisposableEffect(layoutName, hotReloadEnabled) {
+        if (!hotReloadEnabled) {
+            // Just load from assets once
+            loadLayoutFromAssets(context, layoutName, onError)?.let {
+                jsonObject = it
+            }
+            onDispose { }
+        } else {
+            // Use HotLoader for WebSocket-based hot reload
+            val hotLoader = HotLoader.getInstance(context)
+            
+            // First try to load from cache
+            hotLoader.getCachedLayout(layoutName)?.let { cached ->
+                try {
+                    jsonObject = JsonParser.parseString(cached).asJsonObject
+                } catch (e: Exception) {
+                    onError?.invoke(e)
+                }
+            } ?: run {
+                // Fall back to loading from assets
+                loadLayoutFromAssets(context, layoutName, onError)?.let {
+                    jsonObject = it
+                }
+            }
+            
+            // Set up listener for updates
+            val listener = object : HotLoader.HotLoaderListener {
+                override fun onConnected() {
+                    Log.d("DynamicView", "HotLoader connected")
+                }
+                
+                override fun onDisconnected() {
+                    Log.d("DynamicView", "HotLoader disconnected")
+                }
+                
+                override fun onLayoutUpdated(name: String, content: String) {
+                    if (name == layoutName || name == "$layoutName.json") {
+                        try {
+                            jsonObject = JsonParser.parseString(content).asJsonObject
+                            Log.d("DynamicView", "Layout updated: $name")
+                        } catch (e: Exception) {
+                            onError?.invoke(e)
+                        }
+                    }
+                }
+                
+                override fun onLayoutAdded(name: String) {
+                    // New layout added
+                }
+                
+                override fun onLayoutRemoved(name: String) {
+                    // Layout removed
+                }
+                
+                override fun onError(error: Throwable) {
+                    onError?.invoke(Exception(error))
+                }
+            }
+            
+            hotLoader.addListener(listener)
+            hotLoader.start()
+            
+            onDispose {
+                hotLoader.removeListener(listener)
+            }
+        }
+    }
+    
+    // Render the view
+    jsonObject?.let { json ->
+        DynamicView(json, data, onError)
+    }
+}
+
+/**
+ * Load layout from assets folder
+ */
+private fun loadLayoutFromAssets(
+    context: Context,
+    layoutName: String,
+    onError: ((Exception) -> Unit)?
+): JsonObject? {
+    return try {
+        val fileName = if (layoutName.endsWith(".json")) layoutName else "$layoutName.json"
+        val jsonString = context.assets.open("Layouts/$fileName").bufferedReader().use { it.readText() }
+        JsonParser.parseString(jsonString).asJsonObject
+    } catch (e: Exception) {
+        // Try without Layouts directory
+        try {
+            val fileName = if (layoutName.endsWith(".json")) layoutName else "$layoutName.json"
+            val jsonString = context.assets.open(fileName).bufferedReader().use { it.readText() }
+            JsonParser.parseString(jsonString).asJsonObject
+        } catch (e2: Exception) {
+            onError?.invoke(e2)
+            null
+        }
     }
 }
