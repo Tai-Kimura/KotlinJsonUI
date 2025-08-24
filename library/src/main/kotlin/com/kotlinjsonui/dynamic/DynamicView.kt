@@ -19,8 +19,10 @@ import android.util.Log
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.dynamic.components.*
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
+import androidx.compose.runtime.collectAsState
 
 /**
  * Main entry point for rendering dynamic UI from JSON.
@@ -258,21 +260,22 @@ fun DynamicViews(
  * 
  * @param layoutName Name of the layout file (without .json extension)
  * @param data Map of data for binding
- * @param hotReloadEnabled Whether to enable hot reload via WebSocket (default: true in debug)
  * @param onError Optional error handler
  */
 @Composable
 fun DynamicView(
     layoutName: String,
     data: Map<String, Any> = emptyMap(),
-    hotReloadEnabled: Boolean = Configuration.showErrorsInDebug, // Use debug flag as default
     onError: ((Exception) -> Unit)? = null
 ) {
     val context = LocalContext.current
     var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
     
-    DisposableEffect(layoutName, hotReloadEnabled) {
-        if (!hotReloadEnabled) {
+    // Check if dynamic mode is enabled
+    val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
+    
+    DisposableEffect(layoutName, isDynamicModeEnabled) {
+        if (!isDynamicModeEnabled) {
             // Just load from assets once
             loadLayoutFromAssets(context, layoutName, onError)?.let {
                 jsonObject = it
