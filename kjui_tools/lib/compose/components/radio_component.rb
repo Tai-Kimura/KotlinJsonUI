@@ -219,7 +219,14 @@ module KjuiTools
           # Add text label
           if text && !text.empty?
             code += "\n" + indent("    Spacer(modifier = Modifier.width(8.dp))", depth)
-            code += "\n" + indent("    Text(\"#{text}\")", depth)
+            # Add text with color
+            if json_data['fontColor'] || json_data['textColor']
+              text_color = json_data['fontColor'] || json_data['textColor']
+              code += "\n" + indent("    Text(\"#{text}\", color = Color(android.graphics.Color.parseColor(\"#{text_color}\")))", depth)
+            else
+              # Default to black color
+              code += "\n" + indent("    Text(\"#{text}\", color = Color.Black)", depth)
+            end
           end
           
           code += "\n" + indent("}", depth)
@@ -257,7 +264,13 @@ module KjuiTools
           
           # Add label if present
           if json_data['text']
-            code += "\n" + indent("    Text(\"#{json_data['text']}\")", depth)
+            if json_data['fontColor'] || json_data['textColor']
+              text_color = json_data['fontColor'] || json_data['textColor']
+              code += "\n" + indent("    Text(\"#{json_data['text']}\", color = Color(android.graphics.Color.parseColor(\"#{text_color}\")))", depth)
+            else
+              # Default to black color
+              code += "\n" + indent("    Text(\"#{json_data['text']}\", color = Color.Black)", depth)
+            end
             code += "\n" + indent("    Spacer(modifier = Modifier.height(8.dp))", depth)
           end
           
@@ -288,7 +301,14 @@ module KjuiTools
             code += "\n" + indent("            }", depth)
             code += "\n" + indent("        )", depth)
             code += "\n" + indent("        Spacer(modifier = Modifier.width(8.dp))", depth)
-            code += "\n" + indent("        Text(\"#{item}\")", depth)
+            # Add text with black color
+            if json_data['fontColor'] || json_data['textColor']
+              text_color = json_data['fontColor'] || json_data['textColor']
+              code += "\n" + indent("        Text(\"#{item}\", color = Color(android.graphics.Color.parseColor(\"#{text_color}\")))", depth)
+            else
+              # Default to black color
+              code += "\n" + indent("        Text(\"#{item}\", color = Color.Black)", depth)
+            end
             code += "\n" + indent("    }", depth)
           end
           

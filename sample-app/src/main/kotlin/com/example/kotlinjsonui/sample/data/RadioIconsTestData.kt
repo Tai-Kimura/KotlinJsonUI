@@ -6,7 +6,7 @@ import com.example.kotlinjsonui.sample.viewmodels.RadioIconsTestViewModel
 
 data class RadioIconsTestData(
     var selectedDefaultgroup: String = "option1",
-    var selectedCustomgroup: String = "red",
+    var selectedCustomgroup: String = "custom1",
     var selectedColor: String = "Red"
 ) {
     companion object {

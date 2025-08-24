@@ -222,7 +222,7 @@ fun BindingTestGeneratedView(
                 modifier = Modifier.padding(top = 30.dp)
             )
             Slider(
-                value = 0f,
+                value = data.sliderValue.toFloat(),
                 onValueChange = { viewModel.sliderChanged(it) },
                 valueRange = 0f..100f,
                 modifier = Modifier

@@ -5,6 +5,7 @@ require_relative 'commands/init'
 require_relative 'commands/setup'
 require_relative 'commands/build'
 require_relative 'commands/generate'
+require_relative 'commands/hotload'
 
 module KjuiTools
   module CLI
@@ -21,6 +22,8 @@ module KjuiTools
           Commands::Generate.new.run(args)
         when 'build', 'b'
           Commands::Build.new.run(args)
+        when 'hotload', 'hot'
+          Commands::Hotload.run(args)
         when 'watch', 'w'
           puts "Watch command not yet implemented"
         when 'version', 'v', '--version', '-v'
@@ -49,6 +52,7 @@ module KjuiTools
             generate, g         Generate views and components
             setup              Set up project dependencies
             build, b           Build the project
+            hotload, hot       Start/stop hotload server for real-time updates
             watch, w           Watch for file changes
             version, v         Show version information
             help               Show this help message

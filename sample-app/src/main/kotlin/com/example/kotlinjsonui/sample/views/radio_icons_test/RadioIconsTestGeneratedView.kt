@@ -70,7 +70,7 @@ fun RadioIconsTestGeneratedView(
                         onClick = { viewModel.updateData(mapOf("selectedDefaultgroup" to "option1")) }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Option 1")
+                    Text("Option 1", color = Color.Black)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -83,7 +83,7 @@ fun RadioIconsTestGeneratedView(
                         onClick = { viewModel.updateData(mapOf("selectedDefaultgroup" to "option2")) }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Option 2")
+                    Text("Option 2", color = Color.Black)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -96,7 +96,7 @@ fun RadioIconsTestGeneratedView(
                         onClick = { viewModel.updateData(mapOf("selectedDefaultgroup" to "option3")) }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Option 3")
+                    Text("Option 3", color = Color.Black)
                 }
                 Text(
                     text = "Custom Icon Radio Group",
@@ -123,7 +123,7 @@ fun RadioIconsTestGeneratedView(
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Star Option")
+                    Text("Star Option", color = Color.Black)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -142,7 +142,7 @@ fun RadioIconsTestGeneratedView(
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Heart Option")
+                    Text("Heart Option", color = Color.Black)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -155,7 +155,7 @@ fun RadioIconsTestGeneratedView(
                         onCheckedChange = { viewModel.updateData(mapOf("selectedCustomgroup" to "custom3")) }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Square Option")
+                    Text("Square Option", color = Color.Black)
                 }
                 Text(
                     text = "Radio with Items",
@@ -171,7 +171,7 @@ fun RadioIconsTestGeneratedView(
                         .padding(start = 20.dp)
                         .padding(end = 20.dp)
                 ) {
-                    Text("Select Color:")
+                    Text("Select Color:", color = Color.Black)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -188,7 +188,7 @@ fun RadioIconsTestGeneratedView(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Red")
+                        Text("Red", color = Color.Black)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -205,7 +205,7 @@ fun RadioIconsTestGeneratedView(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Green")
+                        Text("Green", color = Color.Black)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -222,7 +222,7 @@ fun RadioIconsTestGeneratedView(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Blue")
+                        Text("Blue", color = Color.Black)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -239,7 +239,7 @@ fun RadioIconsTestGeneratedView(
                             }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Yellow")
+                        Text("Yellow", color = Color.Black)
                     }
                 }
                 Text(

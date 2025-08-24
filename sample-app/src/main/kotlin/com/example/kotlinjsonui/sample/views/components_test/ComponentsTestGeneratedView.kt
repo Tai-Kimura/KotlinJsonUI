@@ -100,8 +100,8 @@ fun ComponentsTestGeneratedView(
             LinearProgressIndicator(
             )
             Slider(
-                value = 0f,
-                onValueChange = { },
+                value = data.slider1Value.toFloat(),
+                onValueChange = { newValue -> viewModel.updateData(mapOf("slider1Value" to newValue.toDouble())) },
                 valueRange = 0f..100f,
             )
             Text(
@@ -137,7 +137,7 @@ fun ComponentsTestGeneratedView(
             }
             Column(
             ) {
-                Text("Select Size")
+                Text("Select Size", color = Color.Black)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -154,7 +154,7 @@ fun ComponentsTestGeneratedView(
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Small")
+                    Text("Small", color = Color.Black)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -171,7 +171,7 @@ fun ComponentsTestGeneratedView(
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Medium")
+                    Text("Medium", color = Color.Black)
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -188,7 +188,7 @@ fun ComponentsTestGeneratedView(
                         }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Large")
+                    Text("Large", color = Color.Black)
                 }
             }
             Text(

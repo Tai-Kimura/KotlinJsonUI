@@ -126,7 +126,7 @@
     {
       "name": "selectedCustomgroup",
       "class": "String",
-      "defaultValue": "red"
+      "defaultValue": "custom1"
     },
     {
       "name": "selectedColor",

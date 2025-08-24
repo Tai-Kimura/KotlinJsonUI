@@ -7,26 +7,43 @@ module KjuiTools
     module Components
       class SliderComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
-          # Slider uses 'bind' for two-way binding
-          value = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+          # Slider uses 'value' or 'bind' for binding
+          value = if json_data['value']
+            if json_data['value'].is_a?(String) && json_data['value'].match(/@\{([^}]+)\}/)
+              variable = $1
+              "data.#{variable}.toFloat()"
+            else
+              # Direct value
+              "#{json_data['value']}f"
+            end
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
             "data.#{variable}.toFloat()"
           else
             '0f'
           end
           
-          min_value = json_data['min'] || 0
-          max_value = json_data['max'] || 100
+          # Support both naming conventions for min/max
+          min_value = json_data['minimumValue'] || json_data['min'] || 0
+          max_value = json_data['maximumValue'] || json_data['max'] || 100
           
           code = indent("Slider(", depth)
           code += "\n" + indent("value = #{value},", depth + 1)
           
           # onValueChange handler
-          if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
-            variable = $1
-            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue.toInt())) },", depth + 1)
-          elsif json_data['onValueChange']
+          binding_variable = nil
+          if json_data['value'] && json_data['value'].is_a?(String) && json_data['value'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          end
+          
+          if json_data['onValueChange']
+            # Use custom handler if specified
             code += "\n" + indent("onValueChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
+          elsif binding_variable
+            # Update the bound variable - check if it's Int or Double/Float based on the data type
+            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue.toDouble())) },", depth + 1)
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end

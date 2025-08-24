@@ -295,7 +295,7 @@ fun ImplementedAttributesTestGeneratedView(
                             onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio1")) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Option 1")
+                        Text("Option 1", color = Color.Black)
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -307,7 +307,7 @@ fun ImplementedAttributesTestGeneratedView(
                             onClick = { viewModel.updateData(mapOf("selectedRadiogroup" to "radio2")) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Option 2")
+                        Text("Option 2", color = Color.Black)
                     }
                 }
                 Text(
@@ -375,6 +375,8 @@ fun ImplementedAttributesTestGeneratedView(
                     options = listOf("Option A", "Option B", "Option C"),
                     backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
                     textColor = Color(android.graphics.Color.parseColor("#0000ff")),
+                    cancelButtonBackgroundColor = Color(android.graphics.Color.parseColor("#FFE5E5")),
+                    cancelButtonTextColor = Color(android.graphics.Color.parseColor("#FF0000")),
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()

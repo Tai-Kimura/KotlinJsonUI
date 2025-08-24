@@ -160,6 +160,26 @@ module KjuiTools
             code += "\n" + indent("cornerRadius = #{json_data['cornerRadius']},", depth + 1)
           end
           
+          # Add cancel button background color if specified
+          if json_data['cancelButtonBackgroundColor']
+            cancel_bg = json_data['cancelButtonBackgroundColor']
+            if cancel_bg.start_with?('#')
+              code += "\n" + indent("cancelButtonBackgroundColor = Color(android.graphics.Color.parseColor(\"#{cancel_bg}\")),", depth + 1)
+            else
+              code += "\n" + indent("cancelButtonBackgroundColor = Color.#{cancel_bg},", depth + 1)
+            end
+          end
+          
+          # Add cancel button text color if specified
+          if json_data['cancelButtonTextColor']
+            cancel_text = json_data['cancelButtonTextColor']
+            if cancel_text.start_with?('#')
+              code += "\n" + indent("cancelButtonTextColor = Color(android.graphics.Color.parseColor(\"#{cancel_text}\")),", depth + 1)
+            else
+              code += "\n" + indent("cancelButtonTextColor = Color.#{cancel_text},", depth + 1)
+            end
+          end
+          
           # Build modifiers
           modifiers = []
           

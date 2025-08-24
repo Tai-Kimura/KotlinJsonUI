@@ -50,7 +50,9 @@ fun SelectBox(
     hintColor: Color = Color(0xFF999999),
     cornerRadius: Int = 8,
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
-    sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor
+    sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
+    cancelButtonBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
+    cancelButtonTextColor: Color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(
@@ -198,13 +200,14 @@ fun SelectBox(
                                 sheetState.hide()
                                 showBottomSheet = false
                             }
-                        }
+                        },
+                    color = cancelButtonBackgroundColor
                 ) {
                     Text(
                         text = "キャンセル",
                         fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
-                        color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
+                        color = cancelButtonTextColor,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),
