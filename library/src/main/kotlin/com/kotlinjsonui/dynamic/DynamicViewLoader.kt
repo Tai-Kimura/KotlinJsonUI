@@ -10,13 +10,16 @@ import java.io.File
 /**
  * DynamicViewLoader provides hot reload functionality for JSON-based UIs
  * 
+ * NOTE: This class is intended for debug builds only.
+ * Use HotReloadView or SafeHotReloadView from the main package for production-safe hot reload.
+ * 
  * Features:
  * - File watching for JSON changes
  * - Automatic UI refresh on JSON updates
  * - Error recovery
  * - Development mode optimizations
  */
-object DynamicViewLoader {
+internal object DynamicViewLoader {
     
     /**
      * Loads and watches a JSON file for changes, automatically updating the UI
