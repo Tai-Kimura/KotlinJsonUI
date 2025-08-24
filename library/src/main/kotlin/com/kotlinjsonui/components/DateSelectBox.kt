@@ -210,7 +210,6 @@ fun DateSelectBox(
             shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             containerColor = sheetBackgroundColor,
             contentColor = sheetTextColor,
-            windowInsets = WindowInsets(0, 0, 0, 0)  // Ensure full visibility
         ) {
             Column(
                 modifier = Modifier

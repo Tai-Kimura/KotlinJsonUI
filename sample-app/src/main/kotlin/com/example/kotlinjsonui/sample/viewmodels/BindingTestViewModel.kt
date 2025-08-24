@@ -5,6 +5,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.BindingTestData
+import com.kotlinjsonui.core.DynamicModeManager
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 class BindingTestViewModel : ViewModel() {
     // JSON file reference for hot reload
@@ -16,9 +22,12 @@ class BindingTestViewModel : ViewModel() {
 
     // Dynamic mode toggle
     fun toggleDynamicMode() {
-        val currentStatus = _data.value.dynamicModeStatus
-        val newStatus = if (currentStatus == "ON") "OFF" else "ON"
-        _data.value = _data.value.copy(dynamicModeStatus = newStatus)
+        // Toggle the actual DynamicModeManager
+        val newState = DynamicModeManager.toggleDynamicMode()
+        
+        // Update the UI status based on actual state
+        val statusText = if (newState == true) "ON" else "OFF"
+        _data.value = _data.value.copy(dynamicModeStatus = statusText)
     }
     
     // Action handlers

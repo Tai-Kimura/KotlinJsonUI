@@ -16,6 +16,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.wrapContentSize
+import com.kotlinjsonui.core.DynamicModeManager
+import com.kotlinjsonui.components.SafeDynamicView
+import androidx.compose.foundation.layout.Box
 
 @Composable
 fun Included2GeneratedView(
@@ -25,6 +30,42 @@ fun Included2GeneratedView(
     // Generated Compose code from included2.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
+    // Check if Dynamic Mode is active
+    if (DynamicModeManager.isActive()) {
+        // Dynamic Mode - use SafeDynamicView for real-time updates
+        SafeDynamicView(
+            layoutName = "included2",
+            fallback = {
+                // Show error or loading state when dynamic view is not available
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Dynamic view not available",
+                        color = Color.Gray
+                    )
+                }
+            },
+            onError = { error ->
+                // Log error or show error UI
+                android.util.Log.e("DynamicView", "Error loading included2: \$error")
+            },
+            onLoading = {
+                // Show loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        ) { jsonContent ->
+            // Parse and render the dynamic JSON content
+            // This will be handled by the DynamicView implementation
+        }
+    } else {
+        // Static Mode - use generated code
         Column(
         modifier = Modifier
             .padding(15.dp)
@@ -62,5 +103,6 @@ fun Included2GeneratedView(
                 modifier = Modifier
             )
         }
-    }    // >>> GENERATED_CODE_END
+    }    }
+    // >>> GENERATED_CODE_END
 }

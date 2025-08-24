@@ -86,7 +86,12 @@ module KjuiTools
             clickable_text: "import androidx.compose.foundation.text.ClickableText",
             partial_attributes_text: ["import com.kotlinjsonui.components.PartialAttributesText",
                                       "import com.kotlinjsonui.components.PartialAttribute"],
-            segment: "import com.kotlinjsonui.components.Segment"
+            segment: "import com.kotlinjsonui.components.Segment",
+            dynamic_mode_manager: "import com.kotlinjsonui.core.DynamicModeManager",
+            safe_dynamic_view: "import com.kotlinjsonui.components.SafeDynamicView",
+            circular_progress_indicator: "import androidx.compose.material3.CircularProgressIndicator",
+            wrapContentSize: "import androidx.compose.foundation.layout.wrapContentSize",
+            box: "import androidx.compose.foundation.layout.Box"
           }
         end
         

@@ -36,6 +36,11 @@ import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.wrapContentSize
+import com.kotlinjsonui.core.DynamicModeManager
+import com.kotlinjsonui.components.SafeDynamicView
+import androidx.compose.foundation.layout.Box
 
 @Composable
 fun BindingTestGeneratedView(
@@ -45,6 +50,42 @@ fun BindingTestGeneratedView(
     // Generated Compose code from binding_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
+    // Check if Dynamic Mode is active
+    if (DynamicModeManager.isActive()) {
+        // Dynamic Mode - use SafeDynamicView for real-time updates
+        SafeDynamicView(
+            layoutName = "binding_test",
+            fallback = {
+                // Show error or loading state when dynamic view is not available
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Dynamic view not available",
+                        color = Color.Gray
+                    )
+                }
+            },
+            onError = { error ->
+                // Log error or show error UI
+                android.util.Log.e("DynamicView", "Error loading binding_test: \$error")
+            },
+            onLoading = {
+                // Show loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        ) { jsonContent ->
+            // Parse and render the dynamic JSON content
+            // This will be handled by the DynamicView implementation
+        }
+    } else {
+        // Static Mode - use generated code
         LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -360,5 +401,6 @@ fun BindingTestGeneratedView(
             )
         }
         }
-    }    // >>> GENERATED_CODE_END
+    }    }
+    // >>> GENERATED_CODE_END
 }

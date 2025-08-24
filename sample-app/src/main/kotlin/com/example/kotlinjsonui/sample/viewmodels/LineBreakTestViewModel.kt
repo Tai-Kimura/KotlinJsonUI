@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.LineBreakTestData
-
+import com.kotlinjsonui.core.DynamicModeManager
 class LineBreakTestViewModel : ViewModel() {
     // JSON file reference for hot reload
     val jsonFileName = "line_break_test"
@@ -16,9 +16,12 @@ class LineBreakTestViewModel : ViewModel() {
 
     // Dynamic mode toggle
     fun toggleDynamicMode() {
-        val currentStatus = _data.value.dynamicModeStatus
-        val newStatus = if (currentStatus == "ON") "OFF" else "ON"
-        _data.value = _data.value.copy(dynamicModeStatus = newStatus)
+        // Toggle the actual DynamicModeManager
+        val newState = DynamicModeManager.toggleDynamicMode()
+        
+        // Update the UI status based on actual state
+        val statusText = if (newState == true) "ON" else "OFF"
+        _data.value = _data.value.copy(dynamicModeStatus = statusText)
     }
     
     // Action handlers

@@ -1,4 +1,4 @@
-package com.kotlinjsonui.hotloader
+package com.kotlinjsonui.dynamic.hotloader
 
 import android.content.Context
 import android.util.Log
@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * HotLoader client for real-time UI updates during development
+ * Only active in DEBUG builds
  */
 class HotLoader private constructor(private val context: Context) {
     

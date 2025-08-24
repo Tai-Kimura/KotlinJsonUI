@@ -330,11 +330,19 @@ module KjuiTools
         if existing_content.include?('// >>> GENERATED_CODE_START') && 
            existing_content.include?('// >>> GENERATED_CODE_END')
           
-          composable_content = generate_component(json_data, 1)
+          # Extract the layout name from file path
+          layout_name = File.basename(File.dirname(file_path))
+          
+          # Generate both static and dynamic versions
+          static_content = generate_component(json_data, 1)
+          dynamic_content = generate_dynamic_view_content(layout_name, json_data, 1)
+          
+          # Create content that switches based on DynamicModeManager
+          composable_content = generate_mode_aware_content(layout_name, static_content, dynamic_content, 1)
           
           updated_content = existing_content.gsub(
             /\/\/ >>> GENERATED_CODE_START.*?\/\/ >>> GENERATED_CODE_END/m,
-            "// >>> GENERATED_CODE_START\n    #{composable_content}    // >>> GENERATED_CODE_END"
+            "// >>> GENERATED_CODE_START\n#{composable_content}    // >>> GENERATED_CODE_END"
           )
           
           updated_content = update_imports(updated_content)
@@ -343,6 +351,69 @@ module KjuiTools
         else
           Core::Logger.warn "Generated code markers not found in #{file_path}"
         end
+      end
+      
+      def generate_mode_aware_content(layout_name, static_content, dynamic_content, depth)
+        indent_str = "    " * depth
+        
+        code = ""
+        code += "#{indent_str}// Check if Dynamic Mode is active\n"
+        code += "#{indent_str}if (DynamicModeManager.isActive()) {\n"
+        code += "#{indent_str}    // Dynamic Mode - use SafeDynamicView for real-time updates\n"
+        code += dynamic_content
+        code += "#{indent_str}} else {\n"
+        code += "#{indent_str}    // Static Mode - use generated code\n"
+        code += "    #{static_content}"
+        code += "#{indent_str}}\n"
+        
+        # Add required imports for DynamicModeManager
+        @required_imports.add(:dynamic_mode_manager)
+        @required_imports.add(:safe_dynamic_view)
+        
+        code
+      end
+      
+      def generate_dynamic_view_content(layout_name, json_data, depth)
+        indent_str = "    " * depth
+        
+        code = ""
+        code += "#{indent_str}    SafeDynamicView(\n"
+        code += "#{indent_str}        layoutName = \"#{layout_name}\",\n"
+        code += "#{indent_str}        fallback = {\n"
+        code += "#{indent_str}            // Show error or loading state when dynamic view is not available\n"
+        code += "#{indent_str}            Box(\n"
+        code += "#{indent_str}                modifier = Modifier.fillMaxSize(),\n"
+        code += "#{indent_str}                contentAlignment = Alignment.Center\n"
+        code += "#{indent_str}            ) {\n"
+        code += "#{indent_str}                Text(\n"
+        code += "#{indent_str}                    text = \"Dynamic view not available\",\n"
+        code += "#{indent_str}                    color = Color.Gray\n"
+        code += "#{indent_str}                )\n"
+        code += "#{indent_str}            }\n"
+        code += "#{indent_str}        },\n"
+        code += "#{indent_str}        onError = { error ->\n"
+        code += "#{indent_str}            // Log error or show error UI\n"
+        code += "#{indent_str}            android.util.Log.e(\"DynamicView\", \"Error loading #{layout_name}: \\$error\")\n"
+        code += "#{indent_str}        },\n"
+        code += "#{indent_str}        onLoading = {\n"
+        code += "#{indent_str}            // Show loading indicator\n"
+        code += "#{indent_str}            Box(\n"
+        code += "#{indent_str}                modifier = Modifier.fillMaxSize(),\n"
+        code += "#{indent_str}                contentAlignment = Alignment.Center\n"
+        code += "#{indent_str}            ) {\n"
+        code += "#{indent_str}                CircularProgressIndicator()\n"
+        code += "#{indent_str}            }\n"
+        code += "#{indent_str}        }\n"
+        code += "#{indent_str}    ) { jsonContent ->\n"
+        code += "#{indent_str}        // Parse and render the dynamic JSON content\n"
+        code += "#{indent_str}        // This will be handled by the DynamicView implementation\n"
+        code += "#{indent_str}    }\n"
+        
+        # Add required imports
+        @required_imports.add(:circular_progress_indicator)
+        @required_imports.add(:box)
+        
+        code
       end
       
       def update_imports(content)
