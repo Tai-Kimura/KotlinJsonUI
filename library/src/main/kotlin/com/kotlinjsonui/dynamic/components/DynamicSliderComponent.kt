@@ -1,15 +1,11 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import kotlin.math.roundToInt
 
 /**
@@ -200,8 +196,8 @@ class DynamicSliderComponent {
                 SliderDefaults.colors()
             }
             
-            // Build modifier
-            val modifier = buildModifier(json)
+            // Build modifier using helper (defaulting to fill width)
+            val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
             
             // Create the Slider
             Slider(
@@ -213,79 +209,6 @@ class DynamicSliderComponent {
                 enabled = isEnabled,
                 colors = colors
             )
-        }
-        
-        private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-            
-            // Width
-            json.get("width")?.asFloat?.let { width ->
-                modifier = if (width < 0) {
-                    modifier.fillMaxWidth()
-                } else {
-                    modifier.width(width.dp)
-                }
-            } ?: run {
-                // Default to fill width if not specified
-                modifier = modifier.fillMaxWidth()
-            }
-            
-            // Apply margins first
-            json.get("margins")?.asJsonArray?.let { margins ->
-                modifier = when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
-                ?: json.get("endMargin")?.asFloat ?: 0f
-            
-            if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier = modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            }
-            
-            // Apply padding
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                modifier = when (paddings.size()) {
-                    1 -> modifier.padding(paddings[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            } ?: json.get("padding")?.asFloat?.let { padding ->
-                modifier = modifier.padding(padding.dp)
-            }
-            
-            return modifier
         }
     }
 }

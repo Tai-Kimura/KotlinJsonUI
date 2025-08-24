@@ -1,13 +1,11 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic SelectBox Component Converter
@@ -143,8 +141,8 @@ class DynamicSelectBoxComponent {
                 catch (e: Exception) { null }
             }
             
-            // Build modifier
-            val modifier = buildModifier(json)
+            // Build modifier using helper (defaulting to fill width)
+            val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
             
             // Create the SelectBox using the existing component
             SelectBox(
@@ -269,8 +267,8 @@ class DynamicSelectBoxComponent {
             
             val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
             
-            // Build modifier
-            val modifier = buildModifier(json)
+            // Build modifier using helper (defaulting to fill width)
+            val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
             
             // Create the DateSelectBox using the existing component
             DateSelectBox(
@@ -343,71 +341,6 @@ class DynamicSelectBoxComponent {
                 }
                 else -> emptyList()
             }
-        }
-        
-        private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-            
-            // Width
-            json.get("width")?.asFloat?.let { width ->
-                modifier = if (width < 0) {
-                    modifier.fillMaxWidth()
-                } else {
-                    modifier.width(width.dp)
-                }
-            } ?: run {
-                // Default to fill width if not specified
-                modifier = modifier.fillMaxWidth()
-            }
-            
-            // Height
-            json.get("height")?.asFloat?.let { height ->
-                modifier = if (height < 0) {
-                    modifier.fillMaxHeight()
-                } else {
-                    modifier.height(height.dp)
-                }
-            }
-            
-            // Apply margins first
-            json.get("margins")?.asJsonArray?.let { margins ->
-                modifier = when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
-                ?: json.get("endMargin")?.asFloat ?: 0f
-            
-            if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier = modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            }
-            
-            // Note: Padding is handled internally by the SelectBox/DateSelectBox components
-            // So we don't apply padding to the modifier here
-            
-            return modifier
         }
     }
 }
