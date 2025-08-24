@@ -159,22 +159,24 @@ This checklist tracks the implementation status of all dynamic component convert
 - [x] Text change event handling
 - [x] CustomTextField integration
 
-### DynamicSwitchComponent
-- [ ] Checked state
-- [ ] Enabled/disabled state
-- [ ] Custom colors (thumb, track)
+### DynamicSwitchComponent ✅
+- [x] Checked state (isOn, bind attributes)
+- [x] Enabled/disabled state
+- [x] Custom colors (onTintColor, thumbTintColor)
 - [ ] Label text
-- [ ] Change event handling
-- [ ] Data binding
+- [x] Change event handling (onValueChange)
+- [x] Data binding with @{} syntax
+- [x] Two-way binding support
 
-### DynamicCheckBoxComponent
-- [ ] Checked state
+### DynamicCheckBoxComponent ✅
+- [x] Checked state (bind attribute)
 - [ ] Indeterminate state
-- [ ] Enabled/disabled state
-- [ ] Custom colors
-- [ ] Label text
-- [ ] Change event handling
-- [ ] Data binding
+- [x] Enabled/disabled state
+- [x] Custom colors (simplified)
+- [x] Label text (label/text attributes)
+- [x] Change event handling (onValueChange)
+- [x] Data binding with @{} syntax
+- [x] Auto Row layout with label
 
 ### DynamicRadioComponent
 - [ ] Radio group management
@@ -421,10 +423,10 @@ This checklist tracks the implementation status of all dynamic component convert
 5. DynamicHStackComponent ✅
 6. DynamicImageComponent ✅
 
-### Phase 2 - Input Components
-1. DynamicTextFieldComponent
-2. DynamicSwitchComponent
-3. DynamicCheckBoxComponent
+### Phase 2 - Input Components (In Progress)
+1. DynamicTextFieldComponent ✅
+2. DynamicSwitchComponent ✅
+3. DynamicCheckBoxComponent ✅
 4. DynamicRadioComponent
 
 ### Phase 3 - Advanced Layouts
