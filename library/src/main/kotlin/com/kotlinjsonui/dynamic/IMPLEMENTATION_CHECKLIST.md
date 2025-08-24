@@ -178,15 +178,17 @@ This checklist tracks the implementation status of all dynamic component convert
 - [x] Data binding with @{} syntax
 - [x] Auto Row layout with label
 
-### DynamicRadioComponent
-- [ ] Radio group management
-- [ ] Selected value
-- [ ] Options parsing
-- [ ] Orientation (vertical/horizontal)
-- [ ] Custom icons
-- [ ] Enabled/disabled state
-- [ ] Change event handling
-- [ ] Data binding
+### DynamicRadioComponent ✅
+- [x] Radio group management (options, items, individual items)
+- [x] Selected value (bind, selectedValue attributes)
+- [x] Options parsing (static and dynamic)
+- [x] Orientation (vertical layout)
+- [x] Custom icons (circle, square, star, heart, etc.)
+- [x] Enabled/disabled state
+- [x] Change event handling
+- [x] Data binding with @{} syntax
+- [x] Group/id support for individual items
+- [x] Text color customization
 
 ### DynamicSliderComponent
 - [ ] Min/max values
@@ -427,7 +429,7 @@ This checklist tracks the implementation status of all dynamic component convert
 1. DynamicTextFieldComponent ✅
 2. DynamicSwitchComponent ✅
 3. DynamicCheckBoxComponent ✅
-4. DynamicRadioComponent
+4. DynamicRadioComponent ✅
 
 ### Phase 3 - Advanced Layouts
 1. DynamicScrollViewComponent
