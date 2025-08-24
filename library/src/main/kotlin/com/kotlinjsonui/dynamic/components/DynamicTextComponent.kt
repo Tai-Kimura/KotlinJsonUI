@@ -106,9 +106,16 @@ class DynamicTextComponent {
                             strikethrough = attr.get("strikethrough")?.asBoolean ?: false,
                             onClick = attr.get("onclick")?.asString?.let { methodName ->
                                 // Get the function from the data map
-                                val function = data[methodName]
-                                if (function is (() -> Unit)) {
-                                    function
+                                val handler = data[methodName]
+                                if (handler is Function<*>) {
+                                    {
+                                        try {
+                                            @Suppress("UNCHECKED_CAST")
+                                            (handler as () -> Unit)()
+                                        } catch (e: Exception) {
+                                            // Handler doesn't match expected signature
+                                        }
+                                    }
                                 } else {
                                     null
                                 }
@@ -274,7 +281,7 @@ class DynamicTextComponent {
         }
         
         private fun buildModifier(json: JsonObject): Modifier {
-            var modifier = Modifier
+            var modifier: Modifier = Modifier
             
             // Width and height
             json.get("width")?.asFloat?.let { width ->
@@ -298,7 +305,8 @@ class DynamicTextComponent {
             return modifier
         }
         
-        private fun applyPadding(modifier: Modifier, json: JsonObject): Modifier {
+        private fun applyPadding(inputModifier: Modifier, json: JsonObject): Modifier {
+            var modifier = inputModifier
             // Handle edgeInset for text-specific padding (priority)
             json.get("edgeInset")?.let { edgeInset ->
                 return when {
@@ -360,7 +368,8 @@ class DynamicTextComponent {
             }
         }
         
-        private fun applyMargins(modifier: Modifier, json: JsonObject): Modifier {
+        private fun applyMargins(inputModifier: Modifier, json: JsonObject): Modifier {
+            var modifier = inputModifier
             // Handle margins array
             json.get("margins")?.asJsonArray?.let { margins ->
                 return when (margins.size()) {
