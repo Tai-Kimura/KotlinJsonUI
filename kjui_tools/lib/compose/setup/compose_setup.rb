@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'json'
 require_relative '../../core/config_manager'
 require_relative '../../core/project_finder'
 
@@ -23,6 +24,9 @@ module KjuiTools
           
           # Copy base files
           copy_base_files
+          
+          # Create hotloader config
+          create_hotloader_config
           
           # Update build.gradle
           update_build_gradle
@@ -274,6 +278,64 @@ module KjuiTools
           else
             puts "  Compose already configured in build.gradle"
           end
+        end
+        
+        def create_hotloader_config
+          puts "Creating hotloader configuration..."
+          
+          # Determine the correct project directory
+          project_root = Core::ProjectFinder.project_dir || Dir.pwd
+          
+          # Check if we're in sample-app
+          if File.exist?(File.join(project_root, 'sample-app'))
+            assets_dir = File.join(project_root, 'sample-app', 'src', 'main', 'assets')
+          else
+            source_dir = @config['source_directory'] || 'src/main'
+            assets_dir = File.join(project_root, source_dir, 'assets')
+          end
+          
+          FileUtils.mkdir_p(assets_dir)
+          
+          # Get IP from config or detect it
+          ip = if @config['hotloader'] && @config['hotloader']['ip']
+                 @config['hotloader']['ip']
+               else
+                 get_local_ip || '10.0.2.2' # Default to Android emulator IP
+               end
+          
+          port = if @config['hotloader'] && @config['hotloader']['port']
+                   @config['hotloader']['port']
+                 else
+                   8081
+                 end
+          
+          # Create hotloader.json
+          hotloader_config_path = File.join(assets_dir, 'hotloader.json')
+          hotloader_config = {
+            'ip' => ip,
+            'port' => port,
+            'enabled' => false, # Default to disabled for initial setup
+            'websocket_endpoint' => "ws://#{ip}:#{port}",
+            'http_endpoint' => "http://#{ip}:#{port}"
+          }
+          
+          File.write(hotloader_config_path, JSON.pretty_generate(hotloader_config))
+          puts "  Created: hotloader.json (IP: #{ip}:#{port})"
+        end
+        
+        def get_local_ip
+          # Try to get WiFi IP first (common interface names)
+          require 'socket'
+          
+          Socket.ip_address_list.each do |addr|
+            if addr.ipv4? && !addr.ipv4_loopback? && !addr.ipv4_multicast?
+              return addr.ip_address
+            end
+          end
+          
+          nil
+        rescue
+          nil
         end
         
         def create_sample_layouts
