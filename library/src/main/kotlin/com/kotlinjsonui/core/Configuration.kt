@@ -1,11 +1,20 @@
 package com.kotlinjsonui.core
 
 import androidx.compose.ui.graphics.Color
+import com.google.gson.JsonObject
 
 /**
  * Configuration object for default values used across KotlinJsonUI components
  */
 object Configuration {
+    
+    /**
+     * Custom color parser function
+     * If set, this function will be used to parse colors from JSON instead of the default parser
+     * The function receives the JsonObject and key
+     * The function should return null if it cannot parse the color
+     */
+    var colorParser: ((JsonObject, String) -> Color?)? = null
     // Global color defaults
     object Colors {
         val background = Color.White

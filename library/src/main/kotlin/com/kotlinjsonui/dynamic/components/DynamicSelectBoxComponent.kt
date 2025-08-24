@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ColorParser
 
 /**
  * Dynamic SelectBox Component Converter
@@ -108,38 +109,17 @@ class DynamicSelectBoxComponent {
             val placeholder = json.get("hint")?.asString 
                 ?: json.get("placeholder")?.asString
             
-            // Parse colors
-            val backgroundColor = json.get("background")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color.White }
-            } ?: Color.White
-            
-            val borderColor = json.get("borderColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color(0xFFCCCCCC) }
-            } ?: Color(0xFFCCCCCC)
-            
-            val textColor = json.get("fontColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color.Black }
-            } ?: Color.Black
-            
-            val hintColor = json.get("hintColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color(0xFF999999) }
-            } ?: Color(0xFF999999)
+            // Parse colors using helper
+            val colors = ColorParser.parseTextColors(json)
+            val backgroundColor = colors.backgroundColor ?: Color.White
+            val borderColor = colors.borderColor ?: Color(0xFFCCCCCC)
+            val textColor = colors.textColor ?: Color.Black
+            val hintColor = colors.hintColor ?: Color(0xFF999999)
             
             val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
             
-            val cancelButtonBackgroundColor = json.get("cancelButtonBackgroundColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
-            
-            val cancelButtonTextColor = json.get("cancelButtonTextColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+            val cancelButtonBackgroundColor = ColorParser.parseColor(json, "cancelButtonBackgroundColor")
+            val cancelButtonTextColor = ColorParser.parseColor(json, "cancelButtonTextColor")
             
             // Build modifier using helper (defaulting to fill width)
             val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
@@ -244,26 +224,12 @@ class DynamicSelectBoxComponent {
             val placeholder = json.get("hint")?.asString 
                 ?: json.get("placeholder")?.asString
             
-            // Parse colors
-            val backgroundColor = json.get("background")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color.White }
-            } ?: Color.White
-            
-            val borderColor = json.get("borderColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color(0xFFCCCCCC) }
-            } ?: Color(0xFFCCCCCC)
-            
-            val textColor = json.get("fontColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color.Black }
-            } ?: Color.Black
-            
-            val hintColor = json.get("hintColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { Color(0xFF999999) }
-            } ?: Color(0xFF999999)
+            // Parse colors using helper
+            val colors = ColorParser.parseTextColors(json)
+            val backgroundColor = colors.backgroundColor ?: Color.White
+            val borderColor = colors.borderColor ?: Color(0xFFCCCCCC)
+            val textColor = colors.textColor ?: Color.Black
+            val hintColor = colors.hintColor ?: Color(0xFF999999)
             
             val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
             

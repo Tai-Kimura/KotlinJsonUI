@@ -2,9 +2,9 @@ package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ColorParser
 
 /**
  * Dynamic Progress Component Converter
@@ -97,16 +97,9 @@ class DynamicProgressComponent {
             // Parse style
             val style = json.get("style")?.asString ?: "linear"
             
-            // Parse colors
-            val progressColor = json.get("progressTintColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
-            
-            val trackColor = json.get("trackTintColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
-            }
+            // Parse colors using helper
+            val progressColor = ColorParser.parseColor(json, "progressTintColor")
+            val trackColor = ColorParser.parseColor(json, "trackTintColor")
             
             // Build modifier using helper
             val modifier = ModifierBuilder.buildModifier(json)
