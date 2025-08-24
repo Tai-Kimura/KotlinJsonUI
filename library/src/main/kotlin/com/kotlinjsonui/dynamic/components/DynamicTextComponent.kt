@@ -262,6 +262,16 @@ class DynamicTextComponent {
             }
             fontWeight?.let { style = style.copy(fontWeight = it) }
             
+            // Line height
+            json.get("lineHeight")?.asFloat?.let { lineHeight ->
+                style = style.copy(lineHeight = lineHeight.sp)
+            }
+            
+            // Letter spacing
+            json.get("letterSpacing")?.asFloat?.let { letterSpacing ->
+                style = style.copy(letterSpacing = letterSpacing.sp)
+            }
+            
             // Text alignment
             val textAlign = when {
                 json.get("textAlign")?.asString != null -> {

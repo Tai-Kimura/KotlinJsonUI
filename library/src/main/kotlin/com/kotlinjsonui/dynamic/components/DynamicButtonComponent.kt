@@ -1,15 +1,24 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Dynamic Button Component Converter
@@ -49,23 +62,57 @@ class DynamicButtonComponent {
             val rawText = json.get("text")?.asString ?: "Button"
             val text = processDataBinding(rawText, data)
             
-            // Parse enabled state
+            // Loading state
+            var isLoading by remember { 
+                mutableStateOf(
+                    json.get("isLoading")?.asBoolean ?: false
+                )
+            }
+            
+            // Parse enabled state (disabled when loading)
             val isEnabled = when {
+                isLoading -> false
                 json.get("disabled")?.asBoolean == true -> false
                 json.get("enabled")?.asBoolean == false -> false
                 else -> true
             }
             
-            // Parse onclick handler
+            // Parse onclick handler with loading support
             val onClick: () -> Unit = {
-                json.get("onclick")?.asString?.let { methodName ->
-                    val handler = data[methodName]
-                    if (handler is Function<*>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (handler as () -> Unit)()
-                        } catch (e: Exception) {
-                            // Handler doesn't match expected signature
+                if (!isLoading) {
+                    json.get("onclick")?.asString?.let { methodName ->
+                        val handler = data[methodName]
+                        if (handler is Function<*>) {
+                            try {
+                                // Check if handler is async (suspend function)
+                                val isAsync = json.get("async")?.asBoolean ?: false
+                                if (isAsync) {
+                                    isLoading = true
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        try {
+                                            @Suppress("UNCHECKED_CAST")
+                                            withContext(Dispatchers.IO) {
+                                                (handler as suspend () -> Unit)()
+                                            }
+                                        } catch (e: Exception) {
+                                            // Try as regular function
+                                            try {
+                                                @Suppress("UNCHECKED_CAST")
+                                                (handler as () -> Unit)()
+                                            } catch (e: Exception) {
+                                                // Handler doesn't match expected signature
+                                            }
+                                        } finally {
+                                            isLoading = false
+                                        }
+                                    }
+                                } else {
+                                    @Suppress("UNCHECKED_CAST")
+                                    (handler as () -> Unit)()
+                                }
+                            } catch (e: Exception) {
+                                // Handler doesn't match expected signature
+                            }
                         }
                     }
                 }
@@ -137,11 +184,29 @@ class DynamicButtonComponent {
                 elevation = elevation,
                 contentPadding = contentPadding
             ) {
-                Text(
-                    text = text,
-                    fontSize = fontSize.sp,
-                    fontWeight = fontWeight
-                )
+                if (isLoading) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = textColor ?: Color.White
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = json.get("loadingText")?.asString ?: text,
+                            fontSize = fontSize.sp,
+                            fontWeight = fontWeight
+                        )
+                    }
+                } else {
+                    Text(
+                        text = text,
+                        fontSize = fontSize.sp,
+                        fontWeight = fontWeight
+                    )
+                }
             }
         }
         
