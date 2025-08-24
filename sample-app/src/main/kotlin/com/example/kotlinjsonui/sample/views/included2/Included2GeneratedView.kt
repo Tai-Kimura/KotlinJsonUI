@@ -35,6 +35,7 @@ fun Included2GeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "included2",
+            data = data.toMap(viewModel),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(

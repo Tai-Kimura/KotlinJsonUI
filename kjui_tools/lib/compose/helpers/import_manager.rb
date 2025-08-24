@@ -91,7 +91,10 @@ module KjuiTools
             safe_dynamic_view: "import com.kotlinjsonui.components.SafeDynamicView",
             circular_progress_indicator: "import androidx.compose.material3.CircularProgressIndicator",
             wrapContentSize: "import androidx.compose.foundation.layout.wrapContentSize",
-            box: "import androidx.compose.foundation.layout.Box"
+            box: "import androidx.compose.foundation.layout.Box",
+            DynamicView: "import com.kotlinjsonui.dynamic.DynamicView",
+            JsonObject: "import com.google.gson.JsonObject",
+            JsonParser: "import com.google.gson.JsonParser"
           }
         end
         

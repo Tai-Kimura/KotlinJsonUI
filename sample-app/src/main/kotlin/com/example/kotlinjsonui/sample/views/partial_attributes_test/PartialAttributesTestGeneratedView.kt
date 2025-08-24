@@ -47,6 +47,7 @@ fun PartialAttributesTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "partial_attributes_test",
+            data = data.toMap(viewModel),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(

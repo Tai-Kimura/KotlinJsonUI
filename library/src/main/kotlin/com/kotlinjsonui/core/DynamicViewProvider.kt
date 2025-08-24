@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import android.content.Context
 import android.util.Log
+import com.google.gson.JsonObject
 import com.kotlinjsonui.BuildConfig
 
 /**
@@ -21,6 +22,7 @@ object DynamicViewProvider {
         @Composable
         fun render(
             layoutName: String,
+            data: Map<String, Any> = emptyMap(),
             modifier: Modifier,
             onError: ((String) -> Unit)?,
             onLoading: @Composable () -> Unit,
@@ -48,6 +50,7 @@ object DynamicViewProvider {
     @Composable
     fun renderDynamicView(
         layoutName: String,
+        data: Map<String, Any> = emptyMap(),
         modifier: Modifier = Modifier,
         onError: ((String) -> Unit)? = null,
         onLoading: @Composable () -> Unit = {},
@@ -63,6 +66,7 @@ object DynamicViewProvider {
         if (currentRenderer != null) {
             currentRenderer.render(
                 layoutName = layoutName,
+                data = data,
                 modifier = modifier,
                 onError = onError,
                 onLoading = onLoading,

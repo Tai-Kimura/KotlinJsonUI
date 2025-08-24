@@ -40,6 +40,7 @@ fun TextViewHintTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "text_view_hint_test",
+            data = data.toMap(viewModel),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(

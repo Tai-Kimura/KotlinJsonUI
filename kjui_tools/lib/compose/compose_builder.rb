@@ -207,8 +207,11 @@ module KjuiTools
         pascal_name = to_pascal_case(include_name)
         snake_name = to_snake_case(include_name)
         
+        # Check if we should use DynamicView
+        use_dynamic = json_data['dynamic'] == true
+        
         # Track this included view for imports
-        @included_views&.add(snake_name)
+        @included_views&.add(snake_name) unless use_dynamic
         
         # Track required imports for LaunchedEffect if we have data bindings
         has_data_bindings = false
@@ -221,10 +224,17 @@ module KjuiTools
         include_data.each do |key, value|
           if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
             has_data_bindings = true
-            @required_imports.add(:LaunchedEffect)
-            @required_imports.add(:remember)
+            unless use_dynamic
+              @required_imports.add(:LaunchedEffect)
+              @required_imports.add(:remember)
+            end
             break
           end
+        end
+        
+        # If using dynamic view, generate DynamicView call
+        if use_dynamic
+          return generate_dynamic_include(json_data, depth, include_data, shared_data, has_data_bindings)
         end
         
         # Generate unique instance ID for this include
@@ -309,6 +319,71 @@ module KjuiTools
         code
       end
       
+      def generate_dynamic_include(json_data, depth, include_data, shared_data, has_data_bindings)
+        include_name = json_data['include']
+        
+        # Add required imports for SafeDynamicView
+        @required_imports.add(:safe_dynamic_view)
+        
+        code = ""
+        
+        # Build data map from bindings and current data
+        code += indent("// Build data map with bindings", depth)
+        code += "\n" + indent("val dynamicData = mutableMapOf<String, Any>()", depth)
+        
+        # Add all current data values
+        code += "\n" + indent("// Add current data values", depth)
+        code += "\n" + indent("data.forEach { (key, value) ->", depth)
+        code += "\n" + indent("dynamicData[key] = value", depth + 1)
+        code += "\n" + indent("}", depth)
+        
+        # Process include_data bindings
+        if include_data.any?
+          code += "\n" + indent("// Process include data bindings", depth)
+          include_data.each do |key, value|
+            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+              # This is a data binding reference to parent data
+              variable = $1
+              code += "\n" + indent("data[\"#{variable}\"]?.let { dynamicData[\"#{key}\"] = it }", depth)
+            else
+              # This is a static value
+              formatted_value = format_value_for_kotlin(value)
+              code += "\n" + indent("dynamicData[\"#{key}\"] = #{formatted_value}", depth)
+            end
+          end
+        end
+        
+        # Process shared_data bindings
+        if shared_data.any?
+          code += "\n" + indent("// Process shared data bindings", depth)
+          shared_data.each do |key, value|
+            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
+              # This creates a two-way binding
+              variable = $1
+              code += "\n" + indent("data[\"#{variable}\"]?.let { dynamicData[\"#{key}\"] = it }", depth)
+            else
+              # Static value for shared_data
+              formatted_value = format_value_for_kotlin(value)
+              code += "\n" + indent("dynamicData[\"#{key}\"] = #{formatted_value}", depth)
+            end
+          end
+        end
+        
+        # Add all viewModel methods as functions to the data map
+        code += "\n" + indent("// Add viewModel methods as event handlers", depth)
+        code += "\n" + indent("// Note: Add specific method references as needed", depth)
+        code += "\n" + indent("// Example: dynamicData[\"onButtonClick\"] = { viewModel.onButtonClick() }", depth)
+        
+        # Call SafeDynamicView
+        code += "\n" + indent("// Render dynamic view", depth)
+        code += "\n" + indent("SafeDynamicView(", depth)
+        code += "\n" + indent("layoutName = \"#{include_name}\",", depth + 1)
+        code += "\n" + indent("data = dynamicData", depth + 1)
+        code += "\n" + indent(")", depth)
+        
+        code
+      end
+      
       def format_value_for_kotlin(value)
         case value
         when String
@@ -381,6 +456,7 @@ module KjuiTools
         code = ""
         code += "#{indent_str}    SafeDynamicView(\n"
         code += "#{indent_str}        layoutName = \"#{layout_name}\",\n"
+        code += "#{indent_str}        data = data.toMap(viewModel),\n"
         code += "#{indent_str}        fallback = {\n"
         code += "#{indent_str}            // Show error or loading state when dynamic view is not available\n"
         code += "#{indent_str}            Box(\n"

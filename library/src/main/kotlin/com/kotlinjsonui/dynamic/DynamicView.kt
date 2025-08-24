@@ -1,188 +1,141 @@
 package com.kotlinjsonui.dynamic
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import android.content.Context
-import android.util.Log
-import com.kotlinjsonui.dynamic.hotloader.HotLoader
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import org.json.JSONObject
+import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.components.*
 
 /**
- * DynamicView - A view that can be updated in real-time from JSON files
- * Only available in DEBUG builds
+ * Main entry point for rendering dynamic UI from JSON.
+ * This component determines the appropriate component type from JSON
+ * and renders it with data binding support.
+ * 
+ * @param json The JSON object describing the UI component
+ * @param data Map of data for binding. @{key} in JSON will be replaced with data[key].
+ *             Functions in the data map can be referenced by name for event handlers.
  */
-class DynamicView(
-    private val layoutName: String,
-    private val context: Context? = null
+@Composable
+fun DynamicView(
+    json: JsonObject,
+    data: Map<String, Any> = emptyMap()
 ) {
-    companion object {
-        private const val TAG = "DynamicView"
-    }
+    // Get the component type from JSON
+    val type = json.get("type")?.asString ?: return
     
-    private val _layoutJson = MutableStateFlow<String?>(null)
-    val layoutJson: StateFlow<String?> = _layoutJson
-    
-    private val _isLoading = MutableStateFlow(true)
-    val isLoading: StateFlow<Boolean> = _isLoading
-    
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-    
-    private var hotLoader: HotLoader? = null
-    
-    init {
-        Log.d(TAG, "Initializing DynamicView with layout: $layoutName")
-        
-        // Load initial layout from assets or cache
-        loadInitialLayout()
-        
-        // Setup HotLoader listener if context is available
-        context?.let {
-            setupHotLoader(it)
+    // Render the appropriate component based on type
+    when (type.lowercase()) {
+        "text", "label" -> {
+            DynamicTextComponent.create(json, data)
         }
-    }
-    
-    private fun loadInitialLayout() {
-        try {
-            // TODO: Load from assets/Layouts/{layoutName}.json
-            // For now, just set loading to false
-            _isLoading.value = false
-            Log.d(TAG, "Initial layout loading placeholder for: $layoutName")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error loading initial layout", e)
-            _error.value = e.message
-            _isLoading.value = false
+        "textfield" -> {
+            DynamicTextFieldComponent.create(json, data)
         }
-    }
-    
-    private fun setupHotLoader(context: Context) {
-        try {
-            hotLoader = HotLoader.getInstance(context)
-            
-            // Check for cached layout first
-            val cachedLayout = hotLoader?.getCachedLayout(layoutName)
-            if (cachedLayout != null) {
-                _layoutJson.value = cachedLayout
-                Log.d(TAG, "Loaded cached layout for: $layoutName")
-            }
-            
-            // Add listener for updates
-            hotLoader?.addListener(object : HotLoader.HotLoaderListener {
-                override fun onConnected() {
-                    Log.d(TAG, "HotLoader connected")
-                }
-                
-                override fun onDisconnected() {
-                    Log.d(TAG, "HotLoader disconnected")
-                }
-                
-                override fun onLayoutUpdated(updatedLayoutName: String, content: String) {
-                    if (updatedLayoutName == layoutName) {
-                        Log.d(TAG, "Layout updated: $layoutName")
-                        _layoutJson.value = content
-                    }
-                }
-                
-                override fun onLayoutAdded(addedLayoutName: String) {
-                    Log.d(TAG, "Layout added: $addedLayoutName")
-                }
-                
-                override fun onLayoutRemoved(removedLayoutName: String) {
-                    if (removedLayoutName == layoutName) {
-                        Log.w(TAG, "Current layout removed: $layoutName")
-                        _error.value = "Layout file was removed"
-                    }
-                }
-                
-                override fun onError(error: Throwable) {
-                    Log.e(TAG, "HotLoader error", error)
-                    _error.value = error.message
-                }
-            })
-            
-            // Start HotLoader if not already running
-            hotLoader?.start()
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting up HotLoader", e)
-            _error.value = e.message
+        "button" -> {
+            DynamicButtonComponent.create(json, data)
         }
-    }
-    
-    fun updateLayout(jsonString: String) {
-        try {
-            // Validate JSON
-            JSONObject(jsonString)
-            _layoutJson.value = jsonString
-            _error.value = null
-        } catch (e: Exception) {
-            Log.e(TAG, "Invalid JSON provided", e)
-            _error.value = "Invalid JSON: ${e.message}"
+        "image" -> {
+            DynamicImageComponent.create(json, data)
         }
-    }
-    
-    fun cleanup() {
-        // Remove listener if needed
-        // Note: We don't stop HotLoader here as it might be used by other views
-        Log.d(TAG, "Cleaning up DynamicView for: $layoutName")
+        "networkimage" -> {
+            DynamicNetworkImageComponent.create(json, data)
+        }
+        "circleimage" -> {
+            DynamicCircleImageComponent.create(json, data)
+        }
+        "switch" -> {
+            DynamicSwitchComponent.create(json, data)
+        }
+        "checkbox" -> {
+            DynamicCheckBoxComponent.create(json, data)
+        }
+        "radio" -> {
+            DynamicRadioComponent.create(json, data)
+        }
+        "slider" -> {
+            DynamicSliderComponent.create(json, data)
+        }
+        "progress", "progressbar" -> {
+            DynamicProgressComponent.create(json, data)
+        }
+        "indicator" -> {
+            DynamicIndicatorComponent.create(json, data)
+        }
+        "selectbox", "spinner" -> {
+            DynamicSelectBoxComponent.create(json, data)
+        }
+        "segment", "tablayout" -> {
+            DynamicSegmentComponent.create(json, data)
+        }
+        "toggle" -> {
+            DynamicToggleComponent.create(json, data)
+        }
+        "scrollview" -> {
+            DynamicScrollViewComponent.create(json, data)
+        }
+        "hstack", "row" -> {
+            DynamicHStackComponent.create(json, data)
+        }
+        "vstack", "column" -> {
+            DynamicVStackComponent.create(json, data)
+        }
+        "zstack", "box" -> {
+            DynamicZStackComponent.create(json, data)
+        }
+        "container", "view" -> {
+            DynamicContainerComponent.create(json, data)
+        }
+        "safeareaview" -> {
+            DynamicSafeAreaViewComponent.create(json, data)
+        }
+        "constraintlayout" -> {
+            DynamicConstraintLayoutComponent.create(json, data)
+        }
+        "collection", "lazycolumn", "recyclerview" -> {
+            DynamicLazyColumnComponent.create(json, data)
+        }
+        "table", "listview" -> {
+            // Table is similar to collection but with different styling
+            DynamicLazyColumnComponent.create(json, data)
+        }
+        "webview" -> {
+            DynamicWebViewComponent.create(json, data)
+        }
+        "tabview" -> {
+            DynamicTabViewComponent.create(json, data)
+        }
+        "gradientview" -> {
+            DynamicGradientViewComponent.create(json, data)
+        }
+        "circleview" -> {
+            DynamicCircleViewComponent.create(json, data)
+        }
+        "blurview" -> {
+            DynamicBlurViewComponent.create(json, data)
+        }
+        "iconlabel" -> {
+            DynamicIconLabelComponent.create(json, data)
+        }
+        "textview" -> {
+            DynamicTextViewComponent.create(json, data)
+        }
+        "triangle" -> {
+            DynamicTriangleComponent.create(json, data)
+        }
+        else -> {
+            // Unknown component type - could log or render placeholder
+        }
     }
 }
 
 /**
- * Composable function to render a DynamicView
+ * Renders a list of components from a JSON array.
+ * Useful for rendering the contents of container components.
  */
 @Composable
-fun DynamicView(
-    layoutName: String,
-    modifier: Modifier = Modifier,
-    onError: ((String) -> Unit)? = null,
-    onLoading: @Composable () -> Unit = {},
-    content: @Composable (String) -> Unit = {}
+fun DynamicViews(
+    components: List<JsonObject>,
+    data: Map<String, Any> = emptyMap()
 ) {
-    val context = LocalContext.current
-    val dynamicView = remember(layoutName) {
-        DynamicView(layoutName, context)
-    }
-    
-    val layoutJson by dynamicView.layoutJson.collectAsState()
-    val isLoading by dynamicView.isLoading.collectAsState()
-    val error by dynamicView.error.collectAsState()
-    
-    // Handle error callback
-    LaunchedEffect(error) {
-        error?.let { onError?.invoke(it) }
-    }
-    
-    // Cleanup when removed from composition
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-            // Cleanup will be called when the coroutine is cancelled
-        }
-    }
-    
-    when {
-        isLoading -> {
-            onLoading()
-        }
-        error != null -> {
-            // Error state - could show default error UI
-            Log.e("DynamicView", "Error: $error")
-        }
-        layoutJson != null -> {
-            content(layoutJson!!)
-        }
-        else -> {
-            // No layout loaded yet
-            Log.d("DynamicView", "No layout loaded for: $layoutName")
-        }
+    components.forEach { component ->
+        DynamicView(component, data)
     }
 }

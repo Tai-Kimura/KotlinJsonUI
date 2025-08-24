@@ -31,6 +31,7 @@ fun ConverterTestCellGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "converter_test_cell",
+            data = data.toMap(viewModel),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
