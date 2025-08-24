@@ -1,10 +1,13 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
@@ -39,8 +43,6 @@ import com.kotlinjsonui.dynamic.processDataBinding
  * - fontSize: Int text size
  * - fontColor: String hex color for text
  * - background: String hex color for background
- * - borderColor: String hex color for border
- * - borderWidth: Float width of border
  * - cornerRadius: Float corner radius
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
@@ -61,7 +63,7 @@ class DynamicTextFieldComponent {
             var textValue by remember(initialText) { mutableStateOf(initialText) }
             
             // Parse placeholder
-            val placeholder = json.get("hint")?.asString 
+            val placeholderText = json.get("hint")?.asString 
                 ?: json.get("placeholder")?.asString 
                 ?: ""
             
@@ -123,9 +125,21 @@ class DynamicTextFieldComponent {
                 
                 // Call the event handler if specified
                 json.get("onTextChange")?.asString?.let { methodName ->
+                    // Look for the function in the data map
                     val handler = data[methodName]
-                    if (handler is (String) -> Unit) {
-                        handler(newValue)
+                    if (handler is Function<*>) {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            (handler as (String) -> Unit)(newValue)
+                        } catch (e: Exception) {
+                            // Try without parameter
+                            try {
+                                @Suppress("UNCHECKED_CAST")
+                                (handler as () -> Unit)()
+                            } catch (e2: Exception) {
+                                // Handler doesn't match expected signature
+                            }
+                        }
                     }
                 }
                 
@@ -136,12 +150,47 @@ class DynamicTextFieldComponent {
                         val variable = match.groupValues[1].split(" ?? ")[0].trim()
                         // Find update function in data map
                         val updateData = data["updateData"]
-                        if (updateData is (Map<String, Any>) -> Unit) {
-                            updateData(mapOf(variable to newValue))
+                        if (updateData is Function<*>) {
+                            try {
+                                @Suppress("UNCHECKED_CAST")
+                                (updateData as (Map<String, Any>) -> Unit)(mapOf(variable to newValue))
+                            } catch (e: Exception) {
+                                // Update function doesn't match expected signature
+                            }
                         }
                     }
                 }
             }
+            
+            // Create placeholder composable
+            val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
+                {
+                    Text(
+                        text = placeholderText,
+                        color = placeholderColor ?: LocalTextStyle.current.color.copy(alpha = 0.6f),
+                        fontSize = (hintFontSize ?: fontSize ?: 14).sp
+                    )
+                }
+            } else null
+            
+            // Create text style
+            val textStyle = LocalTextStyle.current.copy(
+                fontSize = (fontSize ?: 14).sp,
+                color = textColor ?: LocalTextStyle.current.color
+            )
+            
+            // Visual transformation for password
+            val visualTransformation = if (isSecure) {
+                PasswordVisualTransformation()
+            } else {
+                VisualTransformation.None
+            }
+            
+            // Keyboard options
+            val keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = imeAction
+            )
             
             // Check if we need CustomTextField for margins
             val hasMargins = json.get("margins") != null ||
@@ -155,9 +204,6 @@ class DynamicTextFieldComponent {
             // Build modifier
             val modifier = buildModifier(json, !hasMargins)
             
-            // Determine field type (outlined vs regular)
-            val isOutlined = json.get("outlined")?.asBoolean ?: false
-            
             if (hasMargins) {
                 // Use CustomTextFieldWithMargins for margin support
                 val boxModifier = buildMarginModifier(json)
@@ -167,12 +213,10 @@ class DynamicTextFieldComponent {
                     boxModifier = boxModifier,
                     textFieldModifier = modifier,
                     placeholder = placeholder,
-                    isPassword = isSecure,
-                    enabled = !isDisabled,
-                    singleLine = singleLine,
-                    maxLines = if (singleLine) 1 else maxLines,
-                    keyboardType = keyboardType,
-                    imeAction = imeAction
+                    visualTransformation = visualTransformation,
+                    keyboardOptions = keyboardOptions,
+                    textStyle = textStyle,
+                    backgroundColor = backgroundColor
                 )
             } else {
                 // Use CustomTextField
@@ -181,18 +225,16 @@ class DynamicTextFieldComponent {
                     onValueChange = onValueChange,
                     modifier = modifier,
                     placeholder = placeholder,
-                    isPassword = isSecure,
-                    enabled = !isDisabled,
-                    singleLine = singleLine,
-                    maxLines = if (singleLine) 1 else maxLines,
-                    keyboardType = keyboardType,
-                    imeAction = imeAction
+                    visualTransformation = visualTransformation,
+                    keyboardOptions = keyboardOptions,
+                    textStyle = textStyle,
+                    backgroundColor = backgroundColor
                 )
             }
         }
         
         private fun buildModifier(json: JsonObject, includeMargins: Boolean): Modifier {
-            var modifier = Modifier
+            var modifier: Modifier = Modifier
             
             // Width and height
             json.get("width")?.asFloat?.let { width ->
@@ -231,7 +273,7 @@ class DynamicTextFieldComponent {
         }
         
         private fun buildMarginModifier(json: JsonObject): Modifier {
-            var modifier = Modifier
+            var modifier: Modifier = Modifier
             
             // Handle margins array
             json.get("margins")?.asJsonArray?.let { margins ->
