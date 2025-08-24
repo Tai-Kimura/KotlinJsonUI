@@ -154,16 +154,21 @@ class DynamicButtonComponent {
                         vertical = paddings[0].asFloat.dp,
                         horizontal = paddings[1].asFloat.dp
                     )
-                    3 -> PaddingValues(
-                        top = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp
-                    )
+                    3 -> {
+                        // Three values: [top, horizontal, bottom]
+                        // PaddingValues doesn't have this constructor, so use 4-parameter version
+                        PaddingValues(
+                            start = paddings[1].asFloat.dp,
+                            top = paddings[0].asFloat.dp,
+                            end = paddings[1].asFloat.dp,
+                            bottom = paddings[2].asFloat.dp
+                        )
+                    }
                     4 -> PaddingValues(
+                        start = paddings[3].asFloat.dp,
                         top = paddings[0].asFloat.dp,
                         end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
+                        bottom = paddings[2].asFloat.dp
                     )
                     else -> ButtonDefaults.ContentPadding
                 }
