@@ -220,13 +220,15 @@ This checklist tracks the implementation status of all dynamic component convert
 
 ## Image Components
 
-### DynamicImageComponent
-- [ ] Local resource loading
-- [ ] Content scale (fit, fill, crop, etc.)
-- [ ] Width/height
+### DynamicImageComponent ✅
+- [x] Local resource loading
+- [x] Content scale (fit, fill, crop, etc.)
+- [x] Width/height
 - [ ] Aspect ratio
 - [ ] Tinting
 - [ ] Click handling
+- [x] Data binding for src
+- [x] Alpha support
 
 ### DynamicNetworkImageComponent
 - [ ] URL parsing

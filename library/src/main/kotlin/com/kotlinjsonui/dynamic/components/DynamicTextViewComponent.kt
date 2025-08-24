@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicTextViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic text view creation from JSON
             // - Parse TextView properties (text, editable, multiline)
             // - Handle text input for editable views

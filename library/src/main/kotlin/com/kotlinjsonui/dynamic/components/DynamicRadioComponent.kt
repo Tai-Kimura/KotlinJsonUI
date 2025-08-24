@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicRadioComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic radio button creation from JSON
             // - Parse radio button properties (selected state, options)
             // - Handle selection events

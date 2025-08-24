@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicHStackComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic horizontal stack creation from JSON
             // - Parse horizontal alignment and spacing
             // - Handle child components

@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicTabViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic tab view creation from JSON
             // - Parse tab items and content
             // - Handle tab selection

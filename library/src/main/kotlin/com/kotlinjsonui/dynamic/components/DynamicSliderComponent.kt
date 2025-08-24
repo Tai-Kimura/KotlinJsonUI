@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicSliderComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic slider creation from JSON
             // - Parse slider properties (min, max, value, step)
             // - Handle value change events

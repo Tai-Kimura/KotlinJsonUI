@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicSwitchComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic switch creation from JSON
             // - Parse switch properties (checked state, colors)
             // - Handle toggle events

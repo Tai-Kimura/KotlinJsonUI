@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicCircleViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic circle view creation from JSON
             // - Parse circle size and color
             // - Apply circular shape

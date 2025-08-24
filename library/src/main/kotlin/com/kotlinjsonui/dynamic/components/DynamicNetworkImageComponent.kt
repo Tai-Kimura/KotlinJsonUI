@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicNetworkImageComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic network image creation from JSON
             // - Parse image URL and properties
             // - Handle image loading with Coil/Glide

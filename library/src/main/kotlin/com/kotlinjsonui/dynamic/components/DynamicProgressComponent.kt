@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicProgressComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic progress indicator creation from JSON
             // - Parse progress properties (value, indeterminate, style)
             // - Support linear and circular progress

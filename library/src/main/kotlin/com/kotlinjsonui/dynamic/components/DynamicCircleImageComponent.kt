@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicCircleImageComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic circle image creation from JSON
             // - Parse image source (local or network)
             // - Apply circular clipping

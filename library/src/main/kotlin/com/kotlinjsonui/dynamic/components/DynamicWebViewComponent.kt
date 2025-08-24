@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicWebViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic web view creation from JSON
             // - Parse URL or HTML content
             // - Handle JavaScript settings

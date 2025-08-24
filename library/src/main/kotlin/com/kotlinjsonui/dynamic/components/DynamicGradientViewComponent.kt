@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicGradientViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic gradient view creation from JSON
             // - Parse gradient colors and direction
             // - Support linear and radial gradients

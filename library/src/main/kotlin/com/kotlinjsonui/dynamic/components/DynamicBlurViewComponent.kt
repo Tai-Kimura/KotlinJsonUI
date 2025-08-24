@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicBlurViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic blur view creation from JSON
             // - Parse blur radius and style
             // - Apply blur effect to background

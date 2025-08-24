@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicScrollViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic scroll view creation from JSON
             // - Parse scroll direction (vertical/horizontal)
             // - Handle child components

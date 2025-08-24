@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicZStackComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic z-stack creation from JSON
             // - Parse alignment and layering
             // - Handle child components in z-order

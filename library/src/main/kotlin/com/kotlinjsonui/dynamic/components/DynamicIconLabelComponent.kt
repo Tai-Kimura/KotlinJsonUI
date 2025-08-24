@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicIconLabelComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic icon label creation from JSON
             // - Parse icon and text properties
             // - Support icon positioning (left, right, top, bottom)

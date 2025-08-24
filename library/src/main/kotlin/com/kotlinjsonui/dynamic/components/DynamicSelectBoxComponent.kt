@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicSelectBoxComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic select box creation from JSON
             // - Parse options list and selected value
             // - Handle selection change events

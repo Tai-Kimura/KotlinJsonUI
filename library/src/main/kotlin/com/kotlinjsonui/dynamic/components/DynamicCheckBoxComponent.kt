@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicCheckBoxComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic checkbox creation from JSON
             // - Parse checkbox properties (checked state, text, colors)
             // - Handle check/uncheck events

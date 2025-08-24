@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicConstraintLayoutComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic constraint layout creation from JSON
             // - Parse constraints for each child
             // - Handle constraint references

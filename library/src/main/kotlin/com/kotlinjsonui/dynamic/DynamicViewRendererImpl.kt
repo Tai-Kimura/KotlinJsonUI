@@ -13,19 +13,15 @@ class DynamicViewRendererImpl : DynamicViewProvider.DynamicViewRenderer {
     @Composable
     override fun render(
         layoutName: String,
+        data: Map<String, Any>,
         modifier: Modifier,
         onError: ((String) -> Unit)?,
         onLoading: @Composable () -> Unit,
         content: @Composable (String) -> Unit
     ) {
-        // Call the actual DynamicView composable
-        DynamicView(
-            layoutName = layoutName,
-            modifier = modifier,
-            onError = onError,
-            onLoading = onLoading,
-            content = content
-        )
+        // For now, just render an empty box since we don't have a DynamicView that takes layoutName
+        // This is a placeholder implementation
+        // TODO: Implement proper dynamic loading from layoutName
     }
 }
 

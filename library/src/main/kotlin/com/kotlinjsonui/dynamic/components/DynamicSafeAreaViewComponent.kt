@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicSafeAreaViewComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic safe area view creation from JSON
             // - Apply system UI padding (status bar, navigation bar)
             // - Handle child components

@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicLazyColumnComponent {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement dynamic lazy column creation from JSON
             // - Parse list data and item templates
             // - Handle dynamic item rendering

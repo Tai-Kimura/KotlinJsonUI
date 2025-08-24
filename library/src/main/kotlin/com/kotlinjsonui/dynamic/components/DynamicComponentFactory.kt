@@ -10,7 +10,10 @@ import com.google.gson.JsonObject
 class DynamicComponentFactory {
     companion object {
         @Composable
-        fun create(json: JsonObject) {
+        fun create(
+            json: JsonObject,
+            data: Map<String, Any> = emptyMap()
+        ) {
             // TODO: Implement component factory
             // - Determine component type from JSON
             // - Delegate to appropriate component converter
