@@ -89,15 +89,17 @@ fun DynamicView(
         "constraintlayout" -> {
             DynamicConstraintLayoutComponent.create(json, data)
         }
-        "collection", "lazycolumn", "recyclerview" -> {
-            DynamicLazyColumnComponent.create(json, data)
+        "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> {
+            DynamicCollectionComponent.create(json, data)
         }
         "table", "listview" -> {
-            // Table is similar to collection but with different styling
-            DynamicLazyColumnComponent.create(json, data)
+            DynamicTableComponent.create(json, data)
         }
         "webview" -> {
             DynamicWebViewComponent.create(json, data)
+        }
+        "web" -> {
+            DynamicWebComponent.create(json, data)
         }
         "tabview" -> {
             DynamicTabViewComponent.create(json, data)
