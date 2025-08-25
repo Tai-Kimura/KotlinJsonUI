@@ -171,8 +171,8 @@ fun ImplementedAttributesTestGeneratedView(
                 )
                 Box(
                     modifier = Modifier
-                        .padding(10.dp)
                         .background(Color(android.graphics.Color.parseColor("#ffcccc")))
+                        .padding(10.dp)
                 ) {
                     Text(
                         text = "Ideal Size View (200x100)",

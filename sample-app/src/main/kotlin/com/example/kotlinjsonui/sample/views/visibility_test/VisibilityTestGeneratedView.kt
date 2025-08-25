@@ -87,7 +87,7 @@ fun VisibilityTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -105,9 +105,9 @@ fun VisibilityTestGeneratedView(
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp)
             )
             VisibilityWrapper(
                 visibility = "visible",
@@ -117,10 +117,10 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp)
+                    .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
             )
             }
             VisibilityWrapper(
@@ -131,10 +131,10 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
             )
             }
             Text(
@@ -142,29 +142,29 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
             )
             Text(
                 text = "After gone label (no gap)",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
             )
             Text(
                 text = "Opacity Tests",
                 fontSize = 18.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
-                    .padding(top = 30.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 30.dp)
             )
             Text(
                 text = "Opacity: 1.0 (fully visible)",
@@ -172,10 +172,10 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .alpha(1.0f)
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
             )
             Text(
                 text = "Opacity: 0.7",
@@ -183,10 +183,10 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .alpha(0.7f)
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
             )
             Text(
                 text = "Opacity: 0.5",
@@ -194,10 +194,10 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .alpha(0.5f)
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
             )
             Text(
                 text = "Opacity: 0.3",
@@ -205,10 +205,10 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .alpha(0.3f)
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
             )
             Text(
                 text = "Opacity: 0.1",
@@ -216,19 +216,19 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .alpha(0.1f)
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
             )
             Text(
                 text = "Alpha Test (same as opacity)",
                 fontSize = 18.sp,
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 modifier = Modifier
-                    .padding(top = 30.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 30.dp)
             )
             Text(
                 text = "Alpha: 0.6",
@@ -236,10 +236,10 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .alpha(0.6f)
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
             )
             Text(
                 text = "Dynamic Visibility Tests",
@@ -247,9 +247,9 @@ fun VisibilityTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .padding(top = 30.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 30.dp)
             )
             Button(
                 onClick = { },
@@ -272,11 +272,11 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                     .padding(10.dp)
-                    .wrapContentWidth()
-                    .wrapContentHeight()
             )
             }
             Button(
@@ -300,11 +300,11 @@ fun VisibilityTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                     .padding(10.dp)
-                    .wrapContentWidth()
-                    .wrapContentHeight()
             )
             }
         }

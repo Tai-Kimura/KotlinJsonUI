@@ -79,7 +79,7 @@ fun WidthTestGeneratedView(
             onClick = { viewModel.toggleDynamicMode() },
             modifier = Modifier
                 .wrapContentWidth()
-                .height(32.dp),
+                .height(44.dp),
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
@@ -105,10 +105,10 @@ fun WidthTestGeneratedView(
             color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 20.dp)
-                .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
                 .fillMaxWidth()
-                .height(50.dp),
+                .height(50.dp)
+                .padding(top = 20.dp)
+                .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
             textAlign = TextAlign.Center
         )
         Text(
@@ -116,10 +116,10 @@ fun WidthTestGeneratedView(
             color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 10.dp)
-                .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
                 .width(200.dp)
-                .height(50.dp),
+                .height(50.dp)
+                .padding(top = 10.dp)
+                .background(Color(android.graphics.Color.parseColor("#4ECDC4"))),
             textAlign = TextAlign.Center
         )
         Text(
@@ -127,10 +127,10 @@ fun WidthTestGeneratedView(
             color = Color(android.graphics.Color.parseColor("#FFFFFF")),
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 10.dp)
-                .background(Color(android.graphics.Color.parseColor("#45B7D1")))
                 .wrapContentWidth()
-                .height(50.dp),
+                .height(50.dp)
+                .padding(top = 10.dp)
+                .background(Color(android.graphics.Color.parseColor("#45B7D1"))),
             textAlign = TextAlign.Center
         )
         Row(
@@ -145,8 +145,8 @@ fun WidthTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 modifier = Modifier
                     .weight(1f)
-                    .background(Color(android.graphics.Color.parseColor("#96CEB4")))
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .background(Color(android.graphics.Color.parseColor("#96CEB4"))),
                 textAlign = TextAlign.Center
             )
             Text(
@@ -154,8 +154,8 @@ fun WidthTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .weight(2f)
-                    .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .background(Color(android.graphics.Color.parseColor("#FFEAA7"))),
                 textAlign = TextAlign.Center
             )
             Text(
@@ -163,8 +163,8 @@ fun WidthTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .weight(1f)
-                    .background(Color(android.graphics.Color.parseColor("#DFE6E9")))
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .background(Color(android.graphics.Color.parseColor("#DFE6E9"))),
                 textAlign = TextAlign.Center
             )
         }

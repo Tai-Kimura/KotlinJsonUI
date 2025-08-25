@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import android.util.Log
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.kotlinjsonui.components.VisibilityWrapper
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.dynamic.components.*
@@ -73,158 +74,72 @@ fun DynamicView(
         return
     }
     
+    // Check for visibility attribute
+    val visibility = styledJson.get("visibility")?.asString
+    
     // Render the appropriate component based on type
-    val rendered = when (type.lowercase()) {
-        "text", "label" -> {
-            DynamicTextComponent.create(styledJson, data)
-            true
-        }
-        "textfield" -> {
-            DynamicTextFieldComponent.create(styledJson, data)
-            true
-        }
-        "button" -> {
-            DynamicButtonComponent.create(styledJson, data)
-            true
-        }
-        "image" -> {
-            DynamicImageComponent.create(styledJson, data)
-            true
-        }
-        "networkimage" -> {
-            DynamicNetworkImageComponent.create(styledJson, data)
-            true
-        }
-        "circleimage" -> {
-            DynamicCircleImageComponent.create(styledJson, data)
-            true
-        }
-        "switch" -> {
-            DynamicSwitchComponent.create(styledJson, data)
-            true
-        }
-        "checkbox" -> {
-            DynamicCheckBoxComponent.create(styledJson, data)
-            true
-        }
-        "radio" -> {
-            DynamicRadioComponent.create(styledJson, data)
-            true
-        }
-        "slider" -> {
-            DynamicSliderComponent.create(styledJson, data)
-            true
-        }
-        "progress", "progressbar" -> {
-            DynamicProgressComponent.create(styledJson, data)
-            true
-        }
-        "indicator" -> {
-            DynamicIndicatorComponent.create(styledJson, data)
-            true
-        }
-        "selectbox", "spinner" -> {
-            DynamicSelectBoxComponent.create(styledJson, data)
-            true
-        }
-        "segment", "tablayout" -> {
-            DynamicSegmentComponent.create(styledJson, data)
-            true
-        }
-        "toggle" -> {
-            DynamicToggleComponent.create(styledJson, data)
-            true
-        }
-        "scrollview", "scroll" -> {
-            DynamicScrollViewComponent.create(styledJson, data)
-            true
-        }
-        "hstack", "row" -> {
-            DynamicHStackComponent.create(styledJson, data)
-            true
-        }
-        "vstack", "column" -> {
-            DynamicVStackComponent.create(styledJson, data)
-            true
-        }
-        "zstack", "box" -> {
-            DynamicZStackComponent.create(styledJson, data)
-            true
-        }
-        "container", "view" -> {
-            DynamicContainerComponent.create(styledJson, data)
-            true
-        }
-        "safeareaview" -> {
-            DynamicSafeAreaViewComponent.create(styledJson, data)
-            true
-        }
-        "constraintlayout" -> {
-            DynamicConstraintLayoutComponent.create(styledJson, data)
-            true
-        }
-        "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> {
-            DynamicCollectionComponent.create(styledJson, data)
-            true
-        }
-        "table", "listview" -> {
-            DynamicTableComponent.create(styledJson, data)
-            true
-        }
-        "webview" -> {
-            DynamicWebViewComponent.create(styledJson, data)
-            true
-        }
-        "web" -> {
-            DynamicWebComponent.create(styledJson, data)
-            true
-        }
-        "tabview" -> {
-            DynamicTabViewComponent.create(styledJson, data)
-            true
-        }
-        "gradientview" -> {
-            DynamicGradientViewComponent.create(styledJson, data)
-            true
-        }
-        "circleview" -> {
-            DynamicCircleViewComponent.create(styledJson, data)
-            true
-        }
-        "blurview" -> {
-            DynamicBlurViewComponent.create(styledJson, data)
-            true
-        }
-        "iconlabel" -> {
-            DynamicIconLabelComponent.create(styledJson, data)
-            true
-        }
-        "textview" -> {
-            DynamicTextViewComponent.create(styledJson, data)
-            true
-        }
-        "triangle" -> {
-            DynamicTriangleComponent.create(styledJson, data)
-            true
-        }
-        else -> {
-            // Unknown component type
-            false
+    val renderComponent: @Composable () -> Unit = {
+        when (type.lowercase()) {
+            "text", "label" -> DynamicTextComponent.create(styledJson, data)
+            "textfield" -> DynamicTextFieldComponent.create(styledJson, data)
+            "button" -> DynamicButtonComponent.create(styledJson, data)
+            "image" -> DynamicImageComponent.create(styledJson, data)
+            "networkimage" -> DynamicNetworkImageComponent.create(styledJson, data)
+            "circleimage" -> DynamicCircleImageComponent.create(styledJson, data)
+            "switch" -> DynamicSwitchComponent.create(styledJson, data)
+            "checkbox" -> DynamicCheckBoxComponent.create(styledJson, data)
+            "radio" -> DynamicRadioComponent.create(styledJson, data)
+            "slider" -> DynamicSliderComponent.create(styledJson, data)
+            "progress", "progressbar" -> DynamicProgressComponent.create(styledJson, data)
+            "indicator" -> DynamicIndicatorComponent.create(styledJson, data)
+            "selectbox", "spinner" -> DynamicSelectBoxComponent.create(styledJson, data)
+            "segment", "tablayout" -> DynamicSegmentComponent.create(styledJson, data)
+            "toggle" -> DynamicToggleComponent.create(styledJson, data)
+            "scrollview", "scroll" -> DynamicScrollViewComponent.create(styledJson, data)
+            "hstack", "row" -> DynamicHStackComponent.create(styledJson, data)
+            "vstack", "column" -> DynamicVStackComponent.create(styledJson, data)
+            "zstack", "box" -> DynamicZStackComponent.create(styledJson, data)
+            "container", "view" -> DynamicContainerComponent.create(styledJson, data)
+            "safeareaview" -> DynamicSafeAreaViewComponent.create(styledJson, data)
+            "constraintlayout" -> DynamicConstraintLayoutComponent.create(styledJson, data)
+            "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> DynamicCollectionComponent.create(styledJson, data)
+            "table", "listview" -> DynamicTableComponent.create(styledJson, data)
+            "webview" -> DynamicWebViewComponent.create(styledJson, data)
+            "web" -> DynamicWebComponent.create(styledJson, data)
+            "tabview" -> DynamicTabViewComponent.create(styledJson, data)
+            "gradientview" -> DynamicGradientViewComponent.create(styledJson, data)
+            "circleview" -> DynamicCircleViewComponent.create(styledJson, data)
+            "blurview" -> DynamicBlurViewComponent.create(styledJson, data)
+            "iconlabel" -> DynamicIconLabelComponent.create(styledJson, data)
+            "textview" -> DynamicTextViewComponent.create(styledJson, data)
+            "triangle" -> DynamicTriangleComponent.create(styledJson, data)
+            else -> {
+                // Unknown component type
+                val error = IllegalArgumentException("Unknown component type: $type")
+                onError?.invoke(error)
+                
+                // Log error in debug mode
+                if (Configuration.showErrorsInDebug) {
+                    Log.w("DynamicView", "Unknown component type: $type")
+                    ErrorComponent("Unknown component type: $type")
+                } else if (Configuration.fallbackComponent != null) {
+                    // Use custom fallback component if configured
+                    Configuration.fallbackComponent?.invoke(styledJson, data)
+                }
+            }
         }
     }
     
-    if (!rendered) {
-        val error = IllegalArgumentException("Unknown component type: $type")
-        onError?.invoke(error)
-        
-        // Log error in debug mode
-        if (Configuration.showErrorsInDebug) {
-            Log.w("DynamicView", "Unknown component type: $type")
-            ErrorComponent("Unknown component type: $type")
-        } else if (Configuration.fallbackComponent != null) {
-            // Use custom fallback component if configured
-            Configuration.fallbackComponent?.invoke(styledJson, data)
-        }
+    // Apply visibility wrapper if visibility attribute is present
+    if (!visibility.isNullOrEmpty()) {
+        // Process data binding for visibility
+        val processedVisibility = processDataBinding(visibility, data)
+        VisibilityWrapper(
+            visibility = processedVisibility,
+            content = renderComponent
+        )
+    } else {
+        renderComponent()
     }
 }
 

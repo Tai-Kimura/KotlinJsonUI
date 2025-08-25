@@ -97,7 +97,7 @@ fun ConverterTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -127,7 +127,7 @@ fun ConverterTestGeneratedView(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp)
+                    .height(50.dp)
                     .padding(top = 10.dp)
                     .background(Brush.linearGradient(listOf(Color(android.graphics.Color.parseColor("#FF0000")), Color(android.graphics.Color.parseColor("#00FF00")), Color(android.graphics.Color.parseColor("#0000FF")))))
             ) {

@@ -18,16 +18,16 @@
       },
       {
         "type": "Label",
-        "text": "Height 55, Padding [12, 20]",
+        "text": "Height 50, Padding 8 (current behavior)",
         "fontSize": 14,
         "fontColor": "#666666",
         "bottomMargin": 5
       },
       {
         "type": "Button",
-        "text": "Test Button 1",
-        "height": 55,
-        "padding": [12, 20],
+        "text": "Should be 50px total height",
+        "height": 50,
+        "padding": 8,
         "background": "#007AFF",
         "fontColor": "#FFFFFF",
         "cornerRadius": 8,
@@ -35,15 +35,15 @@
       },
       {
         "type": "Label",
-        "text": "Height 55, No Padding",
+        "text": "Height 50, No Padding",
         "fontSize": 14,
         "fontColor": "#666666",
         "bottomMargin": 5
       },
       {
         "type": "Button",
-        "text": "Test Button 2",
-        "height": 55,
+        "text": "This is 50px",
+        "height": 50,
         "background": "#34C759",
         "fontColor": "#FFFFFF",
         "cornerRadius": 8,
@@ -51,44 +51,20 @@
       },
       {
         "type": "Label",
-        "text": "No Height, Padding [12, 20]",
+        "text": "Height 66 (50 + 8*2), Padding 8",
         "fontSize": 14,
         "fontColor": "#666666",
         "bottomMargin": 5
       },
       {
         "type": "Button",
-        "text": "Test Button 3",
-        "padding": [12, 20],
+        "text": "Total height should match first button",
+        "height": 66,
+        "padding": 8,
         "background": "#FF9500",
-        "fontColor": "#FFFFFF",
-        "cornerRadius": 8,
-        "bottomMargin": 20
-      },
-      {
-        "type": "Label",
-        "text": "With bottomMargin 8, Height 55, Padding [12, 20]",
-        "fontSize": 14,
-        "fontColor": "#666666",
-        "bottomMargin": 5
-      },
-      {
-        "type": "Button",
-        "text": "Like primary_button style",
-        "height": 55,
-        "padding": [12, 20],
-        "bottomMargin": 8,
-        "background": "#007AFF",
         "fontColor": "#FFFFFF",
         "cornerRadius": 8
       }
     ]
-  },
-  "data": [
-    {
-      "name": "title",
-      "class": "String",
-      "defaultValue": "Button Test"
-    }
-  ]
+  }
 }

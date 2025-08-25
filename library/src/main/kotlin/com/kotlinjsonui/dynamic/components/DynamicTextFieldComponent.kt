@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
@@ -100,34 +102,57 @@ class DynamicTextFieldComponent {
                 else -> ImeAction.Default
             }
 
-            // Parse colors
+            // Parse colors with Configuration defaults
             val textColor = json.get("fontColor")?.asString?.let {
                 try {
                     Color(android.graphics.Color.parseColor(it))
                 } catch (e: Exception) {
-                    null
+                    Configuration.TextField.defaultTextColor
                 }
-            }
+            } ?: Configuration.TextField.defaultTextColor
 
             val placeholderColor = json.get("hintColor")?.asString?.let {
                 try {
                     Color(android.graphics.Color.parseColor(it))
                 } catch (e: Exception) {
-                    null
+                    Configuration.TextField.defaultPlaceholderColor
                 }
-            }
+            } ?: Configuration.TextField.defaultPlaceholderColor
 
             val backgroundColor = json.get("background")?.asString?.let {
                 try {
                     Color(android.graphics.Color.parseColor(it))
                 } catch (e: Exception) {
-                    null
+                    Configuration.TextField.defaultBackgroundColor
                 }
-            }
+            } ?: Configuration.TextField.defaultBackgroundColor
+            
+            val highlightBackgroundColor = json.get("highlightBackground")?.asString?.let {
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    Configuration.TextField.defaultHighlightBackgroundColor
+                }
+            } ?: Configuration.TextField.defaultHighlightBackgroundColor
+            
+            val borderColor = json.get("borderColor")?.asString?.let {
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    Configuration.TextField.defaultBorderColor
+                }
+            } ?: Configuration.TextField.defaultBorderColor
 
-            // Parse font size
-            val fontSize = json.get("fontSize")?.asInt
-            val hintFontSize = json.get("hintFontSize")?.asInt
+            // Parse font size with Configuration defaults
+            val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
+            val hintFontSize = json.get("hintFontSize")?.asInt ?: Configuration.TextField.defaultFontSize
+            
+            // Parse shape
+            val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.TextField.defaultCornerRadius.toFloat()
+            val shape = RoundedCornerShape(cornerRadius.dp)
+            
+            // Parse isOutlined
+            val isOutlined = json.get("isOutlined")?.asBoolean ?: false
 
             // Handle onTextChange event
             val onValueChange: (String) -> Unit = { newValue ->
@@ -226,7 +251,14 @@ class DynamicTextFieldComponent {
                     visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
                     textStyle = textStyle,
-                    backgroundColor = backgroundColor
+                    shape = shape,
+                    backgroundColor = backgroundColor,
+                    highlightBackgroundColor = highlightBackgroundColor,
+                    borderColor = borderColor,
+                    isOutlined = isOutlined,
+                    isSecure = isSecure,
+                    singleLine = singleLine,
+                    maxLines = maxLines
                 )
             } else {
                 // Use CustomTextField
@@ -238,7 +270,14 @@ class DynamicTextFieldComponent {
                     visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
                     textStyle = textStyle,
-                    backgroundColor = backgroundColor
+                    shape = shape,
+                    backgroundColor = backgroundColor,
+                    highlightBackgroundColor = highlightBackgroundColor,
+                    borderColor = borderColor,
+                    isOutlined = isOutlined,
+                    isSecure = isSecure,
+                    singleLine = singleLine,
+                    maxLines = maxLines
                 )
             }
         }

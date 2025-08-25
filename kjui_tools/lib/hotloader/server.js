@@ -175,7 +175,19 @@ if (watchDirs.length > 0) {
     // Run kjui build when files change
     function runBuild() {
         console.log('Running kjui build...');
-        exec('kjui build', { cwd: projectRoot }, (error, stdout, stderr) => {
+        // Find kjui relative to this server.js file
+        // server.js is at kjui_tools/lib/hotloader/server.js
+        // kjui is at kjui_tools/bin/kjui
+        const serverDir = __dirname; // kjui_tools/lib/hotloader
+        const kjuiPath = path.join(serverDir, '..', '..', 'bin', 'kjui');
+        const absoluteKjuiPath = path.resolve(kjuiPath);
+        
+        if (!fs.existsSync(absoluteKjuiPath)) {
+            console.error(`kjui not found at ${absoluteKjuiPath}`);
+            return;
+        }
+        
+        exec(`ruby ${absoluteKjuiPath} build`, { cwd: projectRoot }, (error, stdout, stderr) => {
             if (error) {
                 console.error('Build error:', error);
                 return;

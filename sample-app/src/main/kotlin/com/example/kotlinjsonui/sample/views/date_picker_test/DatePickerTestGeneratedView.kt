@@ -100,7 +100,7 @@ fun DatePickerTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -118,9 +118,9 @@ fun DatePickerTestGeneratedView(
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp)
             )
             Text(
                 text = "Basic DatePicker",
@@ -279,12 +279,12 @@ fun DatePickerTestGeneratedView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(15.dp)
                     .padding(top = 30.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .padding(15.dp)
             ) {
                 Text(
                     text = "Selected Values:",

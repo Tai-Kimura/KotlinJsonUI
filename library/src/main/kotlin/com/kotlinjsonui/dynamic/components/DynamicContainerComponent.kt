@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -101,7 +102,19 @@ class DynamicContainerComponent {
                 horizontalAlignment = horizontalAlignment
             ) {
                 finalChildren.forEach { child ->
-                    DynamicView(child, data)
+                    // Get alignment for this child
+                    val childAlignment = ModifierBuilder.getChildAlignment(child, "Column")
+                    
+                    // Apply alignment modifier if needed
+                    if (childAlignment != null && childAlignment is Alignment.Horizontal) {
+                        Box(
+                            modifier = Modifier.align(childAlignment)
+                        ) {
+                            DynamicView(child, data)
+                        }
+                    } else {
+                        DynamicView(child, data)
+                    }
                 }
             }
         }
@@ -130,7 +143,19 @@ class DynamicContainerComponent {
                 verticalAlignment = verticalAlignment
             ) {
                 finalChildren.forEach { child ->
-                    DynamicView(child, data)
+                    // Get alignment for this child
+                    val childAlignment = ModifierBuilder.getChildAlignment(child, "Row")
+                    
+                    // Apply alignment modifier if needed
+                    if (childAlignment != null && childAlignment is Alignment.Vertical) {
+                        Box(
+                            modifier = Modifier.align(childAlignment)
+                        ) {
+                            DynamicView(child, data)
+                        }
+                    } else {
+                        DynamicView(child, data)
+                    }
                 }
             }
         }
@@ -150,7 +175,29 @@ class DynamicContainerComponent {
                 contentAlignment = contentAlignment
             ) {
                 children.forEach { child ->
-                    DynamicView(child, data)
+                    // Get alignment for this child
+                    val childAlignment = ModifierBuilder.getChildAlignment(child, "Box")
+                    
+                    // Apply alignment modifier if needed
+                    when (childAlignment) {
+                        is Alignment -> {
+                            Box(
+                                modifier = Modifier.align(childAlignment)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        is BiasAlignment -> {
+                            Box(
+                                modifier = Modifier.align(childAlignment)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        else -> {
+                            DynamicView(child, data)
+                        }
+                    }
                 }
             }
         }
@@ -245,10 +292,16 @@ class DynamicContainerComponent {
         }
         
         private fun buildModifier(json: JsonObject): Modifier {
-            // Use ModifierBuilder for basic size and spacing
-            var modifier = ModifierBuilder.buildModifier(json)
+            // Build modifier with correct order: size -> margins -> background -> padding
+            var modifier: Modifier = Modifier
             
-            // Background color (before clip for proper rendering)
+            // 1. Apply size
+            modifier = ModifierBuilder.applySize(modifier, json)
+            
+            // 2. Apply margins (outer spacing)
+            modifier = ModifierBuilder.applyMargins(modifier, json)
+            
+            // 3. Background color (before padding so padding is inside the background)
             json.get("background")?.asString?.let { colorStr ->
                 try {
                     val color = Color(android.graphics.Color.parseColor(colorStr))
@@ -302,6 +355,9 @@ class DynamicContainerComponent {
                     }
                 }
             }
+            
+            // 4. Apply padding (inner spacing) - MUST be applied last
+            modifier = ModifierBuilder.applyPadding(modifier, json)
             
             return modifier
         }

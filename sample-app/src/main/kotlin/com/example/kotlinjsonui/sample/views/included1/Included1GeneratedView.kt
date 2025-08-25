@@ -75,9 +75,9 @@ fun Included1GeneratedView(
             fontSize = 24.sp,
             color = Color(android.graphics.Color.parseColor("#000000")),
             modifier = Modifier
-                .padding(top = 20.dp)
                 .wrapContentWidth()
                 .wrapContentHeight()
+                .padding(top = 20.dp)
         )
     }    }
     // >>> GENERATED_CODE_END

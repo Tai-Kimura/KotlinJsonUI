@@ -192,72 +192,72 @@ fun ScrollTestGeneratedView(
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 2",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 3",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 4",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 5",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 6",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#E0FFFF")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 7",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#FFF0E0")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
                 Text(
                     text = "Horizontal Scroll Item 8 (End)",
                     fontSize = 14.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(150.dp)
                         .background(Color(android.graphics.Color.parseColor("#F0E0FF")))
                         .padding(10.dp)
-                        .width(150.dp)
                 )
             }
             }

@@ -72,14 +72,14 @@ fun ButtonEnabledTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .padding(20.dp)
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .padding(20.dp)
     ) {
         Button(
             onClick = { viewModel.toggleDynamicMode() },
             modifier = Modifier
                 .wrapContentWidth()
-                .height(32.dp),
+                .height(44.dp),
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(

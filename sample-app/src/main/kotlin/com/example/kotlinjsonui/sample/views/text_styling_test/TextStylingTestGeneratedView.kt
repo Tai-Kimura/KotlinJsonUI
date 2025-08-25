@@ -87,7 +87,7 @@ fun TextStylingTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -105,9 +105,9 @@ fun TextStylingTestGeneratedView(
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp)
             )
             Text(
                 text = "Font Sizes",
@@ -173,10 +173,10 @@ fun TextStylingTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                    .padding(5.dp)
-                    .fillMaxWidth(),
+                    .padding(5.dp),
                 textAlign = TextAlign.Start
             )
             Text(
@@ -184,10 +184,10 @@ fun TextStylingTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                    .padding(5.dp)
-                    .fillMaxWidth(),
+                    .padding(5.dp),
                 textAlign = TextAlign.Center
             )
             Text(
@@ -195,10 +195,10 @@ fun TextStylingTestGeneratedView(
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                    .padding(5.dp)
-                    .fillMaxWidth(),
+                    .padding(5.dp),
                 textAlign = TextAlign.End
             )
             Text(

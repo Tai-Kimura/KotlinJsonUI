@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
@@ -45,20 +46,27 @@ class DynamicZStackComponent {
                 else -> Alignment.TopStart
             }
             
-            // Parse background color
-            val backgroundColor = json.get("background")?.asString?.let {
+            // Build modifier with correct order: size -> margins -> background -> padding
+            var modifier: Modifier = Modifier
+            
+            // 1. Apply size
+            modifier = ModifierBuilder.applySize(modifier, json)
+            
+            // 2. Apply margins (outer spacing)
+            modifier = ModifierBuilder.applyMargins(modifier, json)
+            
+            // 3. Background color (before padding so padding is inside the background)
+            json.get("background")?.asString?.let { colorStr ->
                 try {
-                    Color(android.graphics.Color.parseColor(it))
+                    val color = Color(android.graphics.Color.parseColor(colorStr))
+                    modifier = modifier.background(color)
                 } catch (e: Exception) {
-                    null
+                    // Invalid color
                 }
             }
             
-            // Build modifier
-            var modifier = ModifierBuilder.buildModifier(json)
-            backgroundColor?.let {
-                modifier = modifier.background(it)
-            }
+            // 4. Apply padding (inner spacing) - MUST be applied last
+            modifier = ModifierBuilder.applyPadding(modifier, json)
             
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {
@@ -83,67 +91,40 @@ class DynamicZStackComponent {
                     if (childElement.isJsonObject) {
                         val childJson = childElement.asJsonObject
                         
-                        // Check if child has its own alignment
-                        val childAlignment = parseChildAlignment(childJson)
+                        // Use ModifierBuilder to get alignment (supports BiasAlignment)
+                        val childAlignment = ModifierBuilder.getChildAlignment(childJson, "Box")
                         
-                        if (childAlignment != null) {
-                            // Child has specific alignment
-                            Box(
-                                modifier = Modifier.align(childAlignment)
-                            ) {
+                        when (childAlignment) {
+                            is Alignment -> {
+                                Box(
+                                    modifier = Modifier.align(childAlignment)
+                                ) {
+                                    DynamicView(
+                                        json = childJson,
+                                        data = data
+                                    )
+                                }
+                            }
+                            is BiasAlignment -> {
+                                Box(
+                                    modifier = Modifier.align(childAlignment)
+                                ) {
+                                    DynamicView(
+                                        json = childJson,
+                                        data = data
+                                    )
+                                }
+                            }
+                            else -> {
+                                // Use default alignment
                                 DynamicView(
                                     json = childJson,
                                     data = data
                                 )
                             }
-                        } else {
-                            // Use default alignment
-                            DynamicView(
-                                json = childJson,
-                                data = data
-                            )
                         }
                     }
                 }
-            }
-        }
-        
-        private fun parseChildAlignment(json: JsonObject): Alignment? {
-            // Check for individual alignment properties
-            val hasAlignment = json.has("alignTop") || json.has("alignBottom") ||
-                             json.has("alignLeft") || json.has("alignRight") ||
-                             json.has("centerHorizontal") || json.has("centerVertical") ||
-                             json.has("centerInParent")
-            
-            if (!hasAlignment) return null
-            
-            // Determine alignment based on combination of properties
-            val alignTop = json.get("alignTop")?.asBoolean == true
-            val alignBottom = json.get("alignBottom")?.asBoolean == true
-            val alignLeft = json.get("alignLeft")?.asBoolean == true
-            val alignRight = json.get("alignRight")?.asBoolean == true
-            val centerHorizontal = json.get("centerHorizontal")?.asBoolean == true
-            val centerVertical = json.get("centerVertical")?.asBoolean == true
-            val centerInParent = json.get("centerInParent")?.asBoolean == true
-            
-            return when {
-                centerInParent -> Alignment.Center
-                alignTop && alignLeft -> Alignment.TopStart
-                alignTop && alignRight -> Alignment.TopEnd
-                alignTop && centerHorizontal -> Alignment.TopCenter
-                alignTop -> Alignment.TopCenter
-                alignBottom && alignLeft -> Alignment.BottomStart
-                alignBottom && alignRight -> Alignment.BottomEnd
-                alignBottom && centerHorizontal -> Alignment.BottomCenter
-                alignBottom -> Alignment.BottomCenter
-                alignLeft && centerVertical -> Alignment.CenterStart
-                alignRight && centerVertical -> Alignment.CenterEnd
-                alignLeft -> Alignment.CenterStart
-                alignRight -> Alignment.CenterEnd
-                centerHorizontal && centerVertical -> Alignment.Center
-                centerHorizontal -> Alignment.Center
-                centerVertical -> Alignment.Center
-                else -> null
             }
         }
     }

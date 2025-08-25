@@ -1,6 +1,8 @@
 package com.kotlinjsonui.dynamic.helpers
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -30,6 +32,15 @@ object ModifierBuilder {
         modifier = applyPadding(modifier, json)
         
         return modifier
+    }
+    
+    /**
+     * Apply weight to modifier for Row/Column distribution
+     * Note: This returns the weight value, not a modifier.
+     * The actual weight modifier must be applied within RowScope/ColumnScope.
+     */
+    fun getWeight(json: JsonObject): Float? {
+        return json.get("weight")?.asFloat
     }
     
     /**
@@ -278,5 +289,78 @@ object ModifierBuilder {
         modifier = applyMargins(modifier, json)
         modifier = applyPadding(modifier, json)
         return modifier
+    }
+    
+    /**
+     * Get alignment for child element based on parent type
+     * Returns appropriate Alignment value or null if no alignment specified
+     * 
+     * @param json Child's JSON configuration
+     * @param parentType Type of parent container ("Row", "Column", "Box")
+     * @return Alignment value appropriate for the parent type
+     */
+    fun getChildAlignment(json: JsonObject, parentType: String): Any? {
+        return when (parentType) {
+            "Row", "HStack" -> {
+                // In Row, only vertical alignment is valid
+                when {
+                    json.get("alignTop")?.asBoolean == true -> Alignment.Top
+                    json.get("alignBottom")?.asBoolean == true -> Alignment.Bottom
+                    json.get("centerVertical")?.asBoolean == true -> Alignment.CenterVertically
+                    else -> null
+                }
+            }
+            "Column", "VStack" -> {
+                // In Column, only horizontal alignment is valid
+                when {
+                    json.get("alignLeft")?.asBoolean == true -> Alignment.Start
+                    json.get("alignRight")?.asBoolean == true -> Alignment.End
+                    json.get("centerHorizontal")?.asBoolean == true -> Alignment.CenterHorizontally
+                    else -> null
+                }
+            }
+            "Box", "ZStack" -> {
+                // In Box, all alignments are valid
+                val alignTop = json.get("alignTop")?.asBoolean == true
+                val alignBottom = json.get("alignBottom")?.asBoolean == true  
+                val alignLeft = json.get("alignLeft")?.asBoolean == true
+                val alignRight = json.get("alignRight")?.asBoolean == true
+                val centerHorizontal = json.get("centerHorizontal")?.asBoolean == true
+                val centerVertical = json.get("centerVertical")?.asBoolean == true
+                val centerInParent = json.get("centerInParent")?.asBoolean == true
+                
+                when {
+                    centerInParent -> Alignment.Center
+                    
+                    // Use BiasAlignment for single-direction alignments that need edge positioning
+                    alignTop && !alignBottom && !alignLeft && !alignRight && !centerHorizontal -> 
+                        BiasAlignment(-1f, -1f) // Top edge, horizontally start
+                    alignBottom && !alignTop && !alignLeft && !alignRight && !centerHorizontal -> 
+                        BiasAlignment(-1f, 1f) // Bottom edge, horizontally start
+                    alignLeft && !alignRight && !alignTop && !alignBottom && !centerVertical -> 
+                        BiasAlignment(-1f, -1f) // Left edge, vertically top
+                    alignRight && !alignLeft && !alignTop && !alignBottom && !centerVertical -> 
+                        BiasAlignment(1f, -1f) // Right edge, vertically top
+                    
+                    // Combined alignments with standard Alignment
+                    alignTop && alignLeft -> Alignment.TopStart
+                    alignTop && alignRight -> Alignment.TopEnd
+                    alignTop && centerHorizontal -> Alignment.TopCenter
+                    alignBottom && alignLeft -> Alignment.BottomStart
+                    alignBottom && alignRight -> Alignment.BottomEnd
+                    alignBottom && centerHorizontal -> Alignment.BottomCenter
+                    centerVertical && alignLeft -> Alignment.CenterStart
+                    centerVertical && alignRight -> Alignment.CenterEnd
+                    centerVertical && centerHorizontal -> Alignment.Center
+                    
+                    // Center alignments for single-direction center
+                    centerHorizontal -> BiasAlignment(0f, -1f) // Horizontally centered, top edge
+                    centerVertical -> BiasAlignment(-1f, 0f) // Vertically centered, left edge
+                    
+                    else -> null
+                }
+            }
+            else -> null
+        }
     }
 }

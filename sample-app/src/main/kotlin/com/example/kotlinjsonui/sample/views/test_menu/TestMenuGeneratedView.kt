@@ -83,8 +83,8 @@ fun TestMenuGeneratedView(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(20.dp)
                 .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                .padding(20.dp)
         ) {
             Text(
                 text = "KotlinJsonUI Feature Tests",
@@ -99,7 +99,7 @@ fun TestMenuGeneratedView(
                 modifier = Modifier
                     .padding(bottom = 20.dp)
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(6.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -124,7 +124,7 @@ fun TestMenuGeneratedView(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .wrapContentWidth()
-                    .height(44.dp),
+                    .height(55.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -142,7 +142,7 @@ fun TestMenuGeneratedView(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .wrapContentWidth()
-                    .height(44.dp),
+                    .height(55.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -160,7 +160,7 @@ fun TestMenuGeneratedView(
                 modifier = Modifier
                     .padding(bottom = 8.dp)
                     .wrapContentWidth()
-                    .height(44.dp),
+                    .height(55.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(

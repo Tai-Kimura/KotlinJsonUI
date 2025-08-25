@@ -97,7 +97,7 @@ fun IncludeTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -123,9 +123,9 @@ fun IncludeTestGeneratedView(
                 )
                 Column(
                     modifier = Modifier
-                        .padding(15.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color(android.graphics.Color.parseColor("#E8F4FD")))
+                        .padding(15.dp)
                 ) {
                     Text(
                         text = "Control Panel",
@@ -207,9 +207,9 @@ fun IncludeTestGeneratedView(
                     }
                     Row(
                         modifier = Modifier
-                            .padding(10.dp)
                             .clip(RoundedCornerShape(5.dp))
                             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                            .padding(10.dp)
                     ) {
                         Text(
                             text = "Current Values: ",

@@ -70,9 +70,9 @@ fun Included2GeneratedView(
         // Static Mode - use generated code
         Column(
         modifier = Modifier
-            .padding(15.dp)
             .clip(RoundedCornerShape(10.dp))
             .background(Color(android.graphics.Color.parseColor("#FFF4E6")))
+            .padding(15.dp)
     ) {
         Text(
             text = "Included View 2",
@@ -82,9 +82,9 @@ fun Included2GeneratedView(
         )
         Column(
             modifier = Modifier
-                .padding(10.dp)
                 .clip(RoundedCornerShape(5.dp))
                 .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                .padding(10.dp)
         ) {
             Text(
                 text = "${data.viewTitle}",

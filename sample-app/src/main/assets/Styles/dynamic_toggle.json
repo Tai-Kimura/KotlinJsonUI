@@ -8,6 +8,6 @@
   "fontWeight": "medium",
   "cornerRadius": 6,
   "padding": [8, 12],
-  "height": 60,
+  "height": 44,
   "width": "wrapContent"
 }

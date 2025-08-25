@@ -104,7 +104,7 @@ fun BindingTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -122,9 +122,9 @@ fun BindingTestGeneratedView(
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp)
             )
             Text(
                 text = "Text Binding",
@@ -194,12 +194,12 @@ fun BindingTestGeneratedView(
                     fontSize = 20.sp,
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
+                        .width(100.dp)
+                        .height(44.dp)
                         .padding(start = 5.dp)
                         .padding(end = 5.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                        .width(100.dp)
-                        .height(44.dp),
+                        .background(Color(android.graphics.Color.parseColor("#E0E0E0"))),
                     textAlign = TextAlign.Center
                 )
                 Button(

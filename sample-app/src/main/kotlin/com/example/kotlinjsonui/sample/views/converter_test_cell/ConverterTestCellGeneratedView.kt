@@ -68,8 +68,8 @@ fun ConverterTestCellGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(10.dp)
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .padding(10.dp)
     ) {
         Text(
             text = "${data.title}",

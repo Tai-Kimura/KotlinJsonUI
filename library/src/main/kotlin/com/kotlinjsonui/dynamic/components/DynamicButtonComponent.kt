@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import kotlinx.coroutines.CoroutineScope
@@ -120,7 +123,7 @@ class DynamicButtonComponent {
             }
 
             // Parse text style
-            val fontSize = json.get("fontSize")?.asInt ?: 14
+            val fontSize = json.get("fontSize")?.asInt ?: Configuration.Button.defaultFontSize
             val fontWeight = when (json.get("fontWeight")?.asString?.lowercase()) {
                 "bold" -> FontWeight.Bold
                 "semibold" -> FontWeight.SemiBold
@@ -130,26 +133,26 @@ class DynamicButtonComponent {
                 else -> FontWeight.Normal
             }
 
-            // Parse colors
+            // Parse colors with Configuration defaults
             val textColor = json.get("fontColor")?.asString?.let {
                 try {
                     Color(android.graphics.Color.parseColor(it))
                 } catch (e: Exception) {
-                    null
+                    Configuration.Button.defaultTextColor
                 }
-            }
+            } ?: Configuration.Button.defaultTextColor
 
             val backgroundColor = json.get("background")?.asString?.let {
                 try {
                     Color(android.graphics.Color.parseColor(it))
                 } catch (e: Exception) {
-                    null
+                    Configuration.Button.defaultBackgroundColor
                 }
-            }
+            } ?: Configuration.Button.defaultBackgroundColor
 
-            // Parse shape
-            val cornerRadius = json.get("cornerRadius")?.asFloat
-            val shape = cornerRadius?.let { RoundedCornerShape(it.dp) }
+            // Parse shape with Configuration default
+            val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.Button.defaultCornerRadius.toFloat()
+            val shape = RoundedCornerShape(cornerRadius.dp)
 
             // Parse elevation/shadow
             val elevation = when (val shadow = json.get("shadow")) {
@@ -167,12 +170,10 @@ class DynamicButtonComponent {
 
             // Build button colors
             val colors = ButtonDefaults.buttonColors(
-                containerColor = backgroundColor ?: ButtonDefaults.buttonColors().containerColor,
-                contentColor = textColor ?: ButtonDefaults.buttonColors().contentColor,
-                disabledContainerColor = backgroundColor?.copy(alpha = 0.5f)
-                    ?: ButtonDefaults.buttonColors().disabledContainerColor,
-                disabledContentColor = textColor?.copy(alpha = 0.5f)
-                    ?: ButtonDefaults.buttonColors().disabledContentColor
+                containerColor = backgroundColor,
+                contentColor = textColor,
+                disabledContainerColor = backgroundColor.copy(alpha = 0.5f),
+                disabledContentColor = textColor.copy(alpha = 0.5f)
             )
 
             // Build content padding
@@ -186,7 +187,7 @@ class DynamicButtonComponent {
                 onClick = onClick,
                 modifier = modifier,
                 enabled = isEnabled,
-                shape = shape ?: ButtonDefaults.shape,
+                shape = shape,
                 colors = colors,
                 elevation = elevation,
                 contentPadding = contentPadding
@@ -302,9 +303,11 @@ class DynamicButtonComponent {
         private fun buildModifier(json: JsonObject): Modifier {
             // Use ModifierBuilder for size and margins only 
             // (padding is handled separately as contentPadding for Button)
-            return ModifierBuilder.buildSizeModifier(json).let { modifier ->
-                ModifierBuilder.applyMargins(modifier, json)
-            }
+            // Order: margins first, then size (same as static generation)
+            var modifier: Modifier = Modifier
+            modifier = ModifierBuilder.applyMargins(modifier, json)
+            modifier = ModifierBuilder.applySize(modifier, json)
+            return modifier
         }
     }
 }

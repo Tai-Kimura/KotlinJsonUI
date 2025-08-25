@@ -88,7 +88,7 @@ fun AlignmentComboTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -107,9 +107,9 @@ fun AlignmentComboTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 20.dp)
                     .wrapContentWidth()
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .padding(bottom = 20.dp),
                 textAlign = TextAlign.Center
             )
             Text(

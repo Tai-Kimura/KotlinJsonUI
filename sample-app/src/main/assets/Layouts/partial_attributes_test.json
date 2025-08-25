@@ -2,6 +2,7 @@
   "type": "SafeAreaView",
   "width": "matchParent",
   "height": "matchParent",
+  "background": "#FFFFFF",
   "child": {
     "type": "ScrollView",
     "width": "matchParent",

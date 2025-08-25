@@ -76,8 +76,8 @@ fun TextfieldTestGeneratedView(
         // Static Mode - use generated code
         Column(
         modifier = Modifier
-            .padding(20.dp)
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .padding(20.dp)
     ) {
         Text(
             text = "TextField Test",

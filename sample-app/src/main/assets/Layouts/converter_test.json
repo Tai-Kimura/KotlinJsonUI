@@ -34,7 +34,7 @@
         {
           "type": "GradientView",
           "width": "matchParent",
-          "height": 100,
+          "height": 50,
           "topMargin": 10,
           "colors": [
             "#FF0000",

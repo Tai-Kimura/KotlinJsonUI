@@ -88,7 +88,7 @@ fun AlignmentTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -107,9 +107,9 @@ fun AlignmentTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 20.dp)
                     .wrapContentWidth()
-                    .wrapContentHeight(),
+                    .wrapContentHeight()
+                    .padding(bottom = 20.dp),
                 textAlign = TextAlign.Center
             )
             Text(
@@ -118,9 +118,9 @@ fun AlignmentTestGeneratedView(
                 color = Color(android.graphics.Color.parseColor("#333333")),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .padding(bottom = 10.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(bottom = 10.dp)
             )
             Box(
                 modifier = Modifier
@@ -186,10 +186,10 @@ fun AlignmentTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(BiasAlignment(1f, -1f))
-                        .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
+                        .padding(8.dp)
                 )
             }
             Box(
@@ -205,10 +205,10 @@ fun AlignmentTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
-                        .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
-                        .padding(8.dp)
                         .wrapContentWidth()
-                        .wrapContentHeight(),
+                        .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -225,10 +225,10 @@ fun AlignmentTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, 0f))
-                        .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                        .padding(8.dp)
                 )
             }
             Box(
@@ -269,39 +269,39 @@ fun AlignmentTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.Top)
-                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "Default",
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "Bottom",
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.Bottom)
-                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "Center",
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
-                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .padding(8.dp)
                 )
             }
             Text(
@@ -324,39 +324,39 @@ fun AlignmentTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.Start)
-                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "Default",
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "alignRight",
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.End)
-                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
-                        .padding(8.dp)
                         .wrapContentWidth()
                         .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .padding(8.dp)
                 )
                 Text(
                     text = "centerHorizontal",
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
-                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
-                        .padding(8.dp)
                         .wrapContentWidth()
-                        .wrapContentHeight(),
+                        .wrapContentHeight()
+                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
             }

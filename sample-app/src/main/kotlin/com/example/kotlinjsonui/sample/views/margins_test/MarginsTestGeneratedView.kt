@@ -85,7 +85,7 @@ fun MarginsTestGeneratedView(
                 onClick = { viewModel.toggleDynamicMode() },
                 modifier = Modifier
                     .wrapContentWidth()
-                    .height(32.dp),
+                    .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -103,82 +103,82 @@ fun MarginsTestGeneratedView(
                 fontSize = 24.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp)
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp)
             )
             Text(
                 text = "All margins: [20, 20, 20, 20]",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
             )
             Text(
                 text = "Left margin: 40",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
                     .padding(top = 10.dp)
                     .padding(start = 40.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
-                    .wrapContentWidth()
-                    .wrapContentHeight()
             )
             Text(
                 text = "Right margin: 40",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
                     .padding(top = 10.dp)
                     .padding(end = 40.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
-                    .wrapContentWidth()
-                    .wrapContentHeight()
             )
             Text(
                 text = "Top margin: 30",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 30.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 30.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
             )
             Text(
                 text = "Bottom margin: 30",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(bottom = 30.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(bottom = 30.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
             )
             Text(
                 text = "Label with padding: 20",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
                     .padding(top = 10.dp)
                     .background(Color(android.graphics.Color.parseColor("#E0FFFF")))
                     .padding(20.dp)
-                    .wrapContentWidth()
-                    .wrapContentHeight()
             )
             Text(
                 text = "Label with leftPadding: 30, rightPadding: 30",
                 fontSize = 16.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 modifier = Modifier
-                    .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                     .wrapContentWidth()
                     .wrapContentHeight()
+                    .padding(top = 10.dp)
+                    .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
             )
             Box(
                 modifier = Modifier
@@ -210,10 +210,10 @@ fun MarginsTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .widthIn(max = 200.dp)
+                        .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
                 )
             }
             Box(
@@ -229,10 +229,10 @@ fun MarginsTestGeneratedView(
                     color = Color(android.graphics.Color.parseColor("#000000")),
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .widthIn(min = 150.dp)
+                        .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
                 )
             }
         }

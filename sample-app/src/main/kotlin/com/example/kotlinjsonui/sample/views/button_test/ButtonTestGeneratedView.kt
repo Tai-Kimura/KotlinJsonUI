@@ -71,41 +71,109 @@ fun ButtonTestGeneratedView(
         }
     } else {
         // Static Mode - use generated code
-        Box(
+        LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
+            .fillMaxWidth()
+            .fillMaxHeight()
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
+        item {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                text = "${data.title}",
-                fontSize = 24.sp,
+                text = "Button Height Test",
+                fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#000000")),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
+                modifier = Modifier.padding(bottom = 20.dp)
             )
             Text(
-                text = "Welcome to ButtonTest",
-                fontSize = 16.sp,
+                text = "Height 55, Padding [12, 20]",
+                fontSize = 14.sp,
                 color = Color(android.graphics.Color.parseColor("#666666")),
-                modifier = Modifier
+                modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
-                onClick = { viewModel.onGetStarted() },
+                onClick = { },
+                modifier = Modifier
+                    .padding(bottom = 20.dp)
+                    .height(55.dp),
                 shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 24.dp),
+                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#6200EE"))
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
                                 )
             ) {
                 Text(
-                    text = "Get Started",
+                    text = "Test Button 1",
                     color = Color(android.graphics.Color.parseColor("#FFFFFF")),
                 )
             }
+            Text(
+                text = "Height 55, No Padding",
+                fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier.padding(bottom = 5.dp)
+            )
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .padding(bottom = 20.dp)
+                    .height(55.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                )
+            ) {
+                Text(
+                    text = "Test Button 2",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Text(
+                text = "No Height, Padding [12, 20]",
+                fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier.padding(bottom = 5.dp)
+            )
+            Button(
+                onClick = { },
+                modifier = Modifier.padding(bottom = 20.dp),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                )
+            ) {
+                Text(
+                    text = "Test Button 3",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Text(
+                text = "With bottomMargin 8, Height 55, Padding [12, 20]",
+                fontSize = 14.sp,
+                color = Color(android.graphics.Color.parseColor("#666666")),
+                modifier = Modifier.padding(bottom = 5.dp)
+            )
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .height(55.dp),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                )
+            ) {
+                Text(
+                    text = "Like primary_button style",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+        }
         }
     }    }
     // >>> GENERATED_CODE_END

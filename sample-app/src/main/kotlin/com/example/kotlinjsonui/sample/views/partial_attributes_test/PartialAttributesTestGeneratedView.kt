@@ -84,6 +84,7 @@ fun PartialAttributesTestGeneratedView(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
+            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
     ) {
         LazyColumn(
             modifier = Modifier

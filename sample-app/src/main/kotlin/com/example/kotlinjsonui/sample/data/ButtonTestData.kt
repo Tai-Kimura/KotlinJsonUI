@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.kotlinjsonui.sample.viewmodels.ButtonTestViewModel
 
 data class ButtonTestData(
-    var title: String = "'ButtonTest'"
+    var title: String = "Button Test"
 ) {
     companion object {
         // Update properties from map
@@ -22,11 +22,6 @@ data class ButtonTestData(
         
         // Data properties
         map["title"] = title
-        
-        // Add onclick action lambdas if viewModel is provided
-        viewModel?.let { vm ->
-            map["onGetStarted"] = { vm.onGetStarted() }
-        }
         
         return map
     }
