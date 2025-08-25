@@ -15,11 +15,12 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic Radio Component Converter
  * Converts JSON to RadioButton/RadioGroup composable at runtime
- * 
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - bind: @{variable} for selected value binding
  * - options: Array of options or @{variable} for dynamic options
@@ -51,7 +52,7 @@ class DynamicRadioComponent {
                 else -> createRadioGroup(json, data)
             }
         }
-        
+
         @Composable
         private fun createRadioGroup(json: JsonObject, data: Map<String, Any>) {
             // Parse binding variable
@@ -61,16 +62,16 @@ class DynamicRadioComponent {
                     pattern.find(bind)?.groupValues?.get(1)
                 } else null
             }
-            
+
             // Get initial selected value
             val initialSelected = if (bindingVariable != null) {
                 (data[bindingVariable] as? String) ?: ""
             } else {
                 ""
             }
-            
+
             // State for the selected value
-            var selectedValue by remember(initialSelected, bindingVariable, data) { 
+            var selectedValue by remember(initialSelected, bindingVariable, data) {
                 mutableStateOf(
                     if (bindingVariable != null) {
                         (data[bindingVariable] as? String) ?: ""
@@ -79,14 +80,14 @@ class DynamicRadioComponent {
                     }
                 )
             }
-            
+
             // Update selected state when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     selectedValue = (data[bindingVariable] as? String) ?: ""
                 }
             }
-            
+
             // Parse options
             val options = when {
                 json.get("options")?.isJsonArray == true -> {
@@ -99,29 +100,34 @@ class DynamicRadioComponent {
                                     obj.get("label")?.asString ?: ""
                                 )
                             }
+
                             element.isJsonPrimitive -> {
                                 val value = element.asString
                                 Pair(value, value)
                             }
+
                             else -> Pair("", "")
                         }
                     }
                 }
+
                 json.get("options")?.asString?.contains("@{") == true -> {
                     // Dynamic options from data binding
                     val pattern = "@\\{([^}]+)\\}".toRegex()
                     val variable = pattern.find(json.get("options").asString)?.groupValues?.get(1)
+
                     @Suppress("UNCHECKED_CAST")
                     val dynamicOptions = data[variable] as? List<String> ?: emptyList()
                     dynamicOptions.map { Pair(it, it) }
                 }
+
                 else -> emptyList()
             }
-            
+
             // Handle value change
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
-                
+
                 // Call custom handler if specified
                 json.get("onValueChange")?.asString?.let { methodName ->
                     val handler = data[methodName]
@@ -156,20 +162,26 @@ class DynamicRadioComponent {
                     }
                 }
             }
-            
+
             // Parse colors
             val selectedColor = json.get("selectedColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    null
+                }
             }
-            
+
             val unselectedColor = json.get("unselectedColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    null
+                }
             }
-            
+
             val colors = RadioButtonDefaults.colors()
-            
+
             Column(
                 modifier = buildModifier(json)
             ) {
@@ -191,23 +203,23 @@ class DynamicRadioComponent {
                 }
             }
         }
-        
+
         @Composable
         private fun createRadioItem(json: JsonObject, data: Map<String, Any>) {
             val group = json.get("group")?.asString ?: "default"
             val id = json.get("id")?.asString ?: "radio_${System.currentTimeMillis()}"
             val text = json.get("text")?.asString ?: ""
-            
+
             // Variable name for selected state
             val selectedVar = if (group.lowercase() != "default") {
                 "selected${group.replaceFirstChar { it.uppercase() }}"
             } else {
                 "selectedRadiogroup"
             }
-            
+
             // Get current selected value
             val isSelected = (data[selectedVar] as? String) == id
-            
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = buildModifier(json)
@@ -215,11 +227,11 @@ class DynamicRadioComponent {
                 // Check for custom icons
                 val icon = json.get("icon")?.asString
                 val selectedIcon = json.get("selectedIcon")?.asString
-                
+
                 when {
                     // Standard radio button (circle icons or no icons)
-                    (icon == "circle" || icon == null) && 
-                    (selectedIcon == "checkmark.circle.fill" || selectedIcon == null) -> {
+                    (icon == "circle" || icon == null) &&
+                            (selectedIcon == "checkmark.circle.fill" || selectedIcon == null) -> {
                         RadioButton(
                             selected = isSelected,
                             onClick = {
@@ -238,8 +250,8 @@ class DynamicRadioComponent {
                         )
                     }
                     // Square checkbox appearance
-                    icon == "square" && 
-                    (selectedIcon == "checkmark.square.fill" || selectedIcon == null) -> {
+                    icon == "square" &&
+                            (selectedIcon == "checkmark.square.fill" || selectedIcon == null) -> {
                         Checkbox(
                             checked = isSelected,
                             onCheckedChange = {
@@ -261,7 +273,7 @@ class DynamicRadioComponent {
                     icon != null || selectedIcon != null -> {
                         val iconVector = mapIconName(icon ?: "star")
                         val selectedIconVector = mapIconName(selectedIcon ?: "star.fill")
-                        
+
                         IconButton(
                             onClick = {
                                 val updateData = data["updateData"]
@@ -282,8 +294,11 @@ class DynamicRadioComponent {
                                 contentDescription = text,
                                 tint = if (isSelected) {
                                     json.get("selectedColor")?.asString?.let {
-                                        try { Color(android.graphics.Color.parseColor(it)) }
-                                        catch (e: Exception) { MaterialTheme.colorScheme.primary }
+                                        try {
+                                            Color(android.graphics.Color.parseColor(it))
+                                        } catch (e: Exception) {
+                                            MaterialTheme.colorScheme.primary
+                                        }
                                     } ?: MaterialTheme.colorScheme.primary
                                 } else {
                                     Color.Gray
@@ -311,39 +326,43 @@ class DynamicRadioComponent {
                         )
                     }
                 }
-                
+
                 // Add label text
                 if (text.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    val textColor = (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                        try { Color(android.graphics.Color.parseColor(it)) }
-                        catch (e: Exception) { Color.Black }
-                    } ?: Color.Black
+                    val textColor =
+                        (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
+                            try {
+                                Color(android.graphics.Color.parseColor(it))
+                            } catch (e: Exception) {
+                                Color.Black
+                            }
+                        } ?: Color.Black
                     Text(text = text, color = textColor)
                 }
             }
         }
-        
+
         @Composable
         private fun createRadioGroupWithItems(json: JsonObject, data: Map<String, Any>) {
             val items = json.get("items")?.asJsonArray?.map { it.asString } ?: emptyList()
-            
+
             // Parse selected value binding
             val selectedValueStr = json.get("selectedValue")?.asString
             val bindingVariable = if (selectedValueStr?.contains("@{") == true) {
                 val pattern = "@\\{([^}]+)\\}".toRegex()
                 pattern.find(selectedValueStr)?.groupValues?.get(1)
             } else null
-            
+
             // Get initial selected value
             val initialSelected = if (bindingVariable != null) {
                 (data[bindingVariable] as? String) ?: ""
             } else {
                 ""
             }
-            
+
             // State for the selected value
-            var selectedValue by remember(initialSelected, bindingVariable, data) { 
+            var selectedValue by remember(initialSelected, bindingVariable, data) {
                 mutableStateOf(
                     if (bindingVariable != null) {
                         (data[bindingVariable] as? String) ?: ""
@@ -352,14 +371,14 @@ class DynamicRadioComponent {
                     }
                 )
             }
-            
+
             // Update selected state when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     selectedValue = (data[bindingVariable] as? String) ?: ""
                 }
             }
-            
+
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
                 if (bindingVariable != null) {
@@ -376,20 +395,24 @@ class DynamicRadioComponent {
                     }
                 }
             }
-            
+
             Column(
                 modifier = buildModifier(json)
             ) {
                 // Add label if present
                 json.get("text")?.asString?.let { label ->
-                    val textColor = (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                        try { Color(android.graphics.Color.parseColor(it)) }
-                        catch (e: Exception) { Color.Black }
-                    } ?: Color.Black
+                    val textColor =
+                        (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
+                            try {
+                                Color(android.graphics.Color.parseColor(it))
+                            } catch (e: Exception) {
+                                Color.Black
+                            }
+                        } ?: Color.Black
                     Text(text = label, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
-                
+
                 // Generate radio items
                 items.forEach { item ->
                     Row(
@@ -403,16 +426,20 @@ class DynamicRadioComponent {
                             onClick = { onValueChange(item) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        val textColor = (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            try { Color(android.graphics.Color.parseColor(it)) }
-                            catch (e: Exception) { Color.Black }
-                        } ?: Color.Black
+                        val textColor =
+                            (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
+                                try {
+                                    Color(android.graphics.Color.parseColor(it))
+                                } catch (e: Exception) {
+                                    Color.Black
+                                }
+                            } ?: Color.Black
                         Text(text = item, color = textColor)
                     }
                 }
             }
         }
-        
+
         private fun mapIconName(iconName: String): ImageVector {
             return when (iconName) {
                 "circle" -> Icons.Outlined.PanoramaFishEye
@@ -426,10 +453,10 @@ class DynamicRadioComponent {
                 else -> Icons.Outlined.Star
             }
         }
-        
+
         private fun buildModifier(json: JsonObject): Modifier {
             var modifier: Modifier = Modifier
-            
+
             // Apply margins first
             json.get("margins")?.asJsonArray?.let { margins ->
                 modifier = when (margins.size()) {
@@ -438,24 +465,26 @@ class DynamicRadioComponent {
                         vertical = margins[0].asFloat.dp,
                         horizontal = margins[1].asFloat.dp
                     )
+
                     4 -> modifier.padding(
                         top = margins[0].asFloat.dp,
                         end = margins[1].asFloat.dp,
                         bottom = margins[2].asFloat.dp,
                         start = margins[3].asFloat.dp
                     )
+
                     else -> modifier
                 }
             }
-            
+
             // Handle individual margin properties
             val topMargin = json.get("topMargin")?.asFloat ?: 0f
             val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
+            val leftMargin = json.get("leftMargin")?.asFloat
                 ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
+            val rightMargin = json.get("rightMargin")?.asFloat
                 ?: json.get("endMargin")?.asFloat ?: 0f
-            
+
             if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
                 modifier = modifier.padding(
                     top = topMargin.dp,
@@ -464,7 +493,7 @@ class DynamicRadioComponent {
                     end = rightMargin.dp
                 )
             }
-            
+
             // Apply padding
             json.get("paddings")?.asJsonArray?.let { paddings ->
                 modifier = when (paddings.size()) {
@@ -473,18 +502,20 @@ class DynamicRadioComponent {
                         vertical = paddings[0].asFloat.dp,
                         horizontal = paddings[1].asFloat.dp
                     )
+
                     4 -> modifier.padding(
                         top = paddings[0].asFloat.dp,
                         end = paddings[1].asFloat.dp,
                         bottom = paddings[2].asFloat.dp,
                         start = paddings[3].asFloat.dp
                     )
+
                     else -> modifier
                 }
             } ?: json.get("padding")?.asFloat?.let { padding ->
                 modifier = modifier.padding(padding.dp)
             }
-            
+
             return modifier
         }
     }

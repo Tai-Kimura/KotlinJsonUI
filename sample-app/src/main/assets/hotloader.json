@@ -1,7 +1,7 @@
 {
-  "ip": "192.168.3.11",
+  "ip": "192.168.3.32",
   "port": 8081,
-  "enabled": false,
-  "websocket_endpoint": "ws://192.168.3.11:8081",
-  "http_endpoint": "http://192.168.3.11:8081"
+  "enabled": true,
+  "websocket_endpoint": "ws://192.168.3.32:8081",
+  "http_endpoint": "http://192.168.3.32:8081"
 }

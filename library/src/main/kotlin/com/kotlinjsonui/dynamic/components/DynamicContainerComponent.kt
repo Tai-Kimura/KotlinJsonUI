@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic Container Component Converter
@@ -213,27 +214,8 @@ class DynamicContainerComponent {
         }
         
         private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-            
-            // Width and height
-            json.get("width")?.asFloat?.let { width ->
-                modifier = if (width < 0) {
-                    modifier.fillMaxWidth()
-                } else {
-                    modifier.width(width.dp)
-                }
-            }
-            
-            json.get("height")?.asFloat?.let { height ->
-                modifier = if (height < 0) {
-                    modifier.fillMaxHeight()
-                } else {
-                    modifier.height(height.dp)
-                }
-            }
-            
-            // Apply margins first
-            modifier = applyMargins(modifier, json)
+            // Use ModifierBuilder for basic size and spacing
+            var modifier = ModifierBuilder.buildModifier(json)
             
             // Background color (before clip for proper rendering)
             json.get("background")?.asString?.let { colorStr ->
@@ -290,101 +272,7 @@ class DynamicContainerComponent {
                 }
             }
             
-            // Apply padding after other visual effects
-            modifier = applyPadding(modifier, json)
-            
             return modifier
-        }
-        
-        private fun applyPadding(inputModifier: Modifier, json: JsonObject): Modifier {
-            var modifier = inputModifier
-            
-            // Handle paddings array
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                return when (paddings.size()) {
-                    1 -> modifier.padding(paddings[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle single padding value
-            json.get("padding")?.asFloat?.let { padding ->
-                return modifier.padding(padding.dp)
-            }
-            
-            // Handle individual padding properties
-            val paddingTop = json.get("paddingTop")?.asFloat 
-                ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingBottom = json.get("paddingBottom")?.asFloat 
-                ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingStart = json.get("paddingStart")?.asFloat 
-                ?: json.get("paddingLeft")?.asFloat 
-                ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            val paddingEnd = json.get("paddingEnd")?.asFloat 
-                ?: json.get("paddingRight")?.asFloat 
-                ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            
-            return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
-                modifier.padding(
-                    top = paddingTop.dp,
-                    bottom = paddingBottom.dp,
-                    start = paddingStart.dp,
-                    end = paddingEnd.dp
-                )
-            } else {
-                modifier
-            }
-        }
-        
-        private fun applyMargins(inputModifier: Modifier, json: JsonObject): Modifier {
-            var modifier = inputModifier
-            
-            // Handle margins array
-            json.get("margins")?.asJsonArray?.let { margins ->
-                return when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
-                ?: json.get("endMargin")?.asFloat ?: 0f
-            
-            return if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            } else {
-                modifier
-            }
         }
     }
 }

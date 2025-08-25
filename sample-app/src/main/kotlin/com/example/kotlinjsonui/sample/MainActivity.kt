@@ -52,14 +52,17 @@ import com.example.kotlinjsonui.sample.views.textfield_events_test.TextfieldEven
 import com.example.kotlinjsonui.sample.views.textfield_test.TextfieldTestView
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
+import com.kotlinjsonui.core.KotlinJsonUI
 import androidx.compose.ui.graphics.Color
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Initialize DynamicModeManager for the application
-        DynamicModeManager.initialize(applicationContext)
+        // Initialize KotlinJsonUI library
+        KotlinJsonUI.initialize(applicationContext)
+        
+        // Set initial dynamic mode state
         DynamicModeManager.setDynamicModeEnabled(this, false)
         
         // Configure link color globally (optional - you can customize this)

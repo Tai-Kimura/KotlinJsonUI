@@ -11,11 +11,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic CheckBox Component Converter
  * Converts JSON to CheckBox composable at runtime
- * 
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - bind: @{variable} for two-way binding
  * - label/text: String label text to display next to checkbox
@@ -40,16 +41,16 @@ class DynamicCheckBoxComponent {
                     pattern.find(bind)?.groupValues?.get(1)
                 } else null
             }
-            
+
             // Get initial checked state
             val initialChecked = if (bindingVariable != null) {
                 (data[bindingVariable] as? Boolean) ?: false
             } else {
                 false
             }
-            
+
             // State for the checkbox
-            var checked by remember(initialChecked, bindingVariable, data) { 
+            var checked by remember(initialChecked, bindingVariable, data) {
                 mutableStateOf(
                     if (bindingVariable != null) {
                         (data[bindingVariable] as? Boolean) ?: false
@@ -58,36 +59,38 @@ class DynamicCheckBoxComponent {
                     }
                 )
             }
-            
+
             // Update checked state when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     checked = (data[bindingVariable] as? Boolean) ?: false
                 }
             }
-            
+
             // Parse enabled state
             val isEnabled = when {
                 json.get("enabled")?.isJsonPrimitive == true -> {
                     val enabledValue = json.get("enabled")
                     when {
                         enabledValue.asJsonPrimitive.isBoolean -> enabledValue.asBoolean
-                        enabledValue.asJsonPrimitive.isString && 
-                        enabledValue.asString.contains("@{") -> {
+                        enabledValue.asJsonPrimitive.isString &&
+                                enabledValue.asString.contains("@{") -> {
                             val pattern = "@\\{([^}]+)\\}".toRegex()
                             val variable = pattern.find(enabledValue.asString)?.groupValues?.get(1)
                             (data[variable] as? Boolean) ?: true
                         }
+
                         else -> true
                     }
                 }
+
                 else -> true
             }
-            
+
             // Handle value change
             val onCheckedChange: (Boolean) -> Unit = { newValue ->
                 checked = newValue
-                
+
                 // Call custom handler if specified
                 json.get("onValueChange")?.asString?.let { methodName ->
                     val handler = data[methodName]
@@ -122,23 +125,29 @@ class DynamicCheckBoxComponent {
                     }
                 }
             }
-            
+
             // Parse colors
             val checkedColor = json.get("checkColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    null
+                }
             }
-            
+
             val uncheckedColor = json.get("uncheckedColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    null
+                }
             }
-            
+
             val colors = CheckboxDefaults.colors()
-            
+
             // Check if we have a label
             val labelText = json.get("label")?.asString ?: json.get("text")?.asString
-            
+
             if (labelText != null) {
                 // Checkbox with label - create a Row
                 Row(
@@ -165,10 +174,10 @@ class DynamicCheckBoxComponent {
                 )
             }
         }
-        
+
         private fun buildModifier(json: JsonObject): Modifier {
             var modifier: Modifier = Modifier
-            
+
             // Apply margins first
             json.get("margins")?.asJsonArray?.let { margins ->
                 modifier = when (margins.size()) {
@@ -177,24 +186,26 @@ class DynamicCheckBoxComponent {
                         vertical = margins[0].asFloat.dp,
                         horizontal = margins[1].asFloat.dp
                     )
+
                     4 -> modifier.padding(
                         top = margins[0].asFloat.dp,
                         end = margins[1].asFloat.dp,
                         bottom = margins[2].asFloat.dp,
                         start = margins[3].asFloat.dp
                     )
+
                     else -> modifier
                 }
             }
-            
+
             // Handle individual margin properties
             val topMargin = json.get("topMargin")?.asFloat ?: 0f
             val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
+            val leftMargin = json.get("leftMargin")?.asFloat
                 ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
+            val rightMargin = json.get("rightMargin")?.asFloat
                 ?: json.get("endMargin")?.asFloat ?: 0f
-            
+
             if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
                 modifier = modifier.padding(
                     top = topMargin.dp,
@@ -203,7 +214,7 @@ class DynamicCheckBoxComponent {
                     end = rightMargin.dp
                 )
             }
-            
+
             // Apply padding
             json.get("paddings")?.asJsonArray?.let { paddings ->
                 modifier = when (paddings.size()) {
@@ -212,18 +223,20 @@ class DynamicCheckBoxComponent {
                         vertical = paddings[0].asFloat.dp,
                         horizontal = paddings[1].asFloat.dp
                     )
+
                     4 -> modifier.padding(
                         top = paddings[0].asFloat.dp,
                         end = paddings[1].asFloat.dp,
                         bottom = paddings[2].asFloat.dp,
                         start = paddings[3].asFloat.dp
                     )
+
                     else -> modifier
                 }
             } ?: json.get("padding")?.asFloat?.let { padding ->
                 modifier = modifier.padding(padding.dp)
             }
-            
+
             return modifier
         }
     }

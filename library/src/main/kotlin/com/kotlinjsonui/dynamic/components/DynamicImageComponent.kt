@@ -1,25 +1,32 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic Image Component Converter
  * Converts JSON to Image composable at runtime
- * 
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - src: String resource name (supports @{variable} binding)
  * - contentDescription: String for accessibility
@@ -41,10 +48,10 @@ class DynamicImageComponent {
             // Parse image source with data binding
             val rawSrc = json.get("src")?.asString ?: "placeholder"
             val imageName = processDataBinding(rawSrc, data)
-            
+
             // Get content description
             val contentDescription = json.get("contentDescription")?.asString ?: ""
-            
+
             // Try to get the resource ID
             val context = LocalContext.current
             val resourceId = context.resources.getIdentifier(
@@ -52,10 +59,10 @@ class DynamicImageComponent {
                 "drawable",
                 context.packageName
             )
-            
+
             // Build modifier
             val modifier = buildModifier(json)
-            
+
             // Parse content scale/mode
             val contentScale = when (json.get("contentMode")?.asString?.lowercase()) {
                 "aspectfill" -> ContentScale.Crop
@@ -65,10 +72,10 @@ class DynamicImageComponent {
                 "inside" -> ContentScale.Inside
                 else -> ContentScale.Fit // Default
             }
-            
+
             // Parse alpha
             val alpha = json.get("alpha")?.asFloat ?: 1f
-            
+
             // Create the Image
             if (resourceId != 0) {
                 Image(
@@ -83,130 +90,68 @@ class DynamicImageComponent {
                 // For now, just create an empty composable
             }
         }
-        
+
         private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-            
-            // Handle size attribute (square size)
-            json.get("size")?.asFloat?.let { size ->
-                modifier = modifier.size(size.dp)
+            // Use ModifierBuilder for basic size and spacing
+            var modifier = ModifierBuilder.buildModifier(json)
+
+            // Background color (before clip for proper rendering)
+            json.get("background")?.asString?.let { colorStr ->
+                try {
+                    val color = Color(android.graphics.Color.parseColor(colorStr))
+                    modifier = modifier.background(color)
+                } catch (e: Exception) {
+                    // Invalid color
+                }
+            }
+
+            // Corner radius (clip)
+            json.get("cornerRadius")?.asFloat?.let { radius ->
+                val shape = RoundedCornerShape(radius.dp)
+                modifier = modifier.clip(shape)
+
+                // If we have a border, apply it with the same shape
+                json.get("borderColor")?.asString?.let { borderColorStr ->
+                    try {
+                        val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
+                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                        modifier = modifier.border(borderWidth.dp, borderColor, shape)
+                    } catch (e: Exception) {
+                        // Invalid border color
+                    }
+                }
             } ?: run {
-                // Handle width and height separately
-                json.get("width")?.asFloat?.let { width ->
-                    modifier = if (width < 0) {
-                        modifier.fillMaxWidth()
-                    } else {
-                        modifier.width(width.dp)
-                    }
-                }
-                
-                json.get("height")?.asFloat?.let { height ->
-                    modifier = if (height < 0) {
-                        modifier.fillMaxHeight()
-                    } else {
-                        modifier.height(height.dp)
+                // No corner radius, but might still have border
+                json.get("borderColor")?.asString?.let { borderColorStr ->
+                    try {
+                        val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
+                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                        modifier = modifier.border(borderWidth.dp, borderColor)
+                    } catch (e: Exception) {
+                        // Invalid border color
                     }
                 }
             }
-            
-            // Apply margins first
-            modifier = applyMargins(modifier, json)
-            
-            // Apply padding after margins
-            modifier = applyPadding(modifier, json)
-            
+
+            // Shadow/elevation
+            json.get("shadow")?.let { shadow ->
+                when {
+                    shadow.isJsonPrimitive -> {
+                        val primitive = shadow.asJsonPrimitive
+                        when {
+                            primitive.isBoolean && primitive.asBoolean -> {
+                                modifier = modifier.shadow(6.dp)
+                            }
+
+                            primitive.isNumber -> {
+                                modifier = modifier.shadow(primitive.asFloat.dp)
+                            }
+                        }
+                    }
+                }
+            }
+
             return modifier
-        }
-        
-        private fun applyPadding(inputModifier: Modifier, json: JsonObject): Modifier {
-            var modifier = inputModifier
-            
-            // Handle paddings array
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                return when (paddings.size()) {
-                    1 -> modifier.padding(paddings[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle single padding value
-            json.get("padding")?.asFloat?.let { padding ->
-                return modifier.padding(padding.dp)
-            }
-            
-            // Handle individual padding properties
-            val paddingTop = json.get("paddingTop")?.asFloat 
-                ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingBottom = json.get("paddingBottom")?.asFloat 
-                ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingStart = json.get("paddingStart")?.asFloat 
-                ?: json.get("paddingLeft")?.asFloat 
-                ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            val paddingEnd = json.get("paddingEnd")?.asFloat 
-                ?: json.get("paddingRight")?.asFloat 
-                ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            
-            return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
-                modifier.padding(
-                    top = paddingTop.dp,
-                    bottom = paddingBottom.dp,
-                    start = paddingStart.dp,
-                    end = paddingEnd.dp
-                )
-            } else {
-                modifier
-            }
-        }
-        
-        private fun applyMargins(inputModifier: Modifier, json: JsonObject): Modifier {
-            var modifier = inputModifier
-            
-            // Handle margins array
-            json.get("margins")?.asJsonArray?.let { margins ->
-                return when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
-                ?: json.get("endMargin")?.asFloat ?: 0f
-            
-            return if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            } else {
-                modifier
-            }
         }
     }
 }

@@ -10,11 +10,12 @@
   "package_name": "com.example.kotlinjsonui.sample",
   "use_network": true,
   "hotloader": {
-    "ip": "127.0.0.1",
+    "ip": "192.168.3.32",
     "port": 8081,
     "watch_directories": [
       "assets/Layouts",
       "assets/Styles"
-    ]
+    ],
+    "enabled": true
   }
 }

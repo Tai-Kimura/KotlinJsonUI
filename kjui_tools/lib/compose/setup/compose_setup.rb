@@ -28,6 +28,9 @@ module KjuiTools
           # Create hotloader config
           create_hotloader_config
           
+          # Setup network security for hot reload
+          setup_network_security
+          
           # Update build.gradle
           update_build_gradle
           
@@ -321,6 +324,80 @@ module KjuiTools
           
           File.write(hotloader_config_path, JSON.pretty_generate(hotloader_config))
           puts "  Created: hotloader.json (IP: #{ip}:#{port})"
+        end
+        
+        def setup_network_security
+          puts "Setting up network security for hot reload..."
+          
+          # Determine the correct project directory
+          project_root = Core::ProjectFinder.project_dir || Dir.pwd
+          
+          # Check if we're in sample-app
+          if File.exist?(File.join(project_root, 'sample-app'))
+            res_dir = File.join(project_root, 'sample-app', 'src', 'main', 'res', 'xml')
+            debug_dir = File.join(project_root, 'sample-app', 'src', 'debug')
+            manifest_path = File.join(project_root, 'sample-app', 'src', 'main', 'AndroidManifest.xml')
+          else
+            source_dir = @config['source_directory'] || 'src/main'
+            res_dir = File.join(project_root, source_dir, 'res', 'xml')
+            debug_dir = File.join(project_root, 'src', 'debug')
+            manifest_path = File.join(project_root, source_dir, 'AndroidManifest.xml')
+          end
+          
+          # Create network security config
+          FileUtils.mkdir_p(res_dir)
+          network_config_path = File.join(res_dir, 'network_security_config.xml')
+          
+          network_config = <<~XML
+            <?xml version="1.0" encoding="utf-8"?>
+            <network-security-config>
+                <!-- Allow cleartext traffic for hot reload development server -->
+                <domain-config cleartextTrafficPermitted="true">
+                    <!-- Android emulator localhost -->
+                    <domain includeSubdomains="true">10.0.2.2</domain>
+                    <!-- Common local network ranges -->
+                    <domain includeSubdomains="true">localhost</domain>
+                    <domain includeSubdomains="true">127.0.0.1</domain>
+                    <!-- Local network IPs (adjust as needed) -->
+                    <domain includeSubdomains="true">192.168.0.0/16</domain>
+                    <domain includeSubdomains="true">192.168.1.0/24</domain>
+                    <domain includeSubdomains="true">192.168.3.0/24</domain>
+                    <domain includeSubdomains="true">10.0.0.0/8</domain>
+                </domain-config>
+                
+                <!-- Default configuration for production -->
+                <base-config cleartextTrafficPermitted="false">
+                    <trust-anchors>
+                        <certificates src="system" />
+                    </trust-anchors>
+                </base-config>
+            </network-security-config>
+          XML
+          
+          File.write(network_config_path, network_config)
+          puts "  Created: network_security_config.xml"
+          
+          # Create debug-specific AndroidManifest.xml with both network config and cleartext traffic
+          FileUtils.mkdir_p(debug_dir)
+          debug_manifest_path = File.join(debug_dir, 'AndroidManifest.xml')
+          
+          debug_manifest = <<~XML
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools">
+            
+                <!-- Debug-only configuration for hot reload -->
+                <application
+                    android:networkSecurityConfig="@xml/network_security_config"
+                    android:usesCleartextTraffic="true"
+                    tools:targetApi="31">
+                </application>
+            
+            </manifest>
+          XML
+          
+          File.write(debug_manifest_path, debug_manifest)
+          puts "  Created: debug/AndroidManifest.xml with cleartext traffic enabled for debug builds only"
         end
         
         def get_local_ip

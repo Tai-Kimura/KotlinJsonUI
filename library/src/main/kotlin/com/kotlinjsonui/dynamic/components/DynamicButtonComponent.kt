@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,7 +35,7 @@ import kotlinx.coroutines.withContext
 /**
  * Dynamic Button Component Converter
  * Converts JSON to Button composable at runtime
- * 
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - text: String button label (supports @{variable} binding)
  * - onclick: String method name for click handler
@@ -61,14 +62,14 @@ class DynamicButtonComponent {
             // Parse button text with data binding
             val rawText = json.get("text")?.asString ?: "Button"
             val text = processDataBinding(rawText, data)
-            
+
             // Loading state
-            var isLoading by remember { 
+            var isLoading by remember {
                 mutableStateOf(
                     json.get("isLoading")?.asBoolean ?: false
                 )
             }
-            
+
             // Parse enabled state (disabled when loading)
             val isEnabled = when {
                 isLoading -> false
@@ -76,7 +77,7 @@ class DynamicButtonComponent {
                 json.get("enabled")?.asBoolean == false -> false
                 else -> true
             }
-            
+
             // Parse onclick handler with loading support
             val onClick: () -> Unit = {
                 if (!isLoading) {
@@ -117,7 +118,7 @@ class DynamicButtonComponent {
                     }
                 }
             }
-            
+
             // Parse text style
             val fontSize = json.get("fontSize")?.asInt ?: 14
             val fontWeight = when (json.get("fontWeight")?.asString?.lowercase()) {
@@ -128,22 +129,28 @@ class DynamicButtonComponent {
                 "thin" -> FontWeight.Thin
                 else -> FontWeight.Normal
             }
-            
+
             // Parse colors
             val textColor = json.get("fontColor")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    null
+                }
             }
-            
+
             val backgroundColor = json.get("background")?.asString?.let {
-                try { Color(android.graphics.Color.parseColor(it)) }
-                catch (e: Exception) { null }
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    null
+                }
             }
-            
+
             // Parse shape
             val cornerRadius = json.get("cornerRadius")?.asFloat
             val shape = cornerRadius?.let { RoundedCornerShape(it.dp) }
-            
+
             // Parse elevation/shadow
             val elevation = when (val shadow = json.get("shadow")) {
                 null -> null
@@ -157,23 +164,23 @@ class DynamicButtonComponent {
                     } else null
                 }
             }
-            
+
             // Build button colors
             val colors = ButtonDefaults.buttonColors(
                 containerColor = backgroundColor ?: ButtonDefaults.buttonColors().containerColor,
                 contentColor = textColor ?: ButtonDefaults.buttonColors().contentColor,
-                disabledContainerColor = backgroundColor?.copy(alpha = 0.5f) 
+                disabledContainerColor = backgroundColor?.copy(alpha = 0.5f)
                     ?: ButtonDefaults.buttonColors().disabledContainerColor,
                 disabledContentColor = textColor?.copy(alpha = 0.5f)
                     ?: ButtonDefaults.buttonColors().disabledContentColor
             )
-            
+
             // Build content padding
             val contentPadding = buildContentPadding(json)
-            
+
             // Build modifier
             val modifier = buildModifier(json)
-            
+
             // Create the button
             Button(
                 onClick = onClick,
@@ -209,7 +216,7 @@ class DynamicButtonComponent {
                 }
             }
         }
-        
+
         private fun buildContentPadding(json: JsonObject): PaddingValues {
             // Check for paddings array
             json.get("paddings")?.asJsonArray?.let { paddings ->
@@ -219,6 +226,7 @@ class DynamicButtonComponent {
                         vertical = paddings[0].asFloat.dp,
                         horizontal = paddings[1].asFloat.dp
                     )
+
                     3 -> {
                         // Three values: [top, horizontal, bottom]
                         // PaddingValues doesn't have this constructor, so use 4-parameter version
@@ -229,33 +237,35 @@ class DynamicButtonComponent {
                             bottom = paddings[2].asFloat.dp
                         )
                     }
+
                     4 -> PaddingValues(
                         start = paddings[3].asFloat.dp,
                         top = paddings[0].asFloat.dp,
                         end = paddings[1].asFloat.dp,
                         bottom = paddings[2].asFloat.dp
                     )
+
                     else -> ButtonDefaults.ContentPadding
                 }
             }
-            
+
             // Check for single padding value
             json.get("padding")?.asFloat?.let { padding ->
                 return PaddingValues(padding.dp)
             }
-            
+
             // Check for individual padding values
-            val paddingTop = json.get("paddingTop")?.asFloat 
+            val paddingTop = json.get("paddingTop")?.asFloat
                 ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingBottom = json.get("paddingBottom")?.asFloat 
+            val paddingBottom = json.get("paddingBottom")?.asFloat
                 ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingStart = json.get("paddingStart")?.asFloat 
-                ?: json.get("paddingLeft")?.asFloat 
+            val paddingStart = json.get("paddingStart")?.asFloat
+                ?: json.get("paddingLeft")?.asFloat
                 ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            val paddingEnd = json.get("paddingEnd")?.asFloat 
-                ?: json.get("paddingRight")?.asFloat 
+            val paddingEnd = json.get("paddingEnd")?.asFloat
+                ?: json.get("paddingRight")?.asFloat
                 ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            
+
             return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
                 PaddingValues(
                     top = paddingTop.dp,
@@ -267,59 +277,13 @@ class DynamicButtonComponent {
                 ButtonDefaults.ContentPadding
             }
         }
-        
+
         private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-            
-            // Width and height
-            json.get("width")?.asFloat?.let { width ->
-                modifier = if (width < 0) {
-                    modifier.fillMaxWidth()
-                } else {
-                    modifier.width(width.dp)
-                }
+            // Use ModifierBuilder for size and margins only 
+            // (padding is handled separately as contentPadding for Button)
+            return ModifierBuilder.buildSizeModifier(json).let { modifier ->
+                ModifierBuilder.applyMargins(modifier, json)
             }
-            
-            json.get("height")?.asFloat?.let { height ->
-                modifier = modifier.height(height.dp)
-            }
-            
-            // Margins (Button doesn't use padding modifier, uses contentPadding)
-            json.get("margins")?.asJsonArray?.let { margins ->
-                modifier = when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat 
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat 
-                ?: json.get("endMargin")?.asFloat ?: 0f
-            
-            if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier = modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            }
-            
-            return modifier
         }
     }
 }

@@ -34,6 +34,7 @@ object ModifierBuilder {
     
     /**
      * Apply width and height to modifier
+     * Handles both numeric values and string values like "matchParent", "wrapContent"
      */
     fun applySize(
         modifier: Modifier,
@@ -42,21 +43,72 @@ object ModifierBuilder {
     ): Modifier {
         var result = modifier
         
-        // Width
-        val width = json.get("width")?.asFloat
-        result = when {
-            width != null && width < 0 -> result.fillMaxWidth()
-            width != null -> result.width(width.dp)
-            defaultFillMaxWidth -> result.fillMaxWidth()
-            else -> result
+        // Width - handle both numeric and string values
+        json.get("width")?.let { widthElement ->
+            result = when {
+                widthElement.isJsonPrimitive -> {
+                    val primitive = widthElement.asJsonPrimitive
+                    when {
+                        primitive.isString -> {
+                            when (primitive.asString) {
+                                "matchParent", "match_parent" -> result.fillMaxWidth()
+                                "wrapContent", "wrap_content" -> result.wrapContentWidth()
+                                else -> {
+                                    // Try to parse as number
+                                    try {
+                                        val width = primitive.asString.toFloat()
+                                        if (width < 0) result.fillMaxWidth() else result.width(width.dp)
+                                    } catch (e: NumberFormatException) {
+                                        result
+                                    }
+                                }
+                            }
+                        }
+                        primitive.isNumber -> {
+                            val width = primitive.asFloat
+                            if (width < 0) result.fillMaxWidth() else result.width(width.dp)
+                        }
+                        else -> result
+                    }
+                }
+                else -> result
+            }
+        } ?: run {
+            if (defaultFillMaxWidth) {
+                result = result.fillMaxWidth()
+            }
         }
         
-        // Height
-        val height = json.get("height")?.asFloat
-        result = when {
-            height != null && height < 0 -> result.fillMaxHeight()
-            height != null -> result.height(height.dp)
-            else -> result
+        // Height - handle both numeric and string values
+        json.get("height")?.let { heightElement ->
+            result = when {
+                heightElement.isJsonPrimitive -> {
+                    val primitive = heightElement.asJsonPrimitive
+                    when {
+                        primitive.isString -> {
+                            when (primitive.asString) {
+                                "matchParent", "match_parent" -> result.fillMaxHeight()
+                                "wrapContent", "wrap_content" -> result.wrapContentHeight()
+                                else -> {
+                                    // Try to parse as number
+                                    try {
+                                        val height = primitive.asString.toFloat()
+                                        if (height < 0) result.fillMaxHeight() else result.height(height.dp)
+                                    } catch (e: NumberFormatException) {
+                                        result
+                                    }
+                                }
+                            }
+                        }
+                        primitive.isNumber -> {
+                            val height = primitive.asFloat
+                            if (height < 0) result.fillMaxHeight() else result.height(height.dp)
+                        }
+                        else -> result
+                    }
+                }
+                else -> result
+            }
         }
         
         return result

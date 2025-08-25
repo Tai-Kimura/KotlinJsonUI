@@ -5,7 +5,6 @@ import androidx.compose.ui.Modifier
 import android.content.Context
 import android.util.Log
 import com.google.gson.JsonObject
-import com.kotlinjsonui.BuildConfig
 
 /**
  * Provider for DynamicView components
@@ -37,10 +36,8 @@ object DynamicViewProvider {
      * This should be called from debug-only code
      */
     fun setRenderer(renderer: DynamicViewRenderer) {
-        if (BuildConfig.DEBUG) {
-            this.renderer = renderer
-            Log.d(TAG, "DynamicView renderer registered")
-        }
+        this.renderer = renderer
+        Log.d(TAG, "DynamicView renderer registered")
     }
     
     /**
@@ -57,7 +54,7 @@ object DynamicViewProvider {
         content: @Composable (String) -> Unit = {},
         fallback: @Composable () -> Unit = {}
     ): Boolean {
-        if (!BuildConfig.DEBUG || !DynamicModeManager.isActive()) {
+        if (!DynamicModeManager.isActive()) {
             fallback()
             return false
         }
@@ -74,27 +71,23 @@ object DynamicViewProvider {
             )
             return true
         } else {
-            Log.w(TAG, "DynamicView renderer not available")
+            Log.d(TAG, "DynamicView renderer not available - using fallback")
             fallback()
             return false
         }
     }
     
     /**
-     * Create a DynamicView instance
+     * Create a DynamicView instance using reflection
      * Returns the instance or null if not available
      */
     fun createDynamicView(layoutName: String, context: Context): Any? {
-        if (!BuildConfig.DEBUG) {
-            return null
-        }
-        
         return try {
             val clazz = Class.forName("com.kotlinjsonui.dynamic.DynamicView")
             val constructor = clazz.getConstructor(String::class.java, Context::class.java)
             constructor.newInstance(layoutName, context)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to create DynamicView", e)
+            Log.d(TAG, "DynamicView class not available")
             null
         }
     }

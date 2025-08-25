@@ -1,13 +1,18 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -20,11 +25,12 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.components.PartialAttribute
 import com.kotlinjsonui.components.PartialAttributesText
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic Text Component Converter
  * Converts JSON to Text/Label composable at runtime
- * 
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - text: String content (supports @{variable} binding)
  * - fontSize: Int (default 14)
@@ -48,18 +54,18 @@ class DynamicTextComponent {
     companion object {
         @Composable
         fun create(
-            json: JsonObject, 
+            json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            
+
             // Parse text with data binding support
             val rawText = json.get("text")?.asString ?: ""
             val text = processDataBinding(rawText, data)
-            
+
             // Check for partialAttributes or linkable
             val hasPartialAttributes = json.get("partialAttributes")?.isJsonArray == true
             val isLinkable = json.get("linkable")?.asBoolean == true
-            
+
             if (hasPartialAttributes || isLinkable) {
                 // Use PartialAttributesText for partial attributes or linkable text
                 createPartialAttributesText(json, text, data)
@@ -68,15 +74,15 @@ class DynamicTextComponent {
                 createStandardText(json, text)
             }
         }
-        
+
         @Composable
         private fun createPartialAttributesText(
-            json: JsonObject, 
+            json: JsonObject,
             text: String,
             data: Map<String, Any>
         ) {
             val partialAttributes = mutableListOf<PartialAttribute>()
-            
+
             // Parse partial attributes
             json.get("partialAttributes")?.asJsonArray?.forEach { attrElement ->
                 if (attrElement.isJsonObject) {
@@ -88,12 +94,14 @@ class DynamicTextComponent {
                                 listOf(rangeArray[0].asInt, rangeArray[1].asInt)
                             } else null
                         }
+
                         attr.get("range")?.isJsonPrimitive == true -> {
                             attr.get("range").asString
                         }
+
                         else -> null
                     }
-                    
+
                     range?.let {
                         val partialAttr = PartialAttribute.fromJsonRange(
                             range = it,
@@ -125,13 +133,13 @@ class DynamicTextComponent {
                     }
                 }
             }
-            
+
             // Build text style
             val style = buildTextStyle(json)
-            
+
             // Build modifier
             val modifier = buildModifier(json)
-            
+
             PartialAttributesText(
                 text = text,
                 partialAttributes = partialAttributes,
@@ -140,18 +148,21 @@ class DynamicTextComponent {
                 style = style
             )
         }
-        
+
         @Composable
         private fun createStandardText(json: JsonObject, text: String) {
             // Font size
             val fontSize = json.get("fontSize")?.asInt ?: 14
-            
+
             // Font color (official attribute)
-            val fontColor = json.get("fontColor")?.asString?.let { 
-                try { Color(android.graphics.Color.parseColor(it)) } 
-                catch (e: Exception) { Color.Black }
+            val fontColor = json.get("fontColor")?.asString?.let {
+                try {
+                    Color(android.graphics.Color.parseColor(it))
+                } catch (e: Exception) {
+                    Color.Black
+                }
             } ?: Color.Black
-            
+
             // Font weight - handle both 'font' and 'fontWeight' attributes
             val fontWeight = when {
                 json.get("font")?.asString == "bold" -> FontWeight.Bold
@@ -169,9 +180,10 @@ class DynamicTextComponent {
                         else -> FontWeight.Normal
                     }
                 }
+
                 else -> FontWeight.Normal
             }
-            
+
             // Text alignment
             val textAlign = when {
                 json.get("textAlign")?.asString != null -> {
@@ -182,36 +194,43 @@ class DynamicTextComponent {
                         else -> TextAlign.Start
                     }
                 }
+
                 json.get("centerHorizontal")?.asBoolean == true -> TextAlign.Center
                 else -> TextAlign.Start
             }
-            
+
             // Text decorations
             val textDecoration = when {
-                json.get("underline")?.asBoolean == true && json.get("strikethrough")?.asBoolean == true -> 
-                    TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
+                json.get("underline")?.asBoolean == true && json.get("strikethrough")?.asBoolean == true ->
+                    TextDecoration.combine(
+                        listOf(
+                            TextDecoration.Underline,
+                            TextDecoration.LineThrough
+                        )
+                    )
+
                 json.get("underline")?.asBoolean == true -> TextDecoration.Underline
                 json.get("strikethrough")?.asBoolean == true -> TextDecoration.LineThrough
                 else -> TextDecoration.None
             }
-            
+
             // Lines (maxLines)
             val maxLines = when {
                 json.get("lines")?.asInt == 0 -> Int.MAX_VALUE
                 json.get("lines")?.asInt != null -> json.get("lines").asInt
                 else -> Int.MAX_VALUE
             }
-            
+
             // Line break mode (overflow)
             val overflow = when (json.get("lineBreakMode")?.asString?.lowercase()) {
                 "clip" -> TextOverflow.Clip
                 "tail", "word" -> TextOverflow.Ellipsis
                 else -> TextOverflow.Clip
             }
-            
+
             // Build modifier
             val modifier = buildModifier(json)
-            
+
             Text(
                 text = text,
                 fontSize = fontSize.sp,
@@ -224,15 +243,15 @@ class DynamicTextComponent {
                 modifier = modifier
             )
         }
-        
+
         @Composable
         private fun buildTextStyle(json: JsonObject): TextStyle {
             var style = LocalTextStyle.current
-            
+
             json.get("fontSize")?.asInt?.let { fontSize ->
                 style = style.copy(fontSize = fontSize.sp)
             }
-            
+
             json.get("fontColor")?.asString?.let { colorStr ->
                 try {
                     style = style.copy(color = Color(android.graphics.Color.parseColor(colorStr)))
@@ -240,7 +259,7 @@ class DynamicTextComponent {
                     // Keep default color
                 }
             }
-            
+
             // Font weight
             val fontWeight = when {
                 json.get("font")?.asString == "bold" -> FontWeight.Bold
@@ -258,20 +277,21 @@ class DynamicTextComponent {
                         else -> null
                     }
                 }
+
                 else -> null
             }
             fontWeight?.let { style = style.copy(fontWeight = it) }
-            
+
             // Line height
             json.get("lineHeight")?.asFloat?.let { lineHeight ->
                 style = style.copy(lineHeight = lineHeight.sp)
             }
-            
+
             // Letter spacing
             json.get("letterSpacing")?.asFloat?.let { letterSpacing ->
                 style = style.copy(letterSpacing = letterSpacing.sp)
             }
-            
+
             // Text alignment
             val textAlign = when {
                 json.get("textAlign")?.asString != null -> {
@@ -282,138 +302,76 @@ class DynamicTextComponent {
                         else -> null
                     }
                 }
+
                 json.get("centerHorizontal")?.asBoolean == true -> TextAlign.Center
                 else -> null
             }
             textAlign?.let { style = style.copy(textAlign = it) }
-            
+
             return style
         }
-        
+
         private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-            
-            // Width and height
-            json.get("width")?.asFloat?.let { width ->
-                modifier = if (width < 0) {
-                    modifier.fillMaxWidth()
-                } else {
-                    modifier.width(width.dp)
+            // Use ModifierBuilder for basic size and spacing
+            var modifier = ModifierBuilder.buildModifier(json)
+
+            // Background color (before clip for proper rendering)
+            json.get("background")?.asString?.let { colorStr ->
+                try {
+                    val color = Color(android.graphics.Color.parseColor(colorStr))
+                    modifier = modifier.background(color)
+                } catch (e: Exception) {
+                    // Invalid color
                 }
             }
-            
-            json.get("height")?.asFloat?.let { height ->
-                modifier = modifier.height(height.dp)
+
+            // Corner radius (clip)
+            json.get("cornerRadius")?.asFloat?.let { radius ->
+                val shape = RoundedCornerShape(radius.dp)
+                modifier = modifier.clip(shape)
+
+                // If we have a border, apply it with the same shape
+                json.get("borderColor")?.asString?.let { borderColorStr ->
+                    try {
+                        val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
+                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                        modifier = modifier.border(borderWidth.dp, borderColor, shape)
+                    } catch (e: Exception) {
+                        // Invalid border color
+                    }
+                }
+            } ?: run {
+                // No corner radius, but might still have border
+                json.get("borderColor")?.asString?.let { borderColorStr ->
+                    try {
+                        val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
+                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                        modifier = modifier.border(borderWidth.dp, borderColor)
+                    } catch (e: Exception) {
+                        // Invalid border color
+                    }
+                }
             }
-            
-            // Margins (outside spacing) - applied first
-            modifier = applyMargins(modifier, json)
-            
-            // Padding (inside spacing) - applied after margins
-            modifier = applyPadding(modifier, json)
-            
-            return modifier
-        }
-        
-        private fun applyPadding(inputModifier: Modifier, json: JsonObject): Modifier {
-            var modifier = inputModifier
-            // Handle edgeInset for text-specific padding (priority)
-            json.get("edgeInset")?.let { edgeInset ->
-                return when {
-                    edgeInset.isJsonArray -> {
-                        val array = edgeInset.asJsonArray
-                        when (array.size()) {
-                            4 -> modifier.padding(
-                                top = array[0].asFloat.dp,
-                                end = array[1].asFloat.dp,
-                                bottom = array[2].asFloat.dp,
-                                start = array[3].asFloat.dp
-                            )
-                            else -> modifier
+
+            // Shadow/elevation
+            json.get("shadow")?.let { shadow ->
+                when {
+                    shadow.isJsonPrimitive -> {
+                        val primitive = shadow.asJsonPrimitive
+                        when {
+                            primitive.isBoolean && primitive.asBoolean -> {
+                                modifier = modifier.shadow(6.dp)
+                            }
+
+                            primitive.isNumber -> {
+                                modifier = modifier.shadow(primitive.asFloat.dp)
+                            }
                         }
                     }
-                    edgeInset.isJsonPrimitive -> modifier.padding(edgeInset.asFloat.dp)
-                    else -> modifier
                 }
             }
-            
-            // Handle paddings array
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                return when (paddings.size()) {
-                    1 -> modifier.padding(paddings[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle single padding value
-            json.get("padding")?.asFloat?.let { padding ->
-                return modifier.padding(padding.dp)
-            }
-            
-            // Handle individual padding properties
-            val paddingTop = json.get("paddingTop")?.asFloat ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingBottom = json.get("paddingBottom")?.asFloat ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingStart = json.get("paddingStart")?.asFloat ?: json.get("paddingLeft")?.asFloat ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            val paddingEnd = json.get("paddingEnd")?.asFloat ?: json.get("paddingRight")?.asFloat ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            
-            return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
-                modifier.padding(
-                    top = paddingTop.dp,
-                    bottom = paddingBottom.dp,
-                    start = paddingStart.dp,
-                    end = paddingEnd.dp
-                )
-            } else {
-                modifier
-            }
-        }
-        
-        private fun applyMargins(inputModifier: Modifier, json: JsonObject): Modifier {
-            var modifier = inputModifier
-            // Handle margins array
-            json.get("margins")?.asJsonArray?.let { margins ->
-                return when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-                    else -> modifier
-                }
-            }
-            
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat ?: json.get("endMargin")?.asFloat ?: 0f
-            
-            return if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            } else {
-                modifier
-            }
+
+            return modifier
         }
     }
 }
