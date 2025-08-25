@@ -156,10 +156,21 @@ class DynamicContainerComponent {
         }
         
         private fun parseChildren(json: JsonObject): List<JsonObject> {
-            return when (val child = json.get("child")) {
-                null -> emptyList()
-                is JsonObject -> listOf(child.asJsonObject)
-                is JsonArray -> child.map { it.asJsonObject }
+            // Support both 'child' and 'children' fields
+            val child = json.get("child") ?: json.get("children") ?: return emptyList()
+            
+            return when {
+                child.isJsonObject -> listOf(child.asJsonObject)
+                child.isJsonArray -> {
+                    val array = child.asJsonArray
+                    val result = mutableListOf<JsonObject>()
+                    for (element in array) {
+                        if (element.isJsonObject) {
+                            result.add(element.asJsonObject)
+                        }
+                    }
+                    result
+                }
                 else -> emptyList()
             }
         }
