@@ -44,8 +44,16 @@ class DynamicContainerComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            val orientation = json.get("orientation")?.asString
             val children = parseChildren(json)
+            
+            // Check if any child has relative positioning attributes
+            if (hasRelativePositioning(children)) {
+                // Use ConstraintLayout for relative positioning
+                DynamicConstraintLayoutComponent.create(json, data)
+                return
+            }
+            
+            val orientation = json.get("orientation")?.asString
             
             // Build modifier with all visual properties
             val modifier = buildModifier(json)
@@ -54,6 +62,18 @@ class DynamicContainerComponent {
                 "vertical" -> createColumn(json, modifier, children, data)
                 "horizontal" -> createRow(json, modifier, children, data)
                 else -> createBox(json, modifier, children, data)
+            }
+        }
+        
+        private fun hasRelativePositioning(children: List<JsonObject>): Boolean {
+            val relativeAttrs = listOf(
+                "alignTopOfView", "alignBottomOfView", "alignLeftOfView", "alignRightOfView",
+                "alignTopView", "alignBottomView", "alignLeftView", "alignRightView",
+                "alignCenterVerticalView", "alignCenterHorizontalView"
+            )
+            
+            return children.any { child ->
+                relativeAttrs.any { attr -> child.has(attr) }
             }
         }
         
