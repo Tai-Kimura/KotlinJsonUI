@@ -6,6 +6,6 @@
   "fontWeight": "semibold",
   "cornerRadius": 8,
   "padding": [12, 20],
-  "height": 44,
+  "height": 55,
   "width": "wrapContent"
 }

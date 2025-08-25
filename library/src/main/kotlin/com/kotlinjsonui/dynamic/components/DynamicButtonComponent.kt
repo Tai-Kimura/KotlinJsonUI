@@ -250,8 +250,29 @@ class DynamicButtonComponent {
             }
 
             // Check for single padding value
-            json.get("padding")?.asFloat?.let { padding ->
-                return PaddingValues(padding.dp)
+            json.get("padding")?.let { paddingElement ->
+                when {
+                    paddingElement.isJsonPrimitive && paddingElement.asJsonPrimitive.isNumber -> {
+                        return PaddingValues(paddingElement.asFloat.dp)
+                    }
+                    paddingElement.isJsonArray -> {
+                        val paddingArray = paddingElement.asJsonArray
+                        return when (paddingArray.size()) {
+                            1 -> PaddingValues(paddingArray[0].asFloat.dp)
+                            2 -> PaddingValues(
+                                vertical = paddingArray[0].asFloat.dp,
+                                horizontal = paddingArray[1].asFloat.dp
+                            )
+                            4 -> PaddingValues(
+                                start = paddingArray[3].asFloat.dp,
+                                top = paddingArray[0].asFloat.dp,
+                                end = paddingArray[1].asFloat.dp,
+                                bottom = paddingArray[2].asFloat.dp
+                            )
+                            else -> ButtonDefaults.ContentPadding
+                        }
+                    }
+                }
             }
 
             // Check for individual padding values

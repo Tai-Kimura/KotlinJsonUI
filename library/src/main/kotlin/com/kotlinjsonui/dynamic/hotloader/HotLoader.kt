@@ -221,9 +221,19 @@ class HotLoader private constructor(context: Context) {
                     
                     Log.i(TAG, "File changed: $path")
                     
-                    if (dirName == "Layouts" && fileName.isNotEmpty()) {
-                        // Download the updated layout
-                        downloadLayout(fileName)
+                    when (dirName) {
+                        "Layouts" -> {
+                            if (fileName.isNotEmpty()) {
+                                // Download the updated layout
+                                downloadLayout(fileName)
+                            }
+                        }
+                        "Styles" -> {
+                            if (fileName.isNotEmpty()) {
+                                // Download the updated style
+                                downloadStyle(fileName)
+                            }
+                        }
                     }
                 }
                 "file_added" -> {
@@ -278,6 +288,38 @@ class HotLoader private constructor(context: Context) {
         }
     }
     
+    private fun downloadStyle(styleName: String) {
+        scope.launch {
+            try {
+                val url = "${config.httpUrl}/style/$styleName"
+                val request = Request.Builder()
+                    .url(url)
+                    .build()
+                
+                val response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val styleJson = response.body?.string()
+                    if (styleJson != null) {
+                        // Save to cache
+                        saveStyleToCache(styleName, styleJson)
+                        
+                        // Clear the style cache in DynamicStyleLoader
+                        withContext(Dispatchers.Main) {
+                            com.kotlinjsonui.dynamic.DynamicStyleLoader.clearCache()
+                            
+                            // Notify listeners about style update
+                            listeners.forEach { it.onStyleUpdated(styleName, styleJson) }
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "Failed to download style: ${response.code}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error downloading style", e)
+            }
+        }
+    }
+    
     private fun saveLayoutToCache(layoutName: String, content: String) {
         try {
             val ctx = contextRef.get() ?: return
@@ -290,6 +332,21 @@ class HotLoader private constructor(context: Context) {
             Log.d(TAG, "Saved layout to cache: ${file.absolutePath}")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving layout to cache", e)
+        }
+    }
+    
+    private fun saveStyleToCache(styleName: String, content: String) {
+        try {
+            val ctx = contextRef.get() ?: return
+            val cacheDir = File(ctx.cacheDir, "hotloader_styles")
+            cacheDir.mkdirs()
+            
+            val file = File(cacheDir, "$styleName.json")
+            file.writeText(content)
+            
+            Log.d(TAG, "Saved style to cache: ${file.absolutePath}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving style to cache", e)
         }
     }
     
@@ -335,6 +392,7 @@ class HotLoader private constructor(context: Context) {
         fun onLayoutUpdated(layoutName: String, content: String)
         fun onLayoutAdded(layoutName: String)
         fun onLayoutRemoved(layoutName: String)
+        fun onStyleUpdated(styleName: String, content: String) {}
         fun onError(error: Throwable)
     }
 }

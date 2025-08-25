@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,9 +47,18 @@ fun DynamicView(
     data: Map<String, Any> = emptyMap(),
     onError: ((Exception) -> Unit)? = null
 ) {
+    val context = LocalContext.current
+    
+    // Apply styles if a style attribute is present
+    val styledJson = if (json.has("style")) {
+        DynamicStyleLoader.applyStyle(context, json)
+    } else {
+        json
+    }
+    
     // Validate JSON has required type field
     val type = try {
-        json.get("type")?.asString
+        styledJson.get("type")?.asString
     } catch (e: Exception) {
         onError?.invoke(e)
         null
@@ -66,135 +76,135 @@ fun DynamicView(
     // Render the appropriate component based on type
     val rendered = when (type.lowercase()) {
         "text", "label" -> {
-            DynamicTextComponent.create(json, data)
+            DynamicTextComponent.create(styledJson, data)
             true
         }
         "textfield" -> {
-            DynamicTextFieldComponent.create(json, data)
+            DynamicTextFieldComponent.create(styledJson, data)
             true
         }
         "button" -> {
-            DynamicButtonComponent.create(json, data)
+            DynamicButtonComponent.create(styledJson, data)
             true
         }
         "image" -> {
-            DynamicImageComponent.create(json, data)
+            DynamicImageComponent.create(styledJson, data)
             true
         }
         "networkimage" -> {
-            DynamicNetworkImageComponent.create(json, data)
+            DynamicNetworkImageComponent.create(styledJson, data)
             true
         }
         "circleimage" -> {
-            DynamicCircleImageComponent.create(json, data)
+            DynamicCircleImageComponent.create(styledJson, data)
             true
         }
         "switch" -> {
-            DynamicSwitchComponent.create(json, data)
+            DynamicSwitchComponent.create(styledJson, data)
             true
         }
         "checkbox" -> {
-            DynamicCheckBoxComponent.create(json, data)
+            DynamicCheckBoxComponent.create(styledJson, data)
             true
         }
         "radio" -> {
-            DynamicRadioComponent.create(json, data)
+            DynamicRadioComponent.create(styledJson, data)
             true
         }
         "slider" -> {
-            DynamicSliderComponent.create(json, data)
+            DynamicSliderComponent.create(styledJson, data)
             true
         }
         "progress", "progressbar" -> {
-            DynamicProgressComponent.create(json, data)
+            DynamicProgressComponent.create(styledJson, data)
             true
         }
         "indicator" -> {
-            DynamicIndicatorComponent.create(json, data)
+            DynamicIndicatorComponent.create(styledJson, data)
             true
         }
         "selectbox", "spinner" -> {
-            DynamicSelectBoxComponent.create(json, data)
+            DynamicSelectBoxComponent.create(styledJson, data)
             true
         }
         "segment", "tablayout" -> {
-            DynamicSegmentComponent.create(json, data)
+            DynamicSegmentComponent.create(styledJson, data)
             true
         }
         "toggle" -> {
-            DynamicToggleComponent.create(json, data)
+            DynamicToggleComponent.create(styledJson, data)
             true
         }
         "scrollview" -> {
-            DynamicScrollViewComponent.create(json, data)
+            DynamicScrollViewComponent.create(styledJson, data)
             true
         }
         "hstack", "row" -> {
-            DynamicHStackComponent.create(json, data)
+            DynamicHStackComponent.create(styledJson, data)
             true
         }
         "vstack", "column" -> {
-            DynamicVStackComponent.create(json, data)
+            DynamicVStackComponent.create(styledJson, data)
             true
         }
         "zstack", "box" -> {
-            DynamicZStackComponent.create(json, data)
+            DynamicZStackComponent.create(styledJson, data)
             true
         }
         "container", "view" -> {
-            DynamicContainerComponent.create(json, data)
+            DynamicContainerComponent.create(styledJson, data)
             true
         }
         "safeareaview" -> {
-            DynamicSafeAreaViewComponent.create(json, data)
+            DynamicSafeAreaViewComponent.create(styledJson, data)
             true
         }
         "constraintlayout" -> {
-            DynamicConstraintLayoutComponent.create(json, data)
+            DynamicConstraintLayoutComponent.create(styledJson, data)
             true
         }
         "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> {
-            DynamicCollectionComponent.create(json, data)
+            DynamicCollectionComponent.create(styledJson, data)
             true
         }
         "table", "listview" -> {
-            DynamicTableComponent.create(json, data)
+            DynamicTableComponent.create(styledJson, data)
             true
         }
         "webview" -> {
-            DynamicWebViewComponent.create(json, data)
+            DynamicWebViewComponent.create(styledJson, data)
             true
         }
         "web" -> {
-            DynamicWebComponent.create(json, data)
+            DynamicWebComponent.create(styledJson, data)
             true
         }
         "tabview" -> {
-            DynamicTabViewComponent.create(json, data)
+            DynamicTabViewComponent.create(styledJson, data)
             true
         }
         "gradientview" -> {
-            DynamicGradientViewComponent.create(json, data)
+            DynamicGradientViewComponent.create(styledJson, data)
             true
         }
         "circleview" -> {
-            DynamicCircleViewComponent.create(json, data)
+            DynamicCircleViewComponent.create(styledJson, data)
             true
         }
         "blurview" -> {
-            DynamicBlurViewComponent.create(json, data)
+            DynamicBlurViewComponent.create(styledJson, data)
             true
         }
         "iconlabel" -> {
-            DynamicIconLabelComponent.create(json, data)
+            DynamicIconLabelComponent.create(styledJson, data)
             true
         }
         "textview" -> {
-            DynamicTextViewComponent.create(json, data)
+            DynamicTextViewComponent.create(styledJson, data)
             true
         }
         "triangle" -> {
-            DynamicTriangleComponent.create(json, data)
+            DynamicTriangleComponent.create(styledJson, data)
             true
         }
         else -> {
@@ -213,7 +223,7 @@ fun DynamicView(
             ErrorComponent("Unknown component type: $type")
         } else if (Configuration.fallbackComponent != null) {
             // Use custom fallback component if configured
-            Configuration.fallbackComponent?.invoke(json, data)
+            Configuration.fallbackComponent?.invoke(styledJson, data)
         }
     }
 }
@@ -270,6 +280,7 @@ fun DynamicView(
 ) {
     val context = LocalContext.current
     var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
+    var styleUpdateCounter by remember { mutableStateOf(0) }
     
     // Check if dynamic mode is enabled
     val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
@@ -320,6 +331,13 @@ fun DynamicView(
                     }
                 }
                 
+                override fun onStyleUpdated(styleName: String, content: String) {
+                    // Force recomposition when any style is updated
+                    // This will cause all views to re-read their styles
+                    styleUpdateCounter++
+                    Log.d("DynamicView", "Style updated: $styleName, triggering recomposition")
+                }
+                
                 override fun onLayoutAdded(name: String) {
                     // New layout added
                 }
@@ -342,9 +360,11 @@ fun DynamicView(
         }
     }
     
-    // Render the view
+    // Render the view - include styleUpdateCounter as a key to force recomposition
     jsonObject?.let { json ->
-        DynamicView(json, data, onError)
+        key(styleUpdateCounter) {
+            DynamicView(json, data, onError)
+        }
     }
 }
 
