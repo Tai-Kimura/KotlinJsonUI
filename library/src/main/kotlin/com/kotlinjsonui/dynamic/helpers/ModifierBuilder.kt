@@ -197,8 +197,36 @@ object ModifierBuilder {
         }
         
         // Handle single padding value
-        json.get("padding")?.asFloat?.let { padding ->
-            return result.padding(padding.dp)
+        json.get("padding")?.let { paddingElement ->
+            when {
+                paddingElement.isJsonPrimitive && paddingElement.asJsonPrimitive.isNumber -> {
+                    return result.padding(paddingElement.asFloat.dp)
+                }
+                paddingElement.isJsonArray -> {
+                    // If padding is an array, handle it like paddings
+                    val paddingArray = paddingElement.asJsonArray
+                    return when (paddingArray.size()) {
+                        1 -> result.padding(paddingArray[0].asFloat.dp)
+                        2 -> result.padding(
+                            vertical = paddingArray[0].asFloat.dp,
+                            horizontal = paddingArray[1].asFloat.dp
+                        )
+                        3 -> result.padding(
+                            start = paddingArray[1].asFloat.dp,
+                            top = paddingArray[0].asFloat.dp,
+                            end = paddingArray[1].asFloat.dp,
+                            bottom = paddingArray[2].asFloat.dp
+                        )
+                        4 -> result.padding(
+                            top = paddingArray[0].asFloat.dp,
+                            end = paddingArray[1].asFloat.dp,
+                            bottom = paddingArray[2].asFloat.dp,
+                            start = paddingArray[3].asFloat.dp
+                        )
+                        else -> result
+                    }
+                }
+            }
         }
         
         // Handle individual padding properties
