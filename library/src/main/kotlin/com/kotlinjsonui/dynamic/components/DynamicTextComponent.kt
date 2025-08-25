@@ -312,10 +312,22 @@ class DynamicTextComponent {
         }
 
         private fun buildModifier(json: JsonObject): Modifier {
-            // Use ModifierBuilder for basic size and spacing
-            var modifier = ModifierBuilder.buildModifier(json)
+            // Start with base modifier
+            var modifier: Modifier = Modifier
+            
+            // 1. Apply size first (includes padding in the total size)
+            modifier = ModifierBuilder.applySize(modifier, json)
+            
+            // 2. Apply margins (outer spacing)
+            modifier = ModifierBuilder.applyMargins(modifier, json)
+            
+            // 3. Corner radius (clip) - apply before background for proper rendering
+            json.get("cornerRadius")?.asFloat?.let { radius ->
+                val shape = RoundedCornerShape(radius.dp)
+                modifier = modifier.clip(shape)
+            }
 
-            // Background color (before clip for proper rendering)
+            // 4. Background color
             json.get("background")?.asString?.let { colorStr ->
                 try {
                     val color = Color(android.graphics.Color.parseColor(colorStr))
@@ -324,36 +336,26 @@ class DynamicTextComponent {
                     // Invalid color
                 }
             }
-
-            // Corner radius (clip)
-            json.get("cornerRadius")?.asFloat?.let { radius ->
-                val shape = RoundedCornerShape(radius.dp)
-                modifier = modifier.clip(shape)
-
-                // If we have a border, apply it with the same shape
-                json.get("borderColor")?.asString?.let { borderColorStr ->
-                    try {
-                        val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
-                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+            
+            // 5. Border (after background)
+            json.get("borderColor")?.asString?.let { borderColorStr ->
+                try {
+                    val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
+                    val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                    val shape = json.get("cornerRadius")?.asFloat?.let { 
+                        RoundedCornerShape(it.dp) 
+                    }
+                    if (shape != null) {
                         modifier = modifier.border(borderWidth.dp, borderColor, shape)
-                    } catch (e: Exception) {
-                        // Invalid border color
-                    }
-                }
-            } ?: run {
-                // No corner radius, but might still have border
-                json.get("borderColor")?.asString?.let { borderColorStr ->
-                    try {
-                        val borderColor = Color(android.graphics.Color.parseColor(borderColorStr))
-                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                    } else {
                         modifier = modifier.border(borderWidth.dp, borderColor)
-                    } catch (e: Exception) {
-                        // Invalid border color
                     }
+                } catch (e: Exception) {
+                    // Invalid border color
                 }
             }
 
-            // Shadow/elevation
+            // 6. Shadow/elevation
             json.get("shadow")?.let { shadow ->
                 when {
                     shadow.isJsonPrimitive -> {
@@ -362,7 +364,6 @@ class DynamicTextComponent {
                             primitive.isBoolean && primitive.asBoolean -> {
                                 modifier = modifier.shadow(6.dp)
                             }
-
                             primitive.isNumber -> {
                                 modifier = modifier.shadow(primitive.asFloat.dp)
                             }
@@ -370,6 +371,9 @@ class DynamicTextComponent {
                     }
                 }
             }
+            
+            // 7. Apply padding last (inner spacing)
+            modifier = ModifierBuilder.applyPadding(modifier, json)
 
             return modifier
         }
