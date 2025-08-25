@@ -25,7 +25,7 @@ module KjuiTools
           
           code = indent("#{layout}(", depth)
           
-          # Build modifiers
+          # Build modifiers (correct order for Compose)
           modifiers = []
           
           # Add weight modifier if in Row or Column
@@ -33,10 +33,17 @@ module KjuiTools
             modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           end
           
+          # 1. Size first (total size including padding)
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          
+          # 2. Margins (outer spacing)
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          
+          # 3. Background (before padding so padding creates space inside)
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
+          
+          # 4. Padding (inner spacing) - applied last
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           
           code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
           

@@ -110,16 +110,19 @@ module KjuiTools
             modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           end
           
-          # Add margins first (outside spacing)
+          # 1. Add size first (total size including padding)
+          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          
+          # 2. Add margins (outside spacing)
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           
-          # Add shadow before background
+          # 3. Add shadow before background
           modifiers.concat(Helpers::ModifierBuilder.build_shadow(json_data, required_imports))
           
-          # Add background before padding (so padding creates space inside the background)
+          # 4. Add background before padding (so padding creates space inside the background)
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
           
-          # Handle edgeInset for text-specific padding (inside spacing)
+          # 5. Handle edgeInset for text-specific padding (inside spacing) - applied last
           if json_data['edgeInset']
             insets = json_data['edgeInset']
             if insets.is_a?(Array) && insets.length == 4
@@ -130,8 +133,6 @@ module KjuiTools
           else
             modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           end
-          
-          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           
           # Format modifiers
           if modifiers.any?

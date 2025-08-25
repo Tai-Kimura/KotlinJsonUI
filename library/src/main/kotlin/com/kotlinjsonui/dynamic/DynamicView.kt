@@ -135,7 +135,7 @@ fun DynamicView(
             DynamicToggleComponent.create(styledJson, data)
             true
         }
-        "scrollview" -> {
+        "scrollview", "scroll" -> {
             DynamicScrollViewComponent.create(styledJson, data)
             true
         }
