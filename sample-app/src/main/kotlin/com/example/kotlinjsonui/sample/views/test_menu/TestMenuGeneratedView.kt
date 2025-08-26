@@ -566,6 +566,20 @@ fun TestMenuGeneratedView(
                 )
             }
             Button(
+                onClick = { viewModel.navigateToCollectionTest() },
+                modifier = Modifier.padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                )
+            ) {
+                Text(
+                    text = "Collection Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
                 onClick = { viewModel.navigateToKeyboardAvoidanceTest() },
                 modifier = Modifier.padding(bottom = 8.dp),
                 shape = RoundedCornerShape(8.dp),

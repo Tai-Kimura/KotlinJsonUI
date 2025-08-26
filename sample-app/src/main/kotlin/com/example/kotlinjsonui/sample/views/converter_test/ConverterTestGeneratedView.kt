@@ -35,6 +35,7 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.foundation.layout.Arrangement
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -211,23 +212,22 @@ fun ConverterTestGeneratedView(
             )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
+                verticalArrangement = Arrangement.spacedBy(15.dp),
+                horizontalArrangement = Arrangement.spacedBy(15.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp)
                     .padding(top = 10.dp)
             ) {
-                items(data.items.size) { index ->
-                    val item = data.items[index]
-                    Card(
+                // Collection with data source: items
+                val cellData = data.items.getCellData("ConverterTestCell")
+                items(cellData.size) { index ->
+                    val item = cellData[index]
+                    ConvertertestView(
+                        data = item,
                         modifier = Modifier
-                            .padding(4.dp)
                             .fillMaxWidth()
-                    ) {
-                        Text(
-                            text = item.toString(),
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
+                    )
                 }
             }
             Text(

@@ -354,6 +354,16 @@
         },
         {
           "type": "Button",
+          "text": "Collection Test",
+          "onclick": "navigateToCollectionTest",
+          "background": "#5AC8FA",
+          "fontColor": "#FFFFFF",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
           "text": "Keyboard Avoidance Test",
           "onclick": "navigateToKeyboardAvoidanceTest",
           "background": "#5AC8FA",

@@ -50,6 +50,7 @@ import com.example.kotlinjsonui.sample.views.switch_events_test.SwitchEventsTest
 import com.example.kotlinjsonui.sample.views.text_decoration_test.TextDecorationTestView
 import com.example.kotlinjsonui.sample.views.textfield_events_test.TextfieldEventsTestView
 import com.example.kotlinjsonui.sample.views.textfield_test.TextfieldTestView
+import com.example.kotlinjsonui.sample.views.collection_test.CollectionTestView
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.KotlinJsonUI
@@ -189,6 +190,9 @@ fun AppNavigation() {
         }
         composable("textfield_test") {
             TextfieldTestView()
+        }
+        composable("collection_test") {
+            CollectionTestView()
         }
     }
 }

@@ -1,0 +1,31 @@
+{
+    "type": "View",
+    "orientation": "horizontal",
+    "background": "#F9F9F9",
+    "cornerRadius": 6,
+    "padding": 12,
+    "alignment": "center",
+    "child": [
+        {
+            "type": "Text",
+            "text": "@{item.title}",
+            "fontSize": 14,
+            "color": "#333333",
+            "weight": 1
+        },
+        {
+            "type": "Text",
+            "text": "@{item.value}",
+            "fontSize": 14,
+            "fontWeight": "bold",
+            "color": "#007AFF"
+        }
+    ],
+    "data": [
+        {
+            "name": "item",
+            "class": "Map<String, Any>",
+            "defaultValue": {}
+        }
+    ]
+}

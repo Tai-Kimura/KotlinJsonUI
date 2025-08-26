@@ -103,6 +103,10 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
         _navigationEvent.value = "form_test"
     }
     
+    fun navigateToCollectionTest() {
+        _navigationEvent.value = "collection_test"
+    }
+    
     fun navigateToKeyboardAvoidanceTest() {
         _navigationEvent.value = "keyboard_avoidance_test"
     }

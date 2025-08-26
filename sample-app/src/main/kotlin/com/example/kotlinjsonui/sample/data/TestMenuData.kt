@@ -54,6 +54,7 @@ data class TestMenuData(
             map["navigateToConverterTest"] = { vm.navigateToConverterTest() }
             map["navigateToIncludeTest"] = { vm.navigateToIncludeTest() }
             map["navigateToFormTest"] = { vm.navigateToFormTest() }
+            map["navigateToCollectionTest"] = { vm.navigateToCollectionTest() }
             map["navigateToKeyboardAvoidanceTest"] = { vm.navigateToKeyboardAvoidanceTest() }
             map["navigateToScrollTest"] = { vm.navigateToScrollTest() }
             map["navigateToImplementedAttributesTest"] = { vm.navigateToImplementedAttributesTest() }

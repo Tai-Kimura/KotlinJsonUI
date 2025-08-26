@@ -1,0 +1,89 @@
+{
+    "type": "View",
+    "orientation": "vertical",
+    "padding": 16,
+    "background": "#F5F5F5",
+    "child": [
+        {
+            "type": "Text",
+            "text": "Collection Test with cellClasses",
+            "fontSize": 24,
+            "fontWeight": "bold",
+            "color": "#333333"
+        },
+        {
+            "type": "Text",
+            "text": "Dynamic Mode: @{dynamicModeEnabled}",
+            "fontSize": 14,
+            "color": "@{dynamicModeEnabled|#00AA00|#AA0000}",
+            "bottomMargin": 8
+        },
+        {
+            "type": "Button",
+            "text": "Toggle Dynamic Mode",
+            "onClick": "toggleDynamicMode",
+            "background": "#007AFF",
+            "fontColor": "#FFFFFF",
+            "padding": [8, 16],
+            "cornerRadius": 8,
+            "bottomMargin": 16
+        },
+        {
+            "type": "Text",
+            "text": "Products Grid",
+            "fontSize": 18,
+            "fontWeight": "semibold",
+            "color": "#333333",
+            "bottomMargin": 8
+        },
+        {
+            "type": "Collection",
+            "cellClasses": ["product_cell"],
+            "items": "@{products}",
+            "columns": 2,
+            "itemSpacing": 12,
+            "contentPadding": [8, 8, 8, 8],
+            "height": 400,
+            "background": "#FFFFFF",
+            "cornerRadius": 12,
+            "padding": 8
+        },
+        {
+            "type": "Text",
+            "text": "Simple List (1 Column)",
+            "fontSize": 18,
+            "fontWeight": "semibold",
+            "color": "#333333",
+            "topMargin": 16,
+            "bottomMargin": 8
+        },
+        {
+            "type": "Collection",
+            "cellClasses": ["simple_cell"],
+            "items": "@{simpleItems}",
+            "columns": 1,
+            "itemSpacing": 8,
+            "height": 200,
+            "background": "#FFFFFF",
+            "cornerRadius": 12,
+            "padding": 8
+        }
+    ],
+    "data": [
+        {
+            "name": "dynamicModeEnabled",
+            "class": "Boolean",
+            "defaultValue": false
+        },
+        {
+            "name": "products",
+            "class": "List<Map<String, Any>>",
+            "defaultValue": []
+        },
+        {
+            "name": "simpleItems",
+            "class": "List<Map<String, Any>>",
+            "defaultValue": []
+        }
+    ]
+}

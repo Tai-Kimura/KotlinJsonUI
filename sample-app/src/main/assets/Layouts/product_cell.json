@@ -1,0 +1,43 @@
+{
+    "type": "View",
+    "orientation": "vertical",
+    "background": "#FFFFFF",
+    "cornerRadius": 8,
+    "padding": 12,
+    "shadow": {
+        "color": "#000000",
+        "opacity": 0.1,
+        "radius": 4,
+        "offset": [0, 2]
+    },
+    "child": [
+        {
+            "type": "Text",
+            "text": "@{item.name}",
+            "fontSize": 16,
+            "fontWeight": "semibold",
+            "color": "#333333"
+        },
+        {
+            "type": "Text",
+            "text": "$@{item.price}",
+            "fontSize": 14,
+            "color": "#666666",
+            "topMargin": 4
+        },
+        {
+            "type": "Text",
+            "text": "Stock: @{item.stock}",
+            "fontSize": 12,
+            "color": "@{item.inStock|#00AA00|#FF0000}",
+            "topMargin": 4
+        }
+    ],
+    "data": [
+        {
+            "name": "item",
+            "class": "Map<String, Any>",
+            "defaultValue": {}
+        }
+    ]
+}
