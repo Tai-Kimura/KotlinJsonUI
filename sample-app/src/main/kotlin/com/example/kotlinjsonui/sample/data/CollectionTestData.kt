@@ -6,16 +6,16 @@ import com.example.kotlinjsonui.sample.viewmodels.CollectionTestViewModel
 
 data class CollectionTestData(
     var dynamicModeEnabled: Boolean = false,
-    var products: List<Map<String, Any>> = [],
-    var simpleItems: List<Map<String, Any>> = []
+    var products: List<Map<String, Any>> = emptyList(),
+    var simpleItems: List<Map<String, Any>> = emptyList()
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): CollectionTestData {
             return CollectionTestData(
                 dynamicModeEnabled = map["dynamicModeEnabled"] as? Boolean ?: false,
-                products = map["products"] as? List<Map<String, Any>>,
-                simpleItems = map["simpleItems"] as? List<Map<String, Any>>
+                products = map["products"] as? List<Map<String, Any>> ?: emptyList(),
+                simpleItems = map["simpleItems"] as? List<Map<String, Any>> ?: emptyList()
             )
         }
     }

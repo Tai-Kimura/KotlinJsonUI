@@ -264,6 +264,10 @@ module KjuiTools
               content += "map[\"#{name}\"] as? Boolean ?: false"
             when 'CollectionDataSource'
               content += "(map[\"#{name}\"] as? List<Map<String, Any>>) ?: emptyList()"
+            when /^List<.*>$/
+              content += "map[\"#{name}\"] as? #{kotlin_type} ?: emptyList()"
+            when /^Map<.*>$/
+              content += "map[\"#{name}\"] as? #{kotlin_type} ?: emptyMap()"
             else
               # For custom types, try to cast directly
               content += "map[\"#{name}\"] as? #{kotlin_type}"
@@ -372,6 +376,24 @@ module KjuiTools
         when 'CollectionDataSource'
           # Return an empty list for CollectionDataSource
           'emptyList()'
+        when /^List<.*>$/
+          # Handle generic List types
+          if value.is_a?(Array) && value.empty?
+            'emptyList()'
+          elsif value == '[]' || value == []
+            'emptyList()'
+          else
+            'emptyList()'
+          end
+        when /^Map<.*>$/
+          # Handle generic Map types
+          if value.is_a?(Hash) && value.empty?
+            'emptyMap()'
+          elsif value == '{}' || value == {} || value == '{}'
+            'emptyMap()'
+          else
+            'emptyMap()'
+          end
         else
           # For all other cases, use value as-is
           value
