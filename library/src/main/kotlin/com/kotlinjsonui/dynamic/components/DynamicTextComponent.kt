@@ -372,8 +372,11 @@ class DynamicTextComponent {
                 }
             }
             
-            // 7. Apply padding last (inner spacing)
+            // 7. Apply padding (inner spacing)
             modifier = ModifierBuilder.applyPadding(modifier, json)
+            
+            // 8. Apply opacity last
+            modifier = ModifierBuilder.applyOpacity(modifier, json)
 
             return modifier
         }

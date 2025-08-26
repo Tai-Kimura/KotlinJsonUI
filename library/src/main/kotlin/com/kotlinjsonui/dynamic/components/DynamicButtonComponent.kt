@@ -307,6 +307,7 @@ class DynamicButtonComponent {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyMargins(modifier, json)
             modifier = ModifierBuilder.applySize(modifier, json)
+            modifier = ModifierBuilder.applyOpacity(modifier, json)
             return modifier
         }
     }

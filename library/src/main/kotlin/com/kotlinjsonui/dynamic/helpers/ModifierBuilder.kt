@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 
@@ -14,7 +15,7 @@ import com.google.gson.JsonObject
 object ModifierBuilder {
     
     /**
-     * Build a complete modifier from JSON including size, margins, and padding
+     * Build a complete modifier from JSON including size, margins, padding, and opacity
      */
     fun buildModifier(
         json: JsonObject,
@@ -30,6 +31,9 @@ object ModifierBuilder {
         
         // Apply padding (inner spacing)
         modifier = applyPadding(modifier, json)
+        
+        // Apply opacity/alpha
+        modifier = applyOpacity(modifier, json)
         
         return modifier
     }
@@ -267,6 +271,24 @@ object ModifierBuilder {
             )
         } else {
             result
+        }
+    }
+    
+    /**
+     * Apply opacity/alpha to modifier
+     * Supports both "opacity" and "alpha" JSON properties
+     * Values are expected to be between 0.0 and 1.0
+     */
+    fun applyOpacity(modifier: Modifier, json: JsonObject): Modifier {
+        // Check for opacity first, then alpha
+        val opacityValue = json.get("opacity")?.asFloat ?: json.get("alpha")?.asFloat
+        
+        return if (opacityValue != null) {
+            // Clamp the value between 0 and 1
+            val clampedAlpha = opacityValue.coerceIn(0f, 1f)
+            modifier.alpha(clampedAlpha)
+        } else {
+            modifier
         }
     }
     

@@ -119,6 +119,11 @@ class DynamicTextViewComponent {
             val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.TextField.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
             
+            // Parse isOutlined - automatically use outlined style if borderColor or borderWidth is specified
+            val isOutlined = json.get("outlined")?.asBoolean == true || 
+                             json.get("borderColor") != null || 
+                             json.get("borderWidth") != null
+            
             // Parse max lines (default to unlimited for TextView)
             val maxLines = json.get("maxLines")?.asInt ?: Int.MAX_VALUE
             
@@ -190,6 +195,9 @@ class DynamicTextViewComponent {
                 // Apply padding
                 textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json)
                 
+                // Apply opacity
+                textFieldModifier = ModifierBuilder.applyOpacity(textFieldModifier, json)
+                
                 CustomTextFieldWithMargins(
                     value = currentText,
                     onValueChange = onValueChange,
@@ -202,7 +210,7 @@ class DynamicTextViewComponent {
                     backgroundColor = backgroundColor,
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
-                    isOutlined = true,
+                    isOutlined = isOutlined,
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
@@ -252,7 +260,7 @@ class DynamicTextViewComponent {
                     backgroundColor = backgroundColor,
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
-                    isOutlined = true,
+                    isOutlined = isOutlined,
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(

@@ -68,6 +68,9 @@ class DynamicZStackComponent {
             // 4. Apply padding (inner spacing) - MUST be applied last
             modifier = ModifierBuilder.applyPadding(modifier, json)
             
+            // 5. Apply opacity
+            modifier = ModifierBuilder.applyOpacity(modifier, json)
+            
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {
                 json.has("children") && json.get("children").isJsonArray -> 

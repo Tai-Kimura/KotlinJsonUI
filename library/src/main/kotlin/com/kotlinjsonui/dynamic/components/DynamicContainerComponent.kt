@@ -102,18 +102,42 @@ class DynamicContainerComponent {
                 horizontalAlignment = horizontalAlignment
             ) {
                 finalChildren.forEach { child ->
+                    // Get weight for this child
+                    val weightValue = ModifierBuilder.getWeight(child)
+                    // Only use weight if it's greater than 0
+                    val weight = if (weightValue != null && weightValue > 0f) weightValue else null
+                    
                     // Get alignment for this child
                     val childAlignment = ModifierBuilder.getChildAlignment(child, "Column")
                     
-                    // Apply alignment modifier if needed
-                    if (childAlignment != null && childAlignment is Alignment.Horizontal) {
-                        Box(
-                            modifier = Modifier.align(childAlignment)
-                        ) {
+                    // Apply weight and/or alignment modifiers if needed
+                    when {
+                        weight != null && childAlignment != null && childAlignment is Alignment.Horizontal -> {
+                            Box(
+                                modifier = Modifier
+                                    .weight(weight)
+                                    .align(childAlignment)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        weight != null -> {
+                            Box(
+                                modifier = Modifier.weight(weight)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        childAlignment != null && childAlignment is Alignment.Horizontal -> {
+                            Box(
+                                modifier = Modifier.align(childAlignment)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        else -> {
                             DynamicView(child, data)
                         }
-                    } else {
-                        DynamicView(child, data)
                     }
                 }
             }
@@ -143,18 +167,43 @@ class DynamicContainerComponent {
                 verticalAlignment = verticalAlignment
             ) {
                 finalChildren.forEach { child ->
+                    // Get weight for this child (also check widthWeight for Row)
+                    val weightValue = ModifierBuilder.getWeight(child) 
+                        ?: child.get("widthWeight")?.asFloat
+                    // Only use weight if it's greater than 0
+                    val weight = if (weightValue != null && weightValue > 0f) weightValue else null
+                    
                     // Get alignment for this child
                     val childAlignment = ModifierBuilder.getChildAlignment(child, "Row")
                     
-                    // Apply alignment modifier if needed
-                    if (childAlignment != null && childAlignment is Alignment.Vertical) {
-                        Box(
-                            modifier = Modifier.align(childAlignment)
-                        ) {
+                    // Apply weight and/or alignment modifiers if needed
+                    when {
+                        weight != null && childAlignment != null && childAlignment is Alignment.Vertical -> {
+                            Box(
+                                modifier = Modifier
+                                    .weight(weight)
+                                    .align(childAlignment)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        weight != null -> {
+                            Box(
+                                modifier = Modifier.weight(weight)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        childAlignment != null && childAlignment is Alignment.Vertical -> {
+                            Box(
+                                modifier = Modifier.align(childAlignment)
+                            ) {
+                                DynamicView(child, data)
+                            }
+                        }
+                        else -> {
                             DynamicView(child, data)
                         }
-                    } else {
-                        DynamicView(child, data)
                     }
                 }
             }
@@ -358,6 +407,9 @@ class DynamicContainerComponent {
             
             // 4. Apply padding (inner spacing) - MUST be applied last
             modifier = ModifierBuilder.applyPadding(modifier, json)
+            
+            // 5. Apply opacity
+            modifier = ModifierBuilder.applyOpacity(modifier, json)
             
             return modifier
         }

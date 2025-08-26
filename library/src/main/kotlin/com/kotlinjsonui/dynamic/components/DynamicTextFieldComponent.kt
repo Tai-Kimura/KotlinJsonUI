@@ -151,8 +151,10 @@ class DynamicTextFieldComponent {
             val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.TextField.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
             
-            // Parse isOutlined
-            val isOutlined = json.get("isOutlined")?.asBoolean ?: false
+            // Parse isOutlined - automatically use outlined style if borderColor or borderWidth is specified
+            val isOutlined = json.get("outlined")?.asBoolean == true || 
+                             json.get("borderColor") != null || 
+                             json.get("borderWidth") != null
 
             // Handle onTextChange event
             val onValueChange: (String) -> Unit = { newValue ->
@@ -293,6 +295,9 @@ class DynamicTextFieldComponent {
             if (includeMargins) {
                 modifier = ModifierBuilder.applyMargins(modifier, json)
             }
+            
+            // Apply opacity
+            modifier = ModifierBuilder.applyOpacity(modifier, json)
 
             return modifier
         }
