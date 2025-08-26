@@ -57,6 +57,18 @@ fun DynamicView(
         json
     }
     
+    // Check if this is an include element
+    if (styledJson.has("include")) {
+        DynamicIncludeComponent.create(styledJson, data)
+        return
+    }
+    
+    // Check if this is a data element (should be skipped)
+    if (styledJson.has("data") && !styledJson.has("type")) {
+        // Data-only elements should not be rendered
+        return
+    }
+    
     // Validate JSON has required type field
     val type = try {
         styledJson.get("type")?.asString
@@ -194,6 +206,10 @@ fun DynamicView(
     onError: ((Exception) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    
+    // Initialize DynamicLayoutLoader with context
+    DynamicLayoutLoader.init(context)
+    
     var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
     var styleUpdateCounter by remember { mutableStateOf(0) }
     

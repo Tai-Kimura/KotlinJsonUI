@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.DynamicViewProvider
+import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 
 /**
  * A safe wrapper for DynamicView that can be used in any build variant
@@ -36,6 +37,9 @@ fun SafeDynamicView(
     if (!DynamicModeManager.isInitialized) {
         DynamicModeManager.initialize(context)
     }
+    
+    // Initialize DynamicLayoutLoader with context
+    DynamicLayoutLoader.init(context)
     
     // Use the provider to render DynamicView
     DynamicViewProvider.renderDynamicView(
