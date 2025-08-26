@@ -23,6 +23,7 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  * Converts JSON to scrollable composable at runtime
  *
  * Supported JSON attributes (matching Ruby implementation):
+ * - scrollEnabled: Boolean to enable/disable scrolling (default true)
  * - horizontalScroll: Boolean to enable horizontal scrolling
  * - orientation: "horizontal" | "vertical" (alternative to horizontalScroll)
  * - child: JsonObject or Array of child components
@@ -78,15 +79,20 @@ class DynamicScrollViewComponent {
             // Parse children
             val children = parseChildren(json)
 
+            // Check if scroll is enabled (default true)
+            val scrollEnabled = json.get("scrollEnabled")?.asBoolean ?: true
+
             // Build modifier with scroll
-            val scrollState = rememberScrollState()
             var modifier = buildModifier(json)
 
-            // Apply scroll modifier based on direction
-            modifier = if (isHorizontal) {
-                modifier.horizontalScroll(scrollState)
-            } else {
-                modifier.verticalScroll(scrollState)
+            // Apply scroll modifier based on direction only if scrollEnabled
+            if (scrollEnabled) {
+                val scrollState = rememberScrollState()
+                modifier = if (isHorizontal) {
+                    modifier.horizontalScroll(scrollState)
+                } else {
+                    modifier.verticalScroll(scrollState)
+                }
             }
 
             // Create the scrollable container

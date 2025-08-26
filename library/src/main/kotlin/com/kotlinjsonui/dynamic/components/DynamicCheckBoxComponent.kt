@@ -91,7 +91,22 @@ class DynamicCheckBoxComponent {
             val onCheckedChange: (Boolean) -> Unit = { newValue ->
                 checked = newValue
 
-                // Call custom handler if specified
+                // Update bound variable if data binding is used
+                if (bindingVariable != null) {
+                    val updateData = data["updateData"]
+                    if (updateData is Function<*>) {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            (updateData as (Map<String, Any>) -> Unit)(
+                                mapOf(bindingVariable to newValue)
+                            )
+                        } catch (e: Exception) {
+                            // Update function doesn't match expected signature
+                        }
+                    }
+                }
+
+                // Also call custom handler if specified
                 json.get("onValueChange")?.asString?.let { methodName ->
                     val handler = data[methodName]
                     if (handler is Function<*>) {
@@ -105,21 +120,6 @@ class DynamicCheckBoxComponent {
                                 (handler as () -> Unit)()
                             } catch (e2: Exception) {
                                 // Handler doesn't match expected signature
-                            }
-                        }
-                    }
-                } ?: run {
-                    // Update bound variable if no custom handler
-                    if (bindingVariable != null) {
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(
-                                    mapOf(bindingVariable to newValue)
-                                )
-                            } catch (e: Exception) {
-                                // Update function doesn't match expected signature
                             }
                         }
                     }

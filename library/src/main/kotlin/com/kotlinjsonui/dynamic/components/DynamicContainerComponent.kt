@@ -110,22 +110,39 @@ class DynamicContainerComponent {
                     // Get alignment for this child
                     val childAlignment = ModifierBuilder.getChildAlignment(child, "Column")
                     
+                    // If weight is specified, modify the child JSON to fill available space
+                    val modifiedChild = if (weight != null) {
+                        val childCopy = child.deepCopy()
+                        // In a Column, weighted children should fill width
+                        childCopy.addProperty("width", "matchParent")
+                        // If height is 0, set it to fill
+                        if (child.get("height")?.asFloat == 0f) {
+                            childCopy.remove("height")
+                        }
+                        childCopy
+                    } else {
+                        child
+                    }
+                    
                     // Apply weight and/or alignment modifiers if needed
                     when {
                         weight != null && childAlignment != null && childAlignment is Alignment.Horizontal -> {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
+                                    .fillMaxWidth()
                                     .align(childAlignment)
                             ) {
-                                DynamicView(child, data)
+                                DynamicView(modifiedChild, data)
                             }
                         }
                         weight != null -> {
                             Box(
-                                modifier = Modifier.weight(weight)
+                                modifier = Modifier
+                                    .weight(weight)
+                                    .fillMaxWidth()
                             ) {
-                                DynamicView(child, data)
+                                DynamicView(modifiedChild, data)
                             }
                         }
                         childAlignment != null && childAlignment is Alignment.Horizontal -> {
@@ -176,22 +193,39 @@ class DynamicContainerComponent {
                     // Get alignment for this child
                     val childAlignment = ModifierBuilder.getChildAlignment(child, "Row")
                     
+                    // If weight is specified, modify the child JSON to fill available space
+                    val modifiedChild = if (weight != null) {
+                        val childCopy = child.deepCopy()
+                        // In a Row, weighted children should fill height
+                        childCopy.addProperty("height", "matchParent")
+                        // If width is 0, remove it to let weight handle it
+                        if (child.get("width")?.asFloat == 0f) {
+                            childCopy.remove("width")
+                        }
+                        childCopy
+                    } else {
+                        child
+                    }
+                    
                     // Apply weight and/or alignment modifiers if needed
                     when {
                         weight != null && childAlignment != null && childAlignment is Alignment.Vertical -> {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
+                                    .fillMaxHeight()
                                     .align(childAlignment)
                             ) {
-                                DynamicView(child, data)
+                                DynamicView(modifiedChild, data)
                             }
                         }
                         weight != null -> {
                             Box(
-                                modifier = Modifier.weight(weight)
+                                modifier = Modifier
+                                    .weight(weight)
+                                    .fillMaxHeight()
                             ) {
-                                DynamicView(child, data)
+                                DynamicView(modifiedChild, data)
                             }
                         }
                         childAlignment != null && childAlignment is Alignment.Vertical -> {
