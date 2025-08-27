@@ -140,6 +140,8 @@ module KjuiTools
               'data_directory' => "kotlin/#{package_name.gsub('.', '/')}/data",
               'viewmodel_directory' => "kotlin/#{package_name.gsub('.', '/')}/viewmodels",
               'view_directory' => "kotlin/#{package_name.gsub('.', '/')}/views",
+              'extension_directory' => "kotlin/#{package_name.gsub('.', '/')}/extensions",
+              'adapter_directory' => "kotlin/#{package_name.gsub('.', '/')}/adapters",
               'package_name' => package_name,
               'use_network' => true,  # Compose mode can use network for API calls
               'hotloader' => {
@@ -161,6 +163,8 @@ module KjuiTools
               'data_directory' => 'java/com/example/app/data',
               'viewmodel_directory' => 'java/com/example/app/viewmodel',
               'bindings_directory' => 'java/com/example/app/bindings',
+              'extension_directory' => 'java/com/example/app/extensions',
+              'adapter_directory' => 'java/com/example/app/adapters',
               'use_network' => true,
               'hotloader' => {
                 'ip' => '127.0.0.1',

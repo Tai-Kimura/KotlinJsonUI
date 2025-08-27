@@ -13,7 +13,8 @@ module KjuiTools
           'partial' => 'Generate a partial view', 
           'collection' => 'Generate a collection view',
           'cell' => 'Generate a collection cell view',
-          'binding' => 'Generate binding file'
+          'binding' => 'Generate binding file',
+          'converter' => 'Generate a custom component converter'
         }.freeze
 
         def run(args)
@@ -45,6 +46,8 @@ module KjuiTools
             generate_cell(args, mode)
           when 'binding'
             generate_binding(args, mode)
+          when 'converter'
+            generate_converter(args, mode)
           end
         end
 
@@ -170,6 +173,94 @@ module KjuiTools
           generator = KjuiTools::Xml::Generators::BindingGenerator.new(name)
           generator.generate
         end
+        
+        def generate_converter(args, mode)
+          unless mode == 'compose'
+            puts "Converter generation is only available in Compose mode"
+            exit 1
+          end
+          
+          name = args.shift
+          unless name
+            puts "Error: Please provide a component name"
+            puts "Usage: kjui generate converter <ComponentName> [options]"
+            puts "Options:"
+            puts "  --container         Generate as container component"
+            puts "  --no-container      Generate as non-container component"
+            puts "  --attr KEY:TYPE     Add attribute (can be used multiple times)"
+            puts "  --binding KEY:TYPE  Add binding attribute"
+            puts
+            puts "Examples:"
+            puts "  kjui g converter MyCard --container"
+            puts "  kjui g converter StatusBadge --attr text:String --attr color:Color"
+            puts "  kjui g converter DataCard --binding title:String --attr icon:String"
+            exit 1
+          end
+          
+          options = parse_converter_options(args)
+          
+          require_relative '../../compose/generators/converter_generator'
+          generator = KjuiTools::Compose::Generators::ConverterGenerator.new(name, options)
+          generator.generate
+        end
+        
+        def parse_converter_options(args)
+          options = {
+            is_container: nil,
+            attributes: {}
+          }
+          
+          # Parse flags first
+          parser = OptionParser.new do |opts|
+            opts.on('--container', 'Generate as container component') do
+              options[:is_container] = true
+            end
+            
+            opts.on('--no-container', 'Generate as non-container component') do
+              options[:is_container] = false
+            end
+            
+            opts.on('--attr KEY:TYPE', 'Add attribute') do |attr|
+              key, type = attr.split(':')
+              if key && type
+                options[:attributes][key] = type
+              else
+                puts "Invalid attribute format. Use KEY:TYPE (e.g., text:String)"
+                exit 1
+              end
+            end
+            
+            opts.on('--binding KEY:TYPE', 'Add binding attribute') do |attr|
+              key, type = attr.split(':')
+              if key && type
+                # Prefix with @ to indicate binding
+                options[:attributes]["@#{key}"] = type
+              else
+                puts "Invalid binding format. Use KEY:TYPE (e.g., title:String)"
+                exit 1
+              end
+            end
+          end
+          
+          parser.parse!(args)
+          
+          # Parse remaining arguments as attributes (simplified syntax)
+          args.each do |arg|
+            if arg.include?(':')
+              key, type = arg.split(':', 2)
+              if key && type
+                # Check if it's a binding (starts with @)
+                if key.start_with?('@')
+                  options[:attributes][key] = type
+                else
+                  options[:attributes][key] = type
+                end
+              end
+            end
+          end
+          
+          options
+        end
 
         def parse_view_options(args)
           options = {
@@ -204,6 +295,7 @@ module KjuiTools
           puts "  kjui g partial Header          # Generate a partial"
           puts "  kjui g collection Post/Cell    # Generate collection cell"
           puts "  kjui g binding CustomBinding   # Generate binding file (XML mode only)"
+          puts "  kjui g converter MyCard --container  # Generate custom component"
         end
       end
     end

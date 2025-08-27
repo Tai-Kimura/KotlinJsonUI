@@ -1,0 +1,279 @@
+{
+  "type": "SafeAreaView",
+  "background": "#F5F5F7",
+  "child": [
+    {
+      "type": "ScrollView",
+      "padding": 16,
+      "child": [
+        {
+          "type": "View",
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "text": "Custom Component Test",
+              "fontSize": 28,
+              "fontWeight": "bold",
+              "color": "#000000",
+              "padding": [0, 0, 20, 0]
+            },
+            {
+              "type": "Label",
+              "text": "Testing SampleCard - Static Values",
+              "fontSize": 18,
+              "fontWeight": "semibold",
+              "color": "#333333",
+              "padding": [0, 0, 8, 0]
+            },
+            {
+              "type": "SampleCard",
+              "title": "Static Title",
+              "subtitle": "This is a static subtitle",
+              "count": 42,
+              "padding": 16,
+              "background": "#FFFFFF",
+              "cornerRadius": 12,
+              "borderWidth": 1,
+              "borderColor": "#E0E0E0",
+              "child": [
+                {
+                  "type": "View",
+                  "orientation": "vertical",
+                  "child": [
+                    {
+                      "type": "Label",
+                      "text": "Card Content",
+                      "fontSize": 14,
+                      "color": "#666666"
+                    },
+                    {
+                      "type": "Label",
+                      "text": "This content is inside the custom component",
+                      "fontSize": 12,
+                      "color": "#999999"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "text": "Testing SampleCard - Dynamic Values",
+              "fontSize": 18,
+              "fontWeight": "semibold",
+              "color": "#333333",
+              "padding": [20, 0, 8, 0]
+            },
+            {
+              "type": "SampleCard",
+              "title": "@{cardTitle}",
+              "subtitle": "@{cardSubtitle}",
+              "count": "@{itemCount}",
+              "padding": 16,
+              "background": "#FFFFFF",
+              "cornerRadius": 12,
+              "borderWidth": 1,
+              "borderColor": "#E0E0E0",
+              "child": [
+                {
+                  "type": "View",
+                  "orientation": "vertical",
+                  "child": [
+                    {
+                      "type": "Label",
+                      "text": "Dynamic count: @{itemCount}",
+                      "fontSize": 16,
+                      "fontWeight": "medium",
+                      "color": "#5856D6"
+                    },
+                    {
+                      "type": "View",
+                      "orientation": "horizontal",
+                      "child": [
+                        {
+                          "type": "Button",
+                          "text": "Increment",
+                          "background": "#5856D6",
+                          "color": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "padding": [8, 16],
+                          "onClick": "incrementCount"
+                        },
+                        {
+                          "type": "Button",
+                          "text": "Decrement",
+                          "background": "#FF3B30",
+                          "color": "#FFFFFF",
+                          "cornerRadius": 8,
+                          "padding": [8, 16],
+                          "onClick": "decrementCount"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "text": "Testing Multiple Cards",
+              "fontSize": 18,
+              "fontWeight": "semibold",
+              "color": "#333333",
+              "padding": [20, 0, 8, 0]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "SampleCard",
+                  "title": "Card 1",
+                  "subtitle": "First custom card",
+                  "count": 1,
+                  "padding": 12,
+                  "background": "#E8F5E9",
+                  "cornerRadius": 8,
+                  "child": [
+                    {
+                      "type": "Label",
+                      "text": "Content for card 1",
+                      "fontSize": 14,
+                      "color": "#2E7D32"
+                    }
+                  ]
+                },
+                {
+                  "type": "SampleCard",
+                  "title": "Card 2",
+                  "subtitle": "Second custom card",
+                  "count": 2,
+                  "padding": 12,
+                  "background": "#FFF3E0",
+                  "cornerRadius": 8,
+                  "child": [
+                    {
+                      "type": "Label",
+                      "text": "Content for card 2",
+                      "fontSize": 14,
+                      "color": "#E65100"
+                    }
+                  ]
+                },
+                {
+                  "type": "SampleCard",
+                  "title": "Card 3",
+                  "subtitle": "Third custom card",
+                  "count": 3,
+                  "padding": 12,
+                  "background": "#F3E5F5",
+                  "cornerRadius": 8,
+                  "child": [
+                    {
+                      "type": "Label",
+                      "text": "Content for card 3",
+                      "fontSize": 14,
+                      "color": "#6A1B9A"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "text": "Testing StatusBadge - Non-Container Component",
+              "fontSize": 18,
+              "fontWeight": "semibold",
+              "color": "#333333",
+              "padding": [20, 0, 8, 0]
+            },
+            {
+              "type": "View",
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "StatusBadge",
+                  "title": "Static Status",
+                  "status": "Active",
+                  "color": "#4CAF50",
+                  "count": 5
+                },
+                {
+                  "type": "StatusBadge",
+                  "title": "Dynamic Status",
+                  "status": "@{currentStatus}",
+                  "color": "@{statusColor}",
+                  "count": "@{notificationCount}"
+                },
+                {
+                  "type": "StatusBadge",
+                  "title": "Error Status",
+                  "status": "Error",
+                  "color": "#FF3B30",
+                  "count": 0
+                }
+              ]
+            },
+            {
+              "type": "Button",
+              "text": "Toggle Dynamic Mode",
+              "onClick": "toggleDynamicMode",
+              "background": "#5856D6",
+              "color": "#FFFFFF",
+              "cornerRadius": 8,
+              "padding": [12, 20],
+              "marginTop": 20,
+              "width": "100%"
+            },
+            {
+              "type": "Label",
+              "text": "Dynamic Mode: @{dynamicModeStatus}",
+              "fontSize": 14,
+              "color": "#666666",
+              "textAlign": "center",
+              "marginTop": 8
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "cardTitle",
+      "class": "String",
+      "defaultValue": "'Dynamic Card Title'"
+    },
+    {
+      "name": "cardSubtitle",
+      "class": "String",
+      "defaultValue": "'Dynamic subtitle for testing'"
+    },
+    {
+      "name": "itemCount",
+      "class": "Int",
+      "defaultValue": "10"
+    },
+    {
+      "name": "currentStatus",
+      "class": "String",
+      "defaultValue": "'Online'"
+    },
+    {
+      "name": "statusColor",
+      "class": "Color",
+      "defaultValue": "Color.Green"
+    },
+    {
+      "name": "notificationCount",
+      "class": "Int",
+      "defaultValue": "3"
+    },
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "'OFF'"
+    }
+  ]
+}

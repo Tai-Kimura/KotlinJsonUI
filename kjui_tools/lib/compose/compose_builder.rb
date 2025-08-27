@@ -77,6 +77,7 @@ module KjuiTools
           @required_imports = Set.new
           @included_views = Set.new
           @cell_views = Set.new
+          @custom_components = Set.new
           
           # Find the GeneratedView file
           generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
@@ -164,8 +165,48 @@ module KjuiTools
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
         else
-          "// TODO: Implement component type: #{component_type}"
+          # Check for custom components
+          check_custom_component(component_type, json_data, depth, parent_type)
         end
+      end
+      
+      def check_custom_component(component_type, json_data, depth, parent_type)
+        # Try to load custom component mappings if they exist
+        mappings_file = File.join(File.dirname(__FILE__), 'components', 'extensions', 'component_mappings.rb')
+        
+        if File.exist?(mappings_file)
+          require_relative 'components/extensions/component_mappings'
+          
+          if defined?(Components::Extensions::COMPONENT_MAPPINGS)
+            component_class = Components::Extensions::COMPONENT_MAPPINGS[component_type]
+            
+            if component_class
+              # Load the custom component file
+              snake_case_name = component_type.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+                                            .gsub(/([a-z\d])([A-Z])/,'\1_\2')
+                                            .downcase
+              component_file = File.join(File.dirname(__FILE__), 'components', 'extensions', "#{snake_case_name}_component.rb")
+              
+              if File.exist?(component_file)
+                require_relative "components/extensions/#{snake_case_name}_component"
+                
+                # Add import for the custom component
+                @custom_components&.add(component_type)
+                
+                result = component_class.generate(json_data, depth, @required_imports, parent_type)
+                
+                # Handle container components that return metadata
+                if result.is_a?(Hash) && result[:children]
+                  return handle_container_result(result, depth, parent_type)
+                else
+                  return result
+                end
+              end
+            end
+          end
+        end
+        
+        "// TODO: Implement component type: #{component_type}"
       end
       
       def handle_container_result(result, depth, parent_type = nil)
@@ -530,6 +571,14 @@ module KjuiTools
             imports_to_add << view_import unless imports_to_add.include?(view_import)
             imports_to_add << data_import unless imports_to_add.include?(data_import)
             imports_to_add << viewmodel_import unless imports_to_add.include?(viewmodel_import)
+          end
+        end
+        
+        # Add imports for custom components
+        if @custom_components && @custom_components.any?
+          @custom_components.each do |component_name|
+            component_import = "import #{@package_name}.extensions.#{component_name}"
+            imports_to_add << component_import unless imports_to_add.include?(component_import)
           end
         end
         

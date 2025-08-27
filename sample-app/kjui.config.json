@@ -7,6 +7,8 @@
   "data_directory": "kotlin/com/example/kotlinjsonui/sample/data",
   "viewmodel_directory": "kotlin/com/example/kotlinjsonui/sample/viewmodels",
   "view_directory": "kotlin/com/example/kotlinjsonui/sample/views",
+  "extension_directory": "kotlin/com/example/kotlinjsonui/sample/extensions",
+  "adapter_directory": "kotlin/com/example/kotlinjsonui/sample/adapters",
   "package_name": "com.example.kotlinjsonui.sample",
   "use_network": true,
   "hotloader": {

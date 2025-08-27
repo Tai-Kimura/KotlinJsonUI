@@ -8,18 +8,85 @@ module KjuiTools
     class ConfigManager
       CONFIG_FILE = 'kjui.config.json'
       
+      DEFAULT_CONFIG = {
+        'mode' => 'compose',
+        'project_name' => '',
+        'package_name' => 'com.example.app',
+        'source_directory' => 'app/src/main',
+        'layouts_directory' => 'assets/Layouts',
+        'styles_directory' => 'assets/Styles',
+        'view_directory' => 'kotlin/com/example/app/views',
+        'data_directory' => 'kotlin/com/example/app/data',
+        'viewmodel_directory' => 'kotlin/com/example/app/viewmodels',
+        'extension_directory' => 'library/src/main/kotlin/com/kotlinjsonui/extensions',
+        'adapter_directory' => 'library/src/main/kotlin/com/kotlinjsonui/adapters',
+        'custom_view_types' => {},
+        'compose' => {
+          'output_directory' => 'kotlin/com/example/app/generated'
+        },
+        'xml' => {
+          'bindings_directory' => 'java/com/example/app/bindings'
+        }
+      }.freeze
+      
       class << self
         def load_config
-          return {} unless File.exist?(CONFIG_FILE)
+          config_path = find_config_file
           
-          JSON.parse(File.read(CONFIG_FILE))
-        rescue JSON::ParserError => e
-          puts "Error parsing config file: #{e.message}"
-          {}
+          base_config = if config_path && File.exist?(config_path)
+            begin
+              config_data = JSON.parse(File.read(config_path))
+              # Store the config directory for use by generators
+              config_data['_config_dir'] = File.dirname(config_path)
+              config_data
+            rescue JSON::ParserError => e
+              puts "Error parsing config file: #{e.message}"
+              {}
+            end
+          else
+            {}
+          end
+          
+          # Merge with default config to ensure all keys exist
+          deep_merge(DEFAULT_CONFIG, base_config)
+        end
+        
+        # Find config file in project
+        def find_config_file
+          # First check current directory
+          return CONFIG_FILE if File.exist?(CONFIG_FILE)
+          
+          # Check subdirectories for kjui.config.json
+          Dir.glob(File.join(Dir.pwd, '**/kjui.config.json')).each do |config_path|
+            # Skip hidden directories and node_modules
+            next if config_path.include?('/.') || config_path.include?('/node_modules/')
+            return config_path
+          end
+          
+          # Check parent directories up to 3 levels
+          current = Dir.pwd
+          3.times do
+            current = File.dirname(current)
+            config_path = File.join(current, CONFIG_FILE)
+            return config_path if File.exist?(config_path)
+          end
+          
+          nil
         end
         
         def save_config(config)
           File.write(CONFIG_FILE, JSON.pretty_generate(config))
+        end
+        
+        # Deep merge two hashes
+        def deep_merge(hash1, hash2)
+          hash1.merge(hash2) do |key, old_val, new_val|
+            if old_val.is_a?(Hash) && new_val.is_a?(Hash)
+              deep_merge(old_val, new_val)
+            else
+              new_val
+            end
+          end
         end
         
         def config_exists?
