@@ -5,13 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.kotlinjsonui.sample.viewmodels.SimpleCellViewModel
 
 data class SimpleCellData(
-    var item: Map<String, Any> = emptyMap()
+    var title: String = "",
+    var value: String = ""
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): SimpleCellData {
             return SimpleCellData(
-                item = map["item"] as? Map<String, Any> ?: emptyMap()
+                title = map["title"] as? String ?: "",
+                value = map["value"] as? String ?: ""
             )
         }
     }
@@ -21,7 +23,8 @@ data class SimpleCellData(
         val map = mutableMapOf<String, Any>()
         
         // Data properties
-        map["item"] = item
+        map["title"] = title
+        map["value"] = value
         
         return map
     }

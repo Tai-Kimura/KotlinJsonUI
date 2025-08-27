@@ -183,10 +183,12 @@
           "width": "matchParent",
           "height": 300,
           "topMargin": 10,
-          "columns": 3,
           "itemSpacing": 15,
-          "cellClasses": [
-            "ConverterTestCell"
+          "sections": [
+            {
+              "cell": "ConverterTestCell",
+              "columns": 3
+            }
           ],
           "items": "@{items}"
         },

@@ -1,36 +1,30 @@
 {
-  "type": "View",
-  "width": "matchParent",
-  "height": "wrapContent",
-  "padding": 10,
-  "background": "#FFFFFF",
-  "orientation": "vertical",
-  "child": [
-    {
-      "type": "Label",
-      "text": "@{title}",
-      "fontSize": 16,
-      "font": "bold",
-      "fontColor": "#333333",
-      "bottomMargin": 4
-    },
-    {
-      "type": "Label",
-      "text": "@{subtitle}",
-      "fontSize": 12,
-      "fontColor": "#666666"
-    }
-  ],
-  "data": [
-    {
-      "name": "subtitle",
-      "class": "String",
-      "defaultValue": "Description"
-    },
-    {
-      "name": "title",
-      "class": "String",
-      "defaultValue": "Item"
-    }
-  ]
+    "type": "View",
+    "orientation": "horizontal",
+    "padding": 12,
+    "background": "#FFFFFF",
+    "cornerRadius": 8,
+    "child": [
+        {
+            "type": "Label",
+            "text": "@{item[\"label\"] as? String ?: \"\"}",
+            "fontSize": 14,
+            "fontColor": "#000000",
+            "weight": 1
+        },
+        {
+            "type": "Label",
+            "text": "@{item[\"value\"] as? String ?: \"\"}",
+            "fontSize": 14,
+            "fontWeight": "bold",
+            "fontColor": "#007AFF"
+        }
+    ],
+    "data": [
+        {
+            "name": "item",
+            "class": "Map<String, Any>",
+            "defaultValue": {}
+        }
+    ]
 }

@@ -76,6 +76,7 @@ module KjuiTools
           
           @required_imports = Set.new
           @included_views = Set.new
+          @cell_views = Set.new
           
           # Find the GeneratedView file
           generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
@@ -144,6 +145,11 @@ module KjuiTools
         when 'TextView'
           Components::TextViewComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Collection'
+          # Extract cell classes for imports
+          cell_classes = json_data['cellClasses'] || []
+          cell_classes.each do |cell_class|
+            @cell_views&.add(cell_class)
+          end
           Components::CollectionComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Table'
           Components::TableComponent.generate(json_data, depth, @required_imports, parent_type)
@@ -520,6 +526,39 @@ module KjuiTools
             view_import = "import #{@package_name}.views.#{view_name}.#{pascal_name}View"
             data_import = "import #{@package_name}.data.#{pascal_name}Data"
             viewmodel_import = "import #{@package_name}.viewmodels.#{pascal_name}ViewModel"
+            
+            imports_to_add << view_import unless imports_to_add.include?(view_import)
+            imports_to_add << data_import unless imports_to_add.include?(data_import)
+            imports_to_add << viewmodel_import unless imports_to_add.include?(viewmodel_import)
+          end
+        end
+        
+        # Add imports for cell views (used in Collection components)
+        if @cell_views && @cell_views.any?
+          # Add necessary imports for creating ViewModels in collections
+          imports_to_add << "import androidx.lifecycle.viewmodel.compose.viewModel" unless imports_to_add.include?("import androidx.lifecycle.viewmodel.compose.viewModel")
+          
+          # First, remove any old/incorrect cell view imports
+          lines = content.split("\n")
+          @cell_views.each do |cell_class|
+            snake_name = to_snake_case(cell_class)
+            # Remove any existing imports with incorrect capitalization
+            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.views\.#{Regexp.escape(snake_name)}\.\w+View$/) }
+            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.data\.\w+Data$/) && line.downcase.include?(cell_class.downcase) }
+            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.viewmodels\.\w+ViewModel$/) && line.downcase.include?(cell_class.downcase) }
+          end
+          content = lines.join("\n")
+          
+          @cell_views.each do |cell_class|
+            # Cell class names are already in PascalCase (e.g., "ProductCell")
+            # Convert to snake_case for folder path
+            snake_name = to_snake_case(cell_class)
+            # Keep the original cell class name for the class itself
+            
+            # Add imports for the cell view and data
+            view_import = "import #{@package_name}.views.#{snake_name}.#{cell_class}View"
+            data_import = "import #{@package_name}.data.#{cell_class}Data"
+            viewmodel_import = "import #{@package_name}.viewmodels.#{cell_class}ViewModel"
             
             imports_to_add << view_import unless imports_to_add.include?(view_import)
             imports_to_add << data_import unless imports_to_add.include?(data_import)

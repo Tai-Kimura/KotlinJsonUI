@@ -36,6 +36,11 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
 import androidx.compose.foundation.layout.Arrangement
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.kotlinjsonui.sample.views.converter_test_cell.ConverterTestCellView
+import com.example.kotlinjsonui.sample.data.ConverterTestCellData
+import com.example.kotlinjsonui.sample.viewmodels.ConverterTestCellViewModel
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -219,15 +224,27 @@ fun ConverterTestGeneratedView(
                     .height(300.dp)
                     .padding(top = 10.dp)
             ) {
-                // Collection with data source: items
-                val cellData = data.items.getCellData("ConverterTestCell")
-                items(cellData.size) { index ->
-                    val item = cellData[index]
-                    ConvertertestView(
-                        data = item,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                // Section 1: ConverterTestCell (3 columns)
+                data.items.sections.getOrNull(0)?.let { section ->
+                    section.cells?.let { cellData ->
+                        items(cellData.data.size) { cellIndex ->
+                            val item = cellData.data[cellIndex]
+                            when (item) {
+                                is Map<*, *> -> {
+                                    val data = ConverterTestCellData.fromMap(item as Map<String, Any>)
+                                    ConverterTestCellView(
+                                        data = data,
+                                        viewModel = viewModel(),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                    )
+                                }
+                                else -> {
+                                    // Unsupported item type
+                                }
+                            }
+                        }
+                    }
                 }
             }
             Text(

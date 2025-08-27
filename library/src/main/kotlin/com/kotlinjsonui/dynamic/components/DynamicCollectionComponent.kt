@@ -6,27 +6,36 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.google.gson.JsonArray
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.data.CollectionDataSource
+import com.kotlinjsonui.data.CollectionDataSection
 
 /**
  * Dynamic Collection Component Converter
  * Converts JSON to LazyGrid composable at runtime for grid layouts
  * 
  * Supported JSON attributes (matching SwiftUI implementation):
- * - cellClasses: String array of cell class names
- * - headerClasses: String array of header class names (not yet fully supported in grid)
- * - footerClasses: String array of footer class names (not yet fully supported in grid)
- * - items: @{variable} for data source with getCellData support
+ * - sections: Array of section definitions with cell types and columns
+ * - cellClasses: String array of cell class names (legacy)
+ * - headerClasses: String array of header class names
+ * - footerClasses: String array of footer class names
+ * - items: @{variable} for data source
  * - columns: Number of columns (default: 2)
- * - scrollDirection: "vertical" | "horizontal"
+ * - layout: "vertical" | "horizontal"
+ * - scrollDirection: "vertical" | "horizontal" (deprecated, use layout)
  * - contentPadding: Number or Array for grid content padding
  * - itemSpacing/spacing: Number for spacing between items
  * - cellHeight: Number for fixed cell height
+ * - cellWidth: Number for fixed cell width (horizontal layout)
  * - cell: JsonObject template for custom cell layout (fallback)
+ * - showsVerticalScrollIndicator: Boolean
+ * - showsHorizontalScrollIndicator: Boolean
  * - width/height: Number dimensions
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
@@ -39,7 +48,12 @@ class DynamicCollectionComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            // Extract cellClasses, headerClasses, footerClasses as string arrays
+            // Check if sections are defined
+            val sections = json.get("sections")?.asJsonArray
+            val layout = json.get("layout")?.asString ?: "vertical"
+            val isHorizontal = layout == "horizontal"
+            
+            // Legacy: Extract cellClasses, headerClasses, footerClasses
             val cellClasses = extractStringArray(json.get("cellClasses")?.asJsonArray)
             val headerClasses = extractStringArray(json.get("headerClasses")?.asJsonArray)
             val footerClasses = extractStringArray(json.get("footerClasses")?.asJsonArray)
@@ -53,52 +67,33 @@ class DynamicCollectionComponent {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
                     pattern.find(json.get("items").asString)?.groupValues?.get(1)
                 }
-                json.get("bind")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
-                }
                 else -> null
             }
             
-            // Get items from data source
-            val items = when {
-                // If we have cellClasses and items binding, try to use getCellData
-                cellClassName != null && itemsBinding != null -> {
-                    val dataSource = data[itemsBinding]
-                    when (dataSource) {
-                        // Check if it's a collection data source with getCellData method
-                        is CollectionDataSource -> {
-                            dataSource.getCellData(cellClassName)
-                        }
-                        // Regular list/array
-                        is List<*> -> dataSource
-                        is Array<*> -> dataSource.toList()
-                        else -> emptyList<Any>()
-                    }
-                }
-                // If we have cellClasses but no items binding, look for collectionDataSource
-                cellClassName != null -> {
-                    when (val dataSource = data["collectionDataSource"]) {
-                        is CollectionDataSource -> {
-                            dataSource.getCellData(cellClassName)
-                        }
-                        else -> emptyList<Any>()
-                    }
-                }
-                // Fallback to regular items binding without cellClasses
-                itemsBinding != null -> {
-                    when (val boundValue = data[itemsBinding]) {
-                        is List<*> -> boundValue
-                        is Array<*> -> boundValue.toList()
-                        else -> emptyList<Any>()
-                    }
-                }
-                else -> emptyList<Any>()
-            }
+            // Get collection data source if sections are defined
+            val collectionDataSource = if (sections != null && itemsBinding != null) {
+                data[itemsBinding] as? CollectionDataSource
+            } else null
             
-            // Parse grid configuration
-            val columns = json.get("columns")?.asInt ?: 2
-            val scrollDirection = json.get("scrollDirection")?.asString ?: "vertical"
+            // Parse grid configuration with default columns
+            val defaultColumns = json.get("columns")?.asInt ?: 1
+            
+            // Calculate actual grid columns based on sections
+            val gridColumns = if (sections != null) {
+                // Collect all unique column counts from sections
+                val sectionColumns = sections.map { sectionJson ->
+                    sectionJson.asJsonObject.get("columns")?.asInt ?: defaultColumns
+                }.distinct()
+                
+                // If sections have different column counts, calculate LCM
+                if (sectionColumns.size > 1) {
+                    calculateLCM(sectionColumns)
+                } else {
+                    sectionColumns.firstOrNull() ?: defaultColumns
+                }
+            } else {
+                defaultColumns
+            }
             
             // Parse content padding
             val contentPadding = when {
@@ -127,165 +122,184 @@ class DynamicCollectionComponent {
                 else -> PaddingValues(0.dp)
             }
             
-            // Parse spacing (check both itemSpacing and spacing)
+            // Parse spacing
             val spacing = (json.get("itemSpacing")?.asFloat ?: json.get("spacing")?.asFloat ?: 0f).dp
             
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json)
             
-            // Get cell height if specified
+            // Get cell height/width if specified
             val cellHeight = json.get("cellHeight")?.asFloat?.dp
+            val cellWidth = json.get("cellWidth")?.asFloat?.dp
             
             // Get cell template (fallback if no cellClasses)
             val cellTemplate = json.get("cell")?.asJsonObject
             
-            // Create the appropriate grid based on scroll direction
-            if (scrollDirection == "horizontal") {
+            // Create the appropriate grid based on layout
+            if (isHorizontal) {
                 LazyHorizontalGrid(
-                    rows = GridCells.Fixed(columns),
+                    rows = GridCells.Fixed(gridColumns),
                     modifier = modifier,
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(spacing),
                     horizontalArrangement = Arrangement.spacedBy(spacing)
                 ) {
-                    items(items.size) { index ->
-                        val item = items[index]
+                    generateCollectionItems(
+                        sections = sections,
+                        collectionDataSource = collectionDataSource,
+                        cellClassName = cellClassName,
+                        cellTemplate = cellTemplate,
+                        data = data,
+                        cellWidth = cellWidth,
+                        cellHeight = cellHeight,
+                        isHorizontal = true,
+                        gridColumns = gridColumns,
+                        defaultColumns = defaultColumns
+                    )
+                }
+            } else {
+                // Vertical grid (default)
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(gridColumns),
+                    modifier = modifier,
+                    contentPadding = contentPadding,
+                    verticalArrangement = Arrangement.spacedBy(spacing),
+                    horizontalArrangement = Arrangement.spacedBy(spacing)
+                ) {
+                    generateCollectionItems(
+                        sections = sections,
+                        collectionDataSource = collectionDataSource,
+                        cellClassName = cellClassName,
+                        cellTemplate = cellTemplate,
+                        data = data,
+                        cellWidth = cellWidth,
+                        cellHeight = cellHeight,
+                        isHorizontal = false,
+                        gridColumns = gridColumns,
+                        defaultColumns = defaultColumns
+                    )
+                }
+            }
+        }
+        
+        private fun LazyGridScope.generateCollectionItems(
+            sections: JsonArray?,
+            collectionDataSource: CollectionDataSource?,
+            cellClassName: String?,
+            cellTemplate: JsonObject?,
+            data: Map<String, Any>,
+            cellWidth: androidx.compose.ui.unit.Dp?,
+            cellHeight: androidx.compose.ui.unit.Dp?,
+            isHorizontal: Boolean,
+            gridColumns: Int,
+            defaultColumns: Int
+        ) {
+            when {
+                // If we have sections and data source
+                sections != null && collectionDataSource != null -> {
+                    sections.forEach { sectionJson ->
+                        val sectionObj = sectionJson.asJsonObject
+                        val cellViewName = sectionObj.get("cell")?.asString
+                        val headerViewName = sectionObj.get("header")?.asString
+                        val footerViewName = sectionObj.get("footer")?.asString
+                        val sectionColumns = sectionObj.get("columns")?.asInt ?: defaultColumns
+                        val sectionIndex = sections.indexOf(sectionJson)
                         
-                        // Create item data context
-                        val itemData = data.toMutableMap().apply {
-                            put("item", item ?: "")
-                            put("index", index)
-                        }
+                        // Calculate span for items in this section
+                        val itemSpan = gridColumns / sectionColumns
                         
-                        // Cell modifier
-                        val cellModifier = Modifier.then(
-                            if (cellHeight != null) Modifier.height(cellHeight) else Modifier
-                        ).then(
-                            if (columns > 1) Modifier.fillMaxWidth() else Modifier
-                        )
-                        
-                        when {
-                            // If we have a cell class name, create a custom view for it
-                            cellClassName != null -> {
-                                // Create a view based on the cell class name
-                                // This would ideally create a specific cell view component
-                                Card(
-                                    modifier = cellModifier.padding(4.dp)
-                                ) {
-                                    // In a real implementation, this would dynamically create
-                                    // the appropriate cell view based on cellClassName
-                                    Box(modifier = Modifier.padding(8.dp)) {
-                                        when (item) {
-                                            is Map<*, *> -> {
-                                                // If item is a map, try to display it intelligently
-                                                val displayText = item["title"]?.toString() 
-                                                    ?: item["text"]?.toString()
-                                                    ?: item["name"]?.toString()
-                                                    ?: item.toString()
-                                                Text(text = displayText)
-                                            }
-                                            else -> Text(text = item?.toString() ?: "")
-                                        }
+                        collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
+                            // Render header if present
+                            if (headerViewName != null && section.header != null) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        renderCellView(headerViewName, section.header.data, -1, data)
                                     }
                                 }
                             }
-                            // If we have a cell template, use it
-                            cellTemplate != null -> {
-                                Box(modifier = cellModifier) {
-                                    DynamicView(
-                                        json = cellTemplate,
-                                        data = itemData
-                                    )
+                            
+                            // Render cells
+                            section.cells?.let { cellData ->
+                                items(
+                                    count = cellData.data.size,
+                                    span = if (itemSpan > 1) { { GridItemSpan(itemSpan) } } else null
+                                ) { cellIndex ->
+                                    val item = cellData.data[cellIndex]
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .then(
+                                                if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
+                                                else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
+                                                else Modifier
+                                            )
+                                    ) {
+                                        renderCellView(cellViewName ?: cellClassName, item, cellIndex, data)
+                                    }
                                 }
                             }
-                            // Default cell
-                            else -> {
-                                Card(
-                                    modifier = cellModifier.padding(4.dp)
-                                ) {
-                                    Text(
-                                        text = item?.toString() ?: "",
-                                        modifier = Modifier.padding(16.dp)
-                                    )
+                            
+                            // Render footer if present
+                            if (footerViewName != null && section.footer != null) {
+                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                    Box(modifier = Modifier.fillMaxWidth()) {
+                                        renderCellView(footerViewName, section.footer.data, -2, data)
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            } else {
-                // Vertical grid (default)
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
-                    modifier = modifier,
-                    contentPadding = contentPadding,
-                    verticalArrangement = Arrangement.spacedBy(spacing),
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
-                ) {
-                    items(items.size) { index ->
-                        val item = items[index]
-                        
-                        // Create item data context
-                        val itemData = data.toMutableMap().apply {
-                            put("item", item ?: "")
-                            put("index", index)
+                // If we have cell template
+                cellTemplate != null -> {
+                    // Use a default list of 10 items for template
+                    items(10) { index ->
+                        Box(
+                            modifier = Modifier.then(
+                                if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
+                                else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
+                                else Modifier
+                            )
+                        ) {
+                            val cellData = data.toMutableMap().apply {
+                                put("index", index)
+                            }
+                            DynamicView(
+                                json = cellTemplate,
+                                data = cellData
+                            )
                         }
-                        
-                        // Cell modifier
-                        val cellModifier = Modifier.then(
-                            if (cellHeight != null) Modifier.height(cellHeight) else Modifier
-                        ).then(
-                            if (columns > 1) Modifier.fillMaxWidth() else Modifier
-                        )
-                        
-                        when {
-                            // If we have a cell class name, create a custom view for it
-                            cellClassName != null -> {
-                                // Create a view based on the cell class name
-                                // This would ideally create a specific cell view component
-                                Card(
-                                    modifier = cellModifier.padding(4.dp)
-                                ) {
-                                    // In a real implementation, this would dynamically create
-                                    // the appropriate cell view based on cellClassName
-                                    Box(modifier = Modifier.padding(8.dp)) {
-                                        when (item) {
-                                            is Map<*, *> -> {
-                                                // If item is a map, try to display it intelligently
-                                                val displayText = item["title"]?.toString() 
-                                                    ?: item["text"]?.toString()
-                                                    ?: item["name"]?.toString()
-                                                    ?: item.toString()
-                                                Text(text = displayText)
-                                            }
-                                            else -> Text(text = item?.toString() ?: "")
-                                        }
-                                    }
-                                }
-                            }
-                            // If we have a cell template, use it
-                            cellTemplate != null -> {
-                                Box(modifier = cellModifier) {
-                                    DynamicView(
-                                        json = cellTemplate,
-                                        data = itemData
-                                    )
-                                }
-                            }
-                            // Default cell
-                            else -> {
-                                Card(
-                                    modifier = cellModifier.padding(4.dp)
-                                ) {
-                                    Text(
-                                        text = item?.toString() ?: "",
-                                        modifier = Modifier.padding(16.dp)
-                                    )
-                                }
+                    }
+                }
+                // Default placeholder
+                else -> {
+                    items(10) { index ->
+                        Card(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .then(
+                                    if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
+                                    else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
+                                    else Modifier.fillMaxWidth().height(80.dp)
+                                )
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = androidx.compose.ui.Alignment.Center
+                            ) {
+                                Text("Item $index")
                             }
                         }
                     }
                 }
             }
+        }
+        
+        private fun calculateLCM(numbers: List<Int>): Int {
+            fun gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)
+            fun lcm(a: Int, b: Int): Int = (a * b) / gcd(a, b)
+            
+            return numbers.reduce { acc, n -> lcm(acc, n) }
         }
         
         private fun extractStringArray(jsonArray: JsonArray?): List<String> {
@@ -300,13 +314,76 @@ class DynamicCollectionComponent {
                 }
             }
         }
-    }
-    
-    /**
-     * Interface for collection data sources that support getCellData
-     * This would be implemented by ViewModels or data providers
-     */
-    interface CollectionDataSource {
-        fun getCellData(className: String): List<Any>
+        
+        @Composable
+        private fun renderCellView(
+            cellClassName: String?,
+            item: Any?,
+            index: Int,
+            data: Map<String, Any>
+        ) {
+            if (cellClassName == null) {
+                // Default cell
+                Card(
+                    modifier = Modifier.padding(4.dp).fillMaxWidth()
+                ) {
+                    Text(
+                        text = item?.toString() ?: "",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                return
+            }
+            
+            // Convert cell class name to JSON file name
+            val cellJsonName = cellClassName
+                .replace(Regex("([a-z])([A-Z])")) { "${it.groupValues[1]}_${it.groupValues[2].lowercase()}" }
+                .lowercase()
+            
+            // Initialize DynamicLayoutLoader with context
+            val context = LocalContext.current
+            DynamicLayoutLoader.init(context)
+            
+            // Load the cell JSON from assets
+            val cellJson = DynamicLayoutLoader.loadLayout(cellJsonName)
+            
+            if (cellJson != null) {
+                // Create item data context for the cell
+                val cellData = when (item) {
+                    is Map<*, *> -> {
+                        // If item is already a map, merge it with data
+                        data.toMutableMap().apply {
+                            (item as Map<String, Any>).forEach { (key, value) ->
+                                put(key, value)
+                            }
+                            put("index", index)
+                        }
+                    }
+                    else -> {
+                        // Otherwise, put item as "item" field
+                        data.toMutableMap().apply {
+                            put("item", item ?: "")
+                            put("index", index)
+                        }
+                    }
+                }
+                
+                // Render the cell view with item data
+                DynamicView(
+                    json = cellJson,
+                    data = cellData
+                )
+            } else {
+                // Fallback - display error
+                Card(
+                    modifier = Modifier.padding(4.dp).fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Cell not found: $cellJsonName",
+                        modifier = Modifier.padding(8.dp)
+                    )
+                }
+            }
+        }
     }
 }

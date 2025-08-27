@@ -263,7 +263,7 @@ module KjuiTools
             when 'Bool', 'Boolean'
               content += "map[\"#{name}\"] as? Boolean ?: false"
             when 'CollectionDataSource'
-              content += "(map[\"#{name}\"] as? List<Map<String, Any>>) ?: emptyList()"
+              content += "com.kotlinjsonui.data.CollectionDataSource()"
             when /^List<.*>$/
               content += "map[\"#{name}\"] as? #{kotlin_type} ?: emptyList()"
             when /^Map<.*>$/
@@ -344,8 +344,8 @@ module KjuiTools
         when 'CGFloat'
           'Float'
         when 'CollectionDataSource'
-          # Map CollectionDataSource to a List of maps
-          'List<Map<String, Any>>'
+          # Use the actual CollectionDataSource type
+          'com.kotlinjsonui.data.CollectionDataSource'
         else
           # Return as-is for custom types
           json_class
@@ -374,8 +374,12 @@ module KjuiTools
           # Ensure it's a float with f suffix
           "#{value.to_f}f"
         when 'CollectionDataSource'
-          # Return an empty list for CollectionDataSource
-          'emptyList()'
+          # Return the actual default value string or create new instance
+          if value.is_a?(String) && value == 'CollectionDataSource()'
+            'com.kotlinjsonui.data.CollectionDataSource()'
+          else
+            'com.kotlinjsonui.data.CollectionDataSource()'
+          end
         when /^List<.*>$/
           # Handle generic List types
           if value.is_a?(Array) && value.empty?

@@ -11,6 +11,9 @@
   "button_enabled_test": [
     "dynamic_toggle"
   ],
+  "collection_test": [
+    "dynamic_toggle"
+  ],
   "components_test": [
     "dynamic_toggle"
   ],

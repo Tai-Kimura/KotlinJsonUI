@@ -1,0 +1,38 @@
+{
+  "type": "View",
+  "padding": 12,
+  "background": "#FFFFFF",
+  "cornerRadius": 8,
+  "orientation": "vertical",
+  "border": {
+    "width": 1,
+    "color": "#E0E0E0"
+  },
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 16,
+      "fontColor": "#333333"
+    },
+    {
+      "type": "Label",
+      "text": "@{subtitle}",
+      "fontSize": 12,
+      "fontColor": "#666666",
+      "topMargin": 4
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Basic Item"
+    },
+    {
+      "name": "subtitle",
+      "class": "String",
+      "defaultValue": "Description"
+    }
+  ]
+}

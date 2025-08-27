@@ -2,8 +2,6 @@ package com.example.kotlinjsonui.sample.views.simple_cell
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,7 +24,8 @@ import androidx.compose.ui.draw.clip
 @Composable
 fun SimpleCellGeneratedView(
     data: SimpleCellData,
-    viewModel: SimpleCellViewModel
+    viewModel: SimpleCellViewModel,
+    modifier: Modifier = Modifier
 ) {
     // Generated Compose code from simple_cell.json
     // This will be updated when you run 'kjui build'
@@ -75,13 +74,15 @@ fun SimpleCellGeneratedView(
             .padding(12.dp)
     ) {
         Text(
-            text = "${data.item.title}",
+            text = "${data.title}",
             fontSize = 14.sp,
+            color = Color(android.graphics.Color.parseColor("#000000")),
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = "${data.item.value}",
+            text = "${data.value}",
             fontSize = 14.sp,
+            color = Color(android.graphics.Color.parseColor("#007AFF")),
             fontWeight = FontWeight.Bold,
             modifier = Modifier
         )

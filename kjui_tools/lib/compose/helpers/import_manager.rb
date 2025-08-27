@@ -49,6 +49,7 @@ module KjuiTools
             lazy_grid: ["import androidx.compose.foundation.lazy.grid.LazyVerticalGrid",
                         "import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid",
                         "import androidx.compose.foundation.lazy.grid.GridCells"],
+            grid_item_span: "import androidx.compose.foundation.lazy.grid.GridItemSpan",
             webview: ["import android.webkit.WebView",
                       "import android.webkit.WebViewClient",
                       "import android.webkit.WebChromeClient",

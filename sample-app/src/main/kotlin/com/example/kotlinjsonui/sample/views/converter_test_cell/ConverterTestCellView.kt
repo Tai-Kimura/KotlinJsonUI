@@ -1,19 +1,22 @@
 package com.example.kotlinjsonui.sample.views.converter_test_cell
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.Modifier
+import com.example.kotlinjsonui.sample.data.ConverterTestCellData
 import com.example.kotlinjsonui.sample.viewmodels.ConverterTestCellViewModel
 
 @Composable
 fun ConverterTestCellView(
-    viewModel: ConverterTestCellViewModel = viewModel()
+    data: ConverterTestCellData,
+    viewModel: ConverterTestCellViewModel,
+    modifier: Modifier = Modifier
 ) {
-    val data by viewModel.data.collectAsState()
+    // This is a cell view for use in Collection components
+    // The data parameter contains an 'item' property with the cell's data
     
     ConverterTestCellGeneratedView(
         data = data,
-        viewModel = viewModel
+        viewModel = viewModel,
+        modifier = modifier
     )
 }

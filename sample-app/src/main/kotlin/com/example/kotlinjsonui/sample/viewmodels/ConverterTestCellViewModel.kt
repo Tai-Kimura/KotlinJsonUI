@@ -1,28 +1,27 @@
 package com.example.kotlinjsonui.sample.viewmodels
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewModelScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import com.example.kotlinjsonui.sample.data.ConverterTestCellData
 
 class ConverterTestCellViewModel(application: Application) : AndroidViewModel(application) {
-    // JSON file reference for hot reload
-    val jsonFileName = "converter_test_cell"
+    // Cell data - managed by parent Collection
+    var data by mutableStateOf(ConverterTestCellData())
+        private set
     
-    // Data model
-    private val _data = MutableStateFlow(ConverterTestCellData())
-    val data: StateFlow<ConverterTestCellData> = _data.asStateFlow()
+    // This is a cell view model
+    // Data is typically provided by the parent Collection component
     
-    // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
+    fun updateData(newData: ConverterTestCellData) {
+        data = newData
     }
-
-    // Add more action handlers as needed
-    fun updateData(updates: Map<String, Any>) {
-        val currentDataMap = _data.value.toMap(this).toMutableMap()
-        currentDataMap.putAll(updates)
-        _data.value = ConverterTestCellData.fromMap(currentDataMap)
+    
+    fun updateItem(item: Map<String, Any>) {
+        data = data.copy(item = item)
     }
 }

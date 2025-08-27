@@ -5,13 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.kotlinjsonui.sample.viewmodels.ProductCellViewModel
 
 data class ProductCellData(
-    var item: Map<String, Any> = emptyMap()
+    var name: String = "",
+    var price: String = "",
+    var stock: String = "",
+    var inStock: Boolean = true
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): ProductCellData {
             return ProductCellData(
-                item = map["item"] as? Map<String, Any> ?: emptyMap()
+                name = map["name"] as? String ?: "",
+                price = map["price"] as? String ?: "",
+                stock = map["stock"] as? String ?: "",
+                inStock = map["inStock"] as? Boolean ?: false
             )
         }
     }
@@ -21,7 +27,10 @@ data class ProductCellData(
         val map = mutableMapOf<String, Any>()
         
         // Data properties
-        map["item"] = item
+        map["name"] = name
+        map["price"] = price
+        map["stock"] = stock
+        map["inStock"] = inStock
         
         return map
     }

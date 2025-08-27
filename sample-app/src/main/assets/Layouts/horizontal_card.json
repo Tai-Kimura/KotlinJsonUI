@@ -1,0 +1,48 @@
+{
+  "type": "View",
+  "width": 150,
+  "padding": 12,
+  "background": "#FFFFFF",
+  "cornerRadius": 12,
+  "orientation": "vertical",
+  "border": {
+    "width": 1,
+    "color": "#E0E0E0"
+  },
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 80,
+      "background": "#E3F2FD",
+      "cornerRadius": 8
+    },
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 14,
+      "fontColor": "#333333",
+      "fontWeight": "semibold",
+      "topMargin": 8
+    },
+    {
+      "type": "Label",
+      "text": "@{description}",
+      "fontSize": 12,
+      "fontColor": "#666666",
+      "topMargin": 4
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Card Title"
+    },
+    {
+      "name": "description",
+      "class": "String",
+      "defaultValue": "Card description"
+    }
+  ]
+}

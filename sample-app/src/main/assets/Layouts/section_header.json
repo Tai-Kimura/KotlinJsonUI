@@ -1,0 +1,22 @@
+{
+  "type": "View",
+  "padding": [16, 8],
+  "background": "#F0F0F0",
+  "width": "matchParent",
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 18,
+      "fontWeight": "bold",
+      "fontColor": "#000000"
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Section Header"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "type": "View",
+  "padding": 16,
+  "background": "#FFFFFF",
+  "cornerRadius": 16,
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{badge}",
+      "fontSize": 10,
+      "fontColor": "#FFFFFF",
+      "background": "#FF6B6B",
+      "padding": [4, 8],
+      "cornerRadius": 12
+    },
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 18,
+      "fontColor": "#FFFFFF",
+      "fontWeight": "bold",
+      "topMargin": 12
+    },
+    {
+      "type": "Label",
+      "text": "@{description}",
+      "fontSize": 14,
+      "fontColor": "#FFFFFF",
+      "topMargin": 8,
+      "alpha": 0.9
+    }
+  ],
+  "data": [
+    {
+      "name": "badge",
+      "class": "String",
+      "defaultValue": "FEATURED"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Feature Title"
+    },
+    {
+      "name": "description",
+      "class": "String",
+      "defaultValue": "Amazing feature description"
+    }
+  ]
+}

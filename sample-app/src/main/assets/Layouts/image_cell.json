@@ -1,0 +1,49 @@
+{
+  "type": "View",
+  "padding": 8,
+  "background": "#FFFFFF",
+  "cornerRadius": 12,
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "NetworkImage",
+      "src": "@{imageUrl}",
+      "width": "matchParent",
+      "height": 120,
+      "contentMode": "scaleAspectFill",
+      "cornerRadius": 8
+    },
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 14,
+      "fontColor": "#333333",
+      "fontWeight": "semibold",
+      "topMargin": 8
+    },
+    {
+      "type": "Label",
+      "text": "@{price}",
+      "fontSize": 12,
+      "fontColor": "#007AFF",
+      "topMargin": 4
+    }
+  ],
+  "data": [
+    {
+      "name": "imageUrl",
+      "class": "String",
+      "defaultValue": "https://picsum.photos/200/150"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Image Item"
+    },
+    {
+      "name": "price",
+      "class": "String",
+      "defaultValue": "$99.99"
+    }
+  ]
+}

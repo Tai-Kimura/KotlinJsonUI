@@ -2,27 +2,22 @@ package com.example.kotlinjsonui.sample.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewModelScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import com.example.kotlinjsonui.sample.data.ProductCellData
 
 class ProductCellViewModel(application: Application) : AndroidViewModel(application) {
-    // JSON file reference for hot reload
-    val jsonFileName = "product_cell"
+    // Cell data - managed by parent Collection
+    var data by mutableStateOf(ProductCellData())
+        private set
     
-    // Data model
-    private val _data = MutableStateFlow(ProductCellData())
-    val data: StateFlow<ProductCellData> = _data.asStateFlow()
+    // This is a cell view model
+    // Data is typically provided by the parent Collection component
     
-    // Action handlers
-    fun onGetStarted() {
-        // Handle button tap
-    }
-    
-    // Add more action handlers as needed
-    fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+    fun updateData(newData: ProductCellData) {
+        data = newData
     }
 }

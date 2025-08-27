@@ -1,89 +1,200 @@
 {
-    "type": "View",
-    "orientation": "vertical",
-    "padding": 16,
-    "background": "#F5F5F5",
-    "child": [
+  "type": "View",
+  "background": "#F5F5F7",
+  "child": [
+    {
+      "type": "ScrollView",
+      "child": [
         {
-            "type": "Text",
-            "text": "Collection Test with cellClasses",
-            "fontSize": 24,
-            "fontWeight": "bold",
-            "color": "#333333"
-        },
-        {
-            "type": "Text",
-            "text": "Dynamic Mode: @{dynamicModeEnabled}",
-            "fontSize": 14,
-            "color": "@{dynamicModeEnabled|#00AA00|#AA0000}",
-            "bottomMargin": 8
-        },
-        {
-            "type": "Button",
-            "text": "Toggle Dynamic Mode",
-            "onClick": "toggleDynamicMode",
-            "background": "#007AFF",
-            "fontColor": "#FFFFFF",
-            "padding": [8, 16],
-            "cornerRadius": 8,
-            "bottomMargin": 16
-        },
-        {
-            "type": "Text",
-            "text": "Products Grid",
-            "fontSize": 18,
-            "fontWeight": "semibold",
-            "color": "#333333",
-            "bottomMargin": 8
-        },
-        {
-            "type": "Collection",
-            "cellClasses": ["product_cell"],
-            "items": "@{products}",
-            "columns": 2,
-            "itemSpacing": 12,
-            "contentPadding": [8, 8, 8, 8],
-            "height": 400,
-            "background": "#FFFFFF",
-            "cornerRadius": 12,
-            "padding": 8
-        },
-        {
-            "type": "Text",
-            "text": "Simple List (1 Column)",
-            "fontSize": 18,
-            "fontWeight": "semibold",
-            "color": "#333333",
-            "topMargin": 16,
-            "bottomMargin": 8
-        },
-        {
-            "type": "Collection",
-            "cellClasses": ["simple_cell"],
-            "items": "@{simpleItems}",
-            "columns": 1,
-            "itemSpacing": 8,
-            "height": 200,
-            "background": "#FFFFFF",
-            "cornerRadius": 12,
-            "padding": 8
+          "type": "View",
+          "padding": 16,
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "text": "CollectionView Test",
+              "fontSize": 28,
+              "fontWeight": "bold",
+              "fontColor": "#000000",
+              "bottomMargin": 20
+            },
+
+            {
+              "type": "Label",
+              "text": "Basic Collection with Headers & Footers",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "#000000",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "SectionHeader",
+                  "cell": "BasicCell",
+                  "footer": "SectionFooter",
+                  "columns": 2
+                }
+              ],
+              "layout": "vertical",
+              "items": "@{items1}",
+              "height": 300,
+              "bottomMargin": 20
+            },
+
+            {
+              "type": "Label",
+              "text": "Grid Collection with Multiple Cell Types",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "#000000",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "layout": "vertical",
+              "columns": 2,
+              "sections": [
+                {
+                  "header": "GridHeader",
+                  "cell": "ImageCell",
+                  "footer": "GridFooter",
+                  "columns": 3
+                }
+              ],
+              "items": "@{mixedItems}",
+              "height": 400,
+              "bottomMargin": 20
+            },
+
+            {
+              "type": "Label",
+              "text": "Horizontal Collection",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "#000000",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "HorizontalHeader",
+                  "cell": "HorizontalCard",
+                  "columns": 1
+                }
+              ],
+              "layout": "horizontal",
+              "items": "@{horizontalItems}",
+              "height": 150,
+              "bottomMargin": 20
+            },
+
+            {
+              "type": "Label",
+              "text": "Sectioned Collection",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "#000000",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "CategoryHeader",
+                  "cell": "ProductCell",
+                  "footer": "CategoryFooter",
+                  "columns": 2
+                }
+              ],
+              "layout": "vertical",
+              "items": "@{sectionedItems}",
+              "height": 400,
+              "bottomMargin": 20
+            },
+
+            {
+              "type": "Label",
+              "text": "Multi-Section Collection",
+              "fontSize": 20,
+              "fontWeight": "semibold",
+              "fontColor": "#000000",
+              "bottomMargin": 12
+            },
+            {
+              "type": "Collection",
+              "sections": [
+                {
+                  "header": "CategoryHeader",
+                  "cell": "ProductCell",
+                  "footer": "CategoryFooter",
+                  "columns": 3
+                },
+                {
+                  "header": "FeaturedHeader",
+                  "cell": "FeatureCell",
+                  "columns": 2
+                },
+                {
+                  "header": "GridHeader",
+                  "cell": "ImageCell",
+                  "footer": "GridFooter",
+                  "columns": 4
+                }
+              ],
+              "layout": "vertical",
+              "items": "@{multiSectionItems}",
+              "height": 600
+            },
+            {
+              "type": "Button",
+              "style": "dynamic_toggle",
+              "fontColor": "#FFFFFF",
+              "cornerRadius": 8,
+              "topMargin": 20
+            }
+          ]
         }
-    ],
-    "data": [
-        {
-            "name": "dynamicModeEnabled",
-            "class": "Boolean",
-            "defaultValue": false
-        },
-        {
-            "name": "products",
-            "class": "List<Map<String, Any>>",
-            "defaultValue": []
-        },
-        {
-            "name": "simpleItems",
-            "class": "List<Map<String, Any>>",
-            "defaultValue": []
-        }
-    ]
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeEnabled",
+      "class": "Boolean",
+      "defaultValue": false
+    },
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "items1",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "mixedItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "horizontalItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "sectionedItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "multiSectionItems",
+      "class": "CollectionDataSource",
+      "defaultValue": "CollectionDataSource()"
+    }
+  ]
 }

@@ -1,31 +1,35 @@
 {
     "type": "View",
     "orientation": "horizontal",
+    "padding": 12,
     "background": "#F9F9F9",
     "cornerRadius": 6,
-    "padding": 12,
-    "alignment": "center",
     "child": [
         {
-            "type": "Text",
-            "text": "@{item.title}",
+            "type": "Label",
+            "text": "@{title}",
             "fontSize": 14,
-            "color": "#333333",
+            "fontColor": "#000000",
             "weight": 1
         },
         {
-            "type": "Text",
-            "text": "@{item.value}",
+            "type": "Label",
+            "text": "@{value}",
             "fontSize": 14,
             "fontWeight": "bold",
-            "color": "#007AFF"
+            "fontColor": "#007AFF"
         }
     ],
     "data": [
         {
-            "name": "item",
-            "class": "Map<String, Any>",
-            "defaultValue": {}
+            "name": "title",
+            "class": "String",
+            "defaultValue": ""
+        },
+        {
+            "name": "value",
+            "class": "String",
+            "defaultValue": ""
         }
     ]
 }

@@ -1,0 +1,20 @@
+{
+  "type": "View",
+  "padding": 12,
+  "background": "#FFFFFF",
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 16,
+      "fontColor": "#333333"
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Cell"
+    }
+  ]
+}

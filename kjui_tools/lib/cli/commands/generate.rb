@@ -12,6 +12,7 @@ module KjuiTools
           'view' => 'Generate a new view with JSON and binding',
           'partial' => 'Generate a partial view', 
           'collection' => 'Generate a collection view',
+          'cell' => 'Generate a collection cell view',
           'binding' => 'Generate binding file'
         }.freeze
 
@@ -40,6 +41,8 @@ module KjuiTools
             generate_partial(args, mode)
           when 'collection'
             generate_collection(args, mode)
+          when 'cell'
+            generate_cell(args, mode)
           when 'binding'
             generate_binding(args, mode)
           end
@@ -116,6 +119,32 @@ module KjuiTools
           when 'compose'
             require_relative '../../compose/generators/collection_generator'
             generator = KjuiTools::Compose::Generators::CollectionGenerator.new(name)
+            generator.generate
+          else
+            puts "Error: Unknown mode: #{mode}"
+            exit 1
+          end
+        end
+
+        def generate_cell(args, mode)
+          name = args.shift
+          
+          if name.nil? || name.empty?
+            puts "Error: Cell name is required"
+            puts "Usage: kjui generate cell <name>"
+            exit 1
+          end
+          
+          # Setup project paths
+          Core::ProjectFinder.setup_paths
+          
+          case mode
+          when 'xml'
+            puts "Cell generation is not available in XML mode"
+            exit 1
+          when 'compose'
+            require_relative '../../compose/generators/cell_generator'
+            generator = KjuiTools::Compose::Generators::CellGenerator.new(name)
             generator.generate
           else
             puts "Error: Unknown mode: #{mode}"

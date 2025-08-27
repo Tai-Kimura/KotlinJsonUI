@@ -6,7 +6,7 @@ import com.example.kotlinjsonui.sample.viewmodels.ConverterTestViewModel
 
 data class ConverterTestData(
     var dynamicModeStatus: String = "OFF",
-    var items: List<Map<String, Any>> = emptyList(),
+    var items: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource(),
     var title: String = "Converter Components Test"
 ) {
     companion object {
@@ -14,7 +14,7 @@ data class ConverterTestData(
         fun fromMap(map: Map<String, Any>): ConverterTestData {
             return ConverterTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
-                items = (map["items"] as? List<Map<String, Any>>) ?: emptyList(),
+                items = com.kotlinjsonui.data.CollectionDataSource(),
                 title = map["title"] as? String ?: ""
             )
         }

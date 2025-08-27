@@ -1,0 +1,21 @@
+{
+  "type": "View",
+  "padding": [16, 8],
+  "background": "#FAFAFA",
+  "width": "matchParent",
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{text}",
+      "fontSize": 12,
+      "fontColor": "#666666"
+    }
+  ],
+  "data": [
+    {
+      "name": "text",
+      "class": "String",
+      "defaultValue": "End of section"
+    }
+  ]
+}

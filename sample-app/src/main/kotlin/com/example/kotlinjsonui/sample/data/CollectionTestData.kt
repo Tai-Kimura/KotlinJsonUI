@@ -6,16 +6,24 @@ import com.example.kotlinjsonui.sample.viewmodels.CollectionTestViewModel
 
 data class CollectionTestData(
     var dynamicModeEnabled: Boolean = false,
-    var products: List<Map<String, Any>> = emptyList(),
-    var simpleItems: List<Map<String, Any>> = emptyList()
+    var dynamicModeStatus: String = "OFF",
+    var items1: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource(),
+    var mixedItems: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource(),
+    var horizontalItems: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource(),
+    var sectionedItems: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource(),
+    var multiSectionItems: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource()
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): CollectionTestData {
             return CollectionTestData(
                 dynamicModeEnabled = map["dynamicModeEnabled"] as? Boolean ?: false,
-                products = map["products"] as? List<Map<String, Any>> ?: emptyList(),
-                simpleItems = map["simpleItems"] as? List<Map<String, Any>> ?: emptyList()
+                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "",
+                items1 = com.kotlinjsonui.data.CollectionDataSource(),
+                mixedItems = com.kotlinjsonui.data.CollectionDataSource(),
+                horizontalItems = com.kotlinjsonui.data.CollectionDataSource(),
+                sectionedItems = com.kotlinjsonui.data.CollectionDataSource(),
+                multiSectionItems = com.kotlinjsonui.data.CollectionDataSource()
             )
         }
     }
@@ -26,8 +34,17 @@ data class CollectionTestData(
         
         // Data properties
         map["dynamicModeEnabled"] = dynamicModeEnabled
-        map["products"] = products
-        map["simpleItems"] = simpleItems
+        map["dynamicModeStatus"] = dynamicModeStatus
+        map["items1"] = items1
+        map["mixedItems"] = mixedItems
+        map["horizontalItems"] = horizontalItems
+        map["sectionedItems"] = sectionedItems
+        map["multiSectionItems"] = multiSectionItems
+        
+        // Add onclick action lambdas if viewModel is provided
+        viewModel?.let { vm ->
+            map["toggleDynamicMode"] = { vm.toggleDynamicMode() }
+        }
         
         return map
     }

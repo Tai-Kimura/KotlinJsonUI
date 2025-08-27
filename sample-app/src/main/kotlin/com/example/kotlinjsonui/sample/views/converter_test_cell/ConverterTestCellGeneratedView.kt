@@ -1,5 +1,6 @@
 package com.example.kotlinjsonui.sample.views.converter_test_cell
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -7,22 +8,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.ConverterTestCellData
 import com.example.kotlinjsonui.sample.viewmodels.ConverterTestCellViewModel
-import androidx.compose.foundation.background
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.foundation.layout.wrapContentSize
-import com.kotlinjsonui.core.DynamicModeManager
-import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
+import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
 @Composable
 fun ConverterTestCellGeneratedView(
     data: ConverterTestCellData,
-    viewModel: ConverterTestCellViewModel
+    viewModel: ConverterTestCellViewModel,
+    modifier: Modifier = Modifier
 ) {
     // Generated Compose code from converter_test_cell.json
     // This will be updated when you run 'kjui build'
@@ -64,24 +67,23 @@ fun ConverterTestCellGeneratedView(
         }
     } else {
         // Static Mode - use generated code
-        Column(
+        Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .clip(RoundedCornerShape(8.dp))
             .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
-            .padding(10.dp)
+            .padding(12.dp)
     ) {
         Text(
-            text = "${data.title}",
-            fontSize = 16.sp,
-            color = Color(android.graphics.Color.parseColor("#333333")),
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
+            text = "${data.item["label"] as? String ?: ""}",
+            fontSize = 14.sp,
+            color = Color(android.graphics.Color.parseColor("#000000")),
+            modifier = Modifier.weight(1f)
         )
         Text(
-            text = "${data.subtitle}",
-            fontSize = 12.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            text = "${data.item["value"] as? String ?: ""}",
+            fontSize = 14.sp,
+            color = Color(android.graphics.Color.parseColor("#007AFF")),
+            fontWeight = FontWeight.Bold,
             modifier = Modifier
         )
     }    }
