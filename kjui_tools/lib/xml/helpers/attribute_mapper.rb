@@ -28,7 +28,14 @@ module XmlGenerator
       case key
       # Layout attributes
       when 'padding'
-        return { namespace: 'android', name: 'padding', value: convert_dimension(value) }
+        # Handle array values [top, right, bottom, left] or [vertical, horizontal]
+        if value.is_a?(Array)
+          # For now, use uniform padding with the first value
+          # TODO: Return multiple attributes for paddingTop, paddingRight, etc.
+          return { namespace: 'android', name: 'padding', value: convert_dimension(value.first || 0) }
+        else
+          return { namespace: 'android', name: 'padding', value: convert_dimension(value) }
+        end
       when 'topPadding', 'paddingTop'
         return { namespace: 'android', name: 'paddingTop', value: convert_dimension(value) }
       when 'bottomPadding', 'paddingBottom'
@@ -39,7 +46,14 @@ module XmlGenerator
         return { namespace: 'android', name: 'paddingEnd', value: convert_dimension(value) }
         
       when 'margin'
-        return { namespace: 'android', name: 'layout_margin', value: convert_dimension(value) }
+        # Handle array values [top, right, bottom, left] or [vertical, horizontal]
+        if value.is_a?(Array)
+          # For now, use uniform margin with the first value
+          # TODO: Return multiple attributes for marginTop, marginRight, etc.
+          return { namespace: 'android', name: 'layout_margin', value: convert_dimension(value.first || 0) }
+        else
+          return { namespace: 'android', name: 'layout_margin', value: convert_dimension(value) }
+        end
       when 'topMargin', 'marginTop'
         return { namespace: 'android', name: 'layout_marginTop', value: convert_dimension(value) }
       when 'bottomMargin', 'marginBottom'
@@ -58,6 +72,8 @@ module XmlGenerator
         return { namespace: 'android', name: 'textSize', value: convert_text_size(value) }
       when 'fontColor', 'textColor'
         return { namespace: 'android', name: 'textColor', value: convert_color(value) }
+      when 'font', 'fontFamily'
+        return { namespace: 'android', name: 'fontFamily', value: value }
       when 'fontWeight'
         return map_font_weight(value)
       when 'fontStyle'
@@ -73,7 +89,9 @@ module XmlGenerator
       when 'background', 'backgroundColor'
         return { namespace: 'android', name: 'background', value: convert_color(value) }
       when 'cornerRadius'
-        return nil # Will need to create drawable
+        # TODO: Generate drawable with corners
+        # For now, add as tools attribute for documentation
+        return { namespace: 'tools', name: 'cornerRadius', value: convert_dimension(value) }
       when 'opacity', 'alpha'
         return { namespace: 'android', name: 'alpha', value: value.to_f.to_s }
       when 'visibility'
@@ -169,14 +187,26 @@ module XmlGenerator
     end
 
     def convert_dimension(value)
+      # Handle arrays (for padding/margin with multiple values)
+      if value.is_a?(Array)
+        # For now, just use the first value or average
+        # TODO: Handle top/right/bottom/left separately
+        value = value.first
+      end
+      
       return value if value.is_a?(String) && value.match?(/^\d+(dp|sp|px|dip)$/)
-      return "#{value}dp" if value.is_a?(Numeric) || value.match?(/^\d+$/)
+      return "#{value}dp" if value.is_a?(Numeric)
+      return "#{value}dp" if value.is_a?(String) && value.match?(/^\d+$/)
       value
     end
 
     def convert_text_size(value)
+      # Handle arrays if they somehow get here
+      value = value.first if value.is_a?(Array)
+      
       return value if value.is_a?(String) && value.match?(/^\d+(sp|dp|px)$/)
-      return "#{value}sp" if value.is_a?(Numeric) || value.match?(/^\d+$/)
+      return "#{value}sp" if value.is_a?(Numeric)
+      return "#{value}sp" if value.is_a?(String) && value.match?(/^\d+$/)
       value
     end
 

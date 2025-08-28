@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from partial_attributes_test.json -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<View android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
+  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PartialAttributes Test" android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="20dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="This is a normal label without any partial attributes." android:textSize="16sp" android:layout_marginBottom="20dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="This text has partial styling applied to different parts of the text." android:textSize="16sp" android:layout_marginBottom="20dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Click here to navigate or here for another action." android:textSize="16sp" android:layout_marginBottom="20dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mixed styles: bold, italic, underline, strikethrough" android:textSize="16sp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="今日は天気がいいですね。明日も晴れるといいです。" android:textSize="16sp" android:layout_marginBottom="20dp"/>
+    </LinearLayout>
+  </ScrollView>
+</View>

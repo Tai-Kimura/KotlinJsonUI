@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from weight_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.WeightTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.WeightTestViewModel"/>
+  </data>
+  <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF">
+    <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+    <TextView android:id="@+id/title_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@{data.title}" android:textSize="24sp" android:textColor="#000000"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Horizontal Weight Distribution (1:2:1)" android:textSize="16sp" android:textColor="#333333"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="60" android:orientation="horizontal" android:layout_marginTop="10dp">
+      <TextView android:layout_width="0" android:layout_height="wrap_content" android:layout_weight="1" android:text="Weight: 1" android:background="#FFD0D0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="2" android:text="Weight: 2" android:background="#D0FFD0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="1" android:text="Weight: 1" android:background="#D0D0FF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+    </LinearLayout>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Vertical Weight Distribution (1:3:2)" android:textSize="16sp" android:textColor="#333333"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="300" android:orientation="vertical" android:layout_marginTop="10dp">
+      <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="Weight: 1" android:background="#FFFFD0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="3" android:text="Weight: 3" android:background="#FFD0FF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="2" android:text="Weight: 2" android:background="#D0FFFF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+    </LinearLayout>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="widthWeight Test" android:textSize="16sp" android:textColor="#333333"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="60" android:orientation="horizontal" android:layout_marginTop="10dp">
+      <TextView android:layout_width="0" android:layout_height="match_parent" android:text="widthWeight: 1" android:background="#FFE0E0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      <TextView android:layout_width="0" android:layout_height="match_parent" android:text="widthWeight: 1" android:background="#E0FFE0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+    </LinearLayout>
+  </LinearLayout>
+</layout>

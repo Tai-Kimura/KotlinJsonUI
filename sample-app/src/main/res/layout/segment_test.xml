@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from segment_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.SegmentTestData"/>
+  </data>
+  <View android:layout_width="match_parent" android:layout_height="match_parent">
+    <View android:layout_width="wrap_content" android:layout_height="wrap_content">
+      <LinearLayout android:id="@+id/container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Segment Control Test" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Basic Segment" android:textSize="18sp" android:layout_marginTop="10dp" android:layout_marginStart="20dp"/>
+        <TabLayout android:id="@+id/basicSegment" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Segment with Custom Colors" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <TabLayout android:id="@+id/colorSegment" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Segment with onChange Event" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <TabLayout android:id="@+id/eventSegment" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:id="@+id/segmentStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Selected: @{selectedSize}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Disabled Segment" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <TabLayout android:id="@+id/disabledSegment" android:layout_width="wrap_content" android:layout_height="wrap_content" android:enabled="false" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+      </LinearLayout>
+    </View>
+  </View>
+</layout>

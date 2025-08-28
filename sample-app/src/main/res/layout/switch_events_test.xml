@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from switch_events_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.SwitchEventsTestData"/>
+  </data>
+  <View android:layout_width="match_parent" android:layout_height="match_parent">
+    <View android:layout_width="wrap_content" android:layout_height="wrap_content">
+      <LinearLayout android:id="@+id/container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Switch Events Test" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Switch with onValueChange" android:textSize="18sp" android:layout_marginTop="10dp" android:layout_marginStart="20dp"/>
+        <Switch android:id="@+id/notificationSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Enable Notifications" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:id="@+id/notificationStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.notificationStatus}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Switch with Custom Tint" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <Switch android:id="@+id/darkModeSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dark Mode" android:tint="#FF6B6B" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.darkModeStatus}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Multiple Switches with Events" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <Switch android:id="@+id/wifiSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Wi-Fi" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <Switch android:id="@+id/bluetoothSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bluetooth" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <Switch android:id="@+id/locationSwitch" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Location Services" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Status: @{connectionStatus}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="20dp"/>
+      </LinearLayout>
+    </View>
+  </View>
+</layout>

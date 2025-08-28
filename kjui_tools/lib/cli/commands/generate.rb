@@ -18,11 +18,16 @@ module KjuiTools
         }.freeze
 
         def run(args)
+          # Parse global options first
+          global_options = parse_global_options(args)
+          
           subcommand = args.shift
           
-          # Load config to get mode
+          # Load config to get default mode
           config = Core::ConfigManager.load_config
-          mode = config['mode'] || 'compose'
+          
+          # Use mode from options if provided, otherwise from config, otherwise default to compose
+          mode = global_options[:mode] || config['mode'] || 'compose'
           
           # If no subcommand, generate all based on mode
           if subcommand.nil?
@@ -34,7 +39,7 @@ module KjuiTools
             return
           end
           
-          if subcommand == 'help'
+          if subcommand == 'help' || subcommand == '--help' || subcommand == '-h'
             show_help
             return
           end
@@ -43,6 +48,11 @@ module KjuiTools
             # Check if it's a layout name (no subcommand, just generate that layout)
             if mode == 'xml' && !subcommand.start_with?('-')
               generate_specific_xml_layout(subcommand, args, config)
+              return
+            elsif !subcommand.start_with?('-')
+              # For compose mode, treat it as a layout name and build it
+              puts "Building layout: #{subcommand}"
+              generate_specific_compose_layout(subcommand, args, config)
               return
             end
             
@@ -68,6 +78,28 @@ module KjuiTools
         end
 
         private
+        
+        def parse_global_options(args)
+          options = { mode: nil }
+          
+          # Look for mode option and remove it from args
+          args.each_with_index do |arg, index|
+            if arg == '--mode' || arg == '-m'
+              if args[index + 1]
+                options[:mode] = args[index + 1]
+                args.delete_at(index + 1)
+                args.delete_at(index)
+                break
+              end
+            elsif arg.start_with?('--mode=')
+              options[:mode] = arg.split('=', 2)[1]
+              args.delete_at(index)
+              break
+            end
+          end
+          
+          options
+        end
 
         def generate_view(args, mode)
           options = parse_view_options(args)
@@ -281,7 +313,9 @@ module KjuiTools
         def parse_view_options(args)
           options = {
             root: false,
-            mode: nil
+            mode: nil,
+            type: nil,
+            force: false
           }
           
           OptionParser.new do |opts|
@@ -291,6 +325,22 @@ module KjuiTools
             
             opts.on('--mode MODE', 'Override mode (xml, compose)') do |mode|
               options[:mode] = mode
+            end
+            
+            opts.on('--type TYPE', 'View type for XML mode (activity, fragment)') do |type|
+              options[:type] = type
+            end
+            
+            opts.on('--activity', 'Generate as Activity (XML mode)') do
+              options[:type] = 'activity'
+            end
+            
+            opts.on('--fragment', 'Generate as Fragment (XML mode)') do
+              options[:type] = 'fragment'
+            end
+            
+            opts.on('-f', '--force', 'Force overwrite existing files') do
+              options[:force] = true
             end
           end.parse!(args)
           
@@ -320,9 +370,21 @@ module KjuiTools
           puts "Generating XML for layout: #{layout_name}"
           CLI::Commands::GenerateXml.run([layout_name] + args)
         end
+        
+        def generate_specific_compose_layout(layout_name, args, config)
+          require_relative '../../compose/compose_builder'
+          
+          puts "Building Compose layout: #{layout_name}"
+          # TODO: Implement single layout generation for compose
+          system("ruby #{File.join(File.dirname(__FILE__), '../../..', 'bin', 'kjui')} build")
+        end
 
         def show_help
           puts "Usage: kjui generate [SUBCOMMAND] [options]"
+          puts
+          puts "Global Options:"
+          puts "  --mode, -m MODE        Override mode (xml/compose)"
+          puts "                         Default: use config.json mode"
           puts
           puts "When in XML mode:"
           puts "  kjui generate              # Generate all XML layouts"
@@ -336,13 +398,19 @@ module KjuiTools
             puts "  #{cmd.ljust(12)} #{desc}"
           end
           puts
+          puts "View Options (XML mode):"
+          puts "  --activity             Generate as Activity (default)"
+          puts "  --fragment             Generate as Fragment"
+          puts "  --type TYPE            Specify type (activity/fragment)"
+          puts "  -f, --force            Force overwrite existing files"
+          puts
           puts "Examples:"
-          puts "  kjui g                     # Generate all (based on mode)"
-          puts "  kjui g view HomeView       # Generate a view"
-          puts "  kjui g view RootView --root # Generate root view"
-          puts "  kjui g partial Header      # Generate a partial"
-          puts "  kjui g collection Post/Cell # Generate collection cell"
-          puts "  kjui g binding CustomBinding # Generate binding file (XML mode only)"
+          puts "  kjui g                     # Generate all (based on config mode)"
+          puts "  kjui g --mode xml          # Generate all XML layouts"
+          puts "  kjui g --mode compose      # Generate all Compose views"
+          puts "  kjui g view HomeView --mode xml --activity  # Generate Activity"
+          puts "  kjui g view ProfileView --mode xml --fragment # Generate Fragment"
+          puts "  kjui g view MainView --mode compose  # Generate Compose view"
           puts "  kjui g converter MyCard --container # Generate custom component"
         end
       end

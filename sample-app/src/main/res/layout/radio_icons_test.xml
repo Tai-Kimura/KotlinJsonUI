@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from radio_icons_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.RadioIconsTestData"/>
+  </data>
+  <View android:layout_width="match_parent" android:layout_height="match_parent">
+    <View android:layout_width="wrap_content" android:layout_height="wrap_content">
+      <LinearLayout android:id="@+id/container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Radio Custom Icons Test" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Default Radio Group" android:textSize="18sp" android:layout_marginTop="10dp" android:layout_marginStart="20dp"/>
+        <RadioButton android:id="@+id/option1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Option 1" android:checked="true" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <RadioButton android:id="@+id/option2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Option 2" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <RadioButton android:id="@+id/option3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Option 3" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Custom Icon Radio Group" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <RadioButton android:id="@+id/custom1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Star Option" android:checked="true" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <RadioButton android:id="@+id/custom2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Heart Option" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <RadioButton android:id="@+id/custom3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Square Option" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Radio with Items" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <RadioButton android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Select Color:" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Selected: @{selectedColor}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+      </LinearLayout>
+    </View>
+  </View>
+</layout>

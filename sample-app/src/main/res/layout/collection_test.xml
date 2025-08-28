@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from collection_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.CollectionTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.CollectionTestViewModel"/>
+  </data>
+  <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#F5F5F7">
+    <ScrollView android:layout_width="wrap_content" android:layout_height="wrap_content">
+      <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CollectionView Test" android:textSize="28sp" android:textStyle="bold" android:textColor="#000000" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Basic Collection with Headers &amp; Footers" android:textSize="20sp" android:textColor="#000000" android:layout_marginBottom="12dp"/>
+        <RecyclerView android:layout_width="wrap_content" android:layout_height="300" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Grid Collection with Multiple Cell Types" android:textSize="20sp" android:textColor="#000000" android:layout_marginBottom="12dp"/>
+        <RecyclerView android:layout_width="wrap_content" android:layout_height="400" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Horizontal Collection" android:textSize="20sp" android:textColor="#000000" android:layout_marginBottom="12dp"/>
+        <RecyclerView android:layout_width="wrap_content" android:layout_height="150" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sectioned Collection" android:textSize="20sp" android:textColor="#000000" android:layout_marginBottom="12dp"/>
+        <RecyclerView android:layout_width="wrap_content" android:layout_height="400" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Multi-Section Collection" android:textSize="20sp" android:textColor="#000000" android:layout_marginBottom="12dp"/>
+        <RecyclerView android:layout_width="wrap_content" android:layout_height="600"/>
+        <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:layout_marginTop="20dp" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+      </LinearLayout>
+    </ScrollView>
+  </LinearLayout>
+</layout>

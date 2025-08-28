@@ -12,9 +12,10 @@ require_relative 'helpers/binding_parser'
 
 module XmlGenerator
   class Generator
-    def initialize(layout_name, config)
+    def initialize(layout_name, config, options = {})
       @layout_name = layout_name
       @config = config
+      @options = options
       @json_loader = JsonLoader.new(config)
       @style_loader = StyleLoader.new(config)
       @component_mapper = ComponentMapper.new
@@ -23,6 +24,9 @@ module XmlGenerator
       
       # Get package name from config or auto-detect
       @package_name = @config['package_name'] || detect_package_name
+      
+      # Allow custom output filename
+      @output_filename = options[:output_filename]
     end
     
     def generate
@@ -304,7 +308,9 @@ module XmlGenerator
       output_dir = File.join(@config['project_path'], 'app', 'src', 'main', 'res', 'layout') if File.exist?(File.join(@config['project_path'], 'app'))
       FileUtils.mkdir_p(output_dir)
       
-      output_file = File.join(output_dir, "#{@layout_name.downcase}.xml")
+      # Use custom filename if provided, otherwise use default
+      filename = @output_filename || "#{@layout_name.downcase}.xml"
+      output_file = File.join(output_dir, filename)
       
       # Save XML file
       File.write(output_file, xml_content)

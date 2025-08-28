@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from components_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.ComponentsTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.ComponentsTestViewModel"/>
+  </data>
+  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+      <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="New Components Test" android:textSize="24sp" android:textColor="#333333" android:layout_margin="0dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Toggle/Checkbox Components" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <View android:id="@+id/toggle1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Enable Notifications" android:layout_margin="0dp"/>
+      <CheckBox android:id="@+id/checkbox1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="I agree to terms" android:layout_margin="0dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Progress &amp; Slider" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <View android:id="@+id/progress1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Download Progress" android:progress="@{data.progress1Value}" android:layout_margin="0dp"/>
+      <SeekBar android:id="@+id/slider1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Volume" android:min="0.0" android:max="1.0" android:layout_margin="0dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Selection Components" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <TabLayout android:id="@+id/segment1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View Mode" android:layout_margin="0dp"/>
+      <RadioButton android:id="@+id/radio1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Select Size" android:layout_margin="0dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loading Indicator" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <View android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Loading..." android:layout_margin="0dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Circle Image" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <CircleImageView android:layout_width="80dp" android:layout_height="80dp" android:layout_margin="0dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Gradient View" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <View android:layout_width="match_parent" android:layout_height="100dp" android:layout_margin="0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Gradient Background" android:textSize="20sp" android:textColor="#FFFFFF"/>
+      </View>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Blur View" android:textSize="18sp" android:textColor="#666666" android:layout_margin="0dp"/>
+      <View android:layout_width="match_parent" android:layout_height="80dp" android:layout_margin="0dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Blurred Background" android:textSize="18sp" android:textColor="#333333"/>
+      </View>
+    </LinearLayout>
+  </ScrollView>
+</layout>

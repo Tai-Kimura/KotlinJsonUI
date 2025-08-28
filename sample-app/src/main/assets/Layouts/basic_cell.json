@@ -4,10 +4,6 @@
   "background": "#FFFFFF",
   "cornerRadius": 8,
   "orientation": "vertical",
-  "border": {
-    "width": 1,
-    "color": "#E0E0E0"
-  },
   "child": [
     {
       "type": "Label",

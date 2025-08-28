@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from line_break_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.LineBreakTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.LineBreakTestViewModel"/>
+  </data>
+  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+      <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+      <TextView android:id="@+id/title_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@{data.title}" android:textSize="24sp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lineBreakMode: Word (default)" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="60" android:text="@{data.longText}" android:textSize="14sp" android:background="#E0E0E0" android:padding="10dp" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lineBreakMode: Char" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="60" android:text="@{data.longText}" android:textSize="14sp" android:background="#FFE0E0" android:padding="10dp" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lineBreakMode: Clip" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="60" android:text="@{data.longText}" android:textSize="14sp" android:background="#E0FFE0" android:padding="10dp" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lineBreakMode: Head" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="60" android:text="@{data.longText}" android:textSize="14sp" android:background="#E0E0FF" android:padding="10dp" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lineBreakMode: Middle" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="60" android:text="@{data.longText}" android:textSize="14sp" android:background="#FFFFE0" android:padding="10dp" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lineBreakMode: Tail" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="60" android:text="@{data.longText}" android:textSize="14sp" android:background="#FFE0FF" android:padding="10dp" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Lines Property Test" android:textSize="16sp" android:textColor="#333333" android:layout_marginTop="30dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lines: 1" android:textSize="14sp" android:textColor="#666666" android:layout_marginTop="10dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@{data.longText}" android:textSize="14sp" android:background="#D0FFFF" android:padding="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lines: 3" android:textSize="14sp" android:textColor="#666666" android:layout_marginTop="10dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@{data.longText}" android:textSize="14sp" android:background="#FFD0D0" android:padding="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="lines: 0 (unlimited)" android:textSize="14sp" android:textColor="#666666" android:layout_marginTop="10dp"/>
+      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@{data.longText}" android:textSize="14sp" android:background="#D0FFD0" android:padding="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:textColor="#000000"/>
+    </LinearLayout>
+  </ScrollView>
+</layout>

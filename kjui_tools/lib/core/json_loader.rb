@@ -31,12 +31,14 @@ class JsonLoader
     # Remove .json extension if present
     layout_name = layout_name.sub(/\.json$/, '')
     
+    project_path = @config['project_path'] || Dir.pwd
+    
     # Check multiple possible locations
     possible_paths = [
-      File.join(@config['project_path'], 'src', 'main', 'assets', 'Layouts', "#{layout_name}.json"),
-      File.join(@config['project_path'], 'app', 'src', 'main', 'assets', 'Layouts', "#{layout_name}.json"),
-      File.join(@config['project_path'], 'Layouts', "#{layout_name}.json"),
-      File.join(@config['project_path'], "#{layout_name}.json")
+      File.join(project_path, 'src', 'main', 'assets', 'Layouts', "#{layout_name}.json"),
+      File.join(project_path, 'app', 'src', 'main', 'assets', 'Layouts', "#{layout_name}.json"),
+      File.join(project_path, 'Layouts', "#{layout_name}.json"),
+      File.join(project_path, "#{layout_name}.json")
     ]
     
     possible_paths.find { |path| File.exist?(path) }

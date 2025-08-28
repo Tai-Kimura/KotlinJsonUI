@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from weight_test_with_fixed.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.WeightTestWithFixedData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.WeightTestWithFixedViewModel"/>
+  </data>
+  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+      <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+      <TextView android:id="@+id/title_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@{data.title}" android:textSize="24sp" android:textColor="#000000"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Fixed(80) + Weight(1) + Weight(2) + Fixed(60)" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="60" android:orientation="horizontal" android:layout_marginTop="10dp">
+        <TextView android:layout_width="80" android:layout_height="match_parent" android:text="Fixed: 80" android:background="#FFD0D0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="1" android:text="Weight: 1" android:background="#D0FFD0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="2" android:text="Weight: 2" android:background="#D0D0FF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="60" android:layout_height="match_parent" android:text="Fixed: 60" android:background="#FFFFD0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      </LinearLayout>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Complex nested weights with fixed" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="100" android:orientation="horizontal" android:layout_marginTop="10dp">
+        <LinearLayout android:layout_width="0" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="1">
+          <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="1-1" android:background="#FFE0E0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+          <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="2" android:text="1-2" android:background="#FFC0C0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+        </LinearLayout>
+        <TextView android:layout_width="50" android:layout_height="match_parent" android:text="Fix&#10;50" android:background="#E0E0E0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+        <LinearLayout android:layout_width="0" android:layout_height="match_parent" android:orientation="vertical" android:layout_weight="2">
+          <TextView android:layout_width="match_parent" android:layout_height="30" android:text="Fixed 30" android:background="#E0FFE0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+          <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="Weight 1" android:background="#C0FFC0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+        </LinearLayout>
+      </LinearLayout>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Multiple fixed sizes with weights" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="60" android:orientation="horizontal" android:layout_marginTop="10dp">
+        <TextView android:layout_width="40" android:layout_height="match_parent" android:text="40" android:background="#FFD0D0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="1" android:text="W:1" android:background="#D0FFD0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="60" android:layout_height="match_parent" android:text="60" android:background="#FFD0D0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="1" android:text="W:1" android:background="#D0FFD0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="80" android:layout_height="match_parent" android:text="80" android:background="#FFD0D0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      </LinearLayout>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Zero weights test" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="60" android:orientation="horizontal" android:layout_marginTop="10dp">
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="0" android:text="W:0" android:background="#FFA0A0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="1" android:text="W:1" android:background="#A0FFA0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="100" android:layout_height="match_parent" android:text="Fixed:100" android:background="#A0A0FF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="3" android:text="W:3" android:background="#FFFFA0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      </LinearLayout>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Vertical: Fixed + Weight combinations" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="200" android:orientation="vertical" android:layout_marginTop="10dp">
+        <TextView android:layout_width="match_parent" android:layout_height="30" android:text="Fixed: 30" android:background="#FFE0E0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="Weight: 1" android:background="#E0FFE0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="40" android:text="Fixed: 40" android:background="#E0E0FF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="2" android:text="Weight: 2" android:background="#FFFFE0" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="50" android:text="Fixed: 50" android:background="#FFE0FF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      </LinearLayout>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Vertical: Nested horizontal weights" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="150" android:orientation="vertical" android:layout_marginTop="10dp">
+        <TextView android:layout_width="match_parent" android:layout_height="25" android:text="Header: Fixed 25" android:background="#666666" android:textColor="#FFFFFF" android:textAlignment="center" android:textSize="12sp"/>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0" android:orientation="horizontal" android:layout_weight="1">
+          <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="1" android:text="Col 1" android:background="#FFD0D0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+          <TextView android:layout_width="60" android:layout_height="match_parent" android:text="Fix:60" android:background="#D0D0D0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+          <TextView android:layout_width="0" android:layout_height="match_parent" android:layout_weight="2" android:text="Col 2" android:background="#D0FFD0" android:textAlignment="center" android:textSize="12sp" android:textColor="#000000"/>
+        </LinearLayout>
+        <TextView android:layout_width="match_parent" android:layout_height="25" android:text="Footer: Fixed 25" android:background="#666666" android:textColor="#FFFFFF" android:textAlignment="center" android:textSize="12sp"/>
+      </LinearLayout>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="30dp" android:text="Vertical: Multiple weights only" android:textSize="16sp" android:textColor="#333333"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="120" android:orientation="vertical" android:layout_marginTop="10dp">
+        <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="W:1" android:background="#FFCCCC" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="W:1" android:background="#CCFFCC" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="2" android:text="W:2" android:background="#CCCCFF" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+        <TextView android:layout_width="match_parent" android:layout_height="0" android:layout_weight="1" android:text="W:1" android:background="#FFFFCC" android:textAlignment="center" android:textSize="14sp" android:textColor="#000000"/>
+      </LinearLayout>
+    </LinearLayout>
+  </ScrollView>
+</layout>

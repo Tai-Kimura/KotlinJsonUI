@@ -17,8 +17,9 @@ class StyleLoader
   private
 
   def load_styles
-    styles_dir = File.join(@config['project_path'], 'src', 'main', 'assets', 'Styles')
-    styles_dir = File.join(@config['project_path'], 'app', 'src', 'main', 'assets', 'Styles') unless Dir.exist?(styles_dir)
+    project_path = @config['project_path'] || Dir.pwd
+    styles_dir = File.join(project_path, 'src', 'main', 'assets', 'Styles')
+    styles_dir = File.join(project_path, 'app', 'src', 'main', 'assets', 'Styles') unless Dir.exist?(styles_dir)
     return unless Dir.exist?(styles_dir)
 
     Dir.glob(File.join(styles_dir, '*.json')).each do |style_file|

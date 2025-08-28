@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from textfield_events_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.TextfieldEventsTestData"/>
+  </data>
+  <View android:layout_width="match_parent" android:layout_height="match_parent">
+    <View android:layout_width="wrap_content" android:layout_height="wrap_content">
+      <LinearLayout android:id="@+id/container" android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:background="#F5F5F5">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TextField Events Test" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="20dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="onTextChange Event Test" android:textSize="18sp" android:layout_marginTop="10dp" android:layout_marginStart="20dp"/>
+        <EditText android:id="@+id/emailField" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.email}" android:hint="Enter email" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:id="@+id/emailStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email: @{emailDisplay}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Secure TextField Test" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <EditText android:id="@+id/passwordField" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.password}" android:hint="Enter password" android:inputType="textPassword" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Password length: @{passwordLength}" android:textSize="14sp" android:textColor="#666666" android:layout_marginStart="20dp" android:layout_marginTop="10dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Input Accessory Test" android:textSize="18sp" android:layout_marginTop="30dp" android:layout_marginStart="20dp"/>
+        <EditText android:id="@+id/notesField" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.notes}" android:hint="Enter notes" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"/>
+      </LinearLayout>
+    </View>
+  </View>
+</layout>

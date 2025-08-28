@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from form_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.FormTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.FormTestViewModel"/>
+  </data>
+  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+      <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.title}" android:textSize="28sp" android:textColor="#333333" android:textStyle="bold" android:layout_marginBottom="24dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Personal Information" android:textSize="20sp" android:textColor="#007AFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="First Name" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/firstName" android:layout_width="match_parent" android:layout_height="50" android:hint="Enter your first name" android:text="@{data.firstName}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Last Name" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/lastName" android:layout_width="match_parent" android:layout_height="48" android:hint="Enter your last name" android:text="@{data.lastName}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email Address" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/email" android:layout_width="match_parent" android:layout_height="48" android:hint="email@example.com" android:text="@{data.email}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Phone Number" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/phone" android:layout_width="match_parent" android:layout_height="48" android:hint="+1 234 567 8900" android:text="@{data.phone}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="24dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Address Information" android:textSize="20sp" android:textColor="#007AFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Street Address" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/address" android:layout_width="match_parent" android:layout_height="48" android:hint="123 Main Street" android:text="@{data.address}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="City" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/city" android:layout_width="match_parent" android:layout_height="48" android:hint="New York" android:text="@{data.city}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ZIP Code" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/zipCode" android:layout_width="match_parent" android:layout_height="48" android:hint="10001" android:text="@{data.zipCode}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Country" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/country" android:layout_width="match_parent" android:layout_height="48" android:hint="United States" android:text="@{data.country}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="24dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Professional Information" android:textSize="20sp" android:textColor="#007AFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Company" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/company" android:layout_width="match_parent" android:layout_height="48" android:hint="Company Name" android:text="@{data.company}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Job Title" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/jobTitle" android:layout_width="match_parent" android:layout_height="48" android:hint="Software Engineer" android:text="@{data.jobTitle}" android:textSize="16sp" android:textColor="#000000" android:background="#FFFFFF" android:layout_marginBottom="24dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Additional Information" android:textSize="20sp" android:textColor="#007AFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bio (Flexible Height)" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/bio" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@{data.bio}" android:hint="Tell us about yourself...&#10;This field will grow as you type" android:textSize="16sp" android:textColor="#333333" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Notes (Fixed Height)" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/notes" android:layout_width="match_parent" android:layout_height="120" android:text="@{data.notes}" android:hint="Additional notes...&#10;Fixed height field" android:textSize="16sp" android:textColor="#333333" android:background="#FFFFFF" android:layout_marginBottom="16dp"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Comments (Very Flexible)" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="6dp"/>
+      <EditText android:id="@+id/comments" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@{data.comments}" android:hint="Any comments?&#10;This can grow very tall (up to 300pt)" android:textSize="16sp" android:textColor="#333333" android:background="#FFFFFF" android:layout_marginBottom="24dp"/>
+      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="24dp">
+        <View android:id="@+id/agreeToggle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="12dp"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="I agree to the Terms and Conditions" android:textSize="14sp" android:textColor="#333333"/>
+      </LinearLayout>
+      <Button android:layout_width="match_parent" android:layout_height="54" android:text="Submit Form" android:textSize="18sp" android:textColor="#FFFFFF" android:background="#007AFF" android:onClick="submitForm" android:layout_marginBottom="16dp"/>
+      <Button android:layout_width="match_parent" android:layout_height="54" android:text="Clear All Fields" android:textSize="18sp" android:textColor="#FFFFFF" android:background="#FFFFFF" android:onClick="clearForm" android:layout_marginBottom="40dp"/>
+    </LinearLayout>
+  </ScrollView>
+</layout>

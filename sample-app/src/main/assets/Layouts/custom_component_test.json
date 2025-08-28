@@ -15,7 +15,7 @@
               "text": "Custom Component Test",
               "fontSize": 28,
               "fontWeight": "bold",
-              "color": "#000000",
+              "fontColor": "#000000",
               "padding": [0, 0, 20, 0]
             },
             {
@@ -23,7 +23,7 @@
               "text": "Testing SampleCard - Static Values",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "color": "#333333",
+              "fontColor": "#333333",
               "padding": [0, 0, 8, 0]
             },
             {
@@ -45,13 +45,13 @@
                       "type": "Label",
                       "text": "Card Content",
                       "fontSize": 14,
-                      "color": "#666666"
+                      "fontColor": "#666666"
                     },
                     {
                       "type": "Label",
                       "text": "This content is inside the custom component",
                       "fontSize": 12,
-                      "color": "#999999"
+                      "fontColor": "#999999"
                     }
                   ]
                 }
@@ -62,7 +62,7 @@
               "text": "Testing SampleCard - Dynamic Values",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "color": "#333333",
+              "fontColor": "#333333",
               "padding": [20, 0, 8, 0]
             },
             {
@@ -85,7 +85,7 @@
                       "text": "Dynamic count: @{itemCount}",
                       "fontSize": 16,
                       "fontWeight": "medium",
-                      "color": "#5856D6"
+                      "fontColor": "#5856D6"
                     },
                     {
                       "type": "View",
@@ -95,7 +95,7 @@
                           "type": "Button",
                           "text": "Increment",
                           "background": "#5856D6",
-                          "color": "#FFFFFF",
+                          "fontColor": "#FFFFFF",
                           "cornerRadius": 8,
                           "padding": [8, 16],
                           "onClick": "incrementCount"
@@ -104,7 +104,7 @@
                           "type": "Button",
                           "text": "Decrement",
                           "background": "#FF3B30",
-                          "color": "#FFFFFF",
+                          "fontColor": "#FFFFFF",
                           "cornerRadius": 8,
                           "padding": [8, 16],
                           "onClick": "decrementCount"
@@ -120,7 +120,7 @@
               "text": "Testing Multiple Cards",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "color": "#333333",
+              "fontColor": "#333333",
               "padding": [20, 0, 8, 0]
             },
             {
@@ -140,7 +140,7 @@
                       "type": "Label",
                       "text": "Content for card 1",
                       "fontSize": 14,
-                      "color": "#2E7D32"
+                      "fontColor": "#2E7D32"
                     }
                   ]
                 },
@@ -157,7 +157,7 @@
                       "type": "Label",
                       "text": "Content for card 2",
                       "fontSize": 14,
-                      "color": "#E65100"
+                      "fontColor": "#E65100"
                     }
                   ]
                 },
@@ -174,7 +174,7 @@
                       "type": "Label",
                       "text": "Content for card 3",
                       "fontSize": 14,
-                      "color": "#6A1B9A"
+                      "fontColor": "#6A1B9A"
                     }
                   ]
                 }
@@ -185,7 +185,7 @@
               "text": "Testing StatusBadge - Non-Container Component",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "color": "#333333",
+              "fontColor": "#333333",
               "padding": [20, 0, 8, 0]
             },
             {
@@ -220,17 +220,17 @@
               "text": "Toggle Dynamic Mode",
               "onClick": "toggleDynamicMode",
               "background": "#5856D6",
-              "color": "#FFFFFF",
+              "fontColor": "#FFFFFF",
               "cornerRadius": 8,
               "padding": [12, 20],
               "marginTop": 20,
-              "width": "matchParent"
+              "width": ""
             },
             {
               "type": "Label",
               "text": "Dynamic Mode: @{dynamicModeStatus}",
               "fontSize": 14,
-              "color": "#666666",
+              "fontColor": "#666666",
               "textAlign": "center",
               "marginTop": 8
             }
@@ -262,7 +262,7 @@
     },
     {
       "name": "statusColor",
-      "class": "Color",
+      "class": "fontColor",
       "defaultValue": "Color.Green"
     },
     {

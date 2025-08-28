@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from width_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
+  <data>
+    <import type="android.view.View"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.WidthTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.WidthTestViewModel"/>
+  </data>
+  <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF">
+    <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Width Test" android:textSize="24sp" android:textColor="#000000" android:layout_marginTop="20dp"/>
+    <TextView android:layout_width="match_parent" android:layout_height="50" android:text="matchParent width" android:background="#FF6B6B" android:textColor="#FFFFFF" android:textAlignment="center" android:layout_marginTop="20dp"/>
+    <TextView android:layout_width="200" android:layout_height="50" android:text="Fixed width 200" android:background="#4ECDC4" android:textColor="#FFFFFF" android:textAlignment="center" android:layout_marginTop="10dp"/>
+    <TextView android:layout_width="wrap_content" android:layout_height="50" android:text="wrapContent width" android:background="#45B7D1" android:textColor="#FFFFFF" android:textAlignment="center" android:layout_marginTop="10dp"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="100" android:orientation="horizontal" android:background="#E0E0E0" android:layout_marginTop="20dp">
+      <TextView android:layout_width="wrap_content" android:layout_height="match_parent" android:text="Weight 1" android:layout_weight="1" android:background="#96CEB4" android:textColor="#FFFFFF" android:textAlignment="center"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Weight 2 (wrap)" android:layout_weight="2" android:background="#FFEAA7" android:textColor="#000000" android:textAlignment="center"/>
+      <TextView android:layout_width="wrap_content" android:layout_height="match_parent" android:text="Weight 1" android:layout_weight="1" android:background="#DFE6E9" android:textColor="#000000" android:textAlignment="center"/>
+    </LinearLayout>
+  </LinearLayout>
+</layout>

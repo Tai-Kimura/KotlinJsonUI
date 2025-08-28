@@ -5,10 +5,6 @@
   "background": "#FFFFFF",
   "cornerRadius": 12,
   "orientation": "vertical",
-  "border": {
-    "width": 1,
-    "color": "#E0E0E0"
-  },
   "child": [
     {
       "type": "View",
