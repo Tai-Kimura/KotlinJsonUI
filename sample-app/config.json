@@ -1,0 +1,10 @@
+{
+  "mode": "xml",
+  "project_path": "/Users/like-a-rolling_stone/resource/KotlinJsonUI/sample-app",
+  "package_name": "com.example.kotlinjsonui",
+  "target_sdk": 34,
+  "min_sdk": 24,
+  "generate_binding": true,
+  "generate_data_class": true,
+  "debug": true
+}

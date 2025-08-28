@@ -1,0 +1,48 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "orientation": "vertical",
+  "padding": 16,
+  "background": "#F5F5F5",
+  "child": [
+    {
+      "type": "Label",
+      "id": "titleLabel",
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "#333333",
+      "fontWeight": "bold",
+      "bottomMargin": 8
+    },
+    {
+      "type": "Label",
+      "id": "messageLabel",
+      "text": "@{message}",
+      "fontSize": 16,
+      "fontColor": "#666666",
+      "bottomMargin": 16
+    },
+    {
+      "type": "Button",
+      "id": "actionButton",
+      "text": "Click Me",
+      "onClick": "@{viewModel.onButtonClick()}",
+      "background": "#007AFF",
+      "fontColor": "#FFFFFF",
+      "padding": 12,
+      "cornerRadius": 8
+    },
+    {
+      "type": "Switch",
+      "id": "toggleSwitch",
+      "checked": "@{isEnabled}",
+      "topMargin": 16
+    }
+  ],
+  "data": {
+    "title": "Test Title",
+    "message": "This is a test message",
+    "isEnabled": true
+  }
+}

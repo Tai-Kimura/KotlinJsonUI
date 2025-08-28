@@ -20,20 +20,36 @@ module KjuiTools
         def run(args)
           subcommand = args.shift
           
-          if subcommand.nil? || subcommand == 'help'
+          # Load config to get mode
+          config = Core::ConfigManager.load_config
+          mode = config['mode'] || 'compose'
+          
+          # If no subcommand, generate all based on mode
+          if subcommand.nil?
+            if mode == 'xml'
+              generate_all_xml_layouts(config)
+            else
+              generate_all_compose_views(config)
+            end
+            return
+          end
+          
+          if subcommand == 'help'
             show_help
             return
           end
           
           unless SUBCOMMANDS.key?(subcommand)
+            # Check if it's a layout name (no subcommand, just generate that layout)
+            if mode == 'xml' && !subcommand.start_with?('-')
+              generate_specific_xml_layout(subcommand, args, config)
+              return
+            end
+            
             puts "Unknown generate command: #{subcommand}"
             show_help
             exit 1
           end
-          
-          # Load config to get mode
-          config = Core::ConfigManager.load_config
-          mode = config['mode'] || 'compose'
           
           case subcommand
           when 'view'
@@ -281,8 +297,39 @@ module KjuiTools
           options
         end
 
+        def generate_all_xml_layouts(config)
+          require_relative '../../xml/xml_generator'
+          require_relative '../commands/generate_xml'
+          
+          puts "Generating all XML layouts..."
+          CLI::Commands::GenerateXml.run([])
+        end
+        
+        def generate_all_compose_views(config)
+          require_relative '../../compose/compose_builder'
+          
+          puts "Generating all Compose views..."
+          # Call the existing Compose builder
+          system("ruby #{File.join(File.dirname(__FILE__), '../../..', 'bin', 'kjui')} build")
+        end
+        
+        def generate_specific_xml_layout(layout_name, args, config)
+          require_relative '../../xml/xml_generator'
+          require_relative '../commands/generate_xml'
+          
+          puts "Generating XML for layout: #{layout_name}"
+          CLI::Commands::GenerateXml.run([layout_name] + args)
+        end
+
         def show_help
-          puts "Usage: kjui generate SUBCOMMAND [options]"
+          puts "Usage: kjui generate [SUBCOMMAND] [options]"
+          puts
+          puts "When in XML mode:"
+          puts "  kjui generate              # Generate all XML layouts"
+          puts "  kjui generate test_menu    # Generate specific XML layout"
+          puts
+          puts "When in Compose mode:"
+          puts "  kjui generate              # Generate all Compose views"
           puts
           puts "Subcommands:"
           SUBCOMMANDS.each do |cmd, desc|
@@ -290,12 +337,13 @@ module KjuiTools
           end
           puts
           puts "Examples:"
-          puts "  kjui g view HomeView           # Generate a view"
-          puts "  kjui g view RootView --root    # Generate root view"
-          puts "  kjui g partial Header          # Generate a partial"
-          puts "  kjui g collection Post/Cell    # Generate collection cell"
-          puts "  kjui g binding CustomBinding   # Generate binding file (XML mode only)"
-          puts "  kjui g converter MyCard --container  # Generate custom component"
+          puts "  kjui g                     # Generate all (based on mode)"
+          puts "  kjui g view HomeView       # Generate a view"
+          puts "  kjui g view RootView --root # Generate root view"
+          puts "  kjui g partial Header      # Generate a partial"
+          puts "  kjui g collection Post/Cell # Generate collection cell"
+          puts "  kjui g binding CustomBinding # Generate binding file (XML mode only)"
+          puts "  kjui g converter MyCard --container # Generate custom component"
         end
       end
     end
