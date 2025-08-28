@@ -1,0 +1,192 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "#F5F5F5",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "padding": 16,
+      "child": [
+        {
+          "type": "SampleCard",
+          "title": "User Profile",
+          "subtitle": "Manage your account",
+          "count": 3,
+          "child": [
+            {
+              "type": "View",
+              "width": "matchParent",
+              "height": "wrapContent",
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "View",
+                  "width": "matchParent",
+                  "height": "wrapContent",
+                  "orientation": "horizontal",
+                  "child": [
+                    {
+                      "type": "UserAvatar",
+                      "name": "@{userName}",
+                      "avatarUrl": "@{userAvatar}",
+                      "size": 64,
+                      "isOnline": "@{isOnline}"
+                    },
+                    {
+                      "type": "View",
+                      "width": "wrapContent",
+                      "height": "wrapContent",
+                      "orientation": "vertical",
+                      "leftMargin": 16,
+                      "child": [
+                        {
+                          "type": "Label",
+                          "text": "@{userName}",
+                          "fontSize": 20,
+                          "fontWeight": "bold",
+                          "fontColor": "#333333"
+                        },
+                        {
+                          "type": "Label",
+                          "text": "@{userEmail}",
+                          "fontSize": 14,
+                          "fontColor": "#666666",
+                          "topMargin": 4
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "View",
+                  "width": "matchParent",
+                  "height": 1,
+                  "background": "#E0E0E0",
+                  "topMargin": 12,
+                  "bottomMargin": 12
+                },
+                {
+                  "type": "StatusBadge",
+                  "title": "Status",
+                  "status": "@{userStatus}",
+                  "color": "#4CAF50",
+                  "count": "@{notificationCount}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Team Members",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "fontColor": "#333333",
+          "topMargin": 24,
+          "bottomMargin": 12
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "orientation": "horizontal",
+          "child": [
+            {
+              "type": "UserAvatar",
+              "name": "Alice Johnson",
+              "size": 48,
+              "isOnline": true,
+              "rightMargin": 12
+            },
+            {
+              "type": "UserAvatar",
+              "name": "Bob Smith",
+              "avatarUrl": "https://i.pravatar.cc/150?img=3",
+              "size": 48,
+              "isOnline": false,
+              "rightMargin": 12
+            },
+            {
+              "type": "UserAvatar",
+              "name": "Carol Williams",
+              "avatarUrl": "https://i.pravatar.cc/150?img=5",
+              "size": 48,
+              "isOnline": true,
+              "rightMargin": 12
+            },
+            {
+              "type": "UserAvatar",
+              "name": "David Brown",
+              "size": 48,
+              "isOnline": false
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Actions",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "fontColor": "#333333",
+          "topMargin": 24,
+          "bottomMargin": 12
+        },
+        {
+          "type": "Button",
+          "text": "Toggle Online Status",
+          "onclick": "toggleOnlineStatus",
+          "background": "#007AFF",
+          "fontColor": "#FFFFFF",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Toggle Dynamic Mode",
+          "onclick": "toggleDynamicMode",
+          "background": "#34C759",
+          "fontColor": "#FFFFFF",
+          "padding": 12,
+          "cornerRadius": 8
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "userName",
+      "class": "String",
+      "defaultValue": "John Doe"
+    },
+    {
+      "name": "userEmail",
+      "class": "String",
+      "defaultValue": "john.doe@example.com"
+    },
+    {
+      "name": "userAvatar",
+      "class": "String",
+      "defaultValue": "https://i.pravatar.cc/150?img=1"
+    },
+    {
+      "name": "isOnline",
+      "class": "Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "userStatus",
+      "class": "String",
+      "defaultValue": "Active"
+    },
+    {
+      "name": "notificationCount",
+      "class": "Int",
+      "defaultValue": 5
+    }
+  ]
+}

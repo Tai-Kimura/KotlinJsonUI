@@ -208,6 +208,11 @@ module KjuiTools
         import #{@package_name}.viewmodels.#{view_name}ViewModel
         KOTLIN
         
+        # Add Color import if any property uses Color type
+        if data_properties.any? { |prop| prop['class'] == 'Color' }
+          content += "import androidx.compose.ui.graphics.Color\n"
+        end
+        
         content += "\ndata class #{view_name}Data(\n"
         
         if data_properties.empty?
@@ -262,6 +267,8 @@ module KjuiTools
               content += "(map[\"#{name}\"] as? Number)?.toFloat() ?: 0f"
             when 'Bool', 'Boolean'
               content += "map[\"#{name}\"] as? Boolean ?: false"
+            when 'Color'
+              content += "map[\"#{name}\"] as? Color ?: Color.Unspecified"
             when 'CollectionDataSource'
               content += "com.kotlinjsonui.data.CollectionDataSource()"
             when /^List<.*>$/
@@ -343,6 +350,8 @@ module KjuiTools
           'Boolean'
         when 'CGFloat'
           'Float'
+        when 'Color'
+          'Color'
         when 'CollectionDataSource'
           # Use the actual CollectionDataSource type
           'com.kotlinjsonui.data.CollectionDataSource'
@@ -373,6 +382,29 @@ module KjuiTools
         when 'Float', 'CGFloat'
           # Ensure it's a float with f suffix
           "#{value.to_f}f"
+        when 'Color'
+          # Handle color values
+          if value.is_a?(String) && value.start_with?('#')
+            "Color(android.graphics.Color.parseColor(\"#{value}\"))"
+          elsif value.is_a?(String) && value.start_with?('Color.')
+            value # Direct Color reference like Color.Red
+          elsif value.is_a?(String) && value.downcase.include?('color')
+            # Map common color names
+            case value.downcase
+            when 'red' then 'Color.Red'
+            when 'green' then 'Color.Green'
+            when 'blue' then 'Color.Blue'
+            when 'black' then 'Color.Black'
+            when 'white' then 'Color.White'
+            when 'gray', 'grey' then 'Color.Gray'
+            when 'yellow' then 'Color.Yellow'
+            when 'cyan' then 'Color.Cyan'
+            when 'magenta' then 'Color.Magenta'
+            else 'Color.Unspecified'
+            end
+          else
+            'Color.Unspecified'
+          end
         when 'CollectionDataSource'
           # Return the actual default value string or create new instance
           if value.is_a?(String) && value == 'CollectionDataSource()'

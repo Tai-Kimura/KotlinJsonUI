@@ -531,6 +531,34 @@ fun TestMenuGeneratedView(
                 )
             }
             Button(
+                onClick = { viewModel.navigateToCustomComponentTest() },
+                modifier = Modifier.padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                )
+            ) {
+                Text(
+                    text = "Custom Component Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
+                onClick = { viewModel.navigateToUserProfileTest() },
+                modifier = Modifier.padding(bottom = 8.dp),
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = PaddingValues(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                )
+            ) {
+                Text(
+                    text = "User Profile Test",
+                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                )
+            }
+            Button(
                 onClick = { viewModel.navigateToIncludeTest() },
                 modifier = Modifier.padding(bottom = 20.dp),
                 shape = RoundedCornerShape(8.dp),
@@ -612,7 +640,7 @@ fun TestMenuGeneratedView(
                 fontSize = 20.sp,
                 color = Color(android.graphics.Color.parseColor("#FF0000")),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 10.dp)
+                modifier = Modifier.padding(bottom = 15.dp)
             )
             Button(
                 onClick = { viewModel.navigateToImplementedAttributesTest() },

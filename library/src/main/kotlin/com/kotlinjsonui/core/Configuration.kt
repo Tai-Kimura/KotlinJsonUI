@@ -29,6 +29,13 @@ object Configuration {
      * The function receives the JsonObject and data map
      */
     var fallbackComponent: (@Composable (JsonObject, Map<String, Any>) -> Unit)? = null
+    
+    /**
+     * Custom component handler to render app-specific custom components
+     * The function receives the component type, JsonObject and data map
+     * Should return true if the component was handled, false otherwise
+     */
+    var customComponentHandler: (@Composable (String, JsonObject, Map<String, Any>) -> Boolean)? = null
     // Global color defaults
     object Colors {
         val background = Color.White

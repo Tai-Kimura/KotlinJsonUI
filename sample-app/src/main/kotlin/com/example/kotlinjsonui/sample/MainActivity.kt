@@ -51,6 +51,8 @@ import com.example.kotlinjsonui.sample.views.text_decoration_test.TextDecoration
 import com.example.kotlinjsonui.sample.views.textfield_events_test.TextfieldEventsTestView
 import com.example.kotlinjsonui.sample.views.textfield_test.TextfieldTestView
 import com.example.kotlinjsonui.sample.views.collection_test.CollectionTestView
+import com.example.kotlinjsonui.sample.views.custom_component_test.CustomComponentTestView
+import com.example.kotlinjsonui.sample.views.user_profile_test.UserProfileTestView
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.KotlinJsonUI
@@ -65,6 +67,9 @@ class MainActivity : ComponentActivity() {
         
         // Set initial dynamic mode state
         DynamicModeManager.setDynamicModeEnabled(this, false)
+        
+        // Register custom component handler for dynamic mode (debug only)
+        DynamicComponentInitializer.initialize()
         
         // Configure link color globally (optional - you can customize this)
         // Default is blue (0xFF0000EE), but you can change it to any color
@@ -193,6 +198,12 @@ fun AppNavigation() {
         }
         composable("collection_test") {
             CollectionTestView()
+        }
+        composable("custom_component_test") {
+            CustomComponentTestView()
+        }
+        composable("user_profile_test") {
+            UserProfileTestView()
         }
     }
 }

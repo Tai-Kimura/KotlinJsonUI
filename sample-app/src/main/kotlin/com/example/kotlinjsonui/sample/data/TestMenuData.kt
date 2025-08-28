@@ -52,6 +52,8 @@ data class TestMenuData(
             map["navigateToSegmentTest"] = { vm.navigateToSegmentTest() }
             map["navigateToBindingTest"] = { vm.navigateToBindingTest() }
             map["navigateToConverterTest"] = { vm.navigateToConverterTest() }
+            map["navigateToCustomComponentTest"] = { vm.navigateToCustomComponentTest() }
+            map["navigateToUserProfileTest"] = { vm.navigateToUserProfileTest() }
             map["navigateToIncludeTest"] = { vm.navigateToIncludeTest() }
             map["navigateToFormTest"] = { vm.navigateToFormTest() }
             map["navigateToCollectionTest"] = { vm.navigateToCollectionTest() }

@@ -2,10 +2,9 @@ package com.example.kotlinjsonui.sample.dynamic
 
 import androidx.compose.runtime.Composable
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.components.*
-import com.kotlinjsonui.dynamic.components.extensions.Dynamic--helpComponent
-import com.kotlinjsonui.dynamic.components.extensions.DynamicStatusBadgeComponent
 import com.example.kotlinjsonui.sample.dynamic.components.extensions.DynamicSampleCardComponent
+import com.example.kotlinjsonui.sample.dynamic.components.extensions.DynamicStatusBadgeComponent
+import com.example.kotlinjsonui.sample.dynamic.components.extensions.DynamicUserAvatarComponent
 
 /**
  * Registry for dynamic custom components
@@ -20,11 +19,17 @@ object DynamicComponentRegistry {
     ): Boolean {
         return when (type) {
             "SampleCard" -> {
-                extensions.DynamicSampleCardComponent.create(json, data)
+                DynamicSampleCardComponent.create(json, data)
                 true
             }
-            "StatusBadge" -> extensions.DynamicStatusBadgeComponent.create(json, data)
-            "--help" -> extensions.Dynamic--helpComponent.create(json, data)
+            "StatusBadge" -> {
+                DynamicStatusBadgeComponent.create(json, data)
+                true
+            }
+            "UserAvatar" -> {
+                DynamicUserAvatarComponent.create(json, data)
+                true
+            }
             else -> false
         }
     }

@@ -3,6 +3,7 @@ package com.example.kotlinjsonui.sample.data
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.example.kotlinjsonui.sample.viewmodels.CustomComponentTestViewModel
+import androidx.compose.ui.graphics.Color
 
 data class CustomComponentTestData(
     var cardTitle: String = "'Dynamic Card Title'",
@@ -21,7 +22,7 @@ data class CustomComponentTestData(
                 cardSubtitle = map["cardSubtitle"] as? String ?: "",
                 itemCount = (map["itemCount"] as? Number)?.toInt() ?: 0,
                 currentStatus = map["currentStatus"] as? String ?: "",
-                statusColor = map["statusColor"] as? Color,
+                statusColor = map["statusColor"] as? Color ?: Color.Unspecified,
                 notificationCount = (map["notificationCount"] as? Number)?.toInt() ?: 0,
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: ""
             )

@@ -22,7 +22,8 @@ class SimpleTestViewModel(application: Application) : AndroidViewModel(applicati
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        _data.value.update(updates)
-        _data.value = _data.value.copy() // Trigger recomposition
+        // Update data with new values from map
+        val newData = SimpleTestData.fromMap(updates)
+        _data.value = newData
     }
 }

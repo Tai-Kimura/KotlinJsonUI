@@ -1,9 +1,13 @@
 package com.example.kotlinjsonui.sample.extensions
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Custom SampleCard component
@@ -20,10 +24,61 @@ fun SampleCard(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    Box(
-        modifier = modifier
+    Card(
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
-        // Custom container implementation
-        content()
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Header section
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    if (title.isNotEmpty()) {
+                        Text(
+                            text = title,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    if (subtitle.isNotEmpty()) {
+                        Text(
+                            text = subtitle,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+                if (count > 0) {
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ) {
+                        Text(
+                            text = count.toString(),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+            }
+            
+            // Content section
+            if (title.isNotEmpty() || subtitle.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                content()
+            }
+        }
     }
 }

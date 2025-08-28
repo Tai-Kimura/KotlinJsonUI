@@ -94,6 +94,14 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
         _navigationEvent.value = "converter_test"
     }
     
+    fun navigateToCustomComponentTest() {
+        _navigationEvent.value = "custom_component_test"
+    }
+    
+    fun navigateToUserProfileTest() {
+        _navigationEvent.value = "user_profile_test"
+    }
+    
     fun navigateToIncludeTest() {
         _navigationEvent.value = "include_test"
     }

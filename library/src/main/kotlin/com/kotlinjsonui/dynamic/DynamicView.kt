@@ -126,17 +126,22 @@ fun DynamicView(
             "textview" -> DynamicTextViewComponent.create(styledJson, data)
             "triangle" -> DynamicTriangleComponent.create(styledJson, data)
             else -> {
-                // Unknown component type
-                val error = IllegalArgumentException("Unknown component type: $type")
-                onError?.invoke(error)
+                // First, try custom component handler
+                val handled = Configuration.customComponentHandler?.invoke(type, styledJson, data) ?: false
                 
-                // Log error in debug mode
-                if (Configuration.showErrorsInDebug) {
-                    Log.w("DynamicView", "Unknown component type: $type")
-                    ErrorComponent("Unknown component type: $type")
-                } else if (Configuration.fallbackComponent != null) {
-                    // Use custom fallback component if configured
-                    Configuration.fallbackComponent?.invoke(styledJson, data)
+                if (!handled) {
+                    // Unknown component type
+                    val error = IllegalArgumentException("Unknown component type: $type")
+                    onError?.invoke(error)
+                    
+                    // Log error in debug mode
+                    if (Configuration.showErrorsInDebug) {
+                        Log.w("DynamicView", "Unknown component type: $type")
+                        ErrorComponent("Unknown component type: $type")
+                    } else if (Configuration.fallbackComponent != null) {
+                        // Use custom fallback component if configured
+                        Configuration.fallbackComponent?.invoke(styledJson, data)
+                    }
                 }
             }
         }

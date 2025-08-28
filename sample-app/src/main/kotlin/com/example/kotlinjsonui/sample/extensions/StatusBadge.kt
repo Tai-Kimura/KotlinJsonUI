@@ -1,9 +1,18 @@
 package com.example.kotlinjsonui.sample.extensions
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Custom StatusBadge component
@@ -20,8 +29,58 @@ fun StatusBadge(
     count: Int = 0,
     modifier: Modifier = Modifier
 ) {
-    // TODO: Implement your custom component
-    Box(modifier = modifier) {
-        // Component content
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        tonalElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Status indicator dot
+            if (color != Color.Unspecified) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                )
+            }
+            
+            // Title
+            if (title.isNotEmpty()) {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            
+            // Status text
+            if (status.isNotEmpty()) {
+                Text(
+                    text = status,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            // Count badge
+            if (count > 0) {
+                Badge(
+                    containerColor = if (color != Color.Unspecified) color else MaterialTheme.colorScheme.tertiary,
+                    contentColor = Color.White
+                ) {
+                    Text(
+                        text = count.toString(),
+                        fontSize = 10.sp
+                    )
+                }
+            }
+        }
     }
 }

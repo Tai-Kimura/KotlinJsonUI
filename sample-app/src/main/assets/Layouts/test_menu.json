@@ -326,6 +326,26 @@
         },
         {
           "type": "Button",
+          "text": "Custom Component Test",
+          "onclick": "navigateToCustomComponentTest",
+          "background": "#FF3B30",
+          "fontColor": "#FFFFFF",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "User Profile Test",
+          "onclick": "navigateToUserProfileTest",
+          "background": "#FF3B30",
+          "fontColor": "#FFFFFF",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
           "text": "Include Component Test",
           "onclick": "navigateToIncludeTest",
           "background": "#FF3B30",
@@ -388,7 +408,7 @@
           "fontSize": 20,
           "fontColor": "#FF0000",
           "fontWeight": "bold",
-          "bottomMargin": 10
+          "bottomMargin": 15
         },
         {
           "type": "Button",
