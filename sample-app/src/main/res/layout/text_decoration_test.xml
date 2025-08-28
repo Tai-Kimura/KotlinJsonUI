@@ -1,13 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from text_decoration_test.json -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF">
-  <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Normal text without links" android:textSize="16sp" android:textColor="#000000" android:layout_marginBottom="20dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Visit https://www.apple.com for more info" android:textSize="16sp" android:textColor="#000000" android:layout_marginBottom="20dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Multiple links: https://github.com and https://google.com are popular sites" android:textSize="16sp" android:textColor="#000000" android:layout_marginBottom="20dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email: support@example.com&#10;Website: https://example.com&#10;Phone: 555-123-4567" android:textSize="16sp" android:textColor="#0000FF" android:layout_marginBottom="20dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Linkable with edgeInset: Check out https://anthropic.com" android:textSize="16sp" android:textColor="#FFFFFF" android:background="#FF0000" android:layout_marginBottom="20dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="No linkable flag: https://www.test.com won't be clickable" android:textSize="16sp" android:textColor="#808080" android:layout_marginBottom="20dp"/>
-  </LinearLayout>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Normal text without links"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Visit https://www.apple.com for more info"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Multiple links: https://github.com and https://google.com are popular sites"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email: support@example.com&#10;Website: https://example.com&#10;Phone: 555-123-4567"
+            android:textSize="16sp"
+            android:textColor="#0000FF"
+            android:layout_marginBottom="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Linkable with edgeInset: Check out https://anthropic.com"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:background="#FF0000"
+            android:layout_marginBottom="20dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No linkable flag: https://www.test.com won't be clickable"
+            android:textSize="16sp"
+            android:textColor="#808080"
+            android:layout_marginBottom="20dp"/>
+    </LinearLayout>
 </LinearLayout>

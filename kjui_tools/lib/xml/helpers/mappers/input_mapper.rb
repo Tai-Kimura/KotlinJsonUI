@@ -1,0 +1,77 @@
+#!/usr/bin/env ruby
+
+module XmlGenerator
+  module Mappers
+    class InputMapper
+      def map_input_attributes(key, value)
+        case key
+        # Input attributes
+        when 'inputType'
+          return { namespace: 'android', name: 'inputType', value: map_input_type(value) }
+        when 'placeholder'
+          return { namespace: 'android', name: 'hint', value: value }
+        when 'editable'
+          return { namespace: 'android', name: 'editable', value: value.to_s }
+        when 'singleLine'
+          return { namespace: 'android', name: 'singleLine', value: value.to_s }
+        when 'maxLength'
+          return { namespace: 'android', name: 'maxLength', value: value.to_s }
+          
+        # Switch/Checkbox
+        when 'checked', 'isChecked'
+          return { namespace: 'android', name: 'checked', value: process_checked_value(value) }
+          
+        # SelectBox/Spinner
+        when 'selectedItem'
+          return { namespace: 'tools', name: 'selectedItem', value: value }
+        when 'entries', 'items'
+          if value.is_a?(Array)
+            return { namespace: 'tools', name: 'entries', value: value.join(',') }
+          else
+            return { namespace: 'tools', name: 'entries', value: value }
+          end
+        when 'selectItemType'
+          return { namespace: 'tools', name: 'selectItemType', value: value }
+          
+        # Progress/Slider
+        when 'progress'
+          return { namespace: 'android', name: 'progress', value: value.to_s }
+        when 'max', 'maxValue'
+          return { namespace: 'android', name: 'max', value: value.to_s }
+        when 'min', 'minValue'
+          return { namespace: 'android', name: 'min', value: value.to_s }
+          
+        # Events (will be handled in binding)
+        when 'onClick', 'onclick'
+          return { namespace: 'android', name: 'onClick', value: value }
+        when 'onTextChanged'
+          return nil # Handled in code
+        end
+        
+        nil
+      end
+      
+      private
+      
+      def map_input_type(value)
+        input_type_map = {
+          'text' => 'text',
+          'number' => 'number',
+          'phone' => 'phone',
+          'email' => 'textEmailAddress',
+          'password' => 'textPassword',
+          'multiline' => 'textMultiLine'
+        }
+        input_type_map[value] || value
+      end
+      
+      def process_checked_value(value)
+        if value.is_a?(String) && value.start_with?('@{')
+          value
+        else
+          value.to_s
+        end
+      end
+    end
+  end
+end

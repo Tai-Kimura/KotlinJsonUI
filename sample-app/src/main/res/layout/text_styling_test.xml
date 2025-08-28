@@ -1,35 +1,197 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from text_styling_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
-  <data>
-    <import type="android.view.View"/>
-    <variable name="data" type="com.example.kotlinjsonui.sample.data.TextStylingTestData"/>
-    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.TextStylingTestViewModel"/>
-  </data>
-  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-      <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
-      <TextView android:id="@+id/title_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@{data.title}" android:textSize="24sp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Font Sizes" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="fontSize: 12" android:textSize="12sp" android:layout_marginTop="10dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="fontSize: 16" android:textSize="16sp" android:layout_marginTop="5dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="fontSize: 20" android:textSize="20sp" android:layout_marginTop="5dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="fontSize: 24" android:textSize="24sp" android:layout_marginTop="5dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Font Styles" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Bold Text" android:textSize="16sp" android:layout_marginTop="10dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Underlined Text" android:textSize="16sp" android:layout_marginTop="10dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text Alignment" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Left Aligned (default)" android:textAlignment="textStart" android:textSize="16sp" android:layout_marginTop="10dp" android:background="#E0E0E0" android:padding="5dp" android:textColor="#000000"/>
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Center Aligned" android:textAlignment="center" android:textSize="16sp" android:layout_marginTop="10dp" android:background="#E0E0E0" android:padding="5dp" android:textColor="#000000"/>
-      <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Right Aligned" android:textAlignment="textEnd" android:textSize="16sp" android:layout_marginTop="10dp" android:background="#E0E0E0" android:padding="5dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Line Spacing Test" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="This is a multi-line text with lineSpacing: 5 to demonstrate line spacing" android:textSize="14sp" android:layout_marginTop="10dp" android:background="#FFFFFF" android:padding="10dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="This is another multi-line text with lineSpacing: 10 to demonstrate line spacing (line breaks work with proper spacing)" android:textSize="14sp" android:layout_marginTop="10dp" android:background="#FFFFFF" android:padding="10dp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Font Colors" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Red Text" android:textColor="#FF0000" android:textSize="16sp" android:layout_marginTop="10dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Green Text" android:textColor="#00FF00" android:textSize="16sp" android:layout_marginTop="5dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Blue Text" android:textColor="#0000FF" android:textSize="16sp" android:layout_marginTop="5dp"/>
-    </LinearLayout>
-  </ScrollView>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.TextStylingTestData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.TextStylingTestViewModel"/>
+    </data>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:textColor="#FFFFFF"
+                tools:cornerRadius="8dp"
+                android:text="Dynamic: @{dynamicModeStatus}"
+                android:onClick="toggleDynamicMode"
+                android:background="#5856D6"
+                android:textSize="14sp"
+                android:padding="8dp"/>
+            <TextView
+                android:id="@+id/title_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@{data.title}"
+                android:textSize="24sp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Font Sizes"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="fontSize: 12"
+                android:textSize="12sp"
+                android:layout_marginTop="10dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="fontSize: 16"
+                android:textSize="16sp"
+                android:layout_marginTop="5dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="fontSize: 20"
+                android:textSize="20sp"
+                android:layout_marginTop="5dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="fontSize: 24"
+                android:textSize="24sp"
+                android:layout_marginTop="5dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Font Styles"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bold Text"
+                android:fontFamily="bold"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Underlined Text"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Text Alignment"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Left Aligned (default)"
+                android:textAlignment="textStart"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"
+                android:background="#E0E0E0"
+                android:padding="5dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Center Aligned"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"
+                android:background="#E0E0E0"
+                android:padding="5dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Right Aligned"
+                android:textAlignment="textEnd"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"
+                android:background="#E0E0E0"
+                android:padding="5dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Line Spacing Test"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This is a multi-line text with lineSpacing: 5 to demonstrate line spacing"
+                android:textSize="14sp"
+                android:layout_marginTop="10dp"
+                android:background="#FFFFFF"
+                android:padding="10dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This is another multi-line text with lineSpacing: 10 to demonstrate line spacing (line breaks work with proper spacing)"
+                android:textSize="14sp"
+                android:layout_marginTop="10dp"
+                android:background="#FFFFFF"
+                android:padding="10dp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Font Colors"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Red Text"
+                android:textColor="#FF0000"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Green Text"
+                android:textColor="#00FF00"
+                android:textSize="16sp"
+                android:layout_marginTop="5dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Blue Text"
+                android:textColor="#0000FF"
+                android:textSize="16sp"
+                android:layout_marginTop="5dp"/>
+        </LinearLayout>
+    </ScrollView>
 </layout>

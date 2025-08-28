@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-28 16:25:56",
+  "timestamp": "2025-08-29 07:27:44",
   "statistics": {
     "total_files": 53,
     "successful_parses": 53,
@@ -62,7 +62,6 @@
       "topMargin",
       "centerVertical",
       "centerInParent",
-      "border",
       "font",
       "leftMargin",
       "rightMargin",
@@ -112,12 +111,12 @@
       "defaultImage",
       "contentMode",
       "src",
-      "color",
       "title",
       "subtitle",
       "count",
       "onClick",
       "status",
+      "color",
       "marginTop",
       "datePickerMode",
       "dateStringFormat",
@@ -211,297 +210,7 @@
   },
   "parse_errors": [],
   "unhandled_keys": {
-    "alignment_combo_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][1]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][3][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][3][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][4][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][4][0]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][5][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][5][0]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][6][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][6][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][8][0]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][8][0]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][9][0]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][9][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][10][0]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][10][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][11][0]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][11][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][1]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][1]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][2]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][2]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][3]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][3]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][4]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15][0]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15][1]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15][1]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15][2]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15][2]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][17][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][17][0]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][17][1]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][17][1]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][17][2]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][17][2]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][19][0]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][20][0]"
-      }
-    ],
-    "alignment_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][1]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][3][0]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][4][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][5][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][6][0]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][7][0]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][8][0]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[0][9][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[0][11][0]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[0][11][2]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[0][11][3]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][2]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][13][3]"
-      }
-    ],
-    "basic_cell.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root"
-      },
-      {
-        "message": "Attribute 'border' with value '{\"width\"=>1, \"color\"=>\"#E0E0E0\"}' not handled for type 'View'",
-        "location": "root"
-      }
-    ],
     "binding_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][2]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][5]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][6][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Label'",
-        "location": "root[0][6][1]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][6][2]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[0][10][0]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][11]"
-      },
       {
         "message": "Attribute 'value' with value '\"@{sliderValue}\"' not handled for type 'Slider'",
         "location": "root[0][12]"
@@ -519,48 +228,8 @@
         "location": "root[0][12]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'View'",
-        "location": "root[0][14]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'View'",
-        "location": "root[0][14][0]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedOption}\"' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'items' with value '[\"Option 1\", \"Option 2\", \"Option 3\", \"Option 4\", \"Option 5\", \"Option 6\", \"Option 7\", \"Option 8\", \"Option 9\", \"Option 10\", \"Option 11\", \"Option 12\", \"Option 13\", \"Option 14\", \"Option 15\", \"Option 16\", \"Option 17\", \"Option 18\", \"Option 19\", \"Option 20\", \"Option 21\", \"Option 22\", \"Option 23\", \"Option 24\", \"Option 25\", \"Option 26\", \"Option 27\", \"Option 28\", \"Option 29\", \"Option 30\"]' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
         "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'SelectBox'",
         "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedDate}\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
       },
       {
         "message": "Attribute 'datePickerStyle' with value '\"wheels\"' not handled for type 'SelectBox'",
@@ -579,28 +248,8 @@
         "location": "root[0][19]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
         "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'SelectBox'",
         "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedDate2}\"' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
       },
       {
         "message": "Attribute 'datePickerStyle' with value '\"compact\"' not handled for type 'SelectBox'",
@@ -611,72 +260,8 @@
         "location": "root[0][21]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
-      },
-      {
         "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'SelectBox'",
         "location": "root[0][21]"
-      }
-    ],
-    "button_enabled_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[3]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[4]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[5]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[6]"
-      }
-    ],
-    "button_test.json": [
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [12, 20]:Array",
-        "location": "root[child][2]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][2]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][4]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [12, 20]:Array",
-        "location": "root[child][6]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][6]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [12, 20]:Array",
-        "location": "root[child][8]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][8]"
       }
     ],
     "collection_test.json": [
@@ -690,10 +275,6 @@
       },
       {
         "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
-        "location": "root[0][0][2]"
-      },
-      {
-        "message": "Attribute 'items' with value '\"@{items1}\"' not handled for type 'Collection'",
         "location": "root[0][0][2]"
       },
       {
@@ -713,10 +294,6 @@
         "location": "root[0][0][4]"
       },
       {
-        "message": "Attribute 'items' with value '\"@{mixedItems}\"' not handled for type 'Collection'",
-        "location": "root[0][0][4]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][0][5]"
       },
@@ -726,10 +303,6 @@
       },
       {
         "message": "Attribute 'layout' with value '\"horizontal\"' not handled for type 'Collection'",
-        "location": "root[0][0][6]"
-      },
-      {
-        "message": "Attribute 'items' with value '\"@{horizontalItems}\"' not handled for type 'Collection'",
         "location": "root[0][0][6]"
       },
       {
@@ -745,10 +318,6 @@
         "location": "root[0][0][8]"
       },
       {
-        "message": "Attribute 'items' with value '\"@{sectionedItems}\"' not handled for type 'Collection'",
-        "location": "root[0][0][8]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][0][9]"
       },
@@ -759,39 +328,11 @@
       {
         "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
         "location": "root[0][0][10]"
-      },
-      {
-        "message": "Attribute 'items' with value '\"@{multiSectionItems}\"' not handled for type 'Collection'",
-        "location": "root[0][0][10]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0][11]"
       }
     ],
     "components_test.json": [
       {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [20, 20, 20, 20]:Array",
-        "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][1]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][2]"
-      },
-      {
         "message": "Attribute 'isOn' with value '\"@{toggle1IsOn}\"' not handled for type 'Toggle'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
         "location": "root[0][3]"
       },
       {
@@ -799,123 +340,31 @@
         "location": "root[0][4]"
       },
       {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][4]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][5]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][6]"
-      },
-      {
         "message": "Attribute 'value' with value '\"@{slider1Value}\"' not handled for type 'Slider'",
         "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][8]"
-      },
-      {
-        "message": "Attribute 'items' with value '[\"List\", \"Grid\", \"Map\"]' not handled for type 'Segment'",
-        "location": "root[0][9]"
       },
       {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedSegment1}\"' not handled for type 'Segment'",
         "location": "root[0][9]"
       },
       {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'items' with value '[\"Small\", \"Medium\", \"Large\"]' not handled for type 'Radio'",
-        "location": "root[0][10]"
-      },
-      {
         "message": "Attribute 'selectedValue' with value '\"@{selectedRadio1}\"' not handled for type 'Radio'",
         "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][11]"
       },
       {
         "message": "Attribute 'indicatorStyle' with value '\"circular\"' not handled for type 'Indicator'",
         "location": "root[0][12]"
       },
       {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][12]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][13]"
-      },
-      {
         "message": "Attribute 'url' with value '\"person.circle.fill\"' not handled for type 'CircleImage'",
         "location": "root[0][14]"
       },
       {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][14]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'items' with value '[\"#FF6B6B\", \"#4ECDC4\"]' not handled for type 'GradientView'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'GradientView'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Text'",
-        "location": "root[0][16][0]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 10, 0]:Array",
-        "location": "root[0][17]"
-      },
-      {
         "message": "Attribute 'indicatorStyle' with value '\"light\"' not handled for type 'BlurView'",
         "location": "root[0][18]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'BlurView'",
-        "location": "root[0][18]"
-      },
-      {
-        "message": "Attribute 'margin' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][18]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Text'",
-        "location": "root[0][18][0]"
       }
     ],
     "converter_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
       {
         "message": "Attribute 'colors' with value '[\"#FF0000\", \"#00FF00\", \"#0000FF\"]' not handled for type 'GradientView'",
         "location": "root[0][3]"
@@ -929,28 +378,12 @@
         "location": "root[0][3]"
       },
       {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[0][3][0]"
-      },
-      {
         "message": "Attribute 'zIndex' with value 'true' not handled for type 'View'",
         "location": "root[0][5]"
       },
       {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[0][5][0][0]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'BlurView'",
-        "location": "root[0][5][1]"
-      },
-      {
         "message": "Attribute 'blurRadius' with value '20' not handled for type 'BlurView'",
         "location": "root[0][5][1]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[0][5][1][0]"
       },
       {
         "message": "Attribute 'url' with value '\"https://www.example.com\"' not handled for type 'WebView'",
@@ -973,10 +406,6 @@
         "location": "root[0][11]"
       },
       {
-        "message": "Attribute 'items' with value '\"@{items}\"' not handled for type 'Collection'",
-        "location": "root[0][11]"
-      },
-      {
         "message": "Attribute 'srcName' with value '\"star.fill\"' not handled for type 'Image'",
         "location": "root[0][13]"
       },
@@ -995,105 +424,23 @@
       {
         "message": "Attribute 'contentMode' with value '\"scaleAspectFill\"' not handled for type 'NetworkImage'",
         "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'NetworkImage'",
-        "location": "root[0][15]"
-      }
-    ],
-    "converter_test_cell.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root"
       }
     ],
     "custom_component_test.json": [
       {
-        "message": "Attribute 'color' with value '\"#000000\"' not handled for type 'Label'",
-        "location": "root[0][0][0]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [0, 0, 20, 0]:Array",
-        "location": "root[0][0][0]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][0][1]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#333333\"' not handled for type 'Label'",
-        "location": "root[0][0][1]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [0, 0, 8, 0]:Array",
-        "location": "root[0][0][1]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Static Title\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][2]"
       },
       {
         "message": "Attribute 'subtitle' with value '\"This is a static subtitle\"' not handled for type 'SampleCard'",
         "location": "root[0][0][2]"
       },
       {
-        "message": "Attribute 'count' with value '42' not handled for type 'SampleCard'",
-        "location": "root[0][0][2]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'SampleCard'",
-        "location": "root[0][0][2]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'SampleCard'",
-        "location": "root[0][0][2]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][2]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#666666\"' not handled for type 'Label'",
-        "location": "root[0][0][2][0][0]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#999999\"' not handled for type 'Label'",
-        "location": "root[0][0][2][0][1]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][0][3]"
       },
       {
-        "message": "Attribute 'color' with value '\"#333333\"' not handled for type 'Label'",
-        "location": "root[0][0][3]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [20, 0, 8, 0]:Array",
-        "location": "root[0][0][3]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"@{cardTitle}\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][4]"
-      },
-      {
         "message": "Attribute 'subtitle' with value '\"@{cardSubtitle}\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][4]"
-      },
-      {
-        "message": "Attribute 'count' with value '\"@{itemCount}\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][4]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'SampleCard'",
-        "location": "root[0][0][4]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'SampleCard'",
-        "location": "root[0][0][4]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'SampleCard'",
         "location": "root[0][0][4]"
       },
       {
@@ -1101,199 +448,39 @@
         "location": "root[0][0][4][0][0]"
       },
       {
-        "message": "Attribute 'color' with value '\"#5856D6\"' not handled for type 'Label'",
-        "location": "root[0][0][4][0][0]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#FFFFFF\"' not handled for type 'Button'",
-        "location": "root[0][0][4][0][1][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0][4][0][1][0]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [8, 16]:Array",
-        "location": "root[0][0][4][0][1][0]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#FFFFFF\"' not handled for type 'Button'",
-        "location": "root[0][0][4][0][1][1]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0][4][0][1][1]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [8, 16]:Array",
-        "location": "root[0][0][4][0][1][1]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][0][5]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#333333\"' not handled for type 'Label'",
-        "location": "root[0][0][5]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [20, 0, 8, 0]:Array",
-        "location": "root[0][0][5]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Card 1\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][0]"
       },
       {
         "message": "Attribute 'subtitle' with value '\"First custom card\"' not handled for type 'SampleCard'",
         "location": "root[0][0][6][0]"
       },
       {
-        "message": "Attribute 'count' with value '1' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][0]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#2E7D32\"' not handled for type 'Label'",
-        "location": "root[0][0][6][0][0]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Card 2\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][1]"
-      },
-      {
         "message": "Attribute 'subtitle' with value '\"Second custom card\"' not handled for type 'SampleCard'",
         "location": "root[0][0][6][1]"
-      },
-      {
-        "message": "Attribute 'count' with value '2' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][1]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][1]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#E65100\"' not handled for type 'Label'",
-        "location": "root[0][0][6][1][0]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Card 3\"' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][2]"
       },
       {
         "message": "Attribute 'subtitle' with value '\"Third custom card\"' not handled for type 'SampleCard'",
         "location": "root[0][0][6][2]"
       },
       {
-        "message": "Attribute 'count' with value '3' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][2]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'SampleCard'",
-        "location": "root[0][0][6][2]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#6A1B9A\"' not handled for type 'Label'",
-        "location": "root[0][0][6][2][0]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][0][7]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#333333\"' not handled for type 'Label'",
-        "location": "root[0][0][7]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [20, 0, 8, 0]:Array",
-        "location": "root[0][0][7]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Static Status\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][0]"
       },
       {
         "message": "Attribute 'status' with value '\"Active\"' not handled for type 'StatusBadge'",
         "location": "root[0][0][8][0]"
       },
       {
-        "message": "Attribute 'color' with value '\"#4CAF50\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][0]"
-      },
-      {
-        "message": "Attribute 'count' with value '5' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][0]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Dynamic Status\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][1]"
-      },
-      {
         "message": "Attribute 'status' with value '\"@{currentStatus}\"' not handled for type 'StatusBadge'",
         "location": "root[0][0][8][1]"
       },
       {
-        "message": "Attribute 'color' with value '\"@{statusColor}\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][1]"
-      },
-      {
-        "message": "Attribute 'count' with value '\"@{notificationCount}\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][1]"
-      },
-      {
-        "message": "Attribute 'title' with value '\"Error Status\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][2]"
-      },
-      {
         "message": "Attribute 'status' with value '\"Error\"' not handled for type 'StatusBadge'",
         "location": "root[0][0][8][2]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#FF3B30\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][2]"
-      },
-      {
-        "message": "Attribute 'count' with value '0' not handled for type 'StatusBadge'",
-        "location": "root[0][0][8][2]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#FFFFFF\"' not handled for type 'Button'",
-        "location": "root[0][0][9]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0][9]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [12, 20]:Array",
-        "location": "root[0][0][9]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#666666\"' not handled for type 'Label'",
-        "location": "root[0][0][10]"
       }
     ],
     "date_picker_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][2]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedDate}\"' not handled for type 'SelectBox'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][3]"
-      },
       {
         "message": "Attribute 'datePickerMode' with value '\"date\"' not handled for type 'SelectBox'",
         "location": "root[0][3]"
@@ -1301,14 +488,6 @@
       {
         "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
         "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][4]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedDate2}\"' not handled for type 'SelectBox'",
-        "location": "root[0][6]"
       },
       {
         "message": "Attribute 'minimumDate' with value '\"2025-01-01\"' not handled for type 'SelectBox'",
@@ -1319,28 +498,12 @@
         "location": "root[0][6]"
       },
       {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][6]"
-      },
-      {
         "message": "Attribute 'datePickerMode' with value '\"date\"' not handled for type 'SelectBox'",
         "location": "root[0][6]"
       },
       {
         "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
         "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedTime}\"' not handled for type 'SelectBox'",
-        "location": "root[0][8]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][8]"
       },
       {
         "message": "Attribute 'datePickerMode' with value '\"time\"' not handled for type 'SelectBox'",
@@ -1351,36 +514,12 @@
         "location": "root[0][8]"
       },
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedDateTime}\"' not handled for type 'SelectBox'",
-        "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][10]"
-      },
-      {
         "message": "Attribute 'datePickerMode' with value '\"dateAndTime\"' not handled for type 'SelectBox'",
         "location": "root[0][10]"
       },
       {
         "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd HH:mm\"' not handled for type 'SelectBox'",
         "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedTimeInterval}\"' not handled for type 'SelectBox'",
-        "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][13]"
       },
       {
         "message": "Attribute 'datePickerMode' with value '\"time\"' not handled for type 'SelectBox'",
@@ -1395,18 +534,6 @@
         "location": "root[0][13]"
       },
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][14]"
-      },
-      {
-        "message": "Attribute 'selectedItem' with value '\"@{selectedCalendarDate}\"' not handled for type 'SelectBox'",
-        "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][15]"
-      },
-      {
         "message": "Attribute 'datePickerMode' with value '\"date\"' not handled for type 'SelectBox'",
         "location": "root[0][15]"
       },
@@ -1419,35 +546,15 @@
         "location": "root[0][15]"
       },
       {
-        "message": "Attribute 'selectItemType' with value '\"Date\"' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
         "message": "Attribute 'startDate' with value '\"@{startDate}\"' not handled for type 'SelectBox'",
         "location": "root[0][16]"
       },
       {
         "message": "Attribute 'endDate' with value '\"@{endDate}\"' not handled for type 'SelectBox'",
         "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root[0][17]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][17][0]"
       }
     ],
     "disabled_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][3]"
-      },
       {
         "message": "Attribute 'disabledBackground' with value '\"#CCCCCC\"' not handled for type 'Button'",
         "location": "root[0][5]"
@@ -1457,56 +564,16 @@
         "location": "root[0][5]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][5]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][7]"
-      },
-      {
         "message": "Attribute 'touchDisabledState' with value 'true' not handled for type 'Button'",
         "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][9]"
       },
       {
         "message": "Attribute 'disabledBackground' with value '\"#E0E0E0\"' not handled for type 'TextField'",
         "location": "root[0][11]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
-        "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][11]"
-      },
-      {
         "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'TextField'",
         "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][12]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][13]"
       },
       {
         "message": "Attribute 'disabledBackground' with value '\"#D0D0D0\"' not handled for type 'Button'",
@@ -1515,28 +582,6 @@
       {
         "message": "Attribute 'disabledFontColor' with value '\"#888888\"' not handled for type 'Button'",
         "location": "root[0][14]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][14]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[0][15]"
-      }
-    ],
-    "feature_cell.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '16' not handled for type 'View'",
-        "location": "root"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [4, 8]:Array",
-        "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'Label'",
-        "location": "root[0]"
       }
     ],
     "form_test.json": [
@@ -1545,51 +590,11 @@
         "location": "root"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][2]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][4]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][4]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][4]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][6]"
-      },
-      {
         "message": "Attribute 'keyboardType' with value '\"email\"' not handled for type 'TextField'",
-        "location": "root[0][8]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][8]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][8]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
         "location": "root[0][8]"
       },
       {
@@ -1597,100 +602,16 @@
         "location": "root[0][10]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][10]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][15]"
       },
       {
         "message": "Attribute 'keyboardType' with value '\"number\"' not handled for type 'TextField'",
         "location": "root[0][17]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][17]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][17]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][17]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][19]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][20]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][22]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][22]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][22]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextField'",
-        "location": "root[0][24]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][24]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][24]"
       },
       {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
@@ -1713,35 +634,11 @@
         "location": "root[0][27]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextView'",
-        "location": "root[0][27]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextView'",
-        "location": "root[0][27]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextView'",
-        "location": "root[0][27]"
-      },
-      {
         "message": "Attribute 'hintColor' with value '\"#AAAAAA\"' not handled for type 'TextView'",
         "location": "root[0][29]"
       },
       {
         "message": "Attribute 'hideOnFocused' with value 'false' not handled for type 'TextView'",
-        "location": "root[0][29]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextView'",
-        "location": "root[0][29]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextView'",
-        "location": "root[0][29]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextView'",
         "location": "root[0][29]"
       },
       {
@@ -1761,18 +658,6 @@
         "location": "root[0][31]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'TextView'",
-        "location": "root[0][31]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#E0E0E0\"' not handled for type 'TextView'",
-        "location": "root[0][31]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextView'",
-        "location": "root[0][31]"
-      },
-      {
         "message": "Attribute 'isOn' with value '\"@{agreeToTerms}\"' not handled for type 'Toggle'",
         "location": "root[0][32][0]"
       },
@@ -1781,39 +666,11 @@
         "location": "root[0][33]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'Button'",
-        "location": "root[0][33]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Button'",
-        "location": "root[0][34]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'Button'",
-        "location": "root[0][34]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#FF3B30\"' not handled for type 'Button'",
-        "location": "root[0][34]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '2' not handled for type 'Button'",
         "location": "root[0][34]"
       }
     ],
     "horizontal_card.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'View'",
-        "location": "root"
-      },
-      {
-        "message": "Attribute 'border' with value '{\"width\"=>1, \"color\"=>\"#E0E0E0\"}' not handled for type 'View'",
-        "location": "root"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root[0]"
-      },
       {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[1]"
@@ -1821,15 +678,7 @@
     ],
     "image_cell.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '12' not handled for type 'View'",
-        "location": "root"
-      },
-      {
         "message": "Attribute 'contentMode' with value '\"scaleAspectFill\"' not handled for type 'NetworkImage'",
-        "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'NetworkImage'",
         "location": "root[0]"
       },
       {
@@ -1843,27 +692,11 @@
         "location": "root[child]"
       },
       {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][2][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][2][0]"
-      },
-      {
         "message": "Attribute 'alignCenterVerticalView' with value '\"target1\"' not handled for type 'Label'",
         "location": "root[child][child][2][1]"
       },
       {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][2][1]"
-      },
-      {
         "message": "Attribute 'alignCenterHorizontalView' with value '\"target1\"' not handled for type 'Label'",
-        "location": "root[child][child][2][2]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
         "location": "root[child][child][2][2]"
       },
       {
@@ -1895,15 +728,7 @@
         "location": "root[child][child][12]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][child][12]"
-      },
-      {
         "message": "Attribute 'hilightColor' with value '\"#ff0000\"' not handled for type 'Button'",
-        "location": "root[child][child][13]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
         "location": "root[child][child][13]"
       },
       {
@@ -1913,14 +738,6 @@
       {
         "message": "Attribute 'disabledBackground' with value '\"#f0f0f0\"' not handled for type 'Button'",
         "location": "root[child][child][14]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][child][14]"
-      },
-      {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
-        "location": "root[child][child][16]"
       },
       {
         "message": "Attribute 'onFocus' with value '\"handleFocus\"' not handled for type 'TextField'",
@@ -1963,10 +780,6 @@
         "location": "root[child][child][18][1]"
       },
       {
-        "message": "Attribute 'items' with value '[\"First\", \"Second\", \"Third\"]' not handled for type 'Segment'",
-        "location": "root[child][child][20]"
-      },
-      {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedSegment}\"' not handled for type 'Segment'",
         "location": "root[child][child][20]"
       },
@@ -1987,10 +800,6 @@
         "location": "root[child][child][22]"
       },
       {
-        "message": "Attribute 'items' with value '[\"Option A\", \"Option B\", \"Option C\"]' not handled for type 'SelectBox'",
-        "location": "root[child][child][22]"
-      },
-      {
         "message": "Attribute 'defaultIndex' with value '0' not handled for type 'SelectBox'",
         "location": "root[child][child][22]"
       },
@@ -2000,10 +809,6 @@
       },
       {
         "message": "Attribute 'cancelButtonTextColor' with value '\"#FF0000\"' not handled for type 'SelectBox'",
-        "location": "root[child][child][22]"
-      },
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [15, 10]:Array",
         "location": "root[child][child][22]"
       },
       {
@@ -2021,50 +826,8 @@
     ],
     "include_test.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root[0][1][1]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[0][1][1][1][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[0][1][1][1][1]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[0][1][1][1][2]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[0][1][1][2][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'Button'",
-        "location": "root[0][1][1][2][1]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'View'",
-        "location": "root[0][1][1][3]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0][1][1][3][0]"
-      }
-    ],
-    "included2.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '10' not handled for type 'View'",
-        "location": "root"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '5' not handled for type 'View'",
-        "location": "root[1]"
       }
     ],
     "keyboard_avoidance_test.json": [
@@ -2073,91 +836,31 @@
         "location": "root"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[0][3]"
       },
       {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[0][5]"
       },
       {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][5]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][5]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[0][7]"
       },
       {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[0][9]"
       },
       {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
-        "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[0][11]"
       },
       {
         "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'TextView'",
         "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextView'",
-        "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][14]"
       }
     ],
     "line_break_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][2]"
-      },
       {
         "message": "Attribute 'lineBreakMode' with value '\"Word\"' not handled for type 'Label'",
         "location": "root[0][3]"
@@ -2165,10 +868,6 @@
       {
         "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
         "location": "root[0][3]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][4]"
       },
       {
         "message": "Attribute 'lineBreakMode' with value '\"Char\"' not handled for type 'Label'",
@@ -2179,20 +878,12 @@
         "location": "root[0][5]"
       },
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][6]"
-      },
-      {
         "message": "Attribute 'lineBreakMode' with value '\"Clip\"' not handled for type 'Label'",
         "location": "root[0][7]"
       },
       {
         "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
         "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][8]"
       },
       {
         "message": "Attribute 'lineBreakMode' with value '\"Head\"' not handled for type 'Label'",
@@ -2203,10 +894,6 @@
         "location": "root[0][9]"
       },
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][10]"
-      },
-      {
         "message": "Attribute 'lineBreakMode' with value '\"Middle\"' not handled for type 'Label'",
         "location": "root[0][11]"
       },
@@ -2215,20 +902,12 @@
         "location": "root[0][11]"
       },
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][12]"
-      },
-      {
         "message": "Attribute 'lineBreakMode' with value '\"Tail\"' not handled for type 'Label'",
         "location": "root[0][13]"
       },
       {
         "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
         "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][14]"
       },
       {
         "message": "Attribute 'lines' with value '1' not handled for type 'Label'",
@@ -2252,10 +931,6 @@
       }
     ],
     "margins_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
       {
         "message": "Attribute 'margins' with value '[20, 20, 20, 20]' not handled for type 'Label'",
         "location": "root[0][2]"
@@ -2289,19 +964,11 @@
     ],
     "product_cell.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[0]"
       }
     ],
     "radio_icons_test.json": [
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][0]"
-      },
       {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[child][child][1]"
@@ -2363,77 +1030,13 @@
         "location": "root[child][child][9]"
       },
       {
-        "message": "Attribute 'items' with value '[\"Red\", \"Green\", \"Blue\", \"Yellow\"]' not handled for type 'Radio'",
-        "location": "root[child][child][10]"
-      },
-      {
         "message": "Attribute 'selectedValue' with value '\"@{selectedColor}\"' not handled for type 'Radio'",
         "location": "root[child][child][10]"
       }
     ],
     "relative_test.json": [
       {
-        "message": "Attribute 'paddings' with value '[20, 20, 20, 20]' not handled for type 'ScrollView'",
-        "location": "root"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[child][1]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][2]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][3]"
-      },
-      {
-        "message": "Attribute 'paddings' with value '[20, 30, 20, 30]' not handled for type 'View'",
-        "location": "root[child][4]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][0]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][1]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][1]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][2]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][2]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][3]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][4][3]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][5]"
-      },
-      {
         "message": "Attribute 'margins' with value '[20, 25, 20, 25]' not handled for type 'Label'",
-        "location": "root[child][6][0]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
         "location": "root[child][6][0]"
       },
       {
@@ -2441,15 +1044,7 @@
         "location": "root[child][6][1]"
       },
       {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][6][1]"
-      },
-      {
         "message": "Attribute 'alignBottomView' with value '\"anchor_with_margin\"' not handled for type 'Label'",
-        "location": "root[child][6][2]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
         "location": "root[child][6][2]"
       },
       {
@@ -2457,248 +1052,32 @@
         "location": "root[child][6][3]"
       },
       {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][6][3]"
-      },
-      {
         "message": "Attribute 'alignRightView' with value '\"anchor_with_margin\"' not handled for type 'Label'",
         "location": "root[child][6][4]"
       },
       {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][6][4]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][7]"
-      },
-      {
         "message": "Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'",
         "location": "root[child][8][0]"
-      },
-      {
-        "message": "Attribute 'centerInParent' with value 'true' not handled for type 'Label'",
-        "location": "root[child][8][0]"
-      },
-      {
-        "message": "Attribute 'alignTopOfView' with value '\"center_anchor\"' not handled for type 'Label'",
-        "location": "root[child][8][1]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[child][8][1]"
-      },
-      {
-        "message": "Attribute 'alignBottomOfView' with value '\"center_anchor\"' not handled for type 'Label'",
-        "location": "root[child][8][2]"
-      },
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[child][8][2]"
-      },
-      {
-        "message": "Attribute 'alignLeftOfView' with value '\"center_anchor\"' not handled for type 'Label'",
-        "location": "root[child][8][3]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[child][8][3]"
-      },
-      {
-        "message": "Attribute 'alignRightOfView' with value '\"center_anchor\"' not handled for type 'Label'",
-        "location": "root[child][8][4]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[child][8][4]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][9]"
-      },
-      {
-        "message": "Attribute 'paddings' with value '[10, 10, 10, 10]' not handled for type 'View'",
-        "location": "root[child][10]"
       },
       {
         "message": "Attribute 'margins' with value '[10, 10, 10, 10]' not handled for type 'Label'",
         "location": "root[child][10][0]"
       },
       {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][1]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][1]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][1]"
-      },
-      {
         "message": "Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'",
         "location": "root[child][10][2]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][2]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][2]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][2]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][10][2]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][11]"
-      },
-      {
-        "message": "Attribute 'paddings' with value '[20, 30, 20, 30]' not handled for type 'View'",
-        "location": "root[child][12]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][1]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][1]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][1]"
       },
       {
         "message": "Attribute 'margins' with value '[15, 20, 15, 20]' not handled for type 'Label'",
         "location": "root[child][12][2]"
       },
       {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][2]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][2]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][2]"
-      },
-      {
-        "message": "Attribute 'alignBottom' with value 'true' not handled for type 'Label'",
-        "location": "root[child][12][2]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][13]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][14][0]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[child][14][0]"
-      },
-      {
-        "message": "Attribute 'alignRightOfView' with value '\"chain_start\"' not handled for type 'Label'",
-        "location": "root[child][14][1]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[child][14][1]"
-      },
-      {
-        "message": "Attribute 'alignRightOfView' with value '\"chain_middle\"' not handled for type 'Label'",
-        "location": "root[child][14][2]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[child][14][2]"
-      },
-      {
-        "message": "Attribute 'alignTopOfView' with value '\"chain_middle\"' not handled for type 'Label'",
-        "location": "root[child][14][3]"
-      },
-      {
         "message": "Attribute 'alignLeftView' with value '\"chain_middle\"' not handled for type 'Label'",
         "location": "root[child][14][3]"
       },
       {
-        "message": "Attribute 'alignBottomOfView' with value '\"chain_start\"' not handled for type 'Label'",
-        "location": "root[child][14][4]"
-      },
-      {
         "message": "Attribute 'alignRightView' with value '\"chain_start\"' not handled for type 'Label'",
         "location": "root[child][14][4]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[child][15]"
-      },
-      {
-        "message": "Attribute 'paddings' with value '[15, 15, 15, 15]' not handled for type 'View'",
-        "location": "root[child][16]"
-      },
-      {
-        "message": "Attribute 'alignLeft' with value 'true' not handled for type 'Label'",
-        "location": "root[child][16][0]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][16][0]"
-      },
-      {
-        "message": "Attribute 'alignRight' with value 'true' not handled for type 'Label'",
-        "location": "root[child][16][1]"
-      },
-      {
-        "message": "Attribute 'alignTop' with value 'true' not handled for type 'Label'",
-        "location": "root[child][16][1]"
-      },
-      {
-        "message": "Attribute 'alignLeftOfView' with value '\"ref2\"' not handled for type 'Label'",
-        "location": "root[child][16][2]"
-      },
-      {
-        "message": "Attribute 'alignRightOfView' with value '\"ref1\"' not handled for type 'Label'",
-        "location": "root[child][16][2]"
-      },
-      {
-        "message": "Attribute 'centerVertical' with value 'true' not handled for type 'Label'",
-        "location": "root[child][16][2]"
       },
       {
         "message": "Attribute 'alignTopView' with value '\"ref1\"' not handled for type 'Label'",
@@ -2709,19 +1088,11 @@
         "location": "root[child][16][3]"
       },
       {
-        "message": "Attribute 'alignBottomOfView' with value '\"ref1\"' not handled for type 'Label'",
-        "location": "root[child][16][4]"
-      },
-      {
         "message": "Attribute 'alignLeftView' with value '\"ref1\"' not handled for type 'Label'",
         "location": "root[child][16][4]"
       }
     ],
     "scroll_test.json": [
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0]"
-      },
       {
         "message": "Attribute 'showsVerticalScrollIndicator' with value 'false' not handled for type 'ScrollView'",
         "location": "root[1]"
@@ -2731,88 +1102,28 @@
         "location": "root[2]"
       },
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[2][child][0]"
-      },
-      {
         "message": "Attribute 'showsHorizontalScrollIndicator' with value 'false' not handled for type 'ScrollView'",
         "location": "root[3]"
       }
     ],
-    "section_footer.json": [
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [16, 8]:Array",
-        "location": "root"
-      }
-    ],
-    "section_header.json": [
-      {
-        "message": "Attribute 'padding' mapping error: undefined method `match?' for [16, 8]:Array",
-        "location": "root"
-      }
-    ],
     "secure_field_test.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[3]"
       },
       {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[3]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[3]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
         "location": "root[5]"
       },
       {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[5]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[5]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
         "location": "root[7]"
-      },
-      {
-        "message": "Attribute 'borderColor' with value '\"#CCCCCC\"' not handled for type 'TextField'",
-        "location": "root[7]"
-      },
-      {
-        "message": "Attribute 'borderWidth' with value '1' not handled for type 'TextField'",
-        "location": "root[7]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'View'",
-        "location": "root[8]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[8][0]"
       }
     ],
     "segment_test.json": [
       {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][0]"
-      },
-      {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[child][child][1]"
-      },
-      {
-        "message": "Attribute 'items' with value '[\"Option 1\", \"Option 2\", \"Option 3\"]' not handled for type 'Segment'",
-        "location": "root[child][child][2]"
       },
       {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedBasic}\"' not handled for type 'Segment'",
@@ -2821,10 +1132,6 @@
       {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[child][child][3]"
-      },
-      {
-        "message": "Attribute 'items' with value '[\"Red\", \"Green\", \"Blue\"]' not handled for type 'Segment'",
-        "location": "root[child][child][4]"
       },
       {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedColor}\"' not handled for type 'Segment'",
@@ -2843,10 +1150,6 @@
         "location": "root[child][child][5]"
       },
       {
-        "message": "Attribute 'items' with value '[\"Small\", \"Medium\", \"Large\", \"Extra Large\"]' not handled for type 'Segment'",
-        "location": "root[child][child][6]"
-      },
-      {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedEvent}\"' not handled for type 'Segment'",
         "location": "root[child][child][6]"
       },
@@ -2859,39 +1162,11 @@
         "location": "root[child][child][8]"
       },
       {
-        "message": "Attribute 'items' with value '[\"Disabled 1\", \"Disabled 2\", \"Disabled 3\"]' not handled for type 'Segment'",
-        "location": "root[child][child][9]"
-      },
-      {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedDisabled}\"' not handled for type 'Segment'",
         "location": "root[child][child][9]"
       }
     ],
-    "simple_cell.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '6' not handled for type 'View'",
-        "location": "root"
-      }
-    ],
-    "simple_test.json": [
-      {
-        "message": "Attribute 'color' with value '\"#000000\"' not handled for type 'Label'",
-        "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#666666\"' not handled for type 'Label'",
-        "location": "root[1]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#FFFFFF\"' not handled for type 'Button'",
-        "location": "root[2]"
-      }
-    ],
     "switch_events_test.json": [
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][0]"
-      },
       {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[child][child][1]"
@@ -2961,132 +1236,6 @@
         "location": "root[child][child][11]"
       }
     ],
-    "test_menu.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][8]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][12]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][14]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][15]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][17]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][20]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][21]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][22]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][23]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][25]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][26]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][27]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][28]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][29]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][30]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][32]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][33]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][34]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][35]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][36]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][38]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][39]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][40]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][41]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][43]"
-      }
-    ],
     "text_decoration_test.json": [
       {
         "message": "Attribute 'linkable' with value 'true' not handled for type 'Label'",
@@ -3115,32 +1264,8 @@
     ],
     "text_styling_test.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][2]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][7]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][8]"
-      },
-      {
         "message": "Attribute 'underline' with value 'true' not handled for type 'Label'",
         "location": "root[0][9]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][14]"
       },
       {
         "message": "Attribute 'lineSpacing' with value '5' not handled for type 'Label'",
@@ -3149,23 +1274,11 @@
       {
         "message": "Attribute 'lineSpacing' with value '10' not handled for type 'Label'",
         "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0][17]"
       }
     ],
     "text_view_hint_test.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0]"
-      },
-      {
         "message": "Attribute 'hintColor' with value '\"#FF0000\"' not handled for type 'TextView'",
-        "location": "root[3]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextView'",
         "location": "root[3]"
       },
       {
@@ -3189,19 +1302,11 @@
         "location": "root[5]"
       },
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'TextView'",
-        "location": "root[5]"
-      },
-      {
         "message": "Attribute 'containerInset' with value '12' not handled for type 'TextView'",
         "location": "root[5]"
       }
     ],
     "textfield_events_test.json": [
-      {
-        "message": "Attribute 'centerHorizontal' with value 'true' not handled for type 'Label'",
-        "location": "root[child][child][0]"
-      },
       {
         "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
         "location": "root[child][child][1]"
@@ -3215,10 +1320,6 @@
         "location": "root[child][child][2]"
       },
       {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
-        "location": "root[child][child][2]"
-      },
-      {
         "message": "Attribute 'onTextChange' with value '\"handleEmailChange\"' not handled for type 'TextField'",
         "location": "root[child][child][2]"
       },
@@ -3227,11 +1328,11 @@
         "location": "root[child][child][4]"
       },
       {
-        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
         "location": "root[child][child][5]"
       },
       {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
+        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
         "location": "root[child][child][5]"
       },
       {
@@ -3257,10 +1358,6 @@
     ],
     "textfield_test.json": [
       {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[0]"
-      },
-      {
         "message": "Attribute 'input' with value '\"email\"' not handled for type 'TextField'",
         "location": "root[1]"
       },
@@ -3269,15 +1366,11 @@
         "location": "root[1]"
       },
       {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
-        "location": "root[1]"
-      },
-      {
-        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
         "location": "root[2]"
       },
       {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
+        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
         "location": "root[2]"
       },
       {
@@ -3289,10 +1382,6 @@
         "location": "root[3]"
       },
       {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
-        "location": "root[3]"
-      },
-      {
         "message": "Attribute 'input' with value '\"number\"' not handled for type 'TextField'",
         "location": "root[4]"
       },
@@ -3301,15 +1390,7 @@
         "location": "root[4]"
       },
       {
-        "message": "Attribute 'borderStyle' with value '\"plain\"' not handled for type 'TextField'",
-        "location": "root[4]"
-      },
-      {
         "message": "Attribute 'returnKeyType' with value '\"search\"' not handled for type 'TextField'",
-        "location": "root[5]"
-      },
-      {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
         "location": "root[5]"
       },
       {
@@ -3319,27 +1400,11 @@
       {
         "message": "Attribute 'returnKeyType' with value '\"go\"' not handled for type 'TextField'",
         "location": "root[6]"
-      },
-      {
-        "message": "Attribute 'borderStyle' with value '\"roundedRect\"' not handled for type 'TextField'",
-        "location": "root[6]"
-      },
-      {
-        "message": "Attribute 'font' with value '\"bold\"' not handled for type 'Label'",
-        "location": "root[7]"
       }
     ],
     "user_profile_test.json": [
       {
-        "message": "Attribute 'title' with value '\"User Profile\"' not handled for type 'SampleCard'",
-        "location": "root[0][0]"
-      },
-      {
         "message": "Attribute 'subtitle' with value '\"Manage your account\"' not handled for type 'SampleCard'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'count' with value '3' not handled for type 'SampleCard'",
         "location": "root[0][0]"
       },
       {
@@ -3359,19 +1424,7 @@
         "location": "root[0][0][0][0][0]"
       },
       {
-        "message": "Attribute 'title' with value '\"Status\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][0][2]"
-      },
-      {
         "message": "Attribute 'status' with value '\"@{userStatus}\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][0][2]"
-      },
-      {
-        "message": "Attribute 'color' with value '\"#4CAF50\"' not handled for type 'StatusBadge'",
-        "location": "root[0][0][0][2]"
-      },
-      {
-        "message": "Attribute 'count' with value '\"@{notificationCount}\"' not handled for type 'StatusBadge'",
         "location": "root[0][0][0][2]"
       },
       {
@@ -3429,29 +1482,9 @@
       {
         "message": "Attribute 'isOnline' with value 'false' not handled for type 'UserAvatar'",
         "location": "root[0][2][3]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][4]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][5]"
       }
     ],
     "visibility_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][16]"
-      },
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][18]"
-      },
       {
         "message": "Attribute 'hidden' with value '\"@{isHidden}\"' not handled for type 'Label'",
         "location": "root[0][19]"
@@ -3459,28 +1492,12 @@
     ],
     "weight_test.json": [
       {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0]"
-      },
-      {
         "message": "Attribute 'widthWeight' with value '1' not handled for type 'Label'",
         "location": "root[7][0]"
       },
       {
         "message": "Attribute 'widthWeight' with value '1' not handled for type 'Label'",
         "location": "root[7][1]"
-      }
-    ],
-    "weight_test_with_fixed.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0][0]"
-      }
-    ],
-    "width_test.json": [
-      {
-        "message": "Attribute 'cornerRadius' with value '8' not handled for type 'Button'",
-        "location": "root[0]"
       }
     ]
   }

@@ -1,22 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from textfield_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
-  <data>
-    <import type="android.view.View"/>
-    <variable name="data" type="com.example.kotlinjsonui.sample.data.TextfieldTestData"/>
-  </data>
-  <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="#FFFFFF" android:padding="20dp">
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TextField Test" android:textSize="20sp" android:textColor="#000000" android:layout_marginBottom="20dp"/>
-    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Enter email" android:text="@{data.email}" android:textSize="16sp" android:layout_marginBottom="15dp"/>
-    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Enter password" android:text="@{data.password}" android:textSize="16sp" android:inputType="textPassword" android:layout_marginBottom="15dp"/>
-    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Phone number" android:text="@{data.phone}" android:textSize="16sp" android:layout_marginBottom="15dp"/>
-    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Enter number" android:text="@{data.number}" android:textSize="16sp" android:padding="10dp" android:background="#F0F0F0" android:layout_marginBottom="15dp"/>
-    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Search..." android:text="@{data.search}" android:textSize="16sp" android:layout_marginBottom="15dp"/>
-    <EditText android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Website URL" android:text="@{data.url}" android:textSize="16sp" android:layout_marginBottom="15dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Entered Values:" android:textSize="16sp" android:textColor="#000000" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email: @{email}" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="5dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Password: @{password}" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="5dp"/>
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Phone: @{phone}" android:textSize="14sp" android:textColor="#666666" android:layout_marginBottom="5dp"/>
-  </LinearLayout>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.TextfieldTestData"/>
+    </data>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:padding="20dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextField Test"
+            android:textSize="20sp"
+            android:textColor="#000000"
+            android:fontFamily="bold"
+            android:layout_marginBottom="20dp"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Enter email"
+            android:text="@{data.email}"
+            android:textSize="16sp"
+            tools:borderStyle="roundedRect"
+            android:layout_marginBottom="15dp"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Enter password"
+            android:text="@{data.password}"
+            android:textSize="16sp"
+            tools:borderStyle="roundedRect"
+            android:layout_marginBottom="15dp"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Phone number"
+            android:text="@{data.phone}"
+            android:textSize="16sp"
+            tools:borderStyle="roundedRect"
+            android:layout_marginBottom="15dp"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Enter number"
+            android:text="@{data.number}"
+            android:textSize="16sp"
+            tools:borderStyle="plain"
+            android:padding="10dp"
+            android:background="#F0F0F0"
+            android:layout_marginBottom="15dp"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Search..."
+            android:text="@{data.search}"
+            android:textSize="16sp"
+            tools:borderStyle="roundedRect"
+            android:layout_marginBottom="15dp"/>
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Website URL"
+            android:text="@{data.url}"
+            android:textSize="16sp"
+            tools:borderStyle="roundedRect"
+            android:layout_marginBottom="15dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Entered Values:"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:fontFamily="bold"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email: @{email}"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="5dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Password: @{password}"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="5dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phone: @{phone}"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="5dp"/>
+    </LinearLayout>
 </layout>

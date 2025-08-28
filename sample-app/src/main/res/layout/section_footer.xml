@@ -1,12 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from section_footer.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
-  <data>
-    <import type="android.view.View"/>
-    <variable name="data" type="com.example.kotlinjsonui.sample.data.SectionFooterData"/>
-  </data>
-  <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" android:background="#FAFAFA">
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.text}" android:textSize="12sp" android:textColor="#666666"/>
-  </LinearLayout>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.SectionFooterData"/>
+    </data>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#FAFAFA">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{data.text}"
+            android:textSize="12sp"
+            android:textColor="#666666"/>
+    </LinearLayout>
 </layout>

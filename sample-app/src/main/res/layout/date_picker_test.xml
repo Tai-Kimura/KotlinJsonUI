@@ -1,36 +1,202 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from date_picker_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
-  <data>
-    <import type="android.view.View"/>
-    <variable name="data" type="com.example.kotlinjsonui.sample.data.DatePickerTestData"/>
-    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.DatePickerTestViewModel"/>
-  </data>
-  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#FFFFFF">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-      <Button android:layout_width="wrap_content" android:layout_height="44" android:textColor="#FFFFFF" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textSize="14sp" android:padding="8dp"/>
-      <TextView android:id="@+id/title_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="@{data.title}" android:textSize="24sp" android:textColor="#000000"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Basic DatePicker" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="20dp"/>
-      <Spinner android:id="@+id/basic_date_picker" android:layout_width="match_parent" android:layout_height="50" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DatePicker with Min/Max Dates" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="30dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Min: 2025-01-01, Max: 2025-12-31" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="5dp"/>
-      <Spinner android:id="@+id/limited_date_picker" android:layout_width="match_parent" android:layout_height="50" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Time Picker" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="30dp"/>
-      <Spinner android:id="@+id/time_picker" android:layout_width="match_parent" android:layout_height="50" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DateTime Picker" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="30dp"/>
-      <Spinner android:id="@+id/datetime_picker" android:layout_width="match_parent" android:layout_height="50" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="DatePicker with Minute Interval" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="30dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="15 minute intervals" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="5dp"/>
-      <Spinner android:id="@+id/interval_picker" android:layout_width="match_parent" android:layout_height="50" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Calendar Style DatePicker" android:textSize="18sp" android:textColor="#333333" android:layout_marginTop="30dp"/>
-      <Spinner android:id="@+id/calendar_picker" android:layout_width="match_parent" android:layout_height="300" android:layout_marginTop="10dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp"/>
-      <Spinner android:id="@+id/date_range_select" android:layout_width="match_parent" android:layout_height="50" android:layout_marginTop="30dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:hint="Select Date Range"/>
-      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="30dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:padding="15dp" android:background="#E0E0E0">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Selected Values:" android:textSize="14sp" android:textColor="#333333"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date: @{selectedDate}" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="5dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Range: @{startDate} to @{endDate}" android:textSize="12sp" android:textColor="#666666" android:layout_marginTop="5dp"/>
-      </LinearLayout>
-    </LinearLayout>
-  </ScrollView>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.DatePickerTestData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.DatePickerTestViewModel"/>
+    </data>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:textColor="#FFFFFF"
+                tools:cornerRadius="8dp"
+                android:text="Dynamic: @{dynamicModeStatus}"
+                android:onClick="toggleDynamicMode"
+                android:background="#5856D6"
+                android:textSize="14sp"
+                android:padding="8dp"/>
+            <TextView
+                android:id="@+id/title_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@{data.title}"
+                android:textSize="24sp"
+                android:textColor="#000000"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Basic DatePicker"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="20dp"
+                android:fontFamily="bold"/>
+            <Spinner
+                android:id="@+id/basic_date_picker"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                tools:selectedItem="@{data.selectedDate}"
+                tools:selectItemType="Date"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DatePicker with Min/Max Dates"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="30dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Min: 2025-01-01, Max: 2025-12-31"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginTop="5dp"/>
+            <Spinner
+                android:id="@+id/limited_date_picker"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                tools:selectedItem="@{data.selectedDate2}"
+                tools:selectItemType="Date"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time Picker"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="30dp"
+                android:fontFamily="bold"/>
+            <Spinner
+                android:id="@+id/time_picker"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                tools:selectedItem="@{data.selectedTime}"
+                tools:selectItemType="Date"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DateTime Picker"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="30dp"
+                android:fontFamily="bold"/>
+            <Spinner
+                android:id="@+id/datetime_picker"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                tools:selectedItem="@{data.selectedDateTime}"
+                tools:selectItemType="Date"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DatePicker with Minute Interval"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="30dp"
+                android:fontFamily="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="15 minute intervals"
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginTop="5dp"/>
+            <Spinner
+                android:id="@+id/interval_picker"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                tools:selectedItem="@{data.selectedTimeInterval}"
+                tools:selectItemType="Date"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Calendar Style DatePicker"
+                android:textSize="18sp"
+                android:textColor="#333333"
+                android:layout_marginTop="30dp"
+                android:fontFamily="bold"/>
+            <Spinner
+                android:id="@+id/calendar_picker"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                tools:selectedItem="@{data.selectedCalendarDate}"
+                tools:selectItemType="Date"/>
+            <Spinner
+                android:id="@+id/date_range_select"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:hint="Select Date Range"
+                tools:selectItemType="Date"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:padding="15dp"
+                android:background="#E0E0E0"
+                tools:cornerRadius="8dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selected Values:"
+                    android:textSize="14sp"
+                    android:textColor="#333333"
+                    android:fontFamily="bold"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Date: @{selectedDate}"
+                    android:textSize="12sp"
+                    android:textColor="#666666"
+                    android:layout_marginTop="5dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Range: @{startDate} to @{endDate}"
+                    android:textSize="12sp"
+                    android:textColor="#666666"
+                    android:layout_marginTop="5dp"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </layout>

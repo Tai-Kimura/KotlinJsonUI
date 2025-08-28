@@ -1,58 +1,456 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from test_menu.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
-  <data>
-    <import type="android.view.View"/>
-    <variable name="data" type="com.example.kotlinjsonui.sample.data.TestMenuData"/>
-    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.TestMenuViewModel"/>
-  </data>
-  <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#F5F5F5">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp" android:background="#F5F5F5">
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="KotlinJsonUI Feature Tests" android:textSize="28sp" android:textAlignment="center" android:layout_marginBottom="20dp" android:textStyle="bold" android:textColor="#000000"/>
-      <Button android:layout_width="wrap_content" android:layout_height="44" android:layout_marginBottom="20dp" android:text="Dynamic: @{dynamicModeStatus}" android:onClick="toggleDynamicMode" android:background="#5856D6" android:textColor="#FFFFFF" android:textSize="14sp" android:padding="8dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Layout &amp; Positioning" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="55" android:text="Margins &amp; Padding Test" android:onClick="navigateToMarginsTest" android:layout_marginBottom="8dp" android:background="#007AFF" android:textColor="#FFFFFF" android:textSize="16sp" android:padding="12dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="55" android:text="Alignment Test" android:onClick="navigateToAlignmentTest" android:layout_marginBottom="8dp" android:background="#007AFF" android:textColor="#FFFFFF" android:textSize="16sp" android:padding="12dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="55" android:text="Alignment Combo Test" android:onClick="navigateToAlignmentComboTest" android:layout_marginBottom="8dp" android:background="#007AFF" android:textColor="#FFFFFF" android:textSize="16sp" android:padding="12dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Weight Distribution Test" android:onClick="navigateToWeightTest" android:background="#007AFF" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Weight + Fixed Size Test" android:onClick="navigateToWeightTestWithFixed" android:background="#007AFF" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Width Test" android:onClick="navigateToWidthTest" android:background="#007AFF" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Relative Positioning Test" android:onClick="navigateToRelativeTest" android:background="#007AFF" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Style &amp; Appearance" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Visibility &amp; Opacity Test" android:onClick="navigateToVisibilityTest" android:background="#34C759" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Disabled States Test" android:onClick="navigateToDisabledTest" android:background="#34C759" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text Features" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text Styling Test" android:onClick="navigateToTextStylingTest" android:background="#FF9500" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text Decoration Test" android:onClick="navigateToTextDecorationTest" android:background="#FF9500" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Line Break &amp; Spacing Test" android:onClick="navigateToLineBreakTest" android:background="#FF9500" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Partial Attributes Test" android:onClick="navigateToPartialAttributesTest" android:background="#FF9500" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Input Components" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TextField Test" android:onClick="navigateToTextFieldTest" android:background="#AF52DE" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TextField Events Test" android:onClick="navigateToTextFieldEventsTest" android:background="#AF52DE" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Secure Field Test" android:onClick="navigateToSecureFieldTest" android:background="#AF52DE" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TextView Hint Test" android:onClick="navigateToTextViewHintTest" android:background="#AF52DE" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date Picker Test" android:onClick="navigateToDatePickerTest" android:background="#AF52DE" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UI Components" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Components Test" android:onClick="navigateToComponentsTest" android:background="#5856D6" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Button Test" android:onClick="navigateToButtonTest" android:background="#5856D6" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Button Enabled Test" android:onClick="navigateToButtonEnabledTest" android:background="#5856D6" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Switch Events Test" android:onClick="navigateToSwitchEventsTest" android:background="#5856D6" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Radio Custom Icons Test" android:onClick="navigateToRadioIconsTest" android:background="#5856D6" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Segment Control Test" android:onClick="navigateToSegmentTest" android:background="#5856D6" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Advanced Features" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Binding Properties Test" android:onClick="navigateToBindingTest" android:background="#FF3B30" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Converter Components Test" android:onClick="navigateToConverterTest" android:background="#FF3B30" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Custom Component Test" android:onClick="navigateToCustomComponentTest" android:background="#FF3B30" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="User Profile Test" android:onClick="navigateToUserProfileTest" android:background="#FF3B30" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Include Component Test" android:onClick="navigateToIncludeTest" android:background="#FF3B30" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Forms &amp; Scrolling" android:textSize="20sp" android:textColor="#666666" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Form Test" android:onClick="navigateToFormTest" android:background="#5AC8FA" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Collection Test" android:onClick="navigateToCollectionTest" android:background="#5AC8FA" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Keyboard Avoidance Test" android:onClick="navigateToKeyboardAvoidanceTest" android:background="#5AC8FA" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="8dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Scroll Test" android:onClick="navigateToScrollTest" android:background="#5AC8FA" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-      <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🔥 Complete Test Suite" android:textSize="20sp" android:textColor="#FF0000" android:textStyle="bold" android:layout_marginBottom="15dp"/>
-      <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🔥 All Implemented Attributes Test" android:onClick="navigateToImplementedAttributesTest" android:background="#00C853" android:textColor="#FFFFFF" android:padding="12dp" android:layout_marginBottom="20dp"/>
-    </LinearLayout>
-  </ScrollView>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.TestMenuData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.TestMenuViewModel"/>
+    </data>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F5F5F5">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="#F5F5F5">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KotlinJsonUI Feature Tests"
+                android:textSize="28sp"
+                android:textAlignment="center"
+                android:layout_marginBottom="20dp"
+                android:textStyle="bold"
+                android:textColor="#000000"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginBottom="20dp"
+                android:text="Dynamic: @{dynamicModeStatus}"
+                android:onClick="toggleDynamicMode"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                tools:cornerRadius="6dp"
+                android:padding="8dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Layout &amp; Positioning"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:text="Margins &amp; Padding Test"
+                android:onClick="navigateToMarginsTest"
+                android:layout_marginBottom="8dp"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                tools:cornerRadius="8dp"
+                android:padding="12dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:text="Alignment Test"
+                android:onClick="navigateToAlignmentTest"
+                android:layout_marginBottom="8dp"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                tools:cornerRadius="8dp"
+                android:padding="12dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="55dp"
+                android:text="Alignment Combo Test"
+                android:onClick="navigateToAlignmentComboTest"
+                android:layout_marginBottom="8dp"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                tools:cornerRadius="8dp"
+                android:padding="12dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weight Distribution Test"
+                android:onClick="navigateToWeightTest"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Weight + Fixed Size Test"
+                android:onClick="navigateToWeightTestWithFixed"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Width Test"
+                android:onClick="navigateToWidthTest"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Relative Positioning Test"
+                android:onClick="navigateToRelativeTest"
+                android:background="#007AFF"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Style &amp; Appearance"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Visibility &amp; Opacity Test"
+                android:onClick="navigateToVisibilityTest"
+                android:background="#34C759"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disabled States Test"
+                android:onClick="navigateToDisabledTest"
+                android:background="#34C759"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Text Features"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Text Styling Test"
+                android:onClick="navigateToTextStylingTest"
+                android:background="#FF9500"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Text Decoration Test"
+                android:onClick="navigateToTextDecorationTest"
+                android:background="#FF9500"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Line Break &amp; Spacing Test"
+                android:onClick="navigateToLineBreakTest"
+                android:background="#FF9500"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Partial Attributes Test"
+                android:onClick="navigateToPartialAttributesTest"
+                android:background="#FF9500"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Input Components"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TextField Test"
+                android:onClick="navigateToTextFieldTest"
+                android:background="#AF52DE"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TextField Events Test"
+                android:onClick="navigateToTextFieldEventsTest"
+                android:background="#AF52DE"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Secure Field Test"
+                android:onClick="navigateToSecureFieldTest"
+                android:background="#AF52DE"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TextView Hint Test"
+                android:onClick="navigateToTextViewHintTest"
+                android:background="#AF52DE"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date Picker Test"
+                android:onClick="navigateToDatePickerTest"
+                android:background="#AF52DE"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="UI Components"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Components Test"
+                android:onClick="navigateToComponentsTest"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button Test"
+                android:onClick="navigateToButtonTest"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Button Enabled Test"
+                android:onClick="navigateToButtonEnabledTest"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Switch Events Test"
+                android:onClick="navigateToSwitchEventsTest"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Radio Custom Icons Test"
+                android:onClick="navigateToRadioIconsTest"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Segment Control Test"
+                android:onClick="navigateToSegmentTest"
+                android:background="#5856D6"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Advanced Features"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Binding Properties Test"
+                android:onClick="navigateToBindingTest"
+                android:background="#FF3B30"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Converter Components Test"
+                android:onClick="navigateToConverterTest"
+                android:background="#FF3B30"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Custom Component Test"
+                android:onClick="navigateToCustomComponentTest"
+                android:background="#FF3B30"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User Profile Test"
+                android:onClick="navigateToUserProfileTest"
+                android:background="#FF3B30"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Include Component Test"
+                android:onClick="navigateToIncludeTest"
+                android:background="#FF3B30"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Forms &amp; Scrolling"
+                android:textSize="20sp"
+                android:textColor="#666666"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Form Test"
+                android:onClick="navigateToFormTest"
+                android:background="#5AC8FA"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Collection Test"
+                android:onClick="navigateToCollectionTest"
+                android:background="#5AC8FA"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Keyboard Avoidance Test"
+                android:onClick="navigateToKeyboardAvoidanceTest"
+                android:background="#5AC8FA"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="8dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scroll Test"
+                android:onClick="navigateToScrollTest"
+                android:background="#5AC8FA"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥 Complete Test Suite"
+                android:textSize="20sp"
+                android:textColor="#FF0000"
+                android:textStyle="bold"
+                android:layout_marginBottom="15dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔥 All Implemented Attributes Test"
+                android:onClick="navigateToImplementedAttributesTest"
+                android:background="#00C853"
+                android:textColor="#FFFFFF"
+                android:padding="12dp"
+                tools:cornerRadius="8dp"
+                android:layout_marginBottom="20dp"/>
+        </LinearLayout>
+    </ScrollView>
 </layout>

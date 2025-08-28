@@ -9,6 +9,8 @@ require_relative '../core/style_loader'
 require_relative 'helpers/component_mapper'
 require_relative 'helpers/attribute_mapper'
 require_relative 'helpers/binding_parser'
+require_relative 'helpers/layout_attribute_processor'
+require_relative 'helpers/data_binding_helper'
 
 module XmlGenerator
   class Generator
@@ -21,6 +23,7 @@ module XmlGenerator
       @component_mapper = ComponentMapper.new
       @attribute_mapper = AttributeMapper.new
       @binding_parser = BindingParser.new
+      @layout_processor = LayoutAttributeProcessor.new(@attribute_mapper)
       
       # Get package name from config or auto-detect
       @package_name = @config['package_name'] || detect_package_name
@@ -156,8 +159,20 @@ module XmlGenerator
       end
       
       # Format the XML nicely
-      doc = Nokogiri::XML(builder.to_xml)
-      doc.to_xml(indent: 4)
+      doc = Nokogiri::XML(builder.to_xml) do |config|
+        config.default_xml.noblanks
+      end
+      
+      # Pretty print with proper indentation
+      formatted_xml = doc.to_xml(
+        indent: 4,
+        indent_text: ' ',
+        save_with: Nokogiri::XML::Node::SaveOptions::FORMAT | 
+                   Nokogiri::XML::Node::SaveOptions::AS_XML
+      )
+      
+      # Additional formatting: put each attribute on a new line for better readability
+      format_attributes(formatted_xml)
     end
 
     def generate_regular_xml(json_data)
@@ -170,8 +185,20 @@ module XmlGenerator
       end
       
       # Format the XML nicely
-      doc = Nokogiri::XML(builder.to_xml)
-      doc.to_xml(indent: 4)
+      doc = Nokogiri::XML(builder.to_xml) do |config|
+        config.default_xml.noblanks
+      end
+      
+      # Pretty print with proper indentation
+      formatted_xml = doc.to_xml(
+        indent: 4,
+        indent_text: ' ',
+        save_with: Nokogiri::XML::Node::SaveOptions::FORMAT | 
+                   Nokogiri::XML::Node::SaveOptions::AS_XML
+      )
+      
+      # Additional formatting: put each attribute on a new line for better readability
+      format_attributes(formatted_xml)
     end
 
     def extract_binding_variables(json_data)
@@ -210,7 +237,7 @@ module XmlGenerator
       snake_case.split('_').map(&:capitalize).join
     end
 
-    def create_xml_element(xml, json_element, is_root = false)
+    def create_xml_element(xml, json_element, is_root = false, parent_orientation = nil, parent_type = nil)
       # Map JSON type to Android view class
       view_class = @component_mapper.map_component(json_element['type'])
       
@@ -222,54 +249,32 @@ module XmlGenerator
         attrs['android:id'] = "@+id/#{json_element['id']}"
       end
       
-      # Layout dimensions
-      attrs['android:layout_width'] = @attribute_mapper.map_dimension(
-        json_element['width'] || (is_root ? 'match_parent' : 'wrap_content')
-      )
-      attrs['android:layout_height'] = @attribute_mapper.map_dimension(
-        json_element['height'] || (is_root ? 'match_parent' : 'wrap_content')
-      )
+      # Process layout dimensions
+      dimension_attrs = @layout_processor.process_dimensions(json_element, is_root, parent_orientation)
+      attrs.merge!(dimension_attrs)
       
-      # Add orientation for LinearLayout
-      if view_class == 'LinearLayout' && json_element['orientation']
-        attrs['android:orientation'] = json_element['orientation']
-      elsif view_class == 'LinearLayout'
-        # Default to vertical if not specified
-        attrs['android:orientation'] = 'vertical'
-      end
+      # Process orientation for LinearLayout
+      orientation_attrs = @layout_processor.process_orientation(view_class, json_element)
+      attrs.merge!(orientation_attrs)
       
-      # Map all other attributes
-      json_element.each do |key, value|
-        next if ['type', 'child', 'children', 'id', 'width', 'height', 'style', 'data', 'orientation'].include?(key)
-        
-        android_attr = @attribute_mapper.map_attribute(key, value, json_element['type'])
-        if android_attr
-          namespace, attr_name = android_attr[:namespace], android_attr[:name]
-          attr_value = android_attr[:value]
-          
-          # Handle data binding
-          if attr_value.is_a?(String) && attr_value.start_with?('@{')
-            attr_value = process_data_binding(attr_value)
-          end
-          
-          if namespace == 'android'
-            attrs["android:#{attr_name}"] = attr_value
-          elsif namespace == 'app'
-            attrs["app:#{attr_name}"] = attr_value
-          else
-            attrs[attr_name] = attr_value
-          end
-        end
+      # Process all other attributes
+      other_attrs = @layout_processor.process_attributes(json_element, parent_type)
+      attrs.merge!(other_attrs)
+      
+      # Determine orientation for children
+      current_orientation = nil
+      if view_class == 'LinearLayout'
+        current_orientation = json_element['orientation'] || 'vertical'
       end
       
       # Create element with attributes
       xml.send(view_class.split('.').last, attrs) do
-        create_children(xml, json_element)
+        create_children(xml, json_element, current_orientation, view_class)
       end
     end
 
 
-    def create_children(parent_element, json_element)
+    def create_children(parent_element, json_element, parent_orientation = nil, parent_type = nil)
       # Handle children
       children = json_element['children'] || json_element['child']
       return unless children
@@ -277,31 +282,77 @@ module XmlGenerator
       children = [children] unless children.is_a?(Array)
       
       children.each do |child|
-        create_xml_element(parent_element, child, false)
+        create_xml_element(parent_element, child, false, parent_orientation, parent_type)
       end
     end
 
-    def process_data_binding(value)
-      # Convert @{variable} to Android data binding format
-      if value.start_with?('@{') && value.end_with?('}')
-        # Already in binding format, just ensure proper data. prefix
-        expr = value[2..-2]
-        
-        # Add data. prefix if it's a simple variable
-        if expr.match?(/^\w+$/)
-          "@{data.#{expr}}"
-        elsif expr.include?('(') && !expr.include?('viewModel.')
-          # Method call without viewModel prefix
-          "@{viewModel.#{expr}}"
-        else
-          # Keep as is (already has proper prefix or is complex expression)
-          value
+
+    def format_attributes(xml_string)
+      # Format XML to put each attribute on its own line for better readability
+      lines = xml_string.split("\n")
+      formatted_lines = []
+      
+      lines.each do |line|
+        # Skip comments and empty lines
+        if line.strip.start_with?('<!--') || line.strip.start_with?('<?xml') || line.strip.empty?
+          formatted_lines << line
+          next
         end
-      else
-        value
+        
+        # Check if line contains an XML tag with attributes
+        if line =~ /^(\s*)<([^\/\s>]+)(.*?)(\s*\/?>.*?)$/
+          indent = $1
+          tag_name = $2
+          attributes_str = $3
+          tag_end = $4
+          
+          # Parse all attributes including namespace prefixes
+          attributes = []
+          attributes_str.scan(/(\S+?)="([^"]*)"/) do |attr_name, attr_value|
+            attributes << [attr_name, attr_value]
+          end
+          
+          # Format based on number of attributes
+          if attributes.size > 1
+            # Multiple attributes - put each on its own line
+            formatted_lines << "#{indent}<#{tag_name}"
+            attributes.each do |attr_name, attr_value|
+              formatted_lines << "#{indent}    #{attr_name}=\"#{attr_value}\""
+            end
+            # Handle closing tag
+            if tag_end.strip == '/>'
+              formatted_lines[-1] += '/>'
+            elsif tag_end.include?('>')
+              # Check if there's content after the >
+              if tag_end =~ />\s*(.+)$/
+                content = $1
+                formatted_lines[-1] += '>'
+                # Add the content on the same line if it's simple text
+                if content && !content.empty?
+                  formatted_lines[-1] += content
+                end
+              else
+                formatted_lines[-1] += '>'
+              end
+            else
+              formatted_lines[-1] += tag_end.strip
+            end
+          elsif attributes.size == 1
+            # Single attribute - can stay on one line
+            formatted_lines << line
+          else
+            # No attributes
+            formatted_lines << line
+          end
+        else
+          # Not a tag line or closing tag
+          formatted_lines << line
+        end
       end
+      
+      formatted_lines.join("\n")
     end
-
+    
     def save_xml(xml_content)
       # Determine output path  
       output_dir = File.join(@config['project_path'], 'src', 'main', 'res', 'layout')

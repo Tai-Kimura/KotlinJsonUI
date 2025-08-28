@@ -1,54 +1,279 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from implemented_attributes_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
-  <data>
-    <import type="android.view.View"/>
-  </data>
-  <View android:layout_width="match_parent" android:layout_height="match_parent">
-    <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:background="#F0F0F0">
-      <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Implemented Attributes Test" android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="20dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1. alignCenterVerticalView &amp; alignCenterHorizontalView" android:textSize="18sp" android:textStyle="bold" android:layout_marginBottom="10dp"/>
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="200" android:orientation="vertical" android:background="#f0f0f0">
-          <TextView android:id="@+id/target1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Target View" android:background="#ff0000" android:textColor="#ffffff" android:padding="10dp" android:layout_marginStart="50dp" android:layout_marginTop="50dp"/>
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Centered V" android:background="#00ff00" android:padding="10dp" android:layout_marginEnd="20dp"/>
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Centered H" android:background="#0000ff" android:textColor="#ffffff" android:padding="10dp" android:layout_marginBottom="20dp"/>
-        </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2. idealWidth &amp; idealHeight" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:background="#ffcccc" android:padding="10dp">
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ideal Size View (200x100)"/>
-        </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3. clipToBounds" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <LinearLayout android:layout_width="150" android:layout_height="50" android:orientation="vertical" android:background="#ccffcc">
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="This text is very long and should be clipped to the bounds of the parent view" android:textSize="16sp"/>
-        </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4. direction &amp; distribution" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="50" android:orientation="horizontal" android:background="#ccccff">
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1" android:background="#ff6666" android:textAlignment="center"/>
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2" android:background="#66ff66" android:textAlignment="center"/>
-          <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="3" android:background="#6666ff" android:textColor="#ffffff" android:textAlignment="center"/>
-        </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5. edgeInset (Label padding)" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Text with edgeInset" android:background="#ffffcc" android:textSize="16sp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="6. Button State Attributes" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tap Me (tapBackground)" android:background="#cccccc" android:textColor="#000000" android:padding="10dp" android:layout_marginBottom="10dp"/>
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Highlight Me" android:background="#0000ff" android:textColor="#ffffff" android:padding="10dp" android:layout_marginBottom="10dp"/>
-        <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Disabled Button" android:background="#0000ff" android:textColor="#ffffff" android:enabled="false" android:padding="10dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="7. TextField Events" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <EditText android:id="@+id/textField1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="Type something..." android:text="@{data.textFieldValue}" android:textSize="16sp" android:layout_marginBottom="10dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="8. Radio Custom Icons" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical">
-          <RadioButton android:id="@+id/radio1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Option 1" android:layout_marginBottom="5dp"/>
-          <RadioButton android:id="@+id/radio2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Option 2" android:layout_marginBottom="5dp"/>
-        </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="9. Segment Control" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <TabLayout android:id="@+id/segment" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="10dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10. SelectBox Attributes" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <Spinner android:layout_width="match_parent" android:layout_height="wrap_content" android:background="#FFFFFF" android:textSize="16sp" android:textColor="#0000ff" android:layout_marginBottom="10dp" android:padding="15dp"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="11. Web Component" android:textSize="18sp" android:textStyle="bold" android:layout_marginTop="20dp" android:layout_marginBottom="10dp"/>
-        <View android:layout_width="wrap_content" android:layout_height="200" android:layout_marginBottom="20dp"/>
-      </LinearLayout>
-    </ScrollView>
-  </View>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+    </data>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#F0F0F0">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Implemented Attributes Test"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="20dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1. alignCenterVerticalView &amp; alignCenterHorizontalView"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp"
+                    android:orientation="vertical"
+                    android:background="#f0f0f0">
+                    <TextView
+                        android:id="@+id/target1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Target View"
+                        android:background="#ff0000"
+                        android:textColor="#ffffff"
+                        android:padding="10dp"
+                        android:layout_marginStart="50dp"
+                        android:layout_marginTop="50dp"
+                        android:layout_gravity="top|start"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Centered V"
+                        android:background="#00ff00"
+                        android:padding="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_gravity="end"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Centered H"
+                        android:background="#0000ff"
+                        android:textColor="#ffffff"
+                        android:padding="10dp"
+                        android:layout_marginBottom="20dp"
+                        android:layout_gravity="bottom"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2. idealWidth &amp; idealHeight"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="#ffcccc"
+                    android:padding="10dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ideal Size View (200x100)"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3. clipToBounds"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <LinearLayout
+                    android:layout_width="150dp"
+                    android:layout_height="50dp"
+                    android:orientation="vertical"
+                    android:background="#ccffcc">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="This text is very long and should be clipped to the bounds of the parent view"
+                        android:textSize="16sp"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4. direction &amp; distribution"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal"
+                    android:background="#ccccff">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1"
+                        android:background="#ff6666"
+                        android:textAlignment="center"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2"
+                        android:background="#66ff66"
+                        android:textAlignment="center"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3"
+                        android:background="#6666ff"
+                        android:textColor="#ffffff"
+                        android:textAlignment="center"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5. edgeInset (Label padding)"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Text with edgeInset"
+                    android:background="#ffffcc"
+                    android:textSize="16sp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="6. Button State Attributes"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tap Me (tapBackground)"
+                    android:background="#cccccc"
+                    android:textColor="#000000"
+                    android:padding="10dp"
+                    tools:cornerRadius="8dp"
+                    android:layout_marginBottom="10dp"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Highlight Me"
+                    android:background="#0000ff"
+                    android:textColor="#ffffff"
+                    android:padding="10dp"
+                    tools:cornerRadius="8dp"
+                    android:layout_marginBottom="10dp"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Disabled Button"
+                    android:background="#0000ff"
+                    android:textColor="#ffffff"
+                    android:enabled="false"
+                    android:padding="10dp"
+                    tools:cornerRadius="8dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7. TextField Events"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <EditText
+                    android:id="@+id/textField1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint="Type something..."
+                    android:text="@{data.textFieldValue}"
+                    android:textSize="16sp"
+                    tools:borderStyle="roundedRect"
+                    android:layout_marginBottom="10dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8. Radio Custom Icons"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <RadioButton
+                        android:id="@+id/radio1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Option 1"
+                        android:layout_marginBottom="5dp"/>
+                    <RadioButton
+                        android:id="@+id/radio2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Option 2"
+                        android:layout_marginBottom="5dp"/>
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="9. Segment Control"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <TabLayout
+                    android:id="@+id/segment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:entries="First,Second,Third"
+                    android:layout_marginBottom="10dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="10. SelectBox Attributes"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#FFFFFF"
+                    tools:entries="Option A,Option B,Option C"
+                    android:textSize="16sp"
+                    android:textColor="#0000ff"
+                    android:layout_marginBottom="10dp"
+                    android:padding="15dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="11. Web Component"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="10dp"/>
+                <View
+                    android:layout_width="wrap_content"
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="20dp"/>
+            </LinearLayout>
+        </ScrollView>
+    </View>
 </layout>
