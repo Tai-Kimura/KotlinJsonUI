@@ -4,8 +4,8 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools">
   <data>
     <import type="android.view.View"/>
-    <variable name="data" type="com.example.kotlinjsonui.data.XmlTestData"/>
-    <variable name="viewModel" type="com.example.kotlinjsonui.viewmodel.XmlTestViewModel"/>
+    <variable name="data" type="com.example.kotlinjsonui.sample.data.XmlTestData"/>
+    <variable name="viewModel" type="com.example.kotlinjsonui.sample.viewmodels.XmlTestViewModel"/>
   </data>
   <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" android:background="#F5F5F5">
     <TextView android:id="@+id/titleLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@{data.title}" android:textSize="24sp" android:textColor="#333333" android:textStyle="bold" android:layout_marginBottom="8dp"/>

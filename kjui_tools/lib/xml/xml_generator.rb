@@ -20,8 +20,11 @@ module XmlGenerator
       @component_mapper = ComponentMapper.new
       @attribute_mapper = AttributeMapper.new
       @binding_parser = BindingParser.new
+      
+      # Get package name from config or auto-detect
+      @package_name = @config['package_name'] || detect_package_name
     end
-
+    
     def generate
       puts "Generating XML for #{@layout_name}..."
       
@@ -52,6 +55,48 @@ module XmlGenerator
     end
 
     private
+    
+    def detect_package_name
+      # Try to detect from AndroidManifest.xml
+      manifest_paths = [
+        File.join(@config['project_path'], 'src', 'main', 'AndroidManifest.xml'),
+        File.join(@config['project_path'], 'app', 'src', 'main', 'AndroidManifest.xml')
+      ]
+      
+      manifest_paths.each do |path|
+        if File.exist?(path)
+          content = File.read(path)
+          if content =~ /package="([^"]+)"/
+            return $1
+          end
+        end
+      end
+      
+      # Try to detect from build.gradle
+      gradle_paths = [
+        File.join(@config['project_path'], 'build.gradle'),
+        File.join(@config['project_path'], 'app', 'build.gradle'),
+        File.join(@config['project_path'], 'build.gradle.kts'),
+        File.join(@config['project_path'], 'app', 'build.gradle.kts')
+      ]
+      
+      gradle_paths.each do |path|
+        if File.exist?(path)
+          content = File.read(path)
+          # Look for namespace
+          if content =~ /namespace\s*[=:]\s*["']([^"']+)["']/
+            return $1
+          end
+          # Look for applicationId
+          if content =~ /applicationId\s*[=:]\s*["']([^"']+)["']/
+            return $1
+          end
+        end
+      end
+      
+      # Default
+      'com.example.app'
+    end
 
     def generate_xml(json_data)
       # Check if layout uses data binding
@@ -91,13 +136,13 @@ module XmlGenerator
             # Add data variable
             if json_data['data']
               data_class = "#{camelize(@layout_name)}Data"
-              xml.variable(name: 'data', type: "com.example.kotlinjsonui.data.#{data_class}")
+              xml.variable(name: 'data', type: "#{@package_name}.data.#{data_class}")
             end
             
             # Add viewModel variable if there are onClick handlers
             if has_click_handlers?(json_data)
               view_model_class = "#{camelize(@layout_name)}ViewModel"
-              xml.variable(name: 'viewModel', type: "com.example.kotlinjsonui.viewmodel.#{view_model_class}")
+              xml.variable(name: 'viewModel', type: "#{@package_name}.viewmodels.#{view_model_class}")
             end
           end
           
