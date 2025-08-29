@@ -11,10 +11,10 @@
             name="data"
             type="com.example.kotlinjsonui.sample.data.RadioIconsTestData"/>
     </data>
-    <View
+    <com.kotlinjsonui.views.KjuiSafeAreaView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <View
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
             <LinearLayout
@@ -117,6 +117,6 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
             </LinearLayout>
-        </View>
-    </View>
+        </FrameLayout>
+    </com.kotlinjsonui.views.KjuiSafeAreaView>
 </layout>

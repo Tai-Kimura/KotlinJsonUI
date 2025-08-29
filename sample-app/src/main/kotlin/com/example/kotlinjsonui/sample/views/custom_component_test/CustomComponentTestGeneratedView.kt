@@ -281,7 +281,7 @@ fun CustomComponentTestGeneratedView(
                 }
                 Button(
                     onClick = { },
-                    modifier = Modifier.width(.dp),
+                    modifier = Modifier.wrapContentWidth(),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                     colors = ButtonDefaults.buttonColors(

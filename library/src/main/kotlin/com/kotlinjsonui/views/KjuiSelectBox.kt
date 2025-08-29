@@ -89,6 +89,19 @@ class KjuiSelectBox @JvmOverloads constructor(
             textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, value)
         }
     
+    // Date picker properties
+    var datePickerMode: String = ""
+        set(value) {
+            field = value
+            updateDropdownIcon()
+        }
+    
+    var dateFormat: String = "yyyy-MM-dd"
+    
+    var minDate: String? = null
+    
+    var maxDate: String? = null
+    
     private var onSelectionChangeListener: OnSelectionChangeListener? = null
     
     interface OnSelectionChangeListener {
@@ -133,6 +146,20 @@ class KjuiSelectBox @JvmOverloads constructor(
                 cornerRadius = typedArray.getDimension(R.styleable.KjuiSelectBox_cornerRadius, cornerRadius)
                 borderWidth = typedArray.getDimension(R.styleable.KjuiSelectBox_borderWidth, borderWidth)
                 fontSize = typedArray.getDimension(R.styleable.KjuiSelectBox_fontSize, fontSize * resources.displayMetrics.scaledDensity) / resources.displayMetrics.scaledDensity
+                
+                // Get date picker attributes
+                typedArray.getString(R.styleable.KjuiSelectBox_datePickerMode)?.let {
+                    datePickerMode = it
+                }
+                typedArray.getString(R.styleable.KjuiSelectBox_dateFormat)?.let {
+                    dateFormat = it
+                }
+                typedArray.getString(R.styleable.KjuiSelectBox_minDate)?.let {
+                    minDate = it
+                }
+                typedArray.getString(R.styleable.KjuiSelectBox_maxDate)?.let {
+                    maxDate = it
+                }
             } finally {
                 typedArray.recycle()
             }
@@ -151,7 +178,7 @@ class KjuiSelectBox @JvmOverloads constructor(
             layoutParams = LayoutParams(24f.dpToPx().toInt(), 24f.dpToPx().toInt()).apply {
                 marginStart = 8f.dpToPx().toInt()
             }
-            setImageResource(android.R.drawable.arrow_down_float)
+            updateDropdownIcon()
             setColorFilter(textColor)
         }
         addView(dropdownIcon)
@@ -202,19 +229,48 @@ class KjuiSelectBox @JvmOverloads constructor(
         val activity = context as? AppCompatActivity ?: return
         val fragmentManager = activity.supportFragmentManager
         
-        val bottomSheet = SelectBoxBottomSheet.newInstance(
-            items = items,
-            selectedValue = selectedValue,
-            placeholder = placeholder,
-            textColor = textColor,
-            backgroundColor = bgColor
-        )
-        
-        bottomSheet.setOnSelectionListener { value ->
-            selectedValue = value
+        // Check if this is a date picker mode
+        if (datePickerMode.isNotEmpty() && datePickerMode in listOf("date", "time", "dateAndTime")) {
+            val dateBottomSheet = DatePickerBottomSheet.newInstance(
+                datePickerMode = datePickerMode,
+                dateFormat = dateFormat,
+                selectedValue = selectedValue,
+                minDate = minDate,
+                maxDate = maxDate,
+                textColor = textColor,
+                backgroundColor = bgColor
+            )
+            
+            dateBottomSheet.setOnDateSelectedListener { value ->
+                selectedValue = value
+            }
+            
+            dateBottomSheet.show(fragmentManager, "DatePickerBottomSheet")
+        } else {
+            // Regular select box
+            val bottomSheet = SelectBoxBottomSheet.newInstance(
+                items = items,
+                selectedValue = selectedValue,
+                placeholder = placeholder,
+                textColor = textColor,
+                backgroundColor = bgColor
+            )
+            
+            bottomSheet.setOnSelectionListener { value ->
+                selectedValue = value
+            }
+            
+            bottomSheet.show(fragmentManager, "SelectBoxBottomSheet")
         }
-        
-        bottomSheet.show(fragmentManager, "SelectBoxBottomSheet")
+    }
+    
+    private fun updateDropdownIcon() {
+        val iconRes = when (datePickerMode) {
+            "time" -> android.R.drawable.ic_menu_recent_history
+            "date", "dateAndTime" -> android.R.drawable.ic_menu_today
+            else -> android.R.drawable.arrow_down_float
+        }
+        dropdownIcon.setImageResource(iconRes)
     }
     
     private fun Float.dpToPx(): Float {

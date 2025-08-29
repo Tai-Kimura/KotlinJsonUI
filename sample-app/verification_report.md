@@ -1,15 +1,15 @@
 # KotlinJsonUI JSON Parser Verification Report
 
-**Generated:** 2025-08-29 10:41:21
+**Generated:** 2025-08-29 11:33:12
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Total JSON files | 54 |
-| Successfully parsed | 54 |
+| Total JSON files | 53 |
+| Successfully parsed | 53 |
 | Failed to parse | 0 |
-| Total components | 857 |
+| Total components | 851 |
 | Unique component types | 30 |
 | Unique attributes | 168 |
 
@@ -231,31 +231,10 @@ zIndex
   - Attribute 'maximumValue' with value '100' not handled for type 'Slider'
 - **Location:** `root[0][12]`
   - Attribute 'onValueChange' with value '"sliderChanged"' not handled for type 'Slider'
-- **Location:** `root[0][16]`
-  - Attribute 'hintColor' with value '"#999999"' not handled for type 'SelectBox'
 - **Location:** `root[0][19]`
   - Attribute 'datePickerStyle' with value '"wheels"' not handled for type 'SelectBox'
-- **Location:** `root[0][19]`
-  - Attribute 'dateFormat' with value '"yyyy年MM月dd日"' not handled for type 'SelectBox'
-- **Location:** `root[0][19]`
-  - Attribute 'minimumDate' with value '"2020-01-01"' not handled for type 'SelectBox'
-- **Location:** `root[0][19]`
-  - Attribute 'maximumDate' with value '"2030-12-31"' not handled for type 'SelectBox'
-- **Location:** `root[0][19]`
-  - Attribute 'hintColor' with value '"#999999"' not handled for type 'SelectBox'
 - **Location:** `root[0][21]`
   - Attribute 'datePickerStyle' with value '"compact"' not handled for type 'SelectBox'
-- **Location:** `root[0][21]`
-  - Attribute 'dateFormat' with value '"MM/dd/yyyy"' not handled for type 'SelectBox'
-- **Location:** `root[0][21]`
-  - Attribute 'hintColor' with value '"#999999"' not handled for type 'SelectBox'
-
-### center_align_test.json
-
-- **Location:** `root[1][1]`
-  - Attribute 'alignCenterVerticalView' with value '"reference_view"' not handled for type 'Label'
-- **Location:** `root[1][2]`
-  - Attribute 'alignCenterHorizontalView' with value '"reference_view"' not handled for type 'Label'
 
 ### collection_test.json
 
@@ -356,33 +335,17 @@ zIndex
 ### date_picker_test.json
 
 - **Location:** `root[0][3]`
-  - Attribute 'datePickerMode' with value '"date"' not handled for type 'SelectBox'
-- **Location:** `root[0][3]`
   - Attribute 'dateStringFormat' with value '"yyyy-MM-dd"' not handled for type 'SelectBox'
 - **Location:** `root[0][6]`
-  - Attribute 'minimumDate' with value '"2025-01-01"' not handled for type 'SelectBox'
-- **Location:** `root[0][6]`
-  - Attribute 'maximumDate' with value '"2025-12-31"' not handled for type 'SelectBox'
-- **Location:** `root[0][6]`
-  - Attribute 'datePickerMode' with value '"date"' not handled for type 'SelectBox'
-- **Location:** `root[0][6]`
   - Attribute 'dateStringFormat' with value '"yyyy-MM-dd"' not handled for type 'SelectBox'
-- **Location:** `root[0][8]`
-  - Attribute 'datePickerMode' with value '"time"' not handled for type 'SelectBox'
 - **Location:** `root[0][8]`
   - Attribute 'dateStringFormat' with value '"HH:mm"' not handled for type 'SelectBox'
 - **Location:** `root[0][10]`
-  - Attribute 'datePickerMode' with value '"dateAndTime"' not handled for type 'SelectBox'
-- **Location:** `root[0][10]`
   - Attribute 'dateStringFormat' with value '"yyyy-MM-dd HH:mm"' not handled for type 'SelectBox'
-- **Location:** `root[0][13]`
-  - Attribute 'datePickerMode' with value '"time"' not handled for type 'SelectBox'
 - **Location:** `root[0][13]`
   - Attribute 'minuteInterval' with value '15' not handled for type 'SelectBox'
 - **Location:** `root[0][13]`
   - Attribute 'dateStringFormat' with value '"HH:mm"' not handled for type 'SelectBox'
-- **Location:** `root[0][15]`
-  - Attribute 'datePickerMode' with value '"date"' not handled for type 'SelectBox'
 - **Location:** `root[0][15]`
   - Attribute 'datePickerStyle' with value '"graphical"' not handled for type 'SelectBox'
 - **Location:** `root[0][15]`
@@ -419,10 +382,6 @@ zIndex
   - Attribute 'minHeight' with value '80' not handled for type 'TextView'
 - **Location:** `root[0][27]`
   - Attribute 'maxHeight' with value '200' not handled for type 'TextView'
-- **Location:** `root[0][27]`
-  - Attribute 'hintColor' with value '"#999999"' not handled for type 'TextView'
-- **Location:** `root[0][29]`
-  - Attribute 'hintColor' with value '"#AAAAAA"' not handled for type 'TextView'
 - **Location:** `root[0][29]`
   - Attribute 'hideOnFocused' with value 'false' not handled for type 'TextView'
 - **Location:** `root[0][31]`
@@ -494,8 +453,6 @@ zIndex
 - **Location:** `root[child][child][20]`
   - Attribute 'tintColor' with value '"#0000ff"' not handled for type 'Segment'
 - **Location:** `root[child][child][22]`
-  - Attribute 'prompt' with value '"Choose an option"' not handled for type 'SelectBox'
-- **Location:** `root[child][child][22]`
   - Attribute 'defaultIndex' with value '0' not handled for type 'SelectBox'
 - **Location:** `root[child][child][22]`
   - Attribute 'cancelButtonBackgroundColor' with value '"#FFE5E5"' not handled for type 'SelectBox'
@@ -522,8 +479,6 @@ zIndex
   - Attribute 'secure' with value 'false' not handled for type 'TextField'
 - **Location:** `root[0][11]`
   - Attribute 'secure' with value 'false' not handled for type 'TextField'
-- **Location:** `root[0][13]`
-  - Attribute 'hintColor' with value '"#999999"' not handled for type 'TextView'
 
 ### line_break_test.json
 
@@ -715,8 +670,6 @@ zIndex
 ### text_view_hint_test.json
 
 - **Location:** `root[3]`
-  - Attribute 'hintColor' with value '"#FF0000"' not handled for type 'TextView'
-- **Location:** `root[3]`
   - Attribute 'containerInset' with value '12' not handled for type 'TextView'
 - **Location:** `root[5]`
   - Attribute 'flexible' with value 'true' not handled for type 'TextView'
@@ -724,8 +677,6 @@ zIndex
   - Attribute 'minHeight' with value '80' not handled for type 'TextView'
 - **Location:** `root[5]`
   - Attribute 'maxHeight' with value '200' not handled for type 'TextView'
-- **Location:** `root[5]`
-  - Attribute 'hintColor' with value '"#0000FF"' not handled for type 'TextView'
 - **Location:** `root[5]`
   - Attribute 'containerInset' with value '12' not handled for type 'TextView'
 

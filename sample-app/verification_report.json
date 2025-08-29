@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-08-29 10:41:21",
+  "timestamp": "2025-08-29 11:33:12",
   "statistics": {
-    "total_files": 54,
-    "successful_parses": 54,
+    "total_files": 53,
+    "successful_parses": 53,
     "failed_parses": 0,
-    "total_components": 857,
+    "total_components": 851,
     "unique_component_types": [
       "ScrollView",
       "View",
@@ -86,10 +86,6 @@
       "maximumDate",
       "marginBottom",
       "enabled",
-      "children",
-      "textColor",
-      "alignCenterVerticalView",
-      "alignCenterHorizontalView",
       "sections",
       "layout",
       "columns",
@@ -102,6 +98,7 @@
       "selectedValue",
       "indicatorStyle",
       "url",
+      "children",
       "colors",
       "startPoint",
       "endPoint",
@@ -138,6 +135,8 @@
       "maxHeight",
       "hideOnFocused",
       "hintAttributes",
+      "alignCenterVerticalView",
+      "alignCenterHorizontalView",
       "idealWidth",
       "idealHeight",
       "clipToBounds",
@@ -204,6 +203,7 @@
       "isOnline",
       "visibility",
       "opacity",
+      "textColor",
       "hidden",
       "widthWeight"
     ]
@@ -228,50 +228,12 @@
         "location": "root[0][12]"
       },
       {
-        "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'SelectBox'",
-        "location": "root[0][16]"
-      },
-      {
         "message": "Attribute 'datePickerStyle' with value '\"wheels\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'dateFormat' with value '\"yyyy年MM月dd日\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'minimumDate' with value '\"2020-01-01\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'maximumDate' with value '\"2030-12-31\"' not handled for type 'SelectBox'",
-        "location": "root[0][19]"
-      },
-      {
-        "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'SelectBox'",
         "location": "root[0][19]"
       },
       {
         "message": "Attribute 'datePickerStyle' with value '\"compact\"' not handled for type 'SelectBox'",
         "location": "root[0][21]"
-      },
-      {
-        "message": "Attribute 'dateFormat' with value '\"MM/dd/yyyy\"' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
-      },
-      {
-        "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'SelectBox'",
-        "location": "root[0][21]"
-      }
-    ],
-    "center_align_test.json": [
-      {
-        "message": "Attribute 'alignCenterVerticalView' with value '\"reference_view\"' not handled for type 'Label'",
-        "location": "root[1][1]"
-      },
-      {
-        "message": "Attribute 'alignCenterHorizontalView' with value '\"reference_view\"' not handled for type 'Label'",
-        "location": "root[1][2]"
       }
     ],
     "collection_test.json": [
@@ -452,48 +414,20 @@
     ],
     "date_picker_test.json": [
       {
-        "message": "Attribute 'datePickerMode' with value '\"date\"' not handled for type 'SelectBox'",
-        "location": "root[0][3]"
-      },
-      {
         "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
         "location": "root[0][3]"
       },
       {
-        "message": "Attribute 'minimumDate' with value '\"2025-01-01\"' not handled for type 'SelectBox'",
-        "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'maximumDate' with value '\"2025-12-31\"' not handled for type 'SelectBox'",
-        "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'datePickerMode' with value '\"date\"' not handled for type 'SelectBox'",
-        "location": "root[0][6]"
-      },
-      {
         "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
         "location": "root[0][6]"
-      },
-      {
-        "message": "Attribute 'datePickerMode' with value '\"time\"' not handled for type 'SelectBox'",
-        "location": "root[0][8]"
       },
       {
         "message": "Attribute 'dateStringFormat' with value '\"HH:mm\"' not handled for type 'SelectBox'",
         "location": "root[0][8]"
       },
       {
-        "message": "Attribute 'datePickerMode' with value '\"dateAndTime\"' not handled for type 'SelectBox'",
-        "location": "root[0][10]"
-      },
-      {
         "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd HH:mm\"' not handled for type 'SelectBox'",
         "location": "root[0][10]"
-      },
-      {
-        "message": "Attribute 'datePickerMode' with value '\"time\"' not handled for type 'SelectBox'",
-        "location": "root[0][13]"
       },
       {
         "message": "Attribute 'minuteInterval' with value '15' not handled for type 'SelectBox'",
@@ -502,10 +436,6 @@
       {
         "message": "Attribute 'dateStringFormat' with value '\"HH:mm\"' not handled for type 'SelectBox'",
         "location": "root[0][13]"
-      },
-      {
-        "message": "Attribute 'datePickerMode' with value '\"date\"' not handled for type 'SelectBox'",
-        "location": "root[0][15]"
       },
       {
         "message": "Attribute 'datePickerStyle' with value '\"graphical\"' not handled for type 'SelectBox'",
@@ -570,14 +500,6 @@
       {
         "message": "Attribute 'maxHeight' with value '200' not handled for type 'TextView'",
         "location": "root[0][27]"
-      },
-      {
-        "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'TextView'",
-        "location": "root[0][27]"
-      },
-      {
-        "message": "Attribute 'hintColor' with value '\"#AAAAAA\"' not handled for type 'TextView'",
-        "location": "root[0][29]"
       },
       {
         "message": "Attribute 'hideOnFocused' with value 'false' not handled for type 'TextView'",
@@ -712,10 +634,6 @@
         "location": "root[child][child][20]"
       },
       {
-        "message": "Attribute 'prompt' with value '\"Choose an option\"' not handled for type 'SelectBox'",
-        "location": "root[child][child][22]"
-      },
-      {
         "message": "Attribute 'defaultIndex' with value '0' not handled for type 'SelectBox'",
         "location": "root[child][child][22]"
       },
@@ -764,10 +682,6 @@
       {
         "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
         "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'hintColor' with value '\"#999999\"' not handled for type 'TextView'",
-        "location": "root[0][13]"
       }
     ],
     "line_break_test.json": [
@@ -1102,10 +1016,6 @@
     ],
     "text_view_hint_test.json": [
       {
-        "message": "Attribute 'hintColor' with value '\"#FF0000\"' not handled for type 'TextView'",
-        "location": "root[3]"
-      },
-      {
         "message": "Attribute 'containerInset' with value '12' not handled for type 'TextView'",
         "location": "root[3]"
       },
@@ -1119,10 +1029,6 @@
       },
       {
         "message": "Attribute 'maxHeight' with value '200' not handled for type 'TextView'",
-        "location": "root[5]"
-      },
-      {
-        "message": "Attribute 'hintColor' with value '\"#0000FF\"' not handled for type 'TextView'",
         "location": "root[5]"
       },
       {

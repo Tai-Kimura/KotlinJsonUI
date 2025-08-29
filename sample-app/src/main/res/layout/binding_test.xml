@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from binding_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <import type="android.view.View"/>
-        <variable
-            name="data"
-            type="com.example.kotlinjsonui.sample.data.BindingTestData"/>
-        <variable
-            name="viewModel"
-            type="com.example.kotlinjsonui.sample.viewmodels.BindingTestViewModel"/>
-    </data>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@{data.title}"
+                android:text="placeholder"
                 android:textSize="24sp"
                 android:textColor="#000000"/>
             <com.kotlinjsonui.views.KjuiTextView
@@ -55,7 +45,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:hint="@string/enter_text"
-                android:text="@{data.textValue}"
+                android:text="placeholder"
                 android:background="@drawable/shape_54109721"
                 android:padding="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
@@ -93,7 +83,7 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="100dp"
                     android:layout_height="44dp"
-                    android:text="@{data.counter}"
+                    android:text="placeholder"
                     android:textSize="20sp"
                     android:textColor="#000000"
                     android:textAlignment="center"
@@ -124,7 +114,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
-                android:checked="@{data.toggleValue}"
+                android:checked="placeholder"
                 android:onClick="toggleChanged"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
@@ -166,7 +156,10 @@
                 android:layout_height="40dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"/>
+                android:layout_marginEnd="20dp"
+                android:progress="placeholder"
+                android:min="0"
+                android:max="100"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -204,7 +197,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                app:selectedValue="@{data.selectedOption}"
+                app:selectedValue="placeholder"
                 app:items="Option 1|Option 2|Option 3|Option 4|Option 5|Option 6|Option 7|Option 8|Option 9|Option 10|Option 11|Option 12|Option 13|Option 14|Option 15|Option 16|Option 17|Option 18|Option 19|Option 20|Option 21|Option 22|Option 23|Option 24|Option 25|Option 26|Option 27|Option 28|Option 29|Option 30"
                 android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
@@ -230,7 +223,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 tools:selectItemType="Date"
-                app:selectedValue="@{data.selectedDate}"
+                app:selectedValue="placeholder"
+                app:datePickerMode="wheels"
+                app:dateFormat="yyyy年MM月dd日"
+                app:minDate="2020-01-01"
+                app:maxDate="2030-12-31"
                 android:hint="@string/str__2"
                 android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
@@ -250,7 +247,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 tools:selectItemType="Date"
-                app:selectedValue="@{data.selectedDate2}"
+                app:selectedValue="placeholder"
+                app:datePickerMode="compact"
+                app:dateFormat="MM/dd/yyyy"
                 android:hint="@string/select_date"
                 android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
@@ -261,6 +260,7 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="placeholder"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"
@@ -268,4 +268,4 @@
                 android:layout_marginBottom="30dp"/>
         </LinearLayout>
     </ScrollView>
-</layout>
+</LinearLayout>

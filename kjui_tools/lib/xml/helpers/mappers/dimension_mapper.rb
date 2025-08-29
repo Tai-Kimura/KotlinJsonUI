@@ -4,6 +4,9 @@ module XmlGenerator
   module Mappers
     class DimensionMapper
       def map_dimension(value)
+        # Handle nil or empty string
+        return 'wrap_content' if value.nil? || value.to_s.empty?
+        
         case value
         when 'matchParent', 'match_parent'
           'match_parent'
@@ -20,7 +23,7 @@ module XmlGenerator
         when /^\d+%$/
           "0dp" # Will need layout_weight
         else
-          value.to_s
+          value.to_s.empty? ? 'wrap_content' : value.to_s
         end
       end
       

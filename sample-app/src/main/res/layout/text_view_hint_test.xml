@@ -67,7 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@{data.flexibleText}"
-            android:hint="@string/multi_line_hint_line_2_of_hint__14"
+            android:hint="@string/multi_line_hint_line_2_of_hint__25"
             app:hintColor="#0000FF"
             android:textSize="16sp"
             android:textColor="#000000"

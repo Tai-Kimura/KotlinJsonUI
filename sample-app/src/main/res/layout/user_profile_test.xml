@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from user_profile_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <import type="android.view.View"/>
-        <variable
-            name="data"
-            type="com.example.kotlinjsonui.sample.data.UserProfileTestData"/>
-        <variable
-            name="viewModel"
-            type="com.example.kotlinjsonui.sample.viewmodels.UserProfileTestViewModel"/>
-    </data>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,7 +13,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-            <View
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:title="User Profile"
@@ -47,14 +37,14 @@
                             <com.kotlinjsonui.views.KjuiTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@{data.userName}"
+                                android:text="placeholder"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:textColor="#333333"/>
                             <com.kotlinjsonui.views.KjuiTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@{data.userEmail}"
+                                android:text="placeholder"
                                 android:textSize="14sp"
                                 android:textColor="#666666"
                                 android:layout_marginTop="4dp"/>
@@ -69,11 +59,9 @@
                     <View
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        tools:title="Status"
-                        android:tint="#4CAF50"
-                        tools:count="@{data.notificationCount}"/>
+                        android:background="#4CAF50"/>
                 </LinearLayout>
-            </View>
+            </FrameLayout>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -131,4 +119,4 @@
                 android:padding="12dp"/>
         </LinearLayout>
     </ScrollView>
-</layout>
+</LinearLayout>

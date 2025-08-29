@@ -37,13 +37,28 @@ module XmlGenerator
         when 'prompt'
           return { namespace: 'app', name: 'placeholder', value: value }
           
+        # Date picker attributes
+        when 'datePickerMode', 'datePickerStyle'
+          return { namespace: 'app', name: 'datePickerMode', value: value }
+        when 'dateFormat'
+          return { namespace: 'app', name: 'dateFormat', value: value }
+        when 'minDate', 'minimumDate'
+          return { namespace: 'app', name: 'minDate', value: value }
+        when 'maxDate', 'maximumDate'
+          return { namespace: 'app', name: 'maxDate', value: value }
+          
         # Progress/Slider
         when 'progress'
           return { namespace: 'android', name: 'progress', value: value.to_s }
-        when 'max', 'maxValue'
-          return { namespace: 'android', name: 'max', value: value.to_s }
-        when 'min', 'minValue'
-          return { namespace: 'android', name: 'min', value: value.to_s }
+        when 'max', 'maxValue', 'maximumValue'
+          return { namespace: 'android', name: 'max', value: value.to_f.to_i.to_s }
+        when 'min', 'minValue', 'minimumValue'
+          return { namespace: 'android', name: 'min', value: value.to_f.to_i.to_s }
+        when 'value'
+          # For Slider, value maps to progress
+          return { namespace: 'android', name: 'progress', value: process_binding_value(value) }
+        when 'onValueChange'
+          return nil # Handled in code generation
           
         # Events (will be handled in binding)
         when 'onClick', 'onclick'
@@ -70,6 +85,14 @@ module XmlGenerator
       end
       
       def process_checked_value(value)
+        if value.is_a?(String) && value.start_with?('@{')
+          value
+        else
+          value.to_s
+        end
+      end
+      
+      def process_binding_value(value)
         if value.is_a?(String) && value.start_with?('@{')
           value
         else

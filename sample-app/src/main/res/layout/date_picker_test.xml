@@ -56,7 +56,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 app:selectedValue="@{data.selectedDate}"
-                tools:selectItemType="Date"/>
+                tools:selectItemType="Date"
+                app:datePickerMode="date"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -80,7 +81,10 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 app:selectedValue="@{data.selectedDate2}"
-                tools:selectItemType="Date"/>
+                app:minDate="2025-01-01"
+                app:maxDate="2025-12-31"
+                tools:selectItemType="Date"
+                app:datePickerMode="date"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -97,7 +101,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 app:selectedValue="@{data.selectedTime}"
-                tools:selectItemType="Date"/>
+                tools:selectItemType="Date"
+                app:datePickerMode="time"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -114,7 +119,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 app:selectedValue="@{data.selectedDateTime}"
-                tools:selectItemType="Date"/>
+                tools:selectItemType="Date"
+                app:datePickerMode="dateAndTime"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -138,7 +144,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 app:selectedValue="@{data.selectedTimeInterval}"
-                tools:selectItemType="Date"/>
+                tools:selectItemType="Date"
+                app:datePickerMode="time"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -155,7 +162,8 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 app:selectedValue="@{data.selectedCalendarDate}"
-                tools:selectItemType="Date"/>
+                tools:selectItemType="Date"
+                app:datePickerMode="graphical"/>
             <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/date_range_select"
                 android:layout_width="match_parent"

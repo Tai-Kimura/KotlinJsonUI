@@ -17,5 +17,73 @@
         <attr name="cornerRadius" format="dimension" />
         <attr name="borderWidth" format="dimension" />
         <attr name="fontSize" format="dimension" />
+        <attr name="datePickerMode" format="string" />
+        <attr name="dateFormat" format="string" />
+        <attr name="minDate" format="string" />
+        <attr name="maxDate" format="string" />
+    </declare-styleable>
+    
+    <!-- KjuiNetworkImageView attributes -->
+    <declare-styleable name="KjuiNetworkImageView">
+        <attr name="url" format="string" />
+        <attr name="placeholderImage" format="reference" />
+        <attr name="errorImage" format="reference" />
+        <attr name="defaultImage" format="reference" />
+        <attr name="cornerRadius" />
+        <attr name="crossfadeEnabled" format="boolean" />
+        <attr name="cacheEnabled" format="boolean" />
+    </declare-styleable>
+    
+    <!-- KjuiCircleImageView attributes -->
+    <declare-styleable name="KjuiCircleImageView">
+        <attr name="borderWidth" />
+        <attr name="borderColor" />
+    </declare-styleable>
+    
+    <!-- KjuiBlurView attributes -->
+    <declare-styleable name="KjuiBlurView">
+        <attr name="blurRadius" format="float" />
+        <attr name="blurOverlayColor" format="color" />
+        <attr name="downsampleFactor" format="float" />
+        <attr name="blurEnabled" format="boolean" />
+    </declare-styleable>
+    
+    <!-- KjuiGradientView attributes -->
+    <declare-styleable name="KjuiGradientView">
+        <attr name="gradientStartColor" format="color" />
+        <attr name="gradientEndColor" format="color" />
+        <attr name="gradientCenterColor" format="color" />
+        <attr name="gradientColors" format="string" />
+        <attr name="gradientOrientation">
+            <enum name="top_bottom" value="0" />
+            <enum name="tr_bl" value="1" />
+            <enum name="right_left" value="2" />
+            <enum name="br_tl" value="3" />
+            <enum name="bottom_top" value="4" />
+            <enum name="bl_tr" value="5" />
+            <enum name="left_right" value="6" />
+            <enum name="tl_br" value="7" />
+        </attr>
+        <attr name="gradientAngle" format="integer" />
+        <attr name="gradientType">
+            <enum name="linear" value="0" />
+            <enum name="radial" value="1" />
+            <enum name="sweep" value="2" />
+        </attr>
+        <attr name="gradientRadius" format="float" />
+        <attr name="gradientCenterX" format="float" />
+        <attr name="gradientCenterY" format="float" />
+    </declare-styleable>
+    
+    <!-- KjuiSafeAreaView attributes -->
+    <declare-styleable name="KjuiSafeAreaView">
+        <attr name="safeAreaInsetPositions" format="string" />
+        <attr name="contentInsetAdjustmentBehavior" format="string" />
+        <attr name="applyTopInset" format="boolean" />
+        <attr name="applyBottomInset" format="boolean" />
+        <attr name="applyLeftInset" format="boolean" />
+        <attr name="applyRightInset" format="boolean" />
+        <attr name="applyStartInset" format="boolean" />
+        <attr name="applyEndInset" format="boolean" />
     </declare-styleable>
 </resources>

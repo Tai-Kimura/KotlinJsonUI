@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.kotlinjsonui.sample"
-        minSdk = 21
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -126,6 +126,12 @@ dependencies {
     // ConstraintLayout for XML layouts
     implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     
+    // RecyclerView for list views
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    
+    // Material Design Components
+    implementation("com.google.android.material:material:1.12.0")
+    
     // Jetpack Compose
     implementation(platform("androidx.compose:compose-bom:2025.08.01"))
     implementation("androidx.compose.ui:ui")
@@ -155,5 +161,5 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     
     // Gson for dynamic components (debug only)
-    debugImplementation("com.google.code.gson:gson:2.11.0")
+    debugImplementation("com.google.code.gson:gson:2.13.1")
 }

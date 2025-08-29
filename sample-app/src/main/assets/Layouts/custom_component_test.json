@@ -224,7 +224,7 @@
               "cornerRadius": 8,
               "padding": [12, 20],
               "marginTop": 20,
-              "width": ""
+              "width": "wrapContent"
             },
             {
               "type": "Label",

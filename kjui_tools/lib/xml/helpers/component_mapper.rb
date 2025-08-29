@@ -25,8 +25,8 @@ module XmlGenerator
         
         # Images
         'Image' => 'ImageView',
-        'NetworkImage' => 'ImageView',
-        'CircleImage' => 'de.hdodenhof.circleimageview.CircleImageView',
+        'NetworkImage' => 'com.kotlinjsonui.views.KjuiNetworkImageView',
+        'CircleImage' => 'com.kotlinjsonui.views.KjuiCircleImageView',
         
         # Selection components
         'Switch' => 'Switch',
@@ -45,9 +45,9 @@ module XmlGenerator
         'Rating' => 'RatingBar',
         
         # Lists
-        'List' => 'RecyclerView',
-        'Table' => 'RecyclerView',
-        'Collection' => 'RecyclerView',
+        'List' => 'androidx.recyclerview.widget.RecyclerView',
+        'Table' => 'androidx.recyclerview.widget.RecyclerView',
+        'Collection' => 'androidx.recyclerview.widget.RecyclerView',
         'Grid' => 'GridLayout',
         
         # Material Design components
@@ -63,6 +63,9 @@ module XmlGenerator
         'TabView' => 'com.google.android.material.tabs.TabLayout',
         
         # Special components
+        'SafeAreaView' => 'com.kotlinjsonui.views.KjuiSafeAreaView',
+        'GradientView' => 'com.kotlinjsonui.views.KjuiGradientView',
+        'BlurView' => 'com.kotlinjsonui.views.KjuiBlurView',
         'WebView' => 'WebView',
         'VideoView' => 'VideoView',
         'MapView' => 'com.google.android.gms.maps.MapView',
@@ -92,6 +95,11 @@ module XmlGenerator
       # Check for custom component prefix
       if type.start_with?('Custom')
         return 'include'
+      end
+      
+      # For unknown types, check if they have children
+      if !@component_map[type] && json_element && (json_element['child'] || json_element['children'])
+        return 'FrameLayout'
       end
       
       @component_map[type] || 'View'

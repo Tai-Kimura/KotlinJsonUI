@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from implemented_attributes_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<layout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-    <data>
-        <import type="android.view.View"/>
-    </data>
-    <View
+    <com.kotlinjsonui.views.KjuiSafeAreaView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <ScrollView
@@ -124,6 +120,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="50dp"
                     android:orientation="horizontal"
+                    app:gradientOrientation="right_left"
                     android:background="#ccccff">
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
@@ -204,7 +201,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="@string/type_something"
-                    android:text="@{data.textFieldValue}"
+                    android:text="placeholder"
                     android:textSize="16sp"
                     android:layout_marginBottom="10dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
@@ -275,8 +272,9 @@
                 <View
                     android:layout_width="wrap_content"
                     android:layout_height="200dp"
+                    app:url="https://www.example.com"
                     android:layout_marginBottom="20dp"/>
             </LinearLayout>
         </ScrollView>
-    </View>
-</layout>
+    </com.kotlinjsonui.views.KjuiSafeAreaView>
+</LinearLayout>
