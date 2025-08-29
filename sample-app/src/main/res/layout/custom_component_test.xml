@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from custom_component_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<LinearLayout
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.CustomComponentTestData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.CustomComponentTestViewModel"/>
+    </data>
     <com.kotlinjsonui.views.KjuiSafeAreaView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:background="#F5F5F7">
         <ScrollView
             android:layout_width="wrap_content"
@@ -35,6 +45,8 @@
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    tools:title="Static Title"
+                    tools:count="42"
                     android:padding="16dp"
                     android:background="@drawable/shape_64ae2806">
                     <LinearLayout
@@ -117,6 +129,8 @@
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        tools:title="Card 1"
+                        tools:count="1"
                         android:padding="12dp"
                         android:background="@drawable/shape_c534fdc9">
                         <com.kotlinjsonui.views.KjuiTextView
@@ -129,6 +143,8 @@
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        tools:title="Card 2"
+                        tools:count="2"
                         android:padding="12dp"
                         android:background="@drawable/shape_2e75b627">
                         <com.kotlinjsonui.views.KjuiTextView
@@ -141,6 +157,8 @@
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        tools:title="Card 3"
+                        tools:count="3"
                         android:padding="12dp"
                         android:background="@drawable/shape_9645b58e">
                         <com.kotlinjsonui.views.KjuiTextView
@@ -166,15 +184,19 @@
                     <View
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#4CAF50"/>
+                        tools:title="Static Status"
+                        android:tint="#4CAF50"
+                        tools:count="5"/>
                     <View
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="placeholder"/>
+                        tools:title="Dynamic Status"/>
                     <View
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="#FF3B30"/>
+                        tools:title="Error Status"
+                        android:tint="#FF3B30"
+                        tools:count="0"/>
                 </LinearLayout>
                 <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
@@ -196,4 +218,4 @@
             </LinearLayout>
         </ScrollView>
     </com.kotlinjsonui.views.KjuiSafeAreaView>
-</LinearLayout>
+</layout>

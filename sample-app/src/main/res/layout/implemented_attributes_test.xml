@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from implemented_attributes_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<LinearLayout
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.ImplementedAttributesTestData"/>
+    </data>
     <com.kotlinjsonui.views.KjuiSafeAreaView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -201,7 +208,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:hint="@string/type_something"
-                    android:text="placeholder"
+                    android:text="@{data.textFieldValue}"
                     android:textSize="16sp"
                     android:layout_marginBottom="10dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
@@ -277,4 +284,4 @@
             </LinearLayout>
         </ScrollView>
     </com.kotlinjsonui.views.KjuiSafeAreaView>
-</LinearLayout>
+</layout>

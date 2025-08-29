@@ -38,7 +38,7 @@
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/email_supportexamplecom_website_25"
+            android:text="@string/email_supportexamplecom_website_37"
             android:textSize="16sp"
             android:textColor="#0000FF"
             android:layout_marginBottom="20dp"/>

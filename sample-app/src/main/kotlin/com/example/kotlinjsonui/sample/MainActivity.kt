@@ -11,11 +11,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.kotlinjsonui.sample.databinding.TestMenuBinding
 import com.example.kotlinjsonui.sample.ui.theme.KotlinJsonUITheme
 import com.example.kotlinjsonui.sample.viewmodels.*
 import com.example.kotlinjsonui.sample.views.test_menu.TestMenuView
@@ -57,8 +61,11 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.KotlinJsonUI
 import androidx.compose.ui.graphics.Color
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private lateinit var viewModel: TestMenuViewModel
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -77,6 +84,29 @@ class MainActivity : ComponentActivity() {
         // Configuration.Colors.linkColor = Color(0xFF1976D2)  // Material blue
         // Configuration.Colors.linkColor = Color.Red  // Red links
         
+        // Use XML layout instead of Compose
+        val binding: TestMenuBinding = DataBindingUtil.setContentView(this, R.layout.test_menu)
+        viewModel = ViewModelProvider(this)[TestMenuViewModel::class.java]
+        
+        // Set ViewModel to use XML navigation
+        viewModel.useXmlNavigation = true
+        
+        // Bind data
+        binding.viewModel = viewModel
+        binding.data = viewModel.data.value
+        binding.lifecycleOwner = this
+        
+        // Observe XML navigation events
+        lifecycleScope.launch {
+            viewModel.xmlNavigationEvent.collect { intent ->
+                intent?.let {
+                    startActivity(it)
+                    viewModel.clearXmlNavigationEvent()
+                }
+            }
+        }
+        
+        /* Commented out Compose UI code
         setContent {
             KotlinJsonUITheme {
                 Surface(
@@ -87,9 +117,156 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        */
+    }
+    
+    // onClick handlers for XML layout buttons
+    fun toggleDynamicMode(view: android.view.View) {
+        viewModel.toggleDynamicMode()
+    }
+    
+    fun navigateToMarginsTest(view: android.view.View) {
+        viewModel.navigateToMarginsTest()
+    }
+    
+    fun navigateToAlignmentTest(view: android.view.View) {
+        viewModel.navigateToAlignmentTest()
+    }
+    
+    fun navigateToAlignmentComboTest(view: android.view.View) {
+        viewModel.navigateToAlignmentComboTest()
+    }
+    
+    fun navigateToWeightTest(view: android.view.View) {
+        viewModel.navigateToWeightTest()
+    }
+    
+    fun navigateToWeightTestWithFixed(view: android.view.View) {
+        viewModel.navigateToWeightTestWithFixed()
+    }
+    
+    fun navigateToVisibilityTest(view: android.view.View) {
+        viewModel.navigateToVisibilityTest()
+    }
+    
+    fun navigateToDisabledTest(view: android.view.View) {
+        viewModel.navigateToDisabledTest()
+    }
+    
+    fun navigateToTextStylingTest(view: android.view.View) {
+        viewModel.navigateToTextStylingTest()
+    }
+    
+    fun navigateToComponentsTest(view: android.view.View) {
+        viewModel.navigateToComponentsTest()
+    }
+    
+    fun navigateToLineBreakTest(view: android.view.View) {
+        viewModel.navigateToLineBreakTest()
+    }
+    
+    fun navigateToSecureFieldTest(view: android.view.View) {
+        viewModel.navigateToSecureFieldTest()
+    }
+    
+    fun navigateToDatePickerTest(view: android.view.View) {
+        viewModel.navigateToDatePickerTest()
+    }
+    
+    fun navigateToTextviewHintTest(view: android.view.View) {
+        viewModel.navigateToTextviewHintTest()
+    }
+    
+    fun navigateToRelativeTest(view: android.view.View) {
+        viewModel.navigateToRelativeTest()
+    }
+    
+    fun navigateToBindingTest(view: android.view.View) {
+        viewModel.navigateToBindingTest()
+    }
+    
+    fun navigateToConverterTest(view: android.view.View) {
+        viewModel.navigateToConverterTest()
+    }
+    
+    fun navigateToCustomComponentTest(view: android.view.View) {
+        viewModel.navigateToCustomComponentTest()
+    }
+    
+    fun navigateToUserProfileTest(view: android.view.View) {
+        viewModel.navigateToUserProfileTest()
+    }
+    
+    fun navigateToIncludeTest(view: android.view.View) {
+        viewModel.navigateToIncludeTest()
+    }
+    
+    fun navigateToFormTest(view: android.view.View) {
+        viewModel.navigateToFormTest()
+    }
+    
+    fun navigateToCollectionTest(view: android.view.View) {
+        viewModel.navigateToCollectionTest()
+    }
+    
+    fun navigateToKeyboardAvoidanceTest(view: android.view.View) {
+        viewModel.navigateToKeyboardAvoidanceTest()
+    }
+    
+    fun navigateToButtonTest(view: android.view.View) {
+        viewModel.navigateToButtonTest()
+    }
+    
+    fun navigateToButtonEnabledTest(view: android.view.View) {
+        viewModel.navigateToButtonEnabledTest()
+    }
+    
+    fun navigateToWidthTest(view: android.view.View) {
+        viewModel.navigateToWidthTest()
+    }
+    
+    fun navigateToScrollTest(view: android.view.View) {
+        viewModel.navigateToScrollTest()
+    }
+    
+    fun navigateToTextFieldTest(view: android.view.View) {
+        viewModel.navigateToTextFieldTest()
+    }
+    
+    fun navigateToTextFieldEventsTest(view: android.view.View) {
+        viewModel.navigateToTextFieldEventsTest()
+    }
+    
+    fun navigateToTextDecorationTest(view: android.view.View) {
+        viewModel.navigateToTextDecorationTest()
+    }
+    
+    fun navigateToPartialAttributesTest(view: android.view.View) {
+        viewModel.navigateToPartialAttributesTest()
+    }
+    
+    fun navigateToTextViewHintTest(view: android.view.View) {
+        viewModel.navigateToTextViewHintTest()
+    }
+    
+    fun navigateToSwitchEventsTest(view: android.view.View) {
+        viewModel.navigateToSwitchEventsTest()
+    }
+    
+    fun navigateToRadioIconsTest(view: android.view.View) {
+        viewModel.navigateToRadioIconsTest()
+    }
+    
+    fun navigateToSegmentTest(view: android.view.View) {
+        viewModel.navigateToSegmentTest()
+    }
+    
+    fun navigateToImplementedAttributesTest(view: android.view.View) {
+        viewModel.navigateToImplementedAttributesTest()
     }
 }
 
+/* Commented out Compose navigation code
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -223,3 +400,4 @@ fun TestMenuWithNavigation(navController: NavHostController) {
     
     TestMenuView(viewModel = viewModel)
 }
+*/

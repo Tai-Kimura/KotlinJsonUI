@@ -1,11 +1,14 @@
 package com.example.kotlinjsonui.sample.viewmodels
 import android.app.Application
+import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.TestMenuData
+import com.example.kotlinjsonui.sample.XmlTestActivity
 import com.kotlinjsonui.core.DynamicModeManager
+
 class TestMenuViewModel(application: Application) : AndroidViewModel(application) {
     // JSON file reference for hot reload
     val jsonFileName = "test_menu"
@@ -13,9 +16,32 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
     // Data model
     private val _data = MutableStateFlow(TestMenuData())
     val data: StateFlow<TestMenuData> = _data.asStateFlow()
-    // Navigation event
+    
+    // Navigation mode flag (true = XML, false = Compose)
+    var useXmlNavigation = true
+    
+    // Navigation event for Compose
     private val _navigationEvent = MutableStateFlow<String?>(null)
     val navigationEvent: StateFlow<String?> = _navigationEvent.asStateFlow()
+    
+    // Navigation event for XML (Intent)
+    private val _xmlNavigationEvent = MutableStateFlow<Intent?>(null)
+    val xmlNavigationEvent: StateFlow<Intent?> = _xmlNavigationEvent.asStateFlow()
+    
+    // Private helper function to handle navigation
+    private fun navigate(destination: String) {
+        if (useXmlNavigation) {
+            // Create intent for XML navigation
+            val intent = Intent(getApplication(), XmlTestActivity::class.java).apply {
+                putExtra("layout_name", destination)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            _xmlNavigationEvent.value = intent
+        } else {
+            // Use Compose navigation
+            _navigationEvent.value = destination
+        }
+    }
     // Dynamic mode toggle
     fun toggleDynamicMode() {
         // Toggle the actual DynamicModeManager
@@ -27,154 +53,158 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
     }
     // Layout & Positioning navigation
     fun navigateToMarginsTest() {
-        _navigationEvent.value = "margins_test"
+        navigate("margins_test")
     }
     
     fun navigateToAlignmentTest() {
-        _navigationEvent.value = "alignment_test"
+        navigate("alignment_test")
     }
     
     fun navigateToAlignmentComboTest() {
-        _navigationEvent.value = "alignment_combo_test"
+        navigate("alignment_combo_test")
     }
     
     fun navigateToWeightTest() {
-        _navigationEvent.value = "weight_test"
+        navigate("weight_test")
     }
     
     fun navigateToWeightTestWithFixed() {
-        _navigationEvent.value = "weight_test_with_fixed"
+        navigate("weight_test_with_fixed")
     }
     
     // Style & Appearance navigation
     fun navigateToVisibilityTest() {
-        _navigationEvent.value = "visibility_test"
+        navigate("visibility_test")
     }
     
     fun navigateToDisabledTest() {
-        _navigationEvent.value = "disabled_test"
+        navigate("disabled_test")
     }
     
     // Text Features navigation
     fun navigateToTextStylingTest() {
-        _navigationEvent.value = "text_styling_test"
+        navigate("text_styling_test")
     }
     
     fun navigateToComponentsTest() {
-        _navigationEvent.value = "components_test"
+        navigate("components_test")
     }
     
     fun navigateToLineBreakTest() {
-        _navigationEvent.value = "line_break_test"
+        navigate("line_break_test")
     }
     
     // Input Components navigation
     fun navigateToSecureFieldTest() {
-        _navigationEvent.value = "secure_field_test"
+        navigate("secure_field_test")
     }
     
     fun navigateToDatePickerTest() {
-        _navigationEvent.value = "date_picker_test"
+        navigate("date_picker_test")
     }
     
     fun navigateToTextviewHintTest() {
-        _navigationEvent.value = "text_view_hint_test"
+        navigate("text_view_hint_test")
     }
     
     // Advanced Features navigation
     fun navigateToRelativeTest() {
-        _navigationEvent.value = "relative_test"
+        navigate("relative_test")
     }
     
     fun navigateToBindingTest() {
-        _navigationEvent.value = "binding_test"
+        navigate("binding_test")
     }
     
     fun navigateToConverterTest() {
-        _navigationEvent.value = "converter_test"
+        navigate("converter_test")
     }
     
     fun navigateToCustomComponentTest() {
-        _navigationEvent.value = "custom_component_test"
+        navigate("custom_component_test")
     }
     
     fun navigateToUserProfileTest() {
-        _navigationEvent.value = "user_profile_test"
+        navigate("user_profile_test")
     }
     
     fun navigateToIncludeTest() {
-        _navigationEvent.value = "include_test"
+        navigate("include_test")
     }
     
     // Forms & Keyboard navigation
     fun navigateToFormTest() {
-        _navigationEvent.value = "form_test"
+        navigate("form_test")
     }
     
     fun navigateToCollectionTest() {
-        _navigationEvent.value = "collection_test"
+        navigate("collection_test")
     }
     
     fun navigateToKeyboardAvoidanceTest() {
-        _navigationEvent.value = "keyboard_avoidance_test"
+        navigate("keyboard_avoidance_test")
     }
     
     // Additional test screens
     fun navigateToButtonTest() {
-        _navigationEvent.value = "button_test"
+        navigate("button_test")
     }
     
     fun navigateToButtonEnabledTest() {
-        _navigationEvent.value = "button_enabled_test"
+        navigate("button_enabled_test")
     }
     
     fun navigateToWidthTest() {
-        _navigationEvent.value = "width_test"
+        navigate("width_test")
     }
     
     fun navigateToScrollTest() {
-        _navigationEvent.value = "scroll_test"
+        navigate("scroll_test")
     }
     
     fun navigateToTextFieldTest() {
-        _navigationEvent.value = "textfield_test"
+        navigate("textfield_test")
     }
     
     fun navigateToTextFieldEventsTest() {
-        _navigationEvent.value = "textfield_events_test"
+        navigate("textfield_events_test")
     }
     
     fun navigateToTextDecorationTest() {
-        _navigationEvent.value = "text_decoration_test"
+        navigate("text_decoration_test")
     }
     
     fun navigateToPartialAttributesTest() {
-        _navigationEvent.value = "partial_attributes_test"
+        navigate("partial_attributes_test")
     }
     
     fun navigateToTextViewHintTest() {
-        _navigationEvent.value = "text_view_hint_test"
+        navigate("text_view_hint_test")
     }
     
     fun navigateToSwitchEventsTest() {
-        _navigationEvent.value = "switch_events_test"
+        navigate("switch_events_test")
     }
     
     fun navigateToRadioIconsTest() {
-        _navigationEvent.value = "radio_icons_test"
+        navigate("radio_icons_test")
     }
     
     fun navigateToSegmentTest() {
-        _navigationEvent.value = "segment_test"
+        navigate("segment_test")
     }
     
     fun navigateToImplementedAttributesTest() {
-        _navigationEvent.value = "implemented_attributes_test"
+        navigate("implemented_attributes_test")
     }
     
     // Clear navigation event after handling
     fun clearNavigationEvent() {
         _navigationEvent.value = null
+    }
+    
+    fun clearXmlNavigationEvent() {
+        _xmlNavigationEvent.value = null
     }
     
     // Add more action handlers as needed

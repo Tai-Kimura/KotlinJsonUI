@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'json'
 require_relative 'mappers/dimension_mapper'
 require_relative 'mappers/text_mapper'
 require_relative 'mappers/layout_mapper'
@@ -25,6 +26,13 @@ module XmlGenerator
     end
     
     def map_attribute(key, value, component_type, parent_type = nil, json_element = nil)
+      # Skip problematic data binding expressions for specific attributes
+      if should_skip_binding?(key, value, component_type)
+        log_skipped_binding(key, value, component_type)
+        puts "Skipping binding: #{key}=#{value} for #{component_type}" if ENV['DEBUG']
+        return nil
+      end
+      
       # Try layout attributes first (includes dimensions, padding, margin, alignment)
       result = @layout_mapper.map_layout_attributes(key, value, component_type, parent_type)
       return result if result
@@ -48,8 +56,16 @@ module XmlGenerator
       # Custom component properties (store as tag or tools attribute)
       case key
       when 'title'
+        # Don't use tools: namespace for data binding expressions
+        if value.to_s.start_with?('@{')
+          return nil  # Skip tools attributes with data binding
+        end
         return { namespace: 'tools', name: 'title', value: value }
       when 'count'
+        # Don't use tools: namespace for data binding expressions
+        if value.to_s.start_with?('@{')
+          return nil  # Skip tools attributes with data binding
+        end
         return { namespace: 'tools', name: 'count', value: value.to_s }
       when /^constraint/
         return map_constraint_attribute(key, value)
@@ -69,6 +85,53 @@ module XmlGenerator
     end
     
     private
+    
+    def should_skip_binding?(key, value, component_type)
+      return false unless value.to_s.include?('@{')
+      
+      # List of problematic bindings that need to be skipped
+      problematic_bindings = [
+        # RecyclerView items binding - Skip this as it needs complex adapter implementation
+        { key: 'items', component: 'RecyclerView' },
+        { key: 'items', component: 'Collection' },
+        # StatusColor binding - Compose UI Color type not supported in data binding
+        { key: 'tint', value_contains: 'statusColor' },
+        { key: 'color', value_contains: 'statusColor' },  # color is sometimes mapped to tint
+        # Visibility binding - String type not supported
+        { key: 'visibility', value_contains: '@{' },
+        # Progress binding - double type not supported
+        { key: 'progress', value_contains: '@{' },
+        # Slider value binding (maps to progress) - double type not supported
+        { key: 'value', component: 'Slider', value_contains: '@{' }
+      ]
+      
+      problematic_bindings.any? do |binding|
+        if binding[:component]
+          key == binding[:key] && component_type&.include?(binding[:component])
+        elsif binding[:value_contains]
+          key == binding[:key] && value.to_s.include?(binding[:value_contains])
+        elsif binding[:type]
+          key == binding[:key] && value.to_s.include?('.')  # Assumes object property access
+        else
+          key == binding[:key]
+        end
+      end
+    end
+    
+    def log_skipped_binding(key, value, component_type)
+      @skipped_bindings ||= []
+      @skipped_bindings << {
+        attribute: key,
+        value: value,
+        component: component_type,
+        reason: 'Requires custom binding adapter'
+      }
+      
+      # Write to a file that can be accessed later
+      File.open('/tmp/skipped_bindings.json', 'w') do |f|
+        f.write(@skipped_bindings.to_json)
+      end
+    end
     
     def create_attribute_map
       {

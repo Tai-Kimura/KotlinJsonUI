@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from converter_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<LinearLayout
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.ConverterTestData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.ConverterTestViewModel"/>
+    </data>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,7 +35,7 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="placeholder"
+                android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"
                 android:layout_marginTop="20dp"
@@ -141,8 +151,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
-                android:layout_marginTop="10dp"
-                app:items="placeholder"/>
+                android:layout_marginTop="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -170,4 +179,4 @@
                 app:defaultImage="@drawable/photo"/>
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</layout>

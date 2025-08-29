@@ -327,7 +327,7 @@
         },
         {
           "type": "Label",
-          "text": "@{selectedDate} / @{selectedDate2}",
+          "text": "@{selectedDate}",
           "fontSize": 14,
           "fontColor": "#666666",
           "topMargin": 10,

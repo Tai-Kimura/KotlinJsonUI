@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated from components_test.json with Data Binding -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
-<LinearLayout
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.ComponentsTestData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.ComponentsTestViewModel"/>
+    </data>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -61,14 +71,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/download_progress"
-                android:progress="placeholder"
                 android:layout_margin="0dp"/>
             <SeekBar
                 android:id="@+id/slider1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/volume"
-                android:progress="placeholder"
                 android:min="0"
                 android:max="1"
                 android:layout_margin="0dp"/>
@@ -158,4 +166,4 @@
             </com.kotlinjsonui.views.KjuiBlurView>
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</layout>

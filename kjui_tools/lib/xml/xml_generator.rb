@@ -153,7 +153,7 @@ module XmlGenerator
             xml.import(type: 'android.view.View')
             
             # Add data variable
-            if json_data['data']
+            if has_data_definitions?(json_data)
               data_class = "#{camelize(@layout_name)}Data"
               xml.variable(name: 'data', type: "#{@package_name}.data.#{data_class}")
             end
@@ -166,7 +166,8 @@ module XmlGenerator
           end
           
           # Add the actual layout content
-          create_xml_element(xml, json_data, true)
+          # Pass false for is_root since namespaces are already on <layout> tag
+          create_xml_element(xml, json_data, false)
         end
       end
       
@@ -248,6 +249,36 @@ module XmlGenerator
     def camelize(snake_case)
       snake_case.split('_').map(&:capitalize).join
     end
+    
+    def needs_tools_namespace?(json_element)
+      # Check if this element or any of its children use tools attributes
+      json_string = json_element.to_json
+      json_string.include?('"tools:') || json_string.include?('"title"') || json_string.include?('"count"')
+    end
+    
+    def has_data_definitions?(json_data)
+      # Check if there are any data definitions anywhere in the JSON structure
+      return true if json_data['data']
+      
+      # Check children recursively
+      if json_data['child']
+        children = json_data['child'].is_a?(Array) ? json_data['child'] : [json_data['child']]
+        children.each do |child|
+          return true if child.is_a?(Hash) && child['data']
+          return true if child.is_a?(Hash) && has_data_definitions?(child)
+        end
+      end
+      
+      if json_data['children']
+        children = json_data['children'].is_a?(Array) ? json_data['children'] : [json_data['children']]
+        children.each do |child|
+          return true if child.is_a?(Hash) && child['data']
+          return true if child.is_a?(Hash) && has_data_definitions?(child)
+        end
+      end
+      
+      false
+    end
 
     def create_xml_element(xml, json_element, is_root = false, parent_orientation = nil, parent_type = nil)
       # Map JSON type to Android view class (pass json_element for View type checking)
@@ -259,7 +290,12 @@ module XmlGenerator
       # Add namespace declarations if this is the root element
       if is_root
         attrs['xmlns:android'] = 'http://schemas.android.com/apk/res/android'
+        # Always add app namespace as it's commonly needed for ConstraintLayout and custom attributes
         attrs['xmlns:app'] = 'http://schemas.android.com/apk/res-auto'
+        # Add tools namespace if we're using tools attributes
+        if needs_tools_namespace?(json_element)
+          attrs['xmlns:tools'] = 'http://schemas.android.com/tools'
+        end
       end
       
       # Add ID if present
