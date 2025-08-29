@@ -22,17 +22,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,15 +40,15 @@
                 android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lineBreakMode: Word (default)"
+                android:text="@string/linebreakmode_word_default"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@{data.longText}"
@@ -59,15 +59,15 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lineBreakMode: Char"
+                android:text="@string/linebreakmode_char"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@{data.longText}"
@@ -78,15 +78,15 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lineBreakMode: Clip"
+                android:text="@string/linebreakmode_clip"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@{data.longText}"
@@ -97,15 +97,15 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lineBreakMode: Head"
+                android:text="@string/linebreakmode_head"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@{data.longText}"
@@ -116,15 +116,15 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lineBreakMode: Middle"
+                android:text="@string/linebreakmode_middle"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@{data.longText}"
@@ -135,15 +135,15 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lineBreakMode: Tail"
+                android:text="@string/linebreakmode_tail"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="@{data.longText}"
@@ -154,22 +154,22 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lines Property Test"
+                android:text="@string/lines_property_test"
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lines: 1"
+                android:text="@string/lines_1"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@{data.longText}"
@@ -179,14 +179,14 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lines: 3"
+                android:text="@string/lines_3"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@{data.longText}"
@@ -196,14 +196,14 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="lines: 0 (unlimited)"
+                android:text="@string/lines_0_unlimited"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@{data.longText}"

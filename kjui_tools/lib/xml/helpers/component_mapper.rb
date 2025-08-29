@@ -5,7 +5,7 @@ module XmlGenerator
     def initialize
       @component_map = {
         # Layout containers
-        'View' => 'LinearLayout',
+        # Note: 'View' is handled specially in map_component method
         'HStack' => 'LinearLayout',
         'VStack' => 'LinearLayout',
         'ZStack' => 'FrameLayout',
@@ -14,14 +14,14 @@ module XmlGenerator
         'ScrollView' => 'ScrollView',
         'HorizontalScrollView' => 'HorizontalScrollView',
         
-        # Basic components
-        'Label' => 'TextView',
-        'Text' => 'TextView',
-        'Button' => 'Button',
+        # Basic components - Use Kjui custom views for font support
+        'Label' => 'com.kotlinjsonui.views.KjuiTextView',
+        'Text' => 'com.kotlinjsonui.views.KjuiTextView',
+        'Button' => 'com.kotlinjsonui.views.KjuiButton',
         'ImageButton' => 'ImageButton',
-        'TextField' => 'EditText',
-        'SecureField' => 'EditText',
-        'TextView' => 'EditText',
+        'TextField' => 'com.kotlinjsonui.views.KjuiEditText',
+        'SecureField' => 'com.kotlinjsonui.views.KjuiEditText',
+        'TextView' => 'com.kotlinjsonui.views.KjuiEditText',
         
         # Images
         'Image' => 'ImageView',
@@ -35,7 +35,7 @@ module XmlGenerator
         'RadioGroup' => 'RadioGroup',
         'Segment' => 'com.google.android.material.tabs.TabLayout',
         'Picker' => 'Spinner',
-        'SelectBox' => 'Spinner',
+        'SelectBox' => 'com.kotlinjsonui.views.KjuiSelectBox',
         'DatePicker' => 'DatePicker',
         'TimePicker' => 'TimePicker',
         
@@ -77,7 +77,18 @@ module XmlGenerator
       }
     end
 
-    def map_component(type)
+    def map_component(type, json_element = nil)
+      # Special handling for View type
+      if type == 'View' && json_element
+        # Check if orientation is specified
+        if json_element['orientation']
+          return 'LinearLayout'
+        else
+          # Use ConstraintLayout instead of RelativeLayout for better positioning support
+          return 'androidx.constraintlayout.widget.ConstraintLayout'
+        end
+      end
+      
       # Check for custom component prefix
       if type.start_with?('Custom')
         return 'include'

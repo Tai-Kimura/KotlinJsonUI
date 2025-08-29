@@ -11,6 +11,8 @@ require_relative 'helpers/attribute_mapper'
 require_relative 'helpers/binding_parser'
 require_relative 'helpers/layout_attribute_processor'
 require_relative 'helpers/data_binding_helper'
+require_relative 'drawable/drawable_generator'
+require_relative 'resources/string_resource_manager'
 
 module XmlGenerator
   class Generator
@@ -21,7 +23,13 @@ module XmlGenerator
       @json_loader = JsonLoader.new(config)
       @style_loader = StyleLoader.new(config)
       @component_mapper = ComponentMapper.new
-      @attribute_mapper = AttributeMapper.new
+      
+      # Initialize resource managers
+      project_root = @config['project_path']
+      @drawable_generator = DrawableGenerator::Generator.new(project_root)
+      @string_resource_manager = Resources::StringResourceManager.new(project_root)
+      
+      @attribute_mapper = AttributeMapper.new(@drawable_generator, @string_resource_manager)
       @binding_parser = BindingParser.new
       @layout_processor = LayoutAttributeProcessor.new(@attribute_mapper)
       
@@ -54,10 +62,14 @@ module XmlGenerator
       # Save XML file
       save_xml(xml_content)
       
+      # Save any new strings to strings.xml
+      @string_resource_manager.save_new_strings
+      
       true
     rescue => e
       puts "Error generating XML: #{e.message}"
-      puts e.backtrace if @config['debug']
+      puts "  Backtrace:"
+      e.backtrace[0..4].each { |line| puts "    #{line}" }
       false
     end
 
@@ -238,11 +250,17 @@ module XmlGenerator
     end
 
     def create_xml_element(xml, json_element, is_root = false, parent_orientation = nil, parent_type = nil)
-      # Map JSON type to Android view class
-      view_class = @component_mapper.map_component(json_element['type'])
+      # Map JSON type to Android view class (pass json_element for View type checking)
+      view_class = @component_mapper.map_component(json_element['type'], json_element)
       
       # Prepare all attributes first
       attrs = {}
+      
+      # Add namespace declarations if this is the root element
+      if is_root
+        attrs['xmlns:android'] = 'http://schemas.android.com/apk/res/android'
+        attrs['xmlns:app'] = 'http://schemas.android.com/apk/res-auto'
+      end
       
       # Add ID if present
       if json_element['id']
@@ -268,8 +286,17 @@ module XmlGenerator
       end
       
       # Create element with attributes
-      xml.send(view_class.split('.').last, attrs) do
-        create_children(xml, json_element, current_orientation, view_class)
+      # For custom views with package name, use the full class name
+      if view_class.include?('.')
+        # Custom view with package name - create element directly
+        xml.send(:method_missing, view_class, attrs) do
+          create_children(xml, json_element, current_orientation, view_class)
+        end
+      else
+        # Standard Android view
+        xml.send(view_class, attrs) do
+          create_children(xml, json_element, current_orientation, view_class)
+        end
       end
     end
 
@@ -282,6 +309,9 @@ module XmlGenerator
       children = [children] unless children.is_a?(Array)
       
       children.each do |child|
+        # Skip data definitions - they don't create UI elements
+        next if child.is_a?(Hash) && child.key?('data') && !child.key?('type')
+        
         create_xml_element(parent_element, child, false, parent_orientation, parent_type)
       end
     end

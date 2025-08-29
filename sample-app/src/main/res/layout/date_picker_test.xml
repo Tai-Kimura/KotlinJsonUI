@@ -22,17 +22,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,130 +40,130 @@
                 android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Basic DatePicker"
+                android:text="@string/basic_datepicker"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <Spinner
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/basic_date_picker"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedDate}"
+                app:selectedValue="@{data.selectedDate}"
                 tools:selectItemType="Date"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DatePicker with Min/Max Dates"
+                android:text="@string/datepicker_with_minmax_dates"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Min: 2025-01-01, Max: 2025-12-31"
+                android:text="@string/min_2025_01_01_max_2025_12_31"
                 android:textSize="12sp"
                 android:textColor="#666666"
                 android:layout_marginTop="5dp"/>
-            <Spinner
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/limited_date_picker"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedDate2}"
+                app:selectedValue="@{data.selectedDate2}"
                 tools:selectItemType="Date"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Time Picker"
+                android:text="@string/time_picker"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <Spinner
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/time_picker"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedTime}"
+                app:selectedValue="@{data.selectedTime}"
                 tools:selectItemType="Date"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DateTime Picker"
+                android:text="@string/datetime_picker"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <Spinner
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/datetime_picker"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedDateTime}"
+                app:selectedValue="@{data.selectedDateTime}"
                 tools:selectItemType="Date"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DatePicker with Minute Interval"
+                android:text="@string/datepicker_with_minute_interval"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="15 minute intervals"
+                android:text="@string/str_15_minute_intervals"
                 android:textSize="12sp"
                 android:textColor="#666666"
                 android:layout_marginTop="5dp"/>
-            <Spinner
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/interval_picker"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedTimeInterval}"
+                app:selectedValue="@{data.selectedTimeInterval}"
                 tools:selectItemType="Date"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Calendar Style DatePicker"
+                android:text="@string/calendar_style_datepicker"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <Spinner
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/calendar_picker"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedCalendarDate}"
+                app:selectedValue="@{data.selectedCalendarDate}"
                 tools:selectItemType="Date"/>
-            <Spinner
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/date_range_select"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="30dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:hint="Select Date Range"
+                android:hint="@string/select_date_range"
                 tools:selectItemType="Date"/>
             <LinearLayout
                 android:layout_width="match_parent"
@@ -173,26 +173,25 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:padding="15dp"
-                android:background="#E0E0E0"
-                tools:cornerRadius="8dp">
-                <TextView
+                android:background="@drawable/shape_aba07408">
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selected Values:"
+                    android:text="@string/selected_values"
                     android:textSize="14sp"
                     android:textColor="#333333"
-                    android:fontFamily="bold"/>
-                <TextView
+                    android:textStyle="bold"/>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Date: @{selectedDate}"
+                    android:text="@string/date_selecteddate"
                     android:textSize="12sp"
                     android:textColor="#666666"
                     android:layout_marginTop="5dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Range: @{startDate} to @{endDate}"
+                    android:text="@string/range_startdate_to_enddate"
                     android:textSize="12sp"
                     android:textColor="#666666"
                     android:layout_marginTop="5dp"/>

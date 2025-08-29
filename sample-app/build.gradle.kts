@@ -101,6 +101,8 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        dataBinding = true
+        viewBinding = true
     }
 
     // composeOptions is no longer needed with Kotlin 2.0+ Compose plugin
@@ -120,6 +122,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.3")
     implementation("androidx.activity:activity-compose:1.10.1")
+    
+    // ConstraintLayout for XML layouts
+    implementation("androidx.constraintlayout:constraintlayout:2.2.1")
     
     // Jetpack Compose
     implementation(platform("androidx.compose:compose-bom:2025.08.01"))

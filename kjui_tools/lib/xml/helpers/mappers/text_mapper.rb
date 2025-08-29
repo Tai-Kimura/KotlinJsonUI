@@ -3,12 +3,17 @@
 module XmlGenerator
   module Mappers
     class TextMapper
+      def initialize(string_resource_manager = nil)
+        @string_resource_manager = string_resource_manager
+      end
+      
       def map_text_attributes(key, value, component_type)
         case key
         when 'text'
           return { namespace: 'android', name: 'text', value: process_text_value(value) }
         when 'hint'
-          return { namespace: 'android', name: 'hint', value: value }
+          hint_value = process_hint_value(value)
+          return { namespace: 'android', name: 'hint', value: hint_value }
         when 'fontSize', 'textSize'
           return { namespace: 'android', name: 'textSize', value: convert_text_size(value) }
         when 'fontColor', 'textColor'
@@ -20,8 +25,30 @@ module XmlGenerator
           else
             return { namespace: 'android', name: 'tint', value: convert_color(value) }
           end
-        when 'font', 'fontFamily'
-          return { namespace: 'android', name: 'fontFamily', value: value }
+        when 'font'
+          # Check if it's a font weight/style or a font file name
+          if ['bold', 'italic', 'normal', 'bold_italic'].include?(value.to_s.downcase)
+            # It's a text style
+            return map_font_weight(value)
+          elsif ['Label', 'Text', 'TextView', 'TextField', 'SecureField', 'Button'].include?(component_type)
+            # It's a font file name for Kjui views
+            # Add .ttf extension if not present
+            font_file = value.to_s
+            font_file += '.ttf' unless font_file.end_with?('.ttf', '.otf')
+            return { namespace: 'app', name: 'kjui_font_name', value: font_file }
+          else
+            # For non-Kjui views, use as fontFamily
+            return { namespace: 'android', name: 'fontFamily', value: value }
+          end
+        when 'fontFamily'
+          # fontFamily is always treated as a font file name
+          if ['Label', 'Text', 'TextView', 'TextField', 'SecureField', 'Button'].include?(component_type)
+            font_file = value.to_s
+            font_file += '.ttf' unless font_file.end_with?('.ttf', '.otf')
+            return { namespace: 'app', name: 'kjui_font_name', value: font_file }
+          else
+            return { namespace: 'android', name: 'fontFamily', value: value }
+          end
         when 'fontWeight'
           return map_font_weight(value)
         when 'fontStyle'
@@ -39,12 +66,37 @@ module XmlGenerator
       
       private
       
+      def process_hint_value(value)
+        # Handle data binding
+        if value.is_a?(String) && value.start_with?('@{')
+          return value
+        end
+        
+        # Convert value to string
+        text = value.to_s
+        
+        # Use string resource manager if available
+        if @string_resource_manager
+          @string_resource_manager.get_string_resource(text) || text
+        else
+          text
+        end
+      end
+      
       def process_text_value(value)
         # Handle data binding
         if value.is_a?(String) && value.start_with?('@{')
-          value
+          return value
+        end
+        
+        # Convert value to string
+        text = value.to_s
+        
+        # Use string resource manager if available
+        if @string_resource_manager
+          @string_resource_manager.get_string_resource(text) || text
         else
-          value.to_s
+          text
         end
       end
       
@@ -91,13 +143,21 @@ module XmlGenerator
       end
       
       def map_font_weight(value)
-        case value
+        case value.to_s.downcase
         when 'bold'
           { namespace: 'android', name: 'textStyle', value: 'bold' }
-        when 'normal'
+        when 'italic'
+          { namespace: 'android', name: 'textStyle', value: 'italic' }
+        when 'bold_italic', 'bolditalic'
+          { namespace: 'android', name: 'textStyle', value: 'bold|italic' }
+        when 'normal', 'regular', 'light', 'thin'
           { namespace: 'android', name: 'textStyle', value: 'normal' }
+        when 'medium', 'semibold', 'heavy', 'black'
+          # Medium and similar weights map to bold in Android
+          { namespace: 'android', name: 'textStyle', value: 'bold' }
         else
-          nil
+          # Default to normal for unknown values
+          { namespace: 'android', name: 'textStyle', value: 'normal' }
         end
       end
       

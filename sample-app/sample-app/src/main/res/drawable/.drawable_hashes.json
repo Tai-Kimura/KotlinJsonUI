@@ -1,0 +1,27 @@
+{
+  "ripple_29ec75eb": {
+    "hash": "29ec75eb",
+    "created_at": "2025-08-29 09:08:08 +0900",
+    "content_hash": "c9092fb0263a47315b0848f585cb48f7"
+  },
+  "shape_9233f28a": {
+    "hash": "9233f28a",
+    "created_at": "2025-08-29 09:08:08 +0900",
+    "content_hash": "98e0d4b720c423839c173fed4f4b10d9"
+  },
+  "selector_e6eea1a4": {
+    "hash": "e6eea1a4",
+    "created_at": "2025-08-29 09:08:08 +0900",
+    "content_hash": "7029008304fb706098fb12e56a995658"
+  },
+  "ripple_9b292a98": {
+    "hash": "9b292a98",
+    "created_at": "2025-08-29 09:08:08 +0900",
+    "content_hash": "e510af1b9137bcf002277eb380ee20a6"
+  },
+  "selector_264ed8ff": {
+    "hash": "264ed8ff",
+    "created_at": "2025-08-29 09:08:08 +0900",
+    "content_hash": "32a4e17725ee9847b37ffb388a6225e2"
+  }
+}

@@ -19,17 +19,17 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="#FFFFFF">
-        <Button
+        <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:textColor="#FFFFFF"
-            tools:cornerRadius="8dp"
-            android:text="Dynamic: @{dynamicModeStatus}"
+            android:text="@string/dynamic_dynamicmodestatus"
             android:onClick="toggleDynamicMode"
-            android:background="#5856D6"
+            android:background="@drawable/ripple_b39393a0"
             android:textSize="14sp"
+            android:textStyle="bold"
             android:padding="8dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:id="@+id/title_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,70 +37,61 @@
             android:text="@{data.title}"
             android:textSize="24sp"
             android:textColor="#000000"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Regular TextField (not secure)"
+            android:text="@string/regular_textfield_not_secure"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginTop="30dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/regular_field"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:hint="Enter regular text"
+            android:hint="@string/enter_regular_text"
             android:text="@{data.regularText}"
-            android:background="#FFFFFF"
-            tools:cornerRadius="8dp"
-            tools:strokeColor="#CCCCCC"
-            tools:strokeWidth="1dp"
+            android:background="@drawable/shape_378d2514"
             android:textColor="#000000"
             android:textSize="16sp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Secure TextField (password)"
+            android:text="@string/secure_textfield_password"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginTop="20dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/password_field"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:hint="Enter password"
+            android:hint="@string/enter_password"
             android:text="@{data.password}"
-            android:background="#FFFFFF"
-            tools:cornerRadius="8dp"
-            tools:strokeColor="#CCCCCC"
-            tools:strokeWidth="1dp"
+            android:background="@drawable/shape_378d2514"
             android:textColor="#000000"
             android:textSize="16sp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Confirm Password (also secure)"
+            android:text="@string/confirm_password_also_secure"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginTop="20dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/confirm_password_field"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:hint="Confirm password"
+            android:hint="@string/confirm_password"
             android:text="@{data.confirmPassword}"
-            android:background="#FFFFFF"
-            tools:cornerRadius="8dp"
-            tools:strokeColor="#CCCCCC"
-            tools:strokeWidth="1dp"
+            android:background="@drawable/shape_378d2514"
             android:textColor="#000000"
             android:textSize="16sp"/>
         <LinearLayout
@@ -111,33 +102,32 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:padding="15dp"
-            android:background="#E0E0E0"
-            tools:cornerRadius="8dp">
-            <TextView
+            android:background="@drawable/shape_aba07408">
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Values entered:"
+                android:text="@string/values_entered"
                 android:textSize="14sp"
                 android:textColor="#333333"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Regular: @{regularText}"
+                android:text="@string/regular_regulartext"
                 android:textSize="12sp"
                 android:textColor="#666666"
                 android:layout_marginTop="5dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Password: [hidden]"
+                android:text="@string/password_hidden"
                 android:textSize="12sp"
                 android:textColor="#666666"
                 android:layout_marginTop="5dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Confirm: [hidden]"
+                android:text="@string/confirm_hidden"
                 android:textSize="12sp"
                 android:textColor="#666666"
                 android:layout_marginTop="5dp"/>

@@ -20,96 +20,102 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Implemented Attributes Test"
+                    android:text="@string/implemented_attributes_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="20dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1. alignCenterVerticalView &amp; alignCenterHorizontalView"
+                    android:text="@string/str_1_aligncenterverticalview_align"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="10dp"/>
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="wrap_content"
                     android:layout_height="200dp"
-                    android:orientation="vertical"
                     android:background="#f0f0f0">
-                    <TextView
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:id="@+id/target1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Target View"
+                        android:text="@string/target_view"
                         android:background="#ff0000"
                         android:textColor="#ffffff"
                         android:padding="10dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
                         android:layout_marginStart="50dp"
-                        android:layout_marginTop="50dp"
-                        android:layout_gravity="top|start"/>
-                    <TextView
+                        android:layout_marginTop="50dp"/>
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Centered V"
+                        android:text="@string/centered_v"
                         android:background="#00ff00"
                         android:padding="10dp"
+                        app:layout_constraintTop_toTopOf="@id/target1"
+                        app:layout_constraintEnd_toEndOf="parent"
                         android:layout_marginEnd="20dp"
-                        android:layout_gravity="end"/>
-                    <TextView
+                        app:layout_constraintBottom_toBottomOf="@id/target1"/>
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Centered H"
+                        android:text="@string/centered_h"
                         android:background="#0000ff"
                         android:textColor="#ffffff"
                         android:padding="10dp"
+                        app:layout_constraintStart_toStartOf="@id/target1"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         android:layout_marginBottom="20dp"
-                        android:layout_gravity="bottom"/>
-                </LinearLayout>
-                <TextView
+                        app:layout_constraintEnd_toEndOf="@id/target1"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2. idealWidth &amp; idealHeight"
+                    android:text="@string/str_2_idealwidth_idealheight"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:background="#ffcccc"
                     android:padding="10dp">
-                    <TextView
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Ideal Size View (200x100)"/>
-                </LinearLayout>
-                <TextView
+                        android:text="@string/ideal_size_view_200x100"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="3. clipToBounds"
+                    android:text="@string/str_3_cliptobounds"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="150dp"
                     android:layout_height="50dp"
-                    android:orientation="vertical"
                     android:background="#ccffcc">
-                    <TextView
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="This text is very long and should be clipped to the bounds of the parent view"
-                        android:textSize="16sp"/>
-                </LinearLayout>
-                <TextView
+                        android:text="@string/this_text_is_very_long_and_shou"
+                        android:textSize="16sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="4. direction &amp; distribution"
+                    android:text="@string/str_4_direction_distribution"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
@@ -119,19 +125,19 @@
                     android:layout_height="50dp"
                     android:orientation="horizontal"
                     android:background="#ccccff">
-                    <TextView
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="1"
                         android:background="#ff6666"
                         android:textAlignment="center"/>
-                    <TextView
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="2"
                         android:background="#66ff66"
                         android:textAlignment="center"/>
-                    <TextView
+                    <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="3"
@@ -139,76 +145,72 @@
                         android:textColor="#ffffff"
                         android:textAlignment="center"/>
                 </LinearLayout>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="5. edgeInset (Label padding)"
+                    android:text="@string/str_5_edgeinset_label_padding"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Text with edgeInset"
+                    android:text="@string/text_with_edgeinset"
                     android:background="#ffffcc"
                     android:textSize="16sp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="6. Button State Attributes"
+                    android:text="@string/str_6_button_state_attributes"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <Button
+                <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tap Me (tapBackground)"
-                    android:background="#cccccc"
+                    android:text="@string/tap_me_tapbackground"
+                    android:background="@drawable/selector_7767bdab"
                     android:textColor="#000000"
                     android:padding="10dp"
-                    tools:cornerRadius="8dp"
                     android:layout_marginBottom="10dp"/>
-                <Button
+                <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Highlight Me"
-                    android:background="#0000ff"
+                    android:text="@string/highlight_me"
+                    android:background="@drawable/ripple_c5e9f536"
                     android:textColor="#ffffff"
                     android:padding="10dp"
-                    tools:cornerRadius="8dp"
                     android:layout_marginBottom="10dp"/>
-                <Button
+                <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Disabled Button"
-                    android:background="#0000ff"
+                    android:text="@string/disabled_button"
+                    android:background="@drawable/selector_9de1c5ef"
                     android:textColor="#ffffff"
                     android:enabled="false"
-                    android:padding="10dp"
-                    tools:cornerRadius="8dp"/>
-                <TextView
+                    android:padding="10dp"/>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="7. TextField Events"
+                    android:text="@string/str_7_textfield_events"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <EditText
+                <com.kotlinjsonui.views.KjuiEditText
                     android:id="@+id/textField1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="Type something..."
+                    android:hint="@string/type_something"
                     android:text="@{data.textFieldValue}"
                     android:textSize="16sp"
-                    tools:borderStyle="roundedRect"
                     android:layout_marginBottom="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="8. Radio Custom Icons"
+                    android:text="@string/str_8_radio_custom_icons"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
@@ -221,50 +223,51 @@
                         android:id="@+id/radio1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Option 1"
+                        android:text="@string/option_1"
                         android:layout_marginBottom="5dp"/>
                     <RadioButton
                         android:id="@+id/radio2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Option 2"
+                        android:text="@string/option_2"
                         android:layout_marginBottom="5dp"/>
                 </LinearLayout>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="9. Segment Control"
+                    android:text="@string/str_9_segment_control"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <TabLayout
+                <com.google.android.material.tabs.TabLayout
                     android:id="@+id/segment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:entries="First,Second,Third"
+                    app:items="First|Second|Third"
                     android:layout_marginBottom="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="10. SelectBox Attributes"
+                    android:text="@string/str_10_selectbox_attributes"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="10dp"/>
-                <Spinner
+                <com.kotlinjsonui.views.KjuiSelectBox
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="#FFFFFF"
-                    tools:entries="Option A,Option B,Option C"
+                    app:placeholder="Choose an option"
+                    app:items="Option A|Option B|Option C"
                     android:textSize="16sp"
                     android:textColor="#0000ff"
                     android:layout_marginBottom="10dp"
                     android:padding="15dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="11. Web Component"
+                    android:text="@string/str_11_web_component"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"

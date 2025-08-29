@@ -1,10 +1,10 @@
 {
-  "timestamp": "2025-08-29 07:27:44",
+  "timestamp": "2025-08-29 10:41:21",
   "statistics": {
-    "total_files": 53,
-    "successful_parses": 53,
+    "total_files": 54,
+    "successful_parses": 54,
     "failed_parses": 0,
-    "total_components": 851,
+    "total_components": 857,
     "unique_component_types": [
       "ScrollView",
       "View",
@@ -86,6 +86,10 @@
       "maximumDate",
       "marginBottom",
       "enabled",
+      "children",
+      "textColor",
+      "alignCenterVerticalView",
+      "alignCenterHorizontalView",
       "sections",
       "layout",
       "columns",
@@ -98,7 +102,6 @@
       "selectedValue",
       "indicatorStyle",
       "url",
-      "children",
       "colors",
       "startPoint",
       "endPoint",
@@ -135,8 +138,6 @@
       "maxHeight",
       "hideOnFocused",
       "hintAttributes",
-      "alignCenterVerticalView",
-      "alignCenterHorizontalView",
       "idealWidth",
       "idealHeight",
       "clipToBounds",
@@ -203,7 +204,6 @@
       "isOnline",
       "visibility",
       "opacity",
-      "textColor",
       "hidden",
       "widthWeight"
     ]
@@ -264,11 +264,17 @@
         "location": "root[0][21]"
       }
     ],
-    "collection_test.json": [
+    "center_align_test.json": [
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][1]"
+        "message": "Attribute 'alignCenterVerticalView' with value '\"reference_view\"' not handled for type 'Label'",
+        "location": "root[1][1]"
       },
+      {
+        "message": "Attribute 'alignCenterHorizontalView' with value '\"reference_view\"' not handled for type 'Label'",
+        "location": "root[1][2]"
+      }
+    ],
+    "collection_test.json": [
       {
         "message": "Attribute 'sections' with value '[{\"header\"=>\"SectionHeader\", \"cell\"=>\"BasicCell\", \"footer\"=>\"SectionFooter\", \"columns\"=>2}]' not handled for type 'Collection'",
         "location": "root[0][0][2]"
@@ -276,10 +282,6 @@
       {
         "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
         "location": "root[0][0][2]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][3]"
       },
       {
         "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
@@ -294,10 +296,6 @@
         "location": "root[0][0][4]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][5]"
-      },
-      {
         "message": "Attribute 'sections' with value '[{\"header\"=>\"HorizontalHeader\", \"cell\"=>\"HorizontalCard\", \"columns\"=>1}]' not handled for type 'Collection'",
         "location": "root[0][0][6]"
       },
@@ -306,20 +304,12 @@
         "location": "root[0][0][6]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][7]"
-      },
-      {
         "message": "Attribute 'sections' with value '[{\"header\"=>\"CategoryHeader\", \"cell\"=>\"ProductCell\", \"footer\"=>\"CategoryFooter\", \"columns\"=>2}]' not handled for type 'Collection'",
         "location": "root[0][0][8]"
       },
       {
         "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
         "location": "root[0][0][8]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][9]"
       },
       {
         "message": "Attribute 'sections' with value '[{\"header\"=>\"CategoryHeader\", \"cell\"=>\"ProductCell\", \"footer\"=>\"CategoryFooter\", \"columns\"=>3}, {\"header\"=>\"FeaturedHeader\", \"cell\"=>\"FeatureCell\", \"columns\"=>2}, {\"header\"=>\"GridHeader\", \"cell\"=>\"ImageCell\", \"footer\"=>\"GridFooter\", \"columns\"=>4}]' not handled for type 'Collection'",
@@ -428,28 +418,12 @@
     ],
     "custom_component_test.json": [
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][1]"
-      },
-      {
         "message": "Attribute 'subtitle' with value '\"This is a static subtitle\"' not handled for type 'SampleCard'",
         "location": "root[0][0][2]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][3]"
-      },
-      {
         "message": "Attribute 'subtitle' with value '\"@{cardSubtitle}\"' not handled for type 'SampleCard'",
         "location": "root[0][0][4]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"medium\"' not handled for type 'Label'",
-        "location": "root[0][0][4][0][0]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][5]"
       },
       {
         "message": "Attribute 'subtitle' with value '\"First custom card\"' not handled for type 'SampleCard'",
@@ -462,10 +436,6 @@
       {
         "message": "Attribute 'subtitle' with value '\"Third custom card\"' not handled for type 'SampleCard'",
         "location": "root[0][0][6][2]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][0][7]"
       },
       {
         "message": "Attribute 'status' with value '\"Active\"' not handled for type 'StatusBadge'",
@@ -556,10 +526,6 @@
     ],
     "disabled_test.json": [
       {
-        "message": "Attribute 'disabledBackground' with value '\"#CCCCCC\"' not handled for type 'Button'",
-        "location": "root[0][5]"
-      },
-      {
         "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'Button'",
         "location": "root[0][5]"
       },
@@ -568,16 +534,8 @@
         "location": "root[0][7]"
       },
       {
-        "message": "Attribute 'disabledBackground' with value '\"#E0E0E0\"' not handled for type 'TextField'",
-        "location": "root[0][11]"
-      },
-      {
         "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'TextField'",
         "location": "root[0][11]"
-      },
-      {
-        "message": "Attribute 'disabledBackground' with value '\"#D0D0D0\"' not handled for type 'Button'",
-        "location": "root[0][14]"
       },
       {
         "message": "Attribute 'disabledFontColor' with value '\"#888888\"' not handled for type 'Button'",
@@ -590,10 +548,6 @@
         "location": "root"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][2]"
-      },
-      {
         "message": "Attribute 'keyboardType' with value '\"email\"' not handled for type 'TextField'",
         "location": "root[0][8]"
       },
@@ -602,20 +556,8 @@
         "location": "root[0][10]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][11]"
-      },
-      {
         "message": "Attribute 'keyboardType' with value '\"number\"' not handled for type 'TextField'",
         "location": "root[0][17]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][20]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][25]"
       },
       {
         "message": "Attribute 'flexible' with value 'true' not handled for type 'TextView'",
@@ -660,30 +602,12 @@
       {
         "message": "Attribute 'isOn' with value '\"@{agreeToTerms}\"' not handled for type 'Toggle'",
         "location": "root[0][32][0]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Button'",
-        "location": "root[0][33]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Button'",
-        "location": "root[0][34]"
-      }
-    ],
-    "horizontal_card.json": [
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[1]"
       }
     ],
     "image_cell.json": [
       {
         "message": "Attribute 'contentMode' with value '\"scaleAspectFill\"' not handled for type 'NetworkImage'",
         "location": "root[0]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[1]"
       }
     ],
     "implemented_attributes_test.json": [
@@ -724,19 +648,11 @@
         "location": "root[child][child][10]"
       },
       {
-        "message": "Attribute 'tapBackground' with value '\"#ff00ff\"' not handled for type 'Button'",
-        "location": "root[child][child][12]"
-      },
-      {
         "message": "Attribute 'hilightColor' with value '\"#ff0000\"' not handled for type 'Button'",
         "location": "root[child][child][13]"
       },
       {
         "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'Button'",
-        "location": "root[child][child][14]"
-      },
-      {
-        "message": "Attribute 'disabledBackground' with value '\"#f0f0f0\"' not handled for type 'Button'",
         "location": "root[child][child][14]"
       },
       {
@@ -822,12 +738,6 @@
       {
         "message": "Attribute 'javascriptEnabled' with value 'true' not handled for type 'Web'",
         "location": "root[child][child][24]"
-      }
-    ],
-    "include_test.json": [
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0][1][1][3][0]"
       }
     ],
     "keyboard_avoidance_test.json": [
@@ -962,17 +872,7 @@
         "location": "root[child][child][5]"
       }
     ],
-    "product_cell.json": [
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[0]"
-      }
-    ],
     "radio_icons_test.json": [
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][1]"
-      },
       {
         "message": "Attribute 'group' with value '\"defaultGroup\"' not handled for type 'Radio'",
         "location": "root[child][child][2]"
@@ -984,10 +884,6 @@
       {
         "message": "Attribute 'group' with value '\"defaultGroup\"' not handled for type 'Radio'",
         "location": "root[child][child][4]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][5]"
       },
       {
         "message": "Attribute 'group' with value '\"customGroup\"' not handled for type 'Radio'",
@@ -1026,10 +922,6 @@
         "location": "root[child][child][8]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][9]"
-      },
-      {
         "message": "Attribute 'selectedValue' with value '\"@{selectedColor}\"' not handled for type 'Radio'",
         "location": "root[child][child][10]"
       }
@@ -1038,22 +930,6 @@
       {
         "message": "Attribute 'margins' with value '[20, 25, 20, 25]' not handled for type 'Label'",
         "location": "root[child][6][0]"
-      },
-      {
-        "message": "Attribute 'alignTopView' with value '\"anchor_with_margin\"' not handled for type 'Label'",
-        "location": "root[child][6][1]"
-      },
-      {
-        "message": "Attribute 'alignBottomView' with value '\"anchor_with_margin\"' not handled for type 'Label'",
-        "location": "root[child][6][2]"
-      },
-      {
-        "message": "Attribute 'alignLeftView' with value '\"anchor_with_margin\"' not handled for type 'Label'",
-        "location": "root[child][6][3]"
-      },
-      {
-        "message": "Attribute 'alignRightView' with value '\"anchor_with_margin\"' not handled for type 'Label'",
-        "location": "root[child][6][4]"
       },
       {
         "message": "Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'",
@@ -1070,26 +946,6 @@
       {
         "message": "Attribute 'margins' with value '[15, 20, 15, 20]' not handled for type 'Label'",
         "location": "root[child][12][2]"
-      },
-      {
-        "message": "Attribute 'alignLeftView' with value '\"chain_middle\"' not handled for type 'Label'",
-        "location": "root[child][14][3]"
-      },
-      {
-        "message": "Attribute 'alignRightView' with value '\"chain_start\"' not handled for type 'Label'",
-        "location": "root[child][14][4]"
-      },
-      {
-        "message": "Attribute 'alignTopView' with value '\"ref1\"' not handled for type 'Label'",
-        "location": "root[child][16][3]"
-      },
-      {
-        "message": "Attribute 'alignRightView' with value '\"ref2\"' not handled for type 'Label'",
-        "location": "root[child][16][3]"
-      },
-      {
-        "message": "Attribute 'alignLeftView' with value '\"ref1\"' not handled for type 'Label'",
-        "location": "root[child][16][4]"
       }
     ],
     "scroll_test.json": [
@@ -1122,16 +978,8 @@
     ],
     "segment_test.json": [
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][1]"
-      },
-      {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedBasic}\"' not handled for type 'Segment'",
         "location": "root[child][child][2]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][3]"
       },
       {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedColor}\"' not handled for type 'Segment'",
@@ -1146,10 +994,6 @@
         "location": "root[child][child][4]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][5]"
-      },
-      {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedEvent}\"' not handled for type 'Segment'",
         "location": "root[child][child][6]"
       },
@@ -1158,19 +1002,11 @@
         "location": "root[child][child][6]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][8]"
-      },
-      {
         "message": "Attribute 'selectedIndex' with value '\"@{selectedDisabled}\"' not handled for type 'Segment'",
         "location": "root[child][child][9]"
       }
     ],
     "switch_events_test.json": [
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][1]"
-      },
       {
         "message": "Attribute 'isOn' with value '\"@{notificationEnabled}\"' not handled for type 'Switch'",
         "location": "root[child][child][2]"
@@ -1180,20 +1016,12 @@
         "location": "root[child][child][2]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][4]"
-      },
-      {
         "message": "Attribute 'isOn' with value '\"@{darkModeEnabled}\"' not handled for type 'Switch'",
         "location": "root[child][child][5]"
       },
       {
         "message": "Attribute 'onValueChange' with value '\"handleDarkModeChange\"' not handled for type 'Switch'",
         "location": "root[child][child][5]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][7]"
       },
       {
         "message": "Attribute 'isOn' with value '\"@{wifiEnabled}\"' not handled for type 'Switch'",
@@ -1230,10 +1058,6 @@
       {
         "message": "Attribute 'onValueChange' with value '\"handleLocationChange\"' not handled for type 'Switch'",
         "location": "root[child][child][10]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][11]"
       }
     ],
     "text_decoration_test.json": [
@@ -1308,10 +1132,6 @@
     ],
     "textfield_events_test.json": [
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][1]"
-      },
-      {
         "message": "Attribute 'input' with value '\"email\"' not handled for type 'TextField'",
         "location": "root[child][child][2]"
       },
@@ -1324,10 +1144,6 @@
         "location": "root[child][child][2]"
       },
       {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][4]"
-      },
-      {
         "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
         "location": "root[child][child][5]"
       },
@@ -1338,10 +1154,6 @@
       {
         "message": "Attribute 'onTextChange' with value '\"handlePasswordChange\"' not handled for type 'TextField'",
         "location": "root[child][child][5]"
-      },
-      {
-        "message": "Attribute 'fontWeight' with value '\"semibold\"' not handled for type 'Label'",
-        "location": "root[child][child][7]"
       },
       {
         "message": "Attribute 'accessoryBackground' with value '\"#007AFF\"' not handled for type 'TextField'",

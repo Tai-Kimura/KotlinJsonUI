@@ -23,15 +23,19 @@ module XmlGenerator
           
         # SelectBox/Spinner
         when 'selectedItem'
-          return { namespace: 'tools', name: 'selectedItem', value: value }
+          return { namespace: 'app', name: 'selectedValue', value: value }
         when 'entries', 'items'
           if value.is_a?(Array)
-            return { namespace: 'tools', name: 'entries', value: value.join(',') }
+            return { namespace: 'app', name: 'items', value: value.join('|') }
           else
-            return { namespace: 'tools', name: 'entries', value: value }
+            return { namespace: 'app', name: 'items', value: value }
           end
         when 'selectItemType'
           return { namespace: 'tools', name: 'selectItemType', value: value }
+        when 'hintColor'
+          return { namespace: 'app', name: 'hintColor', value: value }
+        when 'prompt'
+          return { namespace: 'app', name: 'placeholder', value: value }
           
         # Progress/Slider
         when 'progress'

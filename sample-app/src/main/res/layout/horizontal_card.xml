@@ -16,22 +16,20 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="12dp"
-        android:background="#FFFFFF"
-        tools:cornerRadius="12dp">
-        <LinearLayout
+        android:background="@drawable/shape_b0f6b038">
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:orientation="vertical"
-            android:background="#E3F2FD"
-            tools:cornerRadius="8dp"/>
-        <TextView
+            android:background="@drawable/shape_3928b28e"/>
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{data.title}"
             android:textSize="14sp"
             android:textColor="#333333"
+            android:textStyle="bold"
             android:layout_marginTop="8dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{data.description}"

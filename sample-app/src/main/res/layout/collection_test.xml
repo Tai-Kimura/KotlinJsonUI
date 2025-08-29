@@ -14,98 +14,104 @@
             name="viewModel"
             type="com.example.kotlinjsonui.sample.viewmodels.CollectionTestViewModel"/>
     </data>
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:background="#F5F5F7">
         <ScrollView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="CollectionView Test"
+                    android:text="@string/collectionview_test"
                     android:textSize="28sp"
                     android:textStyle="bold"
                     android:textColor="#000000"
                     android:layout_marginBottom="20dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Basic Collection with Headers &amp; Footers"
+                    android:text="@string/basic_collection_with_headers_f"
                     android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="#000000"
                     android:layout_marginBottom="12dp"/>
                 <RecyclerView
                     android:layout_width="wrap_content"
                     android:layout_height="300dp"
-                    tools:entries="@{data.items1}"
+                    app:items="@{data.items1}"
                     android:layout_marginBottom="20dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Grid Collection with Multiple Cell Types"
+                    android:text="@string/grid_collection_with_multiple_c"
                     android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="#000000"
                     android:layout_marginBottom="12dp"/>
                 <RecyclerView
                     android:layout_width="wrap_content"
                     android:layout_height="400dp"
-                    tools:entries="@{data.mixedItems}"
+                    app:items="@{data.mixedItems}"
                     android:layout_marginBottom="20dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Horizontal Collection"
+                    android:text="@string/horizontal_collection"
                     android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="#000000"
                     android:layout_marginBottom="12dp"/>
                 <RecyclerView
                     android:layout_width="wrap_content"
                     android:layout_height="150dp"
-                    tools:entries="@{data.horizontalItems}"
+                    app:items="@{data.horizontalItems}"
                     android:layout_marginBottom="20dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sectioned Collection"
+                    android:text="@string/sectioned_collection"
                     android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="#000000"
                     android:layout_marginBottom="12dp"/>
                 <RecyclerView
                     android:layout_width="wrap_content"
                     android:layout_height="400dp"
-                    tools:entries="@{data.sectionedItems}"
+                    app:items="@{data.sectionedItems}"
                     android:layout_marginBottom="20dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Multi-Section Collection"
+                    android:text="@string/multi_section_collection"
                     android:textSize="20sp"
+                    android:textStyle="bold"
                     android:textColor="#000000"
                     android:layout_marginBottom="12dp"/>
                 <RecyclerView
                     android:layout_width="wrap_content"
                     android:layout_height="600dp"
-                    tools:entries="@{data.multiSectionItems}"/>
-                <Button
+                    app:items="@{data.multiSectionItems}"/>
+                <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
                     android:layout_height="44dp"
                     android:textColor="#FFFFFF"
-                    tools:cornerRadius="8dp"
                     android:layout_marginTop="20dp"
-                    android:text="Dynamic: @{dynamicModeStatus}"
+                    android:text="@string/dynamic_dynamicmodestatus"
                     android:onClick="toggleDynamicMode"
-                    android:background="#5856D6"
+                    android:background="@drawable/ripple_b39393a0"
                     android:textSize="14sp"
+                    android:textStyle="bold"
                     android:padding="8dp"/>
             </LinearLayout>
         </ScrollView>
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

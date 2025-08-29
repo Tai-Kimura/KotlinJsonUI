@@ -23,81 +23,85 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="#F5F5F5">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Segment Control Test"
+                    android:text="@string/segment_control_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
                     android:layout_gravity="center_horizontal"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Basic Segment"
+                    android:text="@string/basic_segment"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="10dp"
                     android:layout_marginStart="20dp"/>
-                <TabLayout
+                <com.google.android.material.tabs.TabLayout
                     android:id="@+id/basicSegment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:entries="Option 1,Option 2,Option 3"
+                    app:items="Option 1|Option 2|Option 3"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Segment with Custom Colors"
+                    android:text="@string/segment_with_custom_colors"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
-                <TabLayout
+                <com.google.android.material.tabs.TabLayout
                     android:id="@+id/colorSegment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:entries="Red,Green,Blue"
+                    app:items="Red|Green|Blue"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Segment with onChange Event"
+                    android:text="@string/segment_with_onchange_event"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
-                <TabLayout
+                <com.google.android.material.tabs.TabLayout
                     android:id="@+id/eventSegment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:entries="Small,Medium,Large,Extra Large"
+                    app:items="Small|Medium|Large|Extra Large"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:id="@+id/segmentStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selected: @{selectedSize}"
+                    android:text="@string/selected_selectedsize"
                     android:textSize="14sp"
                     android:textColor="#666666"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Disabled Segment"
+                    android:text="@string/disabled_segment"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
-                <TabLayout
+                <com.google.android.material.tabs.TabLayout
                     android:id="@+id/disabledSegment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:entries="Disabled 1,Disabled 2,Disabled 3"
+                    app:items="Disabled 1|Disabled 2|Disabled 3"
                     android:enabled="false"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"

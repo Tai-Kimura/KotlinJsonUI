@@ -23,31 +23,32 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="#F5F5F5">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Switch Events Test"
+                    android:text="@string/switch_events_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
                     android:layout_gravity="center_horizontal"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Switch with onValueChange"
+                    android:text="@string/switch_with_onvaluechange"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="10dp"
                     android:layout_marginStart="20dp"/>
                 <Switch
                     android:id="@+id/notificationSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Enable Notifications"
+                    android:text="@string/enable_notifications"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:id="@+id/notificationStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -56,23 +57,24 @@
                     android:textColor="#666666"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Switch with Custom Tint"
+                    android:text="@string/switch_with_custom_tint"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
                 <Switch
                     android:id="@+id/darkModeSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Dark Mode"
+                    android:text="@string/dark_mode"
                     android:tint="#FF6B6B"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@{data.darkModeStatus}"
@@ -80,18 +82,19 @@
                     android:textColor="#666666"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Multiple Switches with Events"
+                    android:text="@string/multiple_switches_with_events"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
                 <Switch
                     android:id="@+id/wifiSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Wi-Fi"
+                    android:text="@string/wi_fi"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
@@ -99,7 +102,7 @@
                     android:id="@+id/bluetoothSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bluetooth"
+                    android:text="@string/bluetooth"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
@@ -107,16 +110,17 @@
                     android:id="@+id/locationSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Location Services"
+                    android:text="@string/location_services"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Status: @{connectionStatus}"
+                    android:text="@string/status_connectionstatus"
                     android:textSize="14sp"
                     android:textColor="#666666"
+                    android:textStyle="bold"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="20dp"/>
             </LinearLayout>

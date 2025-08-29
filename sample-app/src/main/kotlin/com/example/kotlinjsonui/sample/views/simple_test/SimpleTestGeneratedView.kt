@@ -75,11 +75,13 @@ fun SimpleTestGeneratedView(
         Text(
             text = "Simple Test",
             fontSize = 24.sp,
+            color = Color(android.graphics.Color.parseColor("#000000")),
             modifier = Modifier
         )
         Text(
             text = "Testing basic components",
             fontSize = 16.sp,
+            color = Color(android.graphics.Color.parseColor("#666666")),
             modifier = Modifier.padding(top = 8.dp)
         )
         Button(
@@ -89,7 +91,10 @@ fun SimpleTestGeneratedView(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                         )
         ) {
-            Text("Test Button")
+            Text(
+                text = "Test Button",
+                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            )
         }
     }    }
     // >>> GENERATED_CODE_END

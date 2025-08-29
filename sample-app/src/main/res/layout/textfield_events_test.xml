@@ -23,79 +23,80 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="#F5F5F5">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TextField Events Test"
+                    android:text="@string/textfield_events_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
                     android:layout_gravity="center_horizontal"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="onTextChange Event Test"
+                    android:text="@string/ontextchange_event_test"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="10dp"
                     android:layout_marginStart="20dp"/>
-                <EditText
+                <com.kotlinjsonui.views.KjuiEditText
                     android:id="@+id/emailField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@{data.email}"
-                    android:hint="Enter email"
-                    tools:borderStyle="roundedRect"
+                    android:hint="@string/enter_email"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:id="@+id/emailStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Email: @{emailDisplay}"
+                    android:text="@string/email_emaildisplay"
                     android:textSize="14sp"
                     android:textColor="#666666"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Secure TextField Test"
+                    android:text="@string/secure_textfield_test"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
-                <EditText
+                <com.kotlinjsonui.views.KjuiEditText
                     android:id="@+id/passwordField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@{data.password}"
-                    android:hint="Enter password"
-                    tools:borderStyle="roundedRect"
+                    android:hint="@string/enter_password"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Password length: @{passwordLength}"
+                    android:text="@string/password_length_passwordlength"
                     android:textSize="14sp"
                     android:textColor="#666666"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Input Accessory Test"
+                    android:text="@string/input_accessory_test"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
-                <EditText
+                <com.kotlinjsonui.views.KjuiEditText
                     android:id="@+id/notesField"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@{data.notes}"
-                    android:hint="Enter notes"
+                    android:hint="@string/enter_notes"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>

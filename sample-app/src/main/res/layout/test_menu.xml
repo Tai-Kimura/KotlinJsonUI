@@ -24,432 +24,401 @@
             android:orientation="vertical"
             android:padding="20dp"
             android:background="#F5F5F5">
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="KotlinJsonUI Feature Tests"
+                android:text="@string/kotlinjsonui_feature_tests"
                 android:textSize="28sp"
                 android:textAlignment="center"
                 android:layout_marginBottom="20dp"
                 android:textStyle="bold"
                 android:textColor="#000000"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:layout_marginBottom="20dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_4c321718"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp"
-                tools:cornerRadius="6dp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Layout &amp; Positioning"
+                android:text="@string/layout_positioning"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="55dp"
-                android:text="Margins &amp; Padding Test"
+                android:text="@string/margins_padding_test"
                 android:onClick="navigateToMarginsTest"
                 android:layout_marginBottom="8dp"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
-                tools:cornerRadius="8dp"
+                android:textStyle="bold"
                 android:padding="12dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="55dp"
-                android:text="Alignment Test"
+                android:text="@string/alignment_test"
                 android:onClick="navigateToAlignmentTest"
                 android:layout_marginBottom="8dp"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
-                tools:cornerRadius="8dp"
+                android:textStyle="bold"
                 android:padding="12dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="55dp"
-                android:text="Alignment Combo Test"
+                android:text="@string/alignment_combo_test"
                 android:onClick="navigateToAlignmentComboTest"
                 android:layout_marginBottom="8dp"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
-                tools:cornerRadius="8dp"
+                android:textStyle="bold"
                 android:padding="12dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Weight Distribution Test"
+                android:text="@string/weight_distribution_test"
                 android:onClick="navigateToWeightTest"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Weight + Fixed Size Test"
+                android:text="@string/weight_fixed_size_test"
                 android:onClick="navigateToWeightTestWithFixed"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Width Test"
+                android:text="@string/width_test"
                 android:onClick="navigateToWidthTest"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Relative Positioning Test"
+                android:text="@string/relative_positioning_test"
                 android:onClick="navigateToRelativeTest"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Style &amp; Appearance"
+                android:text="@string/style_appearance"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Visibility &amp; Opacity Test"
+                android:text="@string/visibility_opacity_test"
                 android:onClick="navigateToVisibilityTest"
-                android:background="#34C759"
+                android:background="@drawable/ripple_d7b81a7f"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Disabled States Test"
+                android:text="@string/disabled_states_test"
                 android:onClick="navigateToDisabledTest"
-                android:background="#34C759"
+                android:background="@drawable/ripple_d7b81a7f"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Text Features"
+                android:text="@string/text_features"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Text Styling Test"
+                android:text="@string/text_styling_test"
                 android:onClick="navigateToTextStylingTest"
-                android:background="#FF9500"
+                android:background="@drawable/ripple_4c192b00"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Text Decoration Test"
+                android:text="@string/text_decoration_test"
                 android:onClick="navigateToTextDecorationTest"
-                android:background="#FF9500"
+                android:background="@drawable/ripple_4c192b00"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Line Break &amp; Spacing Test"
+                android:text="@string/line_break_spacing_test"
                 android:onClick="navigateToLineBreakTest"
-                android:background="#FF9500"
+                android:background="@drawable/ripple_4c192b00"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Partial Attributes Test"
+                android:text="@string/partial_attributes_test"
                 android:onClick="navigateToPartialAttributesTest"
-                android:background="#FF9500"
+                android:background="@drawable/ripple_4c192b00"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Input Components"
+                android:text="@string/input_components"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField Test"
+                android:text="@string/textfield_test"
                 android:onClick="navigateToTextFieldTest"
-                android:background="#AF52DE"
+                android:background="@drawable/ripple_0f63ba13"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField Events Test"
+                android:text="@string/textfield_events_test"
                 android:onClick="navigateToTextFieldEventsTest"
-                android:background="#AF52DE"
+                android:background="@drawable/ripple_0f63ba13"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Secure Field Test"
+                android:text="@string/secure_field_test"
                 android:onClick="navigateToSecureFieldTest"
-                android:background="#AF52DE"
+                android:background="@drawable/ripple_0f63ba13"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView Hint Test"
+                android:text="@string/textview_hint_test"
                 android:onClick="navigateToTextViewHintTest"
-                android:background="#AF52DE"
+                android:background="@drawable/ripple_0f63ba13"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Date Picker Test"
+                android:text="@string/date_picker_test"
                 android:onClick="navigateToDatePickerTest"
-                android:background="#AF52DE"
+                android:background="@drawable/ripple_0f63ba13"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="UI Components"
+                android:text="@string/ui_components"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Components Test"
+                android:text="@string/components_test"
                 android:onClick="navigateToComponentsTest"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Button Test"
+                android:text="@string/button_test"
                 android:onClick="navigateToButtonTest"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Button Enabled Test"
+                android:text="@string/button_enabled_test"
                 android:onClick="navigateToButtonEnabledTest"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Switch Events Test"
+                android:text="@string/switch_events_test"
                 android:onClick="navigateToSwitchEventsTest"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Radio Custom Icons Test"
+                android:text="@string/radio_custom_icons_test"
                 android:onClick="navigateToRadioIconsTest"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Segment Control Test"
+                android:text="@string/segment_control_test"
                 android:onClick="navigateToSegmentTest"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Advanced Features"
+                android:text="@string/advanced_features"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Binding Properties Test"
+                android:text="@string/binding_properties_test"
                 android:onClick="navigateToBindingTest"
-                android:background="#FF3B30"
+                android:background="@drawable/ripple_63581083"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Converter Components Test"
+                android:text="@string/converter_components_test"
                 android:onClick="navigateToConverterTest"
-                android:background="#FF3B30"
+                android:background="@drawable/ripple_63581083"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Custom Component Test"
+                android:text="@string/custom_component_test"
                 android:onClick="navigateToCustomComponentTest"
-                android:background="#FF3B30"
+                android:background="@drawable/ripple_63581083"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="User Profile Test"
+                android:text="@string/user_profile_test"
                 android:onClick="navigateToUserProfileTest"
-                android:background="#FF3B30"
+                android:background="@drawable/ripple_63581083"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Include Component Test"
+                android:text="@string/include_component_test"
                 android:onClick="navigateToIncludeTest"
-                android:background="#FF3B30"
+                android:background="@drawable/ripple_63581083"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Forms &amp; Scrolling"
+                android:text="@string/forms_scrolling"
                 android:textSize="20sp"
                 android:textColor="#666666"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Form Test"
+                android:text="@string/form_test"
                 android:onClick="navigateToFormTest"
-                android:background="#5AC8FA"
+                android:background="@drawable/ripple_55316544"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Collection Test"
+                android:text="@string/collection_test"
                 android:onClick="navigateToCollectionTest"
-                android:background="#5AC8FA"
+                android:background="@drawable/ripple_55316544"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Keyboard Avoidance Test"
+                android:text="@string/keyboard_avoidance_test"
                 android:onClick="navigateToKeyboardAvoidanceTest"
-                android:background="#5AC8FA"
+                android:background="@drawable/ripple_55316544"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Scroll Test"
+                android:text="@string/scroll_test"
                 android:onClick="navigateToScrollTest"
-                android:background="#5AC8FA"
+                android:background="@drawable/ripple_55316544"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🔥 Complete Test Suite"
+                android:text="@string/complete_test_suite"
                 android:textSize="20sp"
                 android:textColor="#FF0000"
                 android:textStyle="bold"
                 android:layout_marginBottom="15dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🔥 All Implemented Attributes Test"
+                android:text="@string/all_implemented_attributes_test"
                 android:onClick="navigateToImplementedAttributesTest"
-                android:background="#00C853"
+                android:background="@drawable/ripple_e4d3c9ab"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="20dp"/>
         </LinearLayout>
     </ScrollView>

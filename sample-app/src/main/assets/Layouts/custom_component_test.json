@@ -262,7 +262,7 @@
     },
     {
       "name": "statusColor",
-      "class": "fontColor",
+      "class": "Color",
       "defaultValue": "Color.Green"
     },
     {

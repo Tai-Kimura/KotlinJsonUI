@@ -23,17 +23,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{data.title}"
@@ -41,21 +41,22 @@
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginBottom="24dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Personal Information"
+                android:text="@string/personal_information"
                 android:textSize="20sp"
                 android:textColor="#007AFF"
+                android:textStyle="bold"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="First Name"
+                android:text="@string/first_name"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/firstName"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -63,19 +64,16 @@
                 android:text="@{data.firstName}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Last Name"
+                android:text="@string/last_name"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/lastName"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -83,19 +81,16 @@
                 android:text="@{data.lastName}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Email Address"
+                android:text="@string/email_address"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/email"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -103,19 +98,16 @@
                 android:text="@{data.email}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phone Number"
+                android:text="@string/phone_number"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/phone"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -123,26 +115,24 @@
                 android:text="@{data.phone}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="24dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="24dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Address Information"
+                android:text="@string/address_information"
                 android:textSize="20sp"
                 android:textColor="#007AFF"
+                android:textStyle="bold"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Street Address"
+                android:text="@string/street_address"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/address"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -150,19 +140,16 @@
                 android:text="@{data.address}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="City"
+                android:text="@string/city"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/city"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -170,19 +157,16 @@
                 android:text="@{data.city}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ZIP Code"
+                android:text="@string/zip_code"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/zipCode"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -190,19 +174,16 @@
                 android:text="@{data.zipCode}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Country"
+                android:text="@string/country"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/country"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -210,26 +191,24 @@
                 android:text="@{data.country}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="24dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="24dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Professional Information"
+                android:text="@string/professional_information"
                 android:textSize="20sp"
                 android:textColor="#007AFF"
+                android:textStyle="bold"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Company"
+                android:text="@string/company"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/company"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -237,19 +216,16 @@
                 android:text="@{data.company}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Job Title"
+                android:text="@string/job_title"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/jobTitle"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
@@ -257,78 +233,69 @@
                 android:text="@{data.jobTitle}"
                 android:textSize="16sp"
                 android:textColor="#000000"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="24dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="24dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Additional Information"
+                android:text="@string/additional_information"
                 android:textSize="20sp"
                 android:textColor="#007AFF"
+                android:textStyle="bold"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bio (Flexible Height)"
+                android:text="@string/bio_flexible_height"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/bio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@{data.bio}"
-                android:hint="Tell us about yourself...&#10;This field will grow as you type"
+                android:hint="@string/tell_us_about_yourself_this_fie_14"
+                app:hintColor="#999999"
                 android:textSize="16sp"
                 android:textColor="#333333"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Notes (Fixed Height)"
+                android:text="@string/notes_fixed_height"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/notes"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:text="@{data.notes}"
-                android:hint="Additional notes...&#10;Fixed height field"
+                android:hint="@string/additional_notes_fixed_height_f_14"
+                app:hintColor="#AAAAAA"
                 android:textSize="16sp"
                 android:textColor="#333333"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="16dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="16dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Comments (Very Flexible)"
+                android:text="@string/comments_very_flexible"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="6dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/comments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@{data.comments}"
-                android:hint="Any comments?&#10;This can grow very tall (up to 300pt)"
+                android:hint="@string/any_comments_this_can_grow_very_14"
                 android:textSize="16sp"
                 android:textColor="#333333"
-                android:background="#FFFFFF"
-                tools:cornerRadius="10dp"
-                android:layout_marginBottom="24dp"
-                tools:strokeColor="#E0E0E0"
-                tools:strokeWidth="1dp"/>
+                android:background="@drawable/shape_bf88b6a8"
+                android:layout_marginBottom="24dp"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -339,33 +306,31 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="12dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="I agree to the Terms and Conditions"
+                    android:text="@string/i_agree_to_the_terms_and_condit"
                     android:textSize="14sp"
                     android:textColor="#333333"/>
             </LinearLayout>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:text="Submit Form"
+                android:text="@string/submit_form"
                 android:textSize="18sp"
                 android:textColor="#FFFFFF"
-                android:background="#007AFF"
-                tools:cornerRadius="12dp"
+                android:textStyle="bold"
+                android:background="@drawable/ripple_c012e144"
                 android:onClick="submitForm"
                 android:layout_marginBottom="16dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:text="Clear All Fields"
+                android:text="@string/clear_all_fields"
                 android:textSize="18sp"
                 android:textColor="#FFFFFF"
-                android:background="#FFFFFF"
-                tools:cornerRadius="12dp"
-                tools:strokeColor="#FF3B30"
-                tools:strokeWidth="2dp"
+                android:textStyle="bold"
+                android:background="@drawable/ripple_1e058583"
                 android:onClick="clearForm"
                 android:layout_marginBottom="40dp"/>
         </LinearLayout>

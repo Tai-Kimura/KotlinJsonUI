@@ -99,12 +99,14 @@ fun CustomComponentTestGeneratedView(
                 Text(
                     text = "Custom Component Test",
                     fontSize = 28.sp,
+                    color = Color(android.graphics.Color.parseColor("#000000")),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 0.dp, end = 0.dp, bottom = 20.dp, start = 0.dp)
                 )
                 Text(
                     text = "Testing SampleCard - Static Values",
                     fontSize = 18.sp,
+                    color = Color(android.graphics.Color.parseColor("#333333")),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 0.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -123,11 +125,13 @@ fun CustomComponentTestGeneratedView(
                         Text(
                             text = "Card Content",
                             fontSize = 14.sp,
+                            color = Color(android.graphics.Color.parseColor("#666666")),
                             modifier = Modifier
                         )
                         Text(
                             text = "This content is inside the custom component",
                             fontSize = 12.sp,
+                            color = Color(android.graphics.Color.parseColor("#999999")),
                             modifier = Modifier
                         )
                     }
@@ -135,6 +139,7 @@ fun CustomComponentTestGeneratedView(
                 Text(
                     text = "Testing SampleCard - Dynamic Values",
                     fontSize = 18.sp,
+                    color = Color(android.graphics.Color.parseColor("#333333")),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -153,6 +158,7 @@ fun CustomComponentTestGeneratedView(
                         Text(
                             text = "${data.itemCount}",
                             fontSize = 16.sp,
+                            color = Color(android.graphics.Color.parseColor("#5856D6")),
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier
                         )
@@ -166,7 +172,10 @@ fun CustomComponentTestGeneratedView(
                                                                     containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                                                 )
                             ) {
-                                Text("Increment")
+                                Text(
+                                    text = "Increment",
+                                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                )
                             }
                             Button(
                                 onClick = { },
@@ -176,7 +185,10 @@ fun CustomComponentTestGeneratedView(
                                                                     containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
                                                                 )
                             ) {
-                                Text("Decrement")
+                                Text(
+                                    text = "Decrement",
+                                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                )
                             }
                         }
                     }
@@ -184,6 +196,7 @@ fun CustomComponentTestGeneratedView(
                 Text(
                     text = "Testing Multiple Cards",
                     fontSize = 18.sp,
+                    color = Color(android.graphics.Color.parseColor("#333333")),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -201,6 +214,7 @@ fun CustomComponentTestGeneratedView(
                         Text(
                             text = "Content for card 1",
                             fontSize = 14.sp,
+                            color = Color(android.graphics.Color.parseColor("#2E7D32")),
                             modifier = Modifier
                         )
                     }
@@ -216,6 +230,7 @@ fun CustomComponentTestGeneratedView(
                         Text(
                             text = "Content for card 2",
                             fontSize = 14.sp,
+                            color = Color(android.graphics.Color.parseColor("#E65100")),
                             modifier = Modifier
                         )
                     }
@@ -231,6 +246,7 @@ fun CustomComponentTestGeneratedView(
                         Text(
                             text = "Content for card 3",
                             fontSize = 14.sp,
+                            color = Color(android.graphics.Color.parseColor("#6A1B9A")),
                             modifier = Modifier
                         )
                     }
@@ -238,6 +254,7 @@ fun CustomComponentTestGeneratedView(
                 Text(
                     text = "Testing StatusBadge - Non-Container Component",
                     fontSize = 18.sp,
+                    color = Color(android.graphics.Color.parseColor("#333333")),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -264,18 +281,22 @@ fun CustomComponentTestGeneratedView(
                 }
                 Button(
                     onClick = { },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.width(.dp),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                     colors = ButtonDefaults.buttonColors(
                                             containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
                                         )
                 ) {
-                    Text("Toggle Dynamic Mode")
+                    Text(
+                        text = "Toggle Dynamic Mode",
+                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    )
                 }
                 Text(
                     text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
+                    color = Color(android.graphics.Color.parseColor("#666666")),
                     modifier = Modifier,
                     textAlign = TextAlign.Center
                 )

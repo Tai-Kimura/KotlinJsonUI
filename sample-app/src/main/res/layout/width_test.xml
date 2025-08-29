@@ -14,82 +14,93 @@
             name="viewModel"
             type="com.example.kotlinjsonui.sample.viewmodels.WidthTestViewModel"/>
     </data>
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:background="#FFFFFF">
-        <Button
+        <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:textColor="#FFFFFF"
-            tools:cornerRadius="8dp"
-            android:text="Dynamic: @{dynamicModeStatus}"
+            android:text="@string/dynamic_dynamicmodestatus"
             android:onClick="toggleDynamicMode"
-            android:background="#5856D6"
+            android:background="@drawable/ripple_b39393a0"
             android:textSize="14sp"
-            android:padding="8dp"/>
-        <TextView
+            android:textStyle="bold"
+            android:padding="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Width Test"
+            android:text="@string/width_test"
             android:textSize="24sp"
             android:textColor="#000000"
-            android:layout_marginTop="20dp"/>
-        <TextView
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:text="matchParent width"
+            android:text="@string/matchparent_width"
             android:background="#FF6B6B"
             android:textColor="#FFFFFF"
             android:textAlignment="center"
-            android:layout_marginTop="20dp"/>
-        <TextView
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="200dp"
             android:layout_height="50dp"
-            android:text="Fixed width 200"
+            android:text="@string/fixed_width_200"
             android:background="#4ECDC4"
             android:textColor="#FFFFFF"
             android:textAlignment="center"
-            android:layout_marginTop="10dp"/>
-        <TextView
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="50dp"
-            android:text="wrapContent width"
+            android:text="@string/wrapcontent_width"
             android:background="#45B7D1"
             android:textColor="#FFFFFF"
             android:textAlignment="center"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:orientation="horizontal"
             android:background="#E0E0E0"
-            android:layout_marginTop="20dp">
-            <TextView
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="Weight 1"
+                android:text="@string/weight_1_2"
                 android:layout_weight="1"
                 android:background="#96CEB4"
                 android:textColor="#FFFFFF"
                 android:textAlignment="center"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Weight 2 (wrap)"
+                android:text="@string/weight_2_wrap"
                 android:layout_weight="2"
                 android:background="#FFEAA7"
                 android:textColor="#000000"
                 android:textAlignment="center"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:text="Weight 1"
+                android:text="@string/weight_1_2"
                 android:layout_weight="1"
                 android:background="#DFE6E9"
                 android:textColor="#000000"
                 android:textAlignment="center"/>
         </LinearLayout>
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -22,17 +22,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,109 +40,112 @@
                 android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All margins: [20, 20, 20, 20]"
+                android:text="@string/all_margins_20_20_20_20"
                 android:background="#FFE0E0"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Left margin: 40"
+                android:text="@string/left_margin_40"
                 android:layout_marginStart="40dp"
                 android:layout_marginTop="10dp"
                 android:background="#E0FFE0"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Right margin: 40"
+                android:text="@string/right_margin_40"
                 android:layout_marginEnd="40dp"
                 android:layout_marginTop="10dp"
                 android:background="#E0E0FF"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Top margin: 30"
+                android:text="@string/top_margin_30"
                 android:layout_marginTop="30dp"
                 android:background="#FFFFE0"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bottom margin: 30"
+                android:text="@string/bottom_margin_30"
                 android:layout_marginBottom="30dp"
                 android:background="#FFE0FF"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Label with padding: 20"
+                android:text="@string/label_with_padding_20"
                 android:padding="20dp"
                 android:layout_marginTop="10dp"
                 android:background="#E0FFFF"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Label with leftPadding: 30, rightPadding: 30"
+                android:text="@string/label_with_leftpadding_30_right"
                 android:paddingStart="30dp"
                 android:paddingEnd="30dp"
                 android:layout_marginTop="10dp"
                 android:background="#FFCCCC"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:paddingStart="20dp"
                 android:paddingEnd="20dp"
                 android:layout_marginTop="20dp"
                 android:background="#DDDDDD">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Parent has leftPadding: 20, rightPadding: 20"
+                    android:text="@string/parent_has_leftpadding_20_right"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
-            </LinearLayout>
-            <LinearLayout
+                    android:textColor="#000000"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:orientation="vertical"
                 android:layout_marginTop="20dp"
                 android:background="#CCCCCC">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MaxWidth: 200"
+                    android:text="@string/maxwidth_200"
                     android:background="#FFCCCC"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
-            </LinearLayout>
-            <LinearLayout
+                    android:textColor="#000000"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:orientation="vertical"
                 android:layout_marginTop="20dp"
                 android:background="#BBBBBB">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="MinWidth: 150"
+                    android:text="@string/minwidth_150"
                     android:background="#CCFFCC"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
-            </LinearLayout>
+                    android:textColor="#000000"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>
 </layout>

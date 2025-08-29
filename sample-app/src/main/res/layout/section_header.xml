@@ -11,18 +11,19 @@
             name="data"
             type="com.example.kotlinjsonui.sample.data.SectionHeaderData"/>
     </data>
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:padding="16dp"
         android:background="#F0F0F0">
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{data.title}"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#000000"/>
-    </LinearLayout>
+            android:textColor="#000000"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

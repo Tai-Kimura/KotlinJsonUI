@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom attributes for KjuiTextView and related views -->
+    <declare-styleable name="KjuiTextView">
+        <attr name="kjui_font_name" format="string" />
+    </declare-styleable>
+    
+    <!-- KjuiSelectBox attributes -->
+    <declare-styleable name="KjuiSelectBox">
+        <attr name="items" format="string" />
+        <attr name="selectedValue" format="string" />
+        <attr name="placeholder" format="string" />
+        <attr name="hintColor" format="color" />
+        <attr name="textColor" format="color" />
+        <attr name="backgroundColor" format="color" />
+        <attr name="borderColor" format="color" />
+        <attr name="cornerRadius" format="dimension" />
+        <attr name="borderWidth" format="dimension" />
+        <attr name="fontSize" format="dimension" />
+    </declare-styleable>
+</resources>

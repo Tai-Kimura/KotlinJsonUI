@@ -44,14 +44,14 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:layout_marginStart="16dp">
-                            <TextView
+                            <com.kotlinjsonui.views.KjuiTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@{data.userName}"
                                 android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:textColor="#333333"/>
-                            <TextView
+                            <com.kotlinjsonui.views.KjuiTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="@{data.userEmail}"
@@ -60,10 +60,9 @@
                                 android:layout_marginTop="4dp"/>
                         </LinearLayout>
                     </LinearLayout>
-                    <LinearLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:orientation="vertical"
                         android:background="#E0E0E0"
                         android:layout_marginTop="12dp"
                         android:layout_marginBottom="12dp"/>
@@ -75,10 +74,10 @@
                         tools:count="@{data.notificationCount}"/>
                 </LinearLayout>
             </View>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Team Members"
+                android:text="@string/team_members"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
@@ -104,34 +103,32 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Actions"
+                android:text="@string/actions"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#333333"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toggle Online Status"
+                android:text="@string/toggle_online_status"
                 android:onClick="toggleOnlineStatus"
-                android:background="#007AFF"
+                android:background="@drawable/ripple_56a40756"
                 android:textColor="#FFFFFF"
                 android:padding="12dp"
-                tools:cornerRadius="8dp"
                 android:layout_marginBottom="8dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toggle Dynamic Mode"
+                android:text="@string/toggle_dynamic_mode"
                 android:onClick="toggleDynamicMode"
-                android:background="#34C759"
+                android:background="@drawable/ripple_d7b81a7f"
                 android:textColor="#FFFFFF"
-                android:padding="12dp"
-                tools:cornerRadius="8dp"/>
+                android:padding="12dp"/>
         </LinearLayout>
     </ScrollView>
 </layout>

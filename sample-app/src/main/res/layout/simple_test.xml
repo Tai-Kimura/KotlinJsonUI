@@ -2,28 +2,30 @@
 <!-- Generated from simple_test.json -->
 <!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
 <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
-    <TextView
+    <com.kotlinjsonui.views.KjuiTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Simple Test"
+        android:text="@string/simple_test"
         android:textSize="24sp"
         android:textColor="#000000"/>
-    <TextView
+    <com.kotlinjsonui.views.KjuiTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Testing basic components"
+        android:text="@string/testing_basic_components"
         android:textSize="16sp"
         android:textColor="#666666"
         android:layout_marginTop="8dp"/>
-    <Button
+    <com.kotlinjsonui.views.KjuiButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test Button"
-        android:background="#5856D6"
+        android:text="@string/test_button"
+        android:background="@drawable/ripple_3f157f11"
         android:textColor="#FFFFFF"
         android:layout_marginTop="16dp"/>
 </LinearLayout>

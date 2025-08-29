@@ -8,12 +8,14 @@ require_relative 'mappers/input_mapper'
 
 module XmlGenerator
   class AttributeMapper
-    def initialize
+    def initialize(drawable_generator = nil, string_resource_manager = nil)
       @dimension_mapper = Mappers::DimensionMapper.new
-      @text_mapper = Mappers::TextMapper.new
+      @text_mapper = Mappers::TextMapper.new(string_resource_manager)
       @layout_mapper = Mappers::LayoutMapper.new(@dimension_mapper)
-      @style_mapper = Mappers::StyleMapper.new(@text_mapper)
+      @style_mapper = Mappers::StyleMapper.new(@text_mapper, drawable_generator)
       @input_mapper = Mappers::InputMapper.new
+      @drawable_generator = drawable_generator
+      @string_resource_manager = string_resource_manager
       
       @attribute_map = create_attribute_map
     end
@@ -22,7 +24,7 @@ module XmlGenerator
       @dimension_mapper.map_dimension(value)
     end
     
-    def map_attribute(key, value, component_type, parent_type = nil)
+    def map_attribute(key, value, component_type, parent_type = nil, json_element = nil)
       # Try layout attributes first (includes dimensions, padding, margin, alignment)
       result = @layout_mapper.map_layout_attributes(key, value, component_type, parent_type)
       return result if result
@@ -35,8 +37,8 @@ module XmlGenerator
       result = @text_mapper.map_text_attributes(key, value, component_type)
       return result if result
       
-      # Try style attributes
-      result = @style_mapper.map_style_attributes(key, value)
+      # Try style attributes (with json_element for drawable generation)
+      result = @style_mapper.map_style_attributes(key, value, json_element, component_type)
       return result if result
       
       # Try input attributes

@@ -17,91 +17,85 @@
         android:orientation="vertical"
         android:background="#FFFFFF"
         android:padding="20dp">
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextField Test"
+            android:text="@string/textfield_test"
             android:textSize="20sp"
             android:textColor="#000000"
-            android:fontFamily="bold"
+            android:textStyle="bold"
             android:layout_marginBottom="20dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Enter email"
+            android:hint="@string/enter_email"
             android:text="@{data.email}"
             android:textSize="16sp"
-            tools:borderStyle="roundedRect"
             android:layout_marginBottom="15dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Enter password"
+            android:hint="@string/enter_password"
             android:text="@{data.password}"
             android:textSize="16sp"
-            tools:borderStyle="roundedRect"
             android:layout_marginBottom="15dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Phone number"
+            android:hint="@string/phone_number_2"
             android:text="@{data.phone}"
             android:textSize="16sp"
-            tools:borderStyle="roundedRect"
             android:layout_marginBottom="15dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Enter number"
+            android:hint="@string/enter_number"
             android:text="@{data.number}"
             android:textSize="16sp"
-            tools:borderStyle="plain"
             android:padding="10dp"
             android:background="#F0F0F0"
             android:layout_marginBottom="15dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Search..."
+            android:hint="@string/search"
             android:text="@{data.search}"
             android:textSize="16sp"
-            tools:borderStyle="roundedRect"
             android:layout_marginBottom="15dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Website URL"
+            android:hint="@string/website_url"
             android:text="@{data.url}"
             android:textSize="16sp"
-            tools:borderStyle="roundedRect"
             android:layout_marginBottom="15dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Entered Values:"
+            android:text="@string/entered_values"
             android:textSize="16sp"
             android:textColor="#000000"
-            android:fontFamily="bold"
+            android:textStyle="bold"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="10dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Email: @{email}"
+            android:text="@string/email_email"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginBottom="5dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Password: @{password}"
+            android:text="@string/password_password"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginBottom="5dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Phone: @{phone}"
+            android:text="@string/phone_phone"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginBottom="5dp"/>

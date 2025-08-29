@@ -23,27 +23,28 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="#F5F5F5">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Radio Custom Icons Test"
+                    android:text="@string/radio_custom_icons_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
                     android:layout_gravity="center_horizontal"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Default Radio Group"
+                    android:text="@string/default_radio_group"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="10dp"
                     android:layout_marginStart="20dp"/>
                 <RadioButton
                     android:id="@+id/option1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Option 1"
+                    android:text="@string/option_1"
                     android:checked="true"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
@@ -51,28 +52,29 @@
                     android:id="@+id/option2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Option 2"
+                    android:text="@string/option_2"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
                 <RadioButton
                     android:id="@+id/option3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Option 3"
+                    android:text="@string/option_3"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Custom Icon Radio Group"
+                    android:text="@string/custom_icon_radio_group"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
                 <RadioButton
                     android:id="@+id/custom1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Star Option"
+                    android:text="@string/star_option"
                     android:checked="true"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
@@ -80,35 +82,36 @@
                     android:id="@+id/custom2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Heart Option"
+                    android:text="@string/heart_option"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
                 <RadioButton
                     android:id="@+id/custom3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Square Option"
+                    android:text="@string/square_option"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Radio with Items"
+                    android:text="@string/radio_with_items"
                     android:textSize="18sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="30dp"
                     android:layout_marginStart="20dp"/>
                 <RadioButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Select Color:"
-                    tools:entries="Red,Green,Blue,Yellow"
+                    android:text="@string/select_color"
+                    app:items="Red|Green|Blue|Yellow"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Selected: @{selectedColor}"
+                    android:text="@string/selected_selectedcolor"
                     android:textSize="14sp"
                     android:textColor="#666666"
                     android:layout_marginStart="20dp"

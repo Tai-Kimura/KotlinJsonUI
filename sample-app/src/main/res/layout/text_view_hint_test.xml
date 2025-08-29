@@ -20,58 +20,58 @@
         android:orientation="vertical"
         android:background="#FFFFFF"
         android:padding="20dp">
-        <Button
+        <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:textColor="#FFFFFF"
-            tools:cornerRadius="8dp"
-            android:text="Dynamic: @{dynamicModeStatus}"
+            android:text="@string/dynamic_dynamicmodestatus"
             android:onClick="toggleDynamicMode"
-            android:background="#5856D6"
+            android:background="@drawable/ripple_b39393a0"
             android:textSize="14sp"
+            android:textStyle="bold"
             android:padding="8dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TextView Hint Test"
+            android:text="@string/textview_hint_test"
             android:textSize="24sp"
             android:textColor="#000000"
             android:layout_marginBottom="20dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Simple TextView with hint:"
+            android:text="@string/simple_textview_with_hint"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginBottom="8dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/simpleTextView"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:text="@{data.simpleText}"
-            android:hint="This is a simple hint"
+            android:hint="@string/this_is_a_simple_hint"
+            app:hintColor="#FF0000"
             android:textSize="16sp"
             android:textColor="#000000"
-            android:background="#FFFFFF"
-            tools:cornerRadius="8dp"
+            android:background="@drawable/shape_0d78930c"
             android:layout_marginBottom="20dp"/>
-        <TextView
+        <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Flexible TextView with multi-line hint:"
+            android:text="@string/flexible_textview_with_multi_li"
             android:textSize="14sp"
             android:textColor="#666666"
             android:layout_marginBottom="8dp"/>
-        <EditText
+        <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/flexibleTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@{data.flexibleText}"
-            android:hint="Multi-line hint&#10;Line 2 of hint&#10;Line 3 of hint"
+            android:hint="@string/multi_line_hint_line_2_of_hint__14"
+            app:hintColor="#0000FF"
             android:textSize="16sp"
             android:textColor="#000000"
-            android:background="#FFFFFF"
-            tools:cornerRadius="8dp"
+            android:background="@drawable/shape_0d78930c"
             android:layout_marginBottom="20dp"/>
     </LinearLayout>
 </layout>

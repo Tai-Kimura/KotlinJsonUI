@@ -22,17 +22,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,155 +40,155 @@
                 android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Font Sizes"
+                android:text="@string/font_sizes"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="fontSize: 12"
+                android:text="@string/fontsize_12"
                 android:textSize="12sp"
                 android:layout_marginTop="10dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="fontSize: 16"
+                android:text="@string/fontsize_16"
                 android:textSize="16sp"
                 android:layout_marginTop="5dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="fontSize: 20"
+                android:text="@string/fontsize_20"
                 android:textSize="20sp"
                 android:layout_marginTop="5dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="fontSize: 24"
+                android:text="@string/fontsize_24"
                 android:textSize="24sp"
                 android:layout_marginTop="5dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Font Styles"
+                android:text="@string/font_styles"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bold Text"
-                android:fontFamily="bold"
+                android:text="@string/bold_text"
+                android:textStyle="bold"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Underlined Text"
+                android:text="@string/underlined_text"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Text Alignment"
+                android:text="@string/text_alignment"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Left Aligned (default)"
+                android:text="@string/left_aligned_default"
                 android:textAlignment="textStart"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"
                 android:background="#E0E0E0"
                 android:padding="5dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Center Aligned"
+                android:text="@string/center_aligned"
                 android:textAlignment="center"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"
                 android:background="#E0E0E0"
                 android:padding="5dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Right Aligned"
+                android:text="@string/right_aligned"
                 android:textAlignment="textEnd"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"
                 android:background="#E0E0E0"
                 android:padding="5dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Line Spacing Test"
+                android:text="@string/line_spacing_test"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="This is a multi-line text with lineSpacing: 5 to demonstrate line spacing"
+                android:text="@string/this_is_a_multi_line_text_with_"
                 android:textSize="14sp"
                 android:layout_marginTop="10dp"
                 android:background="#FFFFFF"
                 android:padding="10dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="This is another multi-line text with lineSpacing: 10 to demonstrate line spacing (line breaks work with proper spacing)"
+                android:text="@string/this_is_another_multi_line_text"
                 android:textSize="14sp"
                 android:layout_marginTop="10dp"
                 android:background="#FFFFFF"
                 android:padding="10dp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Font Colors"
+                android:text="@string/font_colors"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <TextView
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Red Text"
+                android:text="@string/red_text"
                 android:textColor="#FF0000"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Green Text"
+                android:text="@string/green_text"
                 android:textColor="#00FF00"
                 android:textSize="16sp"
                 android:layout_marginTop="5dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Blue Text"
+                android:text="@string/blue_text"
                 android:textColor="#0000FF"
                 android:textSize="16sp"
                 android:layout_marginTop="5dp"/>

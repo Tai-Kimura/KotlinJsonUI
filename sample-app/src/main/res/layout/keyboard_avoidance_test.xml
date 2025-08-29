@@ -23,149 +23,133 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"
                 android:layout_marginBottom="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField 1"
+                android:text="@string/textfield_1"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/textfield1"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:hint="Enter text here"
+                android:hint="@string/enter_text_here"
                 android:text="@{data.textField1}"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField 2"
+                android:text="@string/textfield_2"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/textfield2"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:hint="Another text field"
+                android:hint="@string/another_text_field"
                 android:text="@{data.textField2}"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField 3"
+                android:text="@string/textfield_3"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/textfield3"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:hint="Keep typing..."
+                android:hint="@string/keep_typing"
                 android:text="@{data.textField3}"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField 4"
+                android:text="@string/textfield_4"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/textfield4"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:hint="This should scroll up"
+                android:hint="@string/this_should_scroll_up"
                 android:text="@{data.textField4}"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextField 5 (at bottom)"
+                android:text="@string/textfield_5_at_bottom"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/textfield5"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:hint="This is near the bottom"
+                android:hint="@string/this_is_near_the_bottom"
                 android:text="@{data.textField5}"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:layout_marginBottom="16dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView (Multi-line)"
+                android:text="@string/textview_multi_line"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginBottom="8dp"/>
-            <EditText
+            <com.kotlinjsonui.views.KjuiEditText
                 android:id="@+id/textview"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:text="@{data.textView}"
-                android:hint="Multi-line text input&#10;Type here..."
+                android:hint="@string/multi_line_text_input_type_here_14"
+                app:hintColor="#999999"
                 android:textSize="16sp"
                 android:textColor="#333333"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
+                android:background="@drawable/shape_0d78930c"
                 android:layout_marginBottom="16dp"/>
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:text="Submit"
+                android:text="@string/submit"
                 android:textSize="18sp"
                 android:textColor="#FFFFFF"
-                android:background="#007AFF"
-                tools:cornerRadius="8dp"
+                android:background="@drawable/ripple_56a40756"
                 android:onClick="submitForm"/>
         </LinearLayout>
     </ScrollView>

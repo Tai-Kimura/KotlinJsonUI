@@ -23,17 +23,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -42,216 +42,226 @@
                 android:textColor="#000000"
                 android:layout_marginBottom="20dp"
                 android:layout_gravity="center_horizontal"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Corner Combinations"
+                android:text="@string/corner_combinations"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#E0E0E0"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Top-Left"
+                    android:text="@string/top_left"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#FFD0D0"
                     android:textSize="14sp"
                     android:padding="8dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="top|start"/>
-            </LinearLayout>
-            <LinearLayout
+                    android:textColor="#000000"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#D8D8D8"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Top-Right"
+                    android:text="@string/top_right"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:background="#D0FFD0"
                     android:textSize="14sp"
                     android:padding="8dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="top|end"/>
-            </LinearLayout>
-            <LinearLayout
+                    android:textColor="#000000"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#D0D0D0"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bottom-Left"
+                    android:text="@string/bottom_left"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#D0D0FF"
                     android:textSize="14sp"
                     android:padding="8dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="bottom|start"/>
-            </LinearLayout>
-            <LinearLayout
+                    android:textColor="#000000"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#C8C8C8"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bottom-Right"
+                    android:text="@string/bottom_right"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:background="#FFFFD0"
                     android:textSize="14sp"
                     android:padding="8dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="bottom|end"/>
-            </LinearLayout>
-            <TextView
+                    android:textColor="#000000"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edge + Center Combinations"
+                android:text="@string/edge_center_combinations"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#C0C0C0"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Top-Center"
+                    android:text="@string/top_center"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#FFD0FF"
                     android:textSize="14sp"
                     android:padding="8dp"
                     android:textColor="#000000"
-                    android:layout_gravity="top|center_horizontal"/>
-            </LinearLayout>
-            <LinearLayout
+                    app:layout_constraintEnd_toEndOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#B8B8B8"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bottom-Center"
+                    android:text="@string/bottom_center"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#D0FFFF"
                     android:textSize="14sp"
                     android:padding="8dp"
                     android:textColor="#000000"
-                    android:layout_gravity="bottom|center_horizontal"/>
-            </LinearLayout>
-            <LinearLayout
+                    app:layout_constraintEnd_toEndOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#B0B0B0"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Left-Center"
+                    android:text="@string/left_center"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     android:background="#FFCCCC"
                     android:textSize="14sp"
                     android:padding="8dp"
                     android:textColor="#000000"
-                    android:layout_gravity="start|center_vertical"/>
-            </LinearLayout>
-            <LinearLayout
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#A8A8A8"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Right-Center"
+                    android:text="@string/right_center"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     android:background="#CCFFCC"
                     android:textSize="14sp"
                     android:padding="8dp"
                     android:textColor="#000000"
-                    android:layout_gravity="end|center_vertical"/>
-            </LinearLayout>
-            <TextView
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Multiple Elements Test"
+                android:text="@string/multiple_elements_test"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
-                android:orientation="vertical"
                 android:background="#A0A0A0"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TL"
+                    android:text="@string/tl"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#FFE0E0"
                     android:textSize="12sp"
                     android:padding="5dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="top|start"/>
-                <TextView
+                    android:textColor="#000000"/>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TR"
+                    android:text="@string/tr"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:background="#E0FFE0"
                     android:textSize="12sp"
                     android:padding="5dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="top|end"/>
-                <TextView
+                    android:textColor="#000000"/>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BL"
+                    android:text="@string/bl"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#E0E0FF"
                     android:textSize="12sp"
                     android:padding="5dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="bottom|start"/>
-                <TextView
+                    android:textColor="#000000"/>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BR"
+                    android:text="@string/br"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:background="#FFFFE0"
                     android:textSize="12sp"
                     android:padding="5dp"
-                    android:textColor="#000000"
-                    android:layout_gravity="bottom|end"/>
-                <TextView
+                    android:textColor="#000000"/>
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Center"
+                    android:text="@string/center"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#FFE0FF"
                     android:textSize="12sp"
                     android:padding="5dp"
                     android:textColor="#000000"
-                    android:layout_gravity="center"/>
-            </LinearLayout>
-            <TextView
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="HStack Mixed Alignment"
+                android:text="@string/hstack_mixed_alignment"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
@@ -263,35 +273,35 @@
                 android:orientation="horizontal"
                 android:background="#989898"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Left-Top"
+                    android:text="@string/left_top"
                     android:background="#FFB0B0"
                     android:padding="8dp"
                     android:textColor="#000000"
                     android:layout_gravity="start|top"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Center"
+                    android:text="@string/center"
                     android:background="#B0FFB0"
                     android:padding="8dp"
                     android:textColor="#000000"
                     android:layout_gravity="center_horizontal|center_vertical"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Right-Bottom"
+                    android:text="@string/right_bottom"
                     android:background="#B0B0FF"
                     android:padding="8dp"
                     android:textColor="#000000"
                     android:layout_gravity="end|bottom"/>
             </LinearLayout>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="VStack Mixed Alignment"
+                android:text="@string/vstack_mixed_alignment"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
@@ -302,71 +312,73 @@
                 android:layout_height="200dp"
                 android:orientation="vertical"
                 android:background="#909090">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Top-Left"
+                    android:text="@string/top_left"
                     android:background="#FFC0C0"
                     android:padding="8dp"
                     android:textColor="#000000"
                     android:layout_gravity="top|start"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Center"
+                    android:text="@string/center"
                     android:background="#C0FFC0"
                     android:padding="8dp"
                     android:textColor="#000000"
                     android:layout_gravity="center_vertical|center_horizontal"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bottom-Right"
+                    android:text="@string/bottom_right"
                     android:background="#C0C0FF"
                     android:padding="8dp"
                     android:textColor="#000000"
                     android:layout_gravity="bottom|end"/>
             </LinearLayout>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edge Cases"
+                android:text="@string/edge_cases"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#888888"
                 android:layout_marginBottom="10dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Only horizontal center"
+                    android:text="@string/only_horizontal_center"
+                    app:layout_constraintStart_toStartOf="parent"
                     android:background="#FFE8E8"
                     android:textSize="14sp"
                     android:padding="8dp"
                     android:textColor="#000000"
-                    android:layout_gravity="center_horizontal"/>
-            </LinearLayout>
-            <LinearLayout
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:orientation="vertical"
                 android:background="#808080">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Only vertical center"
+                    android:text="@string/only_vertical_center"
+                    app:layout_constraintTop_toTopOf="parent"
                     android:background="#E8FFE8"
                     android:textSize="14sp"
                     android:padding="8dp"
                     android:textColor="#000000"
-                    android:layout_gravity="center_vertical"/>
-            </LinearLayout>
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>
 </layout>

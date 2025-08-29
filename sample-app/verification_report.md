@@ -1,15 +1,15 @@
 # KotlinJsonUI JSON Parser Verification Report
 
-**Generated:** 2025-08-29 07:27:44
+**Generated:** 2025-08-29 10:41:21
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Total JSON files | 53 |
-| Successfully parsed | 53 |
+| Total JSON files | 54 |
+| Successfully parsed | 54 |
 | Failed to parse | 0 |
-| Total components | 851 |
+| Total components | 857 |
 | Unique component types | 30 |
 | Unique attributes | 168 |
 
@@ -250,36 +250,33 @@ zIndex
 - **Location:** `root[0][21]`
   - Attribute 'hintColor' with value '"#999999"' not handled for type 'SelectBox'
 
+### center_align_test.json
+
+- **Location:** `root[1][1]`
+  - Attribute 'alignCenterVerticalView' with value '"reference_view"' not handled for type 'Label'
+- **Location:** `root[1][2]`
+  - Attribute 'alignCenterHorizontalView' with value '"reference_view"' not handled for type 'Label'
+
 ### collection_test.json
 
-- **Location:** `root[0][0][1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][2]`
   - Attribute 'sections' with value '[{"header"=>"SectionHeader", "cell"=>"BasicCell", "footer"=>"SectionFooter", "columns"=>2}]' not handled for type 'Collection'
 - **Location:** `root[0][0][2]`
   - Attribute 'layout' with value '"vertical"' not handled for type 'Collection'
-- **Location:** `root[0][0][3]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][4]`
   - Attribute 'layout' with value '"vertical"' not handled for type 'Collection'
 - **Location:** `root[0][0][4]`
   - Attribute 'columns' with value '2' not handled for type 'Collection'
 - **Location:** `root[0][0][4]`
   - Attribute 'sections' with value '[{"header"=>"GridHeader", "cell"=>"ImageCell", "footer"=>"GridFooter", "columns"=>3}]' not handled for type 'Collection'
-- **Location:** `root[0][0][5]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][6]`
   - Attribute 'sections' with value '[{"header"=>"HorizontalHeader", "cell"=>"HorizontalCard", "columns"=>1}]' not handled for type 'Collection'
 - **Location:** `root[0][0][6]`
   - Attribute 'layout' with value '"horizontal"' not handled for type 'Collection'
-- **Location:** `root[0][0][7]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][8]`
   - Attribute 'sections' with value '[{"header"=>"CategoryHeader", "cell"=>"ProductCell", "footer"=>"CategoryFooter", "columns"=>2}]' not handled for type 'Collection'
 - **Location:** `root[0][0][8]`
   - Attribute 'layout' with value '"vertical"' not handled for type 'Collection'
-- **Location:** `root[0][0][9]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][10]`
   - Attribute 'sections' with value '[{"header"=>"CategoryHeader", "cell"=>"ProductCell", "footer"=>"CategoryFooter", "columns"=>3}, {"header"=>"FeaturedHeader", "cell"=>"FeatureCell", "columns"=>2}, {"header"=>"GridHeader", "cell"=>"ImageCell", "footer"=>"GridFooter", "columns"=>4}]' not handled for type 'Collection'
 - **Location:** `root[0][0][10]`
@@ -339,26 +336,16 @@ zIndex
 
 ### custom_component_test.json
 
-- **Location:** `root[0][0][1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][2]`
   - Attribute 'subtitle' with value '"This is a static subtitle"' not handled for type 'SampleCard'
-- **Location:** `root[0][0][3]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][4]`
   - Attribute 'subtitle' with value '"@{cardSubtitle}"' not handled for type 'SampleCard'
-- **Location:** `root[0][0][4][0][0]`
-  - Attribute 'fontWeight' with value '"medium"' not handled for type 'Label'
-- **Location:** `root[0][0][5]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][6][0]`
   - Attribute 'subtitle' with value '"First custom card"' not handled for type 'SampleCard'
 - **Location:** `root[0][0][6][1]`
   - Attribute 'subtitle' with value '"Second custom card"' not handled for type 'SampleCard'
 - **Location:** `root[0][0][6][2]`
   - Attribute 'subtitle' with value '"Third custom card"' not handled for type 'SampleCard'
-- **Location:** `root[0][0][7]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][0][8][0]`
   - Attribute 'status' with value '"Active"' not handled for type 'StatusBadge'
 - **Location:** `root[0][0][8][1]`
@@ -408,17 +395,11 @@ zIndex
 ### disabled_test.json
 
 - **Location:** `root[0][5]`
-  - Attribute 'disabledBackground' with value '"#CCCCCC"' not handled for type 'Button'
-- **Location:** `root[0][5]`
   - Attribute 'disabledFontColor' with value '"#999999"' not handled for type 'Button'
 - **Location:** `root[0][7]`
   - Attribute 'touchDisabledState' with value 'true' not handled for type 'Button'
 - **Location:** `root[0][11]`
-  - Attribute 'disabledBackground' with value '"#E0E0E0"' not handled for type 'TextField'
-- **Location:** `root[0][11]`
   - Attribute 'disabledFontColor' with value '"#999999"' not handled for type 'TextField'
-- **Location:** `root[0][14]`
-  - Attribute 'disabledBackground' with value '"#D0D0D0"' not handled for type 'Button'
 - **Location:** `root[0][14]`
   - Attribute 'disabledFontColor' with value '"#888888"' not handled for type 'Button'
 
@@ -426,20 +407,12 @@ zIndex
 
 - **Location:** `root`
   - Attribute 'keyboardAvoidance' with value 'true' not handled for type 'ScrollView'
-- **Location:** `root[0][2]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][8]`
   - Attribute 'keyboardType' with value '"email"' not handled for type 'TextField'
 - **Location:** `root[0][10]`
   - Attribute 'keyboardType' with value '"phone"' not handled for type 'TextField'
-- **Location:** `root[0][11]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][17]`
   - Attribute 'keyboardType' with value '"number"' not handled for type 'TextField'
-- **Location:** `root[0][20]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
-- **Location:** `root[0][25]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[0][27]`
   - Attribute 'flexible' with value 'true' not handled for type 'TextView'
 - **Location:** `root[0][27]`
@@ -462,22 +435,11 @@ zIndex
   - Attribute 'hintAttributes' with value '{"fontColor"=>"#BBBBBB", "fontSize"=>14, "fontStyle"=>"italic"}' not handled for type 'TextView'
 - **Location:** `root[0][32][0]`
   - Attribute 'isOn' with value '"@{agreeToTerms}"' not handled for type 'Toggle'
-- **Location:** `root[0][33]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Button'
-- **Location:** `root[0][34]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Button'
-
-### horizontal_card.json
-
-- **Location:** `root[1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 
 ### image_cell.json
 
 - **Location:** `root[0]`
   - Attribute 'contentMode' with value '"scaleAspectFill"' not handled for type 'NetworkImage'
-- **Location:** `root[1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 
 ### implemented_attributes_test.json
 
@@ -499,14 +461,10 @@ zIndex
   - Attribute 'distribution' with value '"fillEqually"' not handled for type 'View'
 - **Location:** `root[child][child][10]`
   - Attribute 'edgeInset' with value '20' not handled for type 'Label'
-- **Location:** `root[child][child][12]`
-  - Attribute 'tapBackground' with value '"#ff00ff"' not handled for type 'Button'
 - **Location:** `root[child][child][13]`
   - Attribute 'hilightColor' with value '"#ff0000"' not handled for type 'Button'
 - **Location:** `root[child][child][14]`
   - Attribute 'disabledFontColor' with value '"#999999"' not handled for type 'Button'
-- **Location:** `root[child][child][14]`
-  - Attribute 'disabledBackground' with value '"#f0f0f0"' not handled for type 'Button'
 - **Location:** `root[child][child][16]`
   - Attribute 'onFocus' with value '"handleFocus"' not handled for type 'TextField'
 - **Location:** `root[child][child][16]`
@@ -549,11 +507,6 @@ zIndex
   - Attribute 'scalesPageToFit' with value 'true' not handled for type 'Web'
 - **Location:** `root[child][child][24]`
   - Attribute 'javascriptEnabled' with value 'true' not handled for type 'Web'
-
-### include_test.json
-
-- **Location:** `root[0][1][1][3][0]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 
 ### keyboard_avoidance_test.json
 
@@ -629,23 +582,14 @@ zIndex
 - **Location:** `root[child][child][5]`
   - Attribute 'partialAttributes' with value '[{"range"=>"天気", "fontColor"=>"#FF0000", "fontWeight"=>"bold", "fontSize"=>20}, {"range"=>"晴れる", "fontColor"=>"#0000FF", "underline"=>true}]' not handled for type 'Label'
 
-### product_cell.json
-
-- **Location:** `root[0]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
-
 ### radio_icons_test.json
 
-- **Location:** `root[child][child][1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][2]`
   - Attribute 'group' with value '"defaultGroup"' not handled for type 'Radio'
 - **Location:** `root[child][child][3]`
   - Attribute 'group' with value '"defaultGroup"' not handled for type 'Radio'
 - **Location:** `root[child][child][4]`
   - Attribute 'group' with value '"defaultGroup"' not handled for type 'Radio'
-- **Location:** `root[child][child][5]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][6]`
   - Attribute 'group' with value '"customGroup"' not handled for type 'Radio'
 - **Location:** `root[child][child][6]`
@@ -664,8 +608,6 @@ zIndex
   - Attribute 'icon' with value '"square"' not handled for type 'Radio'
 - **Location:** `root[child][child][8]`
   - Attribute 'selectedIcon' with value '"checkmark.square.fill"' not handled for type 'Radio'
-- **Location:** `root[child][child][9]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][10]`
   - Attribute 'selectedValue' with value '"@{selectedColor}"' not handled for type 'Radio'
 
@@ -673,14 +615,6 @@ zIndex
 
 - **Location:** `root[child][6][0]`
   - Attribute 'margins' with value '[20, 25, 20, 25]' not handled for type 'Label'
-- **Location:** `root[child][6][1]`
-  - Attribute 'alignTopView' with value '"anchor_with_margin"' not handled for type 'Label'
-- **Location:** `root[child][6][2]`
-  - Attribute 'alignBottomView' with value '"anchor_with_margin"' not handled for type 'Label'
-- **Location:** `root[child][6][3]`
-  - Attribute 'alignLeftView' with value '"anchor_with_margin"' not handled for type 'Label'
-- **Location:** `root[child][6][4]`
-  - Attribute 'alignRightView' with value '"anchor_with_margin"' not handled for type 'Label'
 - **Location:** `root[child][8][0]`
   - Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'
 - **Location:** `root[child][10][0]`
@@ -689,16 +623,6 @@ zIndex
   - Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'
 - **Location:** `root[child][12][2]`
   - Attribute 'margins' with value '[15, 20, 15, 20]' not handled for type 'Label'
-- **Location:** `root[child][14][3]`
-  - Attribute 'alignLeftView' with value '"chain_middle"' not handled for type 'Label'
-- **Location:** `root[child][14][4]`
-  - Attribute 'alignRightView' with value '"chain_start"' not handled for type 'Label'
-- **Location:** `root[child][16][3]`
-  - Attribute 'alignTopView' with value '"ref1"' not handled for type 'Label'
-- **Location:** `root[child][16][3]`
-  - Attribute 'alignRightView' with value '"ref2"' not handled for type 'Label'
-- **Location:** `root[child][16][4]`
-  - Attribute 'alignLeftView' with value '"ref1"' not handled for type 'Label'
 
 ### scroll_test.json
 
@@ -720,45 +644,31 @@ zIndex
 
 ### segment_test.json
 
-- **Location:** `root[child][child][1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][2]`
   - Attribute 'selectedIndex' with value '"@{selectedBasic}"' not handled for type 'Segment'
-- **Location:** `root[child][child][3]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][4]`
   - Attribute 'selectedIndex' with value '"@{selectedColor}"' not handled for type 'Segment'
 - **Location:** `root[child][child][4]`
   - Attribute 'normalColor' with value '"#666666"' not handled for type 'Segment'
 - **Location:** `root[child][child][4]`
   - Attribute 'selectedColor' with value '"#FF0000"' not handled for type 'Segment'
-- **Location:** `root[child][child][5]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][6]`
   - Attribute 'selectedIndex' with value '"@{selectedEvent}"' not handled for type 'Segment'
 - **Location:** `root[child][child][6]`
   - Attribute 'onValueChange' with value '"handleSegmentChange"' not handled for type 'Segment'
-- **Location:** `root[child][child][8]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][9]`
   - Attribute 'selectedIndex' with value '"@{selectedDisabled}"' not handled for type 'Segment'
 
 ### switch_events_test.json
 
-- **Location:** `root[child][child][1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][2]`
   - Attribute 'isOn' with value '"@{notificationEnabled}"' not handled for type 'Switch'
 - **Location:** `root[child][child][2]`
   - Attribute 'onValueChange' with value '"handleNotificationChange"' not handled for type 'Switch'
-- **Location:** `root[child][child][4]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][5]`
   - Attribute 'isOn' with value '"@{darkModeEnabled}"' not handled for type 'Switch'
 - **Location:** `root[child][child][5]`
   - Attribute 'onValueChange' with value '"handleDarkModeChange"' not handled for type 'Switch'
-- **Location:** `root[child][child][7]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][8]`
   - Attribute 'isOn' with value '"@{wifiEnabled}"' not handled for type 'Switch'
 - **Location:** `root[child][child][8]`
@@ -777,8 +687,6 @@ zIndex
   - Attribute 'tintColor' with value '"#FF9800"' not handled for type 'Switch'
 - **Location:** `root[child][child][10]`
   - Attribute 'onValueChange' with value '"handleLocationChange"' not handled for type 'Switch'
-- **Location:** `root[child][child][11]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 
 ### text_decoration_test.json
 
@@ -823,24 +731,18 @@ zIndex
 
 ### textfield_events_test.json
 
-- **Location:** `root[child][child][1]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][2]`
   - Attribute 'input' with value '"email"' not handled for type 'TextField'
 - **Location:** `root[child][child][2]`
   - Attribute 'returnKeyType' with value '"done"' not handled for type 'TextField'
 - **Location:** `root[child][child][2]`
   - Attribute 'onTextChange' with value '"handleEmailChange"' not handled for type 'TextField'
-- **Location:** `root[child][child][4]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][5]`
   - Attribute 'secure' with value 'true' not handled for type 'TextField'
 - **Location:** `root[child][child][5]`
   - Attribute 'returnKeyType' with value '"done"' not handled for type 'TextField'
 - **Location:** `root[child][child][5]`
   - Attribute 'onTextChange' with value '"handlePasswordChange"' not handled for type 'TextField'
-- **Location:** `root[child][child][7]`
-  - Attribute 'fontWeight' with value '"semibold"' not handled for type 'Label'
 - **Location:** `root[child][child][8]`
   - Attribute 'accessoryBackground' with value '"#007AFF"' not handled for type 'TextField'
 - **Location:** `root[child][child][8]`

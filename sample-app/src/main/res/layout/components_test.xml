@@ -23,27 +23,27 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="New Components Test"
+                android:text="@string/new_components_test"
                 android:textSize="24sp"
                 android:textColor="#333333"
                 android:layout_margin="0dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toggle/Checkbox Components"
+                android:text="@string/togglecheckbox_components"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
@@ -51,18 +51,18 @@
                 android:id="@+id/toggle1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Enable Notifications"
+                android:text="@string/enable_notifications"
                 android:layout_margin="0dp"/>
             <CheckBox
                 android:id="@+id/checkbox1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="I agree to terms"
+                android:text="@string/i_agree_to_terms"
                 android:layout_margin="0dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Progress &amp; Slider"
+                android:text="@string/progress_slider"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
@@ -70,98 +70,96 @@
                 android:id="@+id/progress1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Download Progress"
+                android:text="@string/download_progress"
                 android:progress="@{data.progress1Value}"
                 android:layout_margin="0dp"/>
             <SeekBar
                 android:id="@+id/slider1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Volume"
+                android:text="@string/volume"
                 android:min="0.0"
                 android:max="1.0"
                 android:layout_margin="0dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Selection Components"
+                android:text="@string/selection_components"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
-            <TabLayout
+            <com.google.android.material.tabs.TabLayout
                 android:id="@+id/segment1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="View Mode"
-                tools:entries="List,Grid,Map"
+                android:text="@string/view_mode"
+                app:items="List|Grid|Map"
                 android:layout_margin="0dp"/>
             <RadioButton
                 android:id="@+id/radio1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Size"
-                tools:entries="Small,Medium,Large"
+                android:text="@string/select_size"
+                app:items="Small|Medium|Large"
                 android:layout_margin="0dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Loading Indicator"
+                android:text="@string/loading_indicator"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
             <View
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Loading..."
+                android:text="@string/loading"
                 android:layout_margin="0dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Circle Image"
+                android:text="@string/circle_image"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
-            <CircleImageView
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:layout_margin="0dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gradient View"
+                android:text="@string/gradient_view"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
             <View
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                tools:entries="#FF6B6B,#4ECDC4"
-                tools:cornerRadius="10dp"
+                app:items="#FF6B6B|#4ECDC4"
                 android:layout_margin="0dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Gradient Background"
+                    android:text="@string/gradient_background"
                     android:textSize="20sp"
                     android:textColor="#FFFFFF"
                     android:layout_centerInParent="true"/>
             </View>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Blur View"
+                android:text="@string/blur_view"
                 android:textSize="18sp"
                 android:textColor="#666666"
                 android:layout_margin="0dp"/>
             <View
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
-                tools:cornerRadius="10dp"
                 android:layout_margin="0dp">
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Blurred Background"
+                    android:text="@string/blurred_background"
                     android:textSize="18sp"
                     android:textColor="#333333"
                     android:layout_centerInParent="true"/>

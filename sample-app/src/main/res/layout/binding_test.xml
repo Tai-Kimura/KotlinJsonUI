@@ -22,17 +22,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-            <Button
+            <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="#FFFFFF"
-                tools:cornerRadius="8dp"
-                android:text="Dynamic: @{dynamicModeStatus}"
+                android:text="@string/dynamic_dynamicmodestatus"
                 android:onClick="toggleDynamicMode"
-                android:background="#5856D6"
+                android:background="@drawable/ripple_b39393a0"
                 android:textSize="14sp"
+                android:textStyle="bold"
                 android:padding="8dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:id="@+id/title_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -40,43 +40,40 @@
                 android:text="@{data.title}"
                 android:textSize="24sp"
                 android:textColor="#000000"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Text Binding"
+                android:text="@string/text_binding"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="20dp"
-                android:fontFamily="bold"/>
-            <EditText
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiEditText
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:hint="Enter text"
+                android:hint="@string/enter_text"
                 android:text="@{data.textValue}"
-                android:background="#FFFFFF"
-                android:padding="10dp"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"/>
-            <TextView
+                android:background="@drawable/shape_54109721"
+                android:padding="10dp"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="You typed: @{textValue}"
+                android:text="@string/you_typed_textvalue"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Counter Binding"
+                android:text="@string/counter_binding"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
+                android:textStyle="bold"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -84,46 +81,43 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp">
-                <Button
+                <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="0dp"
                     android:layout_height="44dp"
                     android:layout_weight="1"
-                    android:text="Decrease"
+                    android:text="@string/decrease"
                     android:onClick="decreaseCounter"
-                    android:background="#FF3B30"
+                    android:background="@drawable/ripple_63581083"
                     android:textColor="#FFFFFF"
-                    tools:cornerRadius="8dp"
                     android:layout_marginEnd="5dp"/>
-                <TextView
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="100dp"
                     android:layout_height="44dp"
                     android:text="@{data.counter}"
                     android:textSize="20sp"
                     android:textColor="#000000"
                     android:textAlignment="center"
-                    android:background="#E0E0E0"
-                    tools:cornerRadius="8dp"
+                    android:background="@drawable/shape_d2d8f004"
                     android:layout_marginStart="5dp"
                     android:layout_marginEnd="5dp"/>
-                <Button
+                <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="0dp"
                     android:layout_height="44dp"
                     android:layout_weight="1"
-                    android:text="Increase"
+                    android:text="@string/increase"
                     android:onClick="increaseCounter"
-                    android:background="#34C759"
+                    android:background="@drawable/ripple_d7b81a7f"
                     android:textColor="#FFFFFF"
-                    tools:cornerRadius="8dp"
                     android:layout_marginStart="5dp"/>
             </LinearLayout>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toggle Binding"
+                android:text="@string/toggle_binding"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
+                android:textStyle="bold"/>
             <Switch
                 android:id="@+id/toggle_switch"
                 android:layout_width="wrap_content"
@@ -132,39 +126,40 @@
                 android:layout_marginStart="20dp"
                 android:checked="@{data.toggleValue}"
                 android:onClick="toggleChanged"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Toggle is: @{toggleValue}"
+                android:text="@string/toggle_is_togglevalue"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:orientation="vertical"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:background="#34C759"
-                tools:cornerRadius="8dp">
-                <TextView
+                android:background="@drawable/shape_228430c3">
+                <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ON/OFF"
+                    android:text="@string/onoff"
                     android:textSize="16sp"
                     android:textColor="#FFFFFF"
-                    android:layout_gravity="center"/>
-            </LinearLayout>
-            <TextView
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slider Binding"
+                android:text="@string/slider_binding"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
+                android:textStyle="bold"/>
             <SeekBar
                 android:id="@+id/value_slider"
                 android:layout_width="match_parent"
@@ -172,109 +167,100 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Slider value: @{sliderValue}"
+                android:text="@string/slider_value_slidervalue"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"/>
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:orientation="vertical"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:background="#E0E0E0"
-                tools:cornerRadius="10dp">
-                <LinearLayout
+                android:background="@drawable/shape_8965afcc">
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="100dp"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:background="#007AFF"
-                    tools:cornerRadius="10dp"/>
-            </LinearLayout>
-            <TextView
+                    android:background="@drawable/shape_773a852f"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SelectBox Binding"
+                android:text="@string/selectbox_binding"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:layout_marginTop="30dp"
-                android:fontFamily="bold"/>
-            <Spinner
+                android:textStyle="bold"/>
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/option_select"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                tools:selectedItem="@{data.selectedOption}"
-                tools:entries="Option 1,Option 2,Option 3,Option 4,Option 5,Option 6,Option 7,Option 8,Option 9,Option 10,Option 11,Option 12,Option 13,Option 14,Option 15,Option 16,Option 17,Option 18,Option 19,Option 20,Option 21,Option 22,Option 23,Option 24,Option 25,Option 26,Option 27,Option 28,Option 29,Option 30"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                app:selectedValue="@{data.selectedOption}"
+                app:items="Option 1|Option 2|Option 3|Option 4|Option 5|Option 6|Option 7|Option 8|Option 9|Option 10|Option 11|Option 12|Option 13|Option 14|Option 15|Option 16|Option 17|Option 18|Option 19|Option 20|Option 21|Option 22|Option 23|Option 24|Option 25|Option 26|Option 27|Option 28|Option 29|Option 30"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
-                android:hint="選択してください"/>
-            <TextView
+                app:hintColor="#999999"
+                android:hint="@string/str_"/>
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Selected: @{selectedOption}"
+                android:text="@string/selected_selectedoption"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Date Picker (Wheels Style)"
+                android:text="@string/date_picker_wheels_style"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginTop="30dp"/>
-            <Spinner
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 tools:selectItemType="Date"
-                tools:selectedItem="@{data.selectedDate}"
-                android:hint="日付を選択"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                app:selectedValue="@{data.selectedDate}"
+                android:hint="@string/str__2"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
+                app:hintColor="#999999"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Date Picker (Compact Style)"
+                android:text="@string/date_picker_compact_style"
                 android:textSize="18sp"
                 android:textColor="#333333"
                 android:textStyle="bold"
                 android:layout_marginTop="30dp"/>
-            <Spinner
+            <com.kotlinjsonui.views.KjuiSelectBox
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 tools:selectItemType="Date"
-                tools:selectedItem="@{data.selectedDate2}"
-                android:hint="Select date"
-                android:background="#FFFFFF"
-                tools:cornerRadius="8dp"
-                tools:strokeColor="#CCCCCC"
-                tools:strokeWidth="1dp"
+                app:selectedValue="@{data.selectedDate2}"
+                android:hint="@string/select_date"
+                android:background="@drawable/shape_378d2514"
                 android:textColor="#000000"
+                app:hintColor="#999999"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"/>
-            <TextView
+            <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{selectedDate} / @{selectedDate2}"
                 android:textSize="14sp"
                 android:textColor="#666666"
                 android:layout_marginTop="10dp"
