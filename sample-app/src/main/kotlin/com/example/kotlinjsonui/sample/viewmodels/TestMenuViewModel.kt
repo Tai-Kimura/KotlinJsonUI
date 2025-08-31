@@ -18,7 +18,7 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
     val data: StateFlow<TestMenuData> = _data.asStateFlow()
     
     // Navigation mode flag (true = XML, false = Compose)
-    var useXmlNavigation = true
+    var useXmlNavigation = false
     
     // Navigation event for Compose
     private val _navigationEvent = MutableStateFlow<String?>(null)
@@ -49,7 +49,7 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
         
         // Update the UI status based on actual state
         val statusText = if (newState == true) "ON" else "OFF"
-        _data.value = _data.value.copy(dynamicModeStatus = statusText)
+        _data.value = _data.value.copy(dynamicModeStatus = "Dynamic Mode: ${statusText}")
     }
     // Layout & Positioning navigation
     fun navigateToMarginsTest() {

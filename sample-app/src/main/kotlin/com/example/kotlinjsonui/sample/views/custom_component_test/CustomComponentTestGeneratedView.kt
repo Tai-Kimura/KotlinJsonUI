@@ -265,7 +265,6 @@ fun CustomComponentTestGeneratedView(
                     StatusBadge(
                         title = "Static Status",
                         status = "Active",
-                        color = Color.medium_green_2,
                         count = 5
                     )
                     StatusBadge(
@@ -277,7 +276,6 @@ fun CustomComponentTestGeneratedView(
                     StatusBadge(
                         title = "Error Status",
                         status = "Error",
-                        color = Color.medium_red,
                         count = 0
                     )
                 }

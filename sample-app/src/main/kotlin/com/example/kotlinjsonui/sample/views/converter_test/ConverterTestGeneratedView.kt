@@ -137,7 +137,7 @@ fun ConverterTestGeneratedView(
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
-                    .background(Brush.linearGradient(listOf(Helpers::ResourceResolver.process_color('#FF0000', required_imports), Helpers::ResourceResolver.process_color('#00FF00', required_imports), Helpers::ResourceResolver.process_color('#0000FF', required_imports))))
+                    .background(Brush.linearGradient(listOf(colorResource(R.color.dark_red), colorResource(R.color.dark_green_2), colorResource(R.color.dark_blue))))
             ) {
                 Text(
                     text = stringResource(R.string.converter_test_diagonal_gradient),

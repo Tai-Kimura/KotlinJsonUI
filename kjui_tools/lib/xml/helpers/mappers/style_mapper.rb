@@ -118,9 +118,10 @@ module XmlGenerator
         when 'gradientCenterColor', 'centerColor'
           return { namespace: 'app', name: 'gradientCenterColor', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'gradientColors', 'colors'
-          # Handle array of colors
+          # Handle array of colors - don't process through ResourceResolver
+          # gradientColors expects raw color values separated by |
           if value.is_a?(Array)
-            colors_string = value.map { |c| KjuiTools::Xml::Helpers::ResourceResolver.process_color(c) }.join('|')
+            colors_string = value.map { |c| normalize_color_for_gradient(c) }.join('|')
             return { namespace: 'app', name: 'gradientColors', value: colors_string }
           else
             return { namespace: 'app', name: 'gradientColors', value: value }
@@ -280,6 +281,18 @@ module XmlGenerator
           'angular' => 'sweep'
         }
         type_map[value] || 'linear'
+      end
+      
+      def normalize_color_for_gradient(color)
+        return '#00000000' if color == 'clear' || color == 'transparent'
+        
+        # Ensure hex format for colors
+        if color.match?(/^#?[A-Fa-f0-9]{6,8}$/)
+          color.start_with?('#') ? color : "##{color}"
+        else
+          # Return as-is for named colors or other formats
+          color
+        end
       end
     end
   end

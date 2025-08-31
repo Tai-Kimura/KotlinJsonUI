@@ -193,11 +193,8 @@ module KjuiTools
                           when 'int', 'integer', 'float', 'double', 'bool', 'boolean'
                             value.to_s
                           when 'color'
-                            if value.is_a?(String) && value.start_with?('#')
-                              "Color(android.graphics.Color.parseColor(\\"\#{value}\\"))"
-                            else
-                              "Color.\#{value}"
-                            end
+                            # Use ResourceResolver to process colors
+                            Helpers::ResourceResolver.process_color(value, required_imports)
                           else
                             value.to_s
                           end

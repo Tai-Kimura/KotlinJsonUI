@@ -1,6 +1,6 @@
 {
   "type": "Button",
-  "text": "Dynamic: @{dynamicModeStatus}",
+  "text": "@{dynamicModeStatus}",
   "onclick": "toggleDynamicMode",
   "background": "#5856D6",
   "fontColor": "#FFFFFF",

@@ -269,7 +269,7 @@ fun ComponentsTestGeneratedView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
-                    .background(Brush.horizontalGradient(listOf(Helpers::ResourceResolver.process_color('#FF6B6B', required_imports), Helpers::ResourceResolver.process_color('#4ECDC4', required_imports))))
+                    .background(Brush.horizontalGradient(listOf(colorResource(R.color.light_red), colorResource(R.color.light_lime))))
                     .clip(RoundedCornerShape(10.dp))
             ) {
             }

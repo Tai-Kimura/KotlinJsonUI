@@ -21,7 +21,7 @@ class VisibilityTestViewModel(application: Application) : AndroidViewModel(appli
         
         // Update the UI status based on actual state
         val statusText = if (newState == true) "ON" else "OFF"
-        _data.value = _data.value.copy(dynamicModeStatus = statusText)
+        _data.value = _data.value.copy(dynamicModeStatus = "Dynamic Mode: ${statusText}")
     }
 
     // Action handlers

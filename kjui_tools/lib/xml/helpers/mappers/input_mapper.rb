@@ -33,7 +33,9 @@ module XmlGenerator
         when 'selectItemType'
           return { namespace: 'tools', name: 'selectItemType', value: value }
         when 'hintColor'
-          return { namespace: 'app', name: 'hintColor', value: value }
+          # Process color value through ResourceResolver
+          color_value = KjuiTools::Xml::Helpers::ResourceResolver.process_color(value)
+          return { namespace: 'app', name: 'hintColor', value: color_value }
         when 'prompt'
           return { namespace: 'app', name: 'placeholder', value: value }
           

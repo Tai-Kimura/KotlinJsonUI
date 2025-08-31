@@ -46,8 +46,10 @@ module KjuiTools
             end
           end
           
-          # Build color list
-          color_list = colors.map { |color| "Helpers::ResourceResolver.process_color('#{color}', required_imports)" }.join(", ")
+          # Build color list - process colors at generation time, not runtime
+          color_list = colors.map { |color| 
+            Helpers::ResourceResolver.process_color(color, required_imports)
+          }.join(", ")
           
           # Add gradient modifier
           required_imports&.add(:gradient)

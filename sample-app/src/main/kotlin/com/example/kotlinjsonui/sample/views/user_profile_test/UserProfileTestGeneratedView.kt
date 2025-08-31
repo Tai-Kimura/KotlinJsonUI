@@ -142,7 +142,6 @@ fun UserProfileTestGeneratedView(
                     StatusBadge(
                         title = "Status",
                         status = data.userStatus,
-                        color = Color.medium_green_2,
                         count = data.notificationCount
                     )
                 }

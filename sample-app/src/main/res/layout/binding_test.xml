@@ -26,7 +26,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
                 android:textColor="@color/white"
-                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
+                android:text="@{data.dynamicModeStatus}"
                 android:onClick="toggleDynamicMode"
                 android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
@@ -210,7 +210,7 @@
                 app:items="Option 1|Option 2|Option 3|Option 4|Option 5|Option 6|Option 7|Option 8|Option 9|Option 10|Option 11|Option 12|Option 13|Option 14|Option 15|Option 16|Option 17|Option 18|Option 19|Option 20|Option 21|Option 22|Option 23|Option 24|Option 25|Option 26|Option 27|Option 28|Option 29|Option 30"
                 android:background="@drawable/shape_f7666c4d"
                 android:textColor="@color/black"
-                app:hintColor="light_gray_8"
+                app:hintColor="@color/light_gray_8"
                 android:hint="&quot;選択してください&quot;"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
@@ -240,7 +240,7 @@
                 android:hint="&quot;日付を選択&quot;"
                 android:background="@drawable/shape_f7666c4d"
                 android:textColor="@color/black"
-                app:hintColor="light_gray_8"
+                app:hintColor="@color/light_gray_8"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"/>
@@ -262,7 +262,7 @@
                 android:hint="@string/binding_test_select_date"
                 android:background="@drawable/shape_f7666c4d"
                 android:textColor="@color/black"
-                app:hintColor="light_gray_8"
+                app:hintColor="@color/light_gray_8"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"/>

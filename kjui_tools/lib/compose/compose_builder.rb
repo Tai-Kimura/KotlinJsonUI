@@ -49,7 +49,10 @@ module KjuiTools
       end
       
       def build(options = {})
-        json_files = Dir.glob(File.join(@layouts_dir, '**/*.json'))
+        # Get all JSON files but exclude Resources folder
+        json_files = Dir.glob(File.join(@layouts_dir, '**/*.json')).reject do |file|
+          file.include?('/Resources/')
+        end
         
         if json_files.empty?
           Core::Logger.warn "No JSON files found in #{@layouts_dir}"

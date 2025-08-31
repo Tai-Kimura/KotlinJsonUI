@@ -70,13 +70,14 @@ class MainActivity : ComponentActivity() {
         
         // Initialize KotlinJsonUI library
         KotlinJsonUI.initialize(applicationContext)
-        
+
         // Set initial dynamic mode state
         DynamicModeManager.setDynamicModeEnabled(this, false)
         
         // Register custom component handler for dynamic mode (debug only)
         DynamicComponentInitializer.initialize()
-        
+
+
         // Configure link color globally (optional - you can customize this)
         // Default is blue (0xFF0000EE), but you can change it to any color
         // Configuration.Colors.linkColor = Color(0xFF007AFF)  // iOS style blue

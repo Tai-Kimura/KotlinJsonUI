@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:textColor="@color/white"
-            android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
+            android:text="@{data.dynamicModeStatus}"
             android:onClick="toggleDynamicMode"
             android:background="@drawable/ripple_d5af3557"
             android:textSize="14sp"
