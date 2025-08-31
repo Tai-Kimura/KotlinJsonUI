@@ -20,6 +20,8 @@ import com.kotlinjsonui.core.SafeDynamicView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun HorizontalCardGeneratedView(
@@ -71,7 +73,7 @@ fun HorizontalCardGeneratedView(
         modifier = Modifier
             .width(150.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(12.dp)
     ) {
         Box(
@@ -79,20 +81,20 @@ fun HorizontalCardGeneratedView(
                 .fillMaxWidth()
                 .height(80.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(android.graphics.Color.parseColor("#E3F2FD")))
+                .background(colorResource(R.color.white_16))
         ) {
         }
         Text(
             text = "${data.title}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#333333")),
+            color = colorResource(R.color.dark_gray),
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(top = 8.dp)
         )
         Text(
             text = "${data.description}",
             fontSize = 12.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

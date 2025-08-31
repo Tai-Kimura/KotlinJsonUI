@@ -19,7 +19,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.kotlinjsonui.sample.databinding.TestMenuBinding
 import com.example.kotlinjsonui.sample.ui.theme.KotlinJsonUITheme
 import com.example.kotlinjsonui.sample.viewmodels.*
 import com.example.kotlinjsonui.sample.views.test_menu.TestMenuView
@@ -83,30 +82,29 @@ class MainActivity : ComponentActivity() {
         // Configuration.Colors.linkColor = Color(0xFF007AFF)  // iOS style blue
         // Configuration.Colors.linkColor = Color(0xFF1976D2)  // Material blue
         // Configuration.Colors.linkColor = Color.Red  // Red links
-        
-        // Use XML layout instead of Compose
-        val binding: TestMenuBinding = DataBindingUtil.setContentView(this, R.layout.test_menu)
-        viewModel = ViewModelProvider(this)[TestMenuViewModel::class.java]
-        
-        // Set ViewModel to use XML navigation
-        viewModel.useXmlNavigation = true
-        
-        // Bind data
-        binding.viewModel = viewModel
-        binding.data = viewModel.data.value
-        binding.lifecycleOwner = this
-        
-        // Observe XML navigation events
-        lifecycleScope.launch {
-            viewModel.xmlNavigationEvent.collect { intent ->
-                intent?.let {
-                    startActivity(it)
-                    viewModel.clearXmlNavigationEvent()
-                }
-            }
-        }
-        
-        /* Commented out Compose UI code
+//
+//        // Use XML layout instead of Compose
+//        val binding: TestMenuBinding = DataBindingUtil.setContentView(this, R.layout.test_menu)
+//        viewModel = ViewModelProvider(this)[TestMenuViewModel::class.java]
+//
+//        // Set ViewModel to use XML navigation
+//        viewModel.useXmlNavigation = true
+//
+//        // Bind data
+//        binding.viewModel = viewModel
+//        binding.data = viewModel.data.value
+//        binding.lifecycleOwner = this
+//
+//        // Observe XML navigation events
+//        lifecycleScope.launch {
+//            viewModel.xmlNavigationEvent.collect { intent ->
+//                intent?.let {
+//                    startActivity(it)
+//                    viewModel.clearXmlNavigationEvent()
+//                }
+//            }
+//        }
+//
         setContent {
             KotlinJsonUITheme {
                 Surface(
@@ -117,7 +115,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        */
     }
     
     // onClick handlers for XML layout buttons
@@ -266,7 +263,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/* Commented out Compose navigation code
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -400,4 +396,3 @@ fun TestMenuWithNavigation(navController: NavHostController) {
     
     TestMenuView(viewModel = viewModel)
 }
-*/

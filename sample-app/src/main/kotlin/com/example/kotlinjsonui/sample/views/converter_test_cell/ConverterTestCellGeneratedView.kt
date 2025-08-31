@@ -20,6 +20,8 @@ import com.kotlinjsonui.core.SafeDynamicView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun ConverterTestCellGeneratedView(
@@ -70,19 +72,19 @@ fun ConverterTestCellGeneratedView(
         Row(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(12.dp)
     ) {
         Text(
             text = "${data.item["label"] as? String ?: ""}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             modifier = Modifier.weight(1f)
         )
         Text(
             text = "${data.item["value"] as? String ?: ""}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#007AFF")),
+            color = colorResource(R.color.medium_blue),
             fontWeight = FontWeight.Bold,
             modifier = Modifier
         )

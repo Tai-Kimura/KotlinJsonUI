@@ -18,14 +18,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="44dp"
-            android:textColor="#FFFFFF"
-            android:text="@string/dynamic_dynamicmodestatus"
+            android:textColor="@color/white"
+            android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
             android:onClick="toggleDynamicMode"
-            android:background="@drawable/ripple_b39393a0"
+            android:background="@drawable/ripple_d5af3557"
             android:textSize="14sp"
             android:textStyle="bold"
             android:padding="8dp"/>
@@ -36,13 +36,13 @@
             android:layout_marginTop="20dp"
             android:text="@{data.title}"
             android:textSize="24sp"
-            android:textColor="#000000"/>
+            android:textColor="@color/black"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/regular_textfield_not_secure"
+            android:text="@string/secure_field_test_regular_textfield_not_secure"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginTop="30dp"/>
         <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/regular_field"
@@ -51,17 +51,17 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:hint="@string/enter_regular_text"
+            android:hint="@string/secure_field_test_enter_regular_text"
             android:text="@{data.regularText}"
-            android:background="@drawable/shape_378d2514"
-            android:textColor="#000000"
+            android:background="@drawable/shape_f7666c4d"
+            android:textColor="@color/black"
             android:textSize="16sp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/secure_textfield_password"
+            android:text="@string/secure_field_test_secure_textfield_password"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginTop="20dp"/>
         <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/password_field"
@@ -70,17 +70,17 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:hint="@string/enter_password"
+            android:hint="@string/secure_field_test_enter_password"
             android:text="@{data.password}"
-            android:background="@drawable/shape_378d2514"
-            android:textColor="#000000"
+            android:background="@drawable/shape_f7666c4d"
+            android:textColor="@color/black"
             android:textSize="16sp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/confirm_password_also_secure"
+            android:text="@string/secure_field_test_confirm_password_also_secure"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginTop="20dp"/>
         <com.kotlinjsonui.views.KjuiEditText
             android:id="@+id/confirm_password_field"
@@ -89,10 +89,10 @@
             android:layout_marginTop="10dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:hint="@string/confirm_password"
+            android:hint="@string/secure_field_test_confirm_password"
             android:text="@{data.confirmPassword}"
-            android:background="@drawable/shape_378d2514"
-            android:textColor="#000000"
+            android:background="@drawable/shape_f7666c4d"
+            android:textColor="@color/black"
             android:textSize="16sp"/>
         <LinearLayout
             android:layout_width="match_parent"
@@ -102,34 +102,34 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:padding="15dp"
-            android:background="@drawable/shape_aba07408">
+            android:background="@drawable/shape_811378f3">
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/values_entered"
+                android:text="@string/secure_field_test_values_entered"
                 android:textSize="14sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/regular_regulartext"
+                android:text="@string/secure_field_test_regular_regulartext"
                 android:textSize="12sp"
-                android:textColor="#666666"
+                android:textColor="@color/medium_gray_4"
                 android:layout_marginTop="5dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/password_hidden"
+                android:text="@string/secure_field_test_password_hidden"
                 android:textSize="12sp"
-                android:textColor="#666666"
+                android:textColor="@color/medium_gray_4"
                 android:layout_marginTop="5dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/confirm_hidden"
+                android:text="@string/secure_field_test_confirm_hidden"
                 android:textSize="12sp"
-                android:textColor="#666666"
+                android:textColor="@color/medium_gray_4"
                 android:layout_marginTop="5dp"/>
         </LinearLayout>
     </LinearLayout>

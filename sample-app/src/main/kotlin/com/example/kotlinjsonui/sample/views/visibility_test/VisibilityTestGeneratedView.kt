@@ -25,6 +25,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun VisibilityTestGeneratedView(
@@ -75,7 +78,7 @@ fun VisibilityTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -91,19 +94,19 @@ fun VisibilityTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
@@ -113,138 +116,138 @@ fun VisibilityTestGeneratedView(
                 visibility = "visible",
             ) {
             Text(
-                text = "Visibility: visible (default)",
+                text = stringResource(R.string.visibility_test_visibility_visible_default),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                    .background(colorResource(R.color.pale_yellow))
             )
             }
             VisibilityWrapper(
                 visibility = "invisible",
             ) {
             Text(
-                text = "This label is invisible (takes space)",
+                text = stringResource(R.string.visibility_test_this_label_is_invisible_takes_s),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                    .background(colorResource(R.color.pale_pink))
             )
             }
             Text(
-                text = "After invisible label",
+                text = stringResource(R.string.visibility_test_after_invisible_label),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
+                    .background(colorResource(R.color.pale_cyan))
             )
             Text(
-                text = "After gone label (no gap)",
+                text = stringResource(R.string.visibility_test_after_gone_label_no_gap),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
+                    .background(colorResource(R.color.white_3))
             )
             Text(
-                text = "Opacity Tests",
+                text = stringResource(R.string.visibility_test_opacity_tests),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 30.dp)
             )
             Text(
-                text = "Opacity: 1.0 (fully visible)",
+                text = stringResource(R.string.visibility_test_opacity_10_fully_visible),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .alpha(1.0f)
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                    .background(colorResource(R.color.white_5))
             )
             Text(
-                text = "Opacity: 0.7",
+                text = stringResource(R.string.visibility_test_opacity_07),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .alpha(0.7f)
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                    .background(colorResource(R.color.white_6))
             )
             Text(
-                text = "Opacity: 0.5",
+                text = stringResource(R.string.visibility_test_opacity_05),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .alpha(0.5f)
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                    .background(colorResource(R.color.white_7))
             )
             Text(
-                text = "Opacity: 0.3",
+                text = stringResource(R.string.visibility_test_opacity_03),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .alpha(0.3f)
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                    .background(colorResource(R.color.white_8))
             )
             Text(
-                text = "Opacity: 0.1",
+                text = stringResource(R.string.visibility_test_opacity_01),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .alpha(0.1f)
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
+                    .background(colorResource(R.color.white_3))
             )
             Text(
-                text = "Alpha Test (same as opacity)",
+                text = stringResource(R.string.visibility_test_alpha_test_same_as_opacity),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 30.dp)
             )
             Text(
-                text = "Alpha: 0.6",
+                text = stringResource(R.string.visibility_test_alpha_06),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .alpha(0.6f)
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                    .background(colorResource(R.color.white_4))
             )
             Text(
-                text = "Dynamic Visibility Tests",
+                text = stringResource(R.string.visibility_test_dynamic_visibility_tests),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .wrapContentWidth()
@@ -256,26 +259,26 @@ fun VisibilityTestGeneratedView(
                 modifier = Modifier.padding(top = 10.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Toggle Visibility",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.visibility_test_toggle_visibility),
+                    color = colorResource(R.color.white),
                 )
             }
             VisibilityWrapper(
                 visibility = data.textVisibility,
             ) {
             Text(
-                text = "This text uses dynamic visibility",
+                text = stringResource(R.string.visibility_test_this_text_uses_dynamic_visibili),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                    .background(colorResource(R.color.white_5))
                     .padding(10.dp)
             )
             }
@@ -284,26 +287,26 @@ fun VisibilityTestGeneratedView(
                 modifier = Modifier.padding(top = 20.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                    containerColor = colorResource(R.color.medium_green)
                                 )
             ) {
                 Text(
-                    text = "Toggle Hidden",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.visibility_test_toggle_hidden),
+                    color = colorResource(R.color.white),
                 )
             }
             VisibilityWrapper(
                 hidden = data.isHidden,
             ) {
             Text(
-                text = "This text uses dynamic hidden attribute",
+                text = stringResource(R.string.visibility_test_this_text_uses_dynamic_hidden_a),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                    .background(colorResource(R.color.white_6))
                     .padding(10.dp)
             )
             }

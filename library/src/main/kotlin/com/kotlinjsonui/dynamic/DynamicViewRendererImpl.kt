@@ -30,6 +30,10 @@ class DynamicViewRendererImpl : DynamicViewProvider.DynamicViewRenderer {
         content: @Composable (String) -> Unit
     ) {
         val context = LocalContext.current
+        
+        // Initialize ResourceCache with context
+        ResourceCache.init(context)
+        
         var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
         var error by remember { mutableStateOf<String?>(null) }
         var isLoading by remember { mutableStateOf(true) }

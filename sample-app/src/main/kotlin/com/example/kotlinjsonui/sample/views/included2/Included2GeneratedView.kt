@@ -22,6 +22,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun Included2GeneratedView(
@@ -71,37 +74,37 @@ fun Included2GeneratedView(
         Column(
         modifier = Modifier
             .clip(RoundedCornerShape(10.dp))
-            .background(Color(android.graphics.Color.parseColor("#FFF4E6")))
+            .background(colorResource(R.color.white_21))
             .padding(15.dp)
     ) {
         Text(
-            text = "Included View 2",
+            text = stringResource(R.string.included2_included_view_2),
             fontSize = 18.sp,
-            color = Color(android.graphics.Color.parseColor("#FF6600")),
+            color = colorResource(R.color.medium_red_6),
             modifier = Modifier
         )
         Column(
             modifier = Modifier
                 .clip(RoundedCornerShape(5.dp))
-                .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                .background(colorResource(R.color.white))
                 .padding(10.dp)
         ) {
             Text(
                 text = "${data.viewTitle}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier
             )
             Text(
                 text = "${data.viewStatus}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier
             )
             Text(
                 text = "${data.viewCount}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier
             )
         }

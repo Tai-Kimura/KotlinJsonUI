@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -75,7 +76,7 @@ module KjuiTools
           # Border for WebView
           if json_data['borderWidth'] && json_data['borderColor']
             required_imports&.add(:border)
-            modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")))"
+            modifiers << ".border(#{json_data['borderWidth']}.dp, Helpers::ResourceResolver.process_color('#{json_data['borderColor']}', required_imports))"
           end
           
           code += Helpers::ModifierBuilder.format(modifiers, depth)

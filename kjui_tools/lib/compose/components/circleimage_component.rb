@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -47,13 +48,13 @@ module KjuiTools
           # Border for circle
           if json_data['borderWidth'] && json_data['borderColor']
             required_imports&.add(:border)
-            modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), CircleShape)"
+            modifiers << ".border(#{json_data['borderWidth']}.dp, Helpers::ResourceResolver.process_color('#{json_data['borderColor']}', required_imports), CircleShape)"
           end
           
           # Background (in case image doesn't load)
           if json_data['background']
             required_imports&.add(:background)
-            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+            modifiers << ".background(Helpers::ResourceResolver.process_color('#{json_data['background']}', required_imports))"
           end
           
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -62,7 +63,7 @@ module KjuiTools
           if json_data['borderWidth'] && json_data['borderColor']
             required_imports&.add(:border)
             shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
-            modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{shape})"
+            modifiers << ".border(#{json_data['borderWidth']}.dp, Helpers::ResourceResolver.process_color('#{json_data['borderColor']}', required_imports), #{shape})"
           end
           
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))

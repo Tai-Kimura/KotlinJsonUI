@@ -1,3 +1,5 @@
+require_relative '../helpers/resource_resolver'
+
 module DrawableGenerator
   class RippleDrawableGenerator
     def generate(json_data, component_type)
@@ -177,25 +179,14 @@ module DrawableGenerator
       
       value_str = value.to_s
       
-      # Already a color reference or hex
-      return value_str if value_str.start_with?('@color/', '#', '?attr/')
+      # Already a color reference
+      return value_str if value_str.start_with?('@color/', '?attr/')
       
-      # Named colors - convert to hex
-      color_map = {
-        'black' => '#000000',
-        'white' => '#FFFFFF',
-        'red' => '#FF0000',
-        'green' => '#00FF00',
-        'blue' => '#0000FF',
-        'yellow' => '#FFFF00',
-        'cyan' => '#00FFFF',
-        'magenta' => '#FF00FF',
-        'gray' => '#808080',
-        'grey' => '#808080',
-        'transparent' => '#00000000'
-      }
+      # Special case for transparent
+      return '#00000000' if value_str == 'transparent'
       
-      color_map[value_str.downcase] || value_str
+      # Use ResourceResolver to check for color resources
+      KjuiTools::Xml::Helpers::ResourceResolver.process_color(value_str)
     end
   end
 end

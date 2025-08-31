@@ -12,9 +12,10 @@ module KjuiTools
       def initialize(config = nil)
         @config = config || Core::ConfigManager.load_config
         Core::ProjectFinder.setup_paths
-        @project_path = @config['project_path'] || Core::ProjectFinder.project_dir || Dir.pwd
-        @layouts_dir = File.join(@project_path, @config['source_directory'] || 'src/main', 'assets/Layouts')
-        @output_dir = File.join(@project_path, 'src/main/res/layout')
+        # Use current directory as project path (where kjui.config.json is located)
+        @project_path = Dir.pwd
+        @layouts_dir = File.join(@project_path, @config['source_directory'] || 'src/main', @config['layouts_directory'] || 'assets/Layouts')
+        @output_dir = File.join(@project_path, @config['source_directory'] || 'src/main', 'res/layout')
         @generated_count = 0
         @failed_count = 0
         @skipped_count = 0
@@ -40,8 +41,13 @@ module KjuiTools
         # Ensure output directory exists
         FileUtils.mkdir_p(@output_dir)
         
-        # Get all JSON files
+        # Get all JSON files (excluding Resources folder)
         json_files = Dir.glob(File.join(@layouts_dir, '*.json'))
+        # Also get JSON files from subdirectories, but exclude Resources
+        json_files += Dir.glob(File.join(@layouts_dir, '**/*.json')).reject do |file|
+          file.include?('/Resources/')
+        end
+        json_files.uniq!
         
         if json_files.empty?
           puts "⚠️  No JSON files found in #{@layouts_dir}"
@@ -49,6 +55,12 @@ module KjuiTools
         end
         
         puts "📄 Found #{json_files.length} JSON files"
+        puts "-" * 60
+        
+        # Extract resources before processing layouts
+        require_relative '../core/resources_manager'
+        resources_manager = Core::ResourcesManager.new(@config, @project_path)
+        resources_manager.extract_resources(json_files)
         puts "-" * 60
         
         # Process each file

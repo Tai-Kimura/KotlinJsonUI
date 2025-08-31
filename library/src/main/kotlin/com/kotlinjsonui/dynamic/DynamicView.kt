@@ -23,6 +23,7 @@ import com.kotlinjsonui.components.VisibilityWrapper
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.dynamic.components.*
+import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
 
@@ -49,6 +50,10 @@ fun DynamicView(
     onError: ((Exception) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    
+    // Initialize ResourceCache and ColorParser with context
+    ResourceCache.init(context)
+    ColorParser.init(context)
     
     // Apply styles if a style attribute is present
     val styledJson = if (json.has("style")) {
@@ -150,7 +155,7 @@ fun DynamicView(
     // Apply visibility wrapper if visibility attribute is present
     if (!visibility.isNullOrEmpty()) {
         // Process data binding for visibility
-        val processedVisibility = processDataBinding(visibility, data)
+        val processedVisibility = processDataBinding(visibility, data, context)
         VisibilityWrapper(
             visibility = processedVisibility,
             content = renderComponent
@@ -211,6 +216,10 @@ fun DynamicView(
     onError: ((Exception) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    
+    // Initialize ResourceCache and ColorParser with context
+    ResourceCache.init(context)
+    ColorParser.init(context)
     
     // Initialize DynamicLayoutLoader with context
     DynamicLayoutLoader.init(context)

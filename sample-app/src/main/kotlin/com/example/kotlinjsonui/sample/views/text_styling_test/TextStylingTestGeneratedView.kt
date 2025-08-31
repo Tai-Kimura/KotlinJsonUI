@@ -25,6 +25,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun TextStylingTestGeneratedView(
@@ -75,7 +78,7 @@ fun TextStylingTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -91,164 +94,164 @@ fun TextStylingTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
             )
             Text(
-                text = "Font Sizes",
+                text = stringResource(R.string.text_styling_test_font_sizes),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "fontSize: 12",
+                text = stringResource(R.string.text_styling_test_fontsize_12),
                 fontSize = 12.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "fontSize: 16",
+                text = stringResource(R.string.text_styling_test_fontsize_16),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
-                text = "fontSize: 20",
+                text = stringResource(R.string.text_styling_test_fontsize_20),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
-                text = "fontSize: 24",
+                text = stringResource(R.string.text_styling_test_fontsize_24),
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
-                text = "Font Styles",
+                text = stringResource(R.string.text_styling_test_font_styles),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "Bold Text",
+                text = stringResource(R.string.text_styling_test_bold_text),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "Underlined Text",
+                text = stringResource(R.string.text_styling_test_underlined_text),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 textDecoration = TextDecoration.Underline,
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "Text Alignment",
+                text = stringResource(R.string.text_styling_test_text_alignment),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "Left Aligned (default)",
+                text = stringResource(R.string.text_styling_test_left_aligned_default),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
                     .padding(5.dp),
                 textAlign = TextAlign.Start
             )
             Text(
-                text = "Center Aligned",
+                text = stringResource(R.string.text_styling_test_center_aligned),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
                     .padding(5.dp),
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Right Aligned",
+                text = stringResource(R.string.text_styling_test_right_aligned),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
                     .padding(5.dp),
                 textAlign = TextAlign.End
             )
             Text(
-                text = "Line Spacing Test",
+                text = stringResource(R.string.text_styling_test_line_spacing_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "This is a multi-line text with lineSpacing: 5 to demonstrate line spacing",
+                text = stringResource(R.string.text_styling_test_this_is_a_multiline_text_with_l),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                    .background(colorResource(R.color.white))
                     .padding(10.dp)
             )
             Text(
-                text = "This is another multi-line text with lineSpacing: 10 to demonstrate line spacing (line breaks work with proper spacing)",
+                text = stringResource(R.string.text_styling_test_this_is_another_multiline_text_),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                    .background(colorResource(R.color.white))
                     .padding(10.dp)
             )
             Text(
-                text = "Font Colors",
+                text = stringResource(R.string.text_styling_test_font_colors),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
-                text = "Red Text",
+                text = stringResource(R.string.text_styling_test_red_text),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#FF0000")),
+                color = colorResource(R.color.dark_red),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
-                text = "Green Text",
+                text = stringResource(R.string.text_styling_test_green_text),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#00FF00")),
+                color = colorResource(R.color.dark_green_2),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
-                text = "Blue Text",
+                text = stringResource(R.string.text_styling_test_blue_text),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#0000FF")),
+                color = colorResource(R.color.dark_blue),
                 modifier = Modifier.padding(top = 5.dp)
             )
         }

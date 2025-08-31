@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -77,11 +78,13 @@ module KjuiTools
                   colors_params = []
                   
                   if json_data['selectedColor']
-                    colors_params << "selectedColor = Color(android.graphics.Color.parseColor(\"#{json_data['selectedColor']}\"))"
+                    selectedcolor_resolved = Helpers::ResourceResolver.process_color(json_data['selectedColor'], required_imports)
+                    colors_params << "selectedColor = #{selectedcolor_resolved}"
                   end
                   
                   if json_data['unselectedColor']
-                    colors_params << "unselectedColor = Color(android.graphics.Color.parseColor(\"#{json_data['unselectedColor']}\"))"
+                    unselectedcolor_resolved = Helpers::ResourceResolver.process_color(json_data['unselectedColor'], required_imports)
+                    colors_params << "unselectedColor = #{unselectedcolor_resolved}"
                   end
                   
                   if colors_params.any?
@@ -201,7 +204,8 @@ module KjuiTools
             
             if json_data['selectedColor'] || json_data['tintColor']
               color = json_data['selectedColor'] || json_data['tintColor']
-              code += "\n" + indent("            tint = if (isSelected) Color(android.graphics.Color.parseColor(\"#{color}\")) else Color.Gray", depth)
+              selected_color = Helpers::ResourceResolver.process_color(color, required_imports)
+              code += "\n" + indent("            tint = if (isSelected) #{selected_color} else Color.Gray", depth)
             else
               code += "\n" + indent("            tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray", depth)
             end
@@ -222,7 +226,8 @@ module KjuiTools
             # Add text with color
             if json_data['fontColor'] || json_data['textColor']
               text_color = json_data['fontColor'] || json_data['textColor']
-              code += "\n" + indent("    Text(\"#{text}\", color = Color(android.graphics.Color.parseColor(\"#{text_color}\")))", depth)
+              color_resolved = Helpers::ResourceResolver.process_color(text_color, required_imports)
+              code += "\n" + indent("    Text(\"#{text}\", color = #{color_resolved})", depth)
             else
               # Default to black color
               code += "\n" + indent("    Text(\"#{text}\", color = Color.Black)", depth)
@@ -266,7 +271,8 @@ module KjuiTools
           if json_data['text']
             if json_data['fontColor'] || json_data['textColor']
               text_color = json_data['fontColor'] || json_data['textColor']
-              code += "\n" + indent("    Text(\"#{json_data['text']}\", color = Color(android.graphics.Color.parseColor(\"#{text_color}\")))", depth)
+              color_resolved = Helpers::ResourceResolver.process_color(text_color, required_imports)
+              code += "\n" + indent("    Text(\"#{json_data['text']}\", color = #{color_resolved})", depth)
             else
               # Default to black color
               code += "\n" + indent("    Text(\"#{json_data['text']}\", color = Color.Black)", depth)
@@ -304,7 +310,8 @@ module KjuiTools
             # Add text with black color
             if json_data['fontColor'] || json_data['textColor']
               text_color = json_data['fontColor'] || json_data['textColor']
-              code += "\n" + indent("        Text(\"#{item}\", color = Color(android.graphics.Color.parseColor(\"#{text_color}\")))", depth)
+              color_resolved = Helpers::ResourceResolver.process_color(text_color, required_imports)
+              code += "\n" + indent("        Text(\"#{item}\", color = #{color_resolved})", depth)
             else
               # Default to black color
               code += "\n" + indent("        Text(\"#{item}\", color = Color.Black)", depth)

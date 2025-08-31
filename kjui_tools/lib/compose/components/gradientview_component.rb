@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -46,7 +47,7 @@ module KjuiTools
           end
           
           # Build color list
-          color_list = colors.map { |color| "Color(android.graphics.Color.parseColor(\"#{color}\"))" }.join(", ")
+          color_list = colors.map { |color| "Helpers::ResourceResolver.process_color('#{color}', required_imports)" }.join(", ")
           
           # Add gradient modifier
           required_imports&.add(:gradient)

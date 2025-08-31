@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -64,12 +65,14 @@ module KjuiTools
           
           # Color
           if json_data['color']
-            code += ",\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['color']}\"))", actual_depth + 1)
+            color_resolved = Helpers::ResourceResolver.process_color(json_data['color'], required_imports)
+            code += ",\n" + indent("color = #{color_resolved}", actual_depth + 1)
           end
           
           # Track color for linear progress
           if style == 'linear' && json_data['trackColor']
-            code += ",\n" + indent("trackColor = Color(android.graphics.Color.parseColor(\"#{json_data['trackColor']}\"))", actual_depth + 1)
+            trackcolor_resolved = Helpers::ResourceResolver.process_color(json_data['trackColor'], required_imports)
+            code += ",\n" + indent("trackColor = #{trackcolor_resolved}", actual_depth + 1)
           end
           
           # Stroke width for circular progress

@@ -92,13 +92,21 @@ module KjuiTools
           last_including_files = cache_manager.load_last_including_files
           style_dependencies = cache_manager.load_style_dependencies
           
-          # Process all JSON files in Layouts directory
-          json_files = Dir.glob(File.join(layouts_dir, '**/*.json'))
+          # Process all JSON files in Layouts directory (excluding Resources folder)
+          json_files = Dir.glob(File.join(layouts_dir, '**/*.json')).reject do |file|
+            file.include?('/Resources/')
+          end
           
           if json_files.empty?
             Core::Logger.warn "No JSON files found in #{layouts_dir}"
             return
           end
+          
+          # Extract resources before processing layouts
+          require_relative '../../core/resources_manager'
+          resources_manager = Core::ResourcesManager.new(config, source_path)
+          resources_manager.extract_resources(json_files)
+          Core::Logger.info "-" * 60
           
           # Track new includes and style dependencies
           new_including_files = {}

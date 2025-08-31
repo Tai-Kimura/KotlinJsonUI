@@ -22,11 +22,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#F5F5F5">
+                android:background="@color/white_23">
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/segment_control_test"
+                    android:text="@string/segment_test_segment_control_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
@@ -35,7 +35,7 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/basic_segment"
+                    android:text="@string/segment_test_basic_segment"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="10dp"
@@ -51,7 +51,7 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/segment_with_custom_colors"
+                    android:text="@string/segment_test_segment_with_custom_colors"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="30dp"
@@ -67,7 +67,7 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/segment_with_onchange_event"
+                    android:text="@string/segment_test_segment_with_onchange_event"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="30dp"
@@ -84,15 +84,15 @@
                     android:id="@+id/segmentStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/selected_selectedsize"
+                    android:text="@string/segment_test_selected_selectedsize"
                     android:textSize="14sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/disabled_segment"
+                    android:text="@string/segment_test_disabled_segment"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="30dp"

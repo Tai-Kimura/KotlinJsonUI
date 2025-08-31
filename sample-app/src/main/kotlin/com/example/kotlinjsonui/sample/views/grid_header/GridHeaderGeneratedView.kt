@@ -17,6 +17,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun GridHeaderGeneratedView(
@@ -66,13 +68,13 @@ fun GridHeaderGeneratedView(
         // Static Mode - use generated code
         Box(
         modifier = Modifier
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(12.dp)
     ) {
         Text(
             text = "${data.title}",
             fontSize = 16.sp,
-            color = Color(android.graphics.Color.parseColor("#333333")),
+            color = colorResource(R.color.dark_gray),
             modifier = Modifier.align(Alignment.TopStart)
         )
     }    }

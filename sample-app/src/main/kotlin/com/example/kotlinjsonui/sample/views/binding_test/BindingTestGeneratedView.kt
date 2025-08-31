@@ -42,6 +42,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun BindingTestGeneratedView(
@@ -92,7 +95,7 @@ fun BindingTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -108,33 +111,33 @@ fun BindingTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
             )
             Text(
-                text = "Text Binding",
+                text = stringResource(R.string.binding_test_text_binding),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textValue,
+                value = "${data.textValue}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textValue" to newValue)) },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -144,25 +147,25 @@ fun BindingTestGeneratedView(
                     .fillMaxWidth()
                     .height(44.dp)
                     .padding(10.dp),
-                placeholder = { Text("Enter text") },
+                placeholder = { Text(stringResource(R.string.binding_test_enter_text)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(color = colorResource(R.color.black))
             )
             Text(
                 text = "${data.textValue}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
             )
             Text(
-                text = "Counter Binding",
+                text = stringResource(R.string.binding_test_counter_binding),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -181,25 +184,25 @@ fun BindingTestGeneratedView(
                         .height(44.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                            containerColor = colorResource(R.color.medium_red)
                                         )
                 ) {
                     Text(
-                        text = "Decrease",
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        text = stringResource(R.string.binding_test_decrease),
+                        color = colorResource(R.color.white),
                     )
                 }
                 Text(
                     text = "${data.counter}",
                     fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(100.dp)
                         .height(44.dp)
                         .padding(start = 5.dp)
                         .padding(end = 5.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0"))),
+                        .background(colorResource(R.color.pale_gray)),
                     textAlign = TextAlign.Center
                 )
                 Button(
@@ -209,19 +212,19 @@ fun BindingTestGeneratedView(
                         .height(44.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                            containerColor = colorResource(R.color.medium_green)
                                         )
                 ) {
                     Text(
-                        text = "Increase",
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        text = stringResource(R.string.binding_test_increase),
+                        color = colorResource(R.color.white),
                     )
                 }
             }
             Text(
-                text = "Toggle Binding",
+                text = stringResource(R.string.binding_test_toggle_binding),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -235,7 +238,7 @@ fun BindingTestGeneratedView(
             Text(
                 text = "${data.toggleValue}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -248,19 +251,19 @@ fun BindingTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(android.graphics.Color.parseColor("#34C759")))
+                    .background(colorResource(R.color.medium_green))
             ) {
                 Text(
-                    text = "ON/OFF",
+                    text = stringResource(R.string.binding_test_onoff),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
             Text(
-                text = "Slider Binding",
+                text = stringResource(R.string.binding_test_slider_binding),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -278,7 +281,7 @@ fun BindingTestGeneratedView(
             Text(
                 text = "${data.sliderValue}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -291,21 +294,21 @@ fun BindingTestGeneratedView(
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
             ) {
                 Box(
                     modifier = Modifier
                         .width(100.dp)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(android.graphics.Color.parseColor("#007AFF")))
+                        .background(colorResource(R.color.medium_blue))
                 ) {
                 }
             }
             Text(
-                text = "SelectBox Binding",
+                text = stringResource(R.string.binding_test_selectbox_binding),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -316,10 +319,10 @@ fun BindingTestGeneratedView(
                 },
                 options = listOf("Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30"),
                 placeholder = "選択してください",
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
-                textColor = Color(android.graphics.Color.parseColor("#000000")),
-                hintColor = Color(android.graphics.Color.parseColor("#999999")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
+                textColor = colorResource(R.color.black),
+                hintColor = colorResource(R.color.light_gray_8),
                 cornerRadius = 8,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -331,15 +334,15 @@ fun BindingTestGeneratedView(
             Text(
                 text = "${data.selectedOption}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
             )
             Text(
-                text = "Date Picker (Wheels Style)",
+                text = stringResource(R.string.binding_test_date_picker_wheels_style),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -353,10 +356,10 @@ fun BindingTestGeneratedView(
                 minimumDate = "2020-01-01",
                 maximumDate = "2030-12-31",
                 placeholder = "日付を選択",
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
-                textColor = Color(android.graphics.Color.parseColor("#000000")),
-                hintColor = Color(android.graphics.Color.parseColor("#999999")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
+                textColor = colorResource(R.color.black),
+                hintColor = colorResource(R.color.light_gray_8),
                 cornerRadius = 8,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -366,9 +369,9 @@ fun BindingTestGeneratedView(
                     .padding(end = 20.dp)
             )
             Text(
-                text = "Date Picker (Compact Style)",
+                text = stringResource(R.string.binding_test_date_picker_compact_style),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -380,10 +383,10 @@ fun BindingTestGeneratedView(
                 datePickerStyle = "compact",
                 dateFormat = "MM/dd/yyyy",
                 placeholder = "Select date",
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
-                textColor = Color(android.graphics.Color.parseColor("#000000")),
-                hintColor = Color(android.graphics.Color.parseColor("#999999")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
+                textColor = colorResource(R.color.black),
+                hintColor = colorResource(R.color.light_gray_8),
                 cornerRadius = 8,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -395,7 +398,7 @@ fun BindingTestGeneratedView(
             Text(
                 text = "${data.selectedDate}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(bottom = 30.dp)

@@ -24,6 +24,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun LineBreakTestGeneratedView(
@@ -74,7 +77,7 @@ fun LineBreakTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -90,213 +93,213 @@ fun LineBreakTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
             )
             Text(
-                text = "lineBreakMode: Word (default)",
+                text = stringResource(R.string.line_break_test_linebreakmode_word_default),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
                     .padding(10.dp),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "lineBreakMode: Char",
+                text = stringResource(R.string.line_break_test_linebreakmode_char),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                    .background(colorResource(R.color.white_5))
                     .padding(10.dp),
                 maxLines = 2
             )
             Text(
-                text = "lineBreakMode: Clip",
+                text = stringResource(R.string.line_break_test_linebreakmode_clip),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                    .background(colorResource(R.color.white_6))
                     .padding(10.dp),
                 maxLines = 2,
                 overflow = TextOverflow.Clip
             )
             Text(
-                text = "lineBreakMode: Head",
+                text = stringResource(R.string.line_break_test_linebreakmode_head),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                    .background(colorResource(R.color.white_7))
                     .padding(10.dp),
                 maxLines = 2
             )
             Text(
-                text = "lineBreakMode: Middle",
+                text = stringResource(R.string.line_break_test_linebreakmode_middle),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                    .background(colorResource(R.color.white_8))
                     .padding(10.dp),
                 maxLines = 2
             )
             Text(
-                text = "lineBreakMode: Tail",
+                text = stringResource(R.string.line_break_test_linebreakmode_tail),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 20.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                    .background(colorResource(R.color.white_9))
                     .padding(10.dp),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "Lines Property Test",
+                text = stringResource(R.string.line_break_test_lines_property_test),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
             Text(
-                text = "lines: 1",
+                text = stringResource(R.string.line_break_test_lines_1),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                    .background(colorResource(R.color.white_4))
                     .padding(10.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "lines: 3",
+                text = stringResource(R.string.line_break_test_lines_3),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                    .background(colorResource(R.color.pale_pink))
                     .padding(10.dp),
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = "lines: 0 (unlimited)",
+                text = stringResource(R.string.line_break_test_lines_0_unlimited),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Text(
                 text = "${data.longText}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 20.dp)
                     .padding(end = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                    .background(colorResource(R.color.pale_yellow))
                     .padding(10.dp),
                 maxLines = Int.MAX_VALUE
             )

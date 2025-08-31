@@ -7,20 +7,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:background="@color/white">
     <com.kotlinjsonui.views.KjuiTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/scrollview_test"
+        android:text="@string/scroll_test_scrollview_test"
         android:textSize="20sp"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:textStyle="bold"
         android:padding="10dp"
         android:layout_marginBottom="10dp"/>
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="200dp"
-        android:background="#F0F0F0"
+        android:background="@color/white_17"
         android:layout_marginBottom="10dp">
         <LinearLayout
             android:layout_width="wrap_content"
@@ -30,61 +30,61 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/no_vertical_indicator"
+                android:text="@string/scroll_test_no_vertical_indicator"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:layout_marginBottom="20dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_1"
+                android:text="@string/scroll_test_item_1"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFE0E0"
+                android:background="@color/white_5"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_2"
+                android:text="@string/scroll_test_item_2"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#E0FFE0"
+                android:background="@color/white_6"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_3"
+                android:text="@string/scroll_test_item_3"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#E0E0FF"
+                android:background="@color/white_7"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_4"
+                android:text="@string/scroll_test_item_4"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFFFE0"
+                android:background="@color/white_8"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_5"
+                android:text="@string/scroll_test_item_5"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFE0FF"
+                android:background="@color/white_9"
                 android:layout_marginBottom="10dp"/>
         </LinearLayout>
     </ScrollView>
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="150dp"
-        android:background="#F0F0F0"
+        android:background="@color/white_17"
         android:layout_marginBottom="10dp">
         <LinearLayout
             android:layout_width="wrap_content"
@@ -94,44 +94,44 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/scroll_disabled"
+                android:text="@string/scroll_test_scroll_disabled"
                 android:textSize="16sp"
-                android:textColor="#FF0000"
+                android:textColor="@color/dark_red"
                 android:textStyle="bold"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/this_scrollview_cannot_be_scrol"
+                android:text="@string/scroll_test_this_scrollview_cannot_be_scrol"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_1"
+                android:text="@string/scroll_test_item_1"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_2"
+                android:text="@string/scroll_test_item_2"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:layout_marginBottom="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/item_3_hidden_below"
+                android:text="@string/scroll_test_item_3_hidden_below"
                 android:textSize="14sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
         </LinearLayout>
     </ScrollView>
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="100dp"
-        android:background="#F0F0F0">
+        android:background="@color/white_17">
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -140,74 +140,74 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_1"
+                android:text="@string/scroll_test_horizontal_scroll_item_1"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFE0E0"
+                android:background="@color/white_5"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_2"
+                android:text="@string/scroll_test_horizontal_scroll_item_2"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#E0FFE0"
+                android:background="@color/white_6"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_3"
+                android:text="@string/scroll_test_horizontal_scroll_item_3"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#E0E0FF"
+                android:background="@color/white_7"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_4"
+                android:text="@string/scroll_test_horizontal_scroll_item_4"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFFFE0"
+                android:background="@color/white_8"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_5"
+                android:text="@string/scroll_test_horizontal_scroll_item_5"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFE0FF"
+                android:background="@color/white_9"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_6"
+                android:text="@string/scroll_test_horizontal_scroll_item_6"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#E0FFFF"
+                android:background="@color/white_22"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_7"
+                android:text="@string/scroll_test_horizontal_scroll_item_7"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#FFF0E0"
+                android:background="@color/white_25"
                 android:layout_marginEnd="10dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
-                android:text="@string/horizontal_scroll_item_8_end"
+                android:text="@string/scroll_test_horizontal_scroll_item_8_end"
                 android:textSize="14sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"
-                android:background="#F0E0FF"/>
+                android:background="@color/white_26"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

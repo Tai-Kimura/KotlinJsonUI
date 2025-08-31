@@ -26,6 +26,9 @@ import androidx.compose.material3.ButtonDefaults
 import com.example.kotlinjsonui.sample.extensions.SampleCard
 import com.example.kotlinjsonui.sample.extensions.UserAvatar
 import com.example.kotlinjsonui.sample.extensions.StatusBadge
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun UserProfileTestGeneratedView(
@@ -76,7 +79,7 @@ fun UserProfileTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+            .background(colorResource(R.color.white_23))
     ) {
         item {
         Column(
@@ -115,14 +118,14 @@ fun UserProfileTestGeneratedView(
                             Text(
                                 text = "${data.userName}",
                                 fontSize = 20.sp,
-                                color = Color(android.graphics.Color.parseColor("#333333")),
+                                color = colorResource(R.color.dark_gray),
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                             )
                             Text(
                                 text = "${data.userEmail}",
                                 fontSize = 14.sp,
-                                color = Color(android.graphics.Color.parseColor("#666666")),
+                                color = colorResource(R.color.medium_gray_4),
                                 modifier = Modifier.padding(top = 4.dp)
                             )
                         }
@@ -133,21 +136,21 @@ fun UserProfileTestGeneratedView(
                             .height(1.dp)
                             .padding(top = 12.dp)
                             .padding(bottom = 12.dp)
-                            .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                            .background(colorResource(R.color.pale_gray))
                     ) {
                     }
                     StatusBadge(
                         title = "Status",
                         status = data.userStatus,
-                        color = Color(android.graphics.Color.parseColor("#4CAF50")),
+                        color = Color.medium_green_2,
                         count = data.notificationCount
                     )
                 }
             }
             Text(
-                text = "Team Members",
+                text = stringResource(R.string.user_profile_test_team_members),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(top = 24.dp)
@@ -183,9 +186,9 @@ fun UserProfileTestGeneratedView(
                 )
             }
             Text(
-                text = "Actions",
+                text = stringResource(R.string.user_profile_test_actions),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(top = 24.dp)
@@ -197,12 +200,12 @@ fun UserProfileTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Toggle Online Status",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.user_profile_test_toggle_online_status),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -210,12 +213,12 @@ fun UserProfileTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                    containerColor = colorResource(R.color.medium_green)
                                 )
             ) {
                 Text(
-                    text = "Toggle Dynamic Mode",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.custom_component_test_toggle_dynamic_mode),
+                    color = colorResource(R.color.white),
                 )
             }
         }

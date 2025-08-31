@@ -18,15 +18,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#FFFFFF"
+        android:background="@color/white"
         android:padding="20dp">
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="44dp"
-            android:textColor="#FFFFFF"
-            android:text="@string/dynamic_dynamicmodestatus"
+            android:textColor="@color/white"
+            android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
             android:onClick="toggleDynamicMode"
-            android:background="@drawable/ripple_b39393a0"
+            android:background="@drawable/ripple_d5af3557"
             android:textSize="14sp"
             android:textStyle="bold"
             android:padding="8dp"/>
@@ -35,52 +35,52 @@
             android:layout_height="wrap_content"
             android:text="@{data.title}"
             android:textSize="24sp"
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_enabled_state_isbuttonen"
+            android:text="@string/button_enabled_test_button_enabled_state_isbuttonen"
             android:textSize="16sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginBottom="10dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/test_button_controlled_by_data"
+            android:text="@string/button_enabled_test_test_button_controlled_by_data"
             android:enabled="@{data.isButtonEnabled}"
             android:onClick="testAction"
-            android:background="@drawable/ripple_6370d6db"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/ripple_4ec80e84"
+            android:textColor="@color/white"
             android:padding="10dp"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/toggle_enabled_state"
+            android:text="@string/button_enabled_test_toggle_enabled_state"
             android:onClick="toggleEnabled"
-            android:background="@drawable/ripple_14d5be80"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/ripple_5b3236d7"
+            android:textColor="@color/white"
             android:padding="10dp"
             android:layout_marginBottom="10dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/always_disabled_button"
+            android:text="@string/button_enabled_test_always_disabled_button"
             android:enabled="false"
             android:onClick="neverCalled"
-            android:background="@drawable/ripple_10bcd0bb"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/ripple_3dc541ca"
+            android:textColor="@color/white"
             android:padding="10dp"
             android:layout_marginBottom="10dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/always_enabled_button"
+            android:text="@string/button_enabled_test_always_enabled_button"
             android:enabled="true"
             android:onClick="alwaysCalled"
-            android:background="@drawable/ripple_2b95b0eb"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/ripple_8f35ccc8"
+            android:textColor="@color/white"
             android:padding="10dp"/>
     </LinearLayout>
 </layout>

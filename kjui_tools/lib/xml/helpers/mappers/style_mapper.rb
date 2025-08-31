@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require_relative '../resource_resolver'
+
 module XmlGenerator
   module Mappers
     class StyleMapper
@@ -19,7 +21,7 @@ module XmlGenerator
               return { namespace: 'android', name: 'background', value: "@drawable/#{drawable_name}" }
             end
           end
-          return { namespace: 'android', name: 'background', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'android', name: 'background', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'cornerRadius'
           # Handled in drawable generation
           return nil if @drawable_generator
@@ -31,7 +33,7 @@ module XmlGenerator
         when 'borderColor', 'strokeColor'
           # Handled in drawable generation
           return nil if @drawable_generator
-          return { namespace: 'tools', name: 'strokeColor', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'tools', name: 'strokeColor', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'borderStyle'
           # Handled in drawable generation if available
           return nil if @drawable_generator
@@ -96,13 +98,13 @@ module XmlGenerator
         when 'scaleType'
           return { namespace: 'android', name: 'scaleType', value: map_scale_type(value) }
         when 'tint'
-          return { namespace: 'android', name: 'tint', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'android', name: 'tint', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
           
         # Blur attributes
         when 'blurRadius'
           return { namespace: 'app', name: 'blurRadius', value: value.to_f.to_s }
         when 'blurOverlayColor'
-          return { namespace: 'app', name: 'blurOverlayColor', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'app', name: 'blurOverlayColor', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'downsampleFactor'
           return { namespace: 'app', name: 'downsampleFactor', value: value.to_f.to_s }
         when 'blurEnabled'
@@ -110,15 +112,15 @@ module XmlGenerator
           
         # Gradient attributes
         when 'gradientStartColor', 'startColor'
-          return { namespace: 'app', name: 'gradientStartColor', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'app', name: 'gradientStartColor', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'gradientEndColor', 'endColor'
-          return { namespace: 'app', name: 'gradientEndColor', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'app', name: 'gradientEndColor', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'gradientCenterColor', 'centerColor'
-          return { namespace: 'app', name: 'gradientCenterColor', value: @text_mapper.send(:convert_color, value) }
+          return { namespace: 'app', name: 'gradientCenterColor', value: KjuiTools::Xml::Helpers::ResourceResolver.process_color(value) }
         when 'gradientColors', 'colors'
           # Handle array of colors
           if value.is_a?(Array)
-            colors_string = value.map { |c| @text_mapper.send(:convert_color, c) }.join('|')
+            colors_string = value.map { |c| KjuiTools::Xml::Helpers::ResourceResolver.process_color(c) }.join('|')
             return { namespace: 'app', name: 'gradientColors', value: colors_string }
           else
             return { namespace: 'app', name: 'gradientColors', value: value }

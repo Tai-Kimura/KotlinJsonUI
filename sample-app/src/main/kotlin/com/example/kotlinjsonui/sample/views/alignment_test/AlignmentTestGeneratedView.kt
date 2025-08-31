@@ -25,6 +25,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun AlignmentTestGeneratedView(
@@ -75,7 +78,7 @@ fun AlignmentTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -92,19 +95,19 @@ fun AlignmentTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .wrapContentWidth()
@@ -113,9 +116,9 @@ fun AlignmentTestGeneratedView(
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Parent Alignment - Single Properties",
+                text = stringResource(R.string.alignment_test_parent_alignment_single_propert),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .wrapContentWidth()
@@ -127,15 +130,15 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
             ) {
                 Text(
-                    text = "alignTop",
+                    text = stringResource(R.string.alignment_test_aligntop),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, -1f))
-                        .background(Color(android.graphics.Color.parseColor("#FFD0D0")))
+                        .background(colorResource(R.color.pale_pink))
                         .padding(8.dp)
                 )
             }
@@ -144,15 +147,15 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D8D8D8")))
+                    .background(colorResource(R.color.pale_gray_2))
             ) {
                 Text(
-                    text = "alignBottom",
+                    text = stringResource(R.string.alignment_test_alignbottom),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, 1f))
-                        .background(Color(android.graphics.Color.parseColor("#D0FFD0")))
+                        .background(colorResource(R.color.pale_yellow))
                         .padding(8.dp)
                 )
             }
@@ -161,15 +164,15 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0D0D0")))
+                    .background(colorResource(R.color.pale_gray_3))
             ) {
                 Text(
-                    text = "alignLeft",
+                    text = stringResource(R.string.alignment_test_alignleft),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, -1f))
-                        .background(Color(android.graphics.Color.parseColor("#D0D0FF")))
+                        .background(colorResource(R.color.pale_cyan))
                         .padding(8.dp)
                 )
             }
@@ -178,17 +181,17 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#C8C8C8")))
+                    .background(colorResource(R.color.light_gray))
             ) {
                 Text(
-                    text = "alignRight",
+                    text = stringResource(R.string.alignment_test_alignright),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(BiasAlignment(1f, -1f))
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFFFD0")))
+                        .background(colorResource(R.color.white_2))
                         .padding(8.dp)
                 )
             }
@@ -197,17 +200,17 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#C0C0C0")))
+                    .background(colorResource(R.color.light_gray_2))
             ) {
                 Text(
-                    text = "centerHorizontal",
+                    text = stringResource(R.string.alignment_test_centerhorizontal),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFD0FF")))
+                        .background(colorResource(R.color.white_3))
                         .padding(8.dp),
                     textAlign = TextAlign.Center
                 )
@@ -217,17 +220,17 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#B8B8B8")))
+                    .background(colorResource(R.color.light_gray_3))
             ) {
                 Text(
-                    text = "centerVertical",
+                    text = stringResource(R.string.alignment_test_centervertical),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, 0f))
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#D0FFFF")))
+                        .background(colorResource(R.color.white_4))
                         .padding(8.dp)
                 )
             }
@@ -236,22 +239,22 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(120.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#B0B0B0")))
+                    .background(colorResource(R.color.light_gray_4))
             ) {
                 Text(
-                    text = "centerInParent",
+                    text = stringResource(R.string.alignment_test_centerinparent),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
+                        .background(colorResource(R.color.pale_red))
                         .padding(8.dp)
                 )
             }
             Text(
-                text = "HStack Alignment Tests",
+                text = stringResource(R.string.alignment_test_hstack_alignment_tests),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(top = 20.dp)
@@ -262,52 +265,52 @@ fun AlignmentTestGeneratedView(
                     .fillMaxWidth()
                     .height(100.dp)
                     .padding(bottom = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#A8A8A8")))
+                    .background(colorResource(R.color.light_gray_5))
             ) {
                 Text(
-                    text = "Top",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_top),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.Top)
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .background(colorResource(R.color.white_5))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Default",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_default),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                        .background(colorResource(R.color.pale_gray))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Bottom",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_bottom),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.Bottom)
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .background(colorResource(R.color.white_7))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Center",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_combo_test_center),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .background(colorResource(R.color.white_6))
                         .padding(8.dp)
                 )
             }
             Text(
-                text = "VStack Alignment Tests",
+                text = stringResource(R.string.alignment_test_vstack_alignment_tests),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .padding(top = 20.dp)
@@ -317,45 +320,45 @@ fun AlignmentTestGeneratedView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .background(Color(android.graphics.Color.parseColor("#A0A0A0")))
+                    .background(colorResource(R.color.light_gray_6))
             ) {
                 Text(
-                    text = "alignLeft",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_alignleft),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.Start)
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .background(colorResource(R.color.white_5))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Default",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_default),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                        .background(colorResource(R.color.pale_gray))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "alignRight",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_alignright),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.End)
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .background(colorResource(R.color.white_7))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "centerHorizontal",
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    text = stringResource(R.string.alignment_test_centerhorizontal),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .background(colorResource(R.color.white_6))
                         .padding(8.dp),
                     textAlign = TextAlign.Center
                 )

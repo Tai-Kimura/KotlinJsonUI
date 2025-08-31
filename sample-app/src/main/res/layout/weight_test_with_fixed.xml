@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,10 +25,10 @@
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:textColor="#FFFFFF"
-                android:text="@string/dynamic_dynamicmodestatus"
+                android:textColor="@color/white"
+                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                 android:onClick="toggleDynamicMode"
-                android:background="@drawable/ripple_b39393a0"
+                android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:padding="8dp"/>
@@ -39,14 +39,14 @@
                 android:layout_marginTop="20dp"
                 android:text="@{data.title}"
                 android:textSize="24sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/fixed80_weight1_weight2_fixed60"
+                android:text="@string/weight_test_with_fixed_fixed80_weight1_weight2_fixed60"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
@@ -55,45 +55,45 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="80dp"
                     android:layout_height="match_parent"
-                    android:text="@string/fixed_80"
-                    android:background="#FFD0D0"
+                    android:text="@string/weight_test_with_fixed_fixed_80"
+                    android:background="@color/pale_pink"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="@string/weight_1"
-                    android:background="#D0FFD0"
+                    android:text="@string/weight_test_weight_1"
+                    android:background="@color/pale_yellow"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
-                    android:text="@string/weight_2"
-                    android:background="#D0D0FF"
+                    android:text="@string/weight_test_weight_2"
+                    android:background="@color/pale_cyan"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="60dp"
                     android:layout_height="match_parent"
-                    android:text="@string/fixed_60"
-                    android:background="#FFFFD0"
+                    android:text="@string/weight_test_with_fixed_fixed_60"
+                    android:background="@color/white_2"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
             </LinearLayout>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/complex_nested_weights_with_fix"
+                android:text="@string/weight_test_with_fixed_complex_nested_weights_with_fix"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
@@ -108,29 +108,29 @@
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:text="@string/str_1_1"
-                        android:background="#FFE0E0"
+                        android:text="&quot;1-1&quot;"
+                        android:background="@color/white_5"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="2"
-                        android:text="@string/str_1_2"
-                        android:background="#FFC0C0"
+                        android:text="&quot;1-2&quot;"
+                        android:background="@color/pale_red_3"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                 </LinearLayout>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="50dp"
                     android:layout_height="match_parent"
-                    android:text="Fix&#10;50"
-                    android:background="#E0E0E0"
+                    android:text="@string/weight_test_with_fixed_fix_50"
+                    android:background="@color/pale_gray"
                     android:textAlignment="center"
                     android:textSize="12sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -139,29 +139,29 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="match_parent"
                         android:layout_height="30dp"
-                        android:text="@string/fixed_30"
-                        android:background="#E0FFE0"
+                        android:text="&quot;Fixed 30&quot;"
+                        android:background="@color/white_6"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:text="@string/weight_1_2"
-                        android:background="#C0FFC0"
+                        android:text="@string/width_test_weight_1"
+                        android:background="@color/pale_green_3"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                 </LinearLayout>
             </LinearLayout>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/multiple_fixed_sizes_with_weigh"
+                android:text="@string/weight_test_with_fixed_multiple_fixed_sizes_with_weigh"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
@@ -170,53 +170,53 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="40dp"
                     android:layout_height="match_parent"
-                    android:text="40"
-                    android:background="#FFD0D0"
+                    android:text="&quot;40&quot;"
+                    android:background="@color/pale_pink"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="@string/w1"
-                    android:background="#D0FFD0"
+                    android:text="@string/weight_test_with_fixed_w1"
+                    android:background="@color/pale_yellow"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="60dp"
                     android:layout_height="match_parent"
-                    android:text="60"
-                    android:background="#FFD0D0"
+                    android:text="&quot;60&quot;"
+                    android:background="@color/pale_pink"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="@string/w1"
-                    android:background="#D0FFD0"
+                    android:text="@string/weight_test_with_fixed_w1"
+                    android:background="@color/pale_yellow"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="80dp"
                     android:layout_height="match_parent"
-                    android:text="80"
-                    android:background="#FFD0D0"
+                    android:text="&quot;80&quot;"
+                    android:background="@color/pale_pink"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
             </LinearLayout>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/zero_weights_test"
+                android:text="@string/weight_test_with_fixed_zero_weights_test"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
@@ -226,45 +226,45 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="0"
-                    android:text="@string/w0"
-                    android:background="#FFA0A0"
+                    android:text="@string/weight_test_with_fixed_w0"
+                    android:background="@color/light_red_6"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="@string/w1"
-                    android:background="#A0FFA0"
+                    android:text="@string/weight_test_with_fixed_w1"
+                    android:background="@color/light_green_2"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="100dp"
                     android:layout_height="match_parent"
-                    android:text="@string/fixed100"
-                    android:background="#A0A0FF"
+                    android:text="@string/weight_test_with_fixed_fixed100"
+                    android:background="@color/light_blue_3"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="3"
-                    android:text="@string/w3"
-                    android:background="#FFFFA0"
+                    android:text="@string/weight_test_with_fixed_w3"
+                    android:background="@color/pale"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
             </LinearLayout>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/vertical_fixed_weight_combinati"
+                android:text="@string/weight_test_with_fixed_vertical_fixed_weight_combinati"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
@@ -273,53 +273,53 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
-                    android:text="@string/fixed_30_2"
-                    android:background="#FFE0E0"
+                    android:text="@string/weight_test_with_fixed_fixed_30"
+                    android:background="@color/white_5"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:text="@string/weight_1"
-                    android:background="#E0FFE0"
+                    android:text="@string/weight_test_weight_1"
+                    android:background="@color/white_6"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
-                    android:text="@string/fixed_40"
-                    android:background="#E0E0FF"
+                    android:text="@string/weight_test_with_fixed_fixed_40"
+                    android:background="@color/white_7"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="2"
-                    android:text="@string/weight_2"
-                    android:background="#FFFFE0"
+                    android:text="@string/weight_test_weight_2"
+                    android:background="@color/white_8"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:text="@string/fixed_50"
-                    android:background="#FFE0FF"
+                    android:text="@string/weight_test_with_fixed_fixed_50"
+                    android:background="@color/white_9"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
             </LinearLayout>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/vertical_nested_horizontal_weig"
+                android:text="@string/weight_test_with_fixed_vertical_nested_horizontal_weig"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
@@ -328,9 +328,9 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="25dp"
-                    android:text="@string/header_fixed_25"
-                    android:background="#666666"
-                    android:textColor="#FFFFFF"
+                    android:text="@string/weight_test_with_fixed_header_fixed_25"
+                    android:background="@color/medium_gray_4"
+                    android:textColor="@color/white"
                     android:textAlignment="center"
                     android:textSize="12sp"/>
                 <LinearLayout
@@ -342,35 +342,35 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="@string/col_1"
-                        android:background="#FFD0D0"
+                        android:text="@string/weight_test_with_fixed_col_1"
+                        android:background="@color/pale_pink"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="60dp"
                         android:layout_height="match_parent"
-                        android:text="@string/fix60"
-                        android:background="#D0D0D0"
+                        android:text="@string/weight_test_with_fixed_fix60"
+                        android:background="@color/pale_gray_3"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="2"
-                        android:text="@string/col_2"
-                        android:background="#D0FFD0"
+                        android:text="@string/weight_test_with_fixed_col_2"
+                        android:background="@color/pale_yellow"
                         android:textAlignment="center"
                         android:textSize="12sp"
-                        android:textColor="#000000"/>
+                        android:textColor="@color/black"/>
                 </LinearLayout>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="25dp"
-                    android:text="@string/footer_fixed_25"
-                    android:background="#666666"
-                    android:textColor="#FFFFFF"
+                    android:text="@string/weight_test_with_fixed_footer_fixed_25"
+                    android:background="@color/medium_gray_4"
+                    android:textColor="@color/white"
                     android:textAlignment="center"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -378,9 +378,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/vertical_multiple_weights_only"
+                android:text="@string/weight_test_with_fixed_vertical_multiple_weights_only"
                 android:textSize="16sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
@@ -390,38 +390,38 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:text="@string/w1"
-                    android:background="#FFCCCC"
+                    android:text="@string/weight_test_with_fixed_w1"
+                    android:background="@color/pale_red"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:text="@string/w1"
-                    android:background="#CCFFCC"
+                    android:text="@string/weight_test_with_fixed_w1"
+                    android:background="@color/pale_green"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="2"
-                    android:text="@string/w2"
-                    android:background="#CCCCFF"
+                    android:text="@string/weight_test_with_fixed_w2"
+                    android:background="@color/pale_blue_3"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:text="@string/w1"
-                    android:background="#FFFFCC"
+                    android:text="@string/weight_test_with_fixed_w1"
+                    android:background="@color/white_18"
                     android:textAlignment="center"
                     android:textSize="14sp"
-                    android:textColor="#000000"/>
+                    android:textColor="@color/black"/>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

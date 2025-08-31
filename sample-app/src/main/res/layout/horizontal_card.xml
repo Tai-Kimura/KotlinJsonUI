@@ -16,17 +16,17 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="12dp"
-        android:background="@drawable/shape_b0f6b038">
+        android:background="@drawable/shape_8e7b5469">
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="80dp"
-            android:background="@drawable/shape_3928b28e"/>
+            android:background="@drawable/shape_7d063952"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{data.title}"
             android:textSize="14sp"
-            android:textColor="#333333"
+            android:textColor="@color/dark_gray"
             android:textStyle="bold"
             android:layout_marginTop="8dp"/>
         <com.kotlinjsonui.views.KjuiTextView
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:text="@{data.description}"
             android:textSize="12sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginTop="4dp"/>
     </LinearLayout>
 </layout>

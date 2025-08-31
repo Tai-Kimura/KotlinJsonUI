@@ -35,6 +35,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun IncludeTestGeneratedView(
@@ -85,7 +88,7 @@ fun IncludeTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -101,13 +104,13 @@ fun IncludeTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Column(
@@ -118,19 +121,19 @@ fun IncludeTestGeneratedView(
                 Text(
                     text = "${data.title}",
                     fontSize = 24.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                 )
                 Column(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(android.graphics.Color.parseColor("#E8F4FD")))
+                        .background(colorResource(R.color.white_20))
                         .padding(15.dp)
                 ) {
                     Text(
-                        text = "Control Panel",
+                        text = stringResource(R.string.include_test_control_panel),
                         fontSize = 18.sp,
-                        color = Color(android.graphics.Color.parseColor("#0066CC")),
+                        color = colorResource(R.color.medium_blue_4),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
                     )
@@ -141,12 +144,12 @@ fun IncludeTestGeneratedView(
                             shape = RoundedCornerShape(5.dp),
                             contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
+                                                            containerColor = colorResource(R.color.medium_green_2)
                                                         )
                         ) {
                             Text(
                                 text = "Count +",
-                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                color = colorResource(R.color.white),
                             )
                         }
                         Button(
@@ -154,12 +157,12 @@ fun IncludeTestGeneratedView(
                             shape = RoundedCornerShape(5.dp),
                             contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(android.graphics.Color.parseColor("#FF9800"))
+                                                            containerColor = colorResource(R.color.medium_red_5)
                                                         )
                         ) {
                             Text(
-                                text = "Count -",
-                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                text = stringResource(R.string.include_test_count),
+                                color = colorResource(R.color.white),
                             )
                         }
                         Button(
@@ -167,12 +170,12 @@ fun IncludeTestGeneratedView(
                             shape = RoundedCornerShape(5.dp),
                             contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
+                                                            containerColor = colorResource(R.color.medium_blue_2)
                                                         )
                         ) {
                             Text(
-                                text = "Reset",
-                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                text = stringResource(R.string.include_test_reset),
+                                color = colorResource(R.color.white),
                             )
                         }
                     }
@@ -183,12 +186,12 @@ fun IncludeTestGeneratedView(
                             shape = RoundedCornerShape(5.dp),
                             contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
+                                                            containerColor = colorResource(R.color.medium_purple)
                                                         )
                         ) {
                             Text(
-                                text = "Change Name",
-                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                text = stringResource(R.string.include_test_change_name),
+                                color = colorResource(R.color.white),
                             )
                         }
                         Button(
@@ -196,44 +199,44 @@ fun IncludeTestGeneratedView(
                             shape = RoundedCornerShape(5.dp),
                             contentPadding = PaddingValues(10.dp),
                             colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(android.graphics.Color.parseColor("#607D8B"))
+                                                            containerColor = colorResource(R.color.medium_cyan)
                                                         )
                         ) {
                             Text(
-                                text = "Toggle Status",
-                                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                text = stringResource(R.string.include_test_toggle_status),
+                                color = colorResource(R.color.white),
                             )
                         }
                     }
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(5.dp))
-                            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                            .background(colorResource(R.color.white))
                             .padding(10.dp)
                     ) {
                         Text(
-                            text = "Current Values: ",
+                            text = stringResource(R.string.include_test_current_values),
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#333333")),
+                            color = colorResource(R.color.dark_gray),
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier
                         )
                         Text(
                             text = "${data.mainCount}",
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            color = colorResource(R.color.medium_gray_4),
                             modifier = Modifier
                         )
                         Text(
                             text = "${data.userName}",
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            color = colorResource(R.color.medium_gray_4),
                             modifier = Modifier
                         )
                         Text(
                             text = "${data.mainStatus}",
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            color = colorResource(R.color.medium_gray_4),
                             modifier = Modifier
                         )
                     }
@@ -241,9 +244,9 @@ fun IncludeTestGeneratedView(
                 Column(
                 ) {
                     Text(
-                        text = "1. Basic Include with static data:",
+                        text = stringResource(R.string.include_test_1_basic_include_with_static_dat),
                         fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        color = colorResource(R.color.medium_gray_4),
                         modifier = Modifier
                     )
                     val context = LocalContext.current
@@ -256,9 +259,9 @@ fun IncludeTestGeneratedView(
                 Column(
                 ) {
                     Text(
-                        text = "2. Include with data (static values):",
+                        text = stringResource(R.string.include_test_2_include_with_data_static_valu),
                         fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        color = colorResource(R.color.medium_gray_4),
                         modifier = Modifier
                     )
                     val context = LocalContext.current
@@ -271,9 +274,9 @@ fun IncludeTestGeneratedView(
                 Column(
                 ) {
                     Text(
-                        text = "3. Include with data (using @{} references):",
+                        text = stringResource(R.string.include_test_3_include_with_data_using_refer),
                         fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        color = colorResource(R.color.medium_gray_4),
                         modifier = Modifier
                     )
                     val context = LocalContext.current
@@ -294,9 +297,9 @@ fun IncludeTestGeneratedView(
                 Column(
                 ) {
                     Text(
-                        text = "4. Include with shared_data and data override:",
+                        text = stringResource(R.string.include_test_4_include_with_shareddata_and_d),
                         fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        color = colorResource(R.color.medium_gray_4),
                         modifier = Modifier
                     )
                     val context = LocalContext.current
@@ -319,9 +322,9 @@ fun IncludeTestGeneratedView(
                 Column(
                 ) {
                     Text(
-                        text = "5. Another included_1 with @{} references:",
+                        text = stringResource(R.string.include_test_5_another_included1_with_refere),
                         fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#666666")),
+                        color = colorResource(R.color.medium_gray_4),
                         modifier = Modifier
                     )
                     val context = LocalContext.current

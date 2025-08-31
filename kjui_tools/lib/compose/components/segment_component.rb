@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -52,23 +53,27 @@ module KjuiTools
           
           # Background color (containerColor)
           if json_data['backgroundColor']
-            colors_params << "containerColor = Color(android.graphics.Color.parseColor(\"#{json_data['backgroundColor']}\"))"
+            bg_color = Helpers::ResourceResolver.process_color(json_data['backgroundColor'], required_imports)
+            colors_params << "containerColor = #{bg_color}"
           end
           
           # Normal text color (contentColor) - for unselected tabs
           if json_data['normalColor']
-            colors_params << "contentColor = Color(android.graphics.Color.parseColor(\"#{json_data['normalColor']}\"))"
+            normal_color = Helpers::ResourceResolver.process_color(json_data['normalColor'], required_imports)
+            colors_params << "contentColor = #{normal_color}"
           end
           
           # Selected text color (selectedContentColor) 
           if json_data['selectedColor'] || json_data['tintColor'] || json_data['selectedSegmentTintColor']
             color = json_data['selectedColor'] || json_data['tintColor'] || json_data['selectedSegmentTintColor']
-            colors_params << "selectedContentColor = Color(android.graphics.Color.parseColor(\"#{color}\"))"
+            selected_color = Helpers::ResourceResolver.process_color(color, required_imports)
+            colors_params << "selectedContentColor = #{selected_color}"
           end
           
           # Indicator color - only if specified
           if json_data['indicatorColor']
-            colors_params << "indicatorColor = Color(android.graphics.Color.parseColor(\"#{json_data['indicatorColor']}\"))"
+            indicator_color = Helpers::ResourceResolver.process_color(json_data['indicatorColor'], required_imports)
+            colors_params << "indicatorColor = #{indicator_color}"
           end
           
           if colors_params.any?
@@ -145,19 +150,25 @@ module KjuiTools
                 # Use conditional color based on selection
                 if is_dynamic_index
                   if selected_color && normal_color
-                    code += "\n" + indent("color = if (#{selected_index} == #{index}) Color(android.graphics.Color.parseColor(\"#{selected_color}\")) else Color(android.graphics.Color.parseColor(\"#{normal_color}\"))", depth + 4)
+                    selected_resolved = Helpers::ResourceResolver.process_color(selected_color, required_imports)
+                    normal_resolved = Helpers::ResourceResolver.process_color(normal_color, required_imports)
+                    code += "\n" + indent("color = if (#{selected_index} == #{index}) #{selected_resolved} else #{normal_resolved}", depth + 4)
                   elsif selected_color
-                    code += "\n" + indent("color = if (#{selected_index} == #{index}) Color(android.graphics.Color.parseColor(\"#{selected_color}\")) else Color.Unspecified", depth + 4)
+                    selected_resolved = Helpers::ResourceResolver.process_color(selected_color, required_imports)
+                    code += "\n" + indent("color = if (#{selected_index} == #{index}) #{selected_resolved} else Color.Unspecified", depth + 4)
                   elsif normal_color
-                    code += "\n" + indent("color = if (#{selected_index} == #{index}) Color.Unspecified else Color(android.graphics.Color.parseColor(\"#{normal_color}\"))", depth + 4)
+                    normal_resolved = Helpers::ResourceResolver.process_color(normal_color, required_imports)
+                    code += "\n" + indent("color = if (#{selected_index} == #{index}) Color.Unspecified else #{normal_resolved}", depth + 4)
                   end
                 else
                   # Static index
                   is_selected = (selected_index == index)
                   if is_selected && selected_color
-                    code += "\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{selected_color}\"))", depth + 4)
+                    selected_resolved = Helpers::ResourceResolver.process_color(selected_color, required_imports)
+                    code += "\n" + indent("color = #{selected_resolved}", depth + 4)
                   elsif !is_selected && normal_color
-                    code += "\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{normal_color}\"))", depth + 4)
+                    normal_resolved = Helpers::ResourceResolver.process_color(normal_color, required_imports)
+                    code += "\n" + indent("color = #{normal_resolved}", depth + 4)
                   end
                 end
                 
@@ -227,11 +238,15 @@ module KjuiTools
               
               # Use conditional color based on selection
               if selected_color && normal_color
-                code += "\n" + indent("color = if (#{selected_comparison}) Color(android.graphics.Color.parseColor(\"#{selected_color}\")) else Color(android.graphics.Color.parseColor(\"#{normal_color}\"))", depth + 5)
+                selected_resolved = Helpers::ResourceResolver.process_color(selected_color, required_imports)
+                normal_resolved = Helpers::ResourceResolver.process_color(normal_color, required_imports)
+                code += "\n" + indent("color = if (#{selected_comparison}) #{selected_resolved} else #{normal_resolved}", depth + 5)
               elsif selected_color
-                code += "\n" + indent("color = if (#{selected_comparison}) Color(android.graphics.Color.parseColor(\"#{selected_color}\")) else Color.Unspecified", depth + 5)
+                selected_resolved = Helpers::ResourceResolver.process_color(selected_color, required_imports)
+                code += "\n" + indent("color = if (#{selected_comparison}) #{selected_resolved} else Color.Unspecified", depth + 5)
               elsif normal_color
-                code += "\n" + indent("color = if (#{selected_comparison}) Color.Unspecified else Color(android.graphics.Color.parseColor(\"#{normal_color}\"))", depth + 5)
+                normal_resolved = Helpers::ResourceResolver.process_color(normal_color, required_imports)
+                code += "\n" + indent("color = if (#{selected_comparison}) Color.Unspecified else #{normal_resolved}", depth + 5)
               end
               
               code += "\n" + indent(")", depth + 4)

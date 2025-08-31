@@ -248,5 +248,450 @@
     "hash": "6967ede2",
     "created_at": "2025-08-29 09:29:34 +0900",
     "content_hash": "2b121d630dfb8d5676a1c6f17660f33d"
+  },
+  "shape_295c2b77": {
+    "hash": "295c2b77",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "5d20d14a7889584beabd92ebb6272b29"
+  },
+  "ripple_7fb4c972": {
+    "hash": "7fb4c972",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "1f0b95f7a562252f3a0ee3f70e3d5f7c"
+  },
+  "shape_5122918d": {
+    "hash": "5122918d",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "263cdabe40cb58fb4eeca8a0cd7a1fd8"
+  },
+  "ripple_e1a375d8": {
+    "hash": "e1a375d8",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "cac26809b9a98e77394c2f7550412272"
+  },
+  "shape_5a014510": {
+    "hash": "5a014510",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "fcde4ddad9ca205c65ac2130b8bfc773"
+  },
+  "shape_74c176ce": {
+    "hash": "74c176ce",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "19ed238e0df395c4e04374dca8322e03"
+  },
+  "shape_e9d7f8b8": {
+    "hash": "e9d7f8b8",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "0f9b66e81038309508e2c986fb418508"
+  },
+  "shape_2ba40f78": {
+    "hash": "2ba40f78",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "3d42aa3e86174655784455ebfae28a53"
+  },
+  "ripple_d5e55557": {
+    "hash": "d5e55557",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "e2cb3fbd500ebf6b073f982bff586cff"
+  },
+  "ripple_4caf419d": {
+    "hash": "4caf419d",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "124667bdf8089afa3ab05fc4059e47ec"
+  },
+  "ripple_5a24c4ad": {
+    "hash": "5a24c4ad",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "b7a42836dcfcd296834d09a3a079e38b"
+  },
+  "ripple_1750116e": {
+    "hash": "1750116e",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "10a9d7f2b889adb46b3850742c42d1b7"
+  },
+  "ripple_8f349068": {
+    "hash": "8f349068",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "d0c9c17ed6302e93d4576164717f6920"
+  },
+  "ripple_8f860408": {
+    "hash": "8f860408",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "d0af9a444753e5e4ad4590289987bc1e"
+  },
+  "shape_46d601e5": {
+    "hash": "46d601e5",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "d8501c8fade448246806a3720c857f1e"
+  },
+  "ripple_42c4eff2": {
+    "hash": "42c4eff2",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "05912dfa6c50182ddf3d4bd6c585ea0d"
+  },
+  "shape_952cf684": {
+    "hash": "952cf684",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "2578b49edd754b5f2a7d223980e3049b"
+  },
+  "shape_eb71f104": {
+    "hash": "eb71f104",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "2e986fbcc5a934a59291947b462252a9"
+  },
+  "shape_d412037c": {
+    "hash": "d412037c",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "8a28ed316778216ee04cf058ca15e0f3"
+  },
+  "shape_8513057d": {
+    "hash": "8513057d",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "8f64949f26d8e6ad4da206b9f5e99757"
+  },
+  "selector_8b3b4d4b": {
+    "hash": "8b3b4d4b",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "7ad6e5906e6ee0037cca936beb50a175"
+  },
+  "selector_35a78d95": {
+    "hash": "35a78d95",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "4fa7d32a16106232493695a3a1aab0a7"
+  },
+  "selector_aa067363": {
+    "hash": "aa067363",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "6ada82c80781d97561d0eafc64100e7e"
+  },
+  "shape_2cc71e13": {
+    "hash": "2cc71e13",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "10c22e69c533fcfc63657b3191623486"
+  },
+  "ripple_5f52c046": {
+    "hash": "5f52c046",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "de87efdccd1465e54d930eb9b76a540d"
+  },
+  "ripple_bb84f4f4": {
+    "hash": "bb84f4f4",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "497f7694c4034cef0e819337d568c823"
+  },
+  "shape_cab2e706": {
+    "hash": "cab2e706",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "ce1c75a19351109db4f15e57ce1996e4"
+  },
+  "selector_a55b7529": {
+    "hash": "a55b7529",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "0acdafb08ea6229f031a5ee06d73c5a5"
+  },
+  "ripple_560aa9f5": {
+    "hash": "560aa9f5",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "37acefc60658d8ad06a8d7509c282915"
+  },
+  "selector_e5179714": {
+    "hash": "e5179714",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "6dd1872c75f9e570f6391c095171317a"
+  },
+  "shape_638cc54e": {
+    "hash": "638cc54e",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "60eaa91a167dae41d620c6431342df77"
+  },
+  "ripple_344ffa8f": {
+    "hash": "344ffa8f",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "531ac85d4c63f58370817df1345ebd51"
+  },
+  "ripple_3109099c": {
+    "hash": "3109099c",
+    "created_at": "2025-09-01 02:20:12 +0900",
+    "content_hash": "927b1c458aa24f38d8af1a3f9cfcea29"
+  },
+  "ripple_927c7b31": {
+    "hash": "927c7b31",
+    "created_at": "2025-09-01 02:20:13 +0900",
+    "content_hash": "f8ac4d89a753e9e4d80665a1f664994a"
+  },
+  "ripple_dd452df4": {
+    "hash": "dd452df4",
+    "created_at": "2025-09-01 02:20:13 +0900",
+    "content_hash": "d9a2bdd57d32d7d397850a68184f71fd"
+  },
+  "ripple_f1ed48b1": {
+    "hash": "f1ed48b1",
+    "created_at": "2025-09-01 02:20:13 +0900",
+    "content_hash": "8ad5c61fb55e361946aa90c09e2d2aa9"
+  },
+  "ripple_100ab2ed": {
+    "hash": "100ab2ed",
+    "created_at": "2025-09-01 02:20:13 +0900",
+    "content_hash": "c9d8a2e44dc90e3765b69e498852d08e"
+  },
+  "shape_9a37b16d": {
+    "hash": "9a37b16d",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "5064d4681dc5bf42f47a6ed4225b8ea1"
+  },
+  "ripple_03325df4": {
+    "hash": "03325df4",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "d97d4800497b876c96a19f2864170ee3"
+  },
+  "shape_0cd10af4": {
+    "hash": "0cd10af4",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "6f005d3a819b27b56fc992f795c82421"
+  },
+  "ripple_1a0cce85": {
+    "hash": "1a0cce85",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "b1c888b01e05f88731c20726d7ee108f"
+  },
+  "shape_b66efd58": {
+    "hash": "b66efd58",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "c5a8bf758a1a7da62ac88f44e9b162db"
+  },
+  "shape_6c228cc3": {
+    "hash": "6c228cc3",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "ddd42adc156f0159e500c87808532302"
+  },
+  "shape_bf88c147": {
+    "hash": "bf88c147",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "025b9a5d7dc654adbb8c5c15c30d2b7b"
+  },
+  "shape_f7666c4d": {
+    "hash": "f7666c4d",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "a20c0669aa10f27f7da0ccfc03694e82"
+  },
+  "ripple_4ec80e84": {
+    "hash": "4ec80e84",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "da998801deb4732aa03446ea31e58107"
+  },
+  "ripple_5b3236d7": {
+    "hash": "5b3236d7",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "b08c9c49746951956fa252a4081595ad"
+  },
+  "ripple_3dc541ca": {
+    "hash": "3dc541ca",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "8fcbf574393125f229334f0702ba08df"
+  },
+  "ripple_8f35ccc8": {
+    "hash": "8f35ccc8",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "c01a9a6f0ae6478a2e650ab22a630b66"
+  },
+  "ripple_12c68881": {
+    "hash": "12c68881",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "4d69d26b07fba6de03b9504b19aca6f1"
+  },
+  "ripple_abf4fa5f": {
+    "hash": "abf4fa5f",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "b2c4e0b9d7ea002e39a85729efa8463b"
+  },
+  "shape_c22c304c": {
+    "hash": "c22c304c",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "262615d8fb75a8b2df5bfa1868164345"
+  },
+  "ripple_6d18491e": {
+    "hash": "6d18491e",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "ed90cf911449ab24b4847b0a69ba6e5f"
+  },
+  "shape_01783869": {
+    "hash": "01783869",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "6bd958157b0b64e5af8700c632ee4df8"
+  },
+  "shape_2e6230c6": {
+    "hash": "2e6230c6",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "5eecd62bb2a838b484b54965ad7dbc07"
+  },
+  "shape_5efeed68": {
+    "hash": "5efeed68",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "5944628f7d979e3f59a83dd62e14862e"
+  },
+  "shape_811378f3": {
+    "hash": "811378f3",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "ade97fd697616a26d900cea9e56c15d0"
+  },
+  "selector_d702e187": {
+    "hash": "d702e187",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "2022c2756037fa953e71a31d6d7dee00"
+  },
+  "selector_cd00cfc3": {
+    "hash": "cd00cfc3",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "1160ecf2c506d0180c012d414c2e9439"
+  },
+  "selector_27c8522a": {
+    "hash": "27c8522a",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "2640b4d9da38e4cadb5cc99d69483b8c"
+  },
+  "shape_53f95c5e": {
+    "hash": "53f95c5e",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "fd3e89faa0a713794a75ef09a2cef975"
+  },
+  "ripple_43054640": {
+    "hash": "43054640",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "2618335aedf76da17a4623285b9fbe83"
+  },
+  "ripple_08f63868": {
+    "hash": "08f63868",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "fe290cd1d8c38b6134200b7e747a7ca9"
+  },
+  "shape_8e7b5469": {
+    "hash": "8e7b5469",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "bc2bfc24dd2ddb53c9accbcd75fa8367"
+  },
+  "shape_7d063952": {
+    "hash": "7d063952",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "f172a544212563ffeafc5d55788aa466"
+  },
+  "selector_6f4ccbf6": {
+    "hash": "6f4ccbf6",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "07c8ef45cd82e18db8ae66dd9fd60511"
+  },
+  "ripple_a7a2cb84": {
+    "hash": "a7a2cb84",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "37dbdf62673b0dfc382505c731be2235"
+  },
+  "selector_d9d980f8": {
+    "hash": "d9d980f8",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "6507348442646a38682fce11b06f881c"
+  },
+  "shape_3fcdf891": {
+    "hash": "3fcdf891",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "4338e0d7ec929085589aa687bd9065e3"
+  },
+  "ripple_07ff9fd8": {
+    "hash": "07ff9fd8",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "9204e9aa51412a5b8ffd081b081edd9a"
+  },
+  "ripple_3bf438c4": {
+    "hash": "3bf438c4",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "0f32554d75a6a22b5a030bb930aab6b2"
+  },
+  "shape_53da3df9": {
+    "hash": "53da3df9",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "db65fa4e1bfdadd10c6bc9b09672d727"
+  },
+  "shape_798c091e": {
+    "hash": "798c091e",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "b34f242c4a2692c47671d7cd5345290c"
+  },
+  "ripple_3e3f55d4": {
+    "hash": "3e3f55d4",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "459008212ea5b8d8c7f1fa988f0c49b4"
+  },
+  "ripple_1fe6dae4": {
+    "hash": "1fe6dae4",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "bdcb224b25ff13ca5d39f72a943e00d5"
+  },
+  "ripple_45e24df4": {
+    "hash": "45e24df4",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "5b3bc7fb3322881194cdfa01f0799511"
+  },
+  "ripple_a18db6e9": {
+    "hash": "a18db6e9",
+    "created_at": "2025-09-01 02:34:43 +0900",
+    "content_hash": "695bf534d212bafc58b2c6a38434a5a0"
+  },
+  "ripple_d5af3557": {
+    "hash": "d5af3557",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "edd36d3458c3ae9f4a83c34ae22b5868"
+  },
+  "shape_fdc35bf6": {
+    "hash": "fdc35bf6",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "ea1b0d5200532c83185ef78443163752"
+  },
+  "shape_2c553480": {
+    "hash": "2c553480",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "720577967eba16978a6b18b63565905c"
+  },
+  "shape_c7f65103": {
+    "hash": "c7f65103",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "72af1a46ae685dd8e48d642b497b85ee"
+  },
+  "selector_b4e8b7d5": {
+    "hash": "b4e8b7d5",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "6d7ef69d06effe33bb4b4a7815707c6f"
+  },
+  "shape_8be4418c": {
+    "hash": "8be4418c",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "812c48759011b56b395535049297f82d"
+  },
+  "ripple_d4cf9ce1": {
+    "hash": "d4cf9ce1",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "ad37afd277d61309e38bb24438fd5397"
+  },
+  "shape_cd549fde": {
+    "hash": "cd549fde",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "55dccabf88940879c00ebd2c67bc8c5c"
+  },
+  "shape_1fcbbfd2": {
+    "hash": "1fcbbfd2",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "43fc5b08e658ad2fb703cc9868eca90c"
+  },
+  "shape_6a5e0a33": {
+    "hash": "6a5e0a33",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "7103651519049a9e57061763513af1f7"
+  },
+  "ripple_0bb15376": {
+    "hash": "0bb15376",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "f70ff70b60766ba075717573e74c94b1"
+  },
+  "ripple_82d37ec0": {
+    "hash": "82d37ec0",
+    "created_at": "2025-09-01 02:45:12 +0900",
+    "content_hash": "ff3a240e1537b3ba8cd6a73cbd17b89b"
   }
 }

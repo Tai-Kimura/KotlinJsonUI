@@ -9,7 +9,12 @@
   "view_directory": "kotlin/com/example/kotlinjsonui/sample/views",
   "extension_directory": "kotlin/com/example/kotlinjsonui/sample/extensions",
   "adapter_directory": "kotlin/com/example/kotlinjsonui/sample/adapters",
+  "resource_manager_directory": "kotlin/com/example/kotlinjsonui/sample/generated",
   "package_name": "com.example.kotlinjsonui.sample",
+  "string_files": [
+    "res/values/strings.xml",
+    "res/values-ja/strings.xml"
+  ],
   "use_network": true,
   "hotloader": {
     "ip": "192.168.3.32",

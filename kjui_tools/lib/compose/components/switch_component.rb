@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -63,11 +64,13 @@ module KjuiTools
             colors_params = []
             
             if json_data['onTintColor']
-              colors_params << "checkedTrackColor = Color(android.graphics.Color.parseColor(\"#{json_data['onTintColor']}\"))"
+              checkedtrackcolor_resolved = Helpers::ResourceResolver.process_color(json_data['onTintColor'], required_imports)
+              colors_params << "checkedTrackColor = #{checkedtrackcolor_resolved}"
             end
             
             if json_data['thumbTintColor']
-              colors_params << "checkedThumbColor = Color(android.graphics.Color.parseColor(\"#{json_data['thumbTintColor']}\"))"
+              checkedthumbcolor_resolved = Helpers::ResourceResolver.process_color(json_data['thumbTintColor'], required_imports)
+              colors_params << "checkedThumbColor = #{checkedthumbcolor_resolved}"
             end
             
             if colors_params.any?

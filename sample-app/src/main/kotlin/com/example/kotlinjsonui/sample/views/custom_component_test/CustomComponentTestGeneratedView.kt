@@ -38,6 +38,8 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.border
 import com.example.kotlinjsonui.sample.extensions.SampleCard
 import com.example.kotlinjsonui.sample.extensions.StatusBadge
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun CustomComponentTestGeneratedView(
@@ -88,7 +90,7 @@ fun CustomComponentTestGeneratedView(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
-            .background(Color(android.graphics.Color.parseColor("#F5F5F7")))
+            .background(colorResource(R.color.white_12))
     ) {
         LazyColumn(
             modifier = Modifier.padding(16.dp)
@@ -97,16 +99,16 @@ fun CustomComponentTestGeneratedView(
             Column(
             ) {
                 Text(
-                    text = "Custom Component Test",
+                    text = stringResource(R.string.custom_component_test_custom_component_test),
                     fontSize = 28.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 0.dp, end = 0.dp, bottom = 20.dp, start = 0.dp)
                 )
                 Text(
-                    text = "Testing SampleCard - Static Values",
+                    text = stringResource(R.string.custom_component_test_testing_samplecard_static_value),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 0.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -117,29 +119,29 @@ fun CustomComponentTestGeneratedView(
                     modifier = Modifier
                         .padding(16.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(12.dp))
-                        .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                        .border(1.dp, colorResource(R.color.pale_gray), RoundedCornerShape(12.dp))
+                        .background(colorResource(R.color.white))
                 ) {
                     Column(
                     ) {
                         Text(
-                            text = "Card Content",
+                            text = stringResource(R.string.custom_component_test_card_content),
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#666666")),
+                            color = colorResource(R.color.medium_gray_4),
                             modifier = Modifier
                         )
                         Text(
-                            text = "This content is inside the custom component",
+                            text = stringResource(R.string.custom_component_test_this_content_is_inside_the_cust),
                             fontSize = 12.sp,
-                            color = Color(android.graphics.Color.parseColor("#999999")),
+                            color = colorResource(R.color.light_gray_8),
                             modifier = Modifier
                         )
                     }
                 }
                 Text(
-                    text = "Testing SampleCard - Dynamic Values",
+                    text = stringResource(R.string.custom_component_test_testing_samplecard_dynamic_valu),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -150,15 +152,15 @@ fun CustomComponentTestGeneratedView(
                     modifier = Modifier
                         .padding(16.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, Color(android.graphics.Color.parseColor("#E0E0E0")), RoundedCornerShape(12.dp))
-                        .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+                        .border(1.dp, colorResource(R.color.pale_gray), RoundedCornerShape(12.dp))
+                        .background(colorResource(R.color.white))
                 ) {
                     Column(
                     ) {
                         Text(
                             text = "${data.itemCount}",
                             fontSize = 16.sp,
-                            color = Color(android.graphics.Color.parseColor("#5856D6")),
+                            color = colorResource(R.color.medium_blue_3),
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier
                         )
@@ -169,12 +171,12 @@ fun CustomComponentTestGeneratedView(
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                                                    containerColor = colorResource(R.color.medium_blue_3)
                                                                 )
                             ) {
                                 Text(
-                                    text = "Increment",
-                                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                    text = stringResource(R.string.custom_component_test_increment),
+                                    color = colorResource(R.color.white),
                                 )
                             }
                             Button(
@@ -182,21 +184,21 @@ fun CustomComponentTestGeneratedView(
                                 shape = RoundedCornerShape(8.dp),
                                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                                                    containerColor = colorResource(R.color.medium_red)
                                                                 )
                             ) {
                                 Text(
-                                    text = "Decrement",
-                                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                                    text = stringResource(R.string.custom_component_test_decrement),
+                                    color = colorResource(R.color.white),
                                 )
                             }
                         }
                     }
                 }
                 Text(
-                    text = "Testing Multiple Cards",
+                    text = stringResource(R.string.custom_component_test_testing_multiple_cards),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -209,12 +211,12 @@ fun CustomComponentTestGeneratedView(
                         modifier = Modifier
                             .padding(12.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(android.graphics.Color.parseColor("#E8F5E9")))
+                            .background(colorResource(R.color.white_13))
                     ) {
                         Text(
-                            text = "Content for card 1",
+                            text = stringResource(R.string.custom_component_test_content_for_card_1),
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#2E7D32")),
+                            color = colorResource(R.color.dark_green),
                             modifier = Modifier
                         )
                     }
@@ -225,12 +227,12 @@ fun CustomComponentTestGeneratedView(
                         modifier = Modifier
                             .padding(12.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(android.graphics.Color.parseColor("#FFF3E0")))
+                            .background(colorResource(R.color.white_14))
                     ) {
                         Text(
-                            text = "Content for card 2",
+                            text = stringResource(R.string.custom_component_test_content_for_card_2),
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#E65100")),
+                            color = colorResource(R.color.medium_red_4),
                             modifier = Modifier
                         )
                     }
@@ -241,20 +243,20 @@ fun CustomComponentTestGeneratedView(
                         modifier = Modifier
                             .padding(12.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(Color(android.graphics.Color.parseColor("#F3E5F5")))
+                            .background(colorResource(R.color.white_15))
                     ) {
                         Text(
-                            text = "Content for card 3",
+                            text = stringResource(R.string.custom_component_test_content_for_card_3),
                             fontSize = 14.sp,
-                            color = Color(android.graphics.Color.parseColor("#6A1B9A")),
+                            color = colorResource(R.color.dark_purple),
                             modifier = Modifier
                         )
                     }
                 }
                 Text(
-                    text = "Testing StatusBadge - Non-Container Component",
+                    text = stringResource(R.string.custom_component_test_testing_statusbadge_noncontaine),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
@@ -263,7 +265,7 @@ fun CustomComponentTestGeneratedView(
                     StatusBadge(
                         title = "Static Status",
                         status = "Active",
-                        color = Color(android.graphics.Color.parseColor("#4CAF50")),
+                        color = Color.medium_green_2,
                         count = 5
                     )
                     StatusBadge(
@@ -275,7 +277,7 @@ fun CustomComponentTestGeneratedView(
                     StatusBadge(
                         title = "Error Status",
                         status = "Error",
-                        color = Color(android.graphics.Color.parseColor("#FF3B30")),
+                        color = Color.medium_red,
                         count = 0
                     )
                 }
@@ -285,18 +287,18 @@ fun CustomComponentTestGeneratedView(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                            containerColor = colorResource(R.color.medium_blue_3)
                                         )
                 ) {
                     Text(
-                        text = "Toggle Dynamic Mode",
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        text = stringResource(R.string.custom_component_test_toggle_dynamic_mode),
+                        color = colorResource(R.color.white),
                     )
                 }
                 Text(
                     text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier,
                     textAlign = TextAlign.Center
                 )

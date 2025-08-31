@@ -44,6 +44,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun ImplementedAttributesTestGeneratedView(
@@ -99,7 +102,7 @@ fun ImplementedAttributesTestGeneratedView(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                .background(colorResource(R.color.white_17))
         ) {
             item {
             Column(
@@ -109,13 +112,13 @@ fun ImplementedAttributesTestGeneratedView(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Implemented Attributes Test",
+                    text = stringResource(R.string.implemented_attributes_test_implemented_attributes_test),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
                 Text(
-                    text = "1. alignCenterVerticalView & alignCenterHorizontalView",
+                    text = stringResource(R.string.implemented_attributes_test_1_aligncenterverticalview_align),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 10.dp)
@@ -123,7 +126,7 @@ fun ImplementedAttributesTestGeneratedView(
                 ConstraintLayout(
                     modifier = Modifier
                         .height(200.dp)
-                        .background(Color(android.graphics.Color.parseColor("#f0f0f0")))
+                        .background(colorResource(R.color.white_17))
                 ) {
                     val target1 = createRef()
                     val view_1 = createRef()
@@ -134,10 +137,10 @@ fun ImplementedAttributesTestGeneratedView(
                             top.linkTo(parent.top, margin = 50.dp)
                             start.linkTo(parent.start, margin = 50.dp)
                         }
-                            .background(Color(android.graphics.Color.parseColor("#ff0000")))
+                            .background(colorResource(R.color.dark_red))
                             .padding(10.dp),
                         text = "Target View",
-                        color = Color(android.graphics.Color.parseColor("#ffffff"))
+                        color = colorResource(R.color.white)
                     )
                     Text(
                         modifier = Modifier.constrainAs(view_1) {
@@ -145,7 +148,7 @@ fun ImplementedAttributesTestGeneratedView(
                             bottom.linkTo(target1.bottom)
                             end.linkTo(parent.end, margin = 20.dp)
                         }
-                            .background(Color(android.graphics.Color.parseColor("#00ff00")))
+                            .background(colorResource(R.color.dark_green_2))
                             .padding(10.dp),
                         text = "Centered V"
                     )
@@ -155,14 +158,14 @@ fun ImplementedAttributesTestGeneratedView(
                             end.linkTo(target1.end)
                             bottom.linkTo(parent.bottom, margin = 20.dp)
                         }
-                            .background(Color(android.graphics.Color.parseColor("#0000ff")))
+                            .background(colorResource(R.color.dark_blue))
                             .padding(10.dp),
                         text = "Centered H",
-                        color = Color(android.graphics.Color.parseColor("#ffffff"))
+                        color = colorResource(R.color.white)
                     )
                 }
                 Text(
-                    text = "2. idealWidth & idealHeight",
+                    text = stringResource(R.string.implemented_attributes_test_2_idealwidth_idealheight),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -171,16 +174,16 @@ fun ImplementedAttributesTestGeneratedView(
                 )
                 Box(
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#ffcccc")))
+                        .background(colorResource(R.color.pale_red))
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "Ideal Size View (200x100)",
+                        text = stringResource(R.string.implemented_attributes_test_ideal_size_view_200x100),
                         modifier = Modifier.align(Alignment.TopStart)
                     )
                 }
                 Text(
-                    text = "3. clipToBounds",
+                    text = stringResource(R.string.implemented_attributes_test_3_cliptobounds),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -191,16 +194,16 @@ fun ImplementedAttributesTestGeneratedView(
                     modifier = Modifier
                         .width(150.dp)
                         .height(50.dp)
-                        .background(Color(android.graphics.Color.parseColor("#ccffcc")))
+                        .background(colorResource(R.color.pale_green))
                 ) {
                     Text(
-                        text = "This text is very long and should be clipped to the bounds of the parent view",
+                        text = stringResource(R.string.implemented_attributes_test_this_text_is_very_long_and_shou),
                         fontSize = 16.sp,
                         modifier = Modifier.align(Alignment.TopStart)
                     )
                 }
                 Text(
-                    text = "4. direction & distribution",
+                    text = stringResource(R.string.implemented_attributes_test_4_direction_distribution),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -210,28 +213,28 @@ fun ImplementedAttributesTestGeneratedView(
                 Row(
                     modifier = Modifier
                         .height(50.dp)
-                        .background(Color(android.graphics.Color.parseColor("#ccccff"))),
+                        .background(colorResource(R.color.pale_blue_3)),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Text(
                         text = "3",
-                        color = Color(android.graphics.Color.parseColor("#ffffff")),
-                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#6666ff"))),
+                        color = colorResource(R.color.white),
+                        modifier = Modifier.background(colorResource(R.color.light_blue)),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = "2",
-                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#66ff66"))),
+                        modifier = Modifier.background(colorResource(R.color.light_green)),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = "1",
-                        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#ff6666"))),
+                        modifier = Modifier.background(colorResource(R.color.light_red_2)),
                         textAlign = TextAlign.Center
                     )
                 }
                 Text(
-                    text = "5. edgeInset (Label padding)",
+                    text = stringResource(R.string.implemented_attributes_test_5_edgeinset_label_padding),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -239,14 +242,14 @@ fun ImplementedAttributesTestGeneratedView(
                         .padding(bottom = 10.dp)
                 )
                 Text(
-                    text = "Text with edgeInset",
+                    text = stringResource(R.string.implemented_attributes_test_text_with_edgeinset),
                     fontSize = 16.sp,
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#ffffcc")))
+                        .background(colorResource(R.color.white_18))
                         .padding(20.dp)
                 )
                 Text(
-                    text = "6. Button State Attributes",
+                    text = stringResource(R.string.implemented_attributes_test_6_button_state_attributes),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -259,12 +262,12 @@ fun ImplementedAttributesTestGeneratedView(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#cccccc"))
+                                            containerColor = colorResource(R.color.pale_gray_4)
                                         )
                 ) {
                     Text(
-                        text = "Tap Me (tapBackground)",
-                        color = Color(android.graphics.Color.parseColor("#000000")),
+                        text = stringResource(R.string.implemented_attributes_test_tap_me_tapbackground),
+                        color = colorResource(R.color.black),
                     )
                 }
                 Button(
@@ -273,13 +276,13 @@ fun ImplementedAttributesTestGeneratedView(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#0000ff")),
+                                            containerColor = colorResource(R.color.dark_blue),
                                             // hilightColor: #ff0000 - Use InteractionSource for pressed state
                                         )
                 ) {
                     Text(
-                        text = "Highlight Me",
-                        color = Color(android.graphics.Color.parseColor("#ffffff")),
+                        text = stringResource(R.string.implemented_attributes_test_highlight_me),
+                        color = colorResource(R.color.white),
                     )
                 }
                 Button(
@@ -287,19 +290,19 @@ fun ImplementedAttributesTestGeneratedView(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(10.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#0000ff")),
-                                            disabledContainerColor = Color(android.graphics.Color.parseColor("#f0f0f0")),
-                                            disabledContentColor = Color(android.graphics.Color.parseColor("#999999"))
+                                            containerColor = colorResource(R.color.dark_blue),
+                                            disabledContainerColor = colorResource(R.color.white_17),
+                                            disabledContentColor = colorResource(R.color.light_gray_8)
                                         ),
                     enabled = false
                 ) {
                     Text(
-                        text = "Disabled Button",
-                        color = Color(android.graphics.Color.parseColor("#ffffff")),
+                        text = stringResource(R.string.disabled_test_disabled_button),
+                        color = colorResource(R.color.white),
                     )
                 }
                 Text(
-                    text = "7. TextField Events",
+                    text = stringResource(R.string.implemented_attributes_test_7_textfield_events),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -307,19 +310,19 @@ fun ImplementedAttributesTestGeneratedView(
                         .padding(bottom = 10.dp)
                 )
                 CustomTextFieldWithMargins(
-                    value = data.textFieldValue,
+                    value = "${data.textFieldValue}",
                     onValueChange = { newValue -> viewModel.updateData(mapOf("textFieldValue" to newValue)) },
                     boxModifier = Modifier
                         .padding(bottom = 10.dp),
-                    placeholder = { Text("Type something...") },
-                    textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+                    placeholder = { Text(stringResource(R.string.implemented_attributes_test_type_something)) },
+                    textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
                     onFocus = { viewModel.handleFocus() },
                     onBlur = { viewModel.handleBlur() },
                     onBeginEditing = { viewModel.handleBeginEditing() },
                     onEndEditing = { viewModel.handleEndEditing() }
                 )
                 Text(
-                    text = "8. Radio Custom Icons",
+                    text = stringResource(R.string.implemented_attributes_test_8_radio_custom_icons),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -354,7 +357,7 @@ fun ImplementedAttributesTestGeneratedView(
                     }
                 }
                 Text(
-                    text = "9. Segment Control",
+                    text = stringResource(R.string.implemented_attributes_test_9_segment_control),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -363,8 +366,8 @@ fun ImplementedAttributesTestGeneratedView(
                 )
                 Segment(
                     selectedTabIndex = data.selectedSegment,
-                    contentColor = Color(android.graphics.Color.parseColor("#000000")),
-                    selectedContentColor = Color(android.graphics.Color.parseColor("#0000ff")),
+                    contentColor = colorResource(R.color.black),
+                    selectedContentColor = colorResource(R.color.dark_blue),
                     modifier = Modifier.padding(bottom = 10.dp)
                 ) {
                     Tab(
@@ -375,7 +378,7 @@ fun ImplementedAttributesTestGeneratedView(
                         text = {
                             Text(
                                 "First",
-                                color = if (data.selectedSegment == 0) Color(android.graphics.Color.parseColor("#0000ff")) else Color(android.graphics.Color.parseColor("#000000"))
+                                color = if (data.selectedSegment == 0) colorResource(R.color.dark_blue) else colorResource(R.color.black)
                             )
                         }
                     )
@@ -387,7 +390,7 @@ fun ImplementedAttributesTestGeneratedView(
                         text = {
                             Text(
                                 "Second",
-                                color = if (data.selectedSegment == 1) Color(android.graphics.Color.parseColor("#0000ff")) else Color(android.graphics.Color.parseColor("#000000"))
+                                color = if (data.selectedSegment == 1) colorResource(R.color.dark_blue) else colorResource(R.color.black)
                             )
                         }
                     )
@@ -399,13 +402,13 @@ fun ImplementedAttributesTestGeneratedView(
                         text = {
                             Text(
                                 "Third",
-                                color = if (data.selectedSegment == 2) Color(android.graphics.Color.parseColor("#0000ff")) else Color(android.graphics.Color.parseColor("#000000"))
+                                color = if (data.selectedSegment == 2) colorResource(R.color.dark_blue) else colorResource(R.color.black)
                             )
                         }
                     )
                 }
                 Text(
-                    text = "10. SelectBox Attributes",
+                    text = stringResource(R.string.implemented_attributes_test_10_selectbox_attributes),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -416,17 +419,17 @@ fun ImplementedAttributesTestGeneratedView(
                     value = "",
                     onValueChange = { },
                     options = listOf("Option A", "Option B", "Option C"),
-                    backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                    textColor = Color(android.graphics.Color.parseColor("#0000ff")),
-                    cancelButtonBackgroundColor = Color(android.graphics.Color.parseColor("#FFE5E5")),
-                    cancelButtonTextColor = Color(android.graphics.Color.parseColor("#FF0000")),
+                    backgroundColor = colorResource(R.color.white),
+                    textColor = colorResource(R.color.dark_blue),
+                    cancelButtonBackgroundColor = colorResource(R.color.white_19),
+                    cancelButtonTextColor = colorResource(R.color.dark_red),
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(bottom = 10.dp)
                 )
                 Text(
-                    text = "11. Web Component",
+                    text = stringResource(R.string.implemented_attributes_test_11_web_component),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier

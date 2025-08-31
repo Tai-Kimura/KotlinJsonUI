@@ -34,6 +34,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun PartialAttributesTestGeneratedView(
@@ -84,7 +87,7 @@ fun PartialAttributesTestGeneratedView(
         modifier = Modifier
             .fillMaxSize()
             .systemBarsPadding()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         LazyColumn(
             modifier = Modifier
@@ -99,13 +102,13 @@ fun PartialAttributesTestGeneratedView(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "PartialAttributes Test",
+                    text = stringResource(R.string.partial_attributes_test_partialattributes_test),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
                 Text(
-                    text = "This is a normal label without any partial attributes.",
+                    text = stringResource(R.string.partial_attributes_test_this_is_a_normal_label_without_),
                     fontSize = 16.sp,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
@@ -115,23 +118,23 @@ fun PartialAttributesTestGeneratedView(
                         PartialAttribute.fromJsonRange(
                             range = listOf(14, 21),
                             text = "This text has partial styling applied to different parts of the text.",
-                            fontColor = "#FF0000",
+                            fontColor = "dark_red",
                             fontWeight = "bold",
                             onClick = null
                         )!!,
                         PartialAttribute.fromJsonRange(
                             range = listOf(22, 29),
                             text = "This text has partial styling applied to different parts of the text.",
-                            fontColor = "#00FF00",
+                            fontColor = "dark_green_2",
                             underline = true,
                             onClick = null
                         )!!,
                         PartialAttribute.fromJsonRange(
                             range = listOf(50, 55),
                             text = "This text has partial styling applied to different parts of the text.",
-                            fontColor = "#0000FF",
+                            fontColor = "dark_blue",
                             fontSize = 20,
-                            background = "#FFFF00",
+                            background = "light_2",
                             onClick = null
                         )!!
                     ),
@@ -144,14 +147,14 @@ fun PartialAttributesTestGeneratedView(
                         PartialAttribute.fromJsonRange(
                             range = listOf(6, 10),
                             text = "Click here to navigate or here for another action.",
-                            fontColor = "#0000FF",
+                            fontColor = "dark_blue",
                             underline = true,
                             onClick = { viewModel.navigateToPage1() }
                         )!!,
                         PartialAttribute.fromJsonRange(
                             range = listOf(27, 31),
                             text = "Click here to navigate or here for another action.",
-                            fontColor = "#0000FF",
+                            fontColor = "dark_blue",
                             underline = true,
                             onClick = { viewModel.navigateToPage2() }
                         )!!
@@ -171,7 +174,7 @@ fun PartialAttributesTestGeneratedView(
                         PartialAttribute.fromJsonRange(
                             range = listOf(20, 26),
                             text = "Mixed styles: bold, italic, underline, strikethrough",
-                            fontColor = "#FF00FF",
+                            fontColor = "light",
                             onClick = null
                         )!!,
                         PartialAttribute.fromJsonRange(
@@ -183,7 +186,7 @@ fun PartialAttributesTestGeneratedView(
                         PartialAttribute.fromJsonRange(
                             range = listOf(39, 53),
                             text = "Mixed styles: bold, italic, underline, strikethrough",
-                            fontColor = "#999999",
+                            fontColor = "light_gray_8",
                             strikethrough = true,
                             onClick = null
                         )!!
@@ -197,7 +200,7 @@ fun PartialAttributesTestGeneratedView(
                         PartialAttribute.fromJsonRange(
                             range = "天気",
                             text = "今日は天気がいいですね。明日も晴れるといいです。",
-                            fontColor = "#FF0000",
+                            fontColor = "dark_red",
                             fontSize = 20,
                             fontWeight = "bold",
                             onClick = null
@@ -205,7 +208,7 @@ fun PartialAttributesTestGeneratedView(
                         PartialAttribute.fromJsonRange(
                             range = "晴れる",
                             text = "今日は天気がいいですね。明日も晴れるといいです。",
-                            fontColor = "#0000FF",
+                            fontColor = "dark_blue",
                             underline = true,
                             onClick = null
                         )!!

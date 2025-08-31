@@ -23,6 +23,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun MarginsTestGeneratedView(
@@ -73,7 +76,7 @@ fun MarginsTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -89,108 +92,108 @@ fun MarginsTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
             )
             Text(
-                text = "All margins: [20, 20, 20, 20]",
+                text = stringResource(R.string.margins_test_all_margins_20_20_20_20),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                    .background(colorResource(R.color.white_5))
             )
             Text(
-                text = "Left margin: 40",
+                text = stringResource(R.string.margins_test_left_margin_40),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
                     .padding(start = 40.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                    .background(colorResource(R.color.white_6))
             )
             Text(
-                text = "Right margin: 40",
+                text = stringResource(R.string.margins_test_right_margin_40),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
                     .padding(end = 40.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                    .background(colorResource(R.color.white_7))
             )
             Text(
-                text = "Top margin: 30",
+                text = stringResource(R.string.margins_test_top_margin_30),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 30.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                    .background(colorResource(R.color.white_8))
             )
             Text(
-                text = "Bottom margin: 30",
+                text = stringResource(R.string.margins_test_bottom_margin_30),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(bottom = 30.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                    .background(colorResource(R.color.white_9))
             )
             Text(
-                text = "Label with padding: 20",
+                text = stringResource(R.string.margins_test_label_with_padding_20),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0FFFF")))
+                    .background(colorResource(R.color.white_22))
                     .padding(20.dp)
             )
             Text(
-                text = "Label with leftPadding: 30, rightPadding: 30",
+                text = stringResource(R.string.margins_test_label_with_leftpadding_30_right),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
+                    .background(colorResource(R.color.pale_red))
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#DDDDDD")))
+                    .background(colorResource(R.color.pale_gray_5))
             ) {
                 Text(
-                    text = "Parent has leftPadding: 20, rightPadding: 20",
+                    text = stringResource(R.string.margins_test_parent_has_leftpadding_20_right),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .wrapContentWidth()
@@ -202,18 +205,18 @@ fun MarginsTestGeneratedView(
                     .fillMaxWidth()
                     .height(100.dp)
                     .padding(top = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#CCCCCC")))
+                    .background(colorResource(R.color.pale_gray_4))
             ) {
                 Text(
-                    text = "MaxWidth: 200",
+                    text = stringResource(R.string.margins_test_maxwidth_200),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .widthIn(max = 200.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFCCCC")))
+                        .background(colorResource(R.color.pale_red))
                 )
             }
             Box(
@@ -221,18 +224,18 @@ fun MarginsTestGeneratedView(
                     .fillMaxWidth()
                     .height(100.dp)
                     .padding(top = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#BBBBBB")))
+                    .background(colorResource(R.color.light_gray_10))
             ) {
                 Text(
-                    text = "MinWidth: 150",
+                    text = stringResource(R.string.margins_test_minwidth_150),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .widthIn(min = 150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#CCFFCC")))
+                        .background(colorResource(R.color.pale_green))
                 )
             }
         }

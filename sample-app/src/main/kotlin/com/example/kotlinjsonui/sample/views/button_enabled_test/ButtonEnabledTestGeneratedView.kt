@@ -22,6 +22,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun ButtonEnabledTestGeneratedView(
@@ -72,7 +75,7 @@ fun ButtonEnabledTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(20.dp)
     ) {
         Button(
@@ -83,25 +86,25 @@ fun ButtonEnabledTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                            containerColor = colorResource(R.color.medium_blue_3)
                         )
         ) {
             Text(
-                text = "Dynamic: ${data.dynamicModeStatus}",
+                text = "${data.dynamicModeStatus}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                color = colorResource(R.color.white),
             )
         }
         Text(
             text = "${data.title}",
             fontSize = 24.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             modifier = Modifier
         )
         Text(
             text = "${data.isButtonEnabled}",
             fontSize = 16.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier
         )
         Button(
@@ -109,13 +112,13 @@ fun ButtonEnabledTestGeneratedView(
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#4CAF50"))
+                            containerColor = colorResource(R.color.medium_green_2)
                         ),
             enabled = data.isButtonEnabled
         ) {
             Text(
-                text = "Test Button (controlled by data)",
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                text = stringResource(R.string.button_enabled_test_test_button_controlled_by_data),
+                color = colorResource(R.color.white),
             )
         }
         Button(
@@ -123,12 +126,12 @@ fun ButtonEnabledTestGeneratedView(
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#2196F3"))
+                            containerColor = colorResource(R.color.medium_blue_2)
                         )
         ) {
             Text(
-                text = "Toggle Enabled State",
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                text = stringResource(R.string.button_enabled_test_toggle_enabled_state),
+                color = colorResource(R.color.white),
             )
         }
         Button(
@@ -136,13 +139,13 @@ fun ButtonEnabledTestGeneratedView(
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#FF5722"))
+                            containerColor = colorResource(R.color.medium_red_2)
                         ),
             enabled = false
         ) {
             Text(
-                text = "Always Disabled Button",
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                text = stringResource(R.string.button_enabled_test_always_disabled_button),
+                color = colorResource(R.color.white),
             )
         }
         Button(
@@ -150,13 +153,13 @@ fun ButtonEnabledTestGeneratedView(
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#9C27B0"))
+                            containerColor = colorResource(R.color.medium_purple)
                         ),
             enabled = true
         ) {
             Text(
-                text = "Always Enabled Button",
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                text = stringResource(R.string.button_enabled_test_always_enabled_button),
+                color = colorResource(R.color.white),
             )
         }
     }    }

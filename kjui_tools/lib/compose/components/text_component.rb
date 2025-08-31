@@ -2,6 +2,7 @@
 
 require_relative '../helpers/modifier_builder'
 require_relative '../helpers/visibility_helper'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -21,7 +22,7 @@ module KjuiTools
             return generate_with_partial_attributes_for_linkable(json_data, depth, required_imports, parent_type)
           end
           
-          text = process_data_binding(json_data['text'] || '')
+          text = Helpers::ResourceResolver.process_text(json_data['text'] || '', required_imports)
           
           component_code = indent("Text(", depth)
           component_code += "\n" + indent("text = #{text},", depth + 1)
@@ -33,7 +34,8 @@ module KjuiTools
           
           # Font color (official attribute)
           if json_data['fontColor']
-            component_code += "\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\")),", depth + 1)
+            color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            component_code += "\n" + indent("color = #{color_value},", depth + 1) if color_value
           end
           
           # Font weight - handle both 'font' and 'fontWeight' attributes
@@ -213,7 +215,8 @@ module KjuiTools
           end
           
           if json_data['fontColor']
-            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))"
+            color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            style_parts << "color = #{color_value}" if color_value
           end
           
           if json_data['font'] == 'bold' || json_data['fontWeight'] == 'bold'
@@ -358,7 +361,8 @@ module KjuiTools
           style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
           
           if json_data['fontColor']
-            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))"
+            color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            style_parts << "color = #{color_value}" if color_value
           end
           
           if json_data['textAlign']
@@ -408,7 +412,8 @@ module KjuiTools
             span_styles = []
             
             if attr['fontColor']
-              span_styles << "color = Color(android.graphics.Color.parseColor(\"#{attr['fontColor']}\"))"
+              color_resolved = Helpers::ResourceResolver.process_color(attr['fontColor'], required_imports)
+              span_styles << "color = #{color_resolved}"
             end
             
             if attr['fontSize']
@@ -427,7 +432,8 @@ module KjuiTools
             end
             
             if attr['background']
-              span_styles << "background = Color(android.graphics.Color.parseColor(\"#{attr['background']}\"))"
+              background_resolved = Helpers::ResourceResolver.process_color(attr['background'], required_imports)
+              span_styles << "background = #{background_resolved}"
             end
             
             if attr['underline']
@@ -511,7 +517,8 @@ module KjuiTools
           end
           
           if json_data['fontColor']
-            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))"
+            color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            style_parts << "color = #{color_value}" if color_value
           end
           
           if json_data['textAlign']
@@ -540,23 +547,6 @@ module KjuiTools
               .gsub("\n", '\\n')
               .gsub("\r", '\\r')
               .gsub("\t", '\\t')
-        end
-        
-        def self.process_data_binding(text)
-          return quote(text) unless text.is_a?(String)
-          
-          if text.match(/@\{([^}]+)\}/)
-            variable = $1
-            if variable.include?(' ?? ')
-              parts = variable.split(' ?? ')
-              var_name = parts[0].strip
-              "\"\${data.#{var_name}}\""
-            else
-              "\"\${data.#{variable}}\""
-            end
-          else
-            quote(text)
-          end
         end
         
         def self.quote(text)

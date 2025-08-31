@@ -25,6 +25,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun ButtonTestGeneratedView(
@@ -75,23 +78,23 @@ fun ButtonTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
             modifier = Modifier.padding(20.dp)
         ) {
             Text(
-                text = "Button Height Test",
+                text = stringResource(R.string.button_test_button_height_test),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 20.dp)
             )
             Text(
-                text = "Height 55, Padding [12, 20]",
+                text = stringResource(R.string.button_test_height_55_padding_12_20),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -102,18 +105,18 @@ fun ButtonTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Test Button 1",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.button_test_test_button_1),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Height 55, No Padding",
+                text = stringResource(R.string.button_test_height_55_no_padding),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -123,18 +126,18 @@ fun ButtonTestGeneratedView(
                     .height(55.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                    containerColor = colorResource(R.color.medium_green)
                                 )
             ) {
                 Text(
-                    text = "Test Button 2",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.button_test_test_button_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "No Height, Padding [12, 20]",
+                text = stringResource(R.string.button_test_no_height_padding_12_20),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -143,18 +146,18 @@ fun ButtonTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                    containerColor = colorResource(R.color.medium_red_3)
                                 )
             ) {
                 Text(
-                    text = "Test Button 3",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.button_test_test_button_3),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "With bottomMargin 8, Height 55, Padding [12, 20]",
+                text = stringResource(R.string.button_test_with_bottommargin_8_height_55_p),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -165,12 +168,12 @@ fun ButtonTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Like primary_button style",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.button_test_like_primarybutton_style),
+                    color = colorResource(R.color.white),
                 )
             }
         }

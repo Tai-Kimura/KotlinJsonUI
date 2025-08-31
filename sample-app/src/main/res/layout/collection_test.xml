@@ -17,7 +17,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#F5F5F7">
+        android:background="@color/white_12">
         <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,18 +31,18 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/collectionview_test"
+                    android:text="@string/collection_test_collectionview_test"
                     android:textSize="28sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="20dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/basic_collection_with_headers_f"
+                    android:text="@string/collection_test_basic_collection_with_headers_f"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="12dp"/>
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="wrap_content"
@@ -51,10 +51,10 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/grid_collection_with_multiple_c"
+                    android:text="@string/collection_test_grid_collection_with_multiple_c"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="12dp"/>
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="wrap_content"
@@ -63,10 +63,10 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/horizontal_collection"
+                    android:text="@string/collection_test_horizontal_collection"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="12dp"/>
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="wrap_content"
@@ -75,10 +75,10 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/sectioned_collection"
+                    android:text="@string/collection_test_sectioned_collection"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="12dp"/>
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="wrap_content"
@@ -87,10 +87,10 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/multi_section_collection"
+                    android:text="@string/collection_test_multisection_collection"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="12dp"/>
                 <androidx.recyclerview.widget.RecyclerView
                     android:layout_width="wrap_content"
@@ -98,11 +98,11 @@
                 <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
                     android:layout_height="44dp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/white"
                     android:layout_marginTop="20dp"
-                    android:text="@string/dynamic_dynamicmodestatus"
+                    android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                     android:onClick="toggleDynamicMode"
-                    android:background="@drawable/ripple_b39393a0"
+                    android:background="@drawable/ripple_d5af3557"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:padding="8dp"/>

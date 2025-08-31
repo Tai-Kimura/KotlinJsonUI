@@ -1,15 +1,28 @@
 package com.kotlinjsonui.dynamic.helpers
 
+import android.content.Context
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.Composable
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.ResourceCache
 
 /**
  * Helper class for parsing colors from JSON
  * Handles hex color strings and provides safe parsing with fallback values
- * Uses Configuration.colorParser if available, otherwise uses default parsing
+ * Uses ResourceCache for color resolution, then Configuration.colorParser if available,
+ * otherwise uses default parsing
  */
 object ColorParser {
+    
+    // Store context for non-composable usage
+    private var cachedContext: Context? = null
+    
+    fun init(context: Context) {
+        cachedContext = context
+        ResourceCache.init(context)
+    }
     
     /**
      * Parse a color from JSON
@@ -33,13 +46,28 @@ object ColorParser {
     
     /**
      * Parse a color from a string value
-     * Supports hex color strings like "#FFFFFF" or "FFFFFF"
+     * First tries to resolve from ResourceCache, then supports hex color strings like "#FFFFFF" or "FFFFFF"
      * @param colorString The color string to parse
+     * @param context Optional context for resource resolution
      */
     fun parseColorString(
-        colorString: String?
+        colorString: String?,
+        context: Context? = cachedContext
     ): Color? {
         if (colorString == null) return null
+        
+        // Try to resolve from ResourceCache if context is available
+        context?.let { ctx ->
+            val resolvedColor = ResourceCache.resolveColor(colorString, ctx)
+            if (resolvedColor != null && resolvedColor != colorString) {
+                // Color was resolved from cache, parse the hex value
+                return try {
+                    Color(android.graphics.Color.parseColor(resolvedColor))
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
         
         // Fall back to default parsing
         return try {

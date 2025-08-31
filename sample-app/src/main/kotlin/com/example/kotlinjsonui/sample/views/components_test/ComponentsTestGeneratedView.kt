@@ -32,6 +32,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -82,7 +85,7 @@ fun ComponentsTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -99,25 +102,25 @@ fun ComponentsTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "New Components Test",
+                text = stringResource(R.string.components_test_new_components_test),
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier
             )
             Text(
-                text = "Toggle/Checkbox Components",
+                text = stringResource(R.string.components_test_togglecheckbox_components),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             Switch(
@@ -135,9 +138,9 @@ fun ComponentsTestGeneratedView(
                 Text("I agree to terms")
             }
             Text(
-                text = "Progress & Slider",
+                text = stringResource(R.string.components_test_progress_slider),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             LinearProgressIndicator(
@@ -148,9 +151,9 @@ fun ComponentsTestGeneratedView(
                 valueRange = 0f..100f,
             )
             Text(
-                text = "Selection Components",
+                text = stringResource(R.string.components_test_selection_components),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             Segment(
@@ -235,17 +238,17 @@ fun ComponentsTestGeneratedView(
                 }
             }
             Text(
-                text = "Loading Indicator",
+                text = stringResource(R.string.components_test_loading_indicator),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             CircularProgressIndicator(
             )
             Text(
-                text = "Circle Image",
+                text = stringResource(R.string.components_test_circle_image),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             AsyncImage(
@@ -257,23 +260,23 @@ fun ComponentsTestGeneratedView(
                     .clip(CircleShape)
             )
             Text(
-                text = "Gradient View",
+                text = stringResource(R.string.components_test_gradient_view),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
-                    .background(Brush.horizontalGradient(listOf(Color(android.graphics.Color.parseColor("#FF6B6B")), Color(android.graphics.Color.parseColor("#4ECDC4")))))
+                    .background(Brush.horizontalGradient(listOf(Helpers::ResourceResolver.process_color('#FF6B6B', required_imports), Helpers::ResourceResolver.process_color('#4ECDC4', required_imports))))
                     .clip(RoundedCornerShape(10.dp))
             ) {
             }
             Text(
-                text = "Blur View",
+                text = stringResource(R.string.components_test_blur_view),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
             )
             Box(

@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,10 +25,10 @@
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:textColor="#FFFFFF"
-                android:text="@string/dynamic_dynamicmodestatus"
+                android:textColor="@color/white"
+                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                 android:onClick="toggleDynamicMode"
-                android:background="@drawable/ripple_b39393a0"
+                android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:padding="8dp"/>
@@ -39,159 +39,159 @@
                 android:layout_marginTop="20dp"
                 android:text="@{data.title}"
                 android:textSize="24sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/visibility_visible_default"
+                android:text="@string/visibility_test_visibility_visible_default"
                 android:visibility="visible"
-                android:background="#D0FFD0"
+                android:background="@color/pale_yellow"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/this_label_is_invisible_takes_s"
+                android:text="@string/visibility_test_this_label_is_invisible_takes_s"
                 android:visibility="invisible"
-                android:background="#FFD0D0"
+                android:background="@color/pale_pink"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/after_invisible_label"
-                android:background="#D0D0FF"
+                android:text="@string/visibility_test_after_invisible_label"
+                android:background="@color/pale_cyan"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/this_label_is_gone_no_space"
+                android:text="@string/visibility_test_this_label_is_gone_no_space"
                 android:visibility="gone"
-                android:background="#FFFFD0"
+                android:background="@color/white_2"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/after_gone_label_no_gap"
-                android:background="#FFD0FF"
+                android:text="@string/visibility_test_after_gone_label_no_gap"
+                android:background="@color/white_3"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/opacity_tests"
+                android:text="@string/visibility_test_opacity_tests"
                 android:textSize="18sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/opacity_10_fully_visible"
+                android:text="@string/visibility_test_opacity_10_fully_visible"
                 android:alpha="1.0"
-                android:background="#FFE0E0"
+                android:background="@color/white_5"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/opacity_07"
+                android:text="@string/visibility_test_opacity_07"
                 android:alpha="0.7"
-                android:background="#E0FFE0"
+                android:background="@color/white_6"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/opacity_05"
+                android:text="@string/visibility_test_opacity_05"
                 android:alpha="0.5"
-                android:background="#E0E0FF"
+                android:background="@color/white_7"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/opacity_03"
+                android:text="@string/visibility_test_opacity_03"
                 android:alpha="0.3"
-                android:background="#FFFFE0"
+                android:background="@color/white_8"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/opacity_01"
+                android:text="@string/visibility_test_opacity_01"
                 android:alpha="0.1"
-                android:background="#FFD0FF"
+                android:background="@color/white_3"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/alpha_test_same_as_opacity"
+                android:text="@string/visibility_test_alpha_test_same_as_opacity"
                 android:textSize="18sp"
-                android:textColor="#333333"/>
+                android:textColor="@color/dark_gray"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/alpha_06"
+                android:text="@string/visibility_test_alpha_06"
                 android:alpha="0.6"
-                android:background="#D0FFFF"
+                android:background="@color/white_4"
                 android:textSize="16sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:text="@string/dynamic_visibility_tests"
+                android:text="@string/visibility_test_dynamic_visibility_tests"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/toggle_visibility"
+                android:text="@string/visibility_test_toggle_visibility"
                 android:onClick="toggleVisibility"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/ripple_56a40756"
-                android:textColor="#FFFFFF"/>
+                android:background="@drawable/ripple_12c68881"
+                android:textColor="@color/white"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/this_text_uses_dynamic_visibili"
-                android:background="#FFE0E0"
+                android:text="@string/visibility_test_this_text_uses_dynamic_visibili"
+                android:background="@color/white_5"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"/>
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/toggle_hidden"
+                android:text="@string/visibility_test_toggle_hidden"
                 android:onClick="toggleHidden"
                 android:layout_marginTop="20dp"
-                android:background="@drawable/ripple_d7b81a7f"
-                android:textColor="#FFFFFF"/>
+                android:background="@drawable/ripple_1a0cce85"
+                android:textColor="@color/white"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="@string/this_text_uses_dynamic_hidden_a"
-                android:background="#E0FFE0"
+                android:text="@string/visibility_test_this_text_uses_dynamic_hidden_a"
+                android:background="@color/white_6"
                 android:textSize="16sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:padding="10dp"/>
         </LinearLayout>
     </ScrollView>

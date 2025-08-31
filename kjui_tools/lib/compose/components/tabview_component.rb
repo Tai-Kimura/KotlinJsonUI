@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -34,7 +35,7 @@ module KjuiTools
           # TabRow modifiers
           tab_modifiers = []
           if json_data['backgroundColor']
-            tab_modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['backgroundColor']}\")))"
+            tab_modifiers << ".background(Helpers::ResourceResolver.process_color('#{json_data['backgroundColor']}', required_imports))"
           end
           
           if tab_modifiers.any?

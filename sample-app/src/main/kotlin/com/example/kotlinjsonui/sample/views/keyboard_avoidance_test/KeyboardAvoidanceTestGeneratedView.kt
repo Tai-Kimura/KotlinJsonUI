@@ -28,6 +28,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun KeyboardAvoidanceTestGeneratedView(
@@ -78,7 +81,7 @@ fun KeyboardAvoidanceTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -95,130 +98,130 @@ fun KeyboardAvoidanceTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier.padding(bottom = 20.dp)
             )
             Text(
-                text = "TextField 1",
+                text = stringResource(R.string.keyboard_avoidance_test_textfield_1),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textField1,
+                value = "${data.textField1}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textField1" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text("Enter text here") },
+                placeholder = { Text(stringResource(R.string.keyboard_avoidance_test_enter_text_here)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "TextField 2",
+                text = stringResource(R.string.keyboard_avoidance_test_textfield_2),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textField2,
+                value = "${data.textField2}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textField2" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text("Another text field") },
+                placeholder = { Text(stringResource(R.string.keyboard_avoidance_test_another_text_field)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "TextField 3",
+                text = stringResource(R.string.keyboard_avoidance_test_textfield_3),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textField3,
+                value = "${data.textField3}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textField3" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text("Keep typing...") },
+                placeholder = { Text(stringResource(R.string.keyboard_avoidance_test_keep_typing)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "TextField 4",
+                text = stringResource(R.string.keyboard_avoidance_test_textfield_4),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textField4,
+                value = "${data.textField4}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textField4" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text("This should scroll up") },
+                placeholder = { Text(stringResource(R.string.keyboard_avoidance_test_this_should_scroll_up)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "TextField 5 (at bottom)",
+                text = stringResource(R.string.keyboard_avoidance_test_textfield_5_at_bottom),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textField5,
+                value = "${data.textField5}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textField5" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text("This is near the bottom") },
+                placeholder = { Text(stringResource(R.string.keyboard_avoidance_test_this_is_near_the_bottom)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "TextView (Multi-line)",
+                text = stringResource(R.string.keyboard_avoidance_test_textview_multiline),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             CustomTextFieldWithMargins(
@@ -231,11 +234,11 @@ fun KeyboardAvoidanceTestGeneratedView(
                     .height(120.dp),
                 placeholder = { Text("Multi-line text input\nType here...") },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                backgroundColor = colorResource(R.color.white),
                 isOutlined = true,
                 maxLines = Int.MAX_VALUE,
                 singleLine = false,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.dark_gray))
             )
             Button(
                 onClick = { viewModel.submitForm() },
@@ -244,13 +247,13 @@ fun KeyboardAvoidanceTestGeneratedView(
                     .height(50.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Submit",
+                    text = stringResource(R.string.keyboard_avoidance_test_submit),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
         }

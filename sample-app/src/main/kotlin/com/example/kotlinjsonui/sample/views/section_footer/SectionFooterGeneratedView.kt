@@ -17,6 +17,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun SectionFooterGeneratedView(
@@ -67,12 +69,12 @@ fun SectionFooterGeneratedView(
         Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(android.graphics.Color.parseColor("#FAFAFA")))
+            .background(colorResource(R.color.white_27))
     ) {
         Text(
             text = "${data.text}",
             fontSize = 12.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.align(Alignment.TopStart)
         )
     }    }

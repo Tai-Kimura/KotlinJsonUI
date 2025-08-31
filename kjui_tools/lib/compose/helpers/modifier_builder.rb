@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative 'resource_resolver'
+
 module KjuiTools
   module Compose
     module Helpers
@@ -168,6 +170,9 @@ module KjuiTools
           if json_data['background']
             required_imports&.add(:background)
             
+            # Use ResourceResolver to process background color
+            background_color = ResourceResolver.process_color(json_data['background'], required_imports)
+            
             if json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
               required_imports&.add(:border)
               required_imports&.add(:shape)
@@ -177,13 +182,15 @@ module KjuiTools
               end
               
               if json_data['borderColor'] && json_data['borderWidth']
+                # Use ResourceResolver to process border color
+                border_color = ResourceResolver.process_color(json_data['borderColor'], required_imports)
                 border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
-                modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
+                modifiers << ".border(#{json_data['borderWidth']}.dp, #{border_color}, #{border_shape})"
               end
               
-              modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+              modifiers << ".background(#{background_color})"
             else
-              modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")))"
+              modifiers << ".background(#{background_color})"
             end
           elsif json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
             required_imports&.add(:border)
@@ -194,8 +201,10 @@ module KjuiTools
             end
             
             if json_data['borderColor'] && json_data['borderWidth']
+              # Use ResourceResolver to process border color
+              border_color = ResourceResolver.process_color(json_data['borderColor'], required_imports)
               border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
-              modifiers << ".border(#{json_data['borderWidth']}.dp, Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")), #{border_shape})"
+              modifiers << ".border(#{json_data['borderWidth']}.dp, #{border_color}, #{border_shape})"
             end
           end
           

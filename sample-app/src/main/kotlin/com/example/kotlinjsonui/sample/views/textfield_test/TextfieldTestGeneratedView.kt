@@ -28,6 +28,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun TextfieldTestGeneratedView(
@@ -76,86 +79,86 @@ fun TextfieldTestGeneratedView(
         // Static Mode - use generated code
         Column(
         modifier = Modifier
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(20.dp)
     ) {
         Text(
-            text = "TextField Test",
+            text = stringResource(R.string.test_menu_textfield_test),
             fontSize = 20.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             fontWeight = FontWeight.Bold,
             modifier = Modifier
         )
         CustomTextField(
-            value = data.email,
+            value = "${data.email}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("email" to newValue)) },
-            placeholder = { Text("Enter email") },
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            placeholder = { Text(stringResource(R.string.textfield_events_test_enter_email)) },
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Default)
         )
         CustomTextField(
-            value = data.password,
+            value = "${data.password}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("password" to newValue)) },
-            placeholder = { Text("Enter password") },
+            placeholder = { Text(stringResource(R.string.secure_field_test_enter_password)) },
             visualTransformation = PasswordVisualTransformation(),
             isSecure = true,
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
         )
         CustomTextField(
-            value = data.phone,
+            value = "${data.phone}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("phone" to newValue)) },
-            placeholder = { Text("Phone number") },
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            placeholder = { Text(stringResource(R.string.textfield_test_phone_number)) },
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Default)
         )
         CustomTextField(
-            value = data.number,
+            value = "${data.number}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("number" to newValue)) },
             modifier = Modifier
                 .padding(10.dp),
-            placeholder = { Text("Enter number") },
-            backgroundColor = Color(android.graphics.Color.parseColor("#F0F0F0")),
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            placeholder = { Text(stringResource(R.string.textfield_test_enter_number)) },
+            backgroundColor = colorResource(R.color.white_17),
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Default)
         )
         CustomTextField(
-            value = data.search,
+            value = "${data.search}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("search" to newValue)) },
-            placeholder = { Text("Search...") },
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            placeholder = { Text(stringResource(R.string.textfield_test_search)) },
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
         )
         CustomTextField(
-            value = data.url,
+            value = "${data.url}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("url" to newValue)) },
-            placeholder = { Text("Website URL") },
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000"))),
+            placeholder = { Text(stringResource(R.string.textfield_test_website_url)) },
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black)),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Default)
         )
         Text(
-            text = "Entered Values:",
+            text = stringResource(R.string.textfield_test_entered_values),
             fontSize = 16.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             fontWeight = FontWeight.Bold,
             modifier = Modifier
         )
         Text(
             text = "${data.email}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier
         )
         Text(
             text = "${data.password}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier
         )
         Text(
             text = "${data.phone}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier
         )
     }    }

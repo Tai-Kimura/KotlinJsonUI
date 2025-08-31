@@ -22,6 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun ImageCellGeneratedView(
@@ -72,7 +74,7 @@ fun ImageCellGeneratedView(
         Column(
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(8.dp)
     ) {
         AsyncImage(
@@ -88,14 +90,14 @@ fun ImageCellGeneratedView(
         Text(
             text = "${data.title}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#333333")),
+            color = colorResource(R.color.dark_gray),
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(top = 8.dp)
         )
         Text(
             text = "${data.price}",
             fontSize = 12.sp,
-            color = Color(android.graphics.Color.parseColor("#007AFF")),
+            color = colorResource(R.color.medium_blue),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

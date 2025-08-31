@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require_relative '../resource_resolver'
+
 module XmlGenerator
   module Mappers
     class TextMapper
@@ -75,12 +77,8 @@ module XmlGenerator
         # Convert value to string
         text = value.to_s
         
-        # Use string resource manager if available
-        if @string_resource_manager
-          @string_resource_manager.get_string_resource(text) || text
-        else
-          text
-        end
+        # Use ResourceResolver to check for string resources
+        KjuiTools::Xml::Helpers::ResourceResolver.process_text(text)
       end
       
       def process_text_value(value)
@@ -92,12 +90,8 @@ module XmlGenerator
         # Convert value to string
         text = value.to_s
         
-        # Use string resource manager if available
-        if @string_resource_manager
-          @string_resource_manager.get_string_resource(text) || text
-        else
-          text
-        end
+        # Use ResourceResolver to check for string resources
+        KjuiTools::Xml::Helpers::ResourceResolver.process_text(text)
       end
       
       def convert_text_size(value)
@@ -118,25 +112,14 @@ module XmlGenerator
       def convert_color(value)
         return nil if value.nil?
         
-        # Handle color values
+        # Handle special color values
         if value.is_a?(String)
-          if value.start_with?('#')
-            value
-          elsif value == 'clear' || value == 'transparent'
-            '#00000000'
-          else
-            # Try to map common color names
-            color_map = {
-              'black' => '#000000',
-              'white' => '#FFFFFF',
-              'red' => '#FF0000',
-              'green' => '#00FF00',
-              'blue' => '#0000FF',
-              'gray' => '#808080',
-              'grey' => '#808080'
-            }
-            color_map[value.downcase] || value
+          if value == 'clear' || value == 'transparent'
+            return '#00000000'
           end
+          
+          # Use ResourceResolver to check for color resources
+          return KjuiTools::Xml::Helpers::ResourceResolver.process_color(value)
         else
           value.to_s
         end

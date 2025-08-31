@@ -28,6 +28,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun SecureFieldTestGeneratedView(
@@ -78,7 +81,7 @@ fun SecureFieldTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         Button(
             onClick = { viewModel.toggleDynamicMode() },
@@ -88,32 +91,32 @@ fun SecureFieldTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                            containerColor = colorResource(R.color.medium_blue_3)
                         )
         ) {
             Text(
-                text = "Dynamic: ${data.dynamicModeStatus}",
+                text = "${data.dynamicModeStatus}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                color = colorResource(R.color.white),
             )
         }
         Text(
             text = "${data.title}",
             fontSize = 24.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             modifier = Modifier
                 .wrapContentWidth()
                 .wrapContentHeight()
                 .padding(top = 20.dp)
         )
         Text(
-            text = "Regular TextField (not secure)",
+            text = stringResource(R.string.secure_field_test_regular_textfield_not_secure),
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(top = 30.dp)
         )
         CustomTextFieldWithMargins(
-            value = data.regularText,
+            value = "${data.regularText}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("regularText" to newValue)) },
             boxModifier = Modifier
                 .padding(top = 10.dp)
@@ -122,21 +125,21 @@ fun SecureFieldTestGeneratedView(
             textFieldModifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            placeholder = { Text("Enter regular text") },
+            placeholder = { Text(stringResource(R.string.secure_field_test_enter_regular_text)) },
             shape = RoundedCornerShape(8.dp),
-            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-            borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+            backgroundColor = colorResource(R.color.white),
+            borderColor = colorResource(R.color.pale_gray_4),
             isOutlined = true,
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
         )
         Text(
-            text = "Secure TextField (password)",
+            text = stringResource(R.string.secure_field_test_secure_textfield_password),
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(top = 20.dp)
         )
         CustomTextFieldWithMargins(
-            value = data.password,
+            value = "${data.password}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("password" to newValue)) },
             boxModifier = Modifier
                 .padding(top = 10.dp)
@@ -145,23 +148,23 @@ fun SecureFieldTestGeneratedView(
             textFieldModifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            placeholder = { Text("Enter password") },
+            placeholder = { Text(stringResource(R.string.secure_field_test_enter_password)) },
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(8.dp),
-            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-            borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+            backgroundColor = colorResource(R.color.white),
+            borderColor = colorResource(R.color.pale_gray_4),
             isOutlined = true,
             isSecure = true,
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
         )
         Text(
-            text = "Confirm Password (also secure)",
+            text = stringResource(R.string.secure_field_test_confirm_password_also_secure),
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(top = 20.dp)
         )
         CustomTextFieldWithMargins(
-            value = data.confirmPassword,
+            value = "${data.confirmPassword}",
             onValueChange = { newValue -> viewModel.updateData(mapOf("confirmPassword" to newValue)) },
             boxModifier = Modifier
                 .padding(top = 10.dp)
@@ -170,14 +173,14 @@ fun SecureFieldTestGeneratedView(
             textFieldModifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            placeholder = { Text("Confirm password") },
+            placeholder = { Text(stringResource(R.string.secure_field_test_confirm_password)) },
             visualTransformation = PasswordVisualTransformation(),
             shape = RoundedCornerShape(8.dp),
-            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-            borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+            backgroundColor = colorResource(R.color.white),
+            borderColor = colorResource(R.color.pale_gray_4),
             isOutlined = true,
             isSecure = true,
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
         )
         Column(
             modifier = Modifier
@@ -187,32 +190,32 @@ fun SecureFieldTestGeneratedView(
                 .padding(start = 20.dp)
                 .padding(end = 20.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                .background(colorResource(R.color.pale_gray))
                 .padding(15.dp)
         ) {
             Text(
-                text = "Values entered:",
+                text = stringResource(R.string.secure_field_test_values_entered),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
             )
             Text(
                 text = "${data.regularText}",
                 fontSize = 12.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
-                text = "Password: [hidden]",
+                text = stringResource(R.string.secure_field_test_password_hidden),
                 fontSize = 12.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(top = 5.dp)
             )
             Text(
-                text = "Confirm: [hidden]",
+                text = stringResource(R.string.secure_field_test_confirm_hidden),
                 fontSize = 12.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(top = 5.dp)
             )
         }

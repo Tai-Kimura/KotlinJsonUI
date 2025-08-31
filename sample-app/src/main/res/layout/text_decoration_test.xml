@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="@color/white">
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -17,45 +17,45 @@
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/normal_text_without_links"
+            android:text="@string/text_decoration_test_normal_text_without_links"
             android:textSize="16sp"
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/visit_httpswwwapplecom_for_more"
+            android:text="@string/text_decoration_test_visit_httpswwwapplecom_for_more"
             android:textSize="16sp"
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/multiple_links_httpsgithubcom_a"
+            android:text="@string/text_decoration_test_multiple_links_httpsgithubcom_a"
             android:textSize="16sp"
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/email_supportexamplecom_website_37"
+            android:text="@string/text_decoration_test_email_supportexamplecom_website"
             android:textSize="16sp"
-            android:textColor="#0000FF"
+            android:textColor="@color/dark_blue"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/linkable_with_edgeinset_check_o"
+            android:text="@string/text_decoration_test_linkable_with_edgeinset_check_o"
             android:textSize="16sp"
-            android:textColor="#FFFFFF"
-            android:background="#FF0000"
+            android:textColor="@color/white"
+            android:background="@color/dark_red"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/no_linkable_flag_httpswwwtestco"
+            android:text="@string/text_decoration_test_no_linkable_flag_httpswwwtestco"
             android:textSize="16sp"
-            android:textColor="#808080"
+            android:textColor="@color/medium_gray_3"
             android:layout_marginBottom="20dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

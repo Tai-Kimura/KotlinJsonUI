@@ -24,6 +24,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun SegmentTestGeneratedView(
@@ -79,10 +82,10 @@ fun SegmentTestGeneratedView(
         ) {
             item {
             Column(
-                modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                modifier = Modifier.background(colorResource(R.color.white_23))
             ) {
                 Text(
-                    text = "Segment Control Test",
+                    text = stringResource(R.string.segment_test_segment_control_test),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -92,7 +95,7 @@ fun SegmentTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Basic Segment",
+                    text = stringResource(R.string.segment_test_basic_segment),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -129,7 +132,7 @@ fun SegmentTestGeneratedView(
                     )
                 }
                 Text(
-                    text = "Segment with Custom Colors",
+                    text = stringResource(R.string.segment_test_segment_with_custom_colors),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -138,8 +141,8 @@ fun SegmentTestGeneratedView(
                 )
                 Segment(
                     selectedTabIndex = data.selectedColor,
-                    contentColor = Color(android.graphics.Color.parseColor("#666666")),
-                    selectedContentColor = Color(android.graphics.Color.parseColor("#FF0000")),
+                    contentColor = colorResource(R.color.medium_gray_4),
+                    selectedContentColor = colorResource(R.color.dark_red),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
@@ -153,7 +156,7 @@ fun SegmentTestGeneratedView(
                         text = {
                             Text(
                                 "Red",
-                                color = if (data.selectedColor == 0) Color(android.graphics.Color.parseColor("#FF0000")) else Color(android.graphics.Color.parseColor("#666666"))
+                                color = if (data.selectedColor == 0) colorResource(R.color.dark_red) else colorResource(R.color.medium_gray_4)
                             )
                         }
                     )
@@ -165,7 +168,7 @@ fun SegmentTestGeneratedView(
                         text = {
                             Text(
                                 "Green",
-                                color = if (data.selectedColor == 1) Color(android.graphics.Color.parseColor("#FF0000")) else Color(android.graphics.Color.parseColor("#666666"))
+                                color = if (data.selectedColor == 1) colorResource(R.color.dark_red) else colorResource(R.color.medium_gray_4)
                             )
                         }
                     )
@@ -177,13 +180,13 @@ fun SegmentTestGeneratedView(
                         text = {
                             Text(
                                 "Blue",
-                                color = if (data.selectedColor == 2) Color(android.graphics.Color.parseColor("#FF0000")) else Color(android.graphics.Color.parseColor("#666666"))
+                                color = if (data.selectedColor == 2) colorResource(R.color.dark_red) else colorResource(R.color.medium_gray_4)
                             )
                         }
                     )
                 }
                 Text(
-                    text = "Segment with onChange Event",
+                    text = stringResource(R.string.segment_test_segment_with_onchange_event),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -229,13 +232,13 @@ fun SegmentTestGeneratedView(
                 Text(
                     text = "${data.selectedSize}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = "Disabled Segment",
+                    text = stringResource(R.string.segment_test_disabled_segment),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier

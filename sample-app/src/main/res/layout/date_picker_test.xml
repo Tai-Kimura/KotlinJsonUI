@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,10 +25,10 @@
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:textColor="#FFFFFF"
-                android:text="@string/dynamic_dynamicmodestatus"
+                android:textColor="@color/white"
+                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                 android:onClick="toggleDynamicMode"
-                android:background="@drawable/ripple_b39393a0"
+                android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:padding="8dp"/>
@@ -39,13 +39,13 @@
                 android:layout_marginTop="20dp"
                 android:text="@{data.title}"
                 android:textSize="24sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/basic_datepicker"
+                android:text="@string/date_picker_test_basic_datepicker"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiSelectBox
@@ -61,17 +61,17 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/datepicker_with_minmax_dates"
+                android:text="@string/date_picker_test_datepicker_with_minmax_dates"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="30dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/min_2025_01_01_max_2025_12_31"
+                android:text="@string/date_picker_test_min_20250101_max_20251231"
                 android:textSize="12sp"
-                android:textColor="#666666"
+                android:textColor="@color/medium_gray_4"
                 android:layout_marginTop="5dp"/>
             <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/limited_date_picker"
@@ -88,9 +88,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/time_picker"
+                android:text="@string/date_picker_test_time_picker"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="30dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiSelectBox
@@ -106,9 +106,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/datetime_picker"
+                android:text="@string/date_picker_test_datetime_picker"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="30dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiSelectBox
@@ -124,17 +124,17 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/datepicker_with_minute_interval"
+                android:text="@string/date_picker_test_datepicker_with_minute_interval"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="30dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/str_15_minute_intervals"
+                android:text="@string/date_picker_test_15_minute_intervals"
                 android:textSize="12sp"
-                android:textColor="#666666"
+                android:textColor="@color/medium_gray_4"
                 android:layout_marginTop="5dp"/>
             <com.kotlinjsonui.views.KjuiSelectBox
                 android:id="@+id/interval_picker"
@@ -149,9 +149,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/calendar_style_datepicker"
+                android:text="@string/date_picker_test_calendar_style_datepicker"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="30dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiSelectBox
@@ -171,7 +171,7 @@
                 android:layout_marginTop="30dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:hint="@string/select_date_range"
+                android:hint="@string/date_picker_test_select_date_range"
                 tools:selectItemType="Date"/>
             <LinearLayout
                 android:layout_width="match_parent"
@@ -181,27 +181,27 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
                 android:padding="15dp"
-                android:background="@drawable/shape_aba07408">
+                android:background="@drawable/shape_811378f3">
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/selected_values"
+                    android:text="@string/date_picker_test_selected_values"
                     android:textSize="14sp"
-                    android:textColor="#333333"
+                    android:textColor="@color/dark_gray"
                     android:textStyle="bold"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/date_selecteddate"
+                    android:text="@string/date_picker_test_date_selecteddate"
                     android:textSize="12sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:layout_marginTop="5dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/range_startdate_to_enddate"
+                    android:text="@string/date_picker_test_range_startdate_to_enddate"
                     android:textSize="12sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:layout_marginTop="5dp"/>
             </LinearLayout>
         </LinearLayout>

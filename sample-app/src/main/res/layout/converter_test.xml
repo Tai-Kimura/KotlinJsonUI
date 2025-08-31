@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,10 +25,10 @@
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:textColor="#FFFFFF"
-                android:text="@string/dynamic_dynamicmodestatus"
+                android:textColor="@color/white"
+                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                 android:onClick="toggleDynamicMode"
-                android:background="@drawable/ripple_b39393a0"
+                android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:padding="8dp"/>
@@ -37,41 +37,41 @@
                 android:layout_height="wrap_content"
                 android:text="@{data.title}"
                 android:textSize="24sp"
-                android:textColor="#000000"
+                android:textColor="@color/black"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/gradientview_test"
+                android:text="@string/converter_test_gradientview_test"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="10dp"/>
             <com.kotlinjsonui.views.KjuiGradientView
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
-                app:gradientColors="#FF0000|#00FF00|#0000FF">
+                app:gradientColors="@color/dark_red|@color/dark_green_2|@color/dark_blue">
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/diagonal_gradient"
+                    android:text="@string/converter_test_diagonal_gradient"
                     android:textSize="16sp"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/white"
                     android:layout_centerInParent="true"/>
             </com.kotlinjsonui.views.KjuiGradientView>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/blurview_test"
+                android:text="@string/converter_test_blurview_test"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="150dp"
                 android:layout_marginTop="10dp"
-                android:background="#4CAF50">
+                android:background="@color/medium_green_2">
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -80,9 +80,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/background_text"
+                        android:text="@string/converter_test_background_text"
                         android:textSize="24sp"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/white"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -91,9 +91,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/this_will_be_blurred"
+                        android:text="@string/converter_test_this_will_be_blurred"
                         android:textSize="16sp"
-                        android:textColor="#FFD700"
+                        android:textColor="@color/light_orange"
                         android:layout_marginTop="50dp"
                         android:layout_marginStart="20dp"
                         app:layout_constraintStart_toStartOf="parent"
@@ -104,16 +104,16 @@
                     android:layout_height="60dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:blurRadius="20.0"
-                    android:background="#00000033"
+                    android:background="@color/black_2"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent">
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/clear_text_on_blur_layer"
+                        android:text="@string/converter_test_clear_text_on_blur_layer"
                         android:textSize="18sp"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/white"
                         android:textStyle="bold"
                         android:layout_centerInParent="true"/>
                 </com.kotlinjsonui.views.KjuiBlurView>
@@ -121,9 +121,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/webview_test"
+                android:text="@string/converter_test_webview_test"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <WebView
                 android:layout_width="match_parent"
@@ -133,9 +133,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/tabview_test"
+                android:text="@string/converter_test_tabview_test"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.google.android.material.tabs.TabLayout
                 android:layout_width="match_parent"
@@ -144,9 +144,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/collection_test"
+                android:text="@string/converter_test_collection_test_2"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <androidx.recyclerview.widget.RecyclerView
                 android:layout_width="match_parent"
@@ -155,9 +155,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/image_test"
+                android:text="@string/converter_test_image_test"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <ImageView
                 android:layout_width="100dp"
@@ -167,9 +167,9 @@
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/networkimage_test"
+                android:text="@string/converter_test_networkimage_test"
                 android:textSize="18sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.kotlinjsonui.views.KjuiNetworkImageView
                 android:layout_width="200dp"

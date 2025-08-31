@@ -20,6 +20,8 @@ import com.kotlinjsonui.core.SafeDynamicView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun BasicCellGeneratedView(
@@ -70,19 +72,19 @@ fun BasicCellGeneratedView(
         Column(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(12.dp)
     ) {
         Text(
             text = "${data.title}",
             fontSize = 16.sp,
-            color = Color(android.graphics.Color.parseColor("#333333")),
+            color = colorResource(R.color.dark_gray),
             modifier = Modifier
         )
         Text(
             text = "${data.subtitle}",
             fontSize = 12.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

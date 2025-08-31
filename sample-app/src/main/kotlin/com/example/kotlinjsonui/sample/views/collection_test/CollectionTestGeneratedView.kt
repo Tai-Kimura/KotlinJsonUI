@@ -72,6 +72,9 @@ import com.example.kotlinjsonui.sample.views.featured_header.FeaturedHeaderView
 import com.example.kotlinjsonui.sample.data.FeaturedHeaderData
 import com.example.kotlinjsonui.sample.viewmodels.FeaturedHeaderViewModel
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun CollectionTestGeneratedView(
@@ -119,7 +122,7 @@ fun CollectionTestGeneratedView(
     } else {
         // Static Mode - use generated code
         Box(
-        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F7")))
+        modifier = Modifier.background(colorResource(R.color.white_12))
     ) {
         LazyColumn(
         ) {
@@ -128,16 +131,16 @@ fun CollectionTestGeneratedView(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "CollectionView Test",
+                    text = stringResource(R.string.collection_test_collectionview_test),
                     fontSize = 28.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
                 Text(
-                    text = "Basic Collection with Headers & Footers",
+                    text = stringResource(R.string.collection_test_basic_collection_with_headers_f),
                     fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -193,9 +196,9 @@ fun CollectionTestGeneratedView(
                     }
                 }
                 Text(
-                    text = "Grid Collection with Multiple Cell Types",
+                    text = stringResource(R.string.collection_test_grid_collection_with_multiple_c),
                     fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -251,9 +254,9 @@ fun CollectionTestGeneratedView(
                     }
                 }
                 Text(
-                    text = "Horizontal Collection",
+                    text = stringResource(R.string.collection_test_horizontal_collection),
                     fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -297,9 +300,9 @@ fun CollectionTestGeneratedView(
                     }
                 }
                 Text(
-                    text = "Sectioned Collection",
+                    text = stringResource(R.string.collection_test_sectioned_collection),
                     fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -355,9 +358,9 @@ fun CollectionTestGeneratedView(
                     }
                 }
                 Text(
-                    text = "Multi-Section Collection",
+                    text = stringResource(R.string.collection_test_multisection_collection),
                     fontSize = 20.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
@@ -496,13 +499,13 @@ fun CollectionTestGeneratedView(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                            containerColor = colorResource(R.color.medium_blue_3)
                                         )
                 ) {
                     Text(
-                        text = "Dynamic: ${data.dynamicModeStatus}",
+                        text = "${data.dynamicModeStatus}",
                         fontSize = 14.sp,
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        color = colorResource(R.color.white),
                     )
                 }
             }

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -50,11 +51,13 @@ module KjuiTools
             colors_params = []
             
             if json_data['progressTintColor']
-              colors_params << "color = Color(android.graphics.Color.parseColor(\"#{json_data['progressTintColor']}\"))"
+              color_resolved = Helpers::ResourceResolver.process_color(json_data['progressTintColor'], required_imports)
+              colors_params << "color = #{color_resolved}"
             end
             
             if json_data['trackTintColor']
-              colors_params << "trackColor = Color(android.graphics.Color.parseColor(\"#{json_data['trackTintColor']}\"))"
+              trackcolor_resolved = Helpers::ResourceResolver.process_color(json_data['trackTintColor'], required_imports)
+              colors_params << "trackColor = #{trackcolor_resolved}"
             end
             
             if colors_params.any?

@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import com.google.gson.JsonObject
 
@@ -29,6 +30,7 @@ interface DynamicComponent {
 /**
  * Utility function to process data binding in text.
  * Replaces @{key} patterns with values from the data map.
+ * Also resolves string resources using ResourceCache.
  * 
  * Example:
  * - Input: "Hello @{name}", data: {"name": "World"}
@@ -37,23 +39,42 @@ interface DynamicComponent {
  * Supports default values with ?? syntax:
  * - Input: "@{name ?? Guest}", data: {} 
  * - Output: "Guest"
+ * 
+ * @param text The text to process
+ * @param data The data map for binding
+ * @param context Optional context for resource resolution
+ */
+fun processDataBinding(text: String, data: Map<String, Any>, context: Context? = null): String {
+    // First handle data binding
+    val boundText = if (text.contains("@{")) {
+        var result = text
+        val pattern = "@\\{([^}]+)\\}".toRegex()
+        pattern.findAll(text).forEach { match ->
+            val variable = match.groupValues[1]
+            val value = if (variable.contains(" ?? ")) {
+                // Handle default value syntax
+                val parts = variable.split(" ?? ")
+                val varName = parts[0].trim()
+                data[varName]?.toString() ?: parts[1].trim().removeSurrounding("\"")
+            } else {
+                data[variable]?.toString() ?: ""
+            }
+            result = result.replace(match.value, value)
+        }
+        result
+    } else {
+        text
+    }
+    
+    // Then resolve string resources if context is available
+    return context?.let { ctx ->
+        ResourceCache.resolveString(boundText, ctx)
+    } ?: boundText
+}
+
+/**
+ * Overload for backward compatibility without context
  */
 fun processDataBinding(text: String, data: Map<String, Any>): String {
-    if (!text.contains("@{")) return text
-    
-    var result = text
-    val pattern = "@\\{([^}]+)\\}".toRegex()
-    pattern.findAll(text).forEach { match ->
-        val variable = match.groupValues[1]
-        val value = if (variable.contains(" ?? ")) {
-            // Handle default value syntax
-            val parts = variable.split(" ?? ")
-            val varName = parts[0].trim()
-            data[varName]?.toString() ?: parts[1].trim().removeSurrounding("\"")
-        } else {
-            data[variable]?.toString() ?: ""
-        }
-        result = result.replace(match.value, value)
-    }
-    return result
+    return processDataBinding(text, data, null)
 }

@@ -27,6 +27,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun RelativeTestGeneratedView(
@@ -78,7 +81,7 @@ fun RelativeTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -97,19 +100,19 @@ fun RelativeTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
                     .wrapContentWidth()
@@ -117,9 +120,9 @@ fun RelativeTestGeneratedView(
                     .padding(bottom = 20.dp)
             )
             Text(
-                text = "1. Parent Constraints with Margin + Padding",
+                text = stringResource(R.string.relative_test_1_parent_constraints_with_margi),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -128,62 +131,62 @@ fun RelativeTestGeneratedView(
                     .fillMaxWidth()
                     .height(200.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
                     .padding(top = 20.dp, end = 30.dp, bottom = 20.dp, start = 30.dp)
             ) {
                 Text(
-                    text = "Top+Left\ntopMargin:10\nleftMargin:15",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_topleft_topmargin10_leftmargin1),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .padding(top = 10.dp)
                         .padding(start = 15.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
+                        .background(colorResource(R.color.light_red))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Top+Right\ntopMargin:15\nrightMargin:20",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_topright_topmargin15_rightmargi),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .padding(top = 15.dp)
                         .padding(end = 20.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
+                        .background(colorResource(R.color.light_lime))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Bottom+Left\nbottomMargin:5\nleftMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_bottomleft_bottommargin5_leftma),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .padding(bottom = 5.dp)
                         .padding(start = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1")))
+                        .background(colorResource(R.color.light_cyan))
                         .padding(8.dp)
                 )
                 Text(
-                    text = "Bottom+Right\nbottomMargin:20\nrightMargin:25",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_bottomright_bottommargin20_righ),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .wrapContentWidth()
                         .wrapContentHeight()
                         .padding(bottom = 20.dp)
                         .padding(end = 25.dp)
-                        .background(Color(android.graphics.Color.parseColor("#96CEB4")))
+                        .background(colorResource(R.color.light_yellow))
                         .padding(8.dp)
                 )
             }
             Text(
-                text = "2. Edge Alignment (Self Margin Only, Ignore Anchor Margin)",
+                text = stringResource(R.string.relative_test_2_edge_alignment_self_margin_on),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -192,7 +195,7 @@ fun RelativeTestGeneratedView(
                     .fillMaxWidth()
                     .height(250.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E8E8E8")))
+                    .background(colorResource(R.color.white_24))
             ) {
                 val anchor_with_margin = createRef()
                 val align_top_test = createRef()
@@ -210,9 +213,9 @@ fun RelativeTestGeneratedView(
                         .padding(top = 20.dp, end = 25.dp, bottom = 20.dp, start = 25.dp)
                         .width(120.dp)
                         .height(60.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
+                        .background(colorResource(R.color.light_red)),
                     text = "Anchor\nmargins:[20,25,20,25]",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -222,10 +225,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
+                        .background(colorResource(R.color.light_lime))
                         .padding(5.dp),
                     text = "alignTop\ntopMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_bottom_test) {
@@ -234,10 +237,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1")))
+                        .background(colorResource(R.color.light_cyan))
                         .padding(5.dp),
                     text = "alignBottom\nbottomMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_left_test) {
@@ -246,10 +249,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#96CEB4")))
+                        .background(colorResource(R.color.light_yellow))
                         .padding(5.dp),
                     text = "alignLeft\nleftMargin:15",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(align_right_test) {
@@ -258,16 +261,16 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
+                        .background(colorResource(R.color.pale_pink_2))
                         .padding(5.dp),
                     text = "alignRight\nrightMargin:15",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
             }
             Text(
-                text = "3. Relative Position (Both Margins Applied)",
+                text = stringResource(R.string.relative_test_3_relative_position_both_margin),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -276,7 +279,7 @@ fun RelativeTestGeneratedView(
                     .fillMaxWidth()
                     .height(300.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D8D8D8")))
+                    .background(colorResource(R.color.pale_gray_2))
             ) {
                 val center_anchor = createRef()
                 val above_test = createRef()
@@ -294,9 +297,9 @@ fun RelativeTestGeneratedView(
                         .padding(top = 15.dp, end = 15.dp, bottom = 15.dp, start = 15.dp)
                         .width(100.dp)
                         .height(50.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
+                        .background(colorResource(R.color.light_red)),
                     text = "Center\nmargins:[15,15,15,15]",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -307,10 +310,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4")))
+                        .background(colorResource(R.color.light_lime))
                         .padding(5.dp),
                     text = "Above\nbottomMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(below_test) {
@@ -320,10 +323,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1")))
+                        .background(colorResource(R.color.light_cyan))
                         .padding(5.dp),
                     text = "Below\ntopMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(left_of_test) {
@@ -333,10 +336,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#96CEB4")))
+                        .background(colorResource(R.color.light_yellow))
                         .padding(5.dp),
                     text = "LeftOf\nrightMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(right_of_test) {
@@ -346,16 +349,16 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
+                        .background(colorResource(R.color.pale_pink_2))
                         .padding(5.dp),
                     text = "RightOf\nleftMargin:10",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
             }
             Text(
-                text = "4. Fixed Size with Both-Side Constraints (Centering)",
+                text = stringResource(R.string.relative_test_4_fixed_size_with_bothside_cons),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -364,24 +367,24 @@ fun RelativeTestGeneratedView(
                     .fillMaxWidth()
                     .height(200.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                    .background(colorResource(R.color.pale_gray))
                     .padding(top = 10.dp, end = 10.dp, bottom = 10.dp, start = 10.dp)
             ) {
                 Text(
-                    text = "Fixed Width\nLeft+Right\nmargins:[10,10,10,10]",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_fixed_width_leftright_margins10),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
                         .width(100.dp)
                         .wrapContentHeight()
                         .padding(top = 10.dp, end = 10.dp, bottom = 10.dp, start = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#A29BFE")))
+                        .background(colorResource(R.color.light_blue_2))
                         .padding(10.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Fixed Height\nTop+Bottom",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_fixed_height_topbottom),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .wrapContentWidth()
@@ -389,26 +392,26 @@ fun RelativeTestGeneratedView(
                         .padding(top = 10.dp)
                         .padding(bottom = 10.dp)
                         .padding(start = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#6C5CE7")))
+                        .background(colorResource(R.color.medium_blue_5))
                         .padding(10.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Fixed Both",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_fixed_both),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .width(80.dp)
                         .height(40.dp)
                         .padding(top = 15.dp, end = 15.dp, bottom = 15.dp, start = 15.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FD79A8"))),
+                        .background(colorResource(R.color.light_red_3)),
                     textAlign = TextAlign.Center
                 )
             }
             Text(
-                text = "5. Dynamic Size (Stretch Between Constraints)",
+                text = stringResource(R.string.relative_test_5_dynamic_size_stretch_between_),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -417,50 +420,50 @@ fun RelativeTestGeneratedView(
                     .fillMaxWidth()
                     .height(250.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D0D0D0")))
+                    .background(colorResource(R.color.pale_gray_3))
                     .padding(top = 20.dp, end = 30.dp, bottom = 20.dp, start = 30.dp)
             ) {
                 Text(
-                    text = "Stretch Horizontal\nleftMargin:10, rightMargin:15",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_stretch_horizontal_leftmargin10),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
                         .wrapContentHeight()
                         .padding(top = 10.dp)
                         .padding(start = 10.dp)
                         .padding(end = 15.dp)
-                        .background(Color(android.graphics.Color.parseColor("#00B894")))
+                        .background(colorResource(R.color.medium_lime))
                         .padding(10.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Stretch\nVertical\ntop:10\nbottom:15",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_stretch_vertical_top10_bottom15),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .wrapContentWidth()
                         .padding(top = 10.dp)
                         .padding(bottom = 15.dp)
                         .padding(start = 10.dp)
-                        .background(Color(android.graphics.Color.parseColor("#00CEC9")))
+                        .background(colorResource(R.color.medium_lime_2))
                         .padding(10.dp),
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Stretch Both Directions\nmargins:[15,20,15,20]",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.relative_test_stretch_both_directions_margins),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .padding(top = 15.dp, end = 20.dp, bottom = 15.dp, start = 20.dp)
-                        .background(Color(android.graphics.Color.parseColor("#636E72")))
+                        .background(colorResource(R.color.medium_gray_5))
                         .padding(10.dp),
                     textAlign = TextAlign.Center
                 )
             }
             Text(
-                text = "6. Complex Chaining with Different Margins",
+                text = stringResource(R.string.relative_test_6_complex_chaining_with_differe),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -469,7 +472,7 @@ fun RelativeTestGeneratedView(
                     .fillMaxWidth()
                     .height(250.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#E8E8E8")))
+                    .background(colorResource(R.color.white_24))
             ) {
                 val chain_start = createRef()
                 val chain_middle = createRef()
@@ -485,10 +488,10 @@ fun RelativeTestGeneratedView(
                     }
                         .width(60.dp)
                         .height(40.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
+                        .background(colorResource(R.color.light_red)),
                     text = "Start\nleft:10\nright:5",
                     fontSize = 10.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -499,10 +502,10 @@ fun RelativeTestGeneratedView(
                     }
                         .width(60.dp)
                         .height(40.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4"))),
+                        .background(colorResource(R.color.light_lime)),
                     text = "Middle\nleft:15\nright:20",
                     fontSize = 10.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -513,10 +516,10 @@ fun RelativeTestGeneratedView(
                     }
                         .width(60.dp)
                         .height(40.dp)
-                        .background(Color(android.graphics.Color.parseColor("#45B7D1"))),
+                        .background(colorResource(R.color.light_cyan)),
                     text = "End\nleft:10\nright:10",
                     fontSize = 10.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -526,10 +529,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFEAA7")))
+                        .background(colorResource(R.color.pale_pink_2))
                         .padding(5.dp),
                     text = "Above Middle\nbottom:5",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(chain_below) {
@@ -538,16 +541,16 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FAB1A0")))
+                        .background(colorResource(R.color.light_red_4))
                         .padding(5.dp),
                     text = "Below Start\ntop:8",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
             }
             Text(
-                text = "7. Mixed Anchor References",
+                text = stringResource(R.string.relative_test_7_mixed_anchor_references),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -557,7 +560,7 @@ fun RelativeTestGeneratedView(
                     .height(250.dp)
                     .padding(top = 15.dp, end = 15.dp, bottom = 15.dp, start = 15.dp)
                     .padding(bottom = 20.dp)
-                    .background(Color(android.graphics.Color.parseColor("#D8D8D8")))
+                    .background(colorResource(R.color.pale_gray_2))
             ) {
                 val ref1 = createRef()
                 val ref2 = createRef()
@@ -572,9 +575,9 @@ fun RelativeTestGeneratedView(
                     }
                         .width(60.dp)
                         .height(30.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
+                        .background(colorResource(R.color.light_red)),
                     text = "Ref1",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -584,9 +587,9 @@ fun RelativeTestGeneratedView(
                     }
                         .width(60.dp)
                         .height(30.dp)
-                        .background(Color(android.graphics.Color.parseColor("#4ECDC4"))),
+                        .background(colorResource(R.color.light_lime)),
                     text = "Ref2",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     textAlign = TextAlign.Center
                 )
                 Text(
@@ -597,10 +600,10 @@ fun RelativeTestGeneratedView(
                         bottom.linkTo(parent.bottom)
                     }
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FFD93D")))
+                        .background(colorResource(R.color.light_orange_2))
                         .padding(5.dp),
                     text = "Between (stretch)",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(aligned_both) {
@@ -609,10 +612,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#6BCB77")))
+                        .background(colorResource(R.color.medium_green_3))
                         .padding(5.dp),
                     text = "AlignBoth",
-                    color = Color(android.graphics.Color.parseColor("#000000"))
+                    color = colorResource(R.color.black)
                 )
                 Text(
                     modifier = Modifier.constrainAs(complex_chain) {
@@ -621,10 +624,10 @@ fun RelativeTestGeneratedView(
                     }
                         .wrapContentWidth()
                         .wrapContentHeight()
-                        .background(Color(android.graphics.Color.parseColor("#FF6B9D")))
+                        .background(colorResource(R.color.light_red_5))
                         .padding(5.dp),
                     text = "Below Ref1",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                    color = colorResource(R.color.white)
                 )
             }
         }

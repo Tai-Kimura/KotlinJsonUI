@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -26,10 +26,10 @@
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:textColor="#FFFFFF"
-                android:text="@string/dynamic_dynamicmodestatus"
+                android:textColor="@color/white"
+                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                 android:onClick="toggleDynamicMode"
-                android:background="@drawable/ripple_b39393a0"
+                android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:padding="8dp"/>
@@ -42,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:text="@{data.title}"
                     android:textSize="24sp"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:layout_marginBottom="20dp"/>
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -50,14 +50,14 @@
                     android:orientation="vertical"
                     android:layout_marginBottom="20dp"
                     android:padding="15dp"
-                    android:background="@drawable/shape_b512f603">
+                    android:background="@drawable/shape_3fcdf891">
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/control_panel"
+                        android:text="@string/include_test_control_panel"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="#0066CC"
+                        android:textColor="@color/medium_blue_4"
                         android:layout_marginBottom="10dp"/>
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -67,28 +67,28 @@
                         <com.kotlinjsonui.views.KjuiButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/count"
+                            android:text="&quot;Count +&quot;"
                             android:onClick="incrementCount"
-                            android:background="@drawable/ripple_6370d6db"
-                            android:textColor="#FFFFFF"
+                            android:background="@drawable/ripple_4ec80e84"
+                            android:textColor="@color/white"
                             android:padding="10dp"
                             android:layout_marginEnd="5dp"/>
                         <com.kotlinjsonui.views.KjuiButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/count_2"
+                            android:text="@string/include_test_count"
                             android:onClick="decrementCount"
-                            android:background="@drawable/ripple_8d96f40d"
-                            android:textColor="#FFFFFF"
+                            android:background="@drawable/ripple_07ff9fd8"
+                            android:textColor="@color/white"
                             android:padding="10dp"
                             android:layout_marginEnd="5dp"/>
                         <com.kotlinjsonui.views.KjuiButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/reset"
+                            android:text="@string/include_test_reset"
                             android:onClick="resetCount"
-                            android:background="@drawable/ripple_14d5be80"
-                            android:textColor="#FFFFFF"
+                            android:background="@drawable/ripple_5b3236d7"
+                            android:textColor="@color/white"
                             android:padding="10dp"/>
                     </LinearLayout>
                     <LinearLayout
@@ -98,19 +98,19 @@
                         <com.kotlinjsonui.views.KjuiButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/change_name"
+                            android:text="@string/include_test_change_name"
                             android:onClick="changeUserName"
-                            android:background="@drawable/ripple_2b95b0eb"
-                            android:textColor="#FFFFFF"
+                            android:background="@drawable/ripple_8f35ccc8"
+                            android:textColor="@color/white"
                             android:padding="10dp"
                             android:layout_marginEnd="5dp"/>
                         <com.kotlinjsonui.views.KjuiButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/toggle_status"
+                            android:text="@string/include_test_toggle_status"
                             android:onClick="toggleStatus"
-                            android:background="@drawable/ripple_1a31ca2e"
-                            android:textColor="#FFFFFF"
+                            android:background="@drawable/ripple_3bf438c4"
+                            android:textColor="@color/white"
                             android:padding="10dp"/>
                     </LinearLayout>
                     <LinearLayout
@@ -119,32 +119,32 @@
                         android:orientation="horizontal"
                         android:layout_marginTop="10dp"
                         android:padding="10dp"
-                        android:background="@drawable/shape_8718b8d3">
+                        android:background="@drawable/shape_53da3df9">
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/current_values"
+                            android:text="@string/include_test_current_values"
                             android:textSize="14sp"
                             android:textStyle="bold"
-                            android:textColor="#333333"/>
+                            android:textColor="@color/dark_gray"/>
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/countmaincount"
+                            android:text="@string/include_test_countmaincount"
                             android:textSize="14sp"
-                            android:textColor="#666666"/>
+                            android:textColor="@color/medium_gray_4"/>
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/userusername"
+                            android:text="@string/include_test_userusername"
                             android:textSize="14sp"
-                            android:textColor="#666666"/>
+                            android:textColor="@color/medium_gray_4"/>
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/statusmainstatus"
+                            android:text="@string/include_test_statusmainstatus"
                             android:textSize="14sp"
-                            android:textColor="#666666"/>
+                            android:textColor="@color/medium_gray_4"/>
                     </LinearLayout>
                 </LinearLayout>
                 <LinearLayout
@@ -155,9 +155,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/str_1_basic_include_with_static_dat"
+                        android:text="@string/include_test_1_basic_include_with_static_dat"
                         android:textSize="16sp"
-                        android:textColor="#666666"
+                        android:textColor="@color/medium_gray_4"
                         android:layout_marginBottom="10dp"/>
                 </LinearLayout>
                 <LinearLayout
@@ -168,9 +168,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/str_2_include_with_data_static_valu"
+                        android:text="@string/include_test_2_include_with_data_static_valu"
                         android:textSize="16sp"
-                        android:textColor="#666666"
+                        android:textColor="@color/medium_gray_4"
                         android:layout_marginBottom="10dp"/>
                 </LinearLayout>
                 <LinearLayout
@@ -181,9 +181,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/str_3_include_with_data_using_refer"
+                        android:text="@string/include_test_3_include_with_data_using_refer"
                         android:textSize="16sp"
-                        android:textColor="#666666"
+                        android:textColor="@color/medium_gray_4"
                         android:layout_marginBottom="10dp"/>
                 </LinearLayout>
                 <LinearLayout
@@ -194,9 +194,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/str_4_include_with_shared_data_and_"
+                        android:text="@string/include_test_4_include_with_shareddata_and_d"
                         android:textSize="16sp"
-                        android:textColor="#666666"
+                        android:textColor="@color/medium_gray_4"
                         android:layout_marginBottom="10dp"/>
                 </LinearLayout>
                 <LinearLayout
@@ -207,9 +207,9 @@
                     <com.kotlinjsonui.views.KjuiTextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/str_5_another_included_1_with_refer"
+                        android:text="@string/include_test_5_another_included1_with_refere"
                         android:textSize="16sp"
-                        android:textColor="#666666"
+                        android:textColor="@color/medium_gray_4"
                         android:layout_marginBottom="10dp"/>
                 </LinearLayout>
             </LinearLayout>

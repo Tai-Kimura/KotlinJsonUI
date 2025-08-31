@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -121,39 +122,23 @@ module KjuiTools
           
           # Add style parameters
           if json_data['background']
-            bg_color = json_data['background']
-            if bg_color.start_with?('#')
-              code += "\n" + indent("backgroundColor = Color(android.graphics.Color.parseColor(\"#{bg_color}\")),", depth + 1)
-            else
-              code += "\n" + indent("backgroundColor = Color.#{bg_color},", depth + 1)
-            end
+            bg_color = Helpers::ResourceResolver.process_color(json_data['background'], required_imports)
+            code += "\n" + indent("backgroundColor = #{bg_color},", depth + 1)
           end
           
           if json_data['borderColor']
-            border_color = json_data['borderColor']
-            if border_color.start_with?('#')
-              code += "\n" + indent("borderColor = Color(android.graphics.Color.parseColor(\"#{border_color}\")),", depth + 1)
-            else
-              code += "\n" + indent("borderColor = Color.#{border_color},", depth + 1)
-            end
+            border_color = Helpers::ResourceResolver.process_color(json_data['borderColor'], required_imports)
+            code += "\n" + indent("borderColor = #{border_color},", depth + 1)
           end
           
           if json_data['fontColor']
-            text_color = json_data['fontColor']
-            if text_color.start_with?('#')
-              code += "\n" + indent("textColor = Color(android.graphics.Color.parseColor(\"#{text_color}\")),", depth + 1)
-            else
-              code += "\n" + indent("textColor = Color.#{text_color},", depth + 1)
-            end
+            text_color = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            code += "\n" + indent("textColor = #{text_color},", depth + 1)
           end
           
           if json_data['hintColor']
-            hint_color = json_data['hintColor']
-            if hint_color.start_with?('#')
-              code += "\n" + indent("hintColor = Color(android.graphics.Color.parseColor(\"#{hint_color}\")),", depth + 1)
-            else
-              code += "\n" + indent("hintColor = Color.#{hint_color},", depth + 1)
-            end
+            hint_color = Helpers::ResourceResolver.process_color(json_data['hintColor'], required_imports)
+            code += "\n" + indent("hintColor = #{hint_color},", depth + 1)
           end
           
           if json_data['cornerRadius']
@@ -162,22 +147,14 @@ module KjuiTools
           
           # Add cancel button background color if specified
           if json_data['cancelButtonBackgroundColor']
-            cancel_bg = json_data['cancelButtonBackgroundColor']
-            if cancel_bg.start_with?('#')
-              code += "\n" + indent("cancelButtonBackgroundColor = Color(android.graphics.Color.parseColor(\"#{cancel_bg}\")),", depth + 1)
-            else
-              code += "\n" + indent("cancelButtonBackgroundColor = Color.#{cancel_bg},", depth + 1)
-            end
+            cancel_bg = Helpers::ResourceResolver.process_color(json_data['cancelButtonBackgroundColor'], required_imports)
+            code += "\n" + indent("cancelButtonBackgroundColor = #{cancel_bg},", depth + 1)
           end
           
           # Add cancel button text color if specified
           if json_data['cancelButtonTextColor']
-            cancel_text = json_data['cancelButtonTextColor']
-            if cancel_text.start_with?('#')
-              code += "\n" + indent("cancelButtonTextColor = Color(android.graphics.Color.parseColor(\"#{cancel_text}\")),", depth + 1)
-            else
-              code += "\n" + indent("cancelButtonTextColor = Color.#{cancel_text},", depth + 1)
-            end
+            cancel_text = Helpers::ResourceResolver.process_color(json_data['cancelButtonTextColor'], required_imports)
+            code += "\n" + indent("cancelButtonTextColor = #{cancel_text},", depth + 1)
           end
           
           # Build modifiers

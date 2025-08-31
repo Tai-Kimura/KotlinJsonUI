@@ -23,6 +23,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun SimpleTestGeneratedView(
@@ -73,27 +76,27 @@ fun SimpleTestGeneratedView(
         modifier = Modifier.padding(16.dp)
     ) {
         Text(
-            text = "Simple Test",
+            text = stringResource(R.string.simple_test_simple_test),
             fontSize = 24.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             modifier = Modifier
         )
         Text(
-            text = "Testing basic components",
+            text = stringResource(R.string.simple_test_testing_basic_components),
             fontSize = 16.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(top = 8.dp)
         )
         Button(
             onClick = { },
             modifier = Modifier.padding(top = 16.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                            containerColor = colorResource(R.color.medium_blue_3)
                         )
         ) {
             Text(
-                text = "Test Button",
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                text = stringResource(R.string.simple_test_test_button),
+                color = colorResource(R.color.white),
             )
         }
     }    }

@@ -22,11 +22,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="#F5F5F5">
+                android:background="@color/white_23">
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/switch_events_test"
+                    android:text="@string/switch_events_test_switch_events_test"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
@@ -35,7 +35,7 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/switch_with_onvaluechange"
+                    android:text="@string/switch_events_test_switch_with_onvaluechange"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="10dp"
@@ -44,7 +44,7 @@
                     android:id="@+id/notificationSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/enable_notifications"
+                    android:text="@string/components_test_enable_notifications"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
@@ -54,13 +54,13 @@
                     android:layout_height="wrap_content"
                     android:text="@{data.notificationStatus}"
                     android:textSize="14sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/switch_with_custom_tint"
+                    android:text="@string/switch_events_test_switch_with_custom_tint"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="30dp"
@@ -69,8 +69,8 @@
                     android:id="@+id/darkModeSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/dark_mode"
-                    android:tint="#FF6B6B"
+                    android:text="@string/switch_events_test_dark_mode"
+                    android:tint="@color/light_red"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
@@ -79,13 +79,13 @@
                     android:layout_height="wrap_content"
                     android:text="@{data.darkModeStatus}"
                     android:textSize="14sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="10dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/multiple_switches_with_events"
+                    android:text="@string/switch_events_test_multiple_switches_with_events"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:layout_marginTop="30dp"
@@ -94,7 +94,7 @@
                     android:id="@+id/wifiSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/wi_fi"
+                    android:text="@string/switch_events_test_wifi"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
@@ -102,7 +102,7 @@
                     android:id="@+id/bluetoothSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/bluetooth"
+                    android:text="@string/switch_events_test_bluetooth"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
@@ -110,16 +110,16 @@
                     android:id="@+id/locationSwitch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/location_services"
+                    android:text="@string/switch_events_test_location_services"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/status_connectionstatus"
+                    android:text="@string/switch_events_test_status_connectionstatus"
                     android:textSize="14sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:textStyle="bold"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="20dp"/>

@@ -27,6 +27,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun TextViewHintTestGeneratedView(
@@ -77,7 +80,7 @@ fun TextViewHintTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(20.dp)
     ) {
         Button(
@@ -88,25 +91,25 @@ fun TextViewHintTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                            containerColor = colorResource(R.color.medium_blue_3)
                         )
         ) {
             Text(
-                text = "Dynamic: ${data.dynamicModeStatus}",
+                text = "${data.dynamicModeStatus}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                color = colorResource(R.color.white),
             )
         }
         Text(
-            text = "TextView Hint Test",
+            text = stringResource(R.string.test_menu_textview_hint_test),
             fontSize = 24.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             modifier = Modifier.padding(bottom = 20.dp)
         )
         Text(
-            text = "Simple TextView with hint:",
+            text = stringResource(R.string.text_view_hint_test_simple_textview_with_hint),
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(bottom = 8.dp)
         )
         CustomTextFieldWithMargins(
@@ -119,16 +122,16 @@ fun TextViewHintTestGeneratedView(
                 .height(100.dp),
             placeholder = { Text("This is a simple hint") },
             shape = RoundedCornerShape(8.dp),
-            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            backgroundColor = colorResource(R.color.white),
             isOutlined = true,
             maxLines = Int.MAX_VALUE,
             singleLine = false,
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
         )
         Text(
-            text = "Flexible TextView with multi-line hint:",
+            text = stringResource(R.string.text_view_hint_test_flexible_textview_with_multilin),
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#666666")),
+            color = colorResource(R.color.medium_gray_4),
             modifier = Modifier.padding(bottom = 8.dp)
         )
         CustomTextFieldWithMargins(
@@ -141,11 +144,11 @@ fun TextViewHintTestGeneratedView(
                 .height(120.dp),
             placeholder = { Text("Multi-line hint\nLine 2 of hint\nLine 3 of hint") },
             shape = RoundedCornerShape(8.dp),
-            backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            backgroundColor = colorResource(R.color.white),
             isOutlined = true,
             maxLines = Int.MAX_VALUE,
             singleLine = false,
-            textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+            textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
         )
     }    }
     // >>> GENERATED_CODE_END

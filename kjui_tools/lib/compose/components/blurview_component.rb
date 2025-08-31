@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -28,7 +29,7 @@ module KjuiTools
           if json_data['backgroundColor']
             bg_color = json_data['backgroundColor']
             opacity = json_data['opacity'] || 0.8
-            modifiers << ".background(Color(android.graphics.Color.parseColor(\"#{bg_color}\")).copy(alpha = #{opacity}f))"
+            modifiers << ".background(Helpers::ResourceResolver.process_color('#{bg_color}', required_imports).copy(alpha = #{opacity}f))"
           end
           
           # Add corner radius if specified

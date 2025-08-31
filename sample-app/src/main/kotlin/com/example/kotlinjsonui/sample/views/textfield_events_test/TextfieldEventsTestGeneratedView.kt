@@ -28,6 +28,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun TextfieldEventsTestGeneratedView(
@@ -83,10 +86,10 @@ fun TextfieldEventsTestGeneratedView(
         ) {
             item {
             Column(
-                modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                modifier = Modifier.background(colorResource(R.color.white_23))
             ) {
                 Text(
-                    text = "TextField Events Test",
+                    text = stringResource(R.string.test_menu_textfield_events_test),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -96,7 +99,7 @@ fun TextfieldEventsTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "onTextChange Event Test",
+                    text = stringResource(R.string.textfield_events_test_ontextchange_event_test),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -104,26 +107,26 @@ fun TextfieldEventsTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 CustomTextFieldWithMargins(
-                    value = data.email,
+                    value = "${data.email}",
                     onValueChange = { newValue -> viewModel.handleEmailChange(newValue) },
                     boxModifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp),
-                    placeholder = { Text("Enter email") },
-                    textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000"))),
+                    placeholder = { Text(stringResource(R.string.textfield_events_test_enter_email)) },
+                    textStyle = TextStyle(color = colorResource(R.color.black)),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Default)
                 )
                 Text(
                     text = "${data.emailDisplay}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = "Secure TextField Test",
+                    text = stringResource(R.string.textfield_events_test_secure_textfield_test),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -131,28 +134,28 @@ fun TextfieldEventsTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 CustomTextFieldWithMargins(
-                    value = data.password,
+                    value = "${data.password}",
                     onValueChange = { newValue -> viewModel.handlePasswordChange(newValue) },
                     boxModifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp),
-                    placeholder = { Text("Enter password") },
+                    placeholder = { Text(stringResource(R.string.secure_field_test_enter_password)) },
                     visualTransformation = PasswordVisualTransformation(),
                     isSecure = true,
-                    textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000"))),
+                    textStyle = TextStyle(color = colorResource(R.color.black)),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
                 )
                 Text(
                     text = "${data.passwordLength}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = "Input Accessory Test",
+                    text = stringResource(R.string.textfield_events_test_input_accessory_test),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -160,14 +163,14 @@ fun TextfieldEventsTestGeneratedView(
                         .padding(start = 20.dp)
                 )
                 CustomTextFieldWithMargins(
-                    value = data.notes,
+                    value = "${data.notes}",
                     onValueChange = { newValue -> viewModel.updateData(mapOf("notes" to newValue)) },
                     boxModifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                         .padding(end = 20.dp),
-                    placeholder = { Text("Enter notes") },
-                    textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000")))
+                    placeholder = { Text(stringResource(R.string.textfield_events_test_enter_notes)) },
+                    textStyle = TextStyle(color = colorResource(R.color.black))
                 )
             }
             }

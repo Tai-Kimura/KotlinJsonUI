@@ -67,6 +67,8 @@ module KjuiTools
             alpha: "import androidx.compose.ui.draw.alpha",
             image: "import androidx.compose.foundation.Image",
             painter_resource: "import androidx.compose.ui.res.painterResource",
+            string_resource: "import androidx.compose.ui.res.stringResource",
+            color_resource: "import androidx.compose.ui.res.colorResource",
             r_class: "import com.example.kotlinjsonui.sample.R",
             gradient: "import androidx.compose.ui.graphics.Brush",
             blur: "import androidx.compose.ui.draw.blur",

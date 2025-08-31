@@ -17,7 +17,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#FFFFFF">
+        android:background="@color/white">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -25,10 +25,10 @@
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="wrap_content"
                 android:layout_height="44dp"
-                android:textColor="#FFFFFF"
-                android:text="@string/dynamic_dynamicmodestatus"
+                android:textColor="@color/white"
+                android:text="&quot;Dynamic: @{dynamicModeStatus}&quot;"
                 android:onClick="toggleDynamicMode"
-                android:background="@drawable/ripple_b39393a0"
+                android:background="@drawable/ripple_d5af3557"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:padding="8dp"/>
@@ -39,13 +39,13 @@
                 android:layout_marginTop="20dp"
                 android:text="@{data.title}"
                 android:textSize="24sp"
-                android:textColor="#000000"/>
+                android:textColor="@color/black"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/enabled_button"
+                android:text="@string/disabled_test_enabled_button"
                 android:textSize="16sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
@@ -53,17 +53,17 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@string/enabled_button"
-                android:background="@drawable/ripple_56a40756"
-                android:textColor="#FFFFFF"
+                android:text="@string/disabled_test_enabled_button"
+                android:background="@drawable/ripple_12c68881"
+                android:textColor="@color/white"
                 android:enabled="true"
                 android:onClick="onEnabledButtonTap"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/disabled_button"
+                android:text="@string/disabled_test_disabled_button"
                 android:textSize="16sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
@@ -71,17 +71,17 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@string/disabled_button"
-                android:background="@drawable/selector_2aad8b20"
-                android:textColor="#FFFFFF"
+                android:text="@string/disabled_test_disabled_button"
+                android:background="@drawable/selector_d702e187"
+                android:textColor="@color/white"
                 android:enabled="false"
                 android:onClick="onDisabledButtonTap"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/touchdisabledstate_button"
+                android:text="@string/disabled_test_touchdisabledstate_button"
                 android:textSize="16sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
@@ -89,16 +89,16 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@string/touch_disabled"
-                android:background="@drawable/ripple_4c192b00"
-                android:textColor="#FFFFFF"
+                android:text="@string/disabled_test_touch_disabled"
+                android:background="@drawable/ripple_abf4fa5f"
+                android:textColor="@color/white"
                 android:onClick="onTouchDisabledTap"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/enabled_textfield"
+                android:text="@string/disabled_test_enabled_textfield"
                 android:textSize="16sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.kotlinjsonui.views.KjuiEditText
                 android:layout_width="match_parent"
@@ -106,17 +106,17 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:hint="@string/enabled_can_type_here"
+                android:hint="@string/disabled_test_enabled_can_type_here"
                 android:text="@{data.textFieldValue}"
-                android:background="@drawable/shape_54109721"
+                android:background="@drawable/shape_9a37b16d"
                 android:padding="10dp"
                 android:enabled="true"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/disabled_textfield"
+                android:text="@string/disabled_test_disabled_textfield"
                 android:textSize="16sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="20dp"/>
             <com.kotlinjsonui.views.KjuiEditText
                 android:layout_width="match_parent"
@@ -124,18 +124,18 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:hint="@string/disabled_cannot_type"
-                android:text="@string/disabled_text_field"
-                android:background="@drawable/selector_db1e7661"
+                android:hint="@string/disabled_test_disabled_cannot_type"
+                android:text="@string/disabled_test_disabled_text_field"
+                android:background="@drawable/selector_cd00cfc3"
                 android:padding="10dp"
                 android:enabled="false"
-                android:textColor="#666666"/>
+                android:textColor="@color/medium_gray_4"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/dynamic_enabledisable_test"
+                android:text="@string/disabled_test_dynamic_enabledisable_test"
                 android:textSize="16sp"
-                android:textColor="#333333"
+                android:textColor="@color/dark_gray"
                 android:layout_marginTop="30dp"
                 android:textStyle="bold"/>
             <com.kotlinjsonui.views.KjuiButton
@@ -144,9 +144,9 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@string/toggle_enable_state"
-                android:background="@drawable/ripple_d7b81a7f"
-                android:textColor="#FFFFFF"
+                android:text="@string/disabled_test_toggle_enable_state"
+                android:background="@drawable/ripple_1a0cce85"
+                android:textColor="@color/white"
                 android:onClick="toggleEnableState"/>
             <com.kotlinjsonui.views.KjuiButton
                 android:layout_width="match_parent"
@@ -154,17 +154,17 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:text="@string/dynamic_button"
-                android:background="@drawable/selector_eef4483b"
-                android:textColor="#FFFFFF"
+                android:text="@string/disabled_test_dynamic_button"
+                android:background="@drawable/selector_27c8522a"
+                android:textColor="@color/white"
                 android:enabled="@{data.isEnabled}"
                 android:onClick="onDynamicButtonTap"/>
             <com.kotlinjsonui.views.KjuiTextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/current_state_isenabled"
+                android:text="@string/disabled_test_current_state_isenabled"
                 android:textSize="14sp"
-                android:textColor="#666666"
+                android:textColor="@color/medium_gray_4"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center_horizontal"/>
         </LinearLayout>

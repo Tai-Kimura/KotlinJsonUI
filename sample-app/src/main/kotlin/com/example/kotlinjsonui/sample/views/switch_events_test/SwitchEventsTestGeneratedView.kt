@@ -21,6 +21,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun SwitchEventsTestGeneratedView(
@@ -76,10 +79,10 @@ fun SwitchEventsTestGeneratedView(
         ) {
             item {
             Column(
-                modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                modifier = Modifier.background(colorResource(R.color.white_23))
             ) {
                 Text(
-                    text = "Switch Events Test",
+                    text = stringResource(R.string.switch_events_test_switch_events_test),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -89,7 +92,7 @@ fun SwitchEventsTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Switch with onValueChange",
+                    text = stringResource(R.string.switch_events_test_switch_with_onvaluechange),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -107,13 +110,13 @@ fun SwitchEventsTestGeneratedView(
                 Text(
                     text = "${data.notificationStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = "Switch with Custom Tint",
+                    text = stringResource(R.string.switch_events_test_switch_with_custom_tint),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -131,13 +134,13 @@ fun SwitchEventsTestGeneratedView(
                 Text(
                     text = "${data.darkModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)
                 )
                 Text(
-                    text = "Multiple Switches with Events",
+                    text = stringResource(R.string.switch_events_test_multiple_switches_with_events),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -171,7 +174,7 @@ fun SwitchEventsTestGeneratedView(
                 Text(
                     text = "${data.connectionStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
                         .padding(top = 20.dp)

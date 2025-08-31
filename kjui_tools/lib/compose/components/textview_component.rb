@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -133,16 +134,19 @@ module KjuiTools
           
           # Background colors
           if json_data['background']
-            code += "\n" + indent("backgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")),", depth + 1)
+            bg_color = Helpers::ResourceResolver.process_color(json_data['background'], required_imports)
+            code += "\n" + indent("backgroundColor = #{bg_color},", depth + 1)
           end
           
           if json_data['highlightBackground']
-            code += "\n" + indent("highlightBackgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['highlightBackground']}\")),", depth + 1)
+            highlight_color = Helpers::ResourceResolver.process_color(json_data['highlightBackground'], required_imports)
+            code += "\n" + indent("highlightBackgroundColor = #{highlight_color},", depth + 1)
           end
           
           # Border color for outlined text fields
           if json_data['borderColor']
-            code += "\n" + indent("borderColor = Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")),", depth + 1)
+            border_color = Helpers::ResourceResolver.process_color(json_data['borderColor'], required_imports)
+            code += "\n" + indent("borderColor = #{border_color},", depth + 1)
           end
           
           # Set isOutlined flag (TextView usually wants outlined style)
@@ -164,7 +168,10 @@ module KjuiTools
             required_imports&.add(:text_style)
             style_parts = []
             style_parts << "fontSize = #{json_data['fontSize']}.sp" if json_data['fontSize']
-            style_parts << "color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\"))" if json_data['fontColor']
+            if json_data['fontColor']
+              font_color = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+              style_parts << "color = #{font_color}"
+            end
             
             if style_parts.any?
               code += "\n" + indent("textStyle = TextStyle(#{style_parts.join(', ')})", depth + 1)

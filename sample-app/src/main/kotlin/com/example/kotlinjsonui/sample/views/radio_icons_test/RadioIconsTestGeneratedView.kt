@@ -27,6 +27,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun RadioIconsTestGeneratedView(
@@ -82,10 +85,10 @@ fun RadioIconsTestGeneratedView(
         ) {
             item {
             Column(
-                modifier = Modifier.background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                modifier = Modifier.background(colorResource(R.color.white_23))
             ) {
                 Text(
-                    text = "Radio Custom Icons Test",
+                    text = stringResource(R.string.radio_icons_test_radio_custom_icons_test),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -95,7 +98,7 @@ fun RadioIconsTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Default Radio Group",
+                    text = stringResource(R.string.radio_icons_test_default_radio_group),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -142,7 +145,7 @@ fun RadioIconsTestGeneratedView(
                     Text("Option 3", color = Color.Black)
                 }
                 Text(
-                    text = "Custom Icon Radio Group",
+                    text = stringResource(R.string.radio_icons_test_custom_icon_radio_group),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -201,7 +204,7 @@ fun RadioIconsTestGeneratedView(
                     Text("Square Option", color = Color.Black)
                 }
                 Text(
-                    text = "Radio with Items",
+                    text = stringResource(R.string.radio_icons_test_radio_with_items),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -288,7 +291,7 @@ fun RadioIconsTestGeneratedView(
                 Text(
                     text = "${data.selectedColor}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#666666")),
+                    color = colorResource(R.color.medium_gray_4),
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .padding(start = 20.dp)

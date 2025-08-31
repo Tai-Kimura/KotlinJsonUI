@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -197,7 +198,8 @@ module KjuiTools
           
           if data['fontColor'] || data['color']
             color = data['fontColor'] || data['color']
-            code += ",\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{color}\"))", depth + 1)
+            color_resolved = Helpers::ResourceResolver.process_color(color, required_imports)
+            code += ",\n" + indent("color = #{color_resolved}", depth + 1)
           end
           
           if data['font'] == 'bold' || data['fontWeight'] == 'bold'

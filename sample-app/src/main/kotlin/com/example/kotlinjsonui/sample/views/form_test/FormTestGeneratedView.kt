@@ -28,6 +28,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun FormTestGeneratedView(
@@ -78,7 +81,7 @@ fun FormTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -95,100 +98,100 @@ fun FormTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 28.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
             Text(
-                text = "Personal Information",
+                text = stringResource(R.string.form_test_personal_information),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#007AFF")),
+                color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
-                text = "First Name",
+                text = stringResource(R.string.form_test_first_name),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.firstName,
+                value = "${data.firstName}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("firstName" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text("Enter your first name") },
+                placeholder = { Text(stringResource(R.string.form_test_enter_your_first_name)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Last Name",
+                text = stringResource(R.string.form_test_last_name),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.lastName,
+                value = "${data.lastName}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("lastName" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("Enter your last name") },
+                placeholder = { Text(stringResource(R.string.form_test_enter_your_last_name)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Email Address",
+                text = stringResource(R.string.form_test_email_address),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.email,
+                value = "${data.email}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("email" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("email@example.com") },
+                placeholder = { Text(stringResource(R.string.form_test_emailexamplecom)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Phone Number",
+                text = stringResource(R.string.form_test_phone_number),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.phone,
+                value = "${data.phone}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("phone" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 24.dp),
@@ -197,68 +200,68 @@ fun FormTestGeneratedView(
                     .height(48.dp),
                 placeholder = { Text("+1 234 567 8900") },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Address Information",
+                text = stringResource(R.string.form_test_address_information),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#007AFF")),
+                color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
-                text = "Street Address",
+                text = stringResource(R.string.form_test_street_address),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.address,
+                value = "${data.address}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("address" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("123 Main Street") },
+                placeholder = { Text(stringResource(R.string.form_test_123_main_street)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "City",
+                text = stringResource(R.string.form_test_city),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.city,
+                value = "${data.city}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("city" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("New York") },
+                placeholder = { Text(stringResource(R.string.form_test_new_york)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "ZIP Code",
+                text = stringResource(R.string.form_test_zip_code),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.zipCode,
+                value = "${data.zipCode}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("zipCode" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
@@ -267,92 +270,92 @@ fun FormTestGeneratedView(
                     .height(48.dp),
                 placeholder = { Text("10001") },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Country",
+                text = stringResource(R.string.form_test_country),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.country,
+                value = "${data.country}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("country" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 24.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("United States") },
+                placeholder = { Text(stringResource(R.string.form_test_united_states)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Professional Information",
+                text = stringResource(R.string.form_test_professional_information),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#007AFF")),
+                color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
-                text = "Company",
+                text = stringResource(R.string.form_test_company),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.company,
+                value = "${data.company}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("company" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("Company Name") },
+                placeholder = { Text(stringResource(R.string.form_test_company_name)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Job Title",
+                text = stringResource(R.string.form_test_job_title),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.jobTitle,
+                value = "${data.jobTitle}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("jobTitle" to newValue)) },
                 boxModifier = Modifier
                     .padding(bottom = 24.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("Software Engineer") },
+                placeholder = { Text(stringResource(R.string.form_test_software_engineer)) },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.black))
             )
             Text(
-                text = "Additional Information",
+                text = stringResource(R.string.form_test_additional_information),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#007AFF")),
+                color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
-                text = "Bio (Flexible Height)",
+                text = stringResource(R.string.form_test_bio_flexible_height),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
@@ -365,17 +368,17 @@ fun FormTestGeneratedView(
                     .height(120.dp),
                 placeholder = { Text("Tell us about yourself...\nThis field will grow as you type") },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
                 maxLines = Int.MAX_VALUE,
                 singleLine = false,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.dark_gray))
             )
             Text(
-                text = "Notes (Fixed Height)",
+                text = stringResource(R.string.form_test_notes_fixed_height),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
@@ -388,17 +391,17 @@ fun FormTestGeneratedView(
                     .height(120.dp),
                 placeholder = { Text("Additional notes...\nFixed height field") },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
                 maxLines = Int.MAX_VALUE,
                 singleLine = false,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.dark_gray))
             )
             Text(
-                text = "Comments (Very Flexible)",
+                text = stringResource(R.string.form_test_comments_very_flexible),
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
@@ -411,12 +414,12 @@ fun FormTestGeneratedView(
                     .height(120.dp),
                 placeholder = { Text("Any comments?\nThis can grow very tall (up to 300pt)") },
                 shape = RoundedCornerShape(10.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#E0E0E0")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray),
                 isOutlined = true,
                 maxLines = Int.MAX_VALUE,
                 singleLine = false,
-                textStyle = TextStyle(fontSize = 16.sp, color = Color(android.graphics.Color.parseColor("#333333")))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.dark_gray))
             )
             Row(
                 modifier = Modifier
@@ -430,9 +433,9 @@ fun FormTestGeneratedView(
                     modifier = Modifier.padding(end = 12.dp)
                 )
                 Text(
-                    text = "I agree to the Terms and Conditions",
+                    text = stringResource(R.string.form_test_i_agree_to_the_terms_and_condit),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#333333")),
+                    color = colorResource(R.color.dark_gray),
                     modifier = Modifier.wrapContentWidth()
                 )
             }
@@ -444,13 +447,13 @@ fun FormTestGeneratedView(
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Submit Form",
+                    text = stringResource(R.string.form_test_submit_form),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -461,13 +464,13 @@ fun FormTestGeneratedView(
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                                    containerColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
-                    text = "Clear All Fields",
+                    text = stringResource(R.string.form_test_clear_all_fields),
                     fontSize = 18.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
         }

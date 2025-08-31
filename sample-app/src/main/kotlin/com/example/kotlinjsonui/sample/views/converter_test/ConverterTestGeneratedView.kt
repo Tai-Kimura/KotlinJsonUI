@@ -41,6 +41,8 @@ import com.example.kotlinjsonui.sample.views.converter_test_cell.ConverterTestCe
 import com.example.kotlinjsonui.sample.data.ConverterTestCellData
 import com.example.kotlinjsonui.sample.viewmodels.ConverterTestCellViewModel
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -91,7 +93,7 @@ fun ConverterTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -107,27 +109,27 @@ fun ConverterTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 20.dp)
             )
             Text(
-                text = "GradientView Test",
+                text = stringResource(R.string.converter_test_gradientview_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Box(
@@ -135,19 +137,19 @@ fun ConverterTestGeneratedView(
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
-                    .background(Brush.linearGradient(listOf(Color(android.graphics.Color.parseColor("#FF0000")), Color(android.graphics.Color.parseColor("#00FF00")), Color(android.graphics.Color.parseColor("#0000FF")))))
+                    .background(Brush.linearGradient(listOf(Helpers::ResourceResolver.process_color('#FF0000', required_imports), Helpers::ResourceResolver.process_color('#00FF00', required_imports), Helpers::ResourceResolver.process_color('#0000FF', required_imports))))
             ) {
                 Text(
-                    text = "Diagonal Gradient",
+                    text = stringResource(R.string.converter_test_diagonal_gradient),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                     modifier = Modifier
                 )
             }
             Text(
-                text = "BlurView Test",
+                text = stringResource(R.string.converter_test_blurview_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Box(
@@ -155,7 +157,7 @@ fun ConverterTestGeneratedView(
                     .fillMaxWidth()
                     .height(150.dp)
                     .padding(top = 10.dp)
-                    .background(Color(android.graphics.Color.parseColor("#4CAF50")))
+                    .background(colorResource(R.color.medium_green_2))
             ) {
                 Box(
                     modifier = Modifier
@@ -163,16 +165,16 @@ fun ConverterTestGeneratedView(
                         .fillMaxHeight()
                 ) {
                     Text(
-                        text = "BACKGROUND TEXT",
+                        text = stringResource(R.string.converter_test_background_text),
                         fontSize = 24.sp,
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        color = colorResource(R.color.white),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.Center)
                     )
                     Text(
-                        text = "This will be blurred",
+                        text = stringResource(R.string.converter_test_this_will_be_blurred),
                         fontSize = 16.sp,
-                        color = Color(android.graphics.Color.parseColor("#FFD700")),
+                        color = colorResource(R.color.light_orange),
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(top = 50.dp)
@@ -187,32 +189,32 @@ fun ConverterTestGeneratedView(
                         .align(Alignment.Center)
                 ) {
                     Text(
-                        text = "Clear Text on Blur Layer",
+                        text = stringResource(R.string.converter_test_clear_text_on_blur_layer),
                         fontSize = 18.sp,
-                        color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                        color = colorResource(R.color.white),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
             }
             Text(
-                text = "WebView Test",
+                text = stringResource(R.string.converter_test_webview_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
 // TODO: Implement component type: WebView
             Text(
-                text = "TabView Test",
+                text = stringResource(R.string.converter_test_tabview_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
 // TODO: Implement component type: TabView
             Text(
-                text = "Collection Test",
+                text = stringResource(R.string.converter_test_collection_test_2),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             LazyVerticalGrid(
@@ -248,9 +250,9 @@ fun ConverterTestGeneratedView(
                 }
             }
             Text(
-                text = "Image Test",
+                text = stringResource(R.string.converter_test_image_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Image(
@@ -261,9 +263,9 @@ fun ConverterTestGeneratedView(
                     .padding(top = 10.dp)
             )
             Text(
-                text = "NetworkImage Test",
+                text = stringResource(R.string.converter_test_networkimage_test),
                 fontSize = 18.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             AsyncImage(

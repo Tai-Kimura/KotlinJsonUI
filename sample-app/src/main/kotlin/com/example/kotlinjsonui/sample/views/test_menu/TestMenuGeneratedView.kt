@@ -26,6 +26,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun TestMenuGeneratedView(
@@ -76,20 +79,20 @@ fun TestMenuGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+            .background(colorResource(R.color.white_23))
     ) {
         item {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .background(Color(android.graphics.Color.parseColor("#F5F5F5")))
+                .background(colorResource(R.color.white_23))
                 .padding(20.dp)
         ) {
             Text(
-                text = "KotlinJsonUI Feature Tests",
+                text = stringResource(R.string.test_menu_kotlinjsonui_feature_tests),
                 fontSize = 28.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 20.dp),
                 textAlign = TextAlign.Center
@@ -103,19 +106,19 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(6.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Layout & Positioning",
+                text = stringResource(R.string.test_menu_layout_positioning),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -128,13 +131,13 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Margins & Padding Test",
+                    text = stringResource(R.string.test_menu_margins_padding_test),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -146,13 +149,13 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Alignment Test",
+                    text = stringResource(R.string.test_menu_alignment_test_2),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -164,13 +167,13 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Alignment Combo Test",
+                    text = stringResource(R.string.test_menu_alignment_combo_test_2),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -179,12 +182,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Weight Distribution Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_weight_distribution_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -193,12 +196,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Weight + Fixed Size Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_weight_fixed_size_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -207,12 +210,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Width Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_width_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -221,18 +224,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 )
             ) {
                 Text(
-                    text = "Relative Positioning Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_relative_positioning_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Style & Appearance",
+                text = stringResource(R.string.test_menu_style_appearance),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -242,12 +245,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                    containerColor = colorResource(R.color.medium_green)
                                 )
             ) {
                 Text(
-                    text = "Visibility & Opacity Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_visibility_opacity_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -256,18 +259,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                    containerColor = colorResource(R.color.medium_green)
                                 )
             ) {
                 Text(
-                    text = "Disabled States Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_disabled_states_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Text Features",
+                text = stringResource(R.string.test_menu_text_features),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -277,12 +280,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                    containerColor = colorResource(R.color.medium_red_3)
                                 )
             ) {
                 Text(
-                    text = "Text Styling Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_text_styling_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -291,12 +294,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                    containerColor = colorResource(R.color.medium_red_3)
                                 )
             ) {
                 Text(
-                    text = "Text Decoration Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_text_decoration_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -305,12 +308,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                    containerColor = colorResource(R.color.medium_red_3)
                                 )
             ) {
                 Text(
-                    text = "Line Break & Spacing Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_line_break_spacing_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -319,18 +322,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                    containerColor = colorResource(R.color.medium_red_3)
                                 )
             ) {
                 Text(
-                    text = "Partial Attributes Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_partial_attributes_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Input Components",
+                text = stringResource(R.string.test_menu_input_components),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -340,12 +343,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                    containerColor = colorResource(R.color.light_purple)
                                 )
             ) {
                 Text(
-                    text = "TextField Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_textfield_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -354,12 +357,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                    containerColor = colorResource(R.color.light_purple)
                                 )
             ) {
                 Text(
-                    text = "TextField Events Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_textfield_events_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -368,12 +371,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                    containerColor = colorResource(R.color.light_purple)
                                 )
             ) {
                 Text(
-                    text = "Secure Field Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_secure_field_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -382,12 +385,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                    containerColor = colorResource(R.color.light_purple)
                                 )
             ) {
                 Text(
-                    text = "TextView Hint Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_textview_hint_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -396,18 +399,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#AF52DE"))
+                                    containerColor = colorResource(R.color.light_purple)
                                 )
             ) {
                 Text(
-                    text = "Date Picker Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_date_picker_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "UI Components",
+                text = stringResource(R.string.test_menu_ui_components),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -417,12 +420,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Components Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_components_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -431,12 +434,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Button Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_button_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -445,12 +448,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Button Enabled Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_button_enabled_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -459,12 +462,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Switch Events Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.switch_events_test_switch_events_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -473,12 +476,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Radio Custom Icons Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.radio_icons_test_radio_custom_icons_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -487,18 +490,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Segment Control Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.segment_test_segment_control_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Advanced Features",
+                text = stringResource(R.string.test_menu_advanced_features),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -508,12 +511,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                    containerColor = colorResource(R.color.medium_red)
                                 )
             ) {
                 Text(
-                    text = "Binding Properties Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_binding_properties_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -522,12 +525,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                    containerColor = colorResource(R.color.medium_red)
                                 )
             ) {
                 Text(
-                    text = "Converter Components Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_converter_components_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -536,12 +539,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                    containerColor = colorResource(R.color.medium_red)
                                 )
             ) {
                 Text(
-                    text = "Custom Component Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.custom_component_test_custom_component_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -550,12 +553,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                    containerColor = colorResource(R.color.medium_red)
                                 )
             ) {
                 Text(
-                    text = "User Profile Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_user_profile_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -564,18 +567,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF3B30"))
+                                    containerColor = colorResource(R.color.medium_red)
                                 )
             ) {
                 Text(
-                    text = "Include Component Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_include_component_test),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Forms & Scrolling",
+                text = stringResource(R.string.test_menu_forms_scrolling),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
@@ -585,12 +588,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                    containerColor = colorResource(R.color.light_cyan_2)
                                 )
             ) {
                 Text(
-                    text = "Form Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_form_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -599,12 +602,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                    containerColor = colorResource(R.color.light_cyan_2)
                                 )
             ) {
                 Text(
-                    text = "Collection Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.converter_test_collection_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -613,12 +616,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                    containerColor = colorResource(R.color.light_cyan_2)
                                 )
             ) {
                 Text(
-                    text = "Keyboard Avoidance Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_keyboard_avoidance_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -627,18 +630,18 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5AC8FA"))
+                                    containerColor = colorResource(R.color.light_cyan_2)
                                 )
             ) {
                 Text(
-                    text = "Scroll Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_scroll_test_2),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "🔥 Complete Test Suite",
+                text = stringResource(R.string.test_menu_complete_test_suite),
                 fontSize = 20.sp,
-                color = Color(android.graphics.Color.parseColor("#FF0000")),
+                color = colorResource(R.color.dark_red),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 15.dp)
             )
@@ -648,12 +651,12 @@ fun TestMenuGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#00C853"))
+                                    containerColor = colorResource(R.color.dark_green_3)
                                 )
             ) {
                 Text(
-                    text = "🔥 All Implemented Attributes Test",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.test_menu_all_implemented_attributes_test),
+                    color = colorResource(R.color.white),
                 )
             }
         }

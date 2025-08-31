@@ -2,8 +2,8 @@
 <resources>
     <style name="Theme.KotlinJsonUI" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryDark">@color/purple_700</item>
-        <item name="colorAccent">@color/teal_200</item>
+        <item name="colorPrimary">@color/light_purple</item>
+        <item name="colorPrimaryDark">@color/light_purple</item>
+        <item name="colorAccent">@color/light_purple</item>
     </style>
 </resources>

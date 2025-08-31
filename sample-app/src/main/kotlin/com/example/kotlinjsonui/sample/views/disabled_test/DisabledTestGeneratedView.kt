@@ -29,6 +29,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun DisabledTestGeneratedView(
@@ -79,7 +82,7 @@ fun DisabledTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         item {
         Column(
@@ -95,28 +98,28 @@ fun DisabledTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                                    containerColor = colorResource(R.color.medium_blue_3)
                                 )
             ) {
                 Text(
-                    text = "Dynamic: ${data.dynamicModeStatus}",
+                    text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
             )
             Text(
-                text = "Enabled Button",
+                text = stringResource(R.string.disabled_test_enabled_button),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Button(
@@ -129,19 +132,19 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF"))
+                                    containerColor = colorResource(R.color.medium_blue)
                                 ),
                 enabled = true
             ) {
                 Text(
-                    text = "Enabled Button",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.disabled_test_enabled_button),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Disabled Button",
+                text = stringResource(R.string.disabled_test_disabled_button),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Button(
@@ -154,21 +157,21 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#007AFF")),
-                                    disabledContainerColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
-                                    disabledContentColor = Color(android.graphics.Color.parseColor("#999999"))
+                                    containerColor = colorResource(R.color.medium_blue),
+                                    disabledContainerColor = colorResource(R.color.pale_gray_4),
+                                    disabledContentColor = colorResource(R.color.light_gray_8)
                                 ),
                 enabled = false
             ) {
                 Text(
-                    text = "Disabled Button",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.disabled_test_disabled_button),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "TouchDisabledState Button",
+                text = stringResource(R.string.disabled_test_touchdisabledstate_button),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Button(
@@ -181,22 +184,22 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#FF9500"))
+                                    containerColor = colorResource(R.color.medium_red_3)
                                 )
             ) {
                 Text(
-                    text = "Touch Disabled",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.disabled_test_touch_disabled),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
-                text = "Enabled TextField",
+                text = stringResource(R.string.disabled_test_enabled_textfield),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = data.textFieldValue,
+                value = "${data.textFieldValue}",
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textFieldValue" to newValue)) },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -206,21 +209,21 @@ fun DisabledTestGeneratedView(
                     .fillMaxWidth()
                     .height(44.dp)
                     .padding(10.dp),
-                placeholder = { Text("Enabled - can type here") },
+                placeholder = { Text(stringResource(R.string.disabled_test_enabled_can_type_here)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#000000")))
+                textStyle = TextStyle(color = colorResource(R.color.black))
             )
             Text(
-                text = "Disabled TextField",
+                text = stringResource(R.string.disabled_test_disabled_textfield),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = "Disabled text field",
+                value = stringResource(R.string.disabled_test_disabled_text_field),
                 onValueChange = { },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -230,17 +233,17 @@ fun DisabledTestGeneratedView(
                     .fillMaxWidth()
                     .height(44.dp)
                     .padding(10.dp),
-                placeholder = { Text("Disabled - cannot type") },
+                placeholder = { Text(stringResource(R.string.disabled_test_disabled_cannot_type)) },
                 shape = RoundedCornerShape(8.dp),
-                backgroundColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
-                borderColor = Color(android.graphics.Color.parseColor("#CCCCCC")),
+                backgroundColor = colorResource(R.color.white),
+                borderColor = colorResource(R.color.pale_gray_4),
                 isOutlined = true,
-                textStyle = TextStyle(color = Color(android.graphics.Color.parseColor("#666666")))
+                textStyle = TextStyle(color = colorResource(R.color.medium_gray_4))
             )
             Text(
-                text = "Dynamic Enable/Disable Test",
+                text = stringResource(R.string.disabled_test_dynamic_enabledisable_test),
                 fontSize = 16.sp,
-                color = Color(android.graphics.Color.parseColor("#333333")),
+                color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 30.dp)
             )
@@ -254,12 +257,12 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#34C759"))
+                                    containerColor = colorResource(R.color.medium_green)
                                 )
             ) {
                 Text(
-                    text = "Toggle Enable State",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.disabled_test_toggle_enable_state),
+                    color = colorResource(R.color.white),
                 )
             }
             Button(
@@ -272,21 +275,21 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                                    disabledContainerColor = Color(android.graphics.Color.parseColor("#D0D0D0")),
-                                    disabledContentColor = Color(android.graphics.Color.parseColor("#888888"))
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    disabledContainerColor = colorResource(R.color.pale_gray_3),
+                                    disabledContentColor = colorResource(R.color.medium_gray_2)
                                 ),
                 enabled = data.isEnabled
             ) {
                 Text(
-                    text = "Dynamic Button",
-                    color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                    text = stringResource(R.string.disabled_test_dynamic_button),
+                    color = colorResource(R.color.white),
                 )
             }
             Text(
                 text = "${data.isEnabled}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#666666")),
+                color = colorResource(R.color.medium_gray_4),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 10.dp),

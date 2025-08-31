@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -86,11 +87,13 @@ module KjuiTools
               colors_params = []
               
               if json_data['checkColor']
-                colors_params << "checkedColor = Color(android.graphics.Color.parseColor(\"#{json_data['checkColor']}\"))"
+                checked_color = Helpers::ResourceResolver.process_color(json_data['checkColor'], required_imports)
+                colors_params << "checkedColor = #{checked_color}"
               end
               
               if json_data['uncheckedColor']
-                colors_params << "uncheckedColor = Color(android.graphics.Color.parseColor(\"#{json_data['uncheckedColor']}\"))"
+                unchecked_color = Helpers::ResourceResolver.process_color(json_data['uncheckedColor'], required_imports)
+                colors_params << "uncheckedColor = #{unchecked_color}"
               end
               
               if colors_params.any?

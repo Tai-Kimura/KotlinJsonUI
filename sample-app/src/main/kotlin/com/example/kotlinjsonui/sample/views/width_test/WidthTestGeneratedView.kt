@@ -23,6 +23,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun WidthTestGeneratedView(
@@ -73,7 +76,7 @@ fun WidthTestGeneratedView(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
     ) {
         Button(
             onClick = { viewModel.toggleDynamicMode() },
@@ -83,54 +86,54 @@ fun WidthTestGeneratedView(
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#5856D6"))
+                            containerColor = colorResource(R.color.medium_blue_3)
                         )
         ) {
             Text(
-                text = "Dynamic: ${data.dynamicModeStatus}",
+                text = "${data.dynamicModeStatus}",
                 fontSize = 14.sp,
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                color = colorResource(R.color.white),
             )
         }
         Text(
-            text = "Width Test",
+            text = stringResource(R.string.test_menu_width_test),
             fontSize = 24.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(top = 20.dp)
         )
         Text(
-            text = "matchParent width",
-            color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            text = stringResource(R.string.width_test_matchparent_width),
+            color = colorResource(R.color.white),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .fillMaxWidth()
                 .height(50.dp)
                 .padding(top = 20.dp)
-                .background(Color(android.graphics.Color.parseColor("#FF6B6B"))),
+                .background(colorResource(R.color.light_red)),
             textAlign = TextAlign.Center
         )
         Text(
-            text = "Fixed width 200",
-            color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            text = stringResource(R.string.width_test_fixed_width_200),
+            color = colorResource(R.color.white),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .width(200.dp)
                 .height(50.dp)
                 .padding(top = 10.dp)
-                .background(Color(android.graphics.Color.parseColor("#4ECDC4"))),
+                .background(colorResource(R.color.light_lime)),
             textAlign = TextAlign.Center
         )
         Text(
-            text = "wrapContent width",
-            color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            text = stringResource(R.string.width_test_wrapcontent_width),
+            color = colorResource(R.color.white),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .wrapContentWidth()
                 .height(50.dp)
                 .padding(top = 10.dp)
-                .background(Color(android.graphics.Color.parseColor("#45B7D1"))),
+                .background(colorResource(R.color.light_cyan)),
             textAlign = TextAlign.Center
         )
         Row(
@@ -138,33 +141,33 @@ fun WidthTestGeneratedView(
                 .fillMaxWidth()
                 .height(100.dp)
                 .padding(top = 20.dp)
-                .background(Color(android.graphics.Color.parseColor("#E0E0E0")))
+                .background(colorResource(R.color.pale_gray))
         ) {
             Text(
-                text = "Weight 1",
-                color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                text = stringResource(R.string.width_test_weight_1),
+                color = colorResource(R.color.white),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color(android.graphics.Color.parseColor("#96CEB4"))),
+                    .background(colorResource(R.color.light_yellow)),
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Weight 2 (wrap)",
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                text = stringResource(R.string.width_test_weight_2_wrap),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .weight(2f)
                     .wrapContentHeight()
-                    .background(Color(android.graphics.Color.parseColor("#FFEAA7"))),
+                    .background(colorResource(R.color.pale_pink_2)),
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Weight 1",
-                color = Color(android.graphics.Color.parseColor("#000000")),
+                text = stringResource(R.string.width_test_weight_1),
+                color = colorResource(R.color.black),
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color(android.graphics.Color.parseColor("#DFE6E9"))),
+                    .background(colorResource(R.color.pale_gray_6)),
                 textAlign = TextAlign.Center
             )
         }

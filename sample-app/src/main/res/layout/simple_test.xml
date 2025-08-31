@@ -11,21 +11,21 @@
     <com.kotlinjsonui.views.KjuiTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/simple_test"
+        android:text="@string/simple_test_simple_test"
         android:textSize="24sp"
-        android:textColor="#000000"/>
+        android:textColor="@color/black"/>
     <com.kotlinjsonui.views.KjuiTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/testing_basic_components"
+        android:text="@string/simple_test_testing_basic_components"
         android:textSize="16sp"
-        android:textColor="#666666"
+        android:textColor="@color/medium_gray_4"
         android:layout_marginTop="8dp"/>
     <com.kotlinjsonui.views.KjuiButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/test_button"
-        android:background="@drawable/ripple_3f157f11"
-        android:textColor="#FFFFFF"
+        android:text="@string/simple_test_test_button"
+        android:background="@drawable/ripple_3e3f55d4"
+        android:textColor="@color/white"
         android:layout_marginTop="16dp"/>
 </LinearLayout>

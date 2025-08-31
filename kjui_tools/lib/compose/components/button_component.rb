@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -8,7 +9,7 @@ module KjuiTools
       class ButtonComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Button uses 'text' attribute per SwiftJsonUI spec
-          text = process_data_binding(json_data['text'] || 'Button')
+          text = Helpers::ResourceResolver.process_text(json_data['text'] || 'Button', required_imports)
           onclick = json_data['onclick']
           
           code = indent("Button(", depth)
@@ -109,15 +110,18 @@ module KjuiTools
             color_params = []
             
             if json_data['background']
-              color_params << "containerColor = Color(android.graphics.Color.parseColor(\"#{json_data['background']}\"))"
+              background_color = Helpers::ResourceResolver.process_color(json_data['background'], required_imports)
+              color_params << "containerColor = #{background_color}"
             end
             
             if json_data['disabledBackground']
-              color_params << "disabledContainerColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledBackground']}\"))"
+              disabled_bg_color = Helpers::ResourceResolver.process_color(json_data['disabledBackground'], required_imports)
+              color_params << "disabledContainerColor = #{disabled_bg_color}"
             end
             
             if json_data['disabledFontColor']
-              color_params << "disabledContentColor = Color(android.graphics.Color.parseColor(\"#{json_data['disabledFontColor']}\"))"
+              disabled_font_color = Helpers::ResourceResolver.process_color(json_data['disabledFontColor'], required_imports)
+              color_params << "disabledContentColor = #{disabled_font_color}"
             end
             
             # Note: hilightColor (pressed state) isn't directly supported in Material3 ButtonDefaults
@@ -157,7 +161,8 @@ module KjuiTools
             end
             
             if json_data['fontColor']
-              text_code += "\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['fontColor']}\")),", depth + 2)
+              color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+              text_code += "\n" + indent("color = #{color_value},", depth + 2) if color_value
             end
             
             text_code += "\n" + indent(")", depth + 1)
@@ -169,38 +174,6 @@ module KjuiTools
         end
         
         private
-        
-        def self.process_data_binding(text)
-          return quote(text) unless text.is_a?(String)
-          
-          # Process template strings with @{} placeholders
-          if text.include?('@{')
-            # Replace all @{variable} with ${data.variable} within the string
-            processed = text.gsub(/@\{([^}]+)\}/) do |match|
-              variable = $1
-              if variable.include?(' ?? ')
-                parts = variable.split(' ?? ')
-                var_name = parts[0].strip
-                "\${data.#{var_name}}"
-              else
-                "\${data.#{variable}}"
-              end
-            end
-            quote(processed)
-          else
-            quote(text)
-          end
-        end
-        
-        def self.quote(text)
-          # Escape special characters properly
-          escaped = text.gsub('\\', '\\\\\\\\')  # Escape backslashes first
-                       .gsub('"', '\\"')           # Escape quotes
-                       .gsub("\n", '\\n')           # Escape newlines
-                       .gsub("\r", '\\r')           # Escape carriage returns
-                       .gsub("\t", '\\t')           # Escape tabs
-          "\"#{escaped}\""
-        end
         
         def self.indent(text, level)
           return text if level == 0

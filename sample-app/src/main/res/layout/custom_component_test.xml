@@ -17,7 +17,7 @@
     <com.kotlinjsonui.views.KjuiSafeAreaView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#F5F5F7">
+        android:background="@color/white_12">
         <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -29,18 +29,18 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/custom_component_test"
+                    android:text="@string/custom_component_test_custom_component_test"
                     android:textSize="28sp"
                     android:textStyle="bold"
-                    android:textColor="#000000"
+                    android:textColor="@color/black"
                     android:padding="0dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/testing_samplecard_static_value"
+                    android:text="@string/custom_component_test_testing_samplecard_static_value"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="@color/dark_gray"
                     android:padding="0dp"/>
                 <FrameLayout
                     android:layout_width="wrap_content"
@@ -48,7 +48,7 @@
                     tools:title="Static Title"
                     tools:count="42"
                     android:padding="16dp"
-                    android:background="@drawable/shape_64ae2806">
+                    android:background="@drawable/shape_c22c304c">
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -56,30 +56,30 @@
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/card_content"
+                            android:text="@string/custom_component_test_card_content"
                             android:textSize="14sp"
-                            android:textColor="#666666"/>
+                            android:textColor="@color/medium_gray_4"/>
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/this_content_is_inside_the_cust"
+                            android:text="@string/custom_component_test_this_content_is_inside_the_cust"
                             android:textSize="12sp"
-                            android:textColor="#999999"/>
+                            android:textColor="@color/light_gray_8"/>
                     </LinearLayout>
                 </FrameLayout>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/testing_samplecard_dynamic_valu"
+                    android:text="@string/custom_component_test_testing_samplecard_dynamic_valu"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="@color/dark_gray"
                     android:padding="20dp"/>
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="16dp"
-                    android:background="@drawable/shape_64ae2806">
+                    android:background="@drawable/shape_c22c304c">
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -87,10 +87,10 @@
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/dynamic_count_itemcount"
+                            android:text="@string/custom_component_test_dynamic_count_itemcount"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="#5856D6"/>
+                            android:textColor="@color/medium_blue_3"/>
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -98,17 +98,17 @@
                             <com.kotlinjsonui.views.KjuiButton
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/increment"
-                                android:background="@drawable/ripple_b39393a0"
-                                android:textColor="#FFFFFF"
+                                android:text="@string/custom_component_test_increment"
+                                android:background="@drawable/ripple_6d18491e"
+                                android:textColor="@color/white"
                                 android:padding="8dp"
                                 android:onClick="incrementCount"/>
                             <com.kotlinjsonui.views.KjuiButton
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/decrement"
-                                android:background="@drawable/ripple_63581083"
-                                android:textColor="#FFFFFF"
+                                android:text="@string/custom_component_test_decrement"
+                                android:background="@drawable/ripple_03325df4"
+                                android:textColor="@color/white"
                                 android:padding="8dp"
                                 android:onClick="decrementCount"/>
                         </LinearLayout>
@@ -117,10 +117,10 @@
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/testing_multiple_cards"
+                    android:text="@string/custom_component_test_testing_multiple_cards"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="@color/dark_gray"
                     android:padding="20dp"/>
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -132,13 +132,13 @@
                         tools:title="Card 1"
                         tools:count="1"
                         android:padding="12dp"
-                        android:background="@drawable/shape_c534fdc9">
+                        android:background="@drawable/shape_01783869">
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/content_for_card_1"
+                            android:text="@string/custom_component_test_content_for_card_1"
                             android:textSize="14sp"
-                            android:textColor="#2E7D32"/>
+                            android:textColor="@color/dark_green"/>
                     </FrameLayout>
                     <FrameLayout
                         android:layout_width="wrap_content"
@@ -146,13 +146,13 @@
                         tools:title="Card 2"
                         tools:count="2"
                         android:padding="12dp"
-                        android:background="@drawable/shape_2e75b627">
+                        android:background="@drawable/shape_2e6230c6">
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/content_for_card_2"
+                            android:text="@string/custom_component_test_content_for_card_2"
                             android:textSize="14sp"
-                            android:textColor="#E65100"/>
+                            android:textColor="@color/medium_red_4"/>
                     </FrameLayout>
                     <FrameLayout
                         android:layout_width="wrap_content"
@@ -160,22 +160,22 @@
                         tools:title="Card 3"
                         tools:count="3"
                         android:padding="12dp"
-                        android:background="@drawable/shape_9645b58e">
+                        android:background="@drawable/shape_5efeed68">
                         <com.kotlinjsonui.views.KjuiTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/content_for_card_3"
+                            android:text="@string/custom_component_test_content_for_card_3"
                             android:textSize="14sp"
-                            android:textColor="#6A1B9A"/>
+                            android:textColor="@color/dark_purple"/>
                     </FrameLayout>
                 </LinearLayout>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/testing_statusbadge_non_contain"
+                    android:text="@string/custom_component_test_testing_statusbadge_noncontaine"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#333333"
+                    android:textColor="@color/dark_gray"
                     android:padding="20dp"/>
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -185,7 +185,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:title="Static Status"
-                        android:tint="#4CAF50"
+                        android:tint="@color/medium_green_2"
                         tools:count="5"/>
                     <View
                         android:layout_width="wrap_content"
@@ -195,24 +195,24 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         tools:title="Error Status"
-                        android:tint="#FF3B30"
+                        android:tint="@color/medium_red"
                         tools:count="0"/>
                 </LinearLayout>
                 <com.kotlinjsonui.views.KjuiButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/toggle_dynamic_mode"
+                    android:text="@string/custom_component_test_toggle_dynamic_mode"
                     android:onClick="toggleDynamicMode"
-                    android:background="@drawable/ripple_b39393a0"
-                    android:textColor="#FFFFFF"
+                    android:background="@drawable/ripple_6d18491e"
+                    android:textColor="@color/white"
                     android:padding="12dp"
                     android:layout_marginTop="20dp"/>
                 <com.kotlinjsonui.views.KjuiTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/dynamic_mode_dynamicmodestatus"
+                    android:text="@string/custom_component_test_dynamic_mode_dynamicmodestatus"
                     android:textSize="14sp"
-                    android:textColor="#666666"
+                    android:textColor="@color/medium_gray_4"
                     android:textAlignment="center"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>

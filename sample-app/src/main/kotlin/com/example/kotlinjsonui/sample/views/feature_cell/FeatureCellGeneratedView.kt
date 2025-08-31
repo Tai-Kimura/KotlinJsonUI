@@ -21,6 +21,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun FeatureCellGeneratedView(
@@ -71,22 +73,22 @@ fun FeatureCellGeneratedView(
         Box(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+            .background(colorResource(R.color.white))
             .padding(16.dp)
     ) {
         Text(
             text = "${data.badge}",
             fontSize = 10.sp,
-            color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            color = colorResource(R.color.white),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(android.graphics.Color.parseColor("#FF6B6B")))
+                .background(colorResource(R.color.light_red))
         )
         Text(
             text = "${data.title}",
             fontSize = 18.sp,
-            color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            color = colorResource(R.color.white),
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -95,7 +97,7 @@ fun FeatureCellGeneratedView(
         Text(
             text = "${data.description}",
             fontSize = 14.sp,
-            color = Color(android.graphics.Color.parseColor("#FFFFFF")),
+            color = colorResource(R.color.white),
             modifier = Modifier
                 .alpha(0.9f)
                 .align(Alignment.TopStart)

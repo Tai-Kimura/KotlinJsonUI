@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -8,8 +9,9 @@ module KjuiTools
       class TextFieldComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # TextField uses 'text' for value and supports both 'hint' and 'placeholder'
-          value = process_data_binding(json_data['text'] || '')
-          placeholder = json_data['hint'] || json_data['placeholder'] || ''
+          value = Helpers::ResourceResolver.process_text(json_data['text'] || '', required_imports)
+          placeholder_text = json_data['hint'] || json_data['placeholder'] || ''
+          placeholder = placeholder_text.empty? ? '""' : Helpers::ResourceResolver.process_text(placeholder_text, required_imports)
           is_secure = json_data['secure'] == true
           
           # Check if we need to wrap in Box for margins
@@ -85,14 +87,15 @@ module KjuiTools
           end
           
           # Add placeholder/hint with styling
-          if placeholder && !placeholder.empty?
+          if placeholder && placeholder != '""'
             if json_data['hintColor'] || json_data['hintFontSize'] || json_data['hintFont']
               # Complex placeholder with styling
               placeholder_code = "placeholder = { Text("
-              placeholder_code += "\n" + indent("text = #{quote(placeholder)}", depth + 2)
+              placeholder_code += "\n" + indent("text = #{placeholder}", depth + 2)
               
               if json_data['hintColor']
-                placeholder_code += ",\n" + indent("color = Color(android.graphics.Color.parseColor(\"#{json_data['hintColor']}\"))", depth + 2)
+                hint_color = Helpers::ResourceResolver.process_color(json_data['hintColor'], required_imports)
+                placeholder_code += ",\n" + indent("color = #{hint_color}", depth + 2)
               end
               
               if json_data['hintFontSize']
@@ -107,7 +110,7 @@ module KjuiTools
               code += "\n" + indent(placeholder_code, depth + 1) + ","
             else
               # Simple placeholder
-              code += "\n" + indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1)
+              code += "\n" + indent("placeholder = { Text(#{placeholder}) },", depth + 1)
             end
           end
           
@@ -126,16 +129,19 @@ module KjuiTools
           
           # Background colors
           if json_data['background']
-            code += "\n" + indent("backgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['background']}\")),", depth + 1)
+            bg_color = Helpers::ResourceResolver.process_color(json_data['background'], required_imports)
+            code += "\n" + indent("backgroundColor = #{bg_color},", depth + 1)
           end
           
           if json_data['highlightBackground']
-            code += "\n" + indent("highlightBackgroundColor = Color(android.graphics.Color.parseColor(\"#{json_data['highlightBackground']}\")),", depth + 1)
+            highlight_bg_color = Helpers::ResourceResolver.process_color(json_data['highlightBackground'], required_imports)
+            code += "\n" + indent("highlightBackgroundColor = #{highlight_bg_color},", depth + 1)
           end
           
           # Border color for outlined text fields
           if json_data['borderColor']
-            code += "\n" + indent("borderColor = Color(android.graphics.Color.parseColor(\"#{json_data['borderColor']}\")),", depth + 1)
+            border_color = Helpers::ResourceResolver.process_color(json_data['borderColor'], required_imports)
+            code += "\n" + indent("borderColor = #{border_color},", depth + 1)
           end
           
           # Set isOutlined and isSecure flags
@@ -157,15 +163,12 @@ module KjuiTools
           
           # Use fontColor if specified, otherwise default to black
           if json_data['fontColor']
-            color = json_data['fontColor']
-            if color.start_with?('#')
-              style_parts << "color = Color(android.graphics.Color.parseColor(\"#{color}\"))"
-            else
-              style_parts << "color = Color.#{color}"
-            end
+            color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            style_parts << "color = #{color_value}" if color_value
           else
             # Default to black text
-            style_parts << "color = Color(android.graphics.Color.parseColor(\"#000000\"))"
+            default_color = Helpers::ResourceResolver.process_color('#000000', required_imports)
+            style_parts << "color = #{default_color}"
           end
           
           if json_data['textAlign']
@@ -262,39 +265,12 @@ module KjuiTools
         
         private
         
-        def self.process_data_binding(text)
-          return quote(text) unless text.is_a?(String)
-          
-          if text.match(/@\{([^}]+)\}/)
-            variable = $1
-            if variable.include?(' ?? ')
-              parts = variable.split(' ?? ')
-              var_name = parts[0].strip
-              "data.#{var_name}"
-            else
-              "data.#{variable}"
-            end
-          else
-            quote(text)
-          end
-        end
-        
         def self.extract_variable_name(text)
           if text && text.match(/@\{([^}]+)\}/)
             $1.split('.').last
           else
             'value'
           end
-        end
-        
-        def self.quote(text)
-          # Escape special characters properly
-          escaped = text.gsub('\\', '\\\\\\\\')  # Escape backslashes first
-                       .gsub('"', '\\"')           # Escape quotes
-                       .gsub("\n", '\\n')           # Escape newlines
-                       .gsub("\r", '\\r')           # Escape carriage returns
-                       .gsub("\t", '\\t')           # Escape tabs
-          "\"#{escaped}\""
         end
         
         def self.indent(text, level)

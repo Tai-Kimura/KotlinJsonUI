@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../helpers/modifier_builder'
+require_relative '../helpers/resource_resolver'
 
 module KjuiTools
   module Compose
@@ -54,13 +55,16 @@ module KjuiTools
             code += ",\n" + indent("colors = SwitchDefaults.colors(", depth + 1)
             
             if json_data['tintColor']
-              code += "\n" + indent("checkedThumbColor = Color(android.graphics.Color.parseColor(\"#{json_data['tintColor']}\")),", depth + 2)
-              code += "\n" + indent("checkedTrackColor = Color(android.graphics.Color.parseColor(\"#{json_data['tintColor']}\")).copy(alpha = 0.5f)", depth + 2)
+              checkedthumbcolor_resolved = Helpers::ResourceResolver.process_color(json_data['tintColor'], required_imports)
+              code += "\n" + indent("checkedThumbColor = #{checkedthumbcolor_resolved},", depth + 2)
+              checkedtrackcolor_resolved = Helpers::ResourceResolver.process_color(json_data['tintColor'], required_imports)
+              code += "\n" + indent("checkedTrackColor = #{checkedtrackcolor_resolved}.copy(alpha = 0.5f)", depth + 2)
             end
             
             if json_data['backgroundColor']
               code += ",\n" if json_data['tintColor']
-              code += "\n" + indent("uncheckedTrackColor = Color(android.graphics.Color.parseColor(\"#{json_data['backgroundColor']}\"))", depth + 2)
+              uncheckedtrackcolor_resolved = Helpers::ResourceResolver.process_color(json_data['backgroundColor'], required_imports)
+              code += "\n" + indent("uncheckedTrackColor = #{uncheckedtrackcolor_resolved}", depth + 2)
             end
             
             code += "\n" + indent(")", depth + 1)

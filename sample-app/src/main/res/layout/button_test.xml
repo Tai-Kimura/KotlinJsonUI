@@ -7,7 +7,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="@color/white">
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,69 +16,69 @@
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_height_test"
+            android:text="@string/button_test_button_height_test"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#000000"
+            android:textColor="@color/black"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/height_55_padding_12_20"
+            android:text="@string/button_test_height_55_padding_12_20"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginBottom="5dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="55dp"
-            android:text="@string/test_button_1"
+            android:text="@string/button_test_test_button_1"
             android:padding="12dp"
-            android:background="@drawable/ripple_56a40756"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/ripple_12c68881"
+            android:textColor="@color/white"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/height_55_no_padding"
+            android:text="@string/button_test_height_55_no_padding"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginBottom="5dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="55dp"
-            android:text="@string/test_button_2"
-            android:background="@drawable/ripple_d7b81a7f"
-            android:textColor="#FFFFFF"
+            android:text="@string/button_test_test_button_2"
+            android:background="@drawable/ripple_1a0cce85"
+            android:textColor="@color/white"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/no_height_padding_12_20"
+            android:text="@string/button_test_no_height_padding_12_20"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginBottom="5dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/test_button_3"
+            android:text="@string/button_test_test_button_3"
             android:padding="12dp"
-            android:background="@drawable/ripple_4c192b00"
-            android:textColor="#FFFFFF"
+            android:background="@drawable/ripple_abf4fa5f"
+            android:textColor="@color/white"
             android:layout_marginBottom="20dp"/>
         <com.kotlinjsonui.views.KjuiTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/with_bottommargin_8_height_55_p"
+            android:text="@string/button_test_with_bottommargin_8_height_55_p"
             android:textSize="14sp"
-            android:textColor="#666666"
+            android:textColor="@color/medium_gray_4"
             android:layout_marginBottom="5dp"/>
         <com.kotlinjsonui.views.KjuiButton
             android:layout_width="wrap_content"
             android:layout_height="55dp"
-            android:text="@string/like_primary_button_style"
+            android:text="@string/button_test_like_primarybutton_style"
             android:padding="12dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/ripple_56a40756"
-            android:textColor="#FFFFFF"/>
+            android:background="@drawable/ripple_12c68881"
+            android:textColor="@color/white"/>
     </LinearLayout>
 </ScrollView>

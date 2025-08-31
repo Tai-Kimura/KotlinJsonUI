@@ -21,6 +21,9 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.stringResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.res.colorResource
 
 @Composable
 fun ScrollTestGeneratedView(
@@ -68,68 +71,68 @@ fun ScrollTestGeneratedView(
     } else {
         // Static Mode - use generated code
         Column(
-        modifier = Modifier.background(Color(android.graphics.Color.parseColor("#FFFFFF")))
+        modifier = Modifier.background(colorResource(R.color.white))
     ) {
         Text(
-            text = "ScrollView Test",
+            text = stringResource(R.string.scroll_test_scrollview_test),
             fontSize = 20.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(10.dp)
         )
         LazyColumn(
             modifier = Modifier
                 .height(200.dp)
-                .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                .background(colorResource(R.color.white_17))
         ) {
             item {
             Column(
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(
-                    text = "No vertical indicator",
+                    text = stringResource(R.string.scroll_test_no_vertical_indicator),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                 )
                 Text(
-                    text = "Item 1",
+                    text = stringResource(R.string.scroll_test_item_1),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .background(colorResource(R.color.white_5))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Item 2",
+                    text = stringResource(R.string.scroll_test_item_2),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .background(colorResource(R.color.white_6))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Item 3",
+                    text = stringResource(R.string.scroll_test_item_3),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .background(colorResource(R.color.white_7))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Item 4",
+                    text = stringResource(R.string.scroll_test_item_4),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                        .background(colorResource(R.color.white_8))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Item 5",
+                    text = stringResource(R.string.scroll_test_item_5),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
-                        .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                        .background(colorResource(R.color.white_9))
                         .padding(10.dp)
                 )
             }
@@ -138,41 +141,41 @@ fun ScrollTestGeneratedView(
         LazyColumn(
             modifier = Modifier
                 .height(150.dp)
-                .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                .background(colorResource(R.color.white_17))
         ) {
             item {
             Column(
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(
-                    text = "Scroll Disabled",
+                    text = stringResource(R.string.scroll_test_scroll_disabled),
                     fontSize = 16.sp,
-                    color = Color(android.graphics.Color.parseColor("#FF0000")),
+                    color = colorResource(R.color.dark_red),
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
                 )
                 Text(
-                    text = "This ScrollView cannot be scrolled",
+                    text = stringResource(R.string.scroll_test_this_scrollview_cannot_be_scrol),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                 )
                 Text(
-                    text = "Item 1",
+                    text = stringResource(R.string.scroll_test_item_1),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                 )
                 Text(
-                    text = "Item 2",
+                    text = stringResource(R.string.scroll_test_item_2),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                 )
                 Text(
-                    text = "Item 3 (Hidden below)",
+                    text = stringResource(R.string.scroll_test_item_3_hidden_below),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                 )
             }
@@ -181,82 +184,82 @@ fun ScrollTestGeneratedView(
         LazyRow(
             modifier = Modifier
                 .height(100.dp)
-                .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+                .background(colorResource(R.color.white_17))
         ) {
             item {
             Row(
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(
-                    text = "Horizontal Scroll Item 1",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_1),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFE0E0")))
+                        .background(colorResource(R.color.white_5))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 2",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_2),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#E0FFE0")))
+                        .background(colorResource(R.color.white_6))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 3",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_3),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#E0E0FF")))
+                        .background(colorResource(R.color.white_7))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 4",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_4),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFFFE0")))
+                        .background(colorResource(R.color.white_8))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 5",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_5),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFE0FF")))
+                        .background(colorResource(R.color.white_9))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 6",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_6),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#E0FFFF")))
+                        .background(colorResource(R.color.white_22))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 7",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_7),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#FFF0E0")))
+                        .background(colorResource(R.color.white_25))
                         .padding(10.dp)
                 )
                 Text(
-                    text = "Horizontal Scroll Item 8 (End)",
+                    text = stringResource(R.string.scroll_test_horizontal_scroll_item_8_end),
                     fontSize = 14.sp,
-                    color = Color(android.graphics.Color.parseColor("#000000")),
+                    color = colorResource(R.color.black),
                     modifier = Modifier
                         .width(150.dp)
-                        .background(Color(android.graphics.Color.parseColor("#F0E0FF")))
+                        .background(colorResource(R.color.white_26))
                         .padding(10.dp)
                 )
             }

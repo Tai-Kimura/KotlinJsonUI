@@ -17,6 +17,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.SafeDynamicView
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
 
 @Composable
 fun SectionHeaderGeneratedView(
@@ -67,12 +69,12 @@ fun SectionHeaderGeneratedView(
         Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(android.graphics.Color.parseColor("#F0F0F0")))
+            .background(colorResource(R.color.white_17))
     ) {
         Text(
             text = "${data.title}",
             fontSize = 18.sp,
-            color = Color(android.graphics.Color.parseColor("#000000")),
+            color = colorResource(R.color.black),
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.TopStart)
         )
