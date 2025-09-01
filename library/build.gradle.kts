@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
+    id("signing")
 }
 
 android {
@@ -104,7 +105,7 @@ dependencies {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "com.tai-kimura"
+            groupId = "com.github.Tai-Kimura"  // For JitPack: com.github.{username}
             artifactId = "kotlinjsonui"
             version = "1.0.0"
 
@@ -114,7 +115,7 @@ publishing {
 
             pom {
                 name.set("KotlinJsonUI")
-                description.set("A JSON-based UI framework for Android")
+                description.set("A JSON-based UI framework for Android with Compose support")
                 url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
                 
                 licenses {
@@ -128,6 +129,7 @@ publishing {
                     developer {
                         id.set("tai-kimura")
                         name.set("Tai Kimura")
+                        email.set("your-email@example.com") // Optional
                     }
                 }
                 
@@ -141,6 +143,22 @@ publishing {
     }
     
     repositories {
+        // Maven Central
+        maven {
+            name = "MavenCentral"
+            url = if (version.toString().endsWith("SNAPSHOT")) {
+                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            } else {
+                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            }
+            
+            credentials {
+                username = project.findProperty("ossrhUsername") as String? ?: ""
+                password = project.findProperty("ossrhPassword") as String? ?: ""
+            }
+        }
+        
+        // GitHub Packages (keep as alternative)
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/Tai-Kimura/KotlinJsonUI")
@@ -149,5 +167,16 @@ publishing {
                 password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
             }
         }
+    }
+}
+
+// Signing configuration for Maven Central
+signing {
+    val signingKey = project.findProperty("signing.key") as String?
+    val signingPassword = project.findProperty("signing.password") as String?
+    
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["release"])
     }
 }

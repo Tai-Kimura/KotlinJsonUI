@@ -1,0 +1,23 @@
+# Template for gradle.properties
+# Copy this file to gradle.properties and fill in your credentials
+# DO NOT commit gradle.properties to version control!
+
+# Project properties
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+kotlin.code.style=official
+android.nonTransitiveRClass=true
+
+# Maven Central (Sonatype OSSRH) credentials
+# Get these from https://s01.oss.sonatype.org/
+ossrhUsername=your-sonatype-username
+ossrhPassword=your-sonatype-password
+
+# GPG Signing for Maven Central
+# Export your GPG key: gpg --export-secret-keys YOUR_KEY_ID | base64
+signing.key=your-base64-encoded-gpg-key
+signing.password=your-gpg-password
+
+# GitHub Packages credentials (optional)
+gpr.user=your-github-username
+gpr.key=your-github-personal-access-token
