@@ -4,7 +4,10 @@ module KjuiTools
   module Compose
     module Helpers
       class ImportManager
-        def self.get_imports_map
+        def self.get_imports_map(package_name = nil)
+          # Use provided package name or default to sample app
+          pkg_name = package_name || 'com.example.kotlinjsonui.sample'
+          
           {
             lazy_column: "import androidx.compose.foundation.lazy.LazyColumn",
             lazy_row: "import androidx.compose.foundation.lazy.LazyRow",
@@ -69,7 +72,7 @@ module KjuiTools
             painter_resource: "import androidx.compose.ui.res.painterResource",
             string_resource: "import androidx.compose.ui.res.stringResource",
             color_resource: "import androidx.compose.ui.res.colorResource",
-            r_class: "import com.example.kotlinjsonui.sample.R",
+            r_class: "import #{pkg_name}.R",
             gradient: "import androidx.compose.ui.graphics.Brush",
             blur: "import androidx.compose.ui.draw.blur",
             navigation: ["import androidx.navigation.NavController",

@@ -545,7 +545,7 @@ module KjuiTools
       end
       
       def update_imports(content)
-        imports_map = Helpers::ImportManager.get_imports_map
+        imports_map = Helpers::ImportManager.get_imports_map(@package_name)
         
         imports_to_add = []
         @required_imports.each do |import_type|
