@@ -129,7 +129,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "io.github.tai-kimura"  // Maven Central向け
             artifactId = "kotlinjsonui"
-            version = "1.0.0"
+            version = "1.0.2"
 
             afterEvaluate {
                 from(components["release"])
