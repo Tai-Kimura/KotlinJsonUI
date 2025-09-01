@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#F5F5F5",
+  "background": "white_23",
   "child": [
     {
       "type": "View",
@@ -48,13 +48,13 @@
                           "text": "@{userName}",
                           "fontSize": 20,
                           "fontWeight": "bold",
-                          "fontColor": "#333333"
+                          "fontColor": "dark_gray"
                         },
                         {
                           "type": "Label",
                           "text": "@{userEmail}",
                           "fontSize": 14,
-                          "fontColor": "#666666",
+                          "fontColor": "medium_gray_4",
                           "topMargin": 4
                         }
                       ]
@@ -65,7 +65,7 @@
                   "type": "View",
                   "width": "matchParent",
                   "height": 1,
-                  "background": "#E0E0E0",
+                  "background": "pale_gray",
                   "topMargin": 12,
                   "bottomMargin": 12
                 },
@@ -73,7 +73,7 @@
                   "type": "StatusBadge",
                   "title": "Status",
                   "status": "@{userStatus}",
-                  "color": "#4CAF50",
+                  "color": "medium_green_2",
                   "count": "@{notificationCount}"
                 }
               ]
@@ -85,7 +85,7 @@
           "text": "Team Members",
           "fontSize": 18,
           "fontWeight": "bold",
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 24,
           "bottomMargin": 12
         },
@@ -131,7 +131,7 @@
           "text": "Actions",
           "fontSize": 18,
           "fontWeight": "bold",
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 24,
           "bottomMargin": 12
         },
@@ -139,8 +139,8 @@
           "type": "Button",
           "text": "Toggle Online Status",
           "onclick": "toggleOnlineStatus",
-          "background": "#007AFF",
-          "fontColor": "#FFFFFF",
+          "background": "medium_blue",
+          "fontColor": "white",
           "padding": 12,
           "cornerRadius": 8,
           "bottomMargin": 8
@@ -149,8 +149,8 @@
           "type": "Button",
           "text": "Toggle Dynamic Mode",
           "onclick": "toggleDynamicMode",
-          "background": "#34C759",
-          "fontColor": "#FFFFFF",
+          "background": "medium_green",
+          "fontColor": "white",
           "padding": 12,
           "cornerRadius": 8
         }

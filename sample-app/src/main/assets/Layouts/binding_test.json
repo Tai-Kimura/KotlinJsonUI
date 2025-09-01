@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,13 +24,13 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Text Binding",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -43,17 +43,17 @@
           "rightMargin": 20,
           "hint": "Enter text",
           "text": "@{textValue}",
-          "background": "#FFFFFF",
+          "background": "white",
           "padding": 10,
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "You typed: @{textValue}",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10,
           "leftMargin": 20
         },
@@ -61,7 +61,7 @@
           "type": "Label",
           "text": "Counter Binding",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -81,8 +81,8 @@
               "height": 44,
               "text": "Decrease",
               "onclick": "decreaseCounter",
-              "background": "#FF3B30",
-              "fontColor": "#FFFFFF",
+              "background": "medium_red",
+              "fontColor": "white",
               "cornerRadius": 8,
               "rightMargin": 5
             },
@@ -92,9 +92,9 @@
               "height": 44,
               "text": "@{counter}",
               "fontSize": 20,
-              "fontColor": "#000000",
+              "fontColor": "black",
               "textAlign": "center",
-              "background": "#E0E0E0",
+              "background": "pale_gray",
               "cornerRadius": 8,
               "leftMargin": 5,
               "rightMargin": 5
@@ -106,8 +106,8 @@
               "height": 44,
               "text": "Increase",
               "onclick": "increaseCounter",
-              "background": "#34C759",
-              "fontColor": "#FFFFFF",
+              "background": "medium_green",
+              "fontColor": "white",
               "cornerRadius": 8,
               "leftMargin": 5
             }
@@ -117,7 +117,7 @@
           "type": "Label",
           "text": "Toggle Binding",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -135,7 +135,7 @@
           "type": "Label",
           "text": "Toggle is: @{toggleValue}",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10,
           "leftMargin": 20
         },
@@ -146,14 +146,14 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "background": "#34C759",
+          "background": "medium_green",
           "cornerRadius": 8,
           "child": [
             {
               "type": "Label",
               "text": "ON/OFF",
               "fontSize": 16,
-              "fontColor": "#FFFFFF",
+              "fontColor": "white",
               "centerInParent": true
             }
           ]
@@ -162,7 +162,7 @@
           "type": "Label",
           "text": "Slider Binding",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -183,7 +183,7 @@
           "type": "Label",
           "text": "Slider value: @{sliderValue}",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10,
           "leftMargin": 20
         },
@@ -194,14 +194,14 @@
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "background": "#E0E0E0",
+          "background": "pale_gray",
           "cornerRadius": 10,
           "child": [
             {
               "type": "View",
               "width": 100,
               "height": "matchParent",
-              "background": "#007AFF",
+              "background": "medium_blue",
               "cornerRadius": 10
             }
           ]
@@ -210,7 +210,7 @@
           "type": "Label",
           "text": "SelectBox Binding",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -255,19 +255,19 @@
             "Option 29",
             "Option 30"
           ],
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
-          "hintColor": "#999999",
+          "fontColor": "black",
+          "hintColor": "light_gray_8",
           "hint": "選択してください"
         },
         {
           "type": "Label",
           "text": "Selected: @{selectedOption}",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10,
           "leftMargin": 20
         },
@@ -275,7 +275,7 @@
           "type": "Label",
           "text": "Date Picker (Wheels Style)",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "fontWeight": "bold",
           "topMargin": 30
         },
@@ -288,12 +288,12 @@
           "minimumDate": "2020-01-01",
           "maximumDate": "2030-12-31",
           "hint": "日付を選択",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
-          "hintColor": "#999999",
+          "fontColor": "black",
+          "hintColor": "light_gray_8",
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
@@ -303,7 +303,7 @@
           "type": "Label",
           "text": "Date Picker (Compact Style)",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "fontWeight": "bold",
           "topMargin": 30
         },
@@ -314,12 +314,12 @@
           "datePickerStyle": "compact",
           "dateFormat": "MM/dd/yyyy",
           "hint": "Select date",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
-          "hintColor": "#999999",
+          "fontColor": "black",
+          "hintColor": "light_gray_8",
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
@@ -329,7 +329,7 @@
           "type": "Label",
           "text": "@{selectedDate}",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10,
           "leftMargin": 20,
           "bottomMargin": 30

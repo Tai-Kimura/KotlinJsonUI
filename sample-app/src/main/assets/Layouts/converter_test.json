@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,14 +13,14 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
           "type": "Label",
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "topMargin": 20,
           "bottomMargin": 20
         },
@@ -28,7 +28,7 @@
           "type": "Label",
           "text": "GradientView Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 10
         },
         {
@@ -54,7 +54,7 @@
               "type": "Label",
               "text": "Diagonal Gradient",
               "fontSize": 16,
-              "fontColor": "#FFFFFF",
+              "fontColor": "white",
               "centerInParent": true
             }
           ]
@@ -63,7 +63,7 @@
           "type": "Label",
           "text": "BlurView Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -71,7 +71,7 @@
           "width": "matchParent",
           "height": 150,
           "topMargin": 10,
-          "background": "#4CAF50",
+          "background": "medium_green_2",
           "zIndex": true,
           "child": [
             {
@@ -83,7 +83,7 @@
                   "type": "Label",
                   "text": "BACKGROUND TEXT",
                   "fontSize": 24,
-                  "fontColor": "#FFFFFF",
+                  "fontColor": "white",
                   "fontWeight": "bold",
                   "centerInParent": true
                 },
@@ -91,7 +91,7 @@
                   "type": "Label",
                   "text": "This will be blurred",
                   "fontSize": 16,
-                  "fontColor": "#FFD700",
+                  "fontColor": "light_orange",
                   "topMargin": 50,
                   "leftMargin": 20
                 }
@@ -103,13 +103,13 @@
               "height": 60,
               "centerInParent": true,
               "blurRadius": 20,
-              "background": "#00000033",
+              "background": "black_2",
               "child": [
                 {
                   "type": "Label",
                   "text": "Clear Text on Blur Layer",
                   "fontSize": 18,
-                  "fontColor": "#FFFFFF",
+                  "fontColor": "white",
                   "fontWeight": "bold",
                   "centerInParent": true
                 }
@@ -121,7 +121,7 @@
           "type": "Label",
           "text": "WebView Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -135,7 +135,7 @@
           "type": "Label",
           "text": "TabView Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -153,7 +153,7 @@
                   "text": "Content of Tab 1",
                   "fontSize": 14,
                   "centerInParent": true,
-                  "fontColor": "#000000"
+                  "fontColor": "black"
                 }
               ]
             },
@@ -165,7 +165,7 @@
                   "text": "Content of Tab 2",
                   "fontSize": 14,
                   "centerInParent": true,
-                  "fontColor": "#000000"
+                  "fontColor": "black"
                 }
               ]
             }
@@ -175,7 +175,7 @@
           "type": "Label",
           "text": "Collection Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -196,7 +196,7 @@
           "type": "Label",
           "text": "Image Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -212,7 +212,7 @@
           "type": "Label",
           "text": "NetworkImage Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {

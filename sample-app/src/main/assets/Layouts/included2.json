@@ -1,6 +1,6 @@
 {
   "type": "View",
-  "background": "#FFF4E6",
+  "background": "white_21",
   "padding": 15,
   "cornerRadius": 10,
   "orientation": "vertical",
@@ -9,12 +9,12 @@
       "type": "Label",
       "text": "Included View 2",
       "fontSize": 18,
-      "fontColor": "#FF6600",
+      "fontColor": "medium_red_6",
       "marginBottom": 10
     },
     {
       "type": "View",
-      "background": "#FFFFFF",
+      "background": "white",
       "padding": 10,
       "cornerRadius": 5,
       "orientation": "vertical",
@@ -23,21 +23,21 @@
           "type": "Label",
           "text": "Title: @{viewTitle}",
           "fontSize": 14,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "marginBottom": 5
         },
         {
           "type": "Label",
           "text": "Status: @{viewStatus}",
           "fontSize": 14,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "marginBottom": 5
         },
         {
           "type": "Label",
           "text": "Count: @{viewCount}",
           "fontSize": 14,
-          "fontColor": "#333333"
+          "fontColor": "dark_gray"
         }
       ]
     }

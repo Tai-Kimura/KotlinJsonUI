@@ -2,7 +2,7 @@
   "type": "View",
   "width": 150,
   "padding": 12,
-  "background": "#FFFFFF",
+  "background": "white",
   "cornerRadius": 12,
   "orientation": "vertical",
   "child": [
@@ -10,14 +10,14 @@
       "type": "View",
       "width": "matchParent",
       "height": 80,
-      "background": "#E3F2FD",
+      "background": "white_16",
       "cornerRadius": 8
     },
     {
       "type": "Label",
       "text": "@{title}",
       "fontSize": 14,
-      "fontColor": "#333333",
+      "fontColor": "dark_gray",
       "fontWeight": "semibold",
       "topMargin": 8
     },
@@ -25,7 +25,7 @@
       "type": "Label",
       "text": "@{description}",
       "fontSize": 12,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "topMargin": 4
     }
   ],

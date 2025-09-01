@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "keyboardAvoidance": true,
   "child": [
     {
@@ -15,21 +15,21 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
           "type": "Label",
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "bottomMargin": 20
         },
         {
           "type": "Label",
           "text": "TextField 1",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 8
         },
         {
@@ -39,11 +39,11 @@
           "height": 50,
           "hint": "Enter text here",
           "text": "@{textField1}",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "fontSize": 16,
           "secure": false,
           "bottomMargin": 16
@@ -52,7 +52,7 @@
           "type": "Label",
           "text": "TextField 2",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 8
         },
         {
@@ -62,11 +62,11 @@
           "height": 50,
           "hint": "Another text field",
           "text": "@{textField2}",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "fontSize": 16,
           "secure": false,
           "bottomMargin": 16
@@ -75,7 +75,7 @@
           "type": "Label",
           "text": "TextField 3",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 8
         },
         {
@@ -85,11 +85,11 @@
           "height": 50,
           "hint": "Keep typing...",
           "text": "@{textField3}",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "fontSize": 16,
           "secure": false,
           "bottomMargin": 16
@@ -98,7 +98,7 @@
           "type": "Label",
           "text": "TextField 4",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 8
         },
         {
@@ -108,11 +108,11 @@
           "height": 50,
           "hint": "This should scroll up",
           "text": "@{textField4}",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "fontSize": 16,
           "secure": false,
           "bottomMargin": 16
@@ -121,7 +121,7 @@
           "type": "Label",
           "text": "TextField 5 (at bottom)",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 8
         },
         {
@@ -131,11 +131,11 @@
           "height": 50,
           "hint": "This is near the bottom",
           "text": "@{textField5}",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "fontSize": 16,
           "secure": false,
           "bottomMargin": 16
@@ -144,7 +144,7 @@
           "type": "Label",
           "text": "TextView (Multi-line)",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 8
         },
         {
@@ -154,10 +154,10 @@
           "height": 120,
           "text": "@{textView}",
           "hint": "Multi-line text input\nType here...",
-          "hintColor": "#999999",
+          "hintColor": "light_gray_8",
           "fontSize": 16,
-          "fontColor": "#333333",
-          "background": "#FFFFFF",
+          "fontColor": "dark_gray",
+          "background": "white",
           "cornerRadius": 8,
           "bottomMargin": 16
         },
@@ -167,8 +167,8 @@
           "height": 50,
           "text": "Submit",
           "fontSize": 18,
-          "fontColor": "#FFFFFF",
-          "background": "#007AFF",
+          "fontColor": "white",
+          "background": "medium_blue",
           "cornerRadius": 8,
           "onclick": "submitForm"
         }

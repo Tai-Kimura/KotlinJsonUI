@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": {
     "type": "View",
     "orientation": "vertical",
@@ -13,23 +13,26 @@
         "text": "Button Height Test",
         "fontSize": 20,
         "fontWeight": "bold",
-        "fontColor": "#000000",
+        "fontColor": "black",
         "bottomMargin": 20
       },
       {
         "type": "Label",
         "text": "Height 55, Padding [12, 20]",
         "fontSize": 14,
-        "fontColor": "#666666",
+        "fontColor": "medium_gray_4",
         "bottomMargin": 5
       },
       {
         "type": "Button",
         "text": "Test Button 1",
         "height": 55,
-        "padding": [12, 20],
-        "background": "#007AFF",
-        "fontColor": "#FFFFFF",
+        "padding": [
+          12,
+          20
+        ],
+        "background": "medium_blue",
+        "fontColor": "white",
         "cornerRadius": 8,
         "bottomMargin": 20
       },
@@ -37,15 +40,15 @@
         "type": "Label",
         "text": "Height 55, No Padding",
         "fontSize": 14,
-        "fontColor": "#666666",
+        "fontColor": "medium_gray_4",
         "bottomMargin": 5
       },
       {
         "type": "Button",
         "text": "Test Button 2",
         "height": 55,
-        "background": "#34C759",
-        "fontColor": "#FFFFFF",
+        "background": "medium_green",
+        "fontColor": "white",
         "cornerRadius": 8,
         "bottomMargin": 20
       },
@@ -53,15 +56,18 @@
         "type": "Label",
         "text": "No Height, Padding [12, 20]",
         "fontSize": 14,
-        "fontColor": "#666666",
+        "fontColor": "medium_gray_4",
         "bottomMargin": 5
       },
       {
         "type": "Button",
         "text": "Test Button 3",
-        "padding": [12, 20],
-        "background": "#FF9500",
-        "fontColor": "#FFFFFF",
+        "padding": [
+          12,
+          20
+        ],
+        "background": "medium_red_3",
+        "fontColor": "white",
         "cornerRadius": 8,
         "bottomMargin": 20
       },
@@ -69,17 +75,20 @@
         "type": "Label",
         "text": "With bottomMargin 8, Height 55, Padding [12, 20]",
         "fontSize": 14,
-        "fontColor": "#666666",
+        "fontColor": "medium_gray_4",
         "bottomMargin": 5
       },
       {
         "type": "Button",
         "text": "Like primary_button style",
         "height": 55,
-        "padding": [12, 20],
+        "padding": [
+          12,
+          20
+        ],
         "bottomMargin": 8,
-        "background": "#007AFF",
-        "fontColor": "#FFFFFF",
+        "background": "medium_blue",
+        "fontColor": "white",
         "cornerRadius": 8
       }
     ]

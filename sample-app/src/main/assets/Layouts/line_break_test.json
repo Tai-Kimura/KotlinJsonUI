@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,13 +24,13 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lineBreakMode: Word (default)",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -42,18 +42,18 @@
           "lineBreakMode": "Word",
           "lines": 2,
           "fontSize": 14,
-          "background": "#E0E0E0",
+          "background": "pale_gray",
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lineBreakMode: Char",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -65,18 +65,18 @@
           "lineBreakMode": "Char",
           "lines": 2,
           "fontSize": 14,
-          "background": "#FFE0E0",
+          "background": "white_5",
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lineBreakMode: Clip",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -88,18 +88,18 @@
           "lineBreakMode": "Clip",
           "lines": 2,
           "fontSize": 14,
-          "background": "#E0FFE0",
+          "background": "white_6",
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lineBreakMode: Head",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -111,18 +111,18 @@
           "lineBreakMode": "Head",
           "lines": 2,
           "fontSize": 14,
-          "background": "#E0E0FF",
+          "background": "white_7",
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lineBreakMode: Middle",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -134,18 +134,18 @@
           "lineBreakMode": "Middle",
           "lines": 2,
           "fontSize": 14,
-          "background": "#FFFFE0",
+          "background": "white_8",
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lineBreakMode: Tail",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -157,18 +157,18 @@
           "lineBreakMode": "Tail",
           "lines": 2,
           "fontSize": 14,
-          "background": "#FFE0FF",
+          "background": "white_9",
           "padding": 10,
           "topMargin": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Lines Property Test",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -176,7 +176,7 @@
           "type": "Label",
           "text": "lines: 1",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10
         },
         {
@@ -186,17 +186,17 @@
           "lines": 1,
           "lineBreakMode": "Tail",
           "fontSize": 14,
-          "background": "#D0FFFF",
+          "background": "white_4",
           "padding": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lines: 3",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10
         },
         {
@@ -206,17 +206,17 @@
           "lines": 3,
           "lineBreakMode": "Tail",
           "fontSize": 14,
-          "background": "#FFD0D0",
+          "background": "pale_pink",
           "padding": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "lines: 0 (unlimited)",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10
         },
         {
@@ -225,11 +225,11 @@
           "text": "@{longText}",
           "lines": 0,
           "fontSize": 14,
-          "background": "#D0FFD0",
+          "background": "pale_yellow",
           "padding": 10,
           "leftMargin": 20,
           "rightMargin": 20,
-          "fontColor": "#000000"
+          "fontColor": "black"
         }
       ]
     }

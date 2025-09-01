@@ -6,121 +6,121 @@
       "type": "View",
       "id": "container",
       "orientation": "vertical",
-      "background": "#F5F5F5",
+      "background": "white_23",
       "child": [
-    {
-      "type": "Label",
-      "text": "Switch Events Test",
-      "fontSize": 24,
-      "fontWeight": "bold",
-      "topMargin": 20,
-      "bottomMargin": 20,
-      "centerHorizontal": true
-    },
-    {
-      "type": "Label",
-      "text": "Switch with onValueChange",
-      "fontSize": 18,
-      "fontWeight": "semibold",
-      "topMargin": 10,
-      "leftMargin": 20
-    },
-    {
-      "type": "Switch",
-      "id": "notificationSwitch",
-      "text": "Enable Notifications",
-      "isOn": "@{notificationEnabled}",
-      "onValueChange": "handleNotificationChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "id": "notificationStatus",
-      "text": "@{notificationStatus}",
-      "fontSize": 14,
-      "fontColor": "#666666",
-      "leftMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "Switch with Custom Tint",
-      "fontSize": 18,
-      "fontWeight": "semibold",
-      "topMargin": 30,
-      "leftMargin": 20
-    },
-    {
-      "type": "Switch",
-      "id": "darkModeSwitch",
-      "text": "Dark Mode",
-      "isOn": "@{darkModeEnabled}",
-      "tint": "#FF6B6B",
-      "onValueChange": "handleDarkModeChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "@{darkModeStatus}",
-      "fontSize": 14,
-      "fontColor": "#666666",
-      "leftMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "Multiple Switches with Events",
-      "fontSize": 18,
-      "fontWeight": "semibold",
-      "topMargin": 30,
-      "leftMargin": 20
-    },
-    {
-      "type": "Switch",
-      "id": "wifiSwitch",
-      "text": "Wi-Fi",
-      "isOn": "@{wifiEnabled}",
-      "tintColor": "#4CAF50",
-      "onValueChange": "handleWifiChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Switch",
-      "id": "bluetoothSwitch",
-      "text": "Bluetooth",
-      "isOn": "@{bluetoothEnabled}",
-      "tintColor": "#2196F3",
-      "onValueChange": "handleBluetoothChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Switch",
-      "id": "locationSwitch",
-      "text": "Location Services",
-      "isOn": "@{locationEnabled}",
-      "tintColor": "#FF9800",
-      "onValueChange": "handleLocationChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "Status: @{connectionStatus}",
-      "fontSize": 14,
-      "fontColor": "#666666",
-      "fontWeight": "semibold",
-      "leftMargin": 20,
-      "topMargin": 20
-    }
+        {
+          "type": "Label",
+          "text": "Switch Events Test",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 20,
+          "centerHorizontal": true
+        },
+        {
+          "type": "Label",
+          "text": "Switch with onValueChange",
+          "fontSize": 18,
+          "fontWeight": "semibold",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "Switch",
+          "id": "notificationSwitch",
+          "text": "Enable Notifications",
+          "isOn": "@{notificationEnabled}",
+          "onValueChange": "handleNotificationChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "id": "notificationStatus",
+          "text": "@{notificationStatus}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "leftMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Switch with Custom Tint",
+          "fontSize": 18,
+          "fontWeight": "semibold",
+          "topMargin": 30,
+          "leftMargin": 20
+        },
+        {
+          "type": "Switch",
+          "id": "darkModeSwitch",
+          "text": "Dark Mode",
+          "isOn": "@{darkModeEnabled}",
+          "tint": "light_red",
+          "onValueChange": "handleDarkModeChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "@{darkModeStatus}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "leftMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Multiple Switches with Events",
+          "fontSize": 18,
+          "fontWeight": "semibold",
+          "topMargin": 30,
+          "leftMargin": 20
+        },
+        {
+          "type": "Switch",
+          "id": "wifiSwitch",
+          "text": "Wi-Fi",
+          "isOn": "@{wifiEnabled}",
+          "tintColor": "medium_green_2",
+          "onValueChange": "handleWifiChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Switch",
+          "id": "bluetoothSwitch",
+          "text": "Bluetooth",
+          "isOn": "@{bluetoothEnabled}",
+          "tintColor": "medium_blue_2",
+          "onValueChange": "handleBluetoothChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Switch",
+          "id": "locationSwitch",
+          "text": "Location Services",
+          "isOn": "@{locationEnabled}",
+          "tintColor": "medium_red_5",
+          "onValueChange": "handleLocationChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Status: @{connectionStatus}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "semibold",
+          "leftMargin": 20,
+          "topMargin": 20
+        }
       ]
     }
   },

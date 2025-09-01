@@ -1,7 +1,7 @@
 {
   "type": "View",
   "padding": 8,
-  "background": "#FFFFFF",
+  "background": "white",
   "cornerRadius": 12,
   "orientation": "vertical",
   "child": [
@@ -17,7 +17,7 @@
       "type": "Label",
       "text": "@{title}",
       "fontSize": 14,
-      "fontColor": "#333333",
+      "fontColor": "dark_gray",
       "fontWeight": "semibold",
       "topMargin": 8
     },
@@ -25,7 +25,7 @@
       "type": "Label",
       "text": "@{price}",
       "fontSize": 12,
-      "fontColor": "#007AFF",
+      "fontColor": "medium_blue",
       "topMargin": 4
     }
   ],

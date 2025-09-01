@@ -1,6 +1,6 @@
 {
   "type": "SafeAreaView",
-  "background": "#F5F5F7",
+  "background": "white_12",
   "child": [
     {
       "type": "ScrollView",
@@ -15,16 +15,26 @@
               "text": "Custom Component Test",
               "fontSize": 28,
               "fontWeight": "bold",
-              "fontColor": "#000000",
-              "padding": [0, 0, 20, 0]
+              "fontColor": "black",
+              "padding": [
+                0,
+                0,
+                20,
+                0
+              ]
             },
             {
               "type": "Label",
               "text": "Testing SampleCard - Static Values",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "fontColor": "#333333",
-              "padding": [0, 0, 8, 0]
+              "fontColor": "dark_gray",
+              "padding": [
+                0,
+                0,
+                8,
+                0
+              ]
             },
             {
               "type": "SampleCard",
@@ -32,10 +42,10 @@
               "subtitle": "This is a static subtitle",
               "count": 42,
               "padding": 16,
-              "background": "#FFFFFF",
+              "background": "white",
               "cornerRadius": 12,
               "borderWidth": 1,
-              "borderColor": "#E0E0E0",
+              "borderColor": "pale_gray",
               "child": [
                 {
                   "type": "View",
@@ -45,13 +55,13 @@
                       "type": "Label",
                       "text": "Card Content",
                       "fontSize": 14,
-                      "fontColor": "#666666"
+                      "fontColor": "medium_gray_4"
                     },
                     {
                       "type": "Label",
                       "text": "This content is inside the custom component",
                       "fontSize": 12,
-                      "fontColor": "#999999"
+                      "fontColor": "light_gray_8"
                     }
                   ]
                 }
@@ -62,8 +72,13 @@
               "text": "Testing SampleCard - Dynamic Values",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "fontColor": "#333333",
-              "padding": [20, 0, 8, 0]
+              "fontColor": "dark_gray",
+              "padding": [
+                20,
+                0,
+                8,
+                0
+              ]
             },
             {
               "type": "SampleCard",
@@ -71,10 +86,10 @@
               "subtitle": "@{cardSubtitle}",
               "count": "@{itemCount}",
               "padding": 16,
-              "background": "#FFFFFF",
+              "background": "white",
               "cornerRadius": 12,
               "borderWidth": 1,
-              "borderColor": "#E0E0E0",
+              "borderColor": "pale_gray",
               "child": [
                 {
                   "type": "View",
@@ -85,7 +100,7 @@
                       "text": "Dynamic count: @{itemCount}",
                       "fontSize": 16,
                       "fontWeight": "medium",
-                      "fontColor": "#5856D6"
+                      "fontColor": "medium_blue_3"
                     },
                     {
                       "type": "View",
@@ -94,19 +109,25 @@
                         {
                           "type": "Button",
                           "text": "Increment",
-                          "background": "#5856D6",
-                          "fontColor": "#FFFFFF",
+                          "background": "medium_blue_3",
+                          "fontColor": "white",
                           "cornerRadius": 8,
-                          "padding": [8, 16],
+                          "padding": [
+                            8,
+                            16
+                          ],
                           "onClick": "incrementCount"
                         },
                         {
                           "type": "Button",
                           "text": "Decrement",
-                          "background": "#FF3B30",
-                          "fontColor": "#FFFFFF",
+                          "background": "medium_red",
+                          "fontColor": "white",
                           "cornerRadius": 8,
-                          "padding": [8, 16],
+                          "padding": [
+                            8,
+                            16
+                          ],
                           "onClick": "decrementCount"
                         }
                       ]
@@ -120,8 +141,13 @@
               "text": "Testing Multiple Cards",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "fontColor": "#333333",
-              "padding": [20, 0, 8, 0]
+              "fontColor": "dark_gray",
+              "padding": [
+                20,
+                0,
+                8,
+                0
+              ]
             },
             {
               "type": "View",
@@ -133,14 +159,14 @@
                   "subtitle": "First custom card",
                   "count": 1,
                   "padding": 12,
-                  "background": "#E8F5E9",
+                  "background": "white_13",
                   "cornerRadius": 8,
                   "child": [
                     {
                       "type": "Label",
                       "text": "Content for card 1",
                       "fontSize": 14,
-                      "fontColor": "#2E7D32"
+                      "fontColor": "dark_green"
                     }
                   ]
                 },
@@ -150,14 +176,14 @@
                   "subtitle": "Second custom card",
                   "count": 2,
                   "padding": 12,
-                  "background": "#FFF3E0",
+                  "background": "white_14",
                   "cornerRadius": 8,
                   "child": [
                     {
                       "type": "Label",
                       "text": "Content for card 2",
                       "fontSize": 14,
-                      "fontColor": "#E65100"
+                      "fontColor": "medium_red_4"
                     }
                   ]
                 },
@@ -167,14 +193,14 @@
                   "subtitle": "Third custom card",
                   "count": 3,
                   "padding": 12,
-                  "background": "#F3E5F5",
+                  "background": "white_15",
                   "cornerRadius": 8,
                   "child": [
                     {
                       "type": "Label",
                       "text": "Content for card 3",
                       "fontSize": 14,
-                      "fontColor": "#6A1B9A"
+                      "fontColor": "dark_purple"
                     }
                   ]
                 }
@@ -185,8 +211,13 @@
               "text": "Testing StatusBadge - Non-Container Component",
               "fontSize": 18,
               "fontWeight": "semibold",
-              "fontColor": "#333333",
-              "padding": [20, 0, 8, 0]
+              "fontColor": "dark_gray",
+              "padding": [
+                20,
+                0,
+                8,
+                0
+              ]
             },
             {
               "type": "View",
@@ -196,7 +227,7 @@
                   "type": "StatusBadge",
                   "title": "Static Status",
                   "status": "Active",
-                  "color": "#4CAF50",
+                  "color": "medium_green_2",
                   "count": 5
                 },
                 {
@@ -210,7 +241,7 @@
                   "type": "StatusBadge",
                   "title": "Error Status",
                   "status": "Error",
-                  "color": "#FF3B30",
+                  "color": "medium_red",
                   "count": 0
                 }
               ]
@@ -219,10 +250,13 @@
               "type": "Button",
               "text": "Toggle Dynamic Mode",
               "onClick": "toggleDynamicMode",
-              "background": "#5856D6",
-              "fontColor": "#FFFFFF",
+              "background": "medium_blue_3",
+              "fontColor": "white",
               "cornerRadius": 8,
-              "padding": [12, 20],
+              "padding": [
+                12,
+                20
+              ],
               "marginTop": 20,
               "width": "wrapContent"
             },
@@ -230,7 +264,7 @@
               "type": "Label",
               "text": "Dynamic Mode: @{dynamicModeStatus}",
               "fontSize": 14,
-              "fontColor": "#666666",
+              "fontColor": "medium_gray_4",
               "textAlign": "center",
               "marginTop": 8
             }

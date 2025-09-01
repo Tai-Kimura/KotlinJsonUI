@@ -1,23 +1,26 @@
 {
   "type": "View",
   "padding": 16,
-  "background": "#FFFFFF",
+  "background": "white",
   "cornerRadius": 16,
   "child": [
     {
       "type": "Label",
       "text": "@{badge}",
       "fontSize": 10,
-      "fontColor": "#FFFFFF",
-      "background": "#FF6B6B",
-      "padding": [4, 8],
+      "fontColor": "white",
+      "background": "light_red",
+      "padding": [
+        4,
+        8
+      ],
       "cornerRadius": 12
     },
     {
       "type": "Label",
       "text": "@{title}",
       "fontSize": 18,
-      "fontColor": "#FFFFFF",
+      "fontColor": "white",
       "fontWeight": "bold",
       "topMargin": 12
     },
@@ -25,7 +28,7 @@
       "type": "Label",
       "text": "@{description}",
       "fontSize": 14,
-      "fontColor": "#FFFFFF",
+      "fontColor": "white",
       "topMargin": 8,
       "alpha": 0.9
     }

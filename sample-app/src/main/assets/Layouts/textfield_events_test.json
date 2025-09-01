@@ -6,96 +6,96 @@
       "type": "View",
       "id": "container",
       "orientation": "vertical",
-      "background": "#F5F5F5",
+      "background": "white_23",
       "child": [
-    {
-      "type": "Label",
-      "text": "TextField Events Test",
-      "fontSize": 24,
-      "fontWeight": "bold",
-      "topMargin": 20,
-      "bottomMargin": 20,
-      "centerHorizontal": true
-    },
-    {
-      "type": "Label",
-      "text": "onTextChange Event Test",
-      "fontSize": 18,
-      "fontWeight": "semibold",
-      "topMargin": 10,
-      "leftMargin": 20
-    },
-    {
-      "type": "TextField",
-      "id": "emailField",
-      "text": "@{email}",
-      "hint": "Enter email",
-      "input": "email",
-      "returnKeyType": "done",
-      "borderStyle": "roundedRect",
-      "onTextChange": "handleEmailChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "id": "emailStatus",
-      "text": "Email: @{emailDisplay}",
-      "fontSize": 14,
-      "fontColor": "#666666",
-      "leftMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "Secure TextField Test",
-      "fontSize": 18,
-      "fontWeight": "semibold",
-      "topMargin": 30,
-      "leftMargin": 20
-    },
-    {
-      "type": "TextField",
-      "id": "passwordField",
-      "text": "@{password}",
-      "hint": "Enter password",
-      "secure": true,
-      "returnKeyType": "done",
-      "borderStyle": "roundedRect",
-      "onTextChange": "handlePasswordChange",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "Password length: @{passwordLength}",
-      "fontSize": 14,
-      "fontColor": "#666666",
-      "leftMargin": 20,
-      "topMargin": 10
-    },
-    {
-      "type": "Label",
-      "text": "Input Accessory Test",
-      "fontSize": 18,
-      "fontWeight": "semibold",
-      "topMargin": 30,
-      "leftMargin": 20
-    },
-    {
-      "type": "TextField",
-      "id": "notesField",
-      "text": "@{notes}",
-      "hint": "Enter notes",
-      "accessoryBackground": "#007AFF",
-      "accessoryTextColor": "#FFFFFF",
-      "doneText": "Finish",
-      "leftMargin": 20,
-      "rightMargin": 20,
-      "topMargin": 10
-    }
+        {
+          "type": "Label",
+          "text": "TextField Events Test",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 20,
+          "centerHorizontal": true
+        },
+        {
+          "type": "Label",
+          "text": "onTextChange Event Test",
+          "fontSize": 18,
+          "fontWeight": "semibold",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "TextField",
+          "id": "emailField",
+          "text": "@{email}",
+          "hint": "Enter email",
+          "input": "email",
+          "returnKeyType": "done",
+          "borderStyle": "roundedRect",
+          "onTextChange": "handleEmailChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "id": "emailStatus",
+          "text": "Email: @{emailDisplay}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "leftMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Secure TextField Test",
+          "fontSize": 18,
+          "fontWeight": "semibold",
+          "topMargin": 30,
+          "leftMargin": 20
+        },
+        {
+          "type": "TextField",
+          "id": "passwordField",
+          "text": "@{password}",
+          "hint": "Enter password",
+          "secure": true,
+          "returnKeyType": "done",
+          "borderStyle": "roundedRect",
+          "onTextChange": "handlePasswordChange",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Password length: @{passwordLength}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "leftMargin": 20,
+          "topMargin": 10
+        },
+        {
+          "type": "Label",
+          "text": "Input Accessory Test",
+          "fontSize": 18,
+          "fontWeight": "semibold",
+          "topMargin": 30,
+          "leftMargin": 20
+        },
+        {
+          "type": "TextField",
+          "id": "notesField",
+          "text": "@{notes}",
+          "hint": "Enter notes",
+          "accessoryBackground": "#007AFF",
+          "accessoryTextColor": "#FFFFFF",
+          "doneText": "Finish",
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "topMargin": 10
+        }
       ]
     }
   },

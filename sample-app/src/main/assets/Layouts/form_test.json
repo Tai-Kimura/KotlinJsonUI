@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "keyboardAvoidance": true,
   "child": [
     {
@@ -15,14 +15,14 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
           "type": "Label",
           "text": "@{title}",
           "fontSize": 28,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "fontWeight": "bold",
           "bottomMargin": 24
         },
@@ -30,7 +30,7 @@
           "type": "Label",
           "text": "Personal Information",
           "fontSize": 20,
-          "fontColor": "#007AFF",
+          "fontColor": "medium_blue",
           "fontWeight": "semibold",
           "bottomMargin": 16
         },
@@ -38,7 +38,7 @@
           "type": "Label",
           "text": "First Name",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -49,18 +49,18 @@
           "placeholder": "Enter your first name",
           "text": "@{firstName}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Last Name",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -71,18 +71,18 @@
           "placeholder": "Enter your last name",
           "text": "@{lastName}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Email Address",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -93,19 +93,19 @@
           "placeholder": "email@example.com",
           "text": "@{email}",
           "fontSize": 16,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "keyboardType": "email",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Phone Number",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -116,19 +116,19 @@
           "placeholder": "+1 234 567 8900",
           "text": "@{phone}",
           "fontSize": 16,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "keyboardType": "phone",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 24,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Address Information",
           "fontSize": 20,
-          "fontColor": "#007AFF",
+          "fontColor": "medium_blue",
           "fontWeight": "semibold",
           "bottomMargin": 16
         },
@@ -136,7 +136,7 @@
           "type": "Label",
           "text": "Street Address",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -147,18 +147,18 @@
           "placeholder": "123 Main Street",
           "text": "@{address}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "City",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -169,18 +169,18 @@
           "placeholder": "New York",
           "text": "@{city}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "ZIP Code",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -191,19 +191,19 @@
           "placeholder": "10001",
           "text": "@{zipCode}",
           "fontSize": 16,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "keyboardType": "number",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Country",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -214,18 +214,18 @@
           "placeholder": "United States",
           "text": "@{country}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 24,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Professional Information",
           "fontSize": 20,
-          "fontColor": "#007AFF",
+          "fontColor": "medium_blue",
           "fontWeight": "semibold",
           "bottomMargin": 16
         },
@@ -233,7 +233,7 @@
           "type": "Label",
           "text": "Company",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -244,18 +244,18 @@
           "placeholder": "Company Name",
           "text": "@{company}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Job Title",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -266,18 +266,18 @@
           "placeholder": "Software Engineer",
           "text": "@{jobTitle}",
           "fontSize": 16,
-          "fontColor": "#000000",
-          "background": "#FFFFFF",
+          "fontColor": "black",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 24,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Additional Information",
           "fontSize": 20,
-          "fontColor": "#007AFF",
+          "fontColor": "medium_blue",
           "fontWeight": "semibold",
           "bottomMargin": 16
         },
@@ -285,7 +285,7 @@
           "type": "Label",
           "text": "Bio (Flexible Height)",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -297,20 +297,20 @@
           "maxHeight": 200,
           "text": "@{bio}",
           "hint": "Tell us about yourself...\nThis field will grow as you type",
-          "hintColor": "#999999",
+          "hintColor": "light_gray_8",
           "fontSize": 16,
-          "fontColor": "#333333",
-          "background": "#FFFFFF",
+          "fontColor": "dark_gray",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Notes (Fixed Height)",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -320,21 +320,21 @@
           "height": 120,
           "text": "@{notes}",
           "hint": "Additional notes...\nFixed height field",
-          "hintColor": "#AAAAAA",
+          "hintColor": "light_gray_9",
           "hideOnFocused": false,
           "fontSize": 16,
-          "fontColor": "#333333",
-          "background": "#FFFFFF",
+          "fontColor": "dark_gray",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 16,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
           "type": "Label",
           "text": "Comments (Very Flexible)",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "bottomMargin": 6
         },
         {
@@ -347,16 +347,16 @@
           "text": "@{comments}",
           "hint": "Any comments?\nThis can grow very tall (up to 300pt)",
           "hintAttributes": {
-            "fontColor": "#BBBBBB",
+            "fontColor": "light_gray_10",
             "fontSize": 14,
             "fontStyle": "italic"
           },
           "fontSize": 16,
-          "fontColor": "#333333",
-          "background": "#FFFFFF",
+          "fontColor": "dark_gray",
+          "background": "white",
           "cornerRadius": 10,
           "bottomMargin": 24,
-          "borderColor": "#E0E0E0",
+          "borderColor": "pale_gray",
           "borderWidth": 1
         },
         {
@@ -376,7 +376,7 @@
               "type": "Label",
               "text": "I agree to the Terms and Conditions",
               "fontSize": 14,
-              "fontColor": "#333333",
+              "fontColor": "dark_gray",
               "width": "wrapContent"
             }
           ]
@@ -387,9 +387,9 @@
           "height": 54,
           "text": "Submit Form",
           "fontSize": 18,
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "fontWeight": "semibold",
-          "background": "#007AFF",
+          "background": "medium_blue",
           "cornerRadius": 12,
           "onclick": "submitForm",
           "bottomMargin": 16
@@ -400,11 +400,11 @@
           "height": 54,
           "text": "Clear All Fields",
           "fontSize": 18,
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "fontWeight": "semibold",
-          "background": "#FFFFFF",
+          "background": "white",
           "cornerRadius": 12,
-          "borderColor": "#FF3B30",
+          "borderColor": "medium_red",
           "borderWidth": 2,
           "onclick": "clearForm",
           "bottomMargin": 40

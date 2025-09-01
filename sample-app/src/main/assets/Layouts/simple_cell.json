@@ -1,35 +1,35 @@
 {
-    "type": "View",
-    "orientation": "horizontal",
-    "padding": 12,
-    "background": "#F9F9F9",
-    "cornerRadius": 6,
-    "child": [
-        {
-            "type": "Label",
-            "text": "@{title}",
-            "fontSize": 14,
-            "fontColor": "#000000",
-            "weight": 1
-        },
-        {
-            "type": "Label",
-            "text": "@{value}",
-            "fontSize": 14,
-            "fontWeight": "bold",
-            "fontColor": "#007AFF"
-        }
-    ],
-    "data": [
-        {
-            "name": "title",
-            "class": "String",
-            "defaultValue": ""
-        },
-        {
-            "name": "value",
-            "class": "String",
-            "defaultValue": ""
-        }
-    ]
+  "type": "View",
+  "orientation": "horizontal",
+  "padding": 12,
+  "background": "white_28",
+  "cornerRadius": 6,
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 14,
+      "fontColor": "black",
+      "weight": 1
+    },
+    {
+      "type": "Label",
+      "text": "@{value}",
+      "fontSize": 14,
+      "fontWeight": "bold",
+      "fontColor": "medium_blue"
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "value",
+      "class": "String",
+      "defaultValue": ""
+    }
+  ]
 }

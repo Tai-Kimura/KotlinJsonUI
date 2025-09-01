@@ -1,7 +1,7 @@
 {
   "type": "View",
   "padding": 12,
-  "background": "#FFFFFF",
+  "background": "white",
   "cornerRadius": 8,
   "orientation": "vertical",
   "child": [
@@ -9,13 +9,13 @@
       "type": "Label",
       "text": "@{title}",
       "fontSize": 16,
-      "fontColor": "#333333"
+      "fontColor": "dark_gray"
     },
     {
       "type": "Label",
       "text": "@{subtitle}",
       "fontSize": 12,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "topMargin": 4
     }
   ],

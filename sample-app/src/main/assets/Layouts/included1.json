@@ -2,7 +2,7 @@
   "type": "View",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "orientation": "vertical",
   "child": [
     {
@@ -13,7 +13,7 @@
       "topMargin": 20,
       "text": "@{title}",
       "fontSize": 24,
-      "fontColor": "#000000"
+      "fontColor": "black"
     }
   ],
   "data": [

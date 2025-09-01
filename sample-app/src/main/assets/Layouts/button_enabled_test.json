@@ -2,28 +2,28 @@
   "type": "View",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "orientation": "vertical",
   "padding": 20,
   "child": [
     {
       "type": "Button",
       "style": "dynamic_toggle",
-      "fontColor": "#FFFFFF",
+      "fontColor": "white",
       "cornerRadius": 8
     },
     {
       "type": "Label",
       "text": "@{title}",
       "fontSize": 24,
-      "fontColor": "#000000",
+      "fontColor": "black",
       "marginBottom": 20
     },
     {
       "type": "Label",
       "text": "Button enabled state: @{isButtonEnabled}",
       "fontSize": 16,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "marginBottom": 10
     },
     {
@@ -31,8 +31,8 @@
       "text": "Test Button (controlled by data)",
       "enabled": "@{isButtonEnabled}",
       "onclick": "testAction",
-      "background": "#4CAF50",
-      "fontColor": "#FFFFFF",
+      "background": "medium_green_2",
+      "fontColor": "white",
       "padding": 10,
       "cornerRadius": 5,
       "marginBottom": 20
@@ -41,8 +41,8 @@
       "type": "Button",
       "text": "Toggle Enabled State",
       "onclick": "toggleEnabled",
-      "background": "#2196F3",
-      "fontColor": "#FFFFFF",
+      "background": "medium_blue_2",
+      "fontColor": "white",
       "padding": 10,
       "cornerRadius": 5,
       "marginBottom": 10
@@ -52,8 +52,8 @@
       "text": "Always Disabled Button",
       "enabled": false,
       "onclick": "neverCalled",
-      "background": "#FF5722",
-      "fontColor": "#FFFFFF",
+      "background": "medium_red_2",
+      "fontColor": "white",
       "padding": 10,
       "cornerRadius": 5,
       "marginBottom": 10
@@ -63,8 +63,8 @@
       "text": "Always Enabled Button",
       "enabled": true,
       "onclick": "alwaysCalled",
-      "background": "#9C27B0",
-      "fontColor": "#FFFFFF",
+      "background": "medium_purple",
+      "fontColor": "white",
       "padding": 10,
       "cornerRadius": 5
     }

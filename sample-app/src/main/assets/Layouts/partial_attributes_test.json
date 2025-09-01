@@ -2,7 +2,7 @@
   "type": "SafeAreaView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": {
     "type": "ScrollView",
     "width": "matchParent",
@@ -34,20 +34,29 @@
           "bottomMargin": 20,
           "partialAttributes": [
             {
-              "range": [14, 21],
-              "fontColor": "#FF0000",
+              "range": [
+                14,
+                21
+              ],
+              "fontColor": "dark_red",
               "fontWeight": "bold"
             },
             {
-              "range": [22, 29],
-              "fontColor": "#00FF00",
+              "range": [
+                22,
+                29
+              ],
+              "fontColor": "dark_green_2",
               "underline": true
             },
             {
-              "range": [50, 55],
-              "fontColor": "#0000FF",
+              "range": [
+                50,
+                55
+              ],
+              "fontColor": "dark_blue",
               "fontSize": 20,
-              "background": "#FFFF00"
+              "background": "light_2"
             }
           ]
         },
@@ -58,14 +67,20 @@
           "bottomMargin": 20,
           "partialAttributes": [
             {
-              "range": [6, 10],
-              "fontColor": "#0000FF",
+              "range": [
+                6,
+                10
+              ],
+              "fontColor": "dark_blue",
               "underline": true,
               "onclick": "navigateToPage1"
             },
             {
-              "range": [27, 31],
-              "fontColor": "#0000FF",
+              "range": [
+                27,
+                31
+              ],
+              "fontColor": "dark_blue",
               "underline": true,
               "onclick": "navigateToPage2"
             }
@@ -77,21 +92,33 @@
           "fontSize": 16,
           "partialAttributes": [
             {
-              "range": [14, 18],
+              "range": [
+                14,
+                18
+              ],
               "fontWeight": "bold"
             },
             {
-              "range": [20, 26],
-              "fontColor": "#FF00FF"
+              "range": [
+                20,
+                26
+              ],
+              "fontColor": "light"
             },
             {
-              "range": [28, 37],
+              "range": [
+                28,
+                37
+              ],
               "underline": true
             },
             {
-              "range": [39, 53],
+              "range": [
+                39,
+                53
+              ],
               "strikethrough": true,
-              "fontColor": "#999999"
+              "fontColor": "light_gray_8"
             }
           ]
         },
@@ -103,13 +130,13 @@
           "partialAttributes": [
             {
               "range": "天気",
-              "fontColor": "#FF0000",
+              "fontColor": "dark_red",
               "fontWeight": "bold",
               "fontSize": 20
             },
             {
               "range": "晴れる",
-              "fontColor": "#0000FF",
+              "fontColor": "dark_blue",
               "underline": true
             }
           ]

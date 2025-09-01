@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,7 +24,7 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -33,9 +33,9 @@
           "topMargin": 20,
           "text": "Visibility: visible (default)",
           "visibility": "visible",
-          "background": "#D0FFD0",
+          "background": "pale_yellow",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -44,9 +44,9 @@
           "topMargin": 10,
           "text": "This label is invisible (takes space)",
           "visibility": "invisible",
-          "background": "#FFD0D0",
+          "background": "pale_pink",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -54,9 +54,9 @@
           "height": "wrapContent",
           "topMargin": 10,
           "text": "After invisible label",
-          "background": "#D0D0FF",
+          "background": "pale_cyan",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -65,9 +65,9 @@
           "topMargin": 10,
           "text": "This label is gone (no space)",
           "visibility": "gone",
-          "background": "#FFFFD0",
+          "background": "white_2",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -75,9 +75,9 @@
           "height": "wrapContent",
           "topMargin": 10,
           "text": "After gone label (no gap)",
-          "background": "#FFD0FF",
+          "background": "white_3",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -86,7 +86,7 @@
           "topMargin": 30,
           "text": "Opacity Tests",
           "fontSize": 18,
-          "fontColor": "#333333"
+          "fontColor": "dark_gray"
         },
         {
           "type": "Label",
@@ -95,9 +95,9 @@
           "topMargin": 10,
           "text": "Opacity: 1.0 (fully visible)",
           "opacity": 1.0,
-          "background": "#FFE0E0",
+          "background": "white_5",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -106,9 +106,9 @@
           "topMargin": 10,
           "text": "Opacity: 0.7",
           "opacity": 0.7,
-          "background": "#E0FFE0",
+          "background": "white_6",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -117,9 +117,9 @@
           "topMargin": 10,
           "text": "Opacity: 0.5",
           "opacity": 0.5,
-          "background": "#E0E0FF",
+          "background": "white_7",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -128,9 +128,9 @@
           "topMargin": 10,
           "text": "Opacity: 0.3",
           "opacity": 0.3,
-          "background": "#FFFFE0",
+          "background": "white_8",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -139,9 +139,9 @@
           "topMargin": 10,
           "text": "Opacity: 0.1",
           "opacity": 0.1,
-          "background": "#FFD0FF",
+          "background": "white_3",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -150,7 +150,7 @@
           "topMargin": 30,
           "text": "Alpha Test (same as opacity)",
           "fontSize": 18,
-          "fontColor": "#333333"
+          "fontColor": "dark_gray"
         },
         {
           "type": "Label",
@@ -159,9 +159,9 @@
           "topMargin": 10,
           "text": "Alpha: 0.6",
           "alpha": 0.6,
-          "background": "#D0FFFF",
+          "background": "white_4",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -170,7 +170,7 @@
           "topMargin": 30,
           "text": "Dynamic Visibility Tests",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "fontWeight": "bold"
         },
         {
@@ -178,9 +178,9 @@
           "text": "Toggle Visibility",
           "onClick": "toggleVisibility",
           "topMargin": 10,
-          "background": "#007AFF",
-          "textColor": "#FFFFFF",
-          "fontColor": "#FFFFFF",
+          "background": "medium_blue",
+          "textColor": "white",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -190,9 +190,9 @@
           "topMargin": 10,
           "text": "This text uses dynamic visibility",
           "visibility": "@{textVisibility}",
-          "background": "#FFE0E0",
+          "background": "white_5",
           "fontSize": 16,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "padding": 10
         },
         {
@@ -200,9 +200,9 @@
           "text": "Toggle Hidden",
           "onClick": "toggleHidden",
           "topMargin": 20,
-          "background": "#34C759",
-          "textColor": "#FFFFFF",
-          "fontColor": "#FFFFFF",
+          "background": "medium_green",
+          "textColor": "white",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -212,9 +212,9 @@
           "topMargin": 10,
           "text": "This text uses dynamic hidden attribute",
           "hidden": "@{isHidden}",
-          "background": "#E0FFE0",
+          "background": "white_6",
           "fontSize": 16,
-          "fontColor": "#000000",
+          "fontColor": "black",
           "padding": 10
         }
       ]

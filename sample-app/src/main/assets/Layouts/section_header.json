@@ -1,7 +1,10 @@
 {
   "type": "View",
-  "padding": [16, 8],
-  "background": "#F0F0F0",
+  "padding": [
+    16,
+    8
+  ],
+  "background": "white_17",
   "width": "matchParent",
   "child": [
     {
@@ -9,7 +12,7 @@
       "text": "@{title}",
       "fontSize": 18,
       "fontWeight": "bold",
-      "fontColor": "#000000"
+      "fontColor": "black"
     }
   ],
   "data": [

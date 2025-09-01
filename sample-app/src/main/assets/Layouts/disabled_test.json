@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,13 +24,13 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Enabled Button",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -41,8 +41,8 @@
           "leftMargin": 20,
           "rightMargin": 20,
           "text": "Enabled Button",
-          "background": "#007AFF",
-          "fontColor": "#FFFFFF",
+          "background": "medium_blue",
+          "fontColor": "white",
           "cornerRadius": 8,
           "enabled": true,
           "onclick": "onEnabledButtonTap"
@@ -51,7 +51,7 @@
           "type": "Label",
           "text": "Disabled Button",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -62,9 +62,9 @@
           "leftMargin": 20,
           "rightMargin": 20,
           "text": "Disabled Button",
-          "background": "#007AFF",
-          "disabledBackground": "#CCCCCC",
-          "fontColor": "#FFFFFF",
+          "background": "medium_blue",
+          "disabledBackground": "pale_gray_4",
+          "fontColor": "white",
           "disabledFontColor": "#999999",
           "cornerRadius": 8,
           "enabled": false,
@@ -74,7 +74,7 @@
           "type": "Label",
           "text": "TouchDisabledState Button",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -85,8 +85,8 @@
           "leftMargin": 20,
           "rightMargin": 20,
           "text": "Touch Disabled",
-          "background": "#FF9500",
-          "fontColor": "#FFFFFF",
+          "background": "medium_red_3",
+          "fontColor": "white",
           "cornerRadius": 8,
           "touchDisabledState": true,
           "onclick": "onTouchDisabledTap"
@@ -95,7 +95,7 @@
           "type": "Label",
           "text": "Enabled TextField",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -107,10 +107,10 @@
           "rightMargin": 20,
           "hint": "Enabled - can type here",
           "text": "@{textFieldValue}",
-          "background": "#FFFFFF",
+          "background": "white",
           "padding": 10,
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
           "enabled": true
         },
@@ -118,7 +118,7 @@
           "type": "Label",
           "text": "Disabled TextField",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20
         },
         {
@@ -130,21 +130,21 @@
           "rightMargin": 20,
           "hint": "Disabled - cannot type",
           "text": "Disabled text field",
-          "background": "#FFFFFF",
-          "disabledBackground": "#E0E0E0",
+          "background": "white",
+          "disabledBackground": "pale_gray",
           "padding": 10,
           "cornerRadius": 8,
-          "borderColor": "#CCCCCC",
+          "borderColor": "pale_gray_4",
           "borderWidth": 1,
           "enabled": false,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "disabledFontColor": "#999999"
         },
         {
           "type": "Label",
           "text": "Dynamic Enable/Disable Test",
           "fontSize": 16,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -156,8 +156,8 @@
           "leftMargin": 20,
           "rightMargin": 20,
           "text": "Toggle Enable State",
-          "background": "#34C759",
-          "fontColor": "#FFFFFF",
+          "background": "medium_green",
+          "fontColor": "white",
           "cornerRadius": 8,
           "onclick": "toggleEnableState"
         },
@@ -169,9 +169,9 @@
           "leftMargin": 20,
           "rightMargin": 20,
           "text": "Dynamic Button",
-          "background": "#5856D6",
-          "disabledBackground": "#D0D0D0",
-          "fontColor": "#FFFFFF",
+          "background": "medium_blue_3",
+          "disabledBackground": "pale_gray_3",
+          "fontColor": "white",
           "disabledFontColor": "#888888",
           "cornerRadius": 8,
           "enabled": "@{isEnabled}",
@@ -181,7 +181,7 @@
           "type": "Label",
           "text": "Current state: @{isEnabled}",
           "fontSize": 14,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 10,
           "centerHorizontal": true
         }

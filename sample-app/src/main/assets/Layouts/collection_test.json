@@ -1,6 +1,6 @@
 {
   "type": "View",
-  "background": "#F5F5F7",
+  "background": "white_12",
   "child": [
     {
       "type": "ScrollView",
@@ -15,16 +15,15 @@
               "text": "CollectionView Test",
               "fontSize": 28,
               "fontWeight": "bold",
-              "fontColor": "#000000",
+              "fontColor": "black",
               "bottomMargin": 20
             },
-
             {
               "type": "Label",
               "text": "Basic Collection with Headers & Footers",
               "fontSize": 20,
               "fontWeight": "semibold",
-              "fontColor": "#000000",
+              "fontColor": "black",
               "bottomMargin": 12
             },
             {
@@ -42,13 +41,12 @@
               "height": 300,
               "bottomMargin": 20
             },
-
             {
               "type": "Label",
               "text": "Grid Collection with Multiple Cell Types",
               "fontSize": 20,
               "fontWeight": "semibold",
-              "fontColor": "#000000",
+              "fontColor": "black",
               "bottomMargin": 12
             },
             {
@@ -67,13 +65,12 @@
               "height": 400,
               "bottomMargin": 20
             },
-
             {
               "type": "Label",
               "text": "Horizontal Collection",
               "fontSize": 20,
               "fontWeight": "semibold",
-              "fontColor": "#000000",
+              "fontColor": "black",
               "bottomMargin": 12
             },
             {
@@ -90,13 +87,12 @@
               "height": 150,
               "bottomMargin": 20
             },
-
             {
               "type": "Label",
               "text": "Sectioned Collection",
               "fontSize": 20,
               "fontWeight": "semibold",
-              "fontColor": "#000000",
+              "fontColor": "black",
               "bottomMargin": 12
             },
             {
@@ -114,13 +110,12 @@
               "height": 400,
               "bottomMargin": 20
             },
-
             {
               "type": "Label",
               "text": "Multi-Section Collection",
               "fontSize": 20,
               "fontWeight": "semibold",
-              "fontColor": "#000000",
+              "fontColor": "black",
               "bottomMargin": 12
             },
             {
@@ -151,7 +146,7 @@
             {
               "type": "Button",
               "style": "dynamic_toggle",
-              "fontColor": "#FFFFFF",
+              "fontColor": "white",
               "cornerRadius": 8,
               "topMargin": 20
             }

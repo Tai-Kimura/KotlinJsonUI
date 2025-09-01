@@ -1,14 +1,17 @@
 {
   "type": "View",
-  "padding": [16, 8],
-  "background": "#FAFAFA",
+  "padding": [
+    16,
+    8
+  ],
+  "background": "white_27",
   "width": "matchParent",
   "child": [
     {
       "type": "Label",
       "text": "@{text}",
       "fontSize": 12,
-      "fontColor": "#666666"
+      "fontColor": "medium_gray_4"
     }
   ],
   "data": [

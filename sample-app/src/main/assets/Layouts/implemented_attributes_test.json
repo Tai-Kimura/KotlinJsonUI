@@ -6,7 +6,7 @@
     "type": "ScrollView",
     "width": "matchParent",
     "height": "matchParent",
-    "background": "#F0F0F0",
+    "background": "white_17",
     "keyboardAvoidance": true,
     "child": {
       "type": "View",
@@ -49,14 +49,14 @@
         {
           "type": "View",
           "height": 200,
-          "background": "#f0f0f0",
+          "background": "white_17",
           "child": [
             {
               "type": "Label",
               "id": "target1",
               "text": "Target View",
-              "background": "#ff0000",
-              "fontColor": "#ffffff",
+              "background": "dark_red",
+              "fontColor": "white",
               "padding": 10,
               "alignTop": true,
               "alignLeft": true,
@@ -66,7 +66,7 @@
             {
               "type": "Label",
               "text": "Centered V",
-              "background": "#00ff00",
+              "background": "dark_green_2",
               "padding": 10,
               "alignCenterVerticalView": "target1",
               "alignRight": true,
@@ -75,8 +75,8 @@
             {
               "type": "Label",
               "text": "Centered H",
-              "background": "#0000ff",
-              "fontColor": "#ffffff",
+              "background": "dark_blue",
+              "fontColor": "white",
               "padding": 10,
               "alignCenterHorizontalView": "target1",
               "alignBottom": true,
@@ -96,7 +96,7 @@
           "type": "View",
           "idealWidth": 200,
           "idealHeight": 100,
-          "background": "#ffcccc",
+          "background": "pale_red",
           "padding": 10,
           "child": [
             {
@@ -117,7 +117,7 @@
           "type": "View",
           "width": 150,
           "height": 50,
-          "background": "#ccffcc",
+          "background": "pale_green",
           "clipToBounds": true,
           "child": [
             {
@@ -141,25 +141,25 @@
           "direction": "rightToLeft",
           "distribution": "fillEqually",
           "height": 50,
-          "background": "#ccccff",
+          "background": "pale_blue_3",
           "child": [
             {
               "type": "Label",
               "text": "1",
-              "background": "#ff6666",
+              "background": "light_red_2",
               "textAlign": "center"
             },
             {
               "type": "Label",
               "text": "2",
-              "background": "#66ff66",
+              "background": "light_green",
               "textAlign": "center"
             },
             {
               "type": "Label",
               "text": "3",
-              "background": "#6666ff",
-              "fontColor": "#ffffff",
+              "background": "light_blue",
+              "fontColor": "white",
               "textAlign": "center"
             }
           ]
@@ -176,7 +176,7 @@
           "type": "Label",
           "text": "Text with edgeInset",
           "edgeInset": 20,
-          "background": "#ffffcc",
+          "background": "white_18",
           "fontSize": 16
         },
         {
@@ -190,9 +190,9 @@
         {
           "type": "Button",
           "text": "Tap Me (tapBackground)",
-          "tapBackground": "#ff00ff",
-          "background": "#cccccc",
-          "fontColor": "#000000",
+          "tapBackground": "light",
+          "background": "pale_gray_4",
+          "fontColor": "black",
           "padding": 10,
           "cornerRadius": 8,
           "bottomMargin": 10
@@ -201,8 +201,8 @@
           "type": "Button",
           "text": "Highlight Me",
           "hilightColor": "#ff0000",
-          "background": "#0000ff",
-          "fontColor": "#ffffff",
+          "background": "dark_blue",
+          "fontColor": "white",
           "padding": 10,
           "cornerRadius": 8,
           "bottomMargin": 10
@@ -211,9 +211,9 @@
           "type": "Button",
           "text": "Disabled Button",
           "disabledFontColor": "#999999",
-          "disabledBackground": "#f0f0f0",
-          "background": "#0000ff",
-          "fontColor": "#ffffff",
+          "disabledBackground": "white_17",
+          "background": "dark_blue",
+          "fontColor": "white",
           "enabled": false,
           "padding": 10,
           "cornerRadius": 8
@@ -282,11 +282,15 @@
         {
           "type": "Segment",
           "id": "segment",
-          "items": ["First", "Second", "Third"],
+          "items": [
+            "First",
+            "Second",
+            "Third"
+          ],
           "selectedIndex": "@{selectedSegment}",
           "normalColor": "#000000",
           "selectedColor": "#0000ff",
-          "tintColor": "#0000ff",
+          "tintColor": "dark_blue",
           "bottomMargin": 10
         },
         {
@@ -299,18 +303,25 @@
         },
         {
           "type": "SelectBox",
-          "background": "#FFFFFF",
+          "background": "white",
           "width": "matchParent",
           "height": "wrapContent",
           "prompt": "Choose an option",
-          "items": ["Option A", "Option B", "Option C"],
+          "items": [
+            "Option A",
+            "Option B",
+            "Option C"
+          ],
           "defaultIndex": 0,
           "fontSize": 16,
-          "fontColor": "#0000ff",
-          "cancelButtonBackgroundColor": "#FFE5E5",
-          "cancelButtonTextColor": "#FF0000",
+          "fontColor": "dark_blue",
+          "cancelButtonBackgroundColor": "white_19",
+          "cancelButtonTextColor": "dark_red",
           "bottomMargin": 10,
-          "padding": [15, 10]
+          "padding": [
+            15,
+            10
+          ]
         },
         {
           "type": "Label",

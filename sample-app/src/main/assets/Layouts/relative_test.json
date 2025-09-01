@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "orientation": "vertical",
   "paddings": [
     20,
@@ -33,7 +33,7 @@
       {
         "type": "Button",
         "style": "dynamic_toggle",
-        "fontColor": "#FFFFFF",
+        "fontColor": "white",
         "cornerRadius": 8
       },
       {
@@ -43,7 +43,7 @@
         "height": "wrapContent",
         "text": "@{title}",
         "fontSize": 24,
-        "fontColor": "#000000",
+        "fontColor": "black",
         "font": "bold",
         "bottomMargin": 20
       },
@@ -51,7 +51,7 @@
         "type": "Label",
         "text": "1. Parent Constraints with Margin + Padding",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -59,7 +59,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 200,
-        "background": "#E0E0E0",
+        "background": "pale_gray",
         "paddings": [
           20,
           30,
@@ -74,8 +74,8 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Top+Left\ntopMargin:10\nleftMargin:15",
-            "background": "#FF6B6B",
-            "fontColor": "#FFFFFF",
+            "background": "light_red",
+            "fontColor": "white",
             "padding": 8,
             "topMargin": 10,
             "leftMargin": 15,
@@ -88,8 +88,8 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Top+Right\ntopMargin:15\nrightMargin:20",
-            "background": "#4ECDC4",
-            "fontColor": "#FFFFFF",
+            "background": "light_lime",
+            "fontColor": "white",
             "padding": 8,
             "topMargin": 15,
             "rightMargin": 20,
@@ -102,8 +102,8 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Bottom+Left\nbottomMargin:5\nleftMargin:10",
-            "background": "#45B7D1",
-            "fontColor": "#FFFFFF",
+            "background": "light_cyan",
+            "fontColor": "white",
             "padding": 8,
             "bottomMargin": 5,
             "leftMargin": 10,
@@ -116,8 +116,8 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Bottom+Right\nbottomMargin:20\nrightMargin:25",
-            "background": "#96CEB4",
-            "fontColor": "#FFFFFF",
+            "background": "light_yellow",
+            "fontColor": "white",
             "padding": 8,
             "bottomMargin": 20,
             "rightMargin": 25,
@@ -130,7 +130,7 @@
         "type": "Label",
         "text": "2. Edge Alignment (Self Margin Only, Ignore Anchor Margin)",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -138,7 +138,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 250,
-        "background": "#E8E8E8",
+        "background": "white_24",
         "bottomMargin": 20,
         "child": [
           {
@@ -147,9 +147,9 @@
             "width": 120,
             "height": 60,
             "text": "Anchor\nmargins:[20,25,20,25]",
-            "background": "#FF6B6B",
+            "background": "light_red",
             "textAlign": "center",
-            "fontColor": "#FFFFFF",
+            "fontColor": "white",
             "margins": [
               20,
               25,
@@ -164,13 +164,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "alignTop\ntopMargin:10",
-            "background": "#4ECDC4",
+            "background": "light_lime",
             "padding": 5,
             "topMargin": 10,
             "alignTopView": "anchor_with_margin",
             "alignLeft": true,
             "leftMargin": 10,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -178,13 +178,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "alignBottom\nbottomMargin:10",
-            "background": "#45B7D1",
+            "background": "light_cyan",
             "padding": 5,
             "bottomMargin": 10,
             "alignBottomView": "anchor_with_margin",
             "alignRight": true,
             "rightMargin": 10,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -192,13 +192,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "alignLeft\nleftMargin:15",
-            "background": "#96CEB4",
+            "background": "light_yellow",
             "padding": 5,
             "topMargin": 10,
             "leftMargin": 15,
             "alignLeftView": "anchor_with_margin",
             "alignTop": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -206,13 +206,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "alignRight\nrightMargin:15",
-            "background": "#FFEAA7",
+            "background": "pale_pink_2",
             "padding": 5,
             "bottomMargin": 10,
             "rightMargin": 15,
             "alignRightView": "anchor_with_margin",
             "alignBottom": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           }
         ]
       },
@@ -220,7 +220,7 @@
         "type": "Label",
         "text": "3. Relative Position (Both Margins Applied)",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -228,7 +228,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 300,
-        "background": "#D8D8D8",
+        "background": "pale_gray_2",
         "bottomMargin": 20,
         "child": [
           {
@@ -237,9 +237,9 @@
             "width": 100,
             "height": 50,
             "text": "Center\nmargins:[15,15,15,15]",
-            "background": "#FF6B6B",
+            "background": "light_red",
             "textAlign": "center",
-            "fontColor": "#FFFFFF",
+            "fontColor": "white",
             "margins": [
               15,
               15,
@@ -254,12 +254,12 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Above\nbottomMargin:10",
-            "background": "#4ECDC4",
+            "background": "light_lime",
             "padding": 5,
             "bottomMargin": 10,
             "alignTopOfView": "center_anchor",
             "centerHorizontal": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -267,12 +267,12 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Below\ntopMargin:10",
-            "background": "#45B7D1",
+            "background": "light_cyan",
             "padding": 5,
             "topMargin": 10,
             "alignBottomOfView": "center_anchor",
             "centerHorizontal": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -280,12 +280,12 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "LeftOf\nrightMargin:10",
-            "background": "#96CEB4",
+            "background": "light_yellow",
             "padding": 5,
             "rightMargin": 10,
             "alignLeftOfView": "center_anchor",
             "centerVertical": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -293,12 +293,12 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "RightOf\nleftMargin:10",
-            "background": "#FFEAA7",
+            "background": "pale_pink_2",
             "padding": 5,
             "leftMargin": 10,
             "alignRightOfView": "center_anchor",
             "centerVertical": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           }
         ]
       },
@@ -306,7 +306,7 @@
         "type": "Label",
         "text": "4. Fixed Size with Both-Side Constraints (Centering)",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -314,7 +314,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 200,
-        "background": "#E0E0E0",
+        "background": "pale_gray",
         "bottomMargin": 20,
         "paddings": [
           10,
@@ -329,8 +329,8 @@
             "width": 100,
             "height": "wrapContent",
             "text": "Fixed Width\nLeft+Right\nmargins:[10,10,10,10]",
-            "background": "#A29BFE",
-            "fontColor": "#FFFFFF",
+            "background": "light_blue_2",
+            "fontColor": "white",
             "textAlign": "center",
             "padding": 10,
             "margins": [
@@ -349,8 +349,8 @@
             "width": "wrapContent",
             "height": 50,
             "text": "Fixed Height\nTop+Bottom",
-            "background": "#6C5CE7",
-            "fontColor": "#FFFFFF",
+            "background": "medium_blue_5",
+            "fontColor": "white",
             "textAlign": "center",
             "padding": 10,
             "topMargin": 10,
@@ -366,8 +366,8 @@
             "width": 80,
             "height": 40,
             "text": "Fixed Both",
-            "background": "#FD79A8",
-            "fontColor": "#FFFFFF",
+            "background": "light_red_3",
+            "fontColor": "white",
             "textAlign": "center",
             "margins": [
               15,
@@ -386,7 +386,7 @@
         "type": "Label",
         "text": "5. Dynamic Size (Stretch Between Constraints)",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -394,7 +394,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 250,
-        "background": "#D0D0D0",
+        "background": "pale_gray_3",
         "bottomMargin": 20,
         "paddings": [
           20,
@@ -408,8 +408,8 @@
             "id": "stretch_horizontal",
             "height": "wrapContent",
             "text": "Stretch Horizontal\nleftMargin:10, rightMargin:15",
-            "background": "#00B894",
-            "fontColor": "#FFFFFF",
+            "background": "medium_lime",
+            "fontColor": "white",
             "textAlign": "center",
             "padding": 10,
             "leftMargin": 10,
@@ -424,8 +424,8 @@
             "id": "stretch_vertical",
             "width": "wrapContent",
             "text": "Stretch\nVertical\ntop:10\nbottom:15",
-            "background": "#00CEC9",
-            "fontColor": "#FFFFFF",
+            "background": "medium_lime_2",
+            "fontColor": "white",
             "textAlign": "center",
             "padding": 10,
             "topMargin": 10,
@@ -439,8 +439,8 @@
             "type": "Label",
             "id": "stretch_both",
             "text": "Stretch Both Directions\nmargins:[15,20,15,20]",
-            "background": "#636E72",
-            "fontColor": "#FFFFFF",
+            "background": "medium_gray_5",
+            "fontColor": "white",
             "textAlign": "center",
             "padding": 10,
             "margins": [
@@ -460,7 +460,7 @@
         "type": "Label",
         "text": "6. Complex Chaining with Different Margins",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -468,7 +468,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 250,
-        "background": "#E8E8E8",
+        "background": "white_24",
         "bottomMargin": 20,
         "child": [
           {
@@ -477,8 +477,8 @@
             "width": 60,
             "height": 40,
             "text": "Start\nleft:10\nright:5",
-            "background": "#FF6B6B",
-            "fontColor": "#FFFFFF",
+            "background": "light_red",
+            "fontColor": "white",
             "textAlign": "center",
             "fontSize": 10,
             "leftMargin": 10,
@@ -492,8 +492,8 @@
             "width": 60,
             "height": 40,
             "text": "Middle\nleft:15\nright:20",
-            "background": "#4ECDC4",
-            "fontColor": "#FFFFFF",
+            "background": "light_lime",
+            "fontColor": "white",
             "textAlign": "center",
             "fontSize": 10,
             "leftMargin": 15,
@@ -507,8 +507,8 @@
             "width": 60,
             "height": 40,
             "text": "End\nleft:10\nright:10",
-            "background": "#45B7D1",
-            "fontColor": "#FFFFFF",
+            "background": "light_cyan",
+            "fontColor": "white",
             "textAlign": "center",
             "fontSize": 10,
             "leftMargin": 10,
@@ -522,13 +522,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Above Middle\nbottom:5",
-            "background": "#FFEAA7",
+            "background": "pale_pink_2",
             "padding": 5,
             "bottomMargin": 5,
             "topMargin": 10,
             "alignTopOfView": "chain_middle",
             "alignLeftView": "chain_middle",
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -536,13 +536,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Below Start\ntop:8",
-            "background": "#FAB1A0",
+            "background": "light_red_4",
             "padding": 5,
             "topMargin": 8,
             "bottomMargin": 10,
             "alignBottomOfView": "chain_start",
             "alignRightView": "chain_start",
-            "fontColor": "#000000"
+            "fontColor": "black"
           }
         ]
       },
@@ -550,7 +550,7 @@
         "type": "Label",
         "text": "7. Mixed Anchor References",
         "fontSize": 18,
-        "fontColor": "#333333",
+        "fontColor": "dark_gray",
         "font": "bold",
         "bottomMargin": 10
       },
@@ -558,7 +558,7 @@
         "type": "View",
         "width": "matchParent",
         "height": 250,
-        "background": "#D8D8D8",
+        "background": "pale_gray_2",
         "bottomMargin": 20,
         "paddings": [
           15,
@@ -573,9 +573,9 @@
             "width": 60,
             "height": 30,
             "text": "Ref1",
-            "background": "#FF6B6B",
+            "background": "light_red",
             "textAlign": "center",
-            "fontColor": "#FFFFFF",
+            "fontColor": "white",
             "alignLeft": true,
             "alignTop": true,
             "leftMargin": 20,
@@ -589,9 +589,9 @@
             "width": 60,
             "height": 30,
             "text": "Ref2",
-            "background": "#4ECDC4",
+            "background": "light_lime",
             "textAlign": "center",
-            "fontColor": "#FFFFFF",
+            "fontColor": "white",
             "alignRight": true,
             "alignTop": true,
             "rightMargin": 20,
@@ -604,14 +604,14 @@
             "id": "between_refs",
             "height": "wrapContent",
             "text": "Between (stretch)",
-            "background": "#FFD93D",
+            "background": "light_orange_2",
             "padding": 5,
             "leftMargin": 5,
             "rightMargin": 5,
             "alignLeftOfView": "ref2",
             "alignRightOfView": "ref1",
             "centerVertical": true,
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -619,13 +619,13 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "AlignBoth",
-            "background": "#6BCB77",
+            "background": "medium_green_3",
             "padding": 5,
             "topMargin": 10,
             "rightMargin": 10,
             "alignTopView": "ref1",
             "alignRightView": "ref2",
-            "fontColor": "#000000"
+            "fontColor": "black"
           },
           {
             "type": "Label",
@@ -633,8 +633,8 @@
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Below Ref1",
-            "background": "#FF6B9D",
-            "fontColor": "#FFFFFF",
+            "background": "light_red_5",
+            "fontColor": "white",
             "padding": 5,
             "topMargin": 10,
             "alignBottomOfView": "ref1",

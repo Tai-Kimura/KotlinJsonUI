@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,13 +24,13 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Basic DatePicker",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -51,7 +51,7 @@
           "type": "Label",
           "text": "DatePicker with Min/Max Dates",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -59,7 +59,7 @@
           "type": "Label",
           "text": "Min: 2025-01-01, Max: 2025-12-31",
           "fontSize": 12,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 5
         },
         {
@@ -81,7 +81,7 @@
           "type": "Label",
           "text": "Time Picker",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -102,7 +102,7 @@
           "type": "Label",
           "text": "DateTime Picker",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -123,7 +123,7 @@
           "type": "Label",
           "text": "DatePicker with Minute Interval",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -131,7 +131,7 @@
           "type": "Label",
           "text": "15 minute intervals",
           "fontSize": 12,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 5
         },
         {
@@ -152,7 +152,7 @@
           "type": "Label",
           "text": "Calendar Style DatePicker",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 30,
           "font": "bold"
         },
@@ -191,7 +191,7 @@
           "leftMargin": 20,
           "rightMargin": 20,
           "padding": 15,
-          "background": "#E0E0E0",
+          "background": "pale_gray",
           "cornerRadius": 8,
           "orientation": "vertical",
           "child": [
@@ -199,21 +199,21 @@
               "type": "Label",
               "text": "Selected Values:",
               "fontSize": 14,
-              "fontColor": "#333333",
+              "fontColor": "dark_gray",
               "font": "bold"
             },
             {
               "type": "Label",
               "text": "Date: @{selectedDate}",
               "fontSize": 12,
-              "fontColor": "#666666",
+              "fontColor": "medium_gray_4",
               "topMargin": 5
             },
             {
               "type": "Label",
               "text": "Range: @{startDate} to @{endDate}",
               "fontSize": 12,
-              "fontColor": "#666666",
+              "fontColor": "medium_gray_4",
               "topMargin": 5
             }
           ]

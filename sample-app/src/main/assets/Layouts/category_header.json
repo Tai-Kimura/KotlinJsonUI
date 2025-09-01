@@ -1,13 +1,13 @@
 {
   "type": "View",
   "padding": 12,
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "Label",
       "text": "@{title}",
       "fontSize": 16,
-      "fontColor": "#333333"
+      "fontColor": "dark_gray"
     }
   ],
   "data": [

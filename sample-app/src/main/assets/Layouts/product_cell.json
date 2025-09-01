@@ -1,52 +1,52 @@
 {
-    "type": "View",
-    "orientation": "vertical",
-    "padding": 12,
-    "background": "#FFFFFF",
-    "cornerRadius": 8,
-    "child": [
-        {
-            "type": "Label",
-            "text": "@{name}",
-            "fontSize": 16,
-            "fontWeight": "semibold",
-            "fontColor": "#000000"
-        },
-        {
-            "type": "Label",
-            "text": "@{price}",
-            "fontSize": 14,
-            "fontColor": "#333333",
-            "topMargin": 4
-        },
-        {
-            "type": "Label",
-            "text": "@{stock}",
-            "fontSize": 12,
-            "fontColor": "#666666",
-            "topMargin": 4
-        }
-    ],
-    "data": [
-        {
-            "name": "name",
-            "class": "String",
-            "defaultValue": ""
-        },
-        {
-            "name": "price",
-            "class": "String",
-            "defaultValue": ""
-        },
-        {
-            "name": "stock",
-            "class": "String",
-            "defaultValue": ""
-        },
-        {
-            "name": "inStock",
-            "class": "Boolean",
-            "defaultValue": true
-        }
-    ]
+  "type": "View",
+  "orientation": "vertical",
+  "padding": 12,
+  "background": "white",
+  "cornerRadius": 8,
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{name}",
+      "fontSize": 16,
+      "fontWeight": "semibold",
+      "fontColor": "black"
+    },
+    {
+      "type": "Label",
+      "text": "@{price}",
+      "fontSize": 14,
+      "fontColor": "dark_gray",
+      "topMargin": 4
+    },
+    {
+      "type": "Label",
+      "text": "@{stock}",
+      "fontSize": 12,
+      "fontColor": "medium_gray_4",
+      "topMargin": 4
+    }
+  ],
+  "data": [
+    {
+      "name": "name",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "price",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "stock",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "inStock",
+      "class": "Boolean",
+      "defaultValue": true
+    }
+  ]
 }

@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,13 +24,13 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Font Sizes",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -39,34 +39,34 @@
           "text": "fontSize: 12",
           "fontSize": 12,
           "topMargin": 10,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "fontSize: 16",
           "fontSize": 16,
           "topMargin": 5,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "fontSize: 20",
           "fontSize": 20,
           "topMargin": 5,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "fontSize: 24",
           "fontSize": 24,
           "topMargin": 5,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Font Styles",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -76,7 +76,7 @@
           "font": "bold",
           "fontSize": 16,
           "topMargin": 10,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -84,13 +84,13 @@
           "underline": true,
           "fontSize": 16,
           "topMargin": 10,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Text Alignment",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -101,9 +101,9 @@
           "width": "matchParent",
           "fontSize": 16,
           "topMargin": 10,
-          "background": "#E0E0E0",
+          "background": "pale_gray",
           "padding": 5,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -112,9 +112,9 @@
           "width": "matchParent",
           "fontSize": 16,
           "topMargin": 10,
-          "background": "#E0E0E0",
+          "background": "pale_gray",
           "padding": 5,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -123,15 +123,15 @@
           "width": "matchParent",
           "fontSize": 16,
           "topMargin": 10,
-          "background": "#E0E0E0",
+          "background": "pale_gray",
           "padding": 5,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Line Spacing Test",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
@@ -141,9 +141,9 @@
           "lineSpacing": 5,
           "fontSize": 14,
           "topMargin": 10,
-          "background": "#FFFFFF",
+          "background": "white",
           "padding": 10,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -151,36 +151,36 @@
           "lineSpacing": 10,
           "fontSize": 14,
           "topMargin": 10,
-          "background": "#FFFFFF",
+          "background": "white",
           "padding": 10,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
           "text": "Font Colors",
           "fontSize": 18,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "topMargin": 20,
           "font": "bold"
         },
         {
           "type": "Label",
           "text": "Red Text",
-          "fontColor": "#FF0000",
+          "fontColor": "dark_red",
           "fontSize": 16,
           "topMargin": 10
         },
         {
           "type": "Label",
           "text": "Green Text",
-          "fontColor": "#00FF00",
+          "fontColor": "dark_green_2",
           "fontSize": 16,
           "topMargin": 5
         },
         {
           "type": "Label",
           "text": "Blue Text",
-          "fontColor": "#0000FF",
+          "fontColor": "dark_blue",
           "fontSize": 16,
           "topMargin": 5
         }

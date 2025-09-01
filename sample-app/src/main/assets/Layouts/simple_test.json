@@ -7,20 +7,20 @@
       "type": "Label",
       "text": "Simple Test",
       "fontSize": 24,
-      "fontColor": "#000000"
+      "fontColor": "black"
     },
     {
-      "type": "Label", 
+      "type": "Label",
       "text": "Testing basic components",
       "fontSize": 16,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "topMargin": 8
     },
     {
       "type": "Button",
       "text": "Test Button",
-      "background": "#5856D6",
-      "fontColor": "#FFFFFF",
+      "background": "medium_blue_3",
+      "fontColor": "white",
       "topMargin": 16
     }
   ]

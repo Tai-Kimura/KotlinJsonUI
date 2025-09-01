@@ -2,13 +2,13 @@
   "type": "View",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "orientation": "vertical",
   "child": [
     {
       "type": "Button",
       "style": "dynamic_toggle",
-      "fontColor": "#FFFFFF",
+      "fontColor": "white",
       "cornerRadius": 8
     },
     {
@@ -19,13 +19,13 @@
       "topMargin": 20,
       "text": "@{title}",
       "fontSize": 24,
-      "fontColor": "#000000"
+      "fontColor": "black"
     },
     {
       "type": "Label",
       "text": "Regular TextField (not secure)",
       "fontSize": 14,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "topMargin": 30
     },
     {
@@ -38,11 +38,11 @@
       "rightMargin": 20,
       "hint": "Enter regular text",
       "text": "@{regularText}",
-      "background": "#FFFFFF",
+      "background": "white",
       "cornerRadius": 8,
-      "borderColor": "#CCCCCC",
+      "borderColor": "pale_gray_4",
       "borderWidth": 1,
-      "fontColor": "#000000",
+      "fontColor": "black",
       "fontSize": 16,
       "secure": false
     },
@@ -50,7 +50,7 @@
       "type": "Label",
       "text": "Secure TextField (password)",
       "fontSize": 14,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "topMargin": 20
     },
     {
@@ -63,11 +63,11 @@
       "rightMargin": 20,
       "hint": "Enter password",
       "text": "@{password}",
-      "background": "#FFFFFF",
+      "background": "white",
       "cornerRadius": 8,
-      "borderColor": "#CCCCCC",
+      "borderColor": "pale_gray_4",
       "borderWidth": 1,
-      "fontColor": "#000000",
+      "fontColor": "black",
       "fontSize": 16,
       "secure": true
     },
@@ -75,7 +75,7 @@
       "type": "Label",
       "text": "Confirm Password (also secure)",
       "fontSize": 14,
-      "fontColor": "#666666",
+      "fontColor": "medium_gray_4",
       "topMargin": 20
     },
     {
@@ -88,11 +88,11 @@
       "rightMargin": 20,
       "hint": "Confirm password",
       "text": "@{confirmPassword}",
-      "background": "#FFFFFF",
+      "background": "white",
       "cornerRadius": 8,
-      "borderColor": "#CCCCCC",
+      "borderColor": "pale_gray_4",
       "borderWidth": 1,
-      "fontColor": "#000000",
+      "fontColor": "black",
       "fontSize": 16,
       "secure": true
     },
@@ -104,7 +104,7 @@
       "leftMargin": 20,
       "rightMargin": 20,
       "padding": 15,
-      "background": "#E0E0E0",
+      "background": "pale_gray",
       "cornerRadius": 8,
       "orientation": "vertical",
       "child": [
@@ -112,28 +112,28 @@
           "type": "Label",
           "text": "Values entered:",
           "fontSize": 14,
-          "fontColor": "#333333",
+          "fontColor": "dark_gray",
           "font": "bold"
         },
         {
           "type": "Label",
           "text": "Regular: @{regularText}",
           "fontSize": 12,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 5
         },
         {
           "type": "Label",
           "text": "Password: [hidden]",
           "fontSize": 12,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 5
         },
         {
           "type": "Label",
           "text": "Confirm: [hidden]",
           "fontSize": 12,
-          "fontColor": "#666666",
+          "fontColor": "medium_gray_4",
           "topMargin": 5
         }
       ]

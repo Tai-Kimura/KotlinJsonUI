@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -24,7 +24,7 @@
           "topMargin": 20,
           "text": "@{title}",
           "fontSize": 24,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -37,9 +37,9 @@
             20,
             20
           ],
-          "background": "#FFE0E0",
+          "background": "white_5",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -48,9 +48,9 @@
           "text": "Left margin: 40",
           "leftMargin": 40,
           "topMargin": 10,
-          "background": "#E0FFE0",
+          "background": "white_6",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -59,9 +59,9 @@
           "text": "Right margin: 40",
           "rightMargin": 40,
           "topMargin": 10,
-          "background": "#E0E0FF",
+          "background": "white_7",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -69,9 +69,9 @@
           "height": "wrapContent",
           "text": "Top margin: 30",
           "topMargin": 30,
-          "background": "#FFFFE0",
+          "background": "white_8",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -79,9 +79,9 @@
           "height": "wrapContent",
           "text": "Bottom margin: 30",
           "bottomMargin": 30,
-          "background": "#FFE0FF",
+          "background": "white_9",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -90,9 +90,9 @@
           "text": "Label with padding: 20",
           "padding": 20,
           "topMargin": 10,
-          "background": "#E0FFFF",
+          "background": "white_22",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "Label",
@@ -102,9 +102,9 @@
           "leftPadding": 30,
           "rightPadding": 30,
           "topMargin": 10,
-          "background": "#FFCCCC",
+          "background": "pale_red",
           "fontSize": 16,
-          "fontColor": "#000000"
+          "fontColor": "black"
         },
         {
           "type": "View",
@@ -113,14 +113,14 @@
           "leftPadding": 20,
           "rightPadding": 20,
           "topMargin": 20,
-          "background": "#DDDDDD",
+          "background": "pale_gray_5",
           "child": {
             "type": "Label",
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "Parent has leftPadding: 20, rightPadding: 20",
             "fontSize": 14,
-            "fontColor": "#000000"
+            "fontColor": "black"
           }
         },
         {
@@ -128,16 +128,16 @@
           "width": "matchParent",
           "height": 100,
           "topMargin": 20,
-          "background": "#CCCCCC",
+          "background": "pale_gray_4",
           "child": {
             "type": "Label",
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "MaxWidth: 200",
             "maxWidth": 200,
-            "background": "#FFCCCC",
+            "background": "pale_red",
             "fontSize": 14,
-            "fontColor": "#000000"
+            "fontColor": "black"
           }
         },
         {
@@ -145,16 +145,16 @@
           "width": "matchParent",
           "height": 100,
           "topMargin": 20,
-          "background": "#BBBBBB",
+          "background": "light_gray_10",
           "child": {
             "type": "Label",
             "width": "wrapContent",
             "height": "wrapContent",
             "text": "MinWidth: 150",
             "minWidth": 150,
-            "background": "#CCFFCC",
+            "background": "pale_green",
             "fontSize": 14,
-            "fontColor": "#000000"
+            "fontColor": "black"
           }
         }
       ]

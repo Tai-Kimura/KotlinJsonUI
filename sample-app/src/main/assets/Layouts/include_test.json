@@ -2,7 +2,7 @@
   "type": "ScrollView",
   "width": "matchParent",
   "height": "matchParent",
-  "background": "#FFFFFF",
+  "background": "white",
   "child": [
     {
       "type": "View",
@@ -13,7 +13,7 @@
         {
           "type": "Button",
           "style": "dynamic_toggle",
-          "fontColor": "#FFFFFF",
+          "fontColor": "white",
           "cornerRadius": 8
         },
         {
@@ -26,7 +26,7 @@
               "type": "Label",
               "text": "@{title}",
               "fontSize": 24,
-              "fontColor": "#000000",
+              "fontColor": "black",
               "marginBottom": 20
             },
             {
@@ -34,7 +34,7 @@
               "orientation": "vertical",
               "marginBottom": 20,
               "padding": 15,
-              "background": "#E8F4FD",
+              "background": "white_20",
               "cornerRadius": 8,
               "child": [
                 {
@@ -42,7 +42,7 @@
                   "text": "Control Panel",
                   "fontSize": 18,
                   "fontWeight": "bold",
-                  "fontColor": "#0066CC",
+                  "fontColor": "medium_blue_4",
                   "marginBottom": 10
                 },
                 {
@@ -54,8 +54,8 @@
                       "type": "Button",
                       "text": "Count +",
                       "onclick": "incrementCount",
-                      "background": "#4CAF50",
-                      "fontColor": "#FFFFFF",
+                      "background": "medium_green_2",
+                      "fontColor": "white",
                       "padding": 10,
                       "cornerRadius": 5,
                       "marginRight": 5
@@ -64,8 +64,8 @@
                       "type": "Button",
                       "text": "Count -",
                       "onclick": "decrementCount",
-                      "background": "#FF9800",
-                      "fontColor": "#FFFFFF",
+                      "background": "medium_red_5",
+                      "fontColor": "white",
                       "padding": 10,
                       "cornerRadius": 5,
                       "marginRight": 5
@@ -74,8 +74,8 @@
                       "type": "Button",
                       "text": "Reset",
                       "onclick": "resetCount",
-                      "background": "#2196F3",
-                      "fontColor": "#FFFFFF",
+                      "background": "medium_blue_2",
+                      "fontColor": "white",
                       "padding": 10,
                       "cornerRadius": 5
                     }
@@ -89,8 +89,8 @@
                       "type": "Button",
                       "text": "Change Name",
                       "onclick": "changeUserName",
-                      "background": "#9C27B0",
-                      "fontColor": "#FFFFFF",
+                      "background": "medium_purple",
+                      "fontColor": "white",
                       "padding": 10,
                       "cornerRadius": 5,
                       "marginRight": 5
@@ -99,8 +99,8 @@
                       "type": "Button",
                       "text": "Toggle Status",
                       "onclick": "toggleStatus",
-                      "background": "#607D8B",
-                      "fontColor": "#FFFFFF",
+                      "background": "medium_cyan",
+                      "fontColor": "white",
                       "padding": 10,
                       "cornerRadius": 5
                     }
@@ -111,7 +111,7 @@
                   "orientation": "horizontal",
                   "marginTop": 10,
                   "padding": 10,
-                  "background": "#FFFFFF",
+                  "background": "white",
                   "cornerRadius": 5,
                   "child": [
                     {
@@ -119,25 +119,25 @@
                       "text": "Current Values: ",
                       "fontSize": 14,
                       "fontWeight": "semibold",
-                      "fontColor": "#333333"
+                      "fontColor": "dark_gray"
                     },
                     {
                       "type": "Label",
                       "text": "Count=@{mainCount}, ",
                       "fontSize": 14,
-                      "fontColor": "#666666"
+                      "fontColor": "medium_gray_4"
                     },
                     {
                       "type": "Label",
                       "text": "User=@{userName}, ",
                       "fontSize": 14,
-                      "fontColor": "#666666"
+                      "fontColor": "medium_gray_4"
                     },
                     {
                       "type": "Label",
                       "text": "Status=@{mainStatus}",
                       "fontSize": 14,
-                      "fontColor": "#666666"
+                      "fontColor": "medium_gray_4"
                     }
                   ]
                 }
@@ -152,7 +152,7 @@
                   "type": "Label",
                   "text": "1. Basic Include with static data:",
                   "fontSize": 16,
-                  "fontColor": "#666666",
+                  "fontColor": "medium_gray_4",
                   "marginBottom": 10
                 },
                 {
@@ -174,7 +174,7 @@
                   "type": "Label",
                   "text": "2. Include with data (static values):",
                   "fontSize": 16,
-                  "fontColor": "#666666",
+                  "fontColor": "medium_gray_4",
                   "marginBottom": 10
                 },
                 {
@@ -196,7 +196,7 @@
                   "type": "Label",
                   "text": "3. Include with data (using @{} references):",
                   "fontSize": 16,
-                  "fontColor": "#666666",
+                  "fontColor": "medium_gray_4",
                   "marginBottom": 10
                 },
                 {
@@ -218,7 +218,7 @@
                   "type": "Label",
                   "text": "4. Include with shared_data and data override:",
                   "fontSize": 16,
-                  "fontColor": "#666666",
+                  "fontColor": "medium_gray_4",
                   "marginBottom": 10
                 },
                 {
@@ -243,7 +243,7 @@
                   "type": "Label",
                   "text": "5. Another included_1 with @{} references:",
                   "fontSize": 16,
-                  "fontColor": "#666666",
+                  "fontColor": "medium_gray_4",
                   "marginBottom": 10
                 },
                 {
