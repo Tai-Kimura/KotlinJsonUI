@@ -214,7 +214,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     
-    coordinates("io.github.tai-kimura", "kotlinjsonui", "1.0.0")
+    coordinates("io.github.tai-kimura", "kotlinjsonui", "1.0.1")
     
     pom {
         name.set("KotlinJsonUI")

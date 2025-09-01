@@ -1,8 +1,11 @@
 package com.kotlinjsonui.core
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.kotlinjsonui.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,15 +52,15 @@ object DynamicModeManager {
         // Check if the host app is in debug mode
         val isHostAppDebug = checkHostAppDebugMode(context)
         
-        // Dynamic Mode is only available when BOTH library and host app are in debug
-        val isDynamicAvailable = BuildConfig.DEBUG || isHostAppDebug
+        // Dynamic Mode is available when host app is in debug
+        val isDynamicAvailable = isHostAppDebug
         _isDynamicModeAvailable.value = isDynamicAvailable
         
         // Load saved preference only if dynamic mode is available
         if (isDynamicAvailable) {
             loadPreference(context.applicationContext)
         } else {
-            Log.i(TAG, "Dynamic Mode is not available (Library: ${if (BuildConfig.DEBUG) "DEBUG" else "RELEASE"}, App: ${if (isHostAppDebug) "DEBUG" else "RELEASE"})")
+            Log.i(TAG, "Dynamic Mode is not available (App: ${if (isHostAppDebug) "DEBUG" else "RELEASE"})")
             _isDynamicModeEnabled.value = false
         }
     }
@@ -126,26 +129,14 @@ object DynamicModeManager {
      */
     private fun checkHostAppDebugMode(context: Context): Boolean {
         return try {
-            // Get the host app's package name
-            val packageName = context.packageName
+            // Check if app is debuggable via ApplicationInfo
+            // This is the most reliable way to check if the app is in debug mode
+            val appInfo = context.applicationInfo
+            val isDebuggable = (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
             
-            // Try to load the host app's BuildConfig class
-            val buildConfigClass = Class.forName("$packageName.BuildConfig")
+            Log.d(TAG, "Host app (${context.packageName}) is ${if (isDebuggable) "DEBUGGABLE" else "NOT DEBUGGABLE"}")
             
-            // Get the DEBUG field
-            val debugField = buildConfigClass.getField("DEBUG")
-            
-            // Get the value of DEBUG field
-            val isDebug = debugField.getBoolean(null)
-            
-            Log.d(TAG, "Host app ($packageName) is in ${if (isDebug) "DEBUG" else "RELEASE"} mode")
-            isDebug
-        } catch (e: ClassNotFoundException) {
-            Log.w(TAG, "Could not find BuildConfig for host app: ${e.message}")
-            false
-        } catch (e: NoSuchFieldException) {
-            Log.w(TAG, "BuildConfig.DEBUG field not found: ${e.message}")
-            false
+            isDebuggable
         } catch (e: Exception) {
             Log.e(TAG, "Error checking host app debug mode", e)
             false
@@ -290,12 +281,15 @@ object DynamicModeManager {
         onLoading: @Composable () -> Unit = {},
         content: @Composable (String) -> Unit = {}
     ) {
-        if (!_isDynamicModeAvailable.value) {
+        val isDynamicAvailable by isDynamicModeAvailable.collectAsState()
+        val isDynamicEnabled by isDynamicModeEnabled.collectAsState()
+        
+        if (!isDynamicAvailable) {
             Log.d(TAG, "DynamicView not available in current configuration")
             return
         }
         
-        if (!isActive()) {
+        if (!isDynamicEnabled) {
             Log.d(TAG, "Dynamic Mode is not active")
             return
         }
