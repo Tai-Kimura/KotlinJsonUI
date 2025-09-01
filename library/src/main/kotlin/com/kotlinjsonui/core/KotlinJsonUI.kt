@@ -23,11 +23,26 @@ object KotlinJsonUI {
         // Clear all cached JSON files
         clearAllCaches(context)
         
-        // Initialize dynamic view support (only works in debug builds)
-        initializeDynamicViewSupport()
-
-        // Initialize DynamicModeManager
+        // Initialize DynamicModeManager first
         DynamicModeManager.initialize(context)
+        
+        // Check if the host app is in debug mode
+        val isHostAppDebug = try {
+            val buildConfigClass = Class.forName("${context.packageName}.BuildConfig")
+            val debugField = buildConfigClass.getField("DEBUG")
+            debugField.getBoolean(null)
+        } catch (e: Exception) {
+            false
+        }
+        
+        // Automatically enable dynamic mode for debug builds
+        if (isHostAppDebug) {
+            DynamicModeManager.setDynamicModeEnabled(context, true)
+            Log.d(TAG, "Dynamic mode enabled for debug build")
+        }
+        
+        // Initialize dynamic view support (only works when dynamic module is available)
+        initializeDynamicViewSupport()
         
         initialized = true
         Log.d(TAG, "KotlinJsonUI initialized")
@@ -41,7 +56,7 @@ object KotlinJsonUI {
         try {
             // Use reflection to call DynamicViewInitializer if it exists
             // This avoids NoClassDefFoundError when the class doesn't exist
-            val clazz = Class.forName("com.kotlinjsonui.core.DynamicViewInitializer")
+            val clazz = Class.forName("com.kotlinjsonui.dynamic.DynamicViewInitializer")
             val initMethod = clazz.getMethod("initialize")
             val instance = clazz.getField("INSTANCE").get(null)
             initMethod.invoke(instance)

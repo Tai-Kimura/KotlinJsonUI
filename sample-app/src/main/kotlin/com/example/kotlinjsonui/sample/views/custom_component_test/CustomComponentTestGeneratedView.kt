@@ -18,7 +18,7 @@ import com.example.kotlinjsonui.sample.viewmodels.CustomComponentTestViewModel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.DynamicModeManager
-import com.kotlinjsonui.core.SafeDynamicView
+import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.PaddingValues

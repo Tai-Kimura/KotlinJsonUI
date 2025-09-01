@@ -495,7 +495,7 @@ module KjuiTools
         
         # Add required imports for DynamicModeManager
         @required_imports.add(:dynamic_mode_manager)
-        @required_imports.add(:safe_dynamic_view)
+        # SafeDynamicView import is already added in generate_dynamic_view
         
         code
       end
@@ -538,6 +538,7 @@ module KjuiTools
         code += "#{indent_str}    }\n"
         
         # Add required imports
+        @required_imports.add(:safe_dynamic_view)
         @required_imports.add(:circular_progress_indicator)
         @required_imports.add(:box)
         
@@ -628,7 +629,7 @@ module KjuiTools
             }.map(&:last).max || package_index
             
             imports_to_add.each do |import|
-              unless content.include?(import)
+              unless lines.any? { |line| line == import }
                 lines.insert(last_import_index + 1, import)
                 last_import_index += 1
               end

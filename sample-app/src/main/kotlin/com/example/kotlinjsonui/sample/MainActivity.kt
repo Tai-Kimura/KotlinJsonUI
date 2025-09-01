@@ -69,23 +69,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         // Initialize KotlinJsonUI library
+        // This automatically handles:
+        // - Dynamic mode initialization for debug builds
+        // - Dynamic component registration when available
+        // - Cache clearing
         KotlinJsonUI.initialize(applicationContext)
-
-        // Set initial dynamic mode state
-        DynamicModeManager.setDynamicModeEnabled(this, false)
-        
-        // Initialize dynamic components if available (only in debug builds)
-        if (BuildConfig.DEBUG) {
-            try {
-                val dynamicInitClass = Class.forName("com.kotlinjsonui.dynamic.DynamicViewInitializer")
-                val initMethod = dynamicInitClass.getMethod("initialize")
-                val initInstance = dynamicInitClass.getField("INSTANCE").get(null)
-                initMethod.invoke(initInstance)
-            } catch (e: Exception) {
-                // Dynamic module not available, continue without it
-                android.util.Log.d("MainActivity", "Dynamic components not available: ${e.message}")
-            }
-        }
 
 
         // Configure link color globally (optional - you can customize this)

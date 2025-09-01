@@ -34,7 +34,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Box
-import com.kotlinjsonui.core.SafeDynamicView
+import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kotlinjsonui.sample.views.converter_test_cell.ConverterTestCellView

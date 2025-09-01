@@ -16,7 +16,7 @@ import com.example.kotlinjsonui.sample.viewmodels.HorizontalHeaderViewModel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import com.kotlinjsonui.core.DynamicModeManager
-import com.kotlinjsonui.core.SafeDynamicView
+import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
 

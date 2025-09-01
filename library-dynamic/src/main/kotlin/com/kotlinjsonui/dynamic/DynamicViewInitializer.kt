@@ -1,7 +1,6 @@
 package com.kotlinjsonui.dynamic
 
 import android.util.Log
-import com.kotlinjsonui.core.DynamicViewProvider
 
 /**
  * Initializer for DynamicView support
@@ -17,20 +16,9 @@ object DynamicViewInitializer {
      */
     fun initialize() {
         try {
-            // Use reflection to load and instantiate DynamicViewRendererImpl
-            // This ensures the class is loaded and its static initializer runs
-            val rendererClass = Class.forName("com.kotlinjsonui.dynamic.DynamicViewRendererImpl")
-            val rendererInstance = rendererClass.getDeclaredConstructor().newInstance()
-            
-            // Register the renderer with the provider
-            if (rendererInstance is DynamicViewProvider.DynamicViewRenderer) {
-                DynamicViewProvider.setRenderer(rendererInstance)
-                Log.d(TAG, "DynamicViewRenderer registered successfully")
-            } else {
-                Log.e(TAG, "DynamicViewRendererImpl does not implement DynamicViewRenderer interface")
-            }
-        } catch (e: ClassNotFoundException) {
-            Log.d(TAG, "DynamicViewRendererImpl not found - expected in release builds")
+            // Register the renderer function with SafeDynamicView
+            com.kotlinjsonui.components.registerDynamicRenderer(::RenderDynamicView)
+            Log.d(TAG, "DynamicViewRenderer registered successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize DynamicViewRenderer", e)
         }

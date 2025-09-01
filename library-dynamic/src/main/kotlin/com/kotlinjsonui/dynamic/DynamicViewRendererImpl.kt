@@ -10,7 +10,6 @@ import androidx.compose.ui.platform.LocalContext
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.kotlinjsonui.core.DynamicViewProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
@@ -19,13 +18,13 @@ import java.io.InputStreamReader
  * Implementation of DynamicViewRenderer
  * This class is only compiled in DEBUG builds
  */
-class DynamicViewRendererImpl : DynamicViewProvider.DynamicViewRenderer {
+class DynamicViewRendererImpl {
     companion object {
         private const val TAG = "DynamicViewRenderer"
     }
     
     @Composable
-    override fun render(
+    fun render(
         layoutName: String,
         data: Map<String, Any>,
         modifier: Modifier,

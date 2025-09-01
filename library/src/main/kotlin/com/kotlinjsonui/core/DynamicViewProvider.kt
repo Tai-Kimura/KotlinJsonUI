@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import android.content.Context
 import android.util.Log
-import com.google.gson.JsonObject
 
 /**
  * Provider for DynamicView components
@@ -13,31 +12,23 @@ import com.google.gson.JsonObject
 object DynamicViewProvider {
     private const val TAG = "DynamicViewProvider"
     
+    private var rendererWrapper: Any? = null
+    
     /**
-     * Interface for DynamicView rendering
-     * Implementation will be provided by debug builds
+     * Set the renderer wrapper
+     * This should be called from the dynamic module initialization
      */
-    interface DynamicViewRenderer {
-        @Composable
-        fun render(
-            layoutName: String,
-            data: Map<String, Any> = emptyMap(),
-            modifier: Modifier,
-            onError: ((String) -> Unit)?,
-            onLoading: @Composable () -> Unit,
-            content: @Composable (String) -> Unit
-        )
+    fun setRendererWrapper(wrapper: Any) {
+        this.rendererWrapper = wrapper
+        Log.d(TAG, "DynamicView renderer wrapper registered")
     }
     
-    private var renderer: DynamicViewRenderer? = null
-    
     /**
-     * Initialize the provider with a renderer
-     * This should be called from debug-only code
+     * Set a renderer (legacy method for compatibility)
      */
-    fun setRenderer(renderer: DynamicViewRenderer) {
-        this.renderer = renderer
-        Log.d(TAG, "DynamicView renderer registered")
+    fun setRenderer(renderer: Any) {
+        // This is kept for compatibility but not used
+        Log.d(TAG, "setRenderer called - ignored in favor of wrapper")
     }
     
     /**
@@ -59,22 +50,45 @@ object DynamicViewProvider {
             return false
         }
         
-        val currentRenderer = renderer
-        if (currentRenderer != null) {
-            currentRenderer.render(
-                layoutName = layoutName,
-                data = data,
-                modifier = modifier,
-                onError = onError,
-                onLoading = onLoading,
-                content = content
-            )
-            return true
-        } else {
-            Log.d(TAG, "DynamicView renderer not available - using fallback")
-            fallback()
-            return false
+        val wrapper = rendererWrapper
+        if (wrapper != null) {
+            // Check if the wrapper has the expected class (non-composable check)
+            val isValidWrapper = try {
+                wrapper.javaClass.name == "com.kotlinjsonui.dynamic.DynamicViewWrapper"
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to check wrapper type", e)
+                false
+            }
+            
+            if (isValidWrapper) {
+                // We'll use a compile-time approach instead
+                // The dynamic module will provide the actual implementation
+                renderDynamicInternal(layoutName, data, modifier, onError, onLoading, content, wrapper)
+                return true
+            }
         }
+        
+        Log.d(TAG, "DynamicView renderer not available - using fallback")
+        fallback()
+        return false
+    }
+    
+    /**
+     * Internal render method that will be called by the dynamic module
+     */
+    @Composable
+    private fun renderDynamicInternal(
+        layoutName: String,
+        data: Map<String, Any>,
+        modifier: Modifier,
+        onError: ((String) -> Unit)?,
+        onLoading: @Composable () -> Unit,
+        content: @Composable (String) -> Unit,
+        wrapper: Any
+    ) {
+        // This will be overridden by the dynamic module through a generated extension
+        // For now, we can't directly call the composable from here
+        Log.w(TAG, "renderDynamicInternal called but no implementation available")
     }
     
     /**
