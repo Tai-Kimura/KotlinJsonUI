@@ -41,20 +41,34 @@ class DynamicViewRendererImpl {
         var error by remember { mutableStateOf<String?>(null) }
         var isLoading by remember { mutableStateOf(true) }
         
-        LaunchedEffect(layoutName) {
+        // Observe HotLoader updates for this layout
+        val hotLoader = com.kotlinjsonui.dynamic.hotloader.HotLoader.getInstance(context)
+        val lastUpdate by hotLoader.lastUpdate.collectAsState()
+        
+        LaunchedEffect(layoutName, lastUpdate) {
             isLoading = true
             error = null
             
             try {
                 withContext(Dispatchers.IO) {
-                    // Try to load from assets/Layouts/ directory (capital L)
+                    // First try to load from HotLoader cache
+                    val cachedLayout = hotLoader.getCachedLayout(layoutName)
+                    if (cachedLayout != null) {
+                        Log.d(TAG, "Loading layout from HotLoader cache: $layoutName")
+                        val gson = Gson()
+                        jsonObject = gson.fromJson(cachedLayout, JsonObject::class.java)
+                        Log.d(TAG, "Successfully loaded layout from cache")
+                        return@withContext
+                    }
+                    
+                    // If not in cache, try to load from assets/Layouts/ directory (capital L)
                     val fileName = if (layoutName.endsWith(".json")) {
                         "Layouts/$layoutName"
                     } else {
                         "Layouts/$layoutName.json"
                     }
                     
-                    Log.d(TAG, "Attempting to load layout: $fileName")
+                    Log.d(TAG, "Attempting to load layout from assets: $fileName")
                     
                     try {
                         context.assets.open(fileName).use { inputStream ->
