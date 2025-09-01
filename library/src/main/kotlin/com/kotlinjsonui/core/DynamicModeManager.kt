@@ -46,13 +46,19 @@ object DynamicModeManager {
         
         isInitialized = true
         
-        // Load saved preference only in DEBUG builds
-        if (BuildConfig.DEBUG) {
+        // Check if the host app is in debug mode
+        val isHostAppDebug = checkHostAppDebugMode(context)
+        
+        // Dynamic Mode is only available when BOTH library and host app are in debug
+        val isDynamicAvailable = BuildConfig.DEBUG || isHostAppDebug
+        _isDynamicModeAvailable.value = isDynamicAvailable
+        
+        // Load saved preference only if dynamic mode is available
+        if (isDynamicAvailable) {
             loadPreference(context.applicationContext)
         } else {
-            Log.i(TAG, "Dynamic Mode is not available in release builds")
+            Log.i(TAG, "Dynamic Mode is not available (Library: ${if (BuildConfig.DEBUG) "DEBUG" else "RELEASE"}, App: ${if (isHostAppDebug) "DEBUG" else "RELEASE"})")
             _isDynamicModeEnabled.value = false
-            _isDynamicModeAvailable.value = false
         }
     }
     
@@ -63,8 +69,8 @@ object DynamicModeManager {
      * @return true if the operation was successful, false if Dynamic Mode is not available
      */
     fun setDynamicModeEnabled(context: Context, enabled: Boolean): Boolean {
-        if (!BuildConfig.DEBUG) {
-            Log.w(TAG, "Cannot enable Dynamic Mode in release build")
+        if (!_isDynamicModeAvailable.value) {
+            Log.w(TAG, "Cannot enable Dynamic Mode - not available in current configuration")
             return false
         }
         
@@ -93,8 +99,8 @@ object DynamicModeManager {
      * @return the new state, or null if Dynamic Mode is not available
      */
     fun toggleDynamicMode(context: Context): Boolean? {
-        if (!BuildConfig.DEBUG) {
-            Log.w(TAG, "Cannot toggle Dynamic Mode in release build")
+        if (!_isDynamicModeAvailable.value) {
+            Log.w(TAG, "Cannot toggle Dynamic Mode - not available")
             return null
         }
         
@@ -111,15 +117,47 @@ object DynamicModeManager {
      * This checks both availability (DEBUG build) and enabled state
      */
     fun isActive(): Boolean {
-        return BuildConfig.DEBUG && _isDynamicModeEnabled.value
+        return _isDynamicModeAvailable.value && _isDynamicModeEnabled.value
+    }
+    
+    /**
+     * Check if the host application is running in debug mode
+     * Uses reflection to check the host app's BuildConfig.DEBUG field
+     */
+    private fun checkHostAppDebugMode(context: Context): Boolean {
+        return try {
+            // Get the host app's package name
+            val packageName = context.packageName
+            
+            // Try to load the host app's BuildConfig class
+            val buildConfigClass = Class.forName("$packageName.BuildConfig")
+            
+            // Get the DEBUG field
+            val debugField = buildConfigClass.getField("DEBUG")
+            
+            // Get the value of DEBUG field
+            val isDebug = debugField.getBoolean(null)
+            
+            Log.d(TAG, "Host app ($packageName) is in ${if (isDebug) "DEBUG" else "RELEASE"} mode")
+            isDebug
+        } catch (e: ClassNotFoundException) {
+            Log.w(TAG, "Could not find BuildConfig for host app: ${e.message}")
+            false
+        } catch (e: NoSuchFieldException) {
+            Log.w(TAG, "BuildConfig.DEBUG field not found: ${e.message}")
+            false
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking host app debug mode", e)
+            false
+        }
     }
     
     /**
      * Get configuration for Dynamic Mode
-     * Returns null if not in DEBUG build
+     * Returns null if not available
      */
     fun getConfiguration(): DynamicModeConfig? {
-        if (!BuildConfig.DEBUG) {
+        if (!_isDynamicModeAvailable.value) {
             return null
         }
         
@@ -146,7 +184,7 @@ object DynamicModeManager {
     }
     
     private fun startDynamicMode(context: Context) {
-        if (!BuildConfig.DEBUG) {
+        if (!_isDynamicModeAvailable.value) {
             return
         }
         
@@ -176,7 +214,7 @@ object DynamicModeManager {
     }
     
     private fun stopDynamicMode(context: Context) {
-        if (!BuildConfig.DEBUG) {
+        if (!_isDynamicModeAvailable.value) {
             return
         }
         
@@ -226,11 +264,11 @@ object DynamicModeManager {
     
     /**
      * Reset all settings to defaults
-     * Only works in DEBUG builds
+     * Only works when Dynamic Mode is available
      * @param context Context for accessing SharedPreferences
      */
     fun reset(context: Context) {
-        if (!BuildConfig.DEBUG) {
+        if (!_isDynamicModeAvailable.value) {
             return
         }
         
@@ -252,8 +290,8 @@ object DynamicModeManager {
         onLoading: @Composable () -> Unit = {},
         content: @Composable (String) -> Unit = {}
     ) {
-        if (!BuildConfig.DEBUG) {
-            Log.d(TAG, "DynamicView not available in release build")
+        if (!_isDynamicModeAvailable.value) {
+            Log.d(TAG, "DynamicView not available in current configuration")
             return
         }
         
@@ -292,12 +330,12 @@ object DynamicModeManager {
     
     /**
      * Create a DynamicView instance (non-composable)
-     * Returns null in release builds
+     * Returns null if Dynamic Mode is not available
      * This method uses reflection to avoid compile-time dependency on DEBUG-only classes
      */
     fun createDynamicView(layoutName: String, context: Context? = null): Any? {
-        if (!BuildConfig.DEBUG) {
-            Log.d(TAG, "DynamicView not available in release build")
+        if (!_isDynamicModeAvailable.value) {
+            Log.d(TAG, "DynamicView not available in current configuration")
             return null
         }
         

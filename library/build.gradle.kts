@@ -26,9 +26,22 @@ android {
                 "proguard-rules.pro",
                 "consumer-rules.pro"
             )
+            
+            // Include debug sources in release build for unified library
+            // Dynamic features will be controlled at runtime
         }
         debug {
             isMinifyEnabled = false
+        }
+    }
+    
+    // Include debug sources in main for unified library
+    sourceSets {
+        getByName("main") {
+            // Include dynamic components in main source set
+            java.srcDirs("src/main/java", "src/debug/java")
+            kotlin.srcDirs("src/main/kotlin", "src/debug/kotlin")
+            res.srcDirs("src/main/res", "src/debug/res")
         }
     }
 
@@ -59,6 +72,11 @@ android {
         singleVariant("release") {
             withSourcesJar()
             withJavadocJar()
+        }
+        
+        // Also publish debug variant with Dynamic Components
+        singleVariant("debug") {
+            withSourcesJar()
         }
     }
 }
@@ -113,6 +131,7 @@ dependencies {
 
 publishing {
     publications {
+        // Release版（通常のライブラリ、Dynamic Components無し）
         register<MavenPublication>("release") {
             groupId = "com.github.Tai-Kimura"  // For JitPack: com.github.{username}
             artifactId = "kotlinjsonui"
@@ -139,6 +158,44 @@ publishing {
                         id.set("tai-kimura")
                         name.set("Tai Kimura")
                         email.set("your-email@example.com") // Optional
+                    }
+                }
+                
+                scm {
+                    url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+                    connection.set("scm:git:git://github.com/Tai-Kimura/KotlinJsonUI.git")
+                    developerConnection.set("scm:git:ssh://github.com/Tai-Kimura/KotlinJsonUI.git")
+                }
+            }
+        }
+        
+        // Debug版（開発用、Dynamic Components含む）
+        register<MavenPublication>("debug") {
+            groupId = "com.github.Tai-Kimura"
+            artifactId = "kotlinjsonui-debug"  // 別のartifactIdで公開
+            version = "1.0.0"
+
+            afterEvaluate {
+                from(components["debug"])
+            }
+
+            pom {
+                name.set("KotlinJsonUI Debug")
+                description.set("KotlinJsonUI with Dynamic Components for development")
+                url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+                
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id.set("tai-kimura")
+                        name.set("Tai Kimura")
+                        email.set("your-email@example.com")
                     }
                 }
                 
