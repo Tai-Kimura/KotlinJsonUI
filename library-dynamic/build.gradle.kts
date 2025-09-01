@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
+    id("signing")
+    id("com.vanniktech.maven.publish")
 }
 
 android {
@@ -33,11 +35,7 @@ android {
         compose = true
     }
     
-    publishing {
-        singleVariant("release") {
-            withJavadocJar()
-        }
-    }
+    // Publishing variants are handled by vanniktech plugin
 }
 
 dependencies {
@@ -60,70 +58,47 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
 }
 
-publishing {
-    publications {
-        register<MavenPublication>("release") {
-            groupId = "io.github.tai-kimura"
-            artifactId = "kotlinjsonui-dynamic"
-            version = "1.0.0"
-
-            afterEvaluate {
-                from(components["release"])
-            }
-
-            pom {
-                name.set("KotlinJsonUI Dynamic Components")
-                description.set("Dynamic components for KotlinJsonUI - enables hot reload and runtime JSON updates")
-                url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
-                
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                
-                developers {
-                    developer {
-                        id.set("tai-kimura")
-                        name.set("Tai Kimura")
-                        email.set("your-email@example.com")
-                    }
-                }
-                
-                scm {
-                    url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
-                    connection.set("scm:git:git://github.com/Tai-Kimura/KotlinJsonUI.git")
-                    developerConnection.set("scm:git:ssh://github.com/Tai-Kimura/KotlinJsonUI.git")
-                }
-            }
-        }
-    }
+// Signing configuration for vanniktech plugin
+signing {
+    val signingKey = project.findProperty("signing.key") as String?
+    val signingPassword = project.findProperty("signing.password") as String?
     
-    repositories {
-        // Maven Central
-        maven {
-            name = "MavenCentral"
-            url = if (version.toString().endsWith("SNAPSHOT")) {
-                uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            } else {
-                uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            }
-            
-            credentials {
-                username = project.findProperty("ossrhUsername") as String? ?: ""
-                password = project.findProperty("ossrhPassword") as String? ?: ""
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+}
+
+// Configure vanniktech plugin for Central Portal
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    
+    coordinates("io.github.tai-kimura", "kotlinjsonui-dynamic", "1.0.0")
+    
+    pom {
+        name.set("KotlinJsonUI Dynamic Components")
+        description.set("Dynamic components for KotlinJsonUI - enables hot reload and runtime JSON updates")
+        url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+        
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
             }
         }
         
-        // GitHub Packages
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Tai-Kimura/KotlinJsonUI")
-            credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+        developers {
+            developer {
+                id.set("tai-kimura")
+                name.set("Taichiro Kimura")
+                email.set("kimura@tanosys.com")
             }
+        }
+        
+        scm {
+            connection.set("scm:git:git://github.com/Tai-Kimura/KotlinJsonUI.git")
+            developerConnection.set("scm:git:ssh://github.com/Tai-Kimura/KotlinJsonUI.git")
+            url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
         }
     }
 }
