@@ -1,23 +1,19 @@
-# Template for gradle.properties
-# Copy this file to gradle.properties and fill in your credentials
-# DO NOT commit gradle.properties to version control!
+# Maven Central Publishing Configuration Template
+# IMPORTANT: Copy this file to ~/.gradle/gradle.properties and fill in your ACTUAL credentials
+# DO NOT commit the actual gradle.properties file with real credentials!
 
-# Project properties
-org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-android.useAndroidX=true
-kotlin.code.style=official
-android.nonTransitiveRClass=true
+# Central Portal Credentials (New system - recommended)
+centralPortalUsername=your-username-or-token
+centralPortalPassword=your-api-token
 
-# Maven Central (Sonatype OSSRH) credentials
-# Get these from https://s01.oss.sonatype.org/
-ossrhUsername=your-sonatype-username
-ossrhPassword=your-sonatype-password
+# GPG Signing (Required for Maven Central)
+# Option 1: ASCII armor format (recommended)
+signing.key=-----BEGIN PGP PRIVATE KEY BLOCK-----\n\
+YOUR_PRIVATE_KEY_HERE\n\
+-----END PGP PRIVATE KEY BLOCK-----
+signing.password=your-gpg-passphrase
 
-# GPG Signing for Maven Central
-# Export your GPG key: gpg --export-secret-keys YOUR_KEY_ID | base64
-signing.key=your-base64-encoded-gpg-key
-signing.password=your-gpg-password
-
-# GitHub Packages credentials (optional)
-gpr.user=your-github-username
-gpr.key=your-github-personal-access-token
+# Option 2: Key file reference
+# signing.keyId=YOUR_KEY_ID
+# signing.secretKeyRingFile=/Users/your-username/.gnupg/secring.gpg
+# signing.password=your-gpg-passphrase

@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
     id("signing")
+    id("com.vanniktech.maven.publish")
 }
 
 android {
@@ -58,15 +59,7 @@ android {
         targetSdk = 36
     }
     
-    // Configure publishing variants
-    publishing {
-        singleVariant("release") {
-            // Don't include sources to avoid conflicts
-            // withSourcesJar() // Commented out
-            withJavadocJar()
-        }
-        
-    }
+    // Publishing variants are handled by vanniktech plugin
 }
 
 dependencies {
@@ -117,7 +110,20 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
+/* Commented out - using vanniktech plugin instead
 publishing {
+    repositories {
+        maven {
+            name = "centralPortal"
+            url = uri("https://central.sonatype.com/api/v1/publisher/deployments/upload")
+            
+            credentials {
+                username = project.findProperty("centralPortalUsername") as String? ?: ""
+                password = project.findProperty("centralPortalPassword") as String? ?: ""
+            }
+        }
+    }
+    
     publications {
         // 単一のAAR公開（releaseビルドを使用）
         register<MavenPublication>("release") {
@@ -191,14 +197,49 @@ publishing {
         }
     }
 }
+*/
 
-// Signing configuration for Maven Central
+// Signing configuration for vanniktech plugin
 signing {
     val signingKey = project.findProperty("signing.key") as String?
     val signingPassword = project.findProperty("signing.password") as String?
     
     if (signingKey != null && signingPassword != null) {
         useInMemoryPgpKeys(signingKey, signingPassword)
-        sign(publishing.publications["release"])
+    }
+}
+
+// Configure vanniktech plugin for Central Portal
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    
+    coordinates("io.github.tai-kimura", "kotlinjsonui", "1.0.0")
+    
+    pom {
+        name.set("KotlinJsonUI")
+        description.set("A JSON-based UI framework for Android with Compose support")
+        url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+        
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        
+        developers {
+            developer {
+                id.set("tai-kimura")
+                name.set("Taichiro Kimura")
+                email.set("kimura@tanosys.com")
+            }
+        }
+        
+        scm {
+            connection.set("scm:git:git://github.com/Tai-Kimura/KotlinJsonUI.git")
+            developerConnection.set("scm:git:ssh://github.com/Tai-Kimura/KotlinJsonUI.git")
+            url.set("https://github.com/Tai-Kimura/KotlinJsonUI")
+        }
     }
 }
