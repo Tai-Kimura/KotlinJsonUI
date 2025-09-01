@@ -167,7 +167,13 @@ if (fs.existsSync(stylesDir)) watchDirs.push(stylesDir);
 
 if (watchDirs.length > 0) {
     const watcher = chokidar.watch(watchDirs, {
-        ignored: /(^|[\/\\])\../, // ignore dotfiles
+        ignored: [
+            /(^|[\/\\])\../, // ignore dotfiles
+            /Resources/, // ignore Resources folders to prevent infinite loop
+            /node_modules/,
+            /build/,
+            /\.gradle/
+        ],
         persistent: true,
         ignoreInitial: true
     });
@@ -195,12 +201,21 @@ if (watchDirs.length > 0) {
             if (stderr) {
                 console.error('Build stderr:', stderr);
             }
+            if (stdout && stdout.trim()) {
+                console.log('Build output:', stdout);
+            }
             console.log('Build completed successfully');
         });
     }
     
     watcher
         .on('add', (filepath) => {
+            // Skip Resources folder files
+            if (filepath.includes('Resources')) {
+                console.log(`Ignoring Resources file: ${filepath}`);
+                return;
+            }
+            
             console.log(`File added: ${filepath}`);
             const relativePath = path.relative(projectRoot, filepath);
             const dirName = path.basename(path.dirname(filepath));
@@ -218,6 +233,12 @@ if (watchDirs.length > 0) {
             }
         })
         .on('change', (filepath) => {
+            // Skip Resources folder files
+            if (filepath.includes('Resources')) {
+                console.log(`Ignoring Resources file change: ${filepath}`);
+                return;
+            }
+            
             console.log(`File changed: ${filepath}`);
             const relativePath = path.relative(projectRoot, filepath);
             const dirName = path.basename(path.dirname(filepath));
@@ -235,6 +256,12 @@ if (watchDirs.length > 0) {
             }
         })
         .on('unlink', (filepath) => {
+            // Skip Resources folder files
+            if (filepath.includes('Resources')) {
+                console.log(`Ignoring Resources file removal: ${filepath}`);
+                return;
+            }
+            
             console.log(`File removed: ${filepath}`);
             const relativePath = path.relative(projectRoot, filepath);
             const dirName = path.basename(path.dirname(filepath));
