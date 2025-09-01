@@ -189,7 +189,8 @@ module KjuiTools
                         format_value = lambda do |value, type|
                           case type.downcase
                           when 'string', 'text'
-                            "\\"\#{value}\\""
+                            # Use ResourceResolver to process strings (checks for resources)
+                            Helpers::ResourceResolver.process_text(value, required_imports)
                           when 'int', 'integer', 'float', 'double', 'bool', 'boolean'
                             value.to_s
                           when 'color'
