@@ -74,8 +74,18 @@ class MainActivity : ComponentActivity() {
         // Set initial dynamic mode state
         DynamicModeManager.setDynamicModeEnabled(this, false)
         
-        // Register custom component handler for dynamic mode (debug only)
-        DynamicComponentInitializer.initialize()
+        // Initialize dynamic components if available (only in debug builds)
+        if (BuildConfig.DEBUG) {
+            try {
+                val dynamicInitClass = Class.forName("com.kotlinjsonui.dynamic.DynamicViewInitializer")
+                val initMethod = dynamicInitClass.getMethod("initialize")
+                val initInstance = dynamicInitClass.getField("INSTANCE").get(null)
+                initMethod.invoke(initInstance)
+            } catch (e: Exception) {
+                // Dynamic module not available, continue without it
+                android.util.Log.d("MainActivity", "Dynamic components not available: ${e.message}")
+            }
+        }
 
 
         // Configure link color globally (optional - you can customize this)

@@ -1,6 +1,7 @@
-package com.kotlinjsonui.core
+package com.kotlinjsonui.dynamic
 
 import android.util.Log
+import com.kotlinjsonui.core.DynamicViewProvider
 
 /**
  * Initializer for DynamicView support

@@ -213,7 +213,8 @@ class DynamicCollectionComponent {
                             if (headerViewName != null && section.header != null) {
                                 item(span = { GridItemSpan(maxLineSpan) }) {
                                     Box(modifier = Modifier.fillMaxWidth()) {
-                                        renderCellView(headerViewName, section.header.data, -1, data)
+                                        val headerData = (section.header as? CollectionDataSection.HeaderFooterData)?.data ?: emptyMap()
+                                        renderCellView(headerViewName, headerData, -1, data)
                                     }
                                 }
                             }
@@ -243,7 +244,8 @@ class DynamicCollectionComponent {
                             if (footerViewName != null && section.footer != null) {
                                 item(span = { GridItemSpan(maxLineSpan) }) {
                                     Box(modifier = Modifier.fillMaxWidth()) {
-                                        renderCellView(footerViewName, section.footer.data, -2, data)
+                                        val footerData = (section.footer as? CollectionDataSection.HeaderFooterData)?.data ?: emptyMap()
+                                        renderCellView(footerViewName, footerData, -2, data)
                                     }
                                 }
                             }
