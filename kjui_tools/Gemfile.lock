@@ -11,6 +11,7 @@ GEM
     optparse (0.6.0)
     pathname (0.4.0)
     racc (1.8.1)
+    rexml (3.4.4)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -41,6 +42,7 @@ DEPENDENCIES
   nokogiri
   optparse
   pathname
+  rexml
   rspec (~> 3.12)
   simplecov
 

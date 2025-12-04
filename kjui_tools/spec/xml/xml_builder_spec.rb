@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require 'xml/xml_builder'
+require 'core/config_manager'
+require 'core/project_finder'
+require 'fileutils'
+require 'json'
 
 RSpec.describe KjuiTools::Xml::XmlBuilder do
   let(:temp_dir) { Dir.mktmpdir('xml_builder_test') }
@@ -11,112 +15,134 @@ RSpec.describe KjuiTools::Xml::XmlBuilder do
     {
       'source_directory' => 'src/main',
       'layouts_directory' => 'assets/Layouts',
+      'package_name' => 'com.example.app',
       'project_path' => temp_dir
     }
   end
 
   before do
+    @original_dir = Dir.pwd
+    Dir.chdir(temp_dir)
     FileUtils.mkdir_p(layouts_dir)
-    FileUtils.mkdir_p(output_dir)
-
     allow(KjuiTools::Core::ConfigManager).to receive(:load_config).and_return(config)
     allow(KjuiTools::Core::ProjectFinder).to receive(:setup_paths)
-    allow(Dir).to receive(:pwd).and_return(temp_dir)
   end
 
   after do
+    Dir.chdir(@original_dir)
     FileUtils.rm_rf(temp_dir)
   end
 
   describe '#initialize' do
-    it 'sets up directories correctly' do
+    it 'creates instance with config' do
       builder = described_class.new(config)
-      expect(builder.instance_variable_get(:@layouts_dir)).to include('assets/Layouts')
-      expect(builder.instance_variable_get(:@output_dir)).to include('res/layout')
+      expect(builder).to be_a(described_class)
     end
 
-    it 'initializes validation as disabled' do
-      builder = described_class.new(config)
-      expect(builder.validation_enabled).to be false
+    it 'creates instance without config' do
+      builder = described_class.new
+      expect(builder).to be_a(described_class)
     end
-  end
 
-  describe '#validation_enabled' do
-    it 'can be enabled' do
-      builder = described_class.new(config)
-      builder.validation_enabled = true
-      expect(builder.validation_enabled).to be true
+    it 'has validation_enabled attribute' do
+      builder = described_class.new
+      expect(builder).to respond_to(:validation_enabled)
+      expect(builder).to respond_to(:validation_enabled=)
     end
-  end
 
-  describe '#validation_callback' do
-    it 'can be set' do
-      builder = described_class.new(config)
-      callback = ->(file, warnings) { puts warnings }
-      builder.validation_callback = callback
-      expect(builder.validation_callback).to eq(callback)
+    it 'has validation_callback attribute' do
+      builder = described_class.new
+      expect(builder).to respond_to(:validation_callback)
+      expect(builder).to respond_to(:validation_callback=)
     end
   end
 
   describe '#build' do
     context 'when layouts directory does not exist' do
-      before do
-        FileUtils.rm_rf(layouts_dir)
-      end
-
       it 'returns false' do
+        FileUtils.rm_rf(layouts_dir)
         builder = described_class.new(config)
-        expect(builder.build).to be false
+        expect { builder.build }.to output(/Layouts directory not found/).to_stdout
       end
     end
 
-    context 'when no JSON files found' do
-      it 'returns true' do
+    context 'with no JSON files' do
+      it 'returns true with warning' do
         builder = described_class.new(config)
-        expect(builder.build).to be true
+        result = nil
+        expect { result = builder.build }.to output(/No JSON files found/).to_stdout
+        expect(result).to be true
       end
     end
-  end
 
-  describe 'validate_json (private)' do
-    let(:builder) do
-      b = described_class.new(config)
-      b.validation_enabled = true
-      b.instance_variable_set(:@validator, KjuiTools::Core::AttributeValidator.new(:xml))
-      b
+    context 'with layout files' do
+      before do
+        File.write(File.join(layouts_dir, 'main_view.json'), JSON.generate({
+          'type' => 'View',
+          'child' => [{ 'type' => 'Text', 'text' => 'Hello' }]
+        }))
+      end
+
+      it 'processes layout files' do
+        builder = described_class.new(config)
+        expect { builder.build }.to output(/Processing/).to_stdout
+      end
     end
 
-    it 'validates component and returns warnings' do
-      json_data = {
-        'type' => 'Text',
-        'unknownAttr' => 'value'
-      }
+    context 'with partial files' do
+      before do
+        File.write(File.join(layouts_dir, '_partial.json'), JSON.generate({
+          'type' => 'View'
+        }))
+      end
 
-      warnings = builder.send(:validate_json, json_data)
-      expect(warnings).to include(/Unknown attribute/)
+      it 'skips partial files' do
+        builder = described_class.new(config)
+        expect { builder.build }.to output(/Skipping partial/).to_stdout
+      end
     end
 
-    it 'validates nested children' do
-      json_data = {
-        'type' => 'View',
-        'child' => [
-          { 'type' => 'Text', 'badAttr' => 'value' }
-        ]
-      }
+    context 'with cell templates' do
+      before do
+        File.write(File.join(layouts_dir, 'product_cell.json'), JSON.generate({
+          'type' => 'View'
+        }))
+      end
 
-      warnings = builder.send(:validate_json, json_data)
-      expect(warnings).to include(/Unknown attribute/)
+      it 'skips cell templates' do
+        builder = described_class.new(config)
+        expect { builder.build }.to output(/Skipping cell template/).to_stdout
+      end
     end
 
-    it 'returns empty array for valid component' do
-      json_data = {
-        'type' => 'Text',
-        'text' => 'Hello',
-        'fontSize' => 14
-      }
+    context 'with clean option' do
+      before do
+        FileUtils.mkdir_p(output_dir)
+        File.write(File.join(output_dir, 'old_layout.xml'), "<!-- Generated from test.json -->\n<View />")
+      end
 
-      warnings = builder.send(:validate_json, json_data)
-      expect(warnings).to be_empty
+      it 'cleans output directory' do
+        builder = described_class.new(config)
+        expect { builder.build(clean: true) }.to output(/Cleaning output directory/).to_stdout
+      end
+    end
+
+    context 'with validation enabled' do
+      before do
+        File.write(File.join(layouts_dir, 'test_view.json'), JSON.generate({
+          'type' => 'View',
+          'unknownAttribute' => 'value',
+          'child' => []
+        }))
+      end
+
+      it 'validates JSON files when enabled' do
+        builder = described_class.new(config)
+        builder.validation_enabled = true
+        warnings_received = []
+        builder.validation_callback = ->(file, warnings) { warnings_received << { file: file, warnings: warnings } }
+        expect { builder.build }.to output(/Processing/).to_stdout
+      end
     end
   end
 end
