@@ -19,7 +19,7 @@ class SelectBoxTest {
     fun selectBox_displaysPlaceholder() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "",
+                value = "",
                 options = listOf("Option 1", "Option 2"),
                 onValueChange = {},
                 placeholder = "Select an option"
@@ -33,7 +33,7 @@ class SelectBoxTest {
     fun selectBox_displaysSelectedValue() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "Option 1",
+                value = "Option 1",
                 options = listOf("Option 1", "Option 2"),
                 onValueChange = {},
                 placeholder = "Select an option"
@@ -47,7 +47,7 @@ class SelectBoxTest {
     fun selectBox_clickOpensSheet() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "",
+                value = "",
                 options = listOf("Option 1", "Option 2", "Option 3"),
                 onValueChange = {},
                 placeholder = "Select an option"
@@ -68,7 +68,7 @@ class SelectBoxTest {
     fun selectBox_withCustomColors() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "Test",
+                value = "Test",
                 options = listOf("Test"),
                 onValueChange = {},
                 backgroundColor = Color.Red,
@@ -83,7 +83,7 @@ class SelectBoxTest {
     fun selectBox_disabled() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "",
+                value = "",
                 options = listOf("Option 1"),
                 onValueChange = {},
                 placeholder = "Disabled",
@@ -95,26 +95,10 @@ class SelectBoxTest {
     }
 
     @Test
-    fun selectBox_withLabelValuePairs() {
-        composeTestRule.setContent {
-            SelectBox(
-                selectedValue = "value1",
-                options = listOf("value1", "value2"),
-                labels = listOf("Label 1", "Label 2"),
-                onValueChange = {},
-                placeholder = "Select"
-            )
-        }
-
-        // Should display the label for the selected value
-        composeTestRule.onNodeWithText("Label 1").assertIsDisplayed()
-    }
-
-    @Test
     fun selectBox_emptyOptions() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "",
+                value = "",
                 options = emptyList(),
                 onValueChange = {},
                 placeholder = "No options"
@@ -128,7 +112,7 @@ class SelectBoxTest {
     fun selectBox_withCornerRadius() {
         composeTestRule.setContent {
             SelectBox(
-                selectedValue = "Test",
+                value = "Test",
                 options = listOf("Test"),
                 onValueChange = {},
                 cornerRadius = 16

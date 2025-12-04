@@ -49,11 +49,11 @@ class FontCacheTest {
     }
 
     @Test
-    fun fontCache_clearCache() {
+    fun fontCache_clear() {
         // Get a typeface to populate cache
         FontCache.getTypeface(context, "test_font")
         // Clear the cache
-        FontCache.clearCache()
+        FontCache.clear()
         // No exception should be thrown
     }
 }
