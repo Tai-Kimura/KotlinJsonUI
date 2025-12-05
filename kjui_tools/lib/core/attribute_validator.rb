@@ -77,13 +77,51 @@ module KjuiTools
       private
 
       def load_definitions
+        # Load base definitions
         definitions_path = File.join(File.dirname(__FILE__), 'attribute_definitions.json')
-        if File.exist?(definitions_path)
+        base_definitions = if File.exist?(definitions_path)
           JSON.parse(File.read(definitions_path))
         else
           puts "\e[31m[KJUI Error] attribute_definitions.json not found at #{definitions_path}\e[0m"
           {}
         end
+
+        # Load and merge extension definitions
+        extension_definitions = load_extension_definitions
+        merge_definitions(base_definitions, extension_definitions)
+      end
+
+      # Load attribute definitions from extension components
+      # @return [Hash] Extension definitions loaded from extension directory
+      def load_extension_definitions
+        extension_defs = {}
+        extensions_dir = File.join(File.dirname(__FILE__), '..', 'compose', 'components', 'extensions', 'attribute_definitions')
+        extensions_dir = File.expand_path(extensions_dir)
+
+        return extension_defs unless Dir.exist?(extensions_dir)
+
+        Dir.glob(File.join(extensions_dir, '*.json')).each do |file_path|
+          begin
+            extension_data = JSON.parse(File.read(file_path))
+            extension_defs.merge!(extension_data)
+          rescue JSON::ParserError => e
+            puts "\e[33m[KJUI Warning] Failed to parse extension definition file #{file_path}: #{e.message}\e[0m"
+          end
+        end
+
+        extension_defs
+      end
+
+      # Merge extension definitions into base definitions
+      # @param base [Hash] Base attribute definitions
+      # @param extensions [Hash] Extension attribute definitions
+      # @return [Hash] Merged definitions
+      def merge_definitions(base, extensions)
+        return base if extensions.empty?
+
+        # Extensions are component-specific definitions
+        # They are merged into the base definitions at the same level as 'common', 'Text', etc.
+        base.merge(extensions)
       end
 
       # Get valid attributes for a component type (common + type-specific)
@@ -274,6 +312,9 @@ module KjuiTools
             actual == 'array'
           when 'object'
             actual == 'object'
+          when 'binding'
+            # binding型は @{propertyName} 形式の文字列である必要がある
+            actual == 'string' && value.is_a?(String) && value.start_with?('@{') && value.end_with?('}')
           else
             # For union types or special cases
             actual == expected

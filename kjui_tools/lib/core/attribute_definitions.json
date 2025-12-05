@@ -1,4 +1,5 @@
 {
+  "_comment": "binding type requires @{propertyName} format for data binding expressions",
   "common": {
     "id": {
       "type": "string",
@@ -27,7 +28,7 @@
     },
     "aspectWidth": { "type": "number", "description": "Aspect ratio width", "mode": "xml" },
     "aspectHeight": { "type": "number", "description": "Aspect ratio height", "mode": "xml" },
-    "background": { "type": "string", "description": "Background color (hex string)" },
+    "background": { "type": ["string", "binding"], "description": "Background color (can be data binding)" },
     "cornerRadius": { "type": "number", "description": "Corner radius in dp" },
     "borderWidth": { "type": "number", "description": "Border width in dp" },
     "borderColor": { "type": "string", "description": "Border color (hex string)" },
@@ -44,13 +45,13 @@
       "description": "Opacity (0-1), alias for alpha"
     },
     "hidden": {
-      "type": ["boolean", "string"],
-      "description": "Whether component is hidden (boolean or @{binding})"
+      "type": ["boolean", "binding"],
+      "description": "Whether component is hidden (can be data binding)"
     },
     "visibility": {
-      "type": "string",
+      "type": ["string", "binding"],
       "enum": ["visible", "invisible", "gone"],
-      "description": "View visibility"
+      "description": "View visibility (can be data binding)"
     },
     "padding": {
       "type": ["number", "array"],
@@ -113,10 +114,10 @@
     "alignCenterHorizontalView": { "type": "string", "description": "Center horizontally with this view (ConstraintLayout)" }
   },
   "Text": {
-    "text": { "type": "string", "description": "Text content (supports @{binding})" },
+    "text": { "type": ["string", "binding"], "description": "Text content (can be data binding)" },
     "font": { "type": "string", "description": "Font name or 'bold'" },
     "fontSize": { "type": "number", "description": "Font size in sp" },
-    "fontColor": { "type": "string", "description": "Text color (hex string)" },
+    "fontColor": { "type": ["string", "binding"], "description": "Text color (can be data binding)" },
     "fontWeight": {
       "type": "string",
       "enum": ["normal", "bold", "semibold", "medium", "light", "thin"],
@@ -181,7 +182,7 @@
     }
   },
   "TextField": {
-    "text": { "type": "string", "description": "Text content (supports @{binding})" },
+    "text": { "type": ["string", "binding"], "description": "Text content (binding for two-way)" },
     "hint": { "type": "string", "description": "Placeholder text" },
     "placeholder": { "type": "string", "description": "Placeholder text (alias for hint)" },
     "hintColor": { "type": "string", "description": "Placeholder color" },
@@ -223,8 +224,8 @@
       "description": "Maximum lines for input"
     },
     "enabled": {
-      "type": "boolean",
-      "description": "Whether input is enabled"
+      "type": ["boolean", "binding"],
+      "description": "Whether input is enabled (can be data binding)"
     },
     "disabled": {
       "type": "boolean",
@@ -243,12 +244,12 @@
       "description": "Text change handler function name"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding expression @{variable}"
     }
   },
   "TextView": {
-    "text": { "type": "string", "description": "Text content (supports @{binding})" },
+    "text": { "type": ["string", "binding"], "description": "Text content (binding for two-way)" },
     "hint": { "type": "string", "description": "Placeholder text" },
     "placeholder": { "type": "string", "description": "Placeholder text (alias for hint)" },
     "hintColor": { "type": "string", "description": "Placeholder color" },
@@ -257,14 +258,14 @@
     "fontSize": { "type": "number", "description": "Font size in sp" },
     "fontColor": { "type": "string", "description": "Text color (hex string)" },
     "maxLines": { "type": "number", "description": "Maximum lines" },
-    "enabled": { "type": "boolean", "description": "Whether input is enabled" },
+    "enabled": { "type": ["boolean", "binding"], "description": "Whether input is enabled (can be data binding)" },
     "disabled": { "type": "boolean", "description": "Whether input is disabled" },
     "outlined": { "type": "boolean", "description": "Use outlined style" },
     "onTextChange": { "type": "string", "description": "Text change handler function name" },
-    "bind": { "type": "string", "description": "Two-way binding expression @{variable}" }
+    "bind": { "type": "binding", "description": "Two-way binding expression @{variable}" }
   },
   "Button": {
-    "text": { "type": "string", "description": "Button text (supports @{binding})" },
+    "text": { "type": ["string", "binding"], "description": "Button text (can be data binding)" },
     "font": { "type": "string", "description": "Font name or 'bold'" },
     "fontSize": { "type": "number", "description": "Font size in sp" },
     "fontColor": { "type": "string", "description": "Text color (hex string)" },
@@ -274,9 +275,9 @@
       "description": "Font weight"
     },
     "enabled": {
-      "type": "boolean",
+      "type": ["boolean", "binding"],
       "default": true,
-      "description": "Whether button is enabled"
+      "description": "Whether button is enabled (can be data binding)"
     },
     "disabled": {
       "type": "boolean",
@@ -304,7 +305,7 @@
     }
   },
   "Image": {
-    "src": { "type": "string", "description": "Image resource name (supports @{binding})" },
+    "src": { "type": ["string", "binding"], "description": "Image resource name (can be data binding)" },
     "contentMode": {
       "type": "string",
       "enum": ["aspectFill", "aspectFit", "center", "fill", "inside"],
@@ -324,7 +325,7 @@
     }
   },
   "NetworkImage": {
-    "src": { "type": "string", "description": "Image URL (supports @{binding})" },
+    "src": { "type": ["string", "binding"], "description": "Image URL (can be data binding)" },
     "placeholder": { "type": "string", "description": "Placeholder image name" },
     "defaultImage": { "type": "string", "description": "Default image name" },
     "errorImage": { "type": "string", "description": "Error image name" },
@@ -337,25 +338,25 @@
     "size": { "type": "number", "description": "Square image size" }
   },
   "CircleImage": {
-    "src": { "type": "string", "description": "Image source (supports @{binding})" },
+    "src": { "type": ["string", "binding"], "description": "Image source (can be data binding)" },
     "size": { "type": "number", "description": "Circle diameter" },
     "contentDescription": { "type": "string", "description": "Accessibility description" }
   },
   "SelectBox": {
     "items": {
-      "type": ["array", "string"],
-      "description": "List of items or @{binding}"
+      "type": ["array", "binding"],
+      "description": "List of items (can be data binding)"
     },
     "options": {
-      "type": ["array", "string"],
-      "description": "List of options (alias for items)"
+      "type": ["array", "binding"],
+      "description": "List of options (alias for items, can be data binding)"
     },
     "selectedItem": {
-      "type": "string",
-      "description": "Selected value @{binding}"
+      "type": ["string", "binding"],
+      "description": "Selected value (binding for two-way)"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding @{variable}"
     },
     "hint": { "type": "string", "description": "Placeholder text" },
@@ -415,14 +416,14 @@
   },
   "Switch": {
     "isOn": {
-      "type": ["boolean", "string"],
-      "description": "Switch state (boolean or @{binding})"
+      "type": ["boolean", "binding"],
+      "description": "Switch state (binding for two-way)"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding @{variable}"
     },
-    "enabled": { "type": "boolean", "description": "Whether enabled" },
+    "enabled": { "type": ["boolean", "binding"], "description": "Whether enabled (can be data binding)" },
     "onTintColor": { "type": "string", "description": "Track color when on" },
     "thumbTintColor": { "type": "string", "description": "Thumb color when on" },
     "onValueChange": {
@@ -431,26 +432,26 @@
     }
   },
   "CheckBox": {
-    "label": { "type": "string", "description": "Checkbox label" },
-    "text": { "type": "string", "description": "Checkbox label (alias)" },
+    "label": { "type": ["string", "binding"], "description": "Checkbox label (can be data binding)" },
+    "text": { "type": ["string", "binding"], "description": "Checkbox label (alias, can be data binding)" },
     "isChecked": {
-      "type": ["boolean", "string"],
-      "description": "Checked state (boolean or @{binding})"
+      "type": ["boolean", "binding"],
+      "description": "Checked state (binding for two-way)"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding @{variable}"
     },
     "checkColor": { "type": "string", "description": "Check mark color" },
-    "enabled": { "type": "boolean", "description": "Whether enabled" },
+    "enabled": { "type": ["boolean", "binding"], "description": "Whether enabled (can be data binding)" },
     "onValueChange": {
       "type": "string",
       "description": "Value change handler function name"
     }
   },
   "Radio": {
-    "label": { "type": "string", "description": "Radio label" },
-    "text": { "type": "string", "description": "Radio label (alias)" },
+    "label": { "type": ["string", "binding"], "description": "Radio label (can be data binding)" },
+    "text": { "type": ["string", "binding"], "description": "Radio label (alias, can be data binding)" },
     "group": {
       "type": "string",
       "required": true,
@@ -461,12 +462,12 @@
       "description": "Array of radio options"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding @{variable}"
     },
     "selectedValue": {
-      "type": "string",
-      "description": "Initially selected value"
+      "type": ["string", "binding"],
+      "description": "Initially selected value (can be data binding)"
     },
     "checkColor": { "type": "string", "description": "Selected indicator color" },
     "onValueChange": {
@@ -476,11 +477,11 @@
   },
   "Slider": {
     "value": {
-      "type": ["number", "string"],
-      "description": "Current value or @{binding}"
+      "type": ["number", "binding"],
+      "description": "Current value (binding for two-way)"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding @{variable}"
     },
     "min": { "type": "number", "description": "Minimum value" },
@@ -495,10 +496,10 @@
   },
   "Progress": {
     "progress": {
-      "type": ["number", "string"],
+      "type": ["number", "binding"],
       "min": 0,
       "max": 1,
-      "description": "Progress value (0-1) or @{binding}"
+      "description": "Progress value (0-1, can be data binding)"
     },
     "tintColor": { "type": "string", "description": "Progress color" },
     "trackColor": { "type": "string", "description": "Track color" },
@@ -506,8 +507,12 @@
   },
   "Indicator": {
     "isAnimating": {
-      "type": "boolean",
-      "description": "Whether animating"
+      "type": ["boolean", "binding"],
+      "description": "Whether animating (can be data binding)"
+    },
+    "animating": {
+      "type": ["boolean", "binding"],
+      "description": "Whether animating (alias, can be data binding)"
     },
     "color": { "type": "string", "description": "Indicator color" },
     "size": {
@@ -527,11 +532,11 @@
       "description": "Segment items (alias for items)"
     },
     "selectedIndex": {
-      "type": ["number", "string"],
-      "description": "Selected index or @{binding}"
+      "type": ["number", "binding"],
+      "description": "Selected index (binding for two-way)"
     },
     "bind": {
-      "type": "string",
+      "type": "binding",
       "description": "Two-way binding @{variable}"
     },
     "onSelect": {
@@ -609,8 +614,8 @@
     "headerClasses": { "type": "array", "description": "Header class names" },
     "footerClasses": { "type": "array", "description": "Footer class names" },
     "items": {
-      "type": "string",
-      "description": "@{variable} for data source"
+      "type": ["array", "binding"],
+      "description": "Data source (binding required for dynamic data)"
     },
     "columns": {
       "type": "number",
@@ -655,8 +660,8 @@
     "cellClasses": { "type": "array", "description": "Cell class names" },
     "headerClasses": { "type": "array", "description": "Header class names" },
     "items": {
-      "type": "string",
-      "description": "@{variable} for data source"
+      "type": ["array", "binding"],
+      "description": "Data source (binding required for dynamic data)"
     },
     "itemSpacing": {
       "type": "number",
@@ -689,8 +694,8 @@
   },
   "Web": {
     "url": {
-      "type": "string",
-      "description": "URL to load (supports @{binding})"
+      "type": ["string", "binding"],
+      "description": "URL to load (can be data binding)"
     },
     "html": {
       "type": "string",
@@ -704,8 +709,8 @@
       "description": "Array of tab definitions"
     },
     "selectedIndex": {
-      "type": ["number", "string"],
-      "description": "Selected tab index or @{binding}"
+      "type": ["number", "binding"],
+      "description": "Selected tab index (binding for two-way)"
     },
     "onSelect": {
       "type": "string",

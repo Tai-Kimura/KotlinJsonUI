@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'core/attribute_validator'
+require 'fileutils'
+require 'json'
 
 RSpec.describe KjuiTools::Core::AttributeValidator do
   describe '#initialize' do
@@ -23,6 +25,77 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
     it 'initializes with empty warnings' do
       validator = described_class.new
       expect(validator.warnings).to be_empty
+    end
+  end
+
+  describe 'extension definitions loading' do
+    let(:extensions_dir) do
+      File.join(File.dirname(__FILE__), '..', '..', 'lib', 'compose', 'components', 'extensions', 'attribute_definitions')
+    end
+
+    before do
+      # Create test extension definition
+      FileUtils.mkdir_p(extensions_dir)
+      @test_definition_file = File.join(extensions_dir, 'TestCustomComponent.json')
+      File.write(@test_definition_file, JSON.pretty_generate({
+        'TestCustomComponent' => {
+          'customTitle' => {
+            'type' => 'string',
+            'description' => 'Custom title attribute'
+          },
+          'customCount' => {
+            'type' => 'number',
+            'description' => 'Custom count attribute'
+          }
+        }
+      }))
+    end
+
+    after do
+      FileUtils.rm_f(@test_definition_file) if @test_definition_file && File.exist?(@test_definition_file)
+    end
+
+    it 'loads extension definitions' do
+      validator = described_class.new
+      expect(validator.definitions).to have_key('TestCustomComponent')
+    end
+
+    it 'merges extension definitions with base definitions' do
+      validator = described_class.new
+      expect(validator.definitions).to have_key('common')
+      expect(validator.definitions).to have_key('TestCustomComponent')
+    end
+
+    it 'validates custom component attributes' do
+      validator = described_class.new
+      component = {
+        'type' => 'TestCustomComponent',
+        'customTitle' => 'Test Title',
+        'customCount' => 42
+      }
+      warnings = validator.validate(component)
+      expect(warnings).to be_empty
+    end
+
+    it 'warns on invalid custom component attribute' do
+      validator = described_class.new
+      component = {
+        'type' => 'TestCustomComponent',
+        'customTitle' => 'Test Title',
+        'invalidAttr' => 'value'
+      }
+      warnings = validator.validate(component)
+      expect(warnings).to include(/Unknown attribute 'invalidAttr'/)
+    end
+
+    it 'validates custom component attribute types' do
+      validator = described_class.new
+      component = {
+        'type' => 'TestCustomComponent',
+        'customCount' => 'not a number'
+      }
+      warnings = validator.validate(component)
+      expect(warnings).to include(/expects number, got string/)
     end
   end
 
