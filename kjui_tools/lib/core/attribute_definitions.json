@@ -1027,6 +1027,44 @@
       "description": "Value change handler function name"
     }
   },
+  "Check": {
+    "check": {
+      "type": [
+        "boolean",
+        "binding"
+      ],
+      "description": "Check state (binding for two-way)"
+    },
+    "src": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Image source for unchecked state (can be data binding)"
+    },
+    "onSrc": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Image source for checked state (can be data binding)"
+    },
+    "bind": {
+      "type": "binding",
+      "description": "Two-way binding @{variable}"
+    },
+    "enabled": {
+      "type": [
+        "boolean",
+        "binding"
+      ],
+      "description": "Whether enabled (can be data binding)"
+    },
+    "onValueChange": {
+      "type": "string",
+      "description": "Value change handler function name"
+    }
+  },
   "Radio": {
     "label": {
       "type": [
