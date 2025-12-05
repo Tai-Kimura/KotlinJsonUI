@@ -286,6 +286,134 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
         expect(warnings).to include(/Required attribute 'group' is missing/)
       end
     end
+
+    # New tests for enum array validation
+    context 'with enum array values' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'gravity' => ['centerVertical']
+        }
+      end
+
+      it 'accepts single valid enum value in array' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with multiple enum array values' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'gravity' => ['centerVertical', 'left']
+        }
+      end
+
+      it 'accepts multiple valid enum values in array' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with invalid enum array values' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'gravity' => ['invalid']
+        }
+      end
+
+      it 'returns warning for invalid enum values in array' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(/invalid values \["invalid"\]/)
+      end
+    end
+
+    context 'with mixed valid and invalid enum array values' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'gravity' => ['centerVertical', 'invalid', 'left']
+        }
+      end
+
+      it 'returns warning for invalid enum values in array' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(/invalid values \["invalid"\]/)
+      end
+    end
+
+    # Tests for width/height with enum type definitions
+    context 'with matchParent string value for width' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'width' => 'matchParent'
+        }
+      end
+
+      it 'accepts matchParent string value' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with wrapContent string value for height' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'height' => 'wrapContent'
+        }
+      end
+
+      it 'accepts wrapContent string value' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with invalid string value for width' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'width' => 'invalid'
+        }
+      end
+
+      it 'returns warning for invalid enum string value' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(/expects/)
+      end
+    end
+
+    context 'with numeric value for width' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'width' => 100
+        }
+      end
+
+      it 'accepts numeric value' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with binding value for width' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'width' => '@{dynamicWidth}'
+        }
+      end
+
+      it 'accepts binding value' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
   end
 
   describe '#validate with different component types' do

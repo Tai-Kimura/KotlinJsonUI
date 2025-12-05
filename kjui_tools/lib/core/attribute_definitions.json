@@ -14,7 +14,10 @@
       "type": [
         "number",
         {
-          "enum": ["matchParent", "wrapContent"]
+          "enum": [
+            "matchParent",
+            "wrapContent"
+          ]
         },
         "binding"
       ],
@@ -24,7 +27,10 @@
       "type": [
         "number",
         {
-          "enum": ["matchParent", "wrapContent"]
+          "enum": [
+            "matchParent",
+            "wrapContent"
+          ]
         },
         "binding"
       ],
@@ -1205,7 +1211,16 @@
         "string",
         "array"
       ],
-      "description": "Alignment (e.g., 'center', 'left|top')"
+      "description": "Alignment (e.g., 'center', 'left|top')",
+      "enum": [
+        "top",
+        "bottom",
+        "centerVertical",
+        "left",
+        "right",
+        "centerHorizontal",
+        "center"
+      ]
     },
     "spacing": {
       "type": [

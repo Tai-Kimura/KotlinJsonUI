@@ -218,8 +218,8 @@ module KjuiTools
         end
 
         # Check enum values
-        if definition['enum'] && !definition['enum'].include?(value)
-          add_warning("Attribute '#{current_path}' in '#{component_type}' has invalid value '#{value}'. Valid values: #{definition['enum'].join(', ')}")
+        if definition['enum']
+          validate_enum(current_path, value, definition['enum'], component_type)
         end
 
         # Check min/max for numbers
@@ -240,6 +240,19 @@ module KjuiTools
         # Validate array items
         if actual_type == 'array' && definition['items']
           validate_array_items(value, definition['items'], component_type, current_path)
+        end
+      end
+
+      # Validate enum values (supports both single values and arrays)
+      def validate_enum(path, value, enum_values, component_type)
+        if value.is_a?(Array)
+          # For array values, check each element
+          invalid_values = value.reject { |v| enum_values.include?(v) }
+          unless invalid_values.empty?
+            add_warning("Attribute '#{path}' in '#{component_type}' has invalid values #{invalid_values.inspect}. Valid values: #{enum_values.join(', ')}")
+          end
+        elsif !enum_values.include?(value)
+          add_warning("Attribute '#{path}' in '#{component_type}' has invalid value '#{value}'. Valid values: #{enum_values.join(', ')}")
         end
       end
 
@@ -318,7 +331,15 @@ module KjuiTools
           when Hash
             # Handle complex type definitions like { "enum": [...] }
             if expected['enum']
-              actual == 'string' && expected['enum'].include?(value)
+              # When enum is defined, accept string type if value matches enum
+              if actual == 'string'
+                expected['enum'].include?(value)
+              elsif actual == 'array'
+                # For array values, check if all elements are in enum
+                value.is_a?(Array) && value.all? { |v| expected['enum'].include?(v) }
+              else
+                false
+              end
             else
               false
             end
