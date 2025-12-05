@@ -217,6 +217,63 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       end
     end
 
+    context 'with binding expression in enum attribute' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'visibility' => '@{isVisible}'
+        }
+      end
+
+      it 'skips enum validation for binding expressions' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with binding in the middle of string' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'visibility' => 'invalid @{binding}'
+        }
+      end
+
+      it 'validates enum and returns warning' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(/invalid value 'invalid @{binding}'/)
+      end
+    end
+
+    context 'with valid enum value in visibility' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'visibility' => 'visible'
+        }
+      end
+
+      it 'returns no warnings' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with invalid enum value in visibility' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'visibility' => 'invalid'
+        }
+      end
+
+      it 'returns warning for invalid enum value' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(/invalid value 'invalid'/)
+        expect(warnings).to include(/Valid values: visible, invisible, gone/)
+      end
+    end
+
     context 'with required attribute missing' do
       let(:component) do
         {

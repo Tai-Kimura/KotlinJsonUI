@@ -204,7 +204,7 @@ module KjuiTools
         current_path = path ? "#{path}.#{name}" : name
 
         # Skip validation for binding expressions
-        if value.is_a?(String) && value.include?('@{')
+        if value.is_a?(String) && value.start_with?('@{')
           return
         end
 
@@ -315,6 +315,13 @@ module KjuiTools
           when 'binding'
             # binding型は @{propertyName} 形式の文字列である必要がある
             actual == 'string' && value.is_a?(String) && value.start_with?('@{') && value.end_with?('}')
+          when Hash
+            # Handle complex type definitions like { "enum": [...] }
+            if expected['enum']
+              actual == 'string' && expected['enum'].include?(value)
+            else
+              false
+            end
           else
             # For union types or special cases
             actual == expected
