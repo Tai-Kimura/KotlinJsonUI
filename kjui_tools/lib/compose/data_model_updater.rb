@@ -5,6 +5,7 @@ require 'fileutils'
 require 'set'
 require_relative '../core/config_manager'
 require_relative '../core/project_finder'
+require_relative '../core/type_converter'
 require_relative 'style_loader'
 
 module KjuiTools
@@ -92,7 +93,9 @@ module KjuiTools
                 if data_item.is_a?(Hash) && data_item['name']
                   # Check if property already exists (by name) to avoid duplicates
                   unless properties.any? { |p| p['name'] == data_item['name'] }
-                    properties << data_item
+                    # Normalize type using TypeConverter
+                    normalized = Core::TypeConverter.normalize_data_property(data_item)
+                    properties << normalized
                   end
                 end
               end

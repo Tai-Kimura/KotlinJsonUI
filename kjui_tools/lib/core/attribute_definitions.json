@@ -633,5 +633,208 @@
       "type": "string",
       "description": "Value change handler function name"
     }
+  },
+  "Slider": {
+    "value": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Current value (binding for two-way)"
+    },
+    "minValue": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Minimum value (binding supported)"
+    },
+    "minimum": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Minimum value (alias for minValue) (binding supported)"
+    },
+    "maxValue": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Maximum value (binding supported)"
+    },
+    "maximum": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Maximum value (alias for maxValue) (binding supported)"
+    },
+    "tintColor": {
+      "type": "string",
+      "description": "Tint color"
+    },
+    "onValueChanged": {
+      "type": "string",
+      "description": "Value change handler"
+    },
+    "onValueChange": {
+      "type": "string",
+      "description": "Value change handler (alias)"
+    }
+  },
+  "Progress": {
+    "progress": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "min": 0,
+      "max": 1,
+      "description": "Progress value (0-1, can be binding)"
+    },
+    "tintColor": {
+      "type": "string",
+      "description": "Tint color"
+    },
+    "progressTintColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Progress portion color (binding supported)"
+    },
+    "trackTintColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Track portion color (binding supported)"
+    }
+  },
+  "Segment": {
+    "items": {
+      "type": "array",
+      "required": true,
+      "description": "Segment items array"
+    },
+    "selectedIndex": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Initially selected index (binding for two-way)"
+    },
+    "tintColor": {
+      "type": "string",
+      "description": "Tint color"
+    },
+    "normalColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Normal state color (binding supported)"
+    },
+    "selectedColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Selected state color (binding supported)"
+    },
+    "valueChange": {
+      "type": "string",
+      "description": "Value change event"
+    }
+  },
+  "Indicator": {
+    "indicatorStyle": {
+      "type": "string",
+      "enum": [
+        "medium",
+        "large"
+      ],
+      "description": "Indicator style"
+    },
+    "color": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Indicator color (binding supported)"
+    },
+    "hidesWhenStopped": {
+      "type": "boolean",
+      "description": "Hide when stopped"
+    }
+  },
+  "Radio": {
+    "label": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Radio label (can be data binding)"
+    },
+    "text": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Radio label (alias, can be data binding)"
+    },
+    "group": {
+      "type": "string",
+      "required": true,
+      "description": "Radio group name"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon name for normal state"
+    },
+    "selectedIcon": {
+      "type": "string",
+      "description": "Selected icon name"
+    },
+    "checked": {
+      "type": [
+        "boolean",
+        "binding"
+      ],
+      "description": "Initial checked state (can be binding)"
+    },
+    "value": {
+      "type": "any",
+      "description": "Associated value when selected"
+    },
+    "font": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Font name (binding supported)"
+    },
+    "fontSize": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Font size (binding supported)"
+    },
+    "fontColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Text color (binding supported)"
+    },
+    "spacing": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Space between icon and text (binding supported)"
+    }
   }
 }
