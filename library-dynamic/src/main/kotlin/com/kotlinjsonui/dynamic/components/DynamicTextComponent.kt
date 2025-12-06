@@ -29,8 +29,12 @@ import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
- * Dynamic Text Component Converter
+ * Dynamic Text/Label Component Converter
  * Converts JSON to Text/Label composable at runtime
+ *
+ * NOTE: Label is the primary component name in JsonUI.
+ * Text is supported as an alias for backward compatibility.
+ * Both "type": "Label" and "type": "Text" work identically.
  *
  * Supported JSON attributes (matching Ruby implementation):
  * - text: String content (supports @{variable} binding)
@@ -309,13 +313,13 @@ class DynamicTextComponent {
         private fun buildModifier(json: JsonObject): Modifier {
             // Start with base modifier
             var modifier: Modifier = Modifier
-            
+
             // 1. Apply size first (includes padding in the total size)
             modifier = ModifierBuilder.applySize(modifier, json)
-            
+
             // 2. Apply margins (outer spacing)
             modifier = ModifierBuilder.applyMargins(modifier, json)
-            
+
             // 3. Corner radius (clip) - apply before background for proper rendering
             json.get("cornerRadius")?.asFloat?.let { radius ->
                 val shape = RoundedCornerShape(radius.dp)
@@ -328,13 +332,13 @@ class DynamicTextComponent {
                     modifier = modifier.background(color)
                 }
             }
-            
+
             // 5. Border (after background)
             json.get("borderColor")?.asString?.let { borderColorStr ->
                 ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                    val shape = json.get("cornerRadius")?.asFloat?.let { 
-                        RoundedCornerShape(it.dp) 
+                    val shape = json.get("cornerRadius")?.asFloat?.let {
+                        RoundedCornerShape(it.dp)
                     }
                     if (shape != null) {
                         modifier = modifier.border(borderWidth.dp, borderColor, shape)
@@ -360,10 +364,10 @@ class DynamicTextComponent {
                     }
                 }
             }
-            
+
             // 7. Apply padding (inner spacing)
             modifier = ModifierBuilder.applyPadding(modifier, json)
-            
+
             // 8. Apply opacity last
             modifier = ModifierBuilder.applyOpacity(modifier, json)
 

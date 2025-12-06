@@ -7,24 +7,32 @@ module KjuiTools
     # Validates JSON component attributes against defined schemas
     # Used by both XML and Compose converters
     class AttributeValidator
-      attr_reader :definitions, :warnings
+      attr_reader :definitions, :warnings, :infos
       attr_accessor :mode
 
-      # Valid modes
+      # Valid modes for this platform
       MODES = [:xml, :compose, :dynamic, :all].freeze
+
+      # Current platform identifier
+      PLATFORM = 'kotlin'.freeze
+
+      # All supported platforms across JsonUI libraries
+      ALL_PLATFORMS = ['swift', 'kotlin', 'react'].freeze
 
       def initialize(mode = :all)
         @definitions = load_definitions
         @warnings = []
+        @infos = []
         @mode = mode
       end
 
       # Validate a component and return warnings
       # @param component [Hash] The component to validate
-      # @param component_type [String] The type of component (e.g., "Text", "TextField")
+      # @param component_type [String] The type of component (e.g., "Label", "TextField")
       # @return [Array<String>] Array of warning messages
       def validate(component, component_type = nil)
         @warnings = []
+        @infos = []
         type = component_type || component['type']
 
         return @warnings unless type
@@ -38,13 +46,19 @@ module KjuiTools
 
           if valid_attrs.key?(key)
             attr_def = valid_attrs[key]
-            # Check mode compatibility first
-            if mode_compatible?(attr_def)
-              # Validate attribute value
-              validate_attribute(key, value, attr_def, type)
+            # Check platform compatibility first
+            if platform_compatible?(attr_def)
+              # Check mode compatibility
+              if mode_compatible?(attr_def)
+                # Validate attribute value
+                validate_attribute(key, value, attr_def, type)
+              else
+                # Attribute not supported in current mode - log as info
+                add_mode_info(key, attr_def, type)
+              end
             else
-              # Attribute not supported in current mode
-              add_mode_warning(key, attr_def, type)
+              # Attribute for other platform - log as info
+              add_platform_info(key, attr_def, type)
             end
           else
             # Unknown attribute
@@ -52,8 +66,9 @@ module KjuiTools
           end
         end
 
-        # Check for required attributes
+        # Check for required attributes (only for current platform)
         valid_attrs.each do |attr_name, attr_def|
+          next unless platform_compatible?(attr_def)
           if attr_def['required'] && !component.key?(attr_name)
             add_warning("Required attribute '#{attr_name}' is missing for component type '#{type}'")
           end
@@ -69,15 +84,26 @@ module KjuiTools
         end
       end
 
+      # Print all info messages to console
+      def print_infos
+        @infos.each do |info|
+          puts "\e[36mℹ️  [KJUI Info] #{info}\e[0m"
+        end
+      end
+
       # Check if there are any warnings
       def has_warnings?
         !@warnings.empty?
       end
 
+      # Check if there are any info messages
+      def has_infos?
+        !@infos.empty?
+      end
+
       private
 
       def load_definitions
-        # Load base definitions
         definitions_path = File.join(File.dirname(__FILE__), 'attribute_definitions.json')
         base_definitions = if File.exist?(definitions_path)
           JSON.parse(File.read(definitions_path))
@@ -86,26 +112,33 @@ module KjuiTools
           {}
         end
 
-        # Load and merge extension definitions
+        # Load and merge extension attribute definitions
         extension_definitions = load_extension_definitions
         merge_definitions(base_definitions, extension_definitions)
       end
 
-      # Load attribute definitions from extension components
-      # @return [Hash] Extension definitions loaded from extension directory
+      # Load extension attribute definitions from the extensions directory
       def load_extension_definitions
         extension_defs = {}
-        extensions_dir = File.join(File.dirname(__FILE__), '..', 'compose', 'components', 'extensions', 'attribute_definitions')
-        extensions_dir = File.expand_path(extensions_dir)
 
-        return extension_defs unless Dir.exist?(extensions_dir)
+        # Check for extension definitions in various locations
+        extension_paths = [
+          # Main KotlinJsonUI structure
+          File.join(Dir.pwd, 'kjui_tools', 'lib', 'compose', 'components', 'extensions', 'attribute_definitions'),
+          # Test app structure
+          File.join(Dir.pwd, 'app', 'kjui_tools', 'lib', 'compose', 'components', 'extensions', 'attribute_definitions')
+        ]
 
-        Dir.glob(File.join(extensions_dir, '*.json')).each do |file_path|
-          begin
-            extension_data = JSON.parse(File.read(file_path))
-            extension_defs.merge!(extension_data)
-          rescue JSON::ParserError => e
-            puts "\e[33m[KJUI Warning] Failed to parse extension definition file #{file_path}: #{e.message}\e[0m"
+        extension_paths.each do |ext_dir|
+          next unless File.directory?(ext_dir)
+
+          Dir.glob(File.join(ext_dir, '*.json')).each do |file|
+            begin
+              component_defs = JSON.parse(File.read(file))
+              extension_defs.merge!(component_defs)
+            rescue JSON::ParserError => e
+              puts "\e[33m[KJUI Warning] Failed to parse extension definition #{file}: #{e.message}\e[0m"
+            end
           end
         end
 
@@ -113,15 +146,17 @@ module KjuiTools
       end
 
       # Merge extension definitions into base definitions
-      # @param base [Hash] Base attribute definitions
-      # @param extensions [Hash] Extension attribute definitions
-      # @return [Hash] Merged definitions
       def merge_definitions(base, extensions)
-        return base if extensions.empty?
-
-        # Extensions are component-specific definitions
-        # They are merged into the base definitions at the same level as 'common', 'Text', etc.
-        base.merge(extensions)
+        extensions.each do |key, value|
+          if base.key?(key) && base[key].is_a?(Hash) && value.is_a?(Hash)
+            # Merge attributes for existing component types
+            base[key] = base[key].merge(value)
+          else
+            # Add new component type definitions
+            base[key] = value
+          end
+        end
+        base
       end
 
       # Get valid attributes for a component type (common + type-specific)
@@ -146,7 +181,7 @@ module KjuiTools
       def map_type_to_definition(type)
         case type
         when 'Label', 'Text'
-          'Text'
+          'Label'
         when 'TextField', 'EditText'
           'TextField'
         when 'TextView', 'MultiLineEditText'
@@ -162,7 +197,7 @@ module KjuiTools
         when 'SelectBox', 'Spinner', 'DatePicker'
           'SelectBox'
         when 'Toggle', 'Switch'
-          'Switch'
+          'Toggle'
         when 'CheckBox', 'Check'
           type == 'CheckBox' ? 'CheckBox' : 'Check'
         when 'Radio', 'RadioButton', 'RadioGroup'
@@ -186,6 +221,10 @@ module KjuiTools
           'Table'
         when 'GradientView'
           'GradientView'
+        when 'Blur', 'BlurView'
+          'Blur'
+        when 'IconLabel'
+          'IconLabel'
         when 'Web', 'WebView'
           'Web'
         when 'TabView'
@@ -203,23 +242,24 @@ module KjuiTools
 
         current_path = path ? "#{path}.#{name}" : name
 
+        # Check if value is a binding expression
+        is_binding = value.is_a?(String) && value.start_with?('@{') && value.end_with?('}')
+
         # Skip validation for binding expressions
-        if value.is_a?(String) && value.start_with?('@{')
-          return
-        end
+        return if is_binding
 
         # Check type
         expected_types = Array(definition['type'])
         actual_type = get_value_type(value)
 
-        unless type_matches?(actual_type, expected_types, value)
-          add_warning("Attribute '#{current_path}' in '#{component_type}' expects #{expected_types.join(' or ')}, got #{actual_type}")
+        unless type_matches?(actual_type, expected_types, value, definition)
+          add_warning("Attribute '#{current_path}' in '#{component_type}' expects #{format_expected_types(expected_types)}, got #{actual_type}")
           return # Don't validate nested properties if type is wrong
         end
 
         # Check enum values
         if definition['enum']
-          validate_enum(current_path, value, definition['enum'], component_type)
+          validate_enum_value(value, definition['enum'], current_path, component_type)
         end
 
         # Check min/max for numbers
@@ -243,17 +283,32 @@ module KjuiTools
         end
       end
 
-      # Validate enum values (supports both single values and arrays)
-      def validate_enum(path, value, enum_values, component_type)
+      # Validate enum value (supports both single values and arrays)
+      def validate_enum_value(value, enum_values, path, component_type)
         if value.is_a?(Array)
           # For array values, check each element
           invalid_values = value.reject { |v| enum_values.include?(v) }
           unless invalid_values.empty?
-            add_warning("Attribute '#{path}' in '#{component_type}' has invalid values #{invalid_values.inspect}. Valid values: #{enum_values.join(', ')}")
+            add_warning("Attribute '#{path}' in '#{component_type}' has invalid value(s) '#{invalid_values.inspect}'. Valid values: #{enum_values.join(', ')}")
           end
-        elsif !enum_values.include?(value)
-          add_warning("Attribute '#{path}' in '#{component_type}' has invalid value '#{value}'. Valid values: #{enum_values.join(', ')}")
+        else
+          # For single values
+          unless enum_values.include?(value)
+            add_warning("Attribute '#{path}' in '#{component_type}' has invalid value '#{value}'. Valid values: #{enum_values.join(', ')}")
+          end
         end
+      end
+
+      # Format expected types for error messages
+      def format_expected_types(expected_types)
+        formatted = expected_types.map do |type|
+          if type.is_a?(Hash) && type['enum']
+            "enum(#{type['enum'].join(', ')})"
+          else
+            type
+          end
+        end
+        formatted.join(' or ')
       end
 
       # Validate nested object properties
@@ -286,7 +341,7 @@ module KjuiTools
             # Simple type validation for array items
             expected_types = Array(item_def['type'])
             actual_type = get_value_type(item)
-            unless type_matches?(actual_type, expected_types, item)
+            unless type_matches?(actual_type, expected_types, item, item_def)
               add_warning("#{item_path} in '#{component_type}' expects #{expected_types.join(' or ')}, got #{actual_type}")
             end
           end
@@ -312,7 +367,7 @@ module KjuiTools
         end
       end
 
-      def type_matches?(actual, expected_types, value)
+      def type_matches?(actual, expected_types, value, definition = nil)
         expected_types.any? do |expected|
           case expected
           when 'string'
@@ -326,12 +381,13 @@ module KjuiTools
           when 'object'
             actual == 'object'
           when 'binding'
-            # binding型は @{propertyName} 形式の文字列である必要がある
+            # binding type requires @{propertyName} format
             actual == 'string' && value.is_a?(String) && value.start_with?('@{') && value.end_with?('}')
+          when 'any'
+            true
           when Hash
-            # Handle complex type definitions like { "enum": [...] }
+            # Handle enum type definition: {"enum": [...]}
             if expected['enum']
-              # When enum is defined, accept string type if value matches enum
               if actual == 'string'
                 expected['enum'].include?(value)
               elsif actual == 'array'
@@ -354,6 +410,19 @@ module KjuiTools
         @warnings << message unless @warnings.include?(message)
       end
 
+      def add_info(message)
+        @infos << message unless @infos.include?(message)
+      end
+
+      # Check if attribute is compatible with current platform
+      # Attributes with platform specified for other platforms are silently skipped
+      def platform_compatible?(attr_def)
+        return true unless attr_def['platform']
+
+        attr_platforms = Array(attr_def['platform'])
+        attr_platforms.include?(PLATFORM) || attr_platforms.include?('all')
+      end
+
       # Check if attribute is compatible with current mode
       def mode_compatible?(attr_def)
         return true if @mode == :all
@@ -363,13 +432,21 @@ module KjuiTools
         attr_modes.include?(@mode.to_s) || attr_modes.include?('all')
       end
 
-      # Add warning for mode-incompatible attribute
-      def add_mode_warning(attr_name, attr_def, component_type)
+      # Add info for mode-incompatible attribute (not an error, just informational)
+      def add_mode_info(attr_name, attr_def, component_type)
         attr_modes = Array(attr_def['mode'])
         mode_str = attr_modes.map { |m| m.capitalize }.join('/')
         current_mode_str = @mode.to_s.capitalize
 
-        add_warning("Attribute '#{attr_name}' in '#{component_type}' is only supported in #{mode_str} mode (current: #{current_mode_str})")
+        add_info("Attribute '#{attr_name}' in '#{component_type}' is for #{mode_str} mode (current: #{current_mode_str})")
+      end
+
+      # Add info for platform-specific attribute (not an error, just informational)
+      def add_platform_info(attr_name, attr_def, component_type)
+        attr_platforms = Array(attr_def['platform'])
+        platform_str = attr_platforms.map { |p| p.capitalize }.join('/')
+
+        add_info("Attribute '#{attr_name}' in '#{component_type}' is for #{platform_str} platform (current: #{PLATFORM.capitalize})")
       end
     end
   end

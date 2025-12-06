@@ -60,7 +60,7 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
 
   describe '#process_colors' do
     it 'returns early for empty processed files' do
-      manager.process_colors([], 0, 0)
+      manager.process_colors([], 0, 0, config)
       expect(File.exist?(File.join(resources_dir, 'colors.json'))).to be false
     end
 
@@ -68,9 +68,37 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
       json_file = File.join(temp_dir, 'test.json')
       File.write(json_file, JSON.generate({ 'background' => '#FF0000' }))
 
-      manager.process_colors([json_file], 1, 0)
+      manager.process_colors([json_file], 1, 0, config)
 
       expect(File.exist?(File.join(resources_dir, 'colors.json'))).to be true
+    end
+
+    it 'skips binding expressions' do
+      json_file = File.join(temp_dir, 'test.json')
+      File.write(json_file, JSON.generate({ 'background' => '@{viewModel.backgroundColor}' }))
+
+      manager.process_colors([json_file], 1, 0, config)
+
+      content = File.read(json_file)
+      data = JSON.parse(content)
+      expect(data['background']).to eq('@{viewModel.backgroundColor}')
+    end
+
+    it 'generates ColorManager.kt when resource_manager_directory is configured' do
+      config_with_manager = config.merge('resource_manager_directory' => 'generated')
+      manager_with_config = described_class.new(config_with_manager, source_path, resources_dir)
+
+      colors = { 'primary' => '#007AFF' }
+      File.write(File.join(resources_dir, 'colors.json'), JSON.generate(colors))
+      manager_with_config.instance_variable_set(:@colors_data, colors)
+
+      json_file = File.join(temp_dir, 'test.json')
+      File.write(json_file, JSON.generate({ 'background' => '#FF0000' }))
+
+      manager_with_config.process_colors([json_file], 1, 0, config_with_manager)
+
+      output_file = File.join(temp_dir, 'generated', 'ColorManager.kt')
+      expect(File.exist?(output_file)).to be true
     end
   end
 
@@ -160,6 +188,10 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
       expect(manager.send(:is_hex_color?, 'primaryColor')).to be false
     end
 
+    it 'rejects binding expressions' do
+      expect(manager.send(:is_hex_color?, '@{viewModel.color}')).to be false
+    end
+
     it 'rejects non-string values' do
       expect(manager.send(:is_hex_color?, 123)).to be false
       expect(manager.send(:is_hex_color?, nil)).to be false
@@ -245,6 +277,11 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
       expect(result).to eq('@{data.color}')
     end
 
+    it 'skips binding expressions with complex expressions' do
+      result = manager.send(:process_and_replace_color, '@{viewModel.backgroundColor}')
+      expect(result).to eq('@{viewModel.backgroundColor}')
+    end
+
     it 'replaces hex colors with keys' do
       result = manager.send(:process_and_replace_color, '#FF0000')
       expect(result).not_to eq('#FF0000')
@@ -287,6 +324,13 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
       expect(modified).to be false
       expect(data['text']).to eq('Hello')
     end
+
+    it 'skips binding expressions in recursive replacement' do
+      data = { 'background' => '@{viewModel.backgroundColor}' }
+      modified = manager.send(:replace_colors_recursive, data)
+      expect(modified).to be false
+      expect(data['background']).to eq('@{viewModel.backgroundColor}')
+    end
   end
 
   describe '#snake_to_camel' do
@@ -305,20 +349,95 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
   end
 
   describe '#generate_kotlin_code' do
-    it 'generates valid Kotlin code' do
-      colors = { 'primary' => '#007AFF' }
-      code = manager.send(:generate_kotlin_code, colors)
+    context 'with valid colors' do
+      it 'generates valid Kotlin code' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
 
-      expect(code).to include('object ColorManager')
-      expect(code).to include('object android')
-      expect(code).to include('object compose')
+        expect(code).to include('object ColorManager')
+        expect(code).to include('object views')
+        expect(code).to include('object compose')
+      end
+
+      it 'includes color accessors' do
+        colors = { 'primary_blue' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('primaryBlue')
+      end
+
+      it 'returns nullable Int for views.color method' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('fun color(key: String): Int?')
+      end
+
+      it 'returns nullable ComposeColor for compose.color method' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('fun color(key: String): ComposeColor?')
+      end
+
+      it 'handles binding expressions in color method' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('if (key.startsWith("@{") && key.endsWith("}")) {')
+        expect(code).to include('return null')
+      end
+
+      it 'returns nullable values for color accessors' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('val primary: Int?')
+        expect(code).to match(/object compose.*val primary: ComposeColor\?/m)
+      end
+
+      it 'returns null for undefined colors' do
+        colors = { 'undefined_color' => nil }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('Log.w(TAG, "Color \'undefined_color\' is not defined in colors.json")')
+        expect(code).to include('return null')
+      end
+
+      it 'uses Log.w instead of println for warnings' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('import android.util.Log')
+        expect(code).to include('Log.w(TAG,')
+        expect(code).not_to include('println(')
+      end
+
+      it 'tries to parse key as hex color when not found' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('Color.parseColor(key) // Try to parse key as hex color')
+      end
     end
 
-    it 'includes color accessors' do
-      colors = { 'primary_blue' => '#007AFF' }
-      code = manager.send(:generate_kotlin_code, colors)
+    context 'with empty colors' do
+      it 'generates code with empty map' do
+        colors = {}
+        code = manager.send(:generate_kotlin_code, colors)
 
-      expect(code).to include('primaryBlue')
+        expect(code).to include('emptyMap()')
+      end
+    end
+
+    context 'Compose color accessors' do
+      it 'delegates to views object' do
+        colors = { 'primary' => '#007AFF' }
+        code = manager.send(:generate_kotlin_code, colors)
+
+        expect(code).to include('val androidColor = views.primary ?: return null')
+        expect(code).to include('return ComposeColor(androidColor)')
+      end
     end
   end
 end

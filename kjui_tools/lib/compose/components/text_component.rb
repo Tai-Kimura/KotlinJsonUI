@@ -7,6 +7,12 @@ require_relative '../helpers/resource_resolver'
 module KjuiTools
   module Compose
     module Components
+      # Text Component Generator
+      # 
+      # NOTE: Label is the primary component name in JsonUI.
+      # Text is supported as an alias for backward compatibility.
+      # Both "type": "Label" and "type": "Text" work identically.
+      #
       class TextComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Check if component should be skipped entirely (static gone/hidden)

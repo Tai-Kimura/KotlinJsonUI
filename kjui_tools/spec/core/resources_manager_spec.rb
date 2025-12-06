@@ -101,7 +101,7 @@ RSpec.describe KjuiTools::Core::ResourcesManager do
       File.write(layout_file, '{}')
 
       expect(string_manager).to receive(:process_strings).with([layout_file], 1, 0)
-      expect(color_manager).to receive(:process_colors).with([layout_file], 1, 0)
+      expect(color_manager).to receive(:process_colors).with([layout_file], 1, 0, config)
 
       manager.extract_from_json_files([layout_file])
     end

@@ -16,6 +16,8 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  * Dynamic Switch Component Converter
  * Converts JSON to Switch composable at runtime
  *
+ * Switch is the primary component name. Toggle is supported as an alias for backward compatibility.
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - isOn: Boolean or @{variable} for checked state
  * - bind: @{variable} for two-way binding
