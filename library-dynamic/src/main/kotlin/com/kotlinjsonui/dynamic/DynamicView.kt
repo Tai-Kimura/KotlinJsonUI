@@ -31,13 +31,13 @@ import androidx.compose.runtime.collectAsState
  * Main entry point for rendering dynamic UI from JSON.
  * This component determines the appropriate component type from JSON
  * and renders it with data binding support.
- * 
+ *
  * Features:
  * - JSON validation and error handling
  * - Component type detection with fallback
  * - Data binding context management
  * - Error recovery with debug information
- * 
+ *
  * @param json The JSON object describing the UI component
  * @param data Map of data for binding. @{key} in JSON will be replaced with data[key].
  *             Functions in the data map can be referenced by name for event handlers.
@@ -50,30 +50,30 @@ fun DynamicView(
     onError: ((Exception) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    
+
     // Initialize ResourceCache and ColorParser with context
     ResourceCache.init(context)
     ColorParser.init(context)
-    
+
     // Apply styles if a style attribute is present
     val styledJson = if (json.has("style")) {
         DynamicStyleLoader.applyStyle(context, json)
     } else {
         json
     }
-    
+
     // Check if this is an include element
     if (styledJson.has("include")) {
         DynamicIncludeComponent.create(styledJson, data)
         return
     }
-    
+
     // Check if this is a data element (should be skipped)
     if (styledJson.has("data") && !styledJson.has("type")) {
         // Data-only elements should not be rendered
         return
     }
-    
+
     // Validate JSON has required type field
     val type = try {
         styledJson.get("type")?.asString
@@ -81,7 +81,7 @@ fun DynamicView(
         onError?.invoke(e)
         null
     }
-    
+
     if (type.isNullOrEmpty()) {
         val error = IllegalArgumentException("JSON must have a 'type' field")
         onError?.invoke(error)
@@ -90,10 +90,10 @@ fun DynamicView(
         }
         return
     }
-    
+
     // Check for visibility attribute
     val visibility = styledJson.get("visibility")?.asString
-    
+
     // Render the appropriate component based on type
     val renderComponent: @Composable () -> Unit = {
         when (type.lowercase()) {
@@ -104,7 +104,8 @@ fun DynamicView(
             "networkimage" -> DynamicNetworkImageComponent.create(styledJson, data)
             "circleimage" -> DynamicCircleImageComponent.create(styledJson, data)
             "switch" -> DynamicSwitchComponent.create(styledJson, data)
-            "checkbox" -> DynamicCheckBoxComponent.create(styledJson, data)
+            // CheckBox is primary, Check is alias for backward compatibility
+            "checkbox", "check" -> DynamicCheckBoxComponent.create(styledJson, data)
             "radio" -> DynamicRadioComponent.create(styledJson, data)
             "slider" -> DynamicSliderComponent.create(styledJson, data)
             "progress", "progressbar" -> DynamicProgressComponent.create(styledJson, data)
@@ -133,12 +134,12 @@ fun DynamicView(
             else -> {
                 // First, try custom component handler
                 val handled = Configuration.customComponentHandler?.invoke(type, styledJson, data) ?: false
-                
+
                 if (!handled) {
                     // Unknown component type
                     val error = IllegalArgumentException("Unknown component type: $type")
                     onError?.invoke(error)
-                    
+
                     // Log error in debug mode
                     if (Configuration.showErrorsInDebug) {
                         Log.w("DynamicView", "Unknown component type: $type")
@@ -152,7 +153,7 @@ fun DynamicView(
             }
         }
     }
-    
+
     // Apply visibility wrapper if visibility attribute is present
     if (!visibility.isNullOrEmpty()) {
         // Process data binding for visibility
@@ -186,7 +187,7 @@ private fun ErrorComponent(message: String) {
 /**
  * Renders a list of components from a JSON array.
  * Useful for rendering the contents of container components.
- * 
+ *
  * @param components List of JSON objects describing UI components
  * @param data Map of data for binding
  * @param onError Optional error handler for individual component errors
@@ -205,7 +206,7 @@ fun DynamicViews(
 /**
  * DynamicView with hot reload support using layout name
  * This version loads JSON from assets/cache and supports WebSocket-based hot reload
- * 
+ *
  * @param layoutName Name of the layout file (without .json extension)
  * @param data Map of data for binding
  * @param onError Optional error handler
@@ -217,20 +218,20 @@ fun DynamicView(
     onError: ((Exception) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    
+
     // Initialize ResourceCache and ColorParser with context
     ResourceCache.init(context)
     ColorParser.init(context)
-    
+
     // Initialize DynamicLayoutLoader with context
     DynamicLayoutLoader.init(context)
-    
+
     var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
     var styleUpdateCounter by remember { mutableStateOf(0) }
-    
+
     // Check if dynamic mode is enabled
     val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
-    
+
     DisposableEffect(layoutName, isDynamicModeEnabled) {
         if (!isDynamicModeEnabled) {
             // Just load from assets once
@@ -241,7 +242,7 @@ fun DynamicView(
         } else {
             // Use HotLoader for WebSocket-based hot reload
             val hotLoader = HotLoader.getInstance(context)
-            
+
             // First try to load from cache
             hotLoader.getCachedLayout(layoutName)?.let { cached ->
                 try {
@@ -255,17 +256,17 @@ fun DynamicView(
                     jsonObject = it
                 }
             }
-            
+
             // Set up listener for updates
             val listener = object : HotLoader.HotLoaderListener {
                 override fun onConnected() {
                     Log.d("DynamicView", "HotLoader connected")
                 }
-                
+
                 override fun onDisconnected() {
                     Log.d("DynamicView", "HotLoader disconnected")
                 }
-                
+
                 override fun onLayoutUpdated(name: String, content: String) {
                     if (name == layoutName || name == "$layoutName.json") {
                         try {
@@ -276,36 +277,36 @@ fun DynamicView(
                         }
                     }
                 }
-                
+
                 override fun onStyleUpdated(styleName: String, content: String) {
                     // Force recomposition when any style is updated
                     // This will cause all views to re-read their styles
                     styleUpdateCounter++
                     Log.d("DynamicView", "Style updated: $styleName, triggering recomposition")
                 }
-                
+
                 override fun onLayoutAdded(name: String) {
                     // New layout added
                 }
-                
+
                 override fun onLayoutRemoved(name: String) {
                     // Layout removed
                 }
-                
+
                 override fun onError(error: Throwable) {
                     onError?.invoke(Exception(error))
                 }
             }
-            
+
             hotLoader.addListener(listener)
             hotLoader.start()
-            
+
             onDispose {
                 hotLoader.removeListener(listener)
             }
         }
     }
-    
+
     // Render the view - include styleUpdateCounter as a key to force recomposition
     jsonObject?.let { json ->
         key(styleUpdateCounter) {

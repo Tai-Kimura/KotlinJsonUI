@@ -18,6 +18,9 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  * Dynamic CheckBox Component Converter
  * Converts JSON to CheckBox composable at runtime
  *
+ * CheckBox is the primary component name. Check is supported as an alias for backward compatibility.
+ * Both "CheckBox" and "Check" JSON types map to this component.
+ *
  * Supported JSON attributes (matching Ruby implementation):
  * - bind: @{variable} for two-way binding
  * - label/text: String label text to display next to checkbox
