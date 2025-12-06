@@ -11,8 +11,17 @@ module KjuiTools
       # Both "CheckBox" and "Check" JSON types map to this component.
       class CheckboxComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
-          # Check uses 'bind' for two-way binding
-          checked = if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+          # CheckBox uses 'isOn', 'checked', or 'bind' for binding
+          # Priority: isOn > checked > bind
+          state_attr = json_data['isOn'] || json_data['checked']
+          checked = if state_attr
+            if state_attr.is_a?(String) && state_attr.match(/@\{([^}]+)\}/)
+              variable = $1
+              "data.#{variable}"
+            else
+              state_attr.to_s
+            end
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
             variable = $1
             "data.#{variable}"
           else
@@ -39,21 +48,53 @@ module KjuiTools
             code += "\n" + indent("checked = #{checked},", depth + 2)
 
             # onCheckedChange handler
-            if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
-              variable = $1
-              code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) }", depth + 2)
-            elsif json_data['onValueChange']
+            binding_variable = nil
+            state_attr_val = json_data['isOn'] || json_data['checked']
+            if state_attr_val.is_a?(String) && state_attr_val.match(/@\{([^}]+)\}/)
+              binding_variable = $1
+            elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+              binding_variable = $1
+            end
+
+            if json_data['onValueChange']
               code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) }", depth + 2)
+            elsif binding_variable
+              code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) }", depth + 2)
             else
               code += "\n" + indent("onCheckedChange = { }", depth + 2)
             end
 
             code += "\n" + indent(")", depth + 1)
 
-            # Label text
+            # Spacer with configurable spacing
+            spacing = json_data['spacing'] || 8
+            code += "\n" + indent("Spacer(modifier = Modifier.width(#{spacing}.dp))", depth + 1)
+
+            # Label text with font attributes
             label_text = json_data['label'] || json_data['text']
-            code += "\n" + indent("Spacer(modifier = Modifier.width(8.dp))", depth + 1)
-            code += "\n" + indent("Text(\"#{label_text}\")", depth + 1)
+            text_params = ["text = \"#{label_text}\""]
+
+            if json_data['fontSize']
+              text_params << "fontSize = #{json_data['fontSize']}.sp"
+            end
+
+            if json_data['fontColor']
+              font_color = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+              text_params << "color = #{font_color}"
+            end
+
+            if json_data['font']
+              font_weight = json_data['font'].downcase == 'bold' ? 'FontWeight.Bold' : 'FontWeight.Normal'
+              text_params << "fontWeight = #{font_weight}"
+            end
+
+            if text_params.size == 1
+              code += "\n" + indent("Text(\"#{label_text}\")", depth + 1)
+            else
+              code += "\n" + indent("Text(", depth + 1)
+              code += "\n" + text_params.map { |param| indent(param, depth + 2) }.join(",\n")
+              code += "\n" + indent(")", depth + 1)
+            end
 
             code += "\n" + indent("}", depth)
           else
@@ -62,11 +103,18 @@ module KjuiTools
             code += "\n" + indent("checked = #{checked},", depth + 1)
 
             # onCheckedChange handler
-            if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
-              variable = $1
-              code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
-            elsif json_data['onValueChange']
+            binding_variable = nil
+            state_attr_val = json_data['isOn'] || json_data['checked']
+            if state_attr_val.is_a?(String) && state_attr_val.match(/@\{([^}]+)\}/)
+              binding_variable = $1
+            elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+              binding_variable = $1
+            end
+
+            if json_data['onValueChange']
               code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
+            elsif binding_variable
+              code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) },", depth + 1)
             else
               code += "\n" + indent("onCheckedChange = { },", depth + 1)
             end
