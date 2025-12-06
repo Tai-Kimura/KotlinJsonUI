@@ -994,5 +994,474 @@
       ],
       "description": "Space between icon and text (binding supported)"
     }
+  },
+  "Button": {
+    "text": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Button text (can be data binding, supports interpolation)"
+    },
+    "font": {
+      "type": "string",
+      "description": "Font name or 'bold'"
+    },
+    "fontSize": {
+      "type": "number",
+      "description": "Font size"
+    },
+    "fontColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Font color (binding supported)"
+    },
+    "disabledFontColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Font color when disabled (binding supported)"
+    },
+    "highlightColor": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Highlight color (binding supported)"
+    },
+    "hilightColor": {
+      "type": "string",
+      "description": "Highlight color (typo alias)"
+    },
+    "tapBackground": {
+      "type": "string",
+      "description": "Background when tapped"
+    },
+    "highlightBackground": {
+      "type": "string",
+      "description": "Background when highlighted"
+    },
+    "image": {
+      "type": "string",
+      "description": "Button image"
+    },
+    "textAlign": {
+      "type": "string",
+      "enum": [
+        "Left",
+        "Center",
+        "Right"
+      ],
+      "description": "Text alignment"
+    }
+  },
+  "Image": {
+    "src": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Image source name (can be data binding)"
+    },
+    "srcName": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Image source name (alias, can be data binding)"
+    },
+    "highlightSrc": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Image when highlighted (binding supported)"
+    },
+    "contentMode": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "enum": [
+        "fit",
+        "fill",
+        "center",
+        "top",
+        "bottom",
+        "left",
+        "right",
+        "AspectFill",
+        "AspectFit",
+        "Center",
+        "ScaleToFill",
+        "Top",
+        "Bottom",
+        "Left",
+        "Right"
+      ],
+      "description": "Content mode (binding supported)"
+    },
+    "renderingMode": {
+      "type": "string",
+      "enum": [
+        "original",
+        "template"
+      ],
+      "description": "Rendering mode"
+    }
+  },
+  "View": {
+    "orientation": {
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ],
+      "description": "Stack orientation"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "topToBottom",
+        "bottomToTop",
+        "leftToRight",
+        "rightToLeft",
+        "none"
+      ],
+      "description": "Layout direction"
+    },
+    "child": {
+      "type": [
+        "object",
+        "array"
+      ],
+      "description": "Child component(s)"
+    },
+    "children": {
+      "type": "array",
+      "description": "Child components (alias for child)"
+    },
+    "alignment": {
+      "type": "string",
+      "description": "Child alignment"
+    },
+    "distribution": {
+      "type": "string",
+      "description": "Distribution mode"
+    },
+    "spacing": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Space between children (binding supported)"
+    },
+    "gradient": {
+      "type": "array",
+      "description": "Gradient colors"
+    },
+    "gradientDirection": {
+      "type": "string",
+      "description": "Gradient direction"
+    },
+    "locations": {
+      "type": "array",
+      "description": "Gradient color stop locations"
+    },
+    "highlighted": {
+      "type": "boolean",
+      "description": "View highlighted state"
+    }
+  },
+  "ScrollView": {
+    "child": {
+      "type": [
+        "object",
+        "array"
+      ],
+      "description": "Child component(s)"
+    },
+    "children": {
+      "type": "array",
+      "description": "Child components"
+    },
+    "orientation": {
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ],
+      "description": "Scroll orientation"
+    },
+    "showsHorizontalScrollIndicator": {
+      "type": "boolean",
+      "description": "Show horizontal indicator"
+    },
+    "showsVerticalScrollIndicator": {
+      "type": "boolean",
+      "description": "Show vertical indicator"
+    },
+    "paging": {
+      "type": "boolean",
+      "description": "Enable paging"
+    },
+    "bounces": {
+      "type": "boolean",
+      "description": "Enable bounce effect"
+    },
+    "scrollEnabled": {
+      "type": [
+        "boolean",
+        "binding"
+      ],
+      "description": "Enable scrolling (binding supported)"
+    },
+    "contentInsetAdjustmentBehavior": {
+      "type": "string",
+      "enum": [
+        "never",
+        "always",
+        "automatic",
+        "scrollableAxes"
+      ],
+      "description": "Content inset adjustment"
+    },
+    "maxZoom": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Maximum zoom scale (binding supported)"
+    },
+    "minZoom": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Minimum zoom scale (binding supported)"
+    },
+    "keyboardDismissMode": {
+      "type": "string",
+      "description": "Keyboard dismiss mode"
+    }
+  },
+  "Collection": {
+    "cellClasses": {
+      "type": "array",
+      "description": "Cell class definitions"
+    },
+    "headerClasses": {
+      "type": "array",
+      "description": "Header class definitions"
+    },
+    "footerClasses": {
+      "type": "array",
+      "description": "Footer class definitions"
+    },
+    "columns": {
+      "type": "number",
+      "min": 1,
+      "description": "Number of columns"
+    },
+    "columnSpacing": {
+      "type": "number",
+      "description": "Spacing between columns"
+    },
+    "lineSpacing": {
+      "type": "number",
+      "description": "Spacing between rows"
+    },
+    "horizontalScroll": {
+      "type": "boolean",
+      "description": "Enable horizontal scroll"
+    },
+    "layout": {
+      "type": "string",
+      "enum": [
+        "vertical",
+        "horizontal",
+        "Flow"
+      ],
+      "description": "Layout type"
+    },
+    "insets": {
+      "type": [
+        "array",
+        "string"
+      ],
+      "description": "Content insets"
+    },
+    "insetHorizontal": {
+      "type": "number",
+      "description": "Horizontal inset"
+    },
+    "insetVertical": {
+      "type": "number",
+      "description": "Vertical inset"
+    },
+    "contentInsets": {
+      "type": [
+        "array",
+        "string"
+      ],
+      "description": "Content insets"
+    },
+    "contentInsetAdjustmentBehavior": {
+      "type": "string",
+      "description": "Content inset adjustment"
+    },
+    "itemWeight": {
+      "type": "number",
+      "description": "Item sizing weight"
+    },
+    "showsHorizontalScrollIndicator": {
+      "type": "boolean",
+      "description": "Show horizontal indicator"
+    },
+    "showsVerticalScrollIndicator": {
+      "type": "boolean",
+      "description": "Show vertical indicator"
+    },
+    "paging": {
+      "type": "boolean",
+      "description": "Enable paging"
+    },
+    "sections": {
+      "type": "array",
+      "description": "Section-based configuration",
+      "items": {
+        "type": "object",
+        "properties": {
+          "header": {
+            "type": "string",
+            "description": "Header view name"
+          },
+          "cell": {
+            "type": "string",
+            "description": "Cell view name"
+          },
+          "footer": {
+            "type": "string",
+            "description": "Footer view name"
+          },
+          "columns": {
+            "type": "number",
+            "description": "Section columns"
+          }
+        }
+      }
+    }
+  },
+  "GradientView": {
+    "gradient": {
+      "type": "array",
+      "description": "Gradient colors"
+    },
+    "gradientDirection": {
+      "type": "string",
+      "enum": [
+        "Vertical",
+        "Horizontal",
+        "Oblique"
+      ],
+      "description": "Gradient direction"
+    },
+    "locations": {
+      "type": "array",
+      "description": "Color stop locations (0.0-1.0)"
+    }
+  },
+  "Blur": {
+    "effectStyle": {
+      "type": "string",
+      "enum": [
+        "Light",
+        "Dark",
+        "ExtraLight"
+      ],
+      "description": "Blur effect style"
+    }
+  },
+  "IconLabel": {
+    "text": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Label text (can be data binding)"
+    },
+    "selected": {
+      "type": [
+        "boolean",
+        "binding"
+      ],
+      "description": "Selected state (binding supported)"
+    },
+    "font": {
+      "type": "string",
+      "description": "Font name"
+    },
+    "fontSize": {
+      "type": "number",
+      "description": "Font size"
+    },
+    "fontColor": {
+      "type": "string",
+      "description": "Text color"
+    },
+    "textShadow": {
+      "type": "string",
+      "description": "Text shadow"
+    },
+    "selectedFontColor": {
+      "type": "string",
+      "description": "Selected text color"
+    },
+    "icon_on": {
+      "type": "string",
+      "description": "Selected icon"
+    },
+    "icon_off": {
+      "type": "string",
+      "description": "Normal icon"
+    },
+    "iconPosition": {
+      "type": "string",
+      "enum": [
+        "Left",
+        "Right",
+        "Top",
+        "Bottom"
+      ],
+      "description": "Icon position relative to text"
+    },
+    "iconMargin": {
+      "type": "number",
+      "description": "Icon-text spacing"
+    }
+  },
+  "Web": {
+    "url": {
+      "type": [
+        "string",
+        "binding"
+      ],
+      "description": "Web page URL (can be data binding)"
+    },
+    "html": {
+      "type": "string",
+      "description": "HTML content"
+    },
+    "allowsBackForwardNavigationGestures": {
+      "type": "boolean",
+      "description": "Enable swipe navigation"
+    },
+    "allowsLinkPreview": {
+      "type": "boolean",
+      "description": "Enable link preview"
+    }
   }
 }
