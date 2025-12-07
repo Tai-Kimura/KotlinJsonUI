@@ -318,6 +318,38 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
     end
   end
 
+  describe '.process_dimension' do
+    it 'returns dp for numeric value' do
+      result = described_class.send(:process_dimension, 16)
+      expect(result).to eq('16.dp')
+    end
+
+    it 'returns dp for float value' do
+      result = described_class.send(:process_dimension, 8.5)
+      expect(result).to eq('8.5.dp')
+    end
+
+    it 'handles data binding syntax' do
+      result = described_class.send(:process_dimension, '@{paddingValue}')
+      expect(result).to eq('data.paddingValue.dp')
+    end
+
+    it 'handles data binding with complex variable name' do
+      result = described_class.send(:process_dimension, '@{item.padding}')
+      expect(result).to eq('data.item.padding.dp')
+    end
+
+    it 'returns dp for regular string value' do
+      result = described_class.send(:process_dimension, '24')
+      expect(result).to eq('24.dp')
+    end
+
+    it 'returns 0.dp for nil or unsupported types' do
+      result = described_class.send(:process_dimension, nil)
+      expect(result).to eq('0.dp')
+    end
+  end
+
   describe '.has_lifecycle_events?' do
     it 'returns truthy when onAppear is present' do
       json_data = { 'onAppear' => 'loadData' }
