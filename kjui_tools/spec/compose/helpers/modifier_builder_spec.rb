@@ -317,4 +317,135 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
       expect(result).to eq('')
     end
   end
+
+  describe '.has_lifecycle_events?' do
+    it 'returns truthy when onAppear is present' do
+      json_data = { 'onAppear' => 'loadData' }
+      expect(described_class.has_lifecycle_events?(json_data)).to be_truthy
+    end
+
+    it 'returns truthy when onDisappear is present' do
+      json_data = { 'onDisappear' => 'cleanup' }
+      expect(described_class.has_lifecycle_events?(json_data)).to be_truthy
+    end
+
+    it 'returns truthy when both are present' do
+      json_data = { 'onAppear' => 'loadData', 'onDisappear' => 'cleanup' }
+      expect(described_class.has_lifecycle_events?(json_data)).to be_truthy
+    end
+
+    it 'returns falsy when neither is present' do
+      json_data = { 'type' => 'View' }
+      expect(described_class.has_lifecycle_events?(json_data)).to be_falsy
+    end
+  end
+
+  describe '.build_lifecycle_effects' do
+    let(:imports) { Set.new }
+
+    context 'with onAppear' do
+      it 'generates LaunchedEffect code' do
+        json_data = { 'onAppear' => 'loadData' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('LaunchedEffect(Unit)')
+        expect(result[:before]).to include('viewModel.loadData()')
+      end
+
+      it 'handles handler with colon' do
+        json_data = { 'onAppear' => 'loadData:' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('viewModel.loadData()')
+      end
+
+      it 'adds launched_effect import' do
+        json_data = { 'onAppear' => 'loadData' }
+        described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(imports).to include(:launched_effect)
+      end
+
+      it 'includes onAppear comment' do
+        json_data = { 'onAppear' => 'loadData' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('// onAppear lifecycle event')
+      end
+    end
+
+    context 'with onDisappear' do
+      it 'generates DisposableEffect code' do
+        json_data = { 'onDisappear' => 'cleanup' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('DisposableEffect(Unit)')
+        expect(result[:before]).to include('onDispose {')
+        expect(result[:before]).to include('viewModel.cleanup()')
+      end
+
+      it 'handles handler with colon' do
+        json_data = { 'onDisappear' => 'cleanup:' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('viewModel.cleanup()')
+      end
+
+      it 'adds disposable_effect import' do
+        json_data = { 'onDisappear' => 'cleanup' }
+        described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(imports).to include(:disposable_effect)
+      end
+
+      it 'includes onDisappear comment' do
+        json_data = { 'onDisappear' => 'cleanup' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('// onDisappear lifecycle event')
+      end
+    end
+
+    context 'with both lifecycle events' do
+      it 'generates both effects' do
+        json_data = { 'onAppear' => 'loadData', 'onDisappear' => 'cleanup' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('LaunchedEffect(Unit)')
+        expect(result[:before]).to include('DisposableEffect(Unit)')
+        expect(result[:before]).to include('viewModel.loadData()')
+        expect(result[:before]).to include('viewModel.cleanup()')
+      end
+
+      it 'adds both imports' do
+        json_data = { 'onAppear' => 'loadData', 'onDisappear' => 'cleanup' }
+        described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(imports).to include(:launched_effect)
+        expect(imports).to include(:disposable_effect)
+      end
+    end
+
+    context 'without lifecycle events' do
+      it 'returns empty before/after' do
+        json_data = { 'type' => 'View' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to eq('')
+        expect(result[:after]).to eq('')
+      end
+
+      it 'does not add imports' do
+        json_data = { 'type' => 'View' }
+        described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(imports).not_to include(:launched_effect)
+        expect(imports).not_to include(:disposable_effect)
+      end
+    end
+
+    context 'with depth indentation' do
+      it 'applies correct indentation at depth 0' do
+        json_data = { 'onAppear' => 'loadData' }
+        result = described_class.build_lifecycle_effects(json_data, 0, imports)
+        expect(result[:before]).to include('LaunchedEffect(Unit) {')
+        expect(result[:before]).to include('    viewModel.loadData()')
+      end
+
+      it 'applies correct indentation at depth 2' do
+        json_data = { 'onAppear' => 'loadData' }
+        result = described_class.build_lifecycle_effects(json_data, 2, imports)
+        expect(result[:before]).to include('        LaunchedEffect(Unit) {')
+        expect(result[:before]).to include('            viewModel.loadData()')
+      end
+    end
+  end
 end

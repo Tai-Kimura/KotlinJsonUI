@@ -98,7 +98,7 @@ module KjuiTools
               elsif frame['width'] == 'wrapContent'
                 modifiers << ".wrapContentWidth()"
               else
-                modifiers << ".width(#{frame['width']}.dp)"
+                modifiers << ".width(#{process_dimension(frame['width'])})"
               end
             end
             if frame['height']
@@ -107,7 +107,7 @@ module KjuiTools
               elsif frame['height'] == 'wrapContent'
                 modifiers << ".wrapContentHeight()"
               else
-                modifiers << ".height(#{frame['height']}.dp)"
+                modifiers << ".height(#{process_dimension(frame['height'])})"
               end
             end
             # If frame is specified, skip individual width/height processing
@@ -120,7 +120,7 @@ module KjuiTools
           elsif json_data['width'] == 'wrapContent'
             modifiers << ".wrapContentWidth()"
           elsif json_data['width'] && !(json_data['weight'] && json_data['width'] == 0)
-            modifiers << ".width(#{json_data['width']}.dp)"
+            modifiers << ".width(#{process_dimension(json_data['width'])})"
           end
 
           # Height - skip if heightWeight is present and height is 0
@@ -129,7 +129,7 @@ module KjuiTools
           elsif json_data['height'] == 'wrapContent'
             modifiers << ".wrapContentHeight()"
           elsif json_data['height'] && !(json_data['heightWeight'] && json_data['height'] == 0)
-            modifiers << ".height(#{json_data['height']}.dp)"
+            modifiers << ".height(#{process_dimension(json_data['height'])})"
           end
           
           # Min/Max constraints
@@ -591,11 +591,29 @@ module KjuiTools
 
         private
 
+        # Process dimension value - handles data bindings and numeric values
+        def self.process_dimension(value)
+          return "#{value}.dp" if value.is_a?(Numeric)
+
+          if value.is_a?(String)
+            # Check for data binding syntax @{variableName}
+            if value.match(/@\{([^}]+)\}/)
+              variable = $1
+              # Data binding returns Int/Float from ViewModel, append .dp
+              return "data.#{variable}.dp"
+            end
+            # Regular string value (might be percentage or other)
+            return "#{value}.dp"
+          end
+
+          "0.dp"
+        end
+
         def self.indent(text, level)
           return text if level == 0
           spaces = '    ' * level
-          text.split("\n").map { |line| 
-            line.empty? ? line : spaces + line 
+          text.split("\n").map { |line|
+            line.empty? ? line : spaces + line
           }.join("\n")
         end
       end
