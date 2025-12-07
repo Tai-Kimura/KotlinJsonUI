@@ -335,6 +335,10 @@ module KjuiTools
           if is_hex_color?(color_value)
             # Check if it's a fully transparent color (alpha = 00)
             if is_transparent_color?(color_value)
+              # Add transparent to colors.json if not already present
+              unless @colors_data.key?('transparent') || @extracted_colors.key?('transparent')
+                @extracted_colors['transparent'] = '#00000000'
+              end
               return 'transparent'
             end
 
