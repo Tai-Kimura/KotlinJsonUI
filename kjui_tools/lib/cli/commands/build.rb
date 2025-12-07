@@ -31,7 +31,7 @@ module KjuiTools
           end
 
           # Print validation summary if there were warnings
-          print_validation_summary if options[:validate] && @validation_warnings.any?
+          print_validation_summary if options[:validate] != false && @validation_warnings.any?
 
           # Exit with error code if strict mode and there were validation errors
           if options[:strict] && @validation_errors > 0
@@ -57,13 +57,12 @@ module KjuiTools
               options[:clean] = true
             end
 
-            opts.on('--validate', 'Validate JSON attributes against schema') do
-              options[:validate] = true
+            opts.on('--no-validate', 'Skip JSON attribute validation') do
+              options[:validate] = false
             end
 
             opts.on('--strict', 'Fail build on validation errors') do
               options[:strict] = true
-              options[:validate] = true
             end
 
             opts.on('-h', '--help', 'Show this help message') do
@@ -71,6 +70,9 @@ module KjuiTools
               exit
             end
           end.parse!(args)
+
+          # Validation is enabled by default
+          options[:validate] = true if options[:validate].nil?
 
           options
         end

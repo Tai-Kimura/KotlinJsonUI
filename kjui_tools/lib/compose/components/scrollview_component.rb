@@ -30,6 +30,9 @@ module KjuiTools
             end
           end
           
+          # keyboardAvoidance属性の確認（デフォルトはtrue）
+          keyboard_avoidance = json_data['keyboardAvoidance'] != false
+
           if is_horizontal
             required_imports&.add(:lazy_row)
             code = indent("LazyRow(", depth)
@@ -37,14 +40,21 @@ module KjuiTools
             required_imports&.add(:lazy_column)
             code = indent("LazyColumn(", depth)
           end
-          
+
           # Build modifiers
           modifiers = []
+
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
-          
+
+          # Apply keyboard avoidance at the end of modifier chain
+          if keyboard_avoidance
+            required_imports&.add(:ime_padding)
+            modifiers << ".imePadding()"
+          end
+
           code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
           
           code += "\n" + indent(") {", depth)

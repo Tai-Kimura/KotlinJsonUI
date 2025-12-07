@@ -37,8 +37,23 @@ RSpec.describe KjuiTools::Compose::Components::TextFieldComponent do
     it 'generates TextField with data binding' do
       json_data = { 'type' => 'TextField', 'text' => '@{searchQuery}' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('value = "${data.searchQuery}"')
+      # Value should be direct data reference (not string interpolation)
+      expect(result).to include('value = data.searchQuery,')
       expect(result).to include('onValueChange')
+    end
+
+    it 'generates TextField with nested data binding' do
+      json_data = { 'type' => 'TextField', 'text' => '@{user.email}' }
+      result = described_class.generate(json_data, 0, required_imports)
+      # Should use direct data reference for nested properties
+      expect(result).to include('value = data.user.email,')
+    end
+
+    it 'generates TextField with data binding and default value' do
+      json_data = { 'type' => 'TextField', 'text' => '@{email ?? ""}' }
+      result = described_class.generate(json_data, 0, required_imports)
+      # Should extract the variable name before ??
+      expect(result).to include('value = data.email,')
     end
 
     it 'generates secure TextField with visual transformation' do

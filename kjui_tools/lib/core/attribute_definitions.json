@@ -2676,6 +2676,11 @@
       "description": "Scroll to top on status bar tap",
       "platform": "swift",
       "mode": "uikit"
+    },
+    "keyboardAvoidance": {
+      "type": "boolean",
+      "description": "Enable keyboard avoidance",
+      "platform": "swift"
     }
   },
   "Collection": {
@@ -2794,8 +2799,7 @@
     "keyboardAvoidance": {
       "type": "boolean",
       "description": "Enable keyboard avoidance",
-      "platform": "swift",
-      "mode": "uikit"
+      "platform": "swift"
     },
     "setTargetAsDelegate": {
       "type": "boolean",

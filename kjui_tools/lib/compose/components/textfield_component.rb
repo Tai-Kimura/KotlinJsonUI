@@ -9,7 +9,15 @@ module KjuiTools
       class TextFieldComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # TextField uses 'text' for value and supports both 'hint' and 'placeholder'
-          value = Helpers::ResourceResolver.process_text(json_data['text'] || '', required_imports)
+          # For TextField value, we need direct data binding (not string interpolation)
+          raw_text = json_data['text'] || ''
+          value = if raw_text.match(/@\{([^}]+)\}/)
+            variable = $1
+            var_name = variable.include?(' ?? ') ? variable.split(' ?? ')[0].strip : variable
+            "data.#{var_name}"
+          else
+            Helpers::ResourceResolver.process_text(raw_text, required_imports)
+          end
           placeholder_text = json_data['hint'] || json_data['placeholder'] || ''
           placeholder = placeholder_text.empty? ? '""' : Helpers::ResourceResolver.process_text(placeholder_text, required_imports)
           is_secure = json_data['secure'] == true

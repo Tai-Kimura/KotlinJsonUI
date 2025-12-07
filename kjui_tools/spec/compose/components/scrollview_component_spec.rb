@@ -53,12 +53,46 @@ RSpec.describe KjuiTools::Compose::Components::ScrollViewComponent do
     end
 
     it 'detects horizontal from child View orientation' do
-      json_data = { 
+      json_data = {
         'type' => 'ScrollView',
         'child' => [{ 'type' => 'View', 'orientation' => 'horizontal' }]
       }
       result = described_class.generate(json_data, 0, required_imports)
       expect(result[:code]).to include('LazyRow(')
+    end
+
+    context 'keyboardAvoidance' do
+      it 'adds imePadding by default' do
+        json_data = { 'type' => 'ScrollView' }
+        result = described_class.generate(json_data, 0, required_imports)
+        expect(result[:code]).to include('.imePadding()')
+        expect(required_imports).to include(:ime_padding)
+      end
+
+      it 'adds imePadding when keyboardAvoidance is true' do
+        json_data = { 'type' => 'ScrollView', 'keyboardAvoidance' => true }
+        result = described_class.generate(json_data, 0, required_imports)
+        expect(result[:code]).to include('.imePadding()')
+        expect(required_imports).to include(:ime_padding)
+      end
+
+      it 'does not add imePadding when keyboardAvoidance is false' do
+        json_data = { 'type' => 'ScrollView', 'keyboardAvoidance' => false }
+        result = described_class.generate(json_data, 0, required_imports)
+        expect(result[:code]).not_to include('imePadding()')
+        expect(required_imports).not_to include(:ime_padding)
+      end
+
+      it 'works with horizontal scroll and keyboardAvoidance disabled' do
+        json_data = {
+          'type' => 'ScrollView',
+          'horizontalScroll' => true,
+          'keyboardAvoidance' => false
+        }
+        result = described_class.generate(json_data, 0, required_imports)
+        expect(result[:code]).to include('LazyRow(')
+        expect(result[:code]).not_to include('imePadding()')
+      end
     end
   end
 end

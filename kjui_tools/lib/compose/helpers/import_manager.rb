@@ -24,6 +24,7 @@ module KjuiTools
             keyboard_type: ["import androidx.compose.foundation.text.KeyboardOptions",
                             "import androidx.compose.ui.text.input.KeyboardType"],
             ime_action: "import androidx.compose.ui.text.input.ImeAction",
+            ime_padding: "import androidx.compose.foundation.layout.imePadding",
             button_colors: "import androidx.compose.material3.ButtonDefaults",
             button_padding: "import androidx.compose.foundation.layout.PaddingValues",
             text_decoration: "import androidx.compose.ui.text.style.TextDecoration",

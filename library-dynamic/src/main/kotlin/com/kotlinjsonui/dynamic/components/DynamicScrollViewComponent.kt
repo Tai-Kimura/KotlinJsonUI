@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.imePadding
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
@@ -27,6 +28,7 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  * - scrollEnabled: Boolean to enable/disable scrolling (default true)
  * - horizontalScroll: Boolean to enable horizontal scrolling
  * - orientation: "horizontal" | "vertical" (alternative to horizontalScroll)
+ * - keyboardAvoidance: Boolean to enable keyboard avoidance (default true)
  * - child: JsonObject or Array of child components
  * - background: String hex color for background
  * - borderColor: String hex color for border
@@ -86,8 +88,16 @@ class DynamicScrollViewComponent {
             // Check if scroll is enabled (default true)
             val scrollEnabled = json.get("scrollEnabled")?.asBoolean ?: true
 
+            // Check if keyboard avoidance is enabled (default true)
+            val keyboardAvoidance = json.get("keyboardAvoidance")?.asBoolean ?: true
+
             // Build modifier with scroll
             var modifier = buildModifier(json)
+
+            // Apply keyboard avoidance if enabled
+            if (keyboardAvoidance) {
+                modifier = modifier.imePadding()
+            }
 
             // Apply scroll modifier based on direction only if scrollEnabled
             if (scrollEnabled) {
