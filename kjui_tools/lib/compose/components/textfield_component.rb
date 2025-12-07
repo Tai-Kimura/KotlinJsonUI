@@ -66,11 +66,10 @@ module KjuiTools
               end
               code += ","
             end
-            
-            # TextField modifier
+
+            # TextField modifier (size only, padding goes to contentPadding)
             textfield_modifiers = []
             textfield_modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
-            textfield_modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
             if textfield_modifiers.any?
               code += "\n" + indent("textFieldModifier = Modifier", depth + 1)
               textfield_modifiers.each do |mod|
@@ -79,12 +78,11 @@ module KjuiTools
               code += ","
             end
           else
-            # Regular modifiers for CustomTextField
+            # Regular modifiers for CustomTextField (size and margins only, padding goes to contentPadding)
             modifiers = []
             modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
-            modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
             modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-            
+
             if modifiers.any?
               code += "\n" + indent("modifier = Modifier", depth + 1)
               modifiers.each do |mod|
@@ -135,8 +133,27 @@ module KjuiTools
             code += "\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp),", depth + 1)
           end
 
-          # Field padding - internal padding within the text field
-          if json_data['fieldPadding']
+          # Content padding - internal padding within the text field
+          # Supports: paddings (array or single value), fieldPadding (legacy single value)
+          if json_data['paddings']
+            required_imports&.add(:padding_values)
+            paddings = json_data['paddings']
+            if paddings.is_a?(Array)
+              case paddings.length
+              when 1
+                code += "\n" + indent("contentPadding = PaddingValues(#{paddings[0]}.dp),", depth + 1)
+              when 2
+                # [vertical, horizontal]
+                code += "\n" + indent("contentPadding = PaddingValues(horizontal = #{paddings[1]}.dp, vertical = #{paddings[0]}.dp),", depth + 1)
+              when 4
+                # [top, right, bottom, left]
+                code += "\n" + indent("contentPadding = PaddingValues(start = #{paddings[3]}.dp, top = #{paddings[0]}.dp, end = #{paddings[1]}.dp, bottom = #{paddings[2]}.dp),", depth + 1)
+              end
+            else
+              code += "\n" + indent("contentPadding = PaddingValues(#{paddings}.dp),", depth + 1)
+            end
+          elsif json_data['fieldPadding']
+            required_imports&.add(:padding_values)
             code += "\n" + indent("contentPadding = PaddingValues(#{json_data['fieldPadding']}.dp),", depth + 1)
           end
 

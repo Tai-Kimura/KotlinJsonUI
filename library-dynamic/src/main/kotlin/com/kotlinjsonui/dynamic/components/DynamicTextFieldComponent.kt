@@ -1,6 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -133,9 +134,12 @@ class DynamicTextFieldComponent {
             val shape = RoundedCornerShape(cornerRadius.dp)
             
             // Parse isOutlined - automatically use outlined style if borderColor or borderWidth is specified
-            val isOutlined = json.get("outlined")?.asBoolean == true || 
-                             json.get("borderColor") != null || 
+            val isOutlined = json.get("outlined")?.asBoolean == true ||
+                             json.get("borderColor") != null ||
                              json.get("borderWidth") != null
+
+            // Parse contentPadding from paddings or fieldPadding
+            val contentPadding = buildContentPadding(json)
 
             // Handle onTextChange event
             val onValueChange: (String) -> Unit = { newValue ->
@@ -235,6 +239,7 @@ class DynamicTextFieldComponent {
                     keyboardOptions = keyboardOptions,
                     textStyle = textStyle,
                     shape = shape,
+                    contentPadding = contentPadding,
                     backgroundColor = backgroundColor,
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
@@ -254,6 +259,7 @@ class DynamicTextFieldComponent {
                     keyboardOptions = keyboardOptions,
                     textStyle = textStyle,
                     shape = shape,
+                    contentPadding = contentPadding,
                     backgroundColor = backgroundColor,
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
@@ -268,15 +274,15 @@ class DynamicTextFieldComponent {
         private fun buildModifier(json: JsonObject, includeMargins: Boolean): Modifier {
             // Use ModifierBuilder for size
             var modifier = ModifierBuilder.buildSizeModifier(json)
-            
-            // Apply padding
-            modifier = ModifierBuilder.applyPadding(modifier, json)
-            
+
+            // NOTE: Don't apply padding to modifier for TextField
+            // Padding is handled separately as contentPadding
+
             // Apply margins if included
             if (includeMargins) {
                 modifier = ModifierBuilder.applyMargins(modifier, json)
             }
-            
+
             // Apply opacity
             modifier = ModifierBuilder.applyOpacity(modifier, json)
 
@@ -286,6 +292,37 @@ class DynamicTextFieldComponent {
         private fun buildMarginModifier(json: JsonObject): Modifier {
             // Use ModifierBuilder for margins
             return ModifierBuilder.applyMargins(Modifier, json)
+        }
+
+        /**
+         * Build contentPadding from paddings or fieldPadding JSON attribute
+         */
+        private fun buildContentPadding(json: JsonObject): PaddingValues? {
+            // Check for paddings array first
+            json.get("paddings")?.asJsonArray?.let { paddings ->
+                return when (paddings.size()) {
+                    1 -> PaddingValues(paddings[0].asFloat.dp)
+                    2 -> PaddingValues(
+                        vertical = paddings[0].asFloat.dp,
+                        horizontal = paddings[1].asFloat.dp
+                    )
+                    4 -> PaddingValues(
+                        start = paddings[3].asFloat.dp,
+                        top = paddings[0].asFloat.dp,
+                        end = paddings[1].asFloat.dp,
+                        bottom = paddings[2].asFloat.dp
+                    )
+                    else -> null
+                }
+            }
+
+            // Check for fieldPadding (legacy single value)
+            json.get("fieldPadding")?.asFloat?.let { padding ->
+                return PaddingValues(padding.dp)
+            }
+
+            // Return null to use default contentPadding
+            return null
         }
     }
 }
