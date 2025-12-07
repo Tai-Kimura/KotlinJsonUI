@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
@@ -60,17 +61,20 @@ class DynamicTextFieldComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Parse text value with data binding
             val rawText = json.get("text")?.asString ?: ""
-            val initialText = processDataBinding(rawText, data)
+            val initialText = processDataBinding(rawText, data, context)
 
             // State for the text field value
             var textValue by remember(initialText) { mutableStateOf(initialText) }
 
-            // Parse placeholder
-            val placeholderText = json.get("hint")?.asString
+            // Parse placeholder with resource resolution
+            val rawPlaceholder = json.get("hint")?.asString
                 ?: json.get("placeholder")?.asString
                 ?: ""
+            val placeholderText = processDataBinding(rawPlaceholder, data, context)
 
             // Parse secure field
             val isSecure = json.get("secure")?.asBoolean ?: false

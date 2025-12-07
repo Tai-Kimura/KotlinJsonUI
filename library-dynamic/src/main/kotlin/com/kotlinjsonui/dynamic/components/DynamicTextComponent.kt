@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.PartialAttribute
@@ -62,10 +63,11 @@ class DynamicTextComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
 
-            // Parse text with data binding support
+            // Parse text with data binding support and resource resolution
             val rawText = json.get("text")?.asString ?: ""
-            val text = processDataBinding(rawText, data)
+            val text = processDataBinding(rawText, data, context)
 
             // Check for partialAttributes or linkable
             val hasPartialAttributes = json.get("partialAttributes")?.isJsonArray == true

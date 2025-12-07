@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
@@ -63,9 +64,11 @@ class DynamicButtonComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            // Parse button text with data binding
+            val context = LocalContext.current
+
+            // Parse button text with data binding and resource resolution
             val rawText = json.get("text")?.asString ?: "Button"
-            val text = processDataBinding(rawText, data)
+            val text = processDataBinding(rawText, data, context)
 
             // Loading state
             var isLoading by remember {

@@ -155,11 +155,27 @@ module KjuiTools
           
           def find_string_key(text, config, source_path)
             strings_data = cached_strings_data
-            
+
+            # First, check if the text itself is a resource key (snake_case like "login_password")
+            # This handles the case where JSON has text: "login_password" which should resolve to R.string.login_password
+            if text.match?(/^[a-z]+(_[a-z0-9]+)+$/)
+              strings_data.each do |file_prefix, file_strings|
+                next unless file_strings.is_a?(Hash)
+
+                file_strings.each do |key, _value|
+                  full_key = "#{file_prefix}_#{key}"
+                  if full_key == text
+                    # Text matches an existing resource key directly
+                    return text
+                  end
+                end
+              end
+            end
+
             # Search through all file prefixes for matching values
             strings_data.each do |file_prefix, file_strings|
               next unless file_strings.is_a?(Hash)
-              
+
               file_strings.each do |key, value|
                 if value == text
                   # Return the full key with prefix
@@ -167,7 +183,7 @@ module KjuiTools
                 end
               end
             end
-            
+
             nil
           end
           

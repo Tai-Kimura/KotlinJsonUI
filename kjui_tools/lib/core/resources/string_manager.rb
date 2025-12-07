@@ -218,13 +218,32 @@ module KjuiTools
         def should_extract_string?(value)
           # Skip data binding expressions
           return false if value.start_with?('@{') || value.start_with?('${')
-          
-          # Extract if it's snake_case (like SwiftJsonUI)
-          return true if value.match?(/^[a-z]+(_[a-z]+)*$/)
-          
+
+          # If it's snake_case, check if it's already a resource key
+          # (to avoid extracting "login_password" when it should resolve to an existing key)
+          if value.match?(/^[a-z]+(_[a-z0-9]+)*$/)
+            # Check if this snake_case value matches an existing resource key
+            return false if is_existing_resource_key?(value)
+            return true
+          end
+
           # Extract if it's a regular text string longer than 2 characters
           # and contains alphabetic characters
           value.length > 2 && value.match?(/[a-zA-Z]/)
+        end
+
+        # Check if a snake_case value matches an existing resource key
+        def is_existing_resource_key?(value)
+          @strings_data.each do |file_prefix, file_strings|
+            next unless file_strings.is_a?(Hash)
+
+            # Check if value matches "prefix_key" pattern
+            file_strings.each do |key, _|
+              full_key = "#{file_prefix}_#{key}"
+              return true if full_key == value
+            end
+          end
+          false
         end
         
         # Extract and store string (without returning a key)
