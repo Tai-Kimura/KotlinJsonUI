@@ -333,6 +333,11 @@ module KjuiTools
 
           # Handle hex colors
           if is_hex_color?(color_value)
+            # Check if it's a fully transparent color (alpha = 00)
+            if is_transparent_color?(color_value)
+              return 'transparent'
+            end
+
             # Normalize hex color (uppercase, with #)
             hex_color = normalize_hex_color(color_value)
 
@@ -493,6 +498,19 @@ module KjuiTools
           return false unless value.is_a?(String)
           # Support 3, 6, and 8 character hex colors (8 = ARGB with alpha)
           value.match?(/^#?[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?([0-9A-Fa-f]{2})?$/)
+        end
+
+        # Check if a color is fully transparent (alpha = 00)
+        def is_transparent_color?(value)
+          return false unless value.is_a?(String)
+          hex = value.gsub('#', '').upcase
+
+          # Only 8-digit hex colors have alpha channel (ARGB format for Android)
+          return false unless hex.length == 8
+
+          # Check if alpha is 00 (fully transparent) - first 2 chars for ARGB
+          alpha = hex[0..1]
+          alpha == '00'
         end
 
         # Normalize hex color format
