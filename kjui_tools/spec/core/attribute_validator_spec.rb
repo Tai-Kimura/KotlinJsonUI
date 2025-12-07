@@ -29,8 +29,9 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
   end
 
   describe 'extension definitions loading' do
+    # Use Dir.pwd-based path since that's what the validator uses
     let(:extensions_dir) do
-      File.join(File.dirname(__FILE__), '..', '..', 'lib', 'compose', 'components', 'extensions', 'attribute_definitions')
+      File.join(Dir.pwd, 'kjui_tools', 'lib', 'compose', 'components', 'extensions', 'attribute_definitions')
     end
 
     before do
@@ -143,7 +144,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
 
       it 'returns warning for type mismatch' do
         warnings = validator.validate(component)
-        expect(warnings).to include(/expects number, got string/)
+        expect(warnings).to include(/expects number or binding, got string/)
       end
     end
 
@@ -326,7 +327,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
 
       it 'returns warning for invalid enum values in array' do
         warnings = validator.validate(component)
-        expect(warnings).to include(/invalid values \["invalid"\]/)
+        expect(warnings).to include(/invalid value\(s\)/)
       end
     end
 
@@ -340,7 +341,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
 
       it 'returns warning for invalid enum values in array' do
         warnings = validator.validate(component)
-        expect(warnings).to include(/invalid values \["invalid"\]/)
+        expect(warnings).to include(/invalid value\(s\)/)
       end
     end
 
@@ -425,8 +426,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'type' => 'Button',
           'text' => 'Click Me',
           'onclick' => 'handleClick',
-          'enabled' => true,
-          'async' => false
+          'enabled' => true
         }
       end
 
@@ -441,8 +441,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
         {
           'type' => 'TextField',
           'hint' => 'Enter text',
-          'keyboardType' => 'email',
-          'imeAction' => 'done',
+          'input' => 'email',
+          'returnKeyType' => 'Done',
           'secure' => false
         }
       end
@@ -452,8 +452,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
         expect(warnings).to be_empty
       end
 
-      it 'warns on invalid keyboardType' do
-        component['keyboardType'] = 'invalid'
+      it 'warns on invalid input type' do
+        component['input'] = 'invalid'
         warnings = validator.validate(component)
         expect(warnings).to include(/invalid value 'invalid'/)
       end
@@ -464,8 +464,9 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
         {
           'type' => 'Image',
           'src' => 'icon_home',
-          'contentMode' => 'aspectFit',
-          'size' => 24
+          'contentMode' => 'fit',
+          'width' => 24,
+          'height' => 24
         }
       end
 
@@ -512,7 +513,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
         {
           'type' => 'Collection',
           'columns' => 2,
-          'itemSpacing' => 8,
+          'columnSpacing' => 8,
           'layout' => 'vertical'
         }
       end
@@ -632,7 +633,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'cornerRadius' => 8,
           'borderWidth' => 1,
           'borderColor' => '#CCCCCC',
-          'shadow' => true
+          'shadow' => '#000000|0|2|0.3|4'
         }
       end
 
@@ -739,6 +740,523 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       component = { 'type' => 'Container', 'orientation' => 'vertical' }
       warnings = validator.validate(component)
       expect(warnings).to be_empty
+    end
+  end
+
+  # NEW: Tests for TextField focus/blur event handlers
+  describe 'TextField focus/blur event handlers' do
+    let(:validator) { described_class.new }
+
+    context 'with onFocus event handler' do
+      let(:component) do
+        {
+          'type' => 'TextField',
+          'text' => '@{inputText}',
+          'onFocus' => 'handleFocus'
+        }
+      end
+
+      it 'returns no warnings for valid onFocus' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with onBlur event handler' do
+      let(:component) do
+        {
+          'type' => 'TextField',
+          'text' => '@{inputText}',
+          'onBlur' => 'handleBlur'
+        }
+      end
+
+      it 'returns no warnings for valid onBlur' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with onBeginEditing event handler' do
+      let(:component) do
+        {
+          'type' => 'TextField',
+          'text' => '@{inputText}',
+          'onBeginEditing' => 'handleBeginEditing'
+        }
+      end
+
+      it 'returns no warnings for valid onBeginEditing' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with onEndEditing event handler' do
+      let(:component) do
+        {
+          'type' => 'TextField',
+          'text' => '@{inputText}',
+          'onEndEditing' => 'handleEndEditing'
+        }
+      end
+
+      it 'returns no warnings for valid onEndEditing' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with all focus/blur event handlers' do
+      let(:component) do
+        {
+          'type' => 'TextField',
+          'text' => '@{inputText}',
+          'hint' => 'Enter text',
+          'onFocus' => 'handleFocus',
+          'onBlur' => 'handleBlur',
+          'onBeginEditing' => 'handleBeginEditing',
+          'onEndEditing' => 'handleEndEditing'
+        }
+      end
+
+      it 'returns no warnings for all event handlers' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    it 'has onFocus defined in TextField attributes' do
+      expect(validator.definitions['TextField']).to have_key('onFocus')
+      expect(validator.definitions['TextField']['onFocus']['type']).to eq('string')
+    end
+
+    it 'has onBlur defined in TextField attributes' do
+      expect(validator.definitions['TextField']).to have_key('onBlur')
+      expect(validator.definitions['TextField']['onBlur']['type']).to eq('string')
+    end
+
+    it 'has onBeginEditing defined in TextField attributes' do
+      expect(validator.definitions['TextField']).to have_key('onBeginEditing')
+      expect(validator.definitions['TextField']['onBeginEditing']['type']).to eq('string')
+    end
+
+    it 'has onEndEditing defined in TextField attributes' do
+      expect(validator.definitions['TextField']).to have_key('onEndEditing')
+      expect(validator.definitions['TextField']['onEndEditing']['type']).to eq('string')
+    end
+  end
+
+  # NEW: Tests for Switch/Toggle new attributes
+  describe 'Switch/Toggle new attributes' do
+    let(:validator) { described_class.new }
+
+    context 'with onTintColor attribute' do
+      let(:component) do
+        {
+          'type' => 'Switch',
+          'isOn' => '@{isEnabled}',
+          'onTintColor' => '#00FF00'
+        }
+      end
+
+      it 'returns no warnings for valid onTintColor' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with bind attribute' do
+      let(:component) do
+        {
+          'type' => 'Switch',
+          'bind' => '@{isToggled}'
+        }
+      end
+
+      it 'returns no warnings for valid bind' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with enabled attribute' do
+      let(:component) do
+        {
+          'type' => 'Switch',
+          'isOn' => true,
+          'enabled' => '@{canToggle}'
+        }
+      end
+
+      it 'returns no warnings for valid enabled binding' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with all Switch attributes' do
+      let(:component) do
+        {
+          'type' => 'Switch',
+          'isOn' => '@{isOn}',
+          'bind' => '@{switchState}',
+          'enabled' => true,
+          'onTintColor' => '#00FF00',
+          'thumbTintColor' => '#FFFFFF',
+          'onValueChange' => 'handleChange'
+        }
+      end
+
+      it 'returns no warnings for all Switch attributes' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with Toggle alias' do
+      let(:component) do
+        {
+          'type' => 'Toggle',
+          'isOn' => '@{isOn}',
+          'bind' => '@{toggleState}',
+          'enabled' => true,
+          'onTintColor' => '#00FF00'
+        }
+      end
+
+      it 'returns no warnings for Toggle with new attributes' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    it 'has onTintColor defined in Switch attributes' do
+      expect(validator.definitions['Switch']).to have_key('onTintColor')
+      expect(validator.definitions['Switch']['onTintColor']['type']).to eq('string')
+    end
+
+    it 'has bind defined in Switch attributes' do
+      expect(validator.definitions['Switch']).to have_key('bind')
+      expect(validator.definitions['Switch']['bind']['type']).to eq('binding')
+    end
+
+    it 'has enabled defined in Switch attributes' do
+      expect(validator.definitions['Switch']).to have_key('enabled')
+      expect(validator.definitions['Switch']['enabled']['type']).to eq(['boolean', 'binding'])
+    end
+
+    it 'has onTintColor defined in Toggle attributes' do
+      expect(validator.definitions['Toggle']).to have_key('onTintColor')
+      expect(validator.definitions['Toggle']['onTintColor']['type']).to eq('string')
+    end
+  end
+
+  # NEW: Tests for CheckBox/Check new attributes
+  describe 'CheckBox/Check new attributes' do
+    let(:validator) { described_class.new }
+
+    context 'with bind attribute on CheckBox' do
+      let(:component) do
+        {
+          'type' => 'CheckBox',
+          'bind' => '@{isChecked}'
+        }
+      end
+
+      it 'returns no warnings for valid bind' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with enabled attribute on CheckBox' do
+      let(:component) do
+        {
+          'type' => 'CheckBox',
+          'isOn' => true,
+          'enabled' => '@{canCheck}'
+        }
+      end
+
+      it 'returns no warnings for valid enabled binding' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with onValueChange on CheckBox' do
+      let(:component) do
+        {
+          'type' => 'CheckBox',
+          'isOn' => '@{isChecked}',
+          'onValueChange' => 'handleCheckChange'
+        }
+      end
+
+      it 'returns no warnings for valid onValueChange' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with all CheckBox attributes' do
+      let(:component) do
+        {
+          'type' => 'CheckBox',
+          'label' => 'Accept terms',
+          'isOn' => '@{isAccepted}',
+          'bind' => '@{checkState}',
+          'enabled' => true,
+          'icon' => 'checkbox_off',
+          'onSrc' => 'checkbox_on',
+          'onValueChange' => 'handleChange'
+        }
+      end
+
+      it 'returns no warnings for all CheckBox attributes' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with Check alias' do
+      let(:component) do
+        {
+          'type' => 'Check',
+          'checked' => '@{isChecked}',
+          'bind' => '@{checkState}',
+          'enabled' => true,
+          'icon' => 'check_off',
+          'selectedIcon' => 'check_on',
+          'onValueChange' => 'handleChange'
+        }
+      end
+
+      it 'returns no warnings for Check with new attributes' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    it 'has bind defined in CheckBox attributes' do
+      expect(validator.definitions['CheckBox']).to have_key('bind')
+      expect(validator.definitions['CheckBox']['bind']['type']).to eq('binding')
+    end
+
+    it 'has enabled defined in CheckBox attributes' do
+      expect(validator.definitions['CheckBox']).to have_key('enabled')
+      expect(validator.definitions['CheckBox']['enabled']['type']).to eq(['boolean', 'binding'])
+    end
+
+    it 'has onValueChange defined in CheckBox attributes' do
+      expect(validator.definitions['CheckBox']).to have_key('onValueChange')
+      expect(validator.definitions['CheckBox']['onValueChange']['type']).to eq('string')
+    end
+
+    it 'has bind defined in Check attributes' do
+      expect(validator.definitions['Check']).to have_key('bind')
+      expect(validator.definitions['Check']['bind']['type']).to eq('binding')
+    end
+
+    it 'has selectedIcon defined in Check attributes' do
+      expect(validator.definitions['Check']).to have_key('selectedIcon')
+      expect(validator.definitions['Check']['selectedIcon']['type']).to eq('string')
+    end
+  end
+
+  # NEW: Tests for EditText/Input alias components
+  describe 'EditText/Input alias components' do
+    let(:validator) { described_class.new }
+
+    context 'with EditText component' do
+      let(:component) do
+        {
+          'type' => 'EditText',
+          'text' => '@{inputText}',
+          'hint' => 'Enter text',
+          'hintColor' => '#999999'
+        }
+      end
+
+      it 'returns no warnings for valid EditText' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with EditText placeholder attribute' do
+      let(:component) do
+        {
+          'type' => 'EditText',
+          'text' => '@{email}',
+          'placeholder' => 'Enter email'
+        }
+      end
+
+      it 'returns no warnings for EditText with placeholder' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with Input component' do
+      let(:component) do
+        {
+          'type' => 'Input',
+          'text' => '@{inputText}',
+          'hint' => 'Enter text',
+          'placeholder' => 'Type here'
+        }
+      end
+
+      it 'returns no warnings for valid Input' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    it 'has EditText defined in definitions' do
+      expect(validator.definitions).to have_key('EditText')
+      expect(validator.definitions['EditText']['_alias_of']).to eq('TextField')
+    end
+
+    it 'has Input defined in definitions' do
+      expect(validator.definitions).to have_key('Input')
+      expect(validator.definitions['Input']['_alias_of']).to eq('TextField')
+    end
+
+    it 'has text attribute in EditText' do
+      expect(validator.definitions['EditText']).to have_key('text')
+      expect(validator.definitions['EditText']['text']['type']).to eq(['string', 'binding'])
+    end
+
+    it 'has hint attribute in EditText' do
+      expect(validator.definitions['EditText']).to have_key('hint')
+      expect(validator.definitions['EditText']['hint']['type']).to eq('string')
+    end
+
+    it 'has placeholder attribute in EditText' do
+      expect(validator.definitions['EditText']).to have_key('placeholder')
+      expect(validator.definitions['EditText']['placeholder']['type']).to eq('string')
+    end
+
+    it 'has text attribute in Input' do
+      expect(validator.definitions['Input']).to have_key('text')
+      expect(validator.definitions['Input']['text']['type']).to eq(['string', 'binding'])
+    end
+
+    it 'has hint attribute in Input' do
+      expect(validator.definitions['Input']).to have_key('hint')
+      expect(validator.definitions['Input']['hint']['type']).to eq('string')
+    end
+  end
+
+  # NEW: Tests for Swift platform-specific attributes
+  describe 'Swift platform-specific attributes' do
+    let(:validator) { described_class.new }
+
+    it 'has offTintColor defined in Switch with swift platform marker' do
+      switch_attrs = validator.definitions['Switch']
+      expect(switch_attrs).to have_key('offTintColor')
+      expect(switch_attrs['offTintColor']['platform']).to eq('swift')
+      expect(switch_attrs['offTintColor']['mode']).to eq('uikit')
+    end
+
+    it 'has aspectWidth defined in common with swift platform marker' do
+      common_attrs = validator.definitions['common']
+      expect(common_attrs).to have_key('aspectWidth')
+      expect(common_attrs['aspectWidth']['platform']).to eq('swift')
+      expect(common_attrs['aspectWidth']['mode']).to eq('uikit')
+    end
+
+    it 'has maxWidthWeight defined in common with swift platform marker' do
+      common_attrs = validator.definitions['common']
+      expect(common_attrs).to have_key('maxWidthWeight')
+      expect(common_attrs['maxWidthWeight']['platform']).to eq('swift')
+      expect(common_attrs['maxWidthWeight']['mode']).to eq('uikit')
+    end
+
+    it 'has selected defined in Label with swift platform marker' do
+      label_attrs = validator.definitions['Label']
+      expect(label_attrs).to have_key('selected')
+      expect(label_attrs['selected']['platform']).to eq('swift')
+    end
+
+    it 'has highlightSrcName defined in Image with swift platform marker' do
+      image_attrs = validator.definitions['Image']
+      expect(image_attrs).to have_key('highlightSrcName')
+      expect(image_attrs['highlightSrcName']['platform']).to eq('swift')
+      expect(image_attrs['highlightSrcName']['mode']).to eq('uikit')
+    end
+
+    it 'has cachePolicy defined in NetworkImage with swift platform marker' do
+      network_image_attrs = validator.definitions['NetworkImage']
+      expect(network_image_attrs).to have_key('cachePolicy')
+      expect(network_image_attrs['cachePolicy']['platform']).to eq('swift')
+      expect(network_image_attrs['cachePolicy']['mode']).to eq('uikit')
+    end
+  end
+
+  # NEW: Tests for lifecycle event attributes (SwiftUI/Compose only)
+  describe 'Lifecycle event attributes' do
+    let(:validator) { described_class.new(:compose) }
+
+    context 'with onAppear event handler' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'onAppear' => 'handleAppear'
+        }
+      end
+
+      it 'returns no warnings for valid onAppear' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with onDisappear event handler' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'onDisappear' => 'handleDisappear'
+        }
+      end
+
+      it 'returns no warnings for valid onDisappear' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with both lifecycle handlers' do
+      let(:component) do
+        {
+          'type' => 'View',
+          'onAppear' => 'handleAppear',
+          'onDisappear' => 'handleDisappear'
+        }
+      end
+
+      it 'returns no warnings for both lifecycle handlers' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    it 'has onAppear defined in common attributes' do
+      common_attrs = validator.definitions['common']
+      expect(common_attrs).to have_key('onAppear')
+      expect(common_attrs['onAppear']['type']).to eq('string')
+      expect(common_attrs['onAppear']['mode']).to eq('compose')
+    end
+
+    it 'has onDisappear defined in common attributes' do
+      common_attrs = validator.definitions['common']
+      expect(common_attrs).to have_key('onDisappear')
+      expect(common_attrs['onDisappear']['type']).to eq('string')
+      expect(common_attrs['onDisappear']['mode']).to eq('compose')
     end
   end
 end

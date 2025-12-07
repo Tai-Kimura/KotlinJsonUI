@@ -1,6 +1,9 @@
 package com.kotlinjsonui.dynamic.helpers
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -383,6 +386,63 @@ object ModifierBuilder {
                 }
             }
             else -> null
+        }
+    }
+
+    /**
+     * Check if JSON has lifecycle events (onAppear/onDisappear)
+     */
+    fun hasLifecycleEvents(json: JsonObject): Boolean {
+        return json.has("onAppear") || json.has("onDisappear")
+    }
+
+    /**
+     * Get onAppear handler name from JSON
+     */
+    fun getOnAppearHandler(json: JsonObject): String? {
+        return json.get("onAppear")?.asString
+    }
+
+    /**
+     * Get onDisappear handler name from JSON
+     */
+    fun getOnDisappearHandler(json: JsonObject): String? {
+        return json.get("onDisappear")?.asString
+    }
+
+    /**
+     * Apply lifecycle effects (onAppear/onDisappear) from JSON
+     * Should be called at the beginning of a Composable function
+     *
+     * @param json The JSON object containing lifecycle event handlers
+     * @param data The data map containing function references for event handlers
+     */
+    @Composable
+    fun ApplyLifecycleEffects(json: JsonObject, data: Map<String, Any>) {
+        // Handle onAppear
+        json.get("onAppear")?.asString?.let { handlerName ->
+            // Clean up handler name (remove colon if present)
+            val cleanHandler = handlerName.replace(":", "")
+
+            LaunchedEffect(Unit) {
+                // Try to find and invoke the handler function from data
+                (data[cleanHandler] as? (() -> Unit))?.invoke()
+                    ?: (data[handlerName] as? (() -> Unit))?.invoke()
+            }
+        }
+
+        // Handle onDisappear
+        json.get("onDisappear")?.asString?.let { handlerName ->
+            // Clean up handler name (remove colon if present)
+            val cleanHandler = handlerName.replace(":", "")
+
+            DisposableEffect(Unit) {
+                onDispose {
+                    // Try to find and invoke the handler function from data
+                    (data[cleanHandler] as? (() -> Unit))?.invoke()
+                        ?: (data[handlerName] as? (() -> Unit))?.invoke()
+                }
+            }
         }
     }
 }

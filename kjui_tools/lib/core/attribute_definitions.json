@@ -855,6 +855,16 @@
         "center"
       ],
       "description": "Content gravity/alignment"
+    },
+    "onAppear": {
+      "type": "string",
+      "description": "Lifecycle callback when view appears (SwiftUI/Compose only)",
+      "mode": "compose"
+    },
+    "onDisappear": {
+      "type": "string",
+      "description": "Lifecycle callback when view disappears (SwiftUI/Compose only)",
+      "mode": "compose"
     }
   },
   "Label": {

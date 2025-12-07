@@ -55,10 +55,11 @@ module KjuiTools
           children = [children] unless children.is_a?(Array)
           
           # Return structure for parent to process children
-          { 
-            code: code, 
+          {
+            code: code,
             children: children,
-            closing: "\n" + indent("}", depth + 1) + "\n" + indent("}", depth)
+            closing: "\n" + indent("}", depth + 1) + "\n" + indent("}", depth),
+            json_data: json_data
           }
         end
         

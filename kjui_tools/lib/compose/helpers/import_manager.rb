@@ -65,6 +65,8 @@ module KjuiTools
                              "import androidx.compose.runtime.setValue"],
             remember: "import androidx.compose.runtime.remember",
             LaunchedEffect: "import androidx.compose.runtime.LaunchedEffect",
+            launched_effect: "import androidx.compose.runtime.LaunchedEffect",
+            disposable_effect: "import androidx.compose.runtime.DisposableEffect",
             bias_alignment: "import androidx.compose.ui.BiasAlignment",
             circle_shape: "import androidx.compose.foundation.shape.CircleShape",
             alpha: "import androidx.compose.ui.draw.alpha",

@@ -107,7 +107,7 @@ module KjuiTools
           end
           
           # Return structure for parent to process children
-          { code: code, children: children, closing: "\n" + indent("}", depth), layout_type: layout }
+          { code: code, children: children, closing: "\n" + indent("}", depth), layout_type: layout, json_data: json_data }
         end
         
         private

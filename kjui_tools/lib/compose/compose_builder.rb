@@ -217,12 +217,19 @@ module KjuiTools
           code = result[:code]
           children = result[:children] || []
           layout_type = result[:layout_type] || parent_type
-          
+          json_data = result[:json_data]
+
+          # Add lifecycle effects at the start of container content
+          if json_data && Helpers::ModifierBuilder.has_lifecycle_events?(json_data)
+            lifecycle = Helpers::ModifierBuilder.build_lifecycle_effects(json_data, depth + 1, @required_imports)
+            code += "\n" + lifecycle[:before] unless lifecycle[:before].empty?
+          end
+
           children.each do |child|
             child_code = generate_component(child, depth + 1, layout_type)
             code += "\n" + child_code unless child_code.empty?
           end
-          
+
           code += result[:closing] if result[:closing]
           code
         else
@@ -231,23 +238,51 @@ module KjuiTools
       end
       
       def generate_safe_area_view(json_data, depth)
-        code = indent("Box(", depth)
-        
-        modifiers = ["Modifier", ".fillMaxSize()", ".systemBarsPadding()"]
+        # Parse edges - support both 'edges' and 'safeAreaInsetPositions' (alias)
+        edges_array = json_data['edges'] || json_data['safeAreaInsetPositions'] || ['all']
+        edges = edges_array.is_a?(Array) ? edges_array : [edges_array]
+
+        # Parse orientation for child layout
+        orientation = json_data['orientation'] || 'vertical'
+
+        # Determine container type based on orientation
+        container = orientation == 'horizontal' ? 'Row' : 'Column'
+        code = indent("#{container}(", depth)
+
+        # Build modifiers
+        modifiers = ["Modifier"]
+        modifiers << ".fillMaxWidth()"
+
+        # Apply safe area padding based on edges
+        if edges.include?('all')
+          modifiers << ".systemBarsPadding()"
+        else
+          modifiers << ".statusBarsPadding()" if edges.include?('top')
+          modifiers << ".navigationBarsPadding()" if edges.include?('bottom')
+          # For start/end, use systemBarsPadding
+          modifiers << ".systemBarsPadding()" if edges.include?('start') || edges.include?('end')
+        end
+
+        # Check if keyboard padding should be applied
+        ignore_keyboard = json_data['ignoreKeyboard'] == true
+        modifiers << ".imePadding()" unless ignore_keyboard
+
         modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+        modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
         modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, @required_imports))
-        
+
         code += Helpers::ModifierBuilder.format(modifiers, depth)
         code += "\n" + indent(") {", depth)
-        
-        children = json_data['child'] || []
+
+        # Get children - support both 'child' and 'children'
+        children = json_data['children'] || json_data['child'] || []
         children = [children] unless children.is_a?(Array)
-        
+
         children.each do |child|
           child_code = generate_component(child, depth + 1)
           code += "\n" + child_code unless child_code.empty?
         end
-        
+
         code += "\n" + indent("}", depth)
         code
       end

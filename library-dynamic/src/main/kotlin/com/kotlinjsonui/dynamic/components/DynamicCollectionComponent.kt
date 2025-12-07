@@ -30,7 +30,9 @@ import com.kotlinjsonui.data.CollectionDataSection
  * - layout: "vertical" | "horizontal"
  * - scrollDirection: "vertical" | "horizontal" (deprecated, use layout)
  * - contentPadding: Number or Array for grid content padding
- * - itemSpacing/spacing: Number for spacing between items
+ * - itemSpacing/spacing: Number for uniform spacing between items
+ * - lineSpacing: Number for vertical spacing between rows (minimumLineSpacing in iOS)
+ * - columnSpacing: Number for horizontal spacing between columns (minimumInteritemSpacing in iOS)
  * - cellHeight: Number for fixed cell height
  * - cellWidth: Number for fixed cell width (horizontal layout)
  * - cell: JsonObject template for custom cell layout (fallback)
@@ -123,7 +125,12 @@ class DynamicCollectionComponent {
             }
             
             // Parse spacing
-            val spacing = (json.get("itemSpacing")?.asFloat ?: json.get("spacing")?.asFloat ?: 0f).dp
+            // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
+            // columnSpacing: horizontal spacing between columns (minimumInteritemSpacing in iOS)
+            // itemSpacing/spacing: uniform spacing (fallback)
+            val defaultSpacing = json.get("itemSpacing")?.asFloat ?: json.get("spacing")?.asFloat ?: 0f
+            val lineSpacing = (json.get("lineSpacing")?.asFloat ?: defaultSpacing).dp
+            val columnSpacing = (json.get("columnSpacing")?.asFloat ?: defaultSpacing).dp
             
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json)
@@ -141,8 +148,8 @@ class DynamicCollectionComponent {
                     rows = GridCells.Fixed(gridColumns),
                     modifier = modifier,
                     contentPadding = contentPadding,
-                    verticalArrangement = Arrangement.spacedBy(spacing),
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
+                    verticalArrangement = Arrangement.spacedBy(lineSpacing),
+                    horizontalArrangement = Arrangement.spacedBy(columnSpacing)
                 ) {
                     generateCollectionItems(
                         sections = sections,
@@ -163,8 +170,8 @@ class DynamicCollectionComponent {
                     columns = GridCells.Fixed(gridColumns),
                     modifier = modifier,
                     contentPadding = contentPadding,
-                    verticalArrangement = Arrangement.spacedBy(spacing),
-                    horizontalArrangement = Arrangement.spacedBy(spacing)
+                    verticalArrangement = Arrangement.spacedBy(lineSpacing),
+                    horizontalArrangement = Arrangement.spacedBy(columnSpacing)
                 ) {
                     generateCollectionItems(
                         sections = sections,

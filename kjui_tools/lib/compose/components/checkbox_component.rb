@@ -29,6 +29,12 @@ module KjuiTools
           end
 
           has_label = json_data['label'] || json_data['text']
+          has_custom_icon = json_data['icon'] || json_data['selectedIcon']
+
+          # If custom icons are specified, use IconToggleButton instead of Checkbox
+          if has_custom_icon
+            return generate_icon_checkbox(json_data, depth, required_imports, parent_type, checked)
+          end
 
           if has_label
             # Checkbox with label
@@ -171,6 +177,65 @@ module KjuiTools
         end
 
         private
+
+        # Generate checkbox with custom icon/selectedIcon
+        def self.generate_icon_checkbox(json_data, depth, required_imports, parent_type, checked)
+          required_imports&.add(:icon_toggle_button)
+          required_imports&.add(:icon)
+
+          icon = json_data['icon'] || 'check_box_outline_blank'
+          selected_icon = json_data['selectedIcon'] || 'check_box'
+
+          # Resolve icon names to drawable resources
+          icon_res = Helpers::ResourceResolver.process_drawable(icon, required_imports)
+          selected_icon_res = Helpers::ResourceResolver.process_drawable(selected_icon, required_imports)
+
+          code = indent("IconToggleButton(", depth)
+          code += "\n" + indent("checked = #{checked},", depth + 1)
+
+          # onCheckedChange handler
+          binding_variable = nil
+          state_attr_val = json_data['isOn'] || json_data['checked']
+          if state_attr_val.is_a?(String) && state_attr_val.match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          end
+
+          if json_data['onValueChange']
+            code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) }", depth + 1)
+          elsif binding_variable
+            code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) }", depth + 1)
+          else
+            code += "\n" + indent("onCheckedChange = { }", depth + 1)
+          end
+
+          # Build modifiers
+          modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
+
+          code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
+
+          code += "\n" + indent(") {", depth)
+
+          # Icon content - switch based on checked state
+          code += "\n" + indent("Icon(", depth + 1)
+          code += "\n" + indent("painter = painterResource(if (#{checked}) #{selected_icon_res} else #{icon_res}),", depth + 2)
+          code += "\n" + indent("contentDescription = null", depth + 2)
+
+          # Icon tint color
+          if json_data['fontColor']
+            icon_color = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            code += ",\n" + indent("tint = #{icon_color}", depth + 2)
+          end
+
+          code += "\n" + indent(")", depth + 1)
+          code += "\n" + indent("}", depth)
+
+          code
+        end
 
         def self.indent(text, level)
           return text if level == 0

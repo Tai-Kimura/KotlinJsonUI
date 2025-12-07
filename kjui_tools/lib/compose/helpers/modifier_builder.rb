@@ -87,7 +87,33 @@ module KjuiTools
         
         def self.build_size(json_data)
           modifiers = []
-          
+
+          # Handle 'frame' attribute - object with width/height
+          # frame: { width: 100, height: 50 }
+          if json_data['frame'].is_a?(Hash)
+            frame = json_data['frame']
+            if frame['width']
+              if frame['width'] == 'matchParent'
+                modifiers << ".fillMaxWidth()"
+              elsif frame['width'] == 'wrapContent'
+                modifiers << ".wrapContentWidth()"
+              else
+                modifiers << ".width(#{frame['width']}.dp)"
+              end
+            end
+            if frame['height']
+              if frame['height'] == 'matchParent'
+                modifiers << ".fillMaxHeight()"
+              elsif frame['height'] == 'wrapContent'
+                modifiers << ".wrapContentHeight()"
+              else
+                modifiers << ".height(#{frame['height']}.dp)"
+              end
+            end
+            # If frame is specified, skip individual width/height processing
+            return modifiers
+          end
+
           # Width - skip if weight is present and width is 0
           if json_data['width'] == 'matchParent'
             modifiers << ".fillMaxWidth()"
@@ -96,7 +122,7 @@ module KjuiTools
           elsif json_data['width'] && !(json_data['weight'] && json_data['width'] == 0)
             modifiers << ".width(#{json_data['width']}.dp)"
           end
-          
+
           # Height - skip if heightWeight is present and height is 0
           if json_data['height'] == 'matchParent'
             modifiers << ".fillMaxHeight()"
@@ -493,7 +519,7 @@ module KjuiTools
         
         def self.format(modifiers, depth)
           return "" if modifiers.empty?
-          
+
           # Check if first modifier is already "Modifier"
           if modifiers[0] == "Modifier"
             code = "\n" + indent("modifier = Modifier", depth + 1)
@@ -503,7 +529,7 @@ module KjuiTools
             end
           else
             code = "\n" + indent("modifier = Modifier", depth + 1)
-            
+
             if modifiers.length == 1 && modifiers[0].start_with?('.')
               code += modifiers[0]
             else
@@ -512,12 +538,59 @@ module KjuiTools
               end
             end
           end
-          
+
           code
         end
-        
+
+        # Build lifecycle event effects (onAppear/onDisappear)
+        # Returns a hash with :before (code before content) and :after (code after content)
+        def self.build_lifecycle_effects(json_data, depth, required_imports = nil)
+          result = { before: "", after: "" }
+
+          if json_data['onAppear']
+            required_imports&.add(:launched_effect)
+            handler = json_data['onAppear']
+
+            result[:before] += indent("// onAppear lifecycle event", depth)
+            result[:before] += "\n" + indent("LaunchedEffect(Unit) {", depth)
+            if handler.include?(':')
+              method_name = handler.gsub(':', '')
+              result[:before] += "\n" + indent("viewModel.#{method_name}()", depth + 1)
+            else
+              result[:before] += "\n" + indent("viewModel.#{handler}()", depth + 1)
+            end
+            result[:before] += "\n" + indent("}", depth)
+            result[:before] += "\n"
+          end
+
+          if json_data['onDisappear']
+            required_imports&.add(:disposable_effect)
+            handler = json_data['onDisappear']
+
+            result[:before] += indent("// onDisappear lifecycle event", depth)
+            result[:before] += "\n" + indent("DisposableEffect(Unit) {", depth)
+            result[:before] += "\n" + indent("onDispose {", depth + 1)
+            if handler.include?(':')
+              method_name = handler.gsub(':', '')
+              result[:before] += "\n" + indent("viewModel.#{method_name}()", depth + 2)
+            else
+              result[:before] += "\n" + indent("viewModel.#{handler}()", depth + 2)
+            end
+            result[:before] += "\n" + indent("}", depth + 1)
+            result[:before] += "\n" + indent("}", depth)
+            result[:before] += "\n"
+          end
+
+          result
+        end
+
+        # Check if component has lifecycle events
+        def self.has_lifecycle_events?(json_data)
+          json_data['onAppear'] || json_data['onDisappear']
+        end
+
         private
-        
+
         def self.indent(text, level)
           return text if level == 0
           spaces = '    ' * level

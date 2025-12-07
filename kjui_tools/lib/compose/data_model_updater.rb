@@ -18,6 +18,7 @@ module KjuiTools
         @layouts_dir = File.join(@source_path, source_directory, @config['layouts_directory'] || 'assets/Layouts')
         @data_dir = File.join(@source_path, source_directory, @config['data_directory'] || 'kotlin/com/example/kotlinjsonui/sample/data')
         @package_name = @config['package_name'] || Core::ProjectFinder.get_package_name || 'com.example.app'
+        @mode = @config['mode'] || 'compose'
       end
 
       def update_data_models
@@ -93,8 +94,8 @@ module KjuiTools
                 if data_item.is_a?(Hash) && data_item['name']
                   # Check if property already exists (by name) to avoid duplicates
                   unless properties.any? { |p| p['name'] == data_item['name'] }
-                    # Normalize type using TypeConverter
-                    normalized = Core::TypeConverter.normalize_data_property(data_item)
+                    # Normalize type using TypeConverter with mode
+                    normalized = Core::TypeConverter.normalize_data_property(data_item, @mode)
                     properties << normalized
                   end
                 end

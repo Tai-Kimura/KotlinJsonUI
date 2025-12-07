@@ -64,11 +64,20 @@ module KjuiTools
           end
           
           # Item spacing
-          if json_data['itemSpacing'] || json_data['spacing']
-            spacing = json_data['itemSpacing'] || json_data['spacing'] || 10
+          # lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
+          # columnSpacing: horizontal spacing between columns (minimumInteritemSpacing in iOS)
+          # itemSpacing/spacing: uniform spacing (fallback)
+          line_spacing = json_data['lineSpacing'] || json_data['itemSpacing'] || json_data['spacing']
+          column_spacing = json_data['columnSpacing'] || json_data['itemSpacing'] || json_data['spacing']
+
+          if line_spacing || column_spacing
             required_imports&.add(:arrangement)
-            code += "\n" + indent("verticalArrangement = Arrangement.spacedBy(#{spacing}.dp),", depth + 1)
-            code += "\n" + indent("horizontalArrangement = Arrangement.spacedBy(#{spacing}.dp),", depth + 1)
+            if line_spacing
+              code += "\n" + indent("verticalArrangement = Arrangement.spacedBy(#{line_spacing}.dp),", depth + 1)
+            end
+            if column_spacing
+              code += "\n" + indent("horizontalArrangement = Arrangement.spacedBy(#{column_spacing}.dp),", depth + 1)
+            end
           end
           
           # Build modifiers

@@ -46,20 +46,23 @@ class DynamicContainerComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            // Apply lifecycle effects first
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
+
             val children = parseChildren(json)
-            
+
             // Check if any child has relative positioning attributes
             if (hasRelativePositioning(children)) {
                 // Use ConstraintLayout for relative positioning
                 DynamicConstraintLayoutComponent.create(json, data)
                 return
             }
-            
+
             val orientation = json.get("orientation")?.asString
-            
+
             // Build modifier with all visual properties
             val modifier = buildModifier(json)
-            
+
             when (orientation) {
                 "vertical" -> createColumn(json, modifier, children, data)
                 "horizontal" -> createRow(json, modifier, children, data)

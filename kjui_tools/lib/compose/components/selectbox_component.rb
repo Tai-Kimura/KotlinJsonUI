@@ -13,8 +13,12 @@ module KjuiTools
           # Check if this is a date picker
           is_date_picker = json_data['selectItemType'] == 'Date'
           
-          # SelectBox uses 'selectedItem' or 'bind' for selected value
-          selected = if json_data['selectedItem'] && json_data['selectedItem'].match(/@\{([^}]+)\}/)
+          # SelectBox uses 'selectedItem', 'selectedDate', or 'bind' for selected value
+          # For date pickers, selectedDate takes priority
+          selected = if is_date_picker && json_data['selectedDate'] && json_data['selectedDate'].match(/@\{([^}]+)\}/)
+            variable = $1
+            "data.#{variable}"
+          elsif json_data['selectedItem'] && json_data['selectedItem'].match(/@\{([^}]+)\}/)
             variable = $1
             "data.#{variable}"
           elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
@@ -34,15 +38,19 @@ module KjuiTools
           code += "\n" + indent("value = #{selected},", depth + 1)
           
           # Handle onValueChange callback
-          if json_data['selectedItem'] && json_data['selectedItem'].match(/@\{([^}]+)\}/)
-            variable = $1
-            code += "\n" + indent("onValueChange = { newValue ->", depth + 1)
-            code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to newValue))", depth + 2)
-            code += "\n" + indent("},", depth + 1)
+          # For date pickers, check selectedDate first
+          binding_variable = nil
+          if is_date_picker && json_data['selectedDate'] && json_data['selectedDate'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
+          elsif json_data['selectedItem'] && json_data['selectedItem'].match(/@\{([^}]+)\}/)
+            binding_variable = $1
           elsif json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
-            variable = $1
+            binding_variable = $1
+          end
+
+          if binding_variable
             code += "\n" + indent("onValueChange = { newValue ->", depth + 1)
-            code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to newValue))", depth + 2)
+            code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue))", depth + 2)
             code += "\n" + indent("},", depth + 1)
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
@@ -143,6 +151,29 @@ module KjuiTools
           
           if json_data['cornerRadius']
             code += "\n" + indent("cornerRadius = #{json_data['cornerRadius']},", depth + 1)
+          end
+
+          # Font styling
+          if json_data['fontSize']
+            code += "\n" + indent("fontSize = #{json_data['fontSize']},", depth + 1)
+          end
+
+          if json_data['font']
+            font_weight = case json_data['font'].to_s.downcase
+            when 'bold'
+              'FontWeight.Bold'
+            when 'semibold'
+              'FontWeight.SemiBold'
+            when 'medium'
+              'FontWeight.Medium'
+            when 'light'
+              'FontWeight.Light'
+            when 'thin'
+              'FontWeight.Thin'
+            else
+              'FontWeight.Normal'
+            end
+            code += "\n" + indent("fontWeight = #{font_weight},", depth + 1)
           end
           
           # Add cancel button background color if specified

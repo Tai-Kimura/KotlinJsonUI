@@ -48,6 +48,9 @@ class DynamicScrollViewComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            // Apply lifecycle effects first
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
+
             // Determine scroll direction
             val isHorizontal = when {
                 // 1. horizontalScroll attribute has highest priority

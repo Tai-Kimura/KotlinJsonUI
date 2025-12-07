@@ -71,7 +71,7 @@ module KjuiTools
           children = [children] unless children.is_a?(Array)
           
           # Return structure for parent to process children
-          { code: code, children: children, closing: "\n" + indent("}", depth) }
+          { code: code, children: children, closing: "\n" + indent("}", depth), json_data: json_data }
         end
         
         private

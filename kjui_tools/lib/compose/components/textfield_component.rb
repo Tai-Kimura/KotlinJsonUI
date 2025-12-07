@@ -126,6 +126,16 @@ module KjuiTools
             required_imports&.add(:shape)
             code += "\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp),", depth + 1)
           end
+
+          # Field padding - internal padding within the text field
+          if json_data['fieldPadding']
+            code += "\n" + indent("contentPadding = PaddingValues(#{json_data['fieldPadding']}.dp),", depth + 1)
+          end
+
+          # Text padding left - start padding for text content
+          if json_data['textPaddingLeft']
+            code += "\n" + indent("textPaddingStart = #{json_data['textPaddingLeft']}.dp,", depth + 1)
+          end
           
           # Background colors
           if json_data['background']
@@ -144,9 +154,18 @@ module KjuiTools
             code += "\n" + indent("borderColor = #{border_color},", depth + 1)
           end
           
+          # Border style handling
+          # borderStyle: none, line, bezel, roundedRect
+          if json_data['borderStyle']
+            case json_data['borderStyle'].downcase
+            when 'none'
+              code += "\n" + indent("isOutlined = false,", depth + 1)
+            when 'line', 'bezel', 'roundedrect'
+              code += "\n" + indent("isOutlined = true,", depth + 1)
+            end
           # Set isOutlined and isSecure flags
           # Automatically use outlined style if borderColor or borderWidth is specified
-          if json_data['outlined'] == true || json_data['borderColor'] || json_data['borderWidth']
+          elsif json_data['outlined'] == true || json_data['borderColor'] || json_data['borderWidth']
             code += "\n" + indent("isOutlined = true,", depth + 1)
           end
           
@@ -208,10 +227,28 @@ module KjuiTools
             code += ",\n" + indent("onEndEditing = { viewModel.#{json_data['onEndEditing']}() }", depth + 1)
           end
           
-          # Keyboard options (input and returnKeyType attributes)
+          # Keyboard options (input, returnKeyType, contentType, autocapitalizationType, autocorrectionType)
           keyboard_options = []
-          
-          if json_data['input']
+
+          # Input type / contentType - contentType takes priority
+          if json_data['contentType']
+            required_imports&.add(:keyboard_type)
+            keyboard_type = case json_data['contentType'].downcase
+            when 'emailaddress', 'email'
+              'KeyboardType.Email'
+            when 'password', 'newpassword'
+              'KeyboardType.Password'
+            when 'telephonenumber', 'phone'
+              'KeyboardType.Phone'
+            when 'url'
+              'KeyboardType.Uri'
+            when 'creditcardnumber'
+              'KeyboardType.Number'
+            else
+              'KeyboardType.Text'
+            end
+            keyboard_options << "keyboardType = #{keyboard_type}"
+          elsif json_data['input']
             required_imports&.add(:keyboard_type)
             keyboard_type = case json_data['input']
             when 'email'
@@ -229,7 +266,7 @@ module KjuiTools
             end
             keyboard_options << "keyboardType = #{keyboard_type}"
           end
-          
+
           if json_data['returnKeyType']
             required_imports&.add(:ime_action)
             ime_action = case json_data['returnKeyType']
@@ -248,7 +285,38 @@ module KjuiTools
             end
             keyboard_options << "imeAction = #{ime_action}"
           end
-          
+
+          # Auto-capitalization type
+          if json_data['autocapitalizationType']
+            required_imports&.add(:keyboard_capitalization)
+            capitalization = case json_data['autocapitalizationType'].downcase
+            when 'none'
+              'KeyboardCapitalization.None'
+            when 'words'
+              'KeyboardCapitalization.Words'
+            when 'sentences'
+              'KeyboardCapitalization.Sentences'
+            when 'allcharacters', 'characters'
+              'KeyboardCapitalization.Characters'
+            else
+              'KeyboardCapitalization.None'
+            end
+            keyboard_options << "capitalization = #{capitalization}"
+          end
+
+          # Auto-correction type
+          if json_data['autocorrectionType']
+            auto_correct = case json_data['autocorrectionType'].downcase
+            when 'no', 'false', 'off'
+              'false'
+            when 'yes', 'true', 'on', 'default'
+              'true'
+            else
+              'true'
+            end
+            keyboard_options << "autoCorrect = #{auto_correct}"
+          end
+
           if keyboard_options.any?
             code += ",\n" + indent("keyboardOptions = KeyboardOptions(#{keyboard_options.join(', ')})", depth + 1)
           end

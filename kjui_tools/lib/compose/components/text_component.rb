@@ -97,6 +97,12 @@ module KjuiTools
             # Line height multiplier - apply to font size
             line_height = json_data['fontSize'] ? json_data['fontSize'].to_f * json_data['lineHeightMultiple'].to_f : 14.0 * json_data['lineHeightMultiple'].to_f
             style_parts << "lineHeight = #{line_height}.sp"
+          elsif json_data['lineSpacing']
+            required_imports&.add(:text_style)
+            # Line spacing - add to base font size
+            base_size = json_data['fontSize'] ? json_data['fontSize'].to_f : 14.0
+            line_height = base_size + json_data['lineSpacing'].to_f
+            style_parts << "lineHeight = #{line_height}.sp"
           end
           
           if style_parts.any?
@@ -174,6 +180,14 @@ module KjuiTools
             end
           end
           
+          # Auto shrink text
+          if json_data['autoShrink']
+            required_imports&.add(:text_overflow)
+            component_code += ",\n" + indent("softWrap = false", depth + 1)
+            component_code += ",\n" + indent("maxLines = 1", depth + 1)
+            component_code += ",\n" + indent("overflow = TextOverflow.Ellipsis", depth + 1)
+          end
+
           # Minimum scale factor (auto-shrink text)
           # In Compose, this is achieved with softWrap=false and overflow=Visible to allow text to scale
           if json_data['minimumScaleFactor']
@@ -195,7 +209,13 @@ module KjuiTools
               component_code += ",\n" + indent("overflow = TextOverflow.Ellipsis", depth + 1)
             end
           end
-          
+
+          # highlightColor - color when pressed/selected
+          if json_data['highlightColor']
+            highlight_color = Helpers::ResourceResolver.process_color(json_data['highlightColor'], required_imports)
+            component_code += ",\n" + indent("// highlightColor: #{highlight_color} - Use InteractionSource for pressed state styling", depth + 1)
+          end
+
           component_code += "\n" + indent(")", depth)
           
           # Wrap with VisibilityWrapper if needed

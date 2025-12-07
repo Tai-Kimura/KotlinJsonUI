@@ -33,6 +33,9 @@ class DynamicZStackComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            // Apply lifecycle effects first
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
+
             // Parse alignment
             val alignment = when (json.get("alignment")?.asString?.lowercase()) {
                 "topleft", "topstart" -> Alignment.TopStart

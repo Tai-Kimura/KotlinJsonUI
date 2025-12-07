@@ -121,9 +121,37 @@ module KjuiTools
             end
           end
 
-          # Placeholder
+          # Placeholder with optional line height styling
           if placeholder && !placeholder.empty?
-            code += "\n" + indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1)
+            if json_data['hintLineHeightMultiple']
+              # Complex placeholder with line height
+              required_imports&.add(:text_style)
+              base_size = json_data['hintFontSize'] || json_data['fontSize'] || 14
+              line_height = base_size.to_f * json_data['hintLineHeightMultiple'].to_f
+              code += "\n" + indent("placeholder = {", depth + 1)
+              code += "\n" + indent("Text(", depth + 2)
+              code += "\n" + indent("text = #{quote(placeholder)},", depth + 3)
+              code += "\n" + indent("style = TextStyle(lineHeight = #{line_height}.sp)", depth + 3)
+              code += "\n" + indent(")", depth + 2)
+              code += "\n" + indent("},", depth + 1)
+            else
+              code += "\n" + indent("placeholder = { Text(#{quote(placeholder)}) },", depth + 1)
+            end
+          end
+
+          # Container inset - internal padding
+          if json_data['containerInset']
+            inset = json_data['containerInset']
+            if inset.is_a?(Array) && inset.length == 4
+              code += "\n" + indent("contentPadding = PaddingValues(top = #{inset[0]}.dp, end = #{inset[1]}.dp, bottom = #{inset[2]}.dp, start = #{inset[3]}.dp),", depth + 1)
+            elsif inset.is_a?(Numeric)
+              code += "\n" + indent("contentPadding = PaddingValues(#{inset}.dp),", depth + 1)
+            end
+          end
+
+          # Flexible height - auto-expand based on content
+          if json_data['flexible']
+            code += "\n" + indent("// flexible: true - height adjusts to content", depth + 1)
           end
 
           # Shape with corner radius
@@ -163,6 +191,26 @@ module KjuiTools
           # Single line false for multi-line
           code += "\n" + indent("singleLine = false,", depth + 1)
 
+          # Line break mode (overflow handling)
+          if json_data['lineBreakMode']
+            # Note: For multi-line TextField, overflow is less relevant
+            # but we include it for completeness
+            case json_data['lineBreakMode'].to_s.downcase
+            when 'clip'
+              code += "\n" + indent("// lineBreakMode: clip", depth + 1)
+            when 'tail', 'truncatetail'
+              code += "\n" + indent("// lineBreakMode: truncate tail", depth + 1)
+            when 'head', 'truncatehead'
+              code += "\n" + indent("// lineBreakMode: truncate head", depth + 1)
+            when 'middle', 'truncatemiddle'
+              code += "\n" + indent("// lineBreakMode: truncate middle", depth + 1)
+            when 'wordwrap', 'word'
+              code += "\n" + indent("// lineBreakMode: word wrap (default)", depth + 1)
+            when 'charwrap', 'char'
+              code += "\n" + indent("// lineBreakMode: character wrap", depth + 1)
+            end
+          end
+
           # Text styling
           if json_data['fontSize'] || json_data['fontColor']
             required_imports&.add(:text_style)
@@ -179,6 +227,29 @@ module KjuiTools
           end
 
           # Keyboard options
+          keyboard_options = []
+
+          # keyboardType
+          if json_data['keyboardType'] || json_data['input']
+            required_imports&.add(:keyboard_type)
+            input_type = json_data['keyboardType'] || json_data['input']
+            keyboard_type = case input_type.to_s.downcase
+            when 'email'
+              'KeyboardType.Email'
+            when 'number'
+              'KeyboardType.Number'
+            when 'decimal'
+              'KeyboardType.Decimal'
+            when 'phone'
+              'KeyboardType.Phone'
+            when 'url'
+              'KeyboardType.Uri'
+            else
+              'KeyboardType.Text'
+            end
+            keyboard_options << "keyboardType = #{keyboard_type}"
+          end
+
           if json_data['returnKeyType']
             required_imports&.add(:ime_action)
             ime_action = case json_data['returnKeyType']
@@ -191,7 +262,27 @@ module KjuiTools
             else
               'ImeAction.Default'
             end
-            code += ",\n" + indent("keyboardOptions = KeyboardOptions(imeAction = #{ime_action})", depth + 1)
+            keyboard_options << "imeAction = #{ime_action}"
+          end
+
+          if keyboard_options.any?
+            code += ",\n" + indent("keyboardOptions = KeyboardOptions(#{keyboard_options.join(', ')})", depth + 1)
+          end
+
+          # scrollEnabled - controls vertical scroll within TextView
+          if json_data.key?('scrollEnabled')
+            # In Compose, scrolling is controlled via verticalScroll modifier
+            # For TextField, we just note it - actual implementation may need custom handling
+            if json_data['scrollEnabled'] == false
+              code += ",\n" + indent("// scrollEnabled = false - scrolling disabled", depth + 1)
+            end
+          end
+
+          # hideOnFocused - hide placeholder when focused
+          # Note: Compose TextField hides placeholder by default when there's text
+          # This is primarily for when you want different behavior
+          if json_data.key?('hideOnFocused')
+            code += ",\n" + indent("// hideOnFocused = #{json_data['hideOnFocused']}", depth + 1)
           end
 
           # Enabled state
