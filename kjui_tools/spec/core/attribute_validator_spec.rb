@@ -1198,6 +1198,120 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
     end
   end
 
+  # NEW: Tests for invalid binding syntax
+  describe 'Invalid binding syntax validation' do
+    let(:validator) { described_class.new }
+
+    context 'with valid binding syntax' do
+      let(:component) do
+        {
+          'type' => 'Text',
+          'text' => '@{userName}'
+        }
+      end
+
+      it 'returns no warnings for valid binding' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with invalid binding syntax - missing closing brace' do
+      let(:component) do
+        {
+          'type' => 'Text',
+          'text' => '@{userName'
+        }
+      end
+
+      it 'returns warning for invalid binding syntax' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(
+          "Attribute 'text' in 'Text' has invalid binding syntax (starts with '@{' but doesn't end with '}')"
+        )
+      end
+    end
+
+    context 'with invalid binding syntax - extra characters after closing brace' do
+      let(:component) do
+        {
+          'type' => 'Text',
+          'text' => '@{userName}extra'
+        }
+      end
+
+      it 'returns warning for invalid binding syntax' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(
+          "Attribute 'text' in 'Text' has invalid binding syntax (starts with '@{' but doesn't end with '}')"
+        )
+      end
+    end
+
+    context 'with regular string value' do
+      let(:component) do
+        {
+          'type' => 'Text',
+          'text' => 'Hello World'
+        }
+      end
+
+      it 'returns no warnings for regular string' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with string containing @{ but not at start' do
+      let(:component) do
+        {
+          'type' => 'Text',
+          'text' => 'Email: @{email}'
+        }
+      end
+
+      it 'returns no warnings for string with @{ in middle' do
+        warnings = validator.validate(component)
+        expect(warnings).to be_empty
+      end
+    end
+
+    context 'with binding attribute type and invalid syntax' do
+      let(:component) do
+        {
+          'type' => 'TextField',
+          'text' => '@{inputValue'
+        }
+      end
+
+      it 'returns warning for invalid binding syntax' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(
+          "Attribute 'text' in 'TextField' has invalid binding syntax (starts with '@{' but doesn't end with '}')"
+        )
+      end
+    end
+
+    context 'with nested object property having invalid binding syntax' do
+      let(:component) do
+        {
+          'type' => 'Text',
+          'text' => 'Hello',
+          'shadow' => {
+            'color' => '@{shadowColor'
+          }
+        }
+      end
+
+      it 'returns warning for invalid binding syntax in nested property' do
+        warnings = validator.validate(component)
+        expect(warnings).to include(
+          "Attribute 'shadow.color' in 'Text' has invalid binding syntax (starts with '@{' but doesn't end with '}')"
+        )
+      end
+    end
+  end
+
   # NEW: Tests for lifecycle event attributes (SwiftUI/Compose only)
   describe 'Lifecycle event attributes' do
     let(:validator) { described_class.new(:compose) }

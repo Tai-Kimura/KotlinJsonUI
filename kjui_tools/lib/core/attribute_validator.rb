@@ -242,6 +242,9 @@ module KjuiTools
 
         current_path = path ? "#{path}.#{name}" : name
 
+        # Check for invalid binding syntax
+        check_invalid_binding_syntax(value, current_path, component_type)
+
         # Check if value is a binding expression
         is_binding = value.is_a?(String) && value.start_with?('@{') && value.end_with?('}')
 
@@ -412,6 +415,15 @@ module KjuiTools
 
       def add_info(message)
         @infos << message unless @infos.include?(message)
+      end
+
+      # Check for invalid binding syntax (starts with @{ but doesn't end with })
+      def check_invalid_binding_syntax(value, path, component_type)
+        return unless value.is_a?(String)
+        return unless value.start_with?('@{')
+        return if value.end_with?('}')
+
+        add_warning("Attribute '#{path}' in '#{component_type}' has invalid binding syntax (starts with '@{' but doesn't end with '}')")
       end
 
       # Check if attribute is compatible with current platform
