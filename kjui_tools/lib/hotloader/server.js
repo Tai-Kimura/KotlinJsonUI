@@ -50,7 +50,8 @@ function findProjectRoot(startPath = process.cwd()) {
 }
 
 // Load configuration
-const projectRoot = findProjectRoot();
+// Use PROJECT_ROOT env var if provided (from hotload.rb), otherwise search for it
+const projectRoot = process.env.PROJECT_ROOT || findProjectRoot();
 const configPath = path.join(projectRoot, 'kjui.config.json');
 let config = {};
 

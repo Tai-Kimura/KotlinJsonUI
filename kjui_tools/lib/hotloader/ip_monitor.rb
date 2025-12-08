@@ -150,29 +150,30 @@ module KjuiTools
       end
       
       def update_build_config(ip)
-        # Load config to get source directory
+        # Load config to get source directory and port
         config = if File.exist?(@config_path)
                    JSON.parse(File.read(@config_path))
                  else
                    {}
                  end
-        
+
         source_dir = config['source_directory'] || 'src/main'
-        
+        port = config.dig('hotloader', 'port') || 8081
+
         # Create or update hotloader config in assets
         assets_dir = File.join(@project_root, source_dir, 'assets')
         FileUtils.mkdir_p(assets_dir)
-        
+
         hotloader_config = File.join(assets_dir, 'hotloader.json')
-        config = {
+        hotloader_json = {
           'ip' => ip,
-          'port' => 8081,
+          'port' => port,
           'enabled' => true,
-          'websocket_endpoint' => "ws://#{ip}:8081",
-          'http_endpoint' => "http://#{ip}:8081"
+          'websocket_endpoint' => "ws://#{ip}:#{port}",
+          'http_endpoint' => "http://#{ip}:#{port}"
         }
-        
-        File.write(hotloader_config, JSON.pretty_generate(config))
+
+        File.write(hotloader_config, JSON.pretty_generate(hotloader_json))
       end
     end
   end

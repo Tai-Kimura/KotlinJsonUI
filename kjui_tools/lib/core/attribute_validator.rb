@@ -42,7 +42,8 @@ module KjuiTools
 
         # Check each attribute in the component
         component.each do |key, value|
-          next if key == 'type' || key == 'child' || key == 'children'
+          # Skip internal/structural attributes (including _ prefixed internal flags)
+          next if key == 'type' || key == 'child' || key == 'children' || key.start_with?('_')
 
           if valid_attrs.key?(key)
             attr_def = valid_attrs[key]

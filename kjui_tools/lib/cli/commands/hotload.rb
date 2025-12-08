@@ -71,6 +71,7 @@ module KjuiTools
           Dir.chdir(hotloader_dir) do
             ENV['HOST'] = '0.0.0.0'
             ENV['PORT'] = port.to_s
+            ENV['PROJECT_ROOT'] = project_root
 
             # Start server in foreground
             system('node server.js')
