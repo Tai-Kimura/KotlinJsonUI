@@ -29,18 +29,23 @@ module KjuiTools
         def self.start_hotloader
           puts "Starting KotlinJsonUI HotLoader..."
           puts "================================="
-          
+
           # Check if Node.js is installed
           unless system('which node > /dev/null 2>&1')
             puts "Error: Node.js is not installed. Please install Node.js first."
             puts "Visit: https://nodejs.org/"
             exit 1
           end
-          
+
           # Find project root
           project_root = find_project_root
           hotloader_dir = File.join(File.dirname(__FILE__), '../../hotloader')
-          
+
+          # Load config to get port
+          config_path = File.join(project_root, 'kjui.config.json')
+          config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
+          port = config.dig('hotloader', 'port') || 8081
+
           # Install npm dependencies if needed
           Dir.chdir(hotloader_dir) do
             unless Dir.exist?('node_modules')
@@ -48,62 +53,74 @@ module KjuiTools
               system('npm install')
             end
           end
-          
-          # Kill any existing processes on port 8081
-          kill_port_process(8081)
-          
+
+          # Kill any existing processes on the port
+          kill_port_process(port)
+
           # Start IP monitor
           ip_monitor = KjuiTools::Hotloader::IpMonitor.new(project_root)
           ip_monitor.start
-          
+
           # Get current IP
           ip = get_local_ip
           puts "\nLocal IP: #{ip}"
-          puts "Port: 8081"
-          
+          puts "Port: #{port}"
+
           # Start Node.js server
           puts "\nStarting server..."
           Dir.chdir(hotloader_dir) do
             ENV['HOST'] = '0.0.0.0'
-            ENV['PORT'] = '8081'
-            
+            ENV['PORT'] = port.to_s
+
             # Start server in foreground
             system('node server.js')
           end
-          
+
           # Stop IP monitor when server stops
           ip_monitor.stop
         end
         
         def self.stop_hotloader
           puts "Stopping KotlinJsonUI HotLoader..."
-          
+
+          # Load config to get port
+          project_root = find_project_root
+          config_path = File.join(project_root, 'kjui.config.json')
+          config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
+          port = config.dig('hotloader', 'port') || 8081
+
           # Kill Node.js server
-          kill_port_process(8081)
-          
+          kill_port_process(port)
+
           # Kill any node processes running server.js
           system("pkill -f 'node.*server.js'")
-          
+
           puts "HotLoader stopped"
         end
-        
+
         def self.show_status
           puts "KotlinJsonUI HotLoader Status"
           puts "============================="
-          
+
+          # Load config to get port
+          project_root = find_project_root
+          config_path = File.join(project_root, 'kjui.config.json')
+          config = File.exist?(config_path) ? JSON.parse(File.read(config_path)) : {}
+          port = config.dig('hotloader', 'port') || 8081
+
           # Check if server is running
-          if port_in_use?(8081)
+          if port_in_use?(port)
             puts "Status: ✅ Running"
-            
+
             # Try to get server info
             begin
               require 'net/http'
               require 'uri'
-              
+
               ip = get_local_ip
-              uri = URI.parse("http://#{ip}:8081/")
+              uri = URI.parse("http://#{ip}:#{port}/")
               response = Net::HTTP.get_response(uri)
-              
+
               if response.code == '200'
                 info = JSON.parse(response.body)
                 puts "Project: #{info['projectRoot']}"
@@ -115,17 +132,13 @@ module KjuiTools
           else
             puts "Status: ❌ Not running"
           end
-          
+
           # Show configuration
-          config_file = File.join(find_project_root, 'kjui.config.json')
-          if File.exist?(config_file)
-            config = JSON.parse(File.read(config_file))
-            if config['hotloader']
-              puts "\nConfiguration:"
-              puts "IP: #{config['hotloader']['ip']}"
-              puts "Port: #{config['hotloader']['port']}"
-              puts "Enabled: #{config['hotloader']['enabled']}"
-            end
+          if config['hotloader']
+            puts "\nConfiguration:"
+            puts "IP: #{config['hotloader']['ip']}"
+            puts "Port: #{config['hotloader']['port']}"
+            puts "Enabled: #{config['hotloader']['enabled']}"
           end
         end
         
