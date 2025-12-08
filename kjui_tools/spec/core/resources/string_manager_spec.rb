@@ -88,9 +88,9 @@ RSpec.describe KjuiTools::Core::Resources::StringManager do
         expect(manager.send(:should_extract_string?, '${userName}')).to be false
       end
 
-      it 'returns true for snake_case strings' do
-        expect(manager.send(:should_extract_string?, 'hello_world')).to be true
-        expect(manager.send(:should_extract_string?, 'test_string_key')).to be true
+      it 'returns false for snake_case strings (already converted keys)' do
+        expect(manager.send(:should_extract_string?, 'hello_world')).to be false
+        expect(manager.send(:should_extract_string?, 'test_string_key')).to be false
       end
 
       it 'returns true for regular text strings' do
