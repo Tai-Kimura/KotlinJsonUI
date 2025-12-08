@@ -243,10 +243,15 @@ module KjuiTools
         edges = edges_array.is_a?(Array) ? edges_array : [edges_array]
 
         # Parse orientation for child layout
-        orientation = json_data['orientation'] || 'vertical'
+        orientation = json_data['orientation']
 
         # Determine container type based on orientation
-        container = orientation == 'horizontal' ? 'Row' : 'Column'
+        # No orientation = Box (like ZStack in SwiftUI)
+        container = case orientation
+                    when 'horizontal' then 'Row'
+                    when 'vertical' then 'Column'
+                    else 'Box'
+                    end
         code = indent("#{container}(", depth)
 
         # Build modifiers

@@ -21,15 +21,23 @@ module KjuiTools
         @mode = @config['mode'] || 'compose'
       end
 
-      def update_data_models
-        # Process all JSON files in Layouts directory but exclude Resources folder
-        json_files = Dir.glob(File.join(@layouts_dir, '**/*.json')).reject do |file|
-          file.include?('/Resources/')
-        end
-        
-        puts "  Updating data models for #{json_files.length} files..."
-        json_files.each do |json_file|
-          process_json_file(json_file)
+      def update_data_models(files_to_update = nil)
+        # If specific files provided, only update those
+        if files_to_update && !files_to_update.empty?
+          puts "  Updating data models for #{files_to_update.length} modified files..."
+          files_to_update.each do |json_file|
+            process_json_file(json_file)
+          end
+        else
+          # Process all JSON files in Layouts directory but exclude Resources folder
+          json_files = Dir.glob(File.join(@layouts_dir, '**/*.json')).reject do |file|
+            file.include?('/Resources/')
+          end
+
+          puts "  Updating data models for #{json_files.length} files..."
+          json_files.each do |json_file|
+            process_json_file(json_file)
+          end
         end
       end
 

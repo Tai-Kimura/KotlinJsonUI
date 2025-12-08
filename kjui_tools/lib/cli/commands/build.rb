@@ -198,17 +198,17 @@ module KjuiTools
             end
           end
 
+          # Update data models first (always run to ensure data models are in sync)
+          require_relative '../../compose/data_model_updater'
+          data_updater = Compose::DataModelUpdater.new
+          data_updater.update_data_models(files_to_update)
+
           if files_to_update.empty?
             Core::Logger.info "No files need updating (all cached)"
             return
           end
 
           Core::Logger.info "Updating #{files_to_update.length} of #{json_files.length} files..."
-
-          # Update data models first
-          require_relative '../../compose/data_model_updater'
-          data_updater = Compose::DataModelUpdater.new
-          data_updater.update_data_models
 
           # Initialize validator if validation is enabled
           validator = options[:validate] ? Core::AttributeValidator.new(:compose) : nil

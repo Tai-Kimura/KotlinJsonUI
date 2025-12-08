@@ -55,8 +55,8 @@ class DynamicSafeAreaViewComponent {
             // Check if keyboard padding should be applied
             val ignoreKeyboard = json.get("ignoreKeyboard")?.asBoolean ?: false
 
-            // Parse orientation for child layout
-            val orientation = json.get("orientation")?.asString ?: "vertical"
+            // Parse orientation for child layout (null means Box/ZStack)
+            val orientation = json.get("orientation")?.asString
             
             // Parse background color
             val backgroundColor = json.get("background")?.asString?.let {
@@ -137,8 +137,23 @@ class DynamicSafeAreaViewComponent {
                         }
                     }
                 }
-                else -> { // "vertical" or default
+                "vertical" -> {
                     Column(modifier = modifier) {
+                        if (childList.size == 1) {
+                            DynamicView(
+                                json = childList[0],
+                                data = data
+                            )
+                        } else if (childList.isNotEmpty()) {
+                            DynamicViews(
+                                components = childList,
+                                data = data
+                            )
+                        }
+                    }
+                }
+                else -> { // No orientation = Box (ZStack equivalent)
+                    Box(modifier = modifier) {
                         if (childList.size == 1) {
                             DynamicView(
                                 json = childList[0],
