@@ -119,12 +119,8 @@ class DynamicContainerComponent {
                         val childCopy = child.deepCopy()
                         // In a Column, weighted children should fill width
                         childCopy.addProperty("width", "matchParent")
-                        // If height is 0, set it to fill
-                        val heightValue = child.get("height")
-                        if (heightValue != null && heightValue.isJsonPrimitive &&
-                            heightValue.asJsonPrimitive.isNumber && heightValue.asFloat == 0f) {
-                            childCopy.remove("height")
-                        }
+                        // In a Column, weighted children should fill height to expand within weighted Box
+                        childCopy.addProperty("height", "matchParent")
                         childCopy
                     } else {
                         child
@@ -204,12 +200,8 @@ class DynamicContainerComponent {
                         val childCopy = child.deepCopy()
                         // In a Row, weighted children should fill height
                         childCopy.addProperty("height", "matchParent")
-                        // If width is 0, remove it to let weight handle it
-                        val widthValue = child.get("width")
-                        if (widthValue != null && widthValue.isJsonPrimitive &&
-                            widthValue.asJsonPrimitive.isNumber && widthValue.asFloat == 0f) {
-                            childCopy.remove("width")
-                        }
+                        // In a Row, weighted children should fill width to expand within weighted Box
+                        childCopy.addProperty("width", "matchParent")
                         childCopy
                     } else {
                         child
