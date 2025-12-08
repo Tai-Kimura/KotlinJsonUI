@@ -121,19 +121,27 @@ module KjuiTools
       end
       
       def update_android_configs(ip)
+        # Load config to get port
+        config = if File.exist?(@config_path)
+                   JSON.parse(File.read(@config_path))
+                 else
+                   {}
+                 end
+        port = config.dig('hotloader', 'port') || 8081
+
         # Update local.properties if it exists
         local_props = File.join(@project_root, 'local.properties')
         if File.exist?(local_props)
           content = File.read(local_props)
-          
+
           # Remove old hotloader.ip line if exists
           content.gsub!(/^hotloader\.ip=.*$/, '')
           content.gsub!(/^hotloader\.port=.*$/, '')
-          
+
           # Add new lines
           content += "\nhotloader.ip=#{ip}"
-          content += "\nhotloader.port=8081"
-          
+          content += "\nhotloader.port=#{port}"
+
           File.write(local_props, content)
         end
         

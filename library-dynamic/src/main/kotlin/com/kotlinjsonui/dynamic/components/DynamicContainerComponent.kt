@@ -117,22 +117,25 @@ class DynamicContainerComponent {
                     // If weight is specified, modify the child JSON to fill available space
                     val modifiedChild = if (weight != null) {
                         val childCopy = child.deepCopy()
-                        // In a Column, weighted children should fill width
-                        childCopy.addProperty("width", "matchParent")
                         // In a Column, weighted children should fill height to expand within weighted Box
                         childCopy.addProperty("height", "matchParent")
                         childCopy
                     } else {
                         child
                     }
-                    
+
+                    // Check if child has matchParent width
+                    val widthValue = child.get("width")
+                    val hasMatchParentWidth = widthValue != null && widthValue.isJsonPrimitive &&
+                        widthValue.asJsonPrimitive.isString && widthValue.asString == "matchParent"
+
                     // Apply weight and/or alignment modifiers if needed
                     when {
                         weight != null && childAlignment != null && childAlignment is Alignment.Horizontal -> {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
-                                    .fillMaxWidth()
+                                    .then(if (hasMatchParentWidth) Modifier.fillMaxWidth() else Modifier.wrapContentWidth())
                                     .align(childAlignment)
                             ) {
                                 DynamicView(modifiedChild, data)
@@ -142,7 +145,7 @@ class DynamicContainerComponent {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
-                                    .fillMaxWidth()
+                                    .then(if (hasMatchParentWidth) Modifier.fillMaxWidth() else Modifier.wrapContentWidth())
                             ) {
                                 DynamicView(modifiedChild, data)
                             }
@@ -198,22 +201,25 @@ class DynamicContainerComponent {
                     // If weight is specified, modify the child JSON to fill available space
                     val modifiedChild = if (weight != null) {
                         val childCopy = child.deepCopy()
-                        // In a Row, weighted children should fill height
-                        childCopy.addProperty("height", "matchParent")
                         // In a Row, weighted children should fill width to expand within weighted Box
                         childCopy.addProperty("width", "matchParent")
                         childCopy
                     } else {
                         child
                     }
-                    
+
+                    // Check if child has matchParent height
+                    val heightValue = child.get("height")
+                    val hasMatchParentHeight = heightValue != null && heightValue.isJsonPrimitive &&
+                        heightValue.asJsonPrimitive.isString && heightValue.asString == "matchParent"
+
                     // Apply weight and/or alignment modifiers if needed
                     when {
                         weight != null && childAlignment != null && childAlignment is Alignment.Vertical -> {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
-                                    .fillMaxHeight()
+                                    .then(if (hasMatchParentHeight) Modifier.fillMaxHeight() else Modifier.wrapContentHeight())
                                     .align(childAlignment)
                             ) {
                                 DynamicView(modifiedChild, data)
@@ -223,7 +229,7 @@ class DynamicContainerComponent {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
-                                    .fillMaxHeight()
+                                    .then(if (hasMatchParentHeight) Modifier.fillMaxHeight() else Modifier.wrapContentHeight())
                             ) {
                                 DynamicView(modifiedChild, data)
                             }
