@@ -179,10 +179,28 @@ if [ -z "$EXTRACT_DIR" ]; then
     exit 1
 fi
 
-# Copy kjui_tools
+# Copy kjui_tools (excluding unnecessary files)
 if [ -d "$EXTRACT_DIR/kjui_tools" ]; then
     print_info "Installing kjui_tools..."
-    cp -r "$EXTRACT_DIR/kjui_tools" .
+    mkdir -p kjui_tools
+
+    # Copy only necessary files/directories, excluding:
+    # - spec/ (test files)
+    # - coverage/ (coverage reports)
+    # - .rspec (RSpec config)
+    # - .DS_Store (macOS metadata)
+    # - .kjui_cache/ (cache)
+    # - *.config.json (example config)
+    if command -v rsync &> /dev/null; then
+        rsync -a --exclude='spec' --exclude='coverage' --exclude='.rspec' \
+              --exclude='.DS_Store' --exclude='.kjui_cache' --exclude='*.config.json' \
+              "$EXTRACT_DIR/kjui_tools/" kjui_tools/
+    else
+        # Fallback: copy all then remove unwanted
+        cp -r "$EXTRACT_DIR/kjui_tools/"* kjui_tools/
+        rm -rf kjui_tools/spec kjui_tools/coverage kjui_tools/.rspec \
+               kjui_tools/.DS_Store kjui_tools/.kjui_cache kjui_tools/*.config.json 2>/dev/null || true
+    fi
     
     # Create VERSION file with the downloaded version
     echo "$VERSION" > kjui_tools/VERSION
