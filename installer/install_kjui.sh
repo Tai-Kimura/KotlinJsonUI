@@ -34,7 +34,7 @@ usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  -v, --version <version>    Specify version/branch/tag to download (default: main)"
+    echo "  -v, --version <version>    Specify version/branch/tag/commit to download (default: main)"
     echo "  -d, --directory <dir>      Installation directory (default: parent directory)"
     echo "  -m, --mode <mode>          Installation mode: xml or compose (default: compose)"
     echo "  -s, --skip-bundle          Skip bundle install for Ruby dependencies"
@@ -42,8 +42,10 @@ usage() {
     echo ""
     echo "Examples:"
     echo "  $0                         # Install latest from main branch to parent directory"
-    echo "  $0 -v v1.0.0               # Install specific version"
+    echo "  $0 -v v1.0.0               # Install specific version (tag)"
+    echo "  $0 -v 1.2.0                # Install from branch (e.g., unreleased version)"
     echo "  $0 -v feature-branch       # Install from specific branch"
+    echo "  $0 -v a1b2c3d              # Install from specific commit hash"
     echo "  $0 -d ./my-project         # Install in specific directory"
     echo "  $0 -m xml                  # Install for XML View mode"
     echo "  $0 -s                      # Skip bundle install"
@@ -136,13 +138,27 @@ trap cleanup EXIT
 
 # Download the archive
 print_info "Downloading KotlinJsonUI $VERSION..."
-# Check if VERSION looks like a version number (starts with digit or v)
-if [[ "$VERSION" =~ ^[0-9] ]] || [[ "$VERSION" =~ ^v[0-9] ]]; then
-    # For tags, use refs/tags/ prefix
+
+# Determine download URL based on VERSION format:
+# - v1.0.0 or 1.0.0 (with dots) → tag
+# - a1b2c3d (7-40 hex chars, no dots) → commit hash
+# - anything else → branch
+if [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+ ]]; then
+    # Tag with 'v' prefix (e.g., v1.0.0)
     DOWNLOAD_URL="https://github.com/$GITHUB_REPO/archive/refs/tags/$VERSION.tar.gz"
-else
-    # For branches, use the direct format
+    print_info "Detected: tag"
+elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+ ]] && [[ ! "$VERSION" =~ ^[0-9a-fA-F]+$ ]]; then
+    # Version number without 'v' but with dots (e.g., 1.2.0) - treat as branch
     DOWNLOAD_URL="https://github.com/$GITHUB_REPO/archive/$VERSION.tar.gz"
+    print_info "Detected: branch (version number)"
+elif [[ "$VERSION" =~ ^[0-9a-fA-F]{7,40}$ ]]; then
+    # Commit hash (7-40 hex characters)
+    DOWNLOAD_URL="https://github.com/$GITHUB_REPO/archive/$VERSION.tar.gz"
+    print_info "Detected: commit hash"
+else
+    # Branch name
+    DOWNLOAD_URL="https://github.com/$GITHUB_REPO/archive/$VERSION.tar.gz"
+    print_info "Detected: branch"
 fi
 
 if ! curl -L -f -o "$TEMP_DIR/kotlinjsonui.tar.gz" "$DOWNLOAD_URL"; then
