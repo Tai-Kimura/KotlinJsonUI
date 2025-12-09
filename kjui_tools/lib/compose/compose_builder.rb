@@ -134,7 +134,7 @@ module KjuiTools
           Components::ProgressComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'SelectBox'
           Components::SelectBoxComponent.generate(json_data, depth, @required_imports, parent_type)
-        when 'Check', 'Checkbox'
+        when 'Check', 'Checkbox', 'CheckBox'
           Components::CheckboxComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Radio'
           Components::RadioComponent.generate(json_data, depth, @required_imports, parent_type)
@@ -522,7 +522,7 @@ module KjuiTools
       
       def generate_mode_aware_content(layout_name, static_content, dynamic_content, depth)
         indent_str = "    " * depth
-        
+
         code = ""
         code += "#{indent_str}// Check if Dynamic Mode is active\n"
         code += "#{indent_str}if (DynamicModeManager.isActive()) {\n"
@@ -532,11 +532,11 @@ module KjuiTools
         code += "#{indent_str}    // Static Mode - use generated code\n"
         code += "    #{static_content}"
         code += "#{indent_str}}\n"
-        
+
         # Add required imports for DynamicModeManager
         @required_imports.add(:dynamic_mode_manager)
         # SafeDynamicView import is already added in generate_dynamic_view
-        
+
         code
       end
       

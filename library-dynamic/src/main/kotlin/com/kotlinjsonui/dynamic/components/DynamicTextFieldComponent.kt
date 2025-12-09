@@ -193,7 +193,7 @@ class DynamicTextFieldComponent {
                 {
                     Text(
                         text = placeholderText,
-                        color = placeholderColor ?: LocalTextStyle.current.color.copy(alpha = 0.6f),
+                        color = placeholderColor ?: Configuration.TextField.defaultPlaceholderColor,
                         fontSize = (hintFontSize ?: fontSize ?: 14).sp
                     )
                 }

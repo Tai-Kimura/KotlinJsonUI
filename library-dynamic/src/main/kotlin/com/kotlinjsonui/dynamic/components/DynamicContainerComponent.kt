@@ -389,37 +389,35 @@ class DynamicContainerComponent {
             
             // 2. Apply margins (outer spacing)
             modifier = ModifierBuilder.applyMargins(modifier, json)
-            
-            // 3. Background color (before padding so padding is inside the background)
+
+            // 3. Corner radius (clip) - MUST be applied BEFORE background
+            val cornerRadius = json.get("cornerRadius")?.asFloat
+            val shape = cornerRadius?.let { RoundedCornerShape(it.dp) }
+
+            if (shape != null) {
+                modifier = modifier.clip(shape)
+            }
+
+            // 4. Background color (after clip so it respects corner radius)
             json.get("background")?.asString?.let { colorStr ->
                 ColorParser.parseColorString(colorStr)?.let { color ->
                     modifier = modifier.background(color)
                 }
             }
-            
-            // Corner radius (clip)
-            json.get("cornerRadius")?.asFloat?.let { radius ->
-                val shape = RoundedCornerShape(radius.dp)
-                modifier = modifier.clip(shape)
-                
-                // If we have a border, apply it with the same shape
-                json.get("borderColor")?.asString?.let { borderColorStr ->
-                    ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
-                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+
+            // 5. Border (with or without corner radius)
+            json.get("borderColor")?.asString?.let { borderColorStr ->
+                ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
+                    val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                    if (shape != null) {
                         modifier = modifier.border(borderWidth.dp, borderColor, shape)
-                    }
-                }
-            } ?: run {
-                // No corner radius, but might still have border
-                json.get("borderColor")?.asString?.let { borderColorStr ->
-                    ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
-                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                    } else {
                         modifier = modifier.border(borderWidth.dp, borderColor)
                     }
                 }
             }
             
-            // Shadow/elevation
+            // 6. Shadow/elevation
             json.get("shadow")?.let { shadow ->
                 when {
                     shadow.isJsonPrimitive -> {
@@ -435,11 +433,11 @@ class DynamicContainerComponent {
                     }
                 }
             }
-            
-            // 4. Apply padding (inner spacing) - MUST be applied last
+
+            // 7. Apply padding (inner spacing) - MUST be applied last
             modifier = ModifierBuilder.applyPadding(modifier, json)
-            
-            // 5. Apply opacity
+
+            // 8. Apply opacity
             modifier = ModifierBuilder.applyOpacity(modifier, json)
             
             return modifier

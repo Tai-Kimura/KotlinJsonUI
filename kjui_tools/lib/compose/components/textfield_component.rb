@@ -93,31 +93,30 @@ module KjuiTools
           end
           
           # Add placeholder/hint with styling
+          # Always use Configuration.TextField.defaultPlaceholderColor if hintColor is not specified
           if placeholder && placeholder != '""'
-            if json_data['hintColor'] || json_data['hintFontSize'] || json_data['hintFont']
-              # Complex placeholder with styling
-              placeholder_code = "placeholder = { Text("
-              placeholder_code += "\n" + indent("text = #{placeholder}", depth + 2)
-              
-              if json_data['hintColor']
-                hint_color = Helpers::ResourceResolver.process_color(json_data['hintColor'], required_imports)
-                placeholder_code += ",\n" + indent("color = #{hint_color}", depth + 2)
-              end
-              
-              if json_data['hintFontSize']
-                placeholder_code += ",\n" + indent("fontSize = #{json_data['hintFontSize']}.sp", depth + 2)
-              end
-              
-              if json_data['hintFont'] == 'bold'
-                placeholder_code += ",\n" + indent("fontWeight = FontWeight.Bold", depth + 2)
-              end
-              
-              placeholder_code += "\n" + indent(") }", depth + 1)
-              code += "\n" + indent(placeholder_code, depth + 1) + ","
+            required_imports&.add(:configuration)
+            placeholder_code = "placeholder = { Text("
+            placeholder_code += "\n" + indent("text = #{placeholder}", depth + 2)
+
+            # Use hintColor if specified, otherwise use Configuration default
+            if json_data['hintColor']
+              hint_color = Helpers::ResourceResolver.process_color(json_data['hintColor'], required_imports)
+              placeholder_code += ",\n" + indent("color = #{hint_color}", depth + 2)
             else
-              # Simple placeholder
-              code += "\n" + indent("placeholder = { Text(#{placeholder}) },", depth + 1)
+              placeholder_code += ",\n" + indent("color = Configuration.TextField.defaultPlaceholderColor", depth + 2)
             end
+
+            if json_data['hintFontSize']
+              placeholder_code += ",\n" + indent("fontSize = #{json_data['hintFontSize']}.sp", depth + 2)
+            end
+
+            if json_data['hintFont'] == 'bold'
+              placeholder_code += ",\n" + indent("fontWeight = FontWeight.Bold", depth + 2)
+            end
+
+            placeholder_code += "\n" + indent(") }", depth + 1)
+            code += "\n" + indent(placeholder_code, depth + 1) + ","
           end
           
           # Add visual transformation for secure fields

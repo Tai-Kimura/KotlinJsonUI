@@ -36,18 +36,18 @@ object Configuration {
      * Should return true if the component was handled, false otherwise
      */
     var customComponentHandler: (@Composable (String, JsonObject, Map<String, Any>) -> Boolean)? = null
-    // Global color defaults
+    // Global color defaults (all mutable for app customization)
     object Colors {
-        val background = Color.White
-        val text = Color.Black
-        val placeholder = Color.Gray
-        val border = Color.LightGray
-        val primary = Color(0xFF007AFF)
-        val secondary = Color(0xFF34C759)
-        val error = Color(0xFFFF3B30)
-        val disabled = Color(0xFFC7C7CC)
-        val shadow = Color.Black.copy(alpha = 0.1f)
-        var linkColor = Color(0xFF0000EE)  // Default blue color for links (customizable)
+        var background = Color.White
+        var text = Color.Black
+        var placeholder = Color.Gray
+        var border = Color.LightGray
+        var primary = Color(0xFF007AFF)
+        var secondary = Color(0xFF34C759)
+        var error = Color(0xFFFF3B30)
+        var disabled = Color(0xFFC7C7CC)
+        var shadow = Color.Black.copy(alpha = 0.1f)
+        var linkColor = Color(0xFF0000EE)  // Default blue color for links
     }
     
     // Global size defaults
@@ -64,13 +64,13 @@ object Configuration {
         const val duration = 300
     }
     
-    // TextField specific defaults
+    // TextField specific defaults (mutable for app customization)
     object TextField {
-        val defaultBackgroundColor = Colors.background
-        val defaultHighlightBackgroundColor = Colors.background
-        val defaultTextColor = Colors.text
-        val defaultPlaceholderColor = Colors.placeholder
-        val defaultBorderColor = Colors.border
+        var defaultBackgroundColor = Colors.background
+        var defaultHighlightBackgroundColor = Colors.background
+        var defaultTextColor = Colors.text
+        var defaultPlaceholderColor = Colors.placeholder
+        var defaultBorderColor = Colors.border
         const val defaultHeight = 44
         const val defaultFontSize = Sizes.fontSize
         const val defaultCornerRadius = Sizes.cornerRadius
