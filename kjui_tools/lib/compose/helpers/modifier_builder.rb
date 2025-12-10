@@ -589,6 +589,47 @@ module KjuiTools
           json_data['onAppear'] || json_data['onDisappear']
         end
 
+        # Convert event handler to method call
+        # onclick (lowercase) -> selector format (string only): functionName: -> viewModel.functionName()
+        # onClick (camelCase) -> binding format only: @{functionName} -> viewModel.functionName()
+        def self.get_event_handler_call(handler, is_camel_case: false)
+          if is_camel_case
+            # camelCase events (onClick, onLongPress, etc.) - binding format only
+            if handler.match?(/^@\{(.+)\}$/)
+              method_name = handler.match(/^@\{(.+)\}$/)[1]
+              "viewModel.#{method_name}()"
+            else
+              "// ERROR: #{handler} - camelCase events require binding format @{functionName}"
+            end
+          else
+            # lowercase events (onclick, onlongpress, etc.) - selector format only
+            if handler.match?(/^@\{/)
+              "// ERROR: #{handler} - lowercase events require selector format (functionName:)"
+            elsif handler.include?(':')
+              method_name = handler.gsub(':', '')
+              "viewModel.#{method_name}()"
+            else
+              "viewModel.#{handler}()"
+            end
+          end
+        end
+
+        # Check if handler is binding format (@{functionName})
+        def self.is_binding?(value)
+          value.is_a?(String) && value.match?(/^@\{.+\}$/)
+        end
+
+        # Extract property name from binding expression
+        # "@{propertyName}" -> "propertyName"
+        def self.extract_binding_property(value)
+          return nil unless value.is_a?(String)
+          if value.match(/^@\{(.+)\}$/)
+            $1
+          else
+            value
+          end
+        end
+
         private
 
         # Process dimension value - handles data bindings and numeric values

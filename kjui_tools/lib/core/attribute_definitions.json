@@ -2140,8 +2140,8 @@
       "mode": "uikit"
     },
     "onValueChange": {
-      "type": "string",
-      "description": "Value change event"
+      "type": "binding",
+      "description": "Value change handler - binding only (@{functionName})"
     }
   },
   "Switch": {
@@ -2215,8 +2215,8 @@
       "description": "Toggle handler function"
     },
     "onValueChange": {
-      "type": "string",
-      "description": "Value change handler (alias)"
+      "type": "binding",
+      "description": "Value change handler - binding only (@{functionName})"
     },
     "labelAttributes": {
       "type": "object",
@@ -2312,8 +2312,8 @@
       "description": "Toggle handler function"
     },
     "onValueChange": {
-      "type": "string",
-      "description": "Value change handler (alias)"
+      "type": "binding",
+      "description": "Value change handler - binding only (@{functionName})"
     },
     "labelAttributes": {
       "type": "object",
@@ -2426,13 +2426,9 @@
       "type": "string",
       "description": "Tint color"
     },
-    "onValueChanged": {
-      "type": "binding",
-      "description": "Value change handler (camelCase) - binding only (@{functionName})"
-    },
     "onValueChange": {
-      "type": "string",
-      "description": "Value change handler (selector-based) - string only, no binding"
+      "type": "binding",
+      "description": "Value change handler - binding only (@{functionName})"
     },
     "minimumValueImage": {
       "type": "string",
@@ -2977,8 +2973,8 @@
       "description": "Space between icon and text (binding supported)"
     },
     "onValueChange": {
-      "type": "string",
-      "description": "Value change handler function name"
+      "type": "binding",
+      "description": "Value change handler - binding only (@{functionName})"
     }
   },
   "Check": {
@@ -3068,8 +3064,8 @@
       "description": "Space between icon and text (binding supported)"
     },
     "onValueChange": {
-      "type": "string",
-      "description": "Value change handler function name"
+      "type": "binding",
+      "description": "Value change handler - binding only (@{functionName})"
     }
   },
   "Indicator": {

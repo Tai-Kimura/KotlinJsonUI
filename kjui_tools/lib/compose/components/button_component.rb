@@ -10,12 +10,18 @@ module KjuiTools
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # Button uses 'text' attribute per SwiftJsonUI spec
           text = Helpers::ResourceResolver.process_text(json_data['text'] || 'Button', required_imports)
-          onclick = json_data['onclick']
-          
+
           code = indent("Button(", depth)
-          
-          if onclick
-            code += "\n" + indent("onClick = { viewModel.#{onclick}() }", depth + 1)
+
+          # Handle click events
+          # onclick (lowercase) -> selector format (string only)
+          # onClick (camelCase) -> binding format only (@{functionName})
+          if json_data['onclick']
+            handler_call = Helpers::ModifierBuilder.get_event_handler_call(json_data['onclick'], is_camel_case: false)
+            code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
+          elsif json_data['onClick']
+            handler_call = Helpers::ModifierBuilder.get_event_handler_call(json_data['onClick'], is_camel_case: true)
+            code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
           else
             code += "\n" + indent("onClick = { }", depth + 1)
           end
