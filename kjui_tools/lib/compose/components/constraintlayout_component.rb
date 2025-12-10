@@ -224,14 +224,19 @@ module KjuiTools
         
         def self.generate_button_component(data, depth, required_imports)
           text = data['text'] || 'Button'
-          onclick = data['onclick']
           # Properly escape text
           escaped_text = quote(text)
-          
+
           code = indent("Button(", depth)
-          
-          if onclick
-            code += "\n" + indent("onClick = { viewModel.#{onclick}() }", depth + 1)
+
+          # onclick (lowercase) -> selector format only
+          # onClick (camelCase) -> binding format only
+          if data['onclick']
+            handler_call = Helpers::ModifierBuilder.get_event_handler_call(data['onclick'], is_camel_case: false)
+            code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
+          elsif data['onClick']
+            handler_call = Helpers::ModifierBuilder.get_event_handler_call(data['onClick'], is_camel_case: true)
+            code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
           else
             code += "\n" + indent("onClick = { }", depth + 1)
           end

@@ -51,10 +51,16 @@ module KjuiTools
           end
 
           # onToggle and onValueChange are aliases
+          # onValueChange (camelCase) -> binding format only (@{functionName})
           handler = json_data['onValueChange'] || json_data['onToggle']
           if handler
-            # Use custom handler if specified
-            code += "\n" + indent("onCheckedChange = { viewModel.#{handler}(it) },", depth + 1)
+            # onValueChange must be binding format
+            if Helpers::ModifierBuilder.is_binding?(handler)
+              method_name = Helpers::ModifierBuilder.extract_binding_property(handler)
+              code += "\n" + indent("onCheckedChange = { viewModel.#{method_name}(it) },", depth + 1)
+            else
+              code += "\n" + indent("onCheckedChange = { // ERROR: #{handler} - camelCase events require binding format @{functionName} },", depth + 1)
+            end
           elsif binding_variable
             # Update the bound variable
             code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) },", depth + 1)
@@ -170,7 +176,13 @@ module KjuiTools
 
           handler = json_data['onValueChange'] || json_data['onToggle']
           if handler
-            code += "\n" + indent("onCheckedChange = { viewModel.#{handler}(it) }", depth + 2)
+            # onValueChange (camelCase) -> binding format only (@{functionName})
+            if Helpers::ModifierBuilder.is_binding?(handler)
+              method_name = Helpers::ModifierBuilder.extract_binding_property(handler)
+              code += "\n" + indent("onCheckedChange = { viewModel.#{method_name}(it) }", depth + 2)
+            else
+              code += "\n" + indent("onCheckedChange = { // ERROR: #{handler} - camelCase events require binding format @{functionName} }", depth + 2)
+            end
           elsif binding_variable
             code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) }", depth + 2)
           else

@@ -40,8 +40,13 @@ module KjuiTools
           end
           
           if json_data['onValueChange']
-            # Use custom handler if specified
-            code += "\n" + indent("onValueChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
+            # onValueChange (camelCase) -> binding format only (@{functionName})
+            if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+              method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+              code += "\n" + indent("onValueChange = { viewModel.#{method_name}(it) },", depth + 1)
+            else
+              code += "\n" + indent("onValueChange = { // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName} },", depth + 1)
+            end
           elsif binding_variable
             # Update the bound variable - check if it's Int or Double/Float based on the data type
             code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue.toDouble())) },", depth + 1)

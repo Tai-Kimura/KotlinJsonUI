@@ -357,8 +357,15 @@ module KjuiTools
             if attr['strikethrough']
               code += "\n" + indent("strikethrough = #{attr['strikethrough']},", depth + 3)
             end
+            # Handle click events for partial attributes
+            # onclick (lowercase) -> selector format (string only)
+            # onClick (camelCase) -> binding format only (@{functionName})
             if attr['onclick']
-              code += "\n" + indent("onClick = { viewModel.#{attr['onclick']}() }", depth + 3)
+              handler_call = Helpers::ModifierBuilder.get_event_handler_call(attr['onclick'], is_camel_case: false)
+              code += "\n" + indent("onClick = { #{handler_call} }", depth + 3)
+            elsif attr['onClick']
+              handler_call = Helpers::ModifierBuilder.get_event_handler_call(attr['onClick'], is_camel_case: true)
+              code += "\n" + indent("onClick = { #{handler_call} }", depth + 3)
             else
               code += "\n" + indent("onClick = null", depth + 3)
             end
@@ -480,11 +487,18 @@ module KjuiTools
               code += "\n" + indent(")", depth + 1)
             end
             
-            # Add clickable annotation if onclick is specified
-            if attr['onclick']
+            # Add clickable annotation if onclick/onClick is specified
+            click_handler = attr['onclick'] || attr['onClick']
+            if click_handler
+              # Extract method name from binding format if needed
+              method_name = if click_handler.match?(/^@\{(.+)\}$/)
+                click_handler.match(/^@\{(.+)\}$/)[1]
+              else
+                click_handler.gsub(':', '')
+              end
               code += "\n" + indent("addStringAnnotation(", depth + 1)
               code += "\n" + indent("tag = \"CLICKABLE\",", depth + 2)
-              code += "\n" + indent("annotation = \"#{attr['onclick']}\",", depth + 2)
+              code += "\n" + indent("annotation = \"#{method_name}\",", depth + 2)
               code += "\n" + indent("start = #{start_idx},", depth + 2)
               code += "\n" + indent("end = #{end_idx}", depth + 2)
               code += "\n" + indent(")", depth + 1)

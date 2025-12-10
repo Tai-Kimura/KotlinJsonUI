@@ -123,9 +123,14 @@ module KjuiTools
               end
               
               # Generate onClick handler
+              # onValueChange (camelCase) -> binding format only (@{functionName})
               if json_data['onValueChange']
-                # Use custom handler if specified
-                code += "\n" + indent("viewModel.#{json_data['onValueChange']}(#{index})", depth + 3)
+                if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                  method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+                  code += "\n" + indent("viewModel.#{method_name}(#{index})", depth + 3)
+                else
+                  code += "\n" + indent("// ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 3)
+                end
               elsif has_binding
                 # Update the bound variable
                 code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to #{index}))", depth + 3)
@@ -214,9 +219,14 @@ module KjuiTools
             end
             
             # Generate onClick handler
+            # onValueChange (camelCase) -> binding format only (@{functionName})
             if json_data['onValueChange']
-              # Use custom handler if specified
-              code += "\n" + indent("viewModel.#{json_data['onValueChange']}(index)", depth + 4)
+              if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+                code += "\n" + indent("viewModel.#{method_name}(index)", depth + 4)
+              else
+                code += "\n" + indent("// ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 4)
+              end
             elsif has_binding
               # Update the bound variable
               code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to index))", depth + 4)

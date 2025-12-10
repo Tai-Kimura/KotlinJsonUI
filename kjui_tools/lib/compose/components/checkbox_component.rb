@@ -63,7 +63,13 @@ module KjuiTools
             end
 
             if json_data['onValueChange']
-              code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) }", depth + 2)
+              # onValueChange (camelCase) -> binding format only (@{functionName})
+              if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+                code += "\n" + indent("onCheckedChange = { viewModel.#{method_name}(it) }", depth + 2)
+              else
+                code += "\n" + indent("onCheckedChange = { // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName} }", depth + 2)
+              end
             elsif binding_variable
               code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) }", depth + 2)
             else
@@ -118,7 +124,13 @@ module KjuiTools
             end
 
             if json_data['onValueChange']
-              code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) },", depth + 1)
+              # onValueChange (camelCase) -> binding format only (@{functionName})
+              if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+                code += "\n" + indent("onCheckedChange = { viewModel.#{method_name}(it) },", depth + 1)
+              else
+                code += "\n" + indent("onCheckedChange = { // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName} },", depth + 1)
+              end
             elsif binding_variable
               code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) },", depth + 1)
             else
@@ -203,7 +215,13 @@ module KjuiTools
           end
 
           if json_data['onValueChange']
-            code += "\n" + indent("onCheckedChange = { viewModel.#{json_data['onValueChange']}(it) }", depth + 1)
+            # onValueChange (camelCase) -> binding format only (@{functionName})
+            if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+              method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+              code += "\n" + indent("onCheckedChange = { viewModel.#{method_name}(it) }", depth + 1)
+            else
+              code += "\n" + indent("onCheckedChange = { // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName} }", depth + 1)
+            end
           elsif binding_variable
             code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue)) }", depth + 1)
           else

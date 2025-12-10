@@ -28,9 +28,14 @@ module KjuiTools
           else
             code += "\n" + indent("checked = #{checked_value},", depth + 1)
             
-            # Handle onclick
+            # Handle onclick (lowercase) -> selector format only
+            # onClick (camelCase) -> binding format only
             if json_data['onclick']
-              code += "\n" + indent("onCheckedChange = { ${data.toMap(viewModel)[\"#{json_data['onclick']}\"]} },", depth + 1)
+              handler_call = Helpers::ModifierBuilder.get_event_handler_call(json_data['onclick'], is_camel_case: false)
+              code += "\n" + indent("onCheckedChange = { #{handler_call} },", depth + 1)
+            elsif json_data['onClick']
+              handler_call = Helpers::ModifierBuilder.get_event_handler_call(json_data['onClick'], is_camel_case: true)
+              code += "\n" + indent("onCheckedChange = { #{handler_call} },", depth + 1)
             else
               code += "\n" + indent("onCheckedChange = { },", depth + 1)
             end

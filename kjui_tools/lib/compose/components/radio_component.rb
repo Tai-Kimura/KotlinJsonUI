@@ -52,7 +52,13 @@ module KjuiTools
                   variable = $1
                   code += "\n" + indent("        viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 2)
                 elsif json_data['onValueChange']
-                  code += "\n" + indent("        viewModel.#{json_data['onValueChange']}(\"#{option_value}\")", depth + 2)
+                  # onValueChange (camelCase) -> binding format only (@{functionName})
+                  if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                    method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+                    code += "\n" + indent("        viewModel.#{method_name}(\"#{option_value}\")", depth + 2)
+                  else
+                    code += "\n" + indent("        // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 2)
+                  end
                 end
                 
                 code += "\n" + indent("    }", depth + 2)
@@ -67,7 +73,13 @@ module KjuiTools
                   variable = $1
                   code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 4)
                 elsif json_data['onValueChange']
-                  code += "\n" + indent("viewModel.#{json_data['onValueChange']}(\"#{option_value}\")", depth + 4)
+                  # onValueChange (camelCase) -> binding format only (@{functionName})
+                  if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                    method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
+                    code += "\n" + indent("viewModel.#{method_name}(\"#{option_value}\")", depth + 4)
+                  else
+                    code += "\n" + indent("// ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 4)
+                  end
                 end
                 
                 code += "\n" + indent("}", depth + 3)
