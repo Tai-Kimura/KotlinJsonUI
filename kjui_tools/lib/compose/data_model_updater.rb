@@ -238,10 +238,15 @@ module KjuiTools
             name = prop['name']
             class_type = map_to_kotlin_type(prop['class'])
             default_value = prop['defaultValue']
-            
+
             # If no default value or nil, make it nullable
             if default_value.nil? || default_value == 'nil'
-              content += "    var #{name}: #{class_type}? = null"
+              # Don't add ? if type already ends with ? (already nullable)
+              if class_type.end_with?('?')
+                content += "    var #{name}: #{class_type} = null"
+              else
+                content += "    var #{name}: #{class_type}? = null"
+              end
             else
               formatted_value = format_default_value(default_value, prop['class'])
               content += "    var #{name}: #{class_type} = #{formatted_value}"
@@ -369,6 +374,18 @@ module KjuiTools
         when 'CollectionDataSource'
           # Use the actual CollectionDataSource type
           'com.kotlinjsonui.data.CollectionDataSource'
+        when /^\(\) -> Unit$/
+          # Non-optional callback becomes optional in data class
+          '(() -> Unit)?'
+        when /^\((.+)\) -> Unit$/
+          # Callback with parameters becomes optional
+          "((#{$1}) -> Unit)?"
+        when /^\(\(\) -> Unit\)\?$/
+          # Already optional, keep as is
+          '(() -> Unit)?'
+        when /^\(\((.+)\) -> Unit\)\?$/
+          # Already optional with params, keep as is
+          "((#{$1}) -> Unit)?"
         else
           # Return as-is for custom types
           json_class

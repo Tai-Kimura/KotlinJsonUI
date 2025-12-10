@@ -234,6 +234,22 @@ RSpec.describe KjuiTools::Compose::DataModelUpdater do
         expect(updater.send(:map_to_kotlin_type, 'CollectionDataSource')).to include('CollectionDataSource')
       end
 
+      it 'maps () -> Unit to optional callback' do
+        expect(updater.send(:map_to_kotlin_type, '() -> Unit')).to eq('(() -> Unit)?')
+      end
+
+      it 'maps (String) -> Unit to optional callback with params' do
+        expect(updater.send(:map_to_kotlin_type, '(String) -> Unit')).to eq('((String) -> Unit)?')
+      end
+
+      it 'keeps already optional callback as-is' do
+        expect(updater.send(:map_to_kotlin_type, '(() -> Unit)?')).to eq('(() -> Unit)?')
+      end
+
+      it 'keeps already optional callback with params as-is' do
+        expect(updater.send(:map_to_kotlin_type, '((String) -> Unit)?')).to eq('((String) -> Unit)?')
+      end
+
       it 'returns custom types as-is' do
         expect(updater.send(:map_to_kotlin_type, 'CustomType')).to eq('CustomType')
       end
