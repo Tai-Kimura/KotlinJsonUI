@@ -80,9 +80,9 @@ RSpec.describe KjuiTools::CLI::Commands::Build do
       expect { build.run(['--clean']) }.not_to raise_error
     end
 
-    it 'parses --validate option' do
+    it 'parses --no-validate option' do
       build = described_class.new
-      expect { build.run(['--validate']) }.not_to raise_error
+      expect { build.run(['--no-validate']) }.not_to raise_error
     end
 
     it 'parses --strict option (implies validate)' do
@@ -101,10 +101,15 @@ RSpec.describe KjuiTools::CLI::Commands::Build do
       }))
     end
 
-    it 'validates JSON when --validate is specified' do
+    it 'validates JSON by default (validation is enabled by default)' do
       build = described_class.new
-      # Validation should detect unknown attribute
-      expect { build.run(['--validate']) }.not_to raise_error
+      # Validation is enabled by default, should detect unknown attribute
+      expect { build.run([]) }.not_to raise_error
+    end
+
+    it 'skips validation when --no-validate is specified' do
+      build = described_class.new
+      expect { build.run(['--no-validate']) }.not_to raise_error
     end
   end
 end

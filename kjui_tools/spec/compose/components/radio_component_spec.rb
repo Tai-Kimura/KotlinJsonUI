@@ -165,7 +165,7 @@ RSpec.describe KjuiTools::Compose::Components::RadioComponent do
         json_data = {
           'type' => 'Radio',
           'options' => ['A', 'B'],
-          'onValueChange' => 'handleChange'
+          'onValueChange' => '@{handleChange}'
         }
         result = described_class.generate(json_data, 0, required_imports)
         expect(result).to include('viewModel.handleChange')

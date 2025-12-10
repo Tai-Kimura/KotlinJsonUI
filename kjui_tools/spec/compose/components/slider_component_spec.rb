@@ -41,7 +41,7 @@ RSpec.describe KjuiTools::Compose::Components::SliderComponent do
     end
 
     it 'generates Slider with onValueChange handler' do
-      json_data = { 'type' => 'Slider', 'onValueChange' => 'handleSliderChange' }
+      json_data = { 'type' => 'Slider', 'onValueChange' => '@{handleSliderChange}' }
       result = described_class.generate(json_data, 0, required_imports)
       expect(result).to include('onValueChange = { viewModel.handleSliderChange(it) }')
     end

@@ -167,7 +167,7 @@ RSpec.describe KjuiTools::Compose::Components::SegmentComponent do
     it 'generates Segment with onValueChange handler' do
       json_data = {
         'type' => 'Segment',
-        'onValueChange' => 'handleTabChange',
+        'onValueChange' => '@{handleTabChange}',
         'items' => ['A', 'B']
       }
       result = described_class.generate(json_data, 0, required_imports)

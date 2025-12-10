@@ -482,7 +482,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'type' => 'Switch',
           'isOn' => true,
           'onTintColor' => '#00FF00',
-          'onValueChange' => 'handleSwitch'
+          'onValueChange' => '@{handleSwitch}'
         }
       end
 
@@ -904,7 +904,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'enabled' => true,
           'onTintColor' => '#00FF00',
           'thumbTintColor' => '#FFFFFF',
-          'onValueChange' => 'handleChange'
+          'onValueChange' => '@{handleChange}'
         }
       end
 
@@ -990,7 +990,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
         {
           'type' => 'CheckBox',
           'isOn' => '@{isChecked}',
-          'onValueChange' => 'handleCheckChange'
+          'onValueChange' => '@{handleCheckChange}'
         }
       end
 
@@ -1010,7 +1010,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'enabled' => true,
           'icon' => 'checkbox_off',
           'onSrc' => 'checkbox_on',
-          'onValueChange' => 'handleChange'
+          'onValueChange' => '@{handleChange}'
         }
       end
 
@@ -1029,7 +1029,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'enabled' => true,
           'icon' => 'check_off',
           'selectedIcon' => 'check_on',
-          'onValueChange' => 'handleChange'
+          'onValueChange' => '@{handleChange}'
         }
       end
 
@@ -1051,7 +1051,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
 
     it 'has onValueChange defined in CheckBox attributes' do
       expect(validator.definitions['CheckBox']).to have_key('onValueChange')
-      expect(validator.definitions['CheckBox']['onValueChange']['type']).to eq('string')
+      expect(validator.definitions['CheckBox']['onValueChange']['type']).to eq('binding')
     end
 
     it 'has bind defined in Check attributes' do

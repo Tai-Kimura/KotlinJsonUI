@@ -113,14 +113,14 @@ RSpec.describe KjuiTools::Compose::Generators::ConverterGenerator do
         expect(result).to eq('string')
       end
 
-      it 'maps text type to string' do
+      it 'maps text type to binding (custom types require binding syntax)' do
         result = generator.send(:map_type_to_json_type, 'Text')
-        expect(result).to eq('string')
+        expect(result).to eq('binding')
       end
 
-      it 'maps color type to string' do
+      it 'maps color type to binding (custom types require binding syntax)' do
         result = generator.send(:map_type_to_json_type, 'Color')
-        expect(result).to eq('string')
+        expect(result).to eq('binding')
       end
 
       it 'maps int to number' do
@@ -153,9 +153,9 @@ RSpec.describe KjuiTools::Compose::Generators::ConverterGenerator do
         expect(result).to eq('boolean')
       end
 
-      it 'defaults unknown types to string' do
+      it 'defaults unknown types to binding (custom types require binding syntax)' do
         result = generator.send(:map_type_to_json_type, 'UnknownType')
-        expect(result).to eq('string')
+        expect(result).to eq('binding')
       end
     end
 
