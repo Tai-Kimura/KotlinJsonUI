@@ -8,15 +8,26 @@ module KjuiTools
       class ImageComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
           # 'src' is the official attribute for images per wiki
-          image_name = json_data['src'] || 'placeholder'
-          
+          raw_src = json_data['src'] || 'placeholder'
+
           # Add required imports
           required_imports&.add(:image)
-          required_imports&.add(:painter_resource)
-          required_imports&.add(:r_class)
-          
+
           code = indent("Image(", depth)
-          code += "\n" + indent("painter = painterResource(id = R.drawable.#{image_name}),", depth + 1)
+
+          # Check if src is a binding expression
+          if Helpers::ModifierBuilder.is_binding?(raw_src)
+            # @{mapTabIcon} -> viewModel.data.mapTabIcon (expects Painter type in Data)
+            property_name = Helpers::ModifierBuilder.extract_binding_property(raw_src)
+            camel_case_name = to_camel_case(property_name)
+            # Binding case doesn't need painterResource import since Data provides Painter directly
+            code += "\n" + indent("painter = viewModel.data.#{camel_case_name},", depth + 1)
+          else
+            # Static resource name needs painterResource
+            required_imports&.add(:painter_resource)
+            required_imports&.add(:r_class)
+            code += "\n" + indent("painter = painterResource(id = R.drawable.#{raw_src}),", depth + 1)
+          end
           
           # Content description for accessibility
           content_desc = json_data['contentDescription'] || ''
@@ -57,16 +68,22 @@ module KjuiTools
         end
         
         private
-        
+
+        def self.to_camel_case(snake_case_string)
+          return snake_case_string unless snake_case_string.include?('_')
+          parts = snake_case_string.split('_')
+          parts[0] + parts[1..-1].map(&:capitalize).join
+        end
+
         def self.quote(text)
           "\"#{text.gsub('"', '\\"')}\""
         end
-        
+
         def self.indent(text, level)
           return text if level == 0
           spaces = '    ' * level
-          text.split("\n").map { |line| 
-            line.empty? ? line : spaces + line 
+          text.split("\n").map { |line|
+            line.empty? ? line : spaces + line
           }.join("\n")
         end
       end
