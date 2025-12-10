@@ -68,6 +68,73 @@ RSpec.describe KjuiTools::Core::TypeConverter do
       end
     end
 
+    context 'with Array syntax' do
+      it 'converts Array(ElementType) to List<ElementType>' do
+        expect(described_class.to_kotlin_type('Array(String)')).to eq('List<String>')
+        expect(described_class.to_kotlin_type('Array(Int)')).to eq('List<Int>')
+        expect(described_class.to_kotlin_type('Array(ItemData)')).to eq('List<ItemData>')
+      end
+
+      it 'converts nested element types' do
+        expect(described_class.to_kotlin_type('Array(Bool)')).to eq('List<Boolean>')
+      end
+    end
+
+    context 'with Dictionary syntax' do
+      it 'converts Dictionary(KeyType, ValueType) to Map<KeyType, ValueType>' do
+        expect(described_class.to_kotlin_type('Dictionary(String, Any)')).to eq('Map<String, Any>')
+        expect(described_class.to_kotlin_type('Dictionary(String, Int)')).to eq('Map<String, Int>')
+      end
+
+      it 'converts nested key/value types' do
+        expect(described_class.to_kotlin_type('Dictionary(String, Bool)')).to eq('Map<String, Boolean>')
+      end
+    end
+
+    context 'with Swift callback syntax conversion' do
+      it 'converts (() -> Void) to () -> Unit' do
+        expect(described_class.to_kotlin_type('(() -> Void)')).to eq('() -> Unit')
+      end
+
+      it 'converts ((ParamType) -> Void) to (ParamType) -> Unit' do
+        expect(described_class.to_kotlin_type('((String) -> Void)')).to eq('(String) -> Unit')
+        expect(described_class.to_kotlin_type('((ItemData) -> Void)')).to eq('(ItemData) -> Unit')
+      end
+
+      it 'converts ((Param1, Param2) -> Void) to (Param1, Param2) -> Unit' do
+        expect(described_class.to_kotlin_type('((Int, String) -> Void)')).to eq('(Int, String) -> Unit')
+      end
+
+      it 'converts optional callback (() -> Void)? to (() -> Unit)?' do
+        expect(described_class.to_kotlin_type('(() -> Void)?')).to eq('(() -> Unit)?')
+      end
+
+      it 'converts optional callback with params ((ParamType) -> Void)? to ((ParamType) -> Unit)?' do
+        expect(described_class.to_kotlin_type('((String) -> Void)?')).to eq('((String) -> Unit)?')
+      end
+
+      it 'converts parameter types in callbacks' do
+        expect(described_class.to_kotlin_type('((Bool) -> Void)')).to eq('(Boolean) -> Unit')
+      end
+    end
+
+    context 'with Swift simple callback syntax (no outer parens)' do
+      it 'converts () -> Void to (() -> Unit)? (optional)' do
+        expect(described_class.to_kotlin_type('() -> Void')).to eq('(() -> Unit)?')
+      end
+
+      it 'converts (ParamType) -> Void to ((ParamType) -> Unit)? (optional)' do
+        expect(described_class.to_kotlin_type('(String) -> Void')).to eq('((String) -> Unit)?')
+      end
+    end
+
+    context 'with Swift type mappings' do
+      it 'converts Void to Unit' do
+        expect(described_class.to_kotlin_type('Void')).to eq('Unit')
+        expect(described_class.to_kotlin_type('void')).to eq('Unit')
+      end
+    end
+
     context 'with nil or empty types' do
       it 'returns nil for nil input' do
         expect(described_class.to_kotlin_type(nil)).to be_nil

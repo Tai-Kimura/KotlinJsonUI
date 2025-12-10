@@ -30,6 +30,8 @@ module KjuiTools
         'boolean' => 'Boolean',
         # iOS-specific types mapped to Kotlin equivalents
         'CGFloat' => 'Float',
+        'Void' => 'Unit',
+        'void' => 'Unit',
         # Kotlin/Compose-specific types
         'Dp' => 'Dp',
         'Alignment' => 'Alignment'
@@ -100,6 +102,55 @@ module KjuiTools
           return json_type if json_type.nil? || json_type.to_s.empty?
 
           type_str = json_type.to_s
+
+          # Check for Array(ElementType) syntax -> List<ElementType>
+          if (match = type_str.match(/^Array\((.+)\)$/))
+            element_type = to_kotlin_type(match[1].strip, mode)
+            return "List<#{element_type}>"
+          end
+
+          # Check for Dictionary(KeyType,ValueType) syntax -> Map<KeyType, ValueType>
+          if (match = type_str.match(/^Dictionary\((.+),\s*(.+)\)$/))
+            key_type = to_kotlin_type(match[1].strip, mode)
+            value_type = to_kotlin_type(match[2].strip, mode)
+            return "Map<#{key_type}, #{value_type}>"
+          end
+
+          # Check for Swift optional callback syntax (() -> Void)? -> (() -> Unit)?
+          if (match = type_str.match(/^\(\((.*)?\)\s*->\s*Void\)\?$/))
+            params = match[1]&.strip
+            if params.nil? || params.empty?
+              return "(() -> Unit)?"
+            else
+              # Convert parameter types
+              param_types = params.split(',').map { |p| to_kotlin_type(p.strip, mode) }.join(', ')
+              return "((#{param_types}) -> Unit)?"
+            end
+          end
+
+          # Check for Swift callback syntax (() -> Void) -> () -> Unit (with outer parens)
+          if (match = type_str.match(/^\(\((.*)?\)\s*->\s*Void\)$/))
+            params = match[1]&.strip
+            if params.nil? || params.empty?
+              return "() -> Unit"
+            else
+              # Convert parameter types
+              param_types = params.split(',').map { |p| to_kotlin_type(p.strip, mode) }.join(', ')
+              return "(#{param_types}) -> Unit"
+            end
+          end
+
+          # Check for Swift simple callback syntax () -> Void -> (() -> Unit)? (without outer parens, treated as optional)
+          if (match = type_str.match(/^\((.*)?\)\s*->\s*Void$/))
+            params = match[1]&.strip
+            if params.nil? || params.empty?
+              return "(() -> Unit)?"
+            else
+              # Convert parameter types
+              param_types = params.split(',').map { |p| to_kotlin_type(p.strip, mode) }.join(', ')
+              return "((#{param_types}) -> Unit)?"
+            end
+          end
 
           # Check mode-specific mapping first
           if mode && MODE_TYPE_MAPPING.key?(type_str)
