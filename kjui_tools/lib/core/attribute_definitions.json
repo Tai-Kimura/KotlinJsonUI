@@ -6,6 +6,10 @@
       "type": "string",
       "description": "Unique identifier for the component"
     },
+    "generatedBy": {
+      "type": "string",
+      "description": "AI generation command that created this component (metadata only, not rendered)"
+    },
     "type": {
       "type": "string",
       "required": true,
@@ -611,23 +615,23 @@
         "string",
         "array"
       ],
-      "description": "Click handler function name (selector-based) or event array"
+      "description": "Click handler function name (selector-based, lowercase) - string only, no binding"
     },
     "onClick": {
-      "type": "string",
-      "description": "Click handler function name (closure-based, camelCase)"
+      "type": "binding",
+      "description": "Click handler (camelCase) - binding only (@{functionName})"
     },
     "onLongPress": {
-      "type": "string",
-      "description": "Long press gesture closure handler"
+      "type": "binding",
+      "description": "Long press gesture handler (camelCase) - binding only (@{functionName})"
     },
     "onPan": {
-      "type": "string",
-      "description": "Pan gesture closure handler"
+      "type": "binding",
+      "description": "Pan gesture handler (camelCase) - binding only (@{functionName})"
     },
     "onPinch": {
-      "type": "string",
-      "description": "Pinch gesture closure handler"
+      "type": "binding",
+      "description": "Pinch gesture handler (camelCase) - binding only (@{functionName})"
     },
     "canTap": {
       "type": [
@@ -2423,12 +2427,12 @@
       "description": "Tint color"
     },
     "onValueChanged": {
-      "type": "string",
-      "description": "Value change handler"
+      "type": "binding",
+      "description": "Value change handler (camelCase) - binding only (@{functionName})"
     },
     "onValueChange": {
       "type": "string",
-      "description": "Value change handler (alias)"
+      "description": "Value change handler (selector-based) - string only, no binding"
     },
     "minimumValueImage": {
       "type": "string",
