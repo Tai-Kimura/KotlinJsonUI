@@ -38,7 +38,9 @@ module KjuiTools
       # Mode-specific type mapping (types that differ between compose and xml)
       MODE_TYPE_MAPPING = {
         'Color' => { 'compose' => 'Color', 'xml' => 'Int' },
-        'color' => { 'compose' => 'Color', 'xml' => 'Int' }
+        'color' => { 'compose' => 'Color', 'xml' => 'Int' },
+        'Image' => { 'compose' => 'Painter', 'xml' => 'Drawable' },
+        'image' => { 'compose' => 'Painter', 'xml' => 'Drawable' }
       }.freeze
 
       # Default values for each Kotlin type
@@ -50,7 +52,9 @@ module KjuiTools
         'Boolean' => 'false',
         'Color' => 'Color.Unspecified',
         'Dp' => '0.dp',
-        'Alignment' => 'Alignment.TopStart'
+        'Alignment' => 'Alignment.TopStart',
+        'Painter' => 'EmptyPainter()',
+        'Drawable' => 'null'
       }.freeze
 
       class << self
