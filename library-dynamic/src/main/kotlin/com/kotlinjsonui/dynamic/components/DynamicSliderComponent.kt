@@ -146,24 +146,32 @@ class DynamicSliderComponent {
                 }
                 
                 // Also call custom handler if specified
-                json.get("onValueChange")?.asString?.let { methodName ->
-                    val handler = data[methodName]
-                    if (handler is Function<*>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (handler as (Float) -> Unit)(newValue)
-                        } catch (e: Exception) {
-                            // Try with Double
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (handler as (Double) -> Unit)(newValue.toDouble())
-                            } catch (e2: Exception) {
-                                // Try without parameter
+                // onValueChange (camelCase) -> binding format only (@{functionName})
+                json.get("onValueChange")?.asString?.let { onValueChangeValue ->
+                    // Must be binding format
+                    if (onValueChangeValue.contains("@{")) {
+                        val pattern = "@\\{([^}]+)\\}".toRegex()
+                        val methodName = pattern.find(onValueChangeValue)?.groupValues?.get(1)
+                        methodName?.let { name ->
+                            val handler = data[name]
+                            if (handler is Function<*>) {
                                 try {
                                     @Suppress("UNCHECKED_CAST")
-                                    (handler as () -> Unit)()
-                                } catch (e3: Exception) {
-                                    // Handler doesn't match expected signature
+                                    (handler as (Float) -> Unit)(newValue)
+                                } catch (e: Exception) {
+                                    // Try with Double
+                                    try {
+                                        @Suppress("UNCHECKED_CAST")
+                                        (handler as (Double) -> Unit)(newValue.toDouble())
+                                    } catch (e2: Exception) {
+                                        // Try without parameter
+                                        try {
+                                            @Suppress("UNCHECKED_CAST")
+                                            (handler as () -> Unit)()
+                                        } catch (e3: Exception) {
+                                            // Handler doesn't match expected signature
+                                        }
+                                    }
                                 }
                             }
                         }

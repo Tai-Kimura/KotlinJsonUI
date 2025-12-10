@@ -85,11 +85,33 @@ class DynamicButtonComponent {
                 else -> true
             }
 
-            // Parse onclick handler with loading support
+            // Parse click handler with loading support
+            // onclick (lowercase) -> selector format only (string)
+            // onClick (camelCase) -> binding format only (@{functionName})
             val onClick: () -> Unit = {
                 if (!isLoading) {
-                    json.get("onclick")?.asString?.let { methodName ->
-                        val handler = data[methodName]
+                    // Get method name from onclick (selector) or onClick (binding)
+                    val methodName = when {
+                        // onclick (lowercase) - selector format (string only)
+                        json.get("onclick")?.asString != null -> {
+                            val onclickValue = json.get("onclick").asString
+                            // Must NOT be binding format for onclick
+                            if (!onclickValue.contains("@{")) onclickValue else null
+                        }
+                        // onClick (camelCase) - binding format only (@{functionName})
+                        json.get("onClick")?.asString != null -> {
+                            val onClickValue = json.get("onClick").asString
+                            // Must be binding format for onClick
+                            if (onClickValue.contains("@{")) {
+                                val pattern = "@\\{([^}]+)\\}".toRegex()
+                                pattern.find(onClickValue)?.groupValues?.get(1)
+                            } else null
+                        }
+                        else -> null
+                    }
+
+                    methodName?.let { name ->
+                        val handler = data[name]
                         if (handler is Function<*>) {
                             try {
                                 // Check if handler is async (suspend function)

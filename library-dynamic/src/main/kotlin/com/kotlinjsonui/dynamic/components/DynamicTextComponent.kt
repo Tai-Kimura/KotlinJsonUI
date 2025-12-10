@@ -119,20 +119,37 @@ class DynamicTextComponent {
                             background = attr.get("background")?.asString,
                             underline = attr.get("underline")?.asBoolean ?: false,
                             strikethrough = attr.get("strikethrough")?.asBoolean ?: false,
-                            onClick = attr.get("onclick")?.asString?.let { methodName ->
-                                // Get the function from the data map
-                                val handler = data[methodName]
-                                if (handler is Function<*>) {
-                                    {
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (handler as () -> Unit)()
-                                        } catch (e: Exception) {
-                                            // Handler doesn't match expected signature
-                                        }
+                            // onclick (lowercase) -> selector format only (string)
+                            // onClick (camelCase) -> binding format only (@{functionName})
+                            onClick = run {
+                                val methodName = when {
+                                    // onclick (lowercase) - selector format (string only)
+                                    attr.get("onclick")?.asString != null -> {
+                                        val onclickValue = attr.get("onclick").asString
+                                        if (!onclickValue.contains("@{")) onclickValue else null
                                     }
-                                } else {
-                                    null
+                                    // onClick (camelCase) - binding format only (@{functionName})
+                                    attr.get("onClick")?.asString != null -> {
+                                        val onClickValue = attr.get("onClick").asString
+                                        if (onClickValue.contains("@{")) {
+                                            val pattern = "@\\{([^}]+)\\}".toRegex()
+                                            pattern.find(onClickValue)?.groupValues?.get(1)
+                                        } else null
+                                    }
+                                    else -> null
+                                }
+                                methodName?.let { name ->
+                                    val handler = data[name]
+                                    if (handler is Function<*>) {
+                                        {
+                                            try {
+                                                @Suppress("UNCHECKED_CAST")
+                                                (handler as () -> Unit)()
+                                            } catch (e: Exception) {
+                                                // Handler doesn't match expected signature
+                                            }
+                                        }
+                                    } else null
                                 }
                             }
                         )

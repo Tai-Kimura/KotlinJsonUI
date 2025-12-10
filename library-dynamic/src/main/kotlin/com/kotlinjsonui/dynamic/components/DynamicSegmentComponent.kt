@@ -144,23 +144,35 @@ class DynamicSegmentComponent {
                             selectedIndex = index
                             
                             // Call custom handler if specified
-                            json.get("onValueChange")?.asString?.let { methodName ->
-                                val handler = data[methodName]
-                                if (handler is Function<*>) {
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (handler as (Int) -> Unit)(index)
-                                    } catch (e: Exception) {
-                                        // Try without parameter
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (handler as () -> Unit)()
-                                        } catch (e2: Exception) {
-                                            // Handler doesn't match expected signature
-                                        }
-                                    }
-                                }
-                            } ?: run {
+                            // onValueChange (camelCase) -> binding format only (@{functionName})
+                            val onValueChangeHandled = json.get("onValueChange")?.asString?.let { onValueChangeValue ->
+                                // Must be binding format
+                                if (onValueChangeValue.contains("@{")) {
+                                    val pattern = "@\\{([^}]+)\\}".toRegex()
+                                    val methodName = pattern.find(onValueChangeValue)?.groupValues?.get(1)
+                                    methodName?.let { name ->
+                                        val handler = data[name]
+                                        if (handler is Function<*>) {
+                                            try {
+                                                @Suppress("UNCHECKED_CAST")
+                                                (handler as (Int) -> Unit)(index)
+                                                true
+                                            } catch (e: Exception) {
+                                                // Try without parameter
+                                                try {
+                                                    @Suppress("UNCHECKED_CAST")
+                                                    (handler as () -> Unit)()
+                                                    true
+                                                } catch (e2: Exception) {
+                                                    false
+                                                }
+                                            }
+                                        } else false
+                                    } ?: false
+                                } else false
+                            } ?: false
+
+                            if (!onValueChangeHandled) {
                                 // Update bound variable if no custom handler
                                 if (bindingVariable != null) {
                                     val updateData = data["updateData"]
