@@ -677,9 +677,7 @@
     },
     "style": {
       "type": "string",
-      "description": "Style class name",
-      "platform": "swift",
-      "mode": "uikit"
+      "description": "Style class name"
     },
     "compressHorizontal": {
       "type": "string",
