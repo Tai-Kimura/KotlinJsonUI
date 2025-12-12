@@ -2531,14 +2531,16 @@
     "distribution": {
       "type": "string",
       "enum": ["fill", "fillEqually", "equalSpacing", "equalCentering"],
-      "description": "Child distribution mode for stacks"
+      "description": "Child distribution mode for stacks",
+      "mode": ["swiftui", "compose", "react"]
     },
     "spacing": {
       "type": [
         "number",
         "binding"
       ],
-      "description": "Space between children (binding supported)"
+      "description": "Space between children (binding supported)",
+      "mode": ["swiftui", "compose", "react"]
     },
     "gradient": {
       "type": "array",
