@@ -669,7 +669,8 @@
     },
     "variables": {
       "type": "object",
-      "description": "Variables for include"
+      "description": "Variables for include",
+      "mode": "uikit"
     },
     "shared_data": {
       "type": "object",
