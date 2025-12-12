@@ -74,14 +74,18 @@
         "number",
         "binding"
       ],
-      "description": "Width weight for flexible layouts (binding supported)"
+      "description": "Width weight for flexible layouts (binding supported)",
+      "platform": "swift",
+      "mode": "uikit"
     },
     "heightWeight": {
       "type": [
         "number",
         "binding"
       ],
-      "description": "Height weight for flexible layouts (binding supported)"
+      "description": "Height weight for flexible layouts (binding supported)",
+      "platform": "swift",
+      "mode": "uikit"
     },
     "maxWidthWeight": {
       "type": [
