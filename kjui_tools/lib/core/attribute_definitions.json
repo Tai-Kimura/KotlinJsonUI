@@ -150,35 +150,35 @@
         "string",
         "binding"
       ],
-      "description": "Background color (can be data binding)"
+      "description": "Background color - hex string (#RRGGBB or #RRGGBBAA) or color name from colors.json (can be data binding)"
     },
     "tapBackground": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Background color when tapped (binding supported)"
+      "description": "Background color when tapped - hex string or color name from colors.json (binding supported)"
     },
     "highlightBackground": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Background color when highlighted (binding supported)"
+      "description": "Background color when highlighted - hex string or color name from colors.json (binding supported)"
     },
     "disabledBackground": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Background when disabled (binding supported)"
+      "description": "Background when disabled - hex string or color name from colors.json (binding supported)"
     },
     "defaultBackground": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Default background color (binding supported)",
+      "description": "Default background color - hex string or color name from colors.json (binding supported)",
       "platform": "swift",
       "mode": "uikit"
     },
@@ -201,7 +201,7 @@
         "string",
         "binding"
       ],
-      "description": "Border color (binding supported)"
+      "description": "Border color - hex string or color name from colors.json (binding supported)"
     },
     "alpha": {
       "type": [
@@ -647,7 +647,7 @@
         "string",
         "binding"
       ],
-      "description": "Tint color (binding supported)"
+      "description": "Tint color - hex string or color name from colors.json (binding supported)"
     },
     "binding": {
       "type": [
@@ -906,7 +906,7 @@
         "string",
         "binding"
       ],
-      "description": "Font color (can be data binding)"
+      "description": "Font color - hex string or color name from colors.json (can be data binding)"
     },
     "selected": {
       "type": [
@@ -994,7 +994,7 @@
         },
         "color": {
           "type": "string",
-          "description": "Underline color"
+          "description": "Underline color - hex string or color name from colors.json"
         },
         "lineOffset": {
           "type": "number",
@@ -1021,7 +1021,7 @@
         },
         "color": {
           "type": "string",
-          "description": "Strikethrough color"
+          "description": "Strikethrough color - hex string or color name from colors.json"
         }
       }
     },
@@ -1057,7 +1057,7 @@
         "string",
         "binding"
       ],
-      "description": "Hint text color (binding supported)"
+      "description": "Hint text color - hex string or color name from colors.json (binding supported)"
     },
     "highlightAttributes": {
       "type": "object",
@@ -1073,7 +1073,7 @@
         },
         "fontColor": {
           "type": "string",
-          "description": "Font color"
+          "description": "Font color - hex string or color name from colors.json"
         },
         "lineHeightMultiple": {
           "type": "number",
@@ -1095,7 +1095,7 @@
         "string",
         "binding"
       ],
-      "description": "Font color when selected (binding supported)"
+      "description": "Font color when selected - hex string or color name from colors.json (binding supported)"
     },
     "partialAttributes": {
       "type": "array",
@@ -1113,7 +1113,7 @@
           },
           "fontColor": {
             "type": "string",
-            "description": "Font color"
+            "description": "Font color - hex string or color name from colors.json"
           },
           "lineSpacing": {
             "type": "number",
@@ -1159,7 +1159,7 @@
               },
               "color": {
                 "type": "string",
-                "description": "Underline color"
+                "description": "Underline color - hex string or color name from colors.json"
               },
               "lineOffset": {
                 "type": "number",
@@ -1196,7 +1196,7 @@
         },
         "fontColor": {
           "type": "string",
-          "description": "Font color"
+          "description": "Font color - hex string or color name from colors.json"
         },
         "lineHeightMultiple": {
           "type": "number",
@@ -1226,7 +1226,7 @@
         "string",
         "binding"
       ],
-      "description": "Placeholder color (binding supported)"
+      "description": "Placeholder color - hex string or color name from colors.json (binding supported)"
     },
     "hintFont": {
       "type": "string",
@@ -1261,7 +1261,7 @@
         "string",
         "binding"
       ],
-      "description": "Font color (binding supported)"
+      "description": "Font color - hex string or color name from colors.json (binding supported)"
     },
     "textAlign": {
       "type": "string",
@@ -1380,11 +1380,11 @@
     },
     "accessoryBackground": {
       "type": "string",
-      "description": "Input accessory background"
+      "description": "Input accessory background - hex string or color name from colors.json"
     },
     "accessoryTextColor": {
       "type": "string",
-      "description": "Input accessory text color"
+      "description": "Input accessory text color - hex string or color name from colors.json"
     },
     "doneText": {
       "type": "string",
@@ -1478,7 +1478,7 @@
         "string",
         "binding"
       ],
-      "description": "Placeholder color (binding supported)"
+      "description": "Placeholder color - hex string or color name from colors.json (binding supported)"
     },
     "hintFont": {
       "type": "string",
@@ -1520,7 +1520,7 @@
         "string",
         "binding"
       ],
-      "description": "Font color (binding supported)"
+      "description": "Font color - hex string or color name from colors.json (binding supported)"
     },
     "textAlign": {
       "type": "string",
@@ -1633,7 +1633,7 @@
         "string",
         "binding"
       ],
-      "description": "Placeholder color (binding supported)"
+      "description": "Placeholder color - hex string or color name from colors.json (binding supported)"
     },
     "inputType": {
       "type": "string",
@@ -1663,7 +1663,7 @@
         "string",
         "binding"
       ],
-      "description": "Placeholder color (binding supported)"
+      "description": "Placeholder color - hex string or color name from colors.json (binding supported)"
     }
   },
   "Button": {
@@ -1687,33 +1687,33 @@
         "string",
         "binding"
       ],
-      "description": "Font color (binding supported)"
+      "description": "Font color - hex string or color name from colors.json (binding supported)"
     },
     "disabledFontColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Font color when disabled (binding supported)"
+      "description": "Font color when disabled - hex string or color name from colors.json (binding supported)"
     },
     "highlightColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Highlight color (binding supported)"
+      "description": "Highlight color - hex string or color name from colors.json (binding supported)"
     },
     "hilightColor": {
       "type": "string",
-      "description": "Highlight color (typo alias)"
+      "description": "Highlight color - hex string or color name from colors.json (typo alias)"
     },
     "tapBackground": {
       "type": "string",
-      "description": "Background when tapped"
+      "description": "Background when tapped - hex string or color name from colors.json"
     },
     "highlightBackground": {
       "type": "string",
-      "description": "Background when highlighted"
+      "description": "Background when highlighted - hex string or color name from colors.json"
     },
     "image": {
       "type": "string",
@@ -1884,7 +1884,7 @@
         "string",
         "binding"
       ],
-      "description": "Hint text color (binding supported)"
+      "description": "Hint text color - hex string or color name from colors.json (binding supported)"
     },
     "items": {
       "type": [
@@ -1993,7 +1993,7 @@
     },
     "fontColor": {
       "type": "string",
-      "description": "Font color"
+      "description": "Font color - hex string or color name from colors.json"
     },
     "labelAttributes": {
       "type": "object",
@@ -2009,7 +2009,7 @@
         },
         "fontColor": {
           "type": "string",
-          "description": "Font color"
+          "description": "Font color - hex string or color name from colors.json"
         },
         "textAlign": {
           "type": "string",
@@ -2030,7 +2030,7 @@
         },
         "highlightColor": {
           "type": "string",
-          "description": "Highlight color"
+          "description": "Highlight color - hex string or color name from colors.json"
         },
         "hintAttributes": {
           "type": "object",
@@ -2038,7 +2038,7 @@
         },
         "hintColor": {
           "type": "string",
-          "description": "Hint color"
+          "description": "Hint color - hex string or color name from colors.json"
         },
         "lineHeightMultiple": {
           "type": "number",
@@ -2089,11 +2089,11 @@
         },
         "tintColor": {
           "type": "string",
-          "description": "Caret tint color"
+          "description": "Caret tint color - hex string or color name from colors.json"
         },
         "background": {
           "type": "string",
-          "description": "Caret background color"
+          "description": "Caret background color - hex string or color name from colors.json"
         }
       }
     },
@@ -2105,7 +2105,7 @@
       "properties": {
         "background": {
           "type": "string",
-          "description": "Divider color"
+          "description": "Divider color - hex string or color name from colors.json"
         },
         "height": {
           "type": "number",
@@ -2186,29 +2186,29 @@
         "string",
         "binding"
       ],
-      "description": "Tint color (binding supported)"
+      "description": "Tint color - hex string or color name from colors.json (binding supported)"
     },
     "tintColor": {
       "type": "string",
-      "description": "Tint color (alias)"
+      "description": "Tint color - hex string or color name from colors.json (alias)"
     },
     "onTintColor": {
       "type": "string",
-      "description": "Track color when on"
+      "description": "Track color when on - hex string or color name from colors.json"
     },
     "thumbTintColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Thumb tint color (binding supported)"
+      "description": "Thumb tint color - hex string or color name from colors.json (binding supported)"
     },
     "offTintColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Off tint color (binding supported)",
+      "description": "Off tint color - hex string or color name from colors.json (binding supported)",
       "platform": "swift",
       "mode": "uikit"
     },
@@ -2238,7 +2238,7 @@
         },
         "fontColor": {
           "type": "string",
-          "description": "Font color"
+          "description": "Font color - hex string or color name from colors.json"
         }
       }
     }
@@ -2283,29 +2283,29 @@
         "string",
         "binding"
       ],
-      "description": "Tint color (binding supported)"
+      "description": "Tint color - hex string or color name from colors.json (binding supported)"
     },
     "tintColor": {
       "type": "string",
-      "description": "Tint color (alias)"
+      "description": "Tint color - hex string or color name from colors.json (alias)"
     },
     "onTintColor": {
       "type": "string",
-      "description": "Track color when on"
+      "description": "Track color when on - hex string or color name from colors.json"
     },
     "thumbTintColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Thumb tint color (binding supported)"
+      "description": "Thumb tint color - hex string or color name from colors.json (binding supported)"
     },
     "offTintColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Off tint color (binding supported)",
+      "description": "Off tint color - hex string or color name from colors.json (binding supported)",
       "platform": "swift",
       "mode": "uikit"
     },
@@ -2335,7 +2335,7 @@
         },
         "fontColor": {
           "type": "string",
-          "description": "Font color"
+          "description": "Font color - hex string or color name from colors.json"
         }
       }
     }
@@ -2355,21 +2355,21 @@
     },
     "tintColor": {
       "type": "string",
-      "description": "Tint color"
+      "description": "Tint color - hex string or color name from colors.json"
     },
     "normalColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Normal state color (binding supported)"
+      "description": "Normal state color - hex string or color name from colors.json (binding supported)"
     },
     "selectedColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Selected state color (binding supported)"
+      "description": "Selected state color - hex string or color name from colors.json (binding supported)"
     },
     "valueChange": {
       "type": "string",
@@ -2426,7 +2426,7 @@
     },
     "tintColor": {
       "type": "string",
-      "description": "Tint color"
+      "description": "Tint color - hex string or color name from colors.json"
     },
     "onValueChange": {
       "type": "binding",
@@ -2457,21 +2457,21 @@
     },
     "tintColor": {
       "type": "string",
-      "description": "Tint color"
+      "description": "Tint color - hex string or color name from colors.json"
     },
     "progressTintColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Progress portion color (binding supported)"
+      "description": "Progress portion color - hex string or color name from colors.json (binding supported)"
     },
     "trackTintColor": {
       "type": [
         "string",
         "binding"
       ],
-      "description": "Track portion color (binding supported)"
+      "description": "Track portion color - hex string or color name from colors.json (binding supported)"
     },
     "progressViewStyle": {
       "type": "string",
@@ -2874,7 +2874,7 @@
         "string",
         "binding"
       ],
-      "description": "Text color (binding supported)"
+      "description": "Text color - hex string or color name from colors.json (binding supported)"
     },
     "spacing": {
       "type": [
@@ -2965,7 +2965,7 @@
         "string",
         "binding"
       ],
-      "description": "Text color (binding supported)"
+      "description": "Text color - hex string or color name from colors.json (binding supported)"
     },
     "spacing": {
       "type": [
@@ -3056,7 +3056,7 @@
         "string",
         "binding"
       ],
-      "description": "Text color (binding supported)"
+      "description": "Text color - hex string or color name from colors.json (binding supported)"
     },
     "spacing": {
       "type": [
@@ -3084,7 +3084,7 @@
         "string",
         "binding"
       ],
-      "description": "Indicator color (binding supported)"
+      "description": "Indicator color - hex string or color name from colors.json (binding supported)"
     },
     "hidesWhenStopped": {
       "type": "boolean",
@@ -3148,7 +3148,7 @@
     },
     "fontColor": {
       "type": "string",
-      "description": "Text color"
+      "description": "Text color - hex string or color name from colors.json"
     },
     "textShadow": {
       "type": "string",
@@ -3156,7 +3156,7 @@
     },
     "selectedFontColor": {
       "type": "string",
-      "description": "Selected text color"
+      "description": "Selected text color - hex string or color name from colors.json"
     },
     "icon_on": {
       "type": "string",
