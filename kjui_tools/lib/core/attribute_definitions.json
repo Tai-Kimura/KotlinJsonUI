@@ -665,11 +665,12 @@
     },
     "include": {
       "type": "string",
-      "description": "Include another JSON layout"
+      "description": "Include another JSON layout (filename without extension)"
     },
     "variables": {
       "type": "object",
       "description": "Variables for include",
+      "platform": "swift",
       "mode": "uikit"
     },
     "shared_data": {
