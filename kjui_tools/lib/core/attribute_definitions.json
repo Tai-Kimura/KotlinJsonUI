@@ -2530,7 +2530,8 @@
     },
     "distribution": {
       "type": "string",
-      "description": "Distribution mode"
+      "enum": ["fill", "fillEqually", "equalSpacing", "equalCentering"],
+      "description": "Child distribution mode for stacks"
     },
     "spacing": {
       "type": [
