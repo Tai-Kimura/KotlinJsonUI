@@ -431,19 +431,19 @@ module KjuiTools
           @logger.info "Created attribute definition file: #{file_path}"
         end
 
-        # Map type string to JSON schema type
+        # Map type string to JSON schema type (supports binding for all types)
         # @param type [String] The type string from options
-        # @return [String] JSON schema type
+        # @return [Array, String] JSON schema type(s) - array for binding support
         def map_type_to_json_type(type)
           case type.downcase
           when 'string'
-            'string'
+            ['string', 'binding']
           when 'int', 'integer'
-            'number'
+            ['number', 'binding']
           when 'double', 'float'
-            'number'
+            ['number', 'binding']
           when 'bool', 'boolean'
-            'boolean'
+            ['boolean', 'binding']
           else
             # Custom class types must use binding syntax (@{propertyName})
             'binding'
