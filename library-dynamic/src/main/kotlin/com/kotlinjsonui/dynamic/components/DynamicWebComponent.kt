@@ -13,6 +13,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.dashedBorder
+import com.kotlinjsonui.dynamic.helpers.dottedBorder
 
 /**
  * Dynamic Web Component Converter
@@ -64,11 +66,16 @@ class DynamicWebComponent {
                 ModifierBuilder.buildModifier(json)
             }
             
-            // Apply border if specified
+            // Apply border if specified (supports solid/dashed/dotted)
             if (json.has("borderWidth") && json.has("borderColor")) {
                 val borderWidth = json.get("borderWidth").asFloat.dp
                 val borderColor = ColorParser.parseColor(json, "borderColor") ?: Color.Gray
-                modifier = modifier.border(borderWidth, borderColor)
+                val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+                modifier = when (borderStyle) {
+                    "dashed" -> modifier.dashedBorder(borderWidth, borderColor, null)
+                    "dotted" -> modifier.dottedBorder(borderWidth, borderColor, null)
+                    else -> modifier.border(borderWidth, borderColor)
+                }
             }
             
             // Track URL for updates

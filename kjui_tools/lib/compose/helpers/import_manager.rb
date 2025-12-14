@@ -105,7 +105,9 @@ module KjuiTools
             box: "import androidx.compose.foundation.layout.Box",
             DynamicView: "import com.kotlinjsonui.dynamic.DynamicView",
             JsonObject: "import com.google.gson.JsonObject",
-            JsonParser: "import com.google.gson.JsonParser"
+            JsonParser: "import com.google.gson.JsonParser",
+            dashed_border: ["import com.kotlinjsonui.dynamic.helpers.dashedBorder",
+                            "import com.kotlinjsonui.dynamic.helpers.dottedBorder"]
           }
         end
         

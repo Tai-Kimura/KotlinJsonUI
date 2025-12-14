@@ -18,6 +18,8 @@ import coil.request.ImageRequest
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.dashedBorder
+import com.kotlinjsonui.dynamic.helpers.dottedBorder
 
 /**
  * Dynamic CircleImage Component Converter
@@ -88,11 +90,16 @@ class DynamicCircleImageComponent {
                 modifier = modifier.background(it, CircleShape)
             }
             
-            // Border
+            // Border (supports solid/dashed/dotted)
             val borderWidth = json.get("borderWidth")?.asFloat
             val borderColor = ColorParser.parseColor(json, "borderColor")
             if (borderWidth != null && borderWidth > 0 && borderColor != null) {
-                modifier = modifier.border(borderWidth.dp, borderColor, CircleShape)
+                val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+                modifier = when (borderStyle) {
+                    "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, CircleShape)
+                    "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, CircleShape)
+                    else -> modifier.border(borderWidth.dp, borderColor, CircleShape)
+                }
             }
             
             // Create the appropriate image component

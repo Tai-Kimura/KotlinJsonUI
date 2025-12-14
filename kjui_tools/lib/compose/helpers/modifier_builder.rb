@@ -208,12 +208,9 @@ module KjuiTools
               end
               
               if json_data['borderColor'] && json_data['borderWidth']
-                # Use ResourceResolver to process border color
-                border_color = ResourceResolver.process_color(json_data['borderColor'], required_imports)
-                border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
-                modifiers << ".border(#{json_data['borderWidth']}.dp, #{border_color}, #{border_shape})"
+                modifiers << build_border_modifier(json_data, required_imports)
               end
-              
+
               modifiers << ".background(#{background_color})"
             else
               modifiers << ".background(#{background_color})"
@@ -221,16 +218,13 @@ module KjuiTools
           elsif json_data['cornerRadius'] || json_data['borderColor'] || json_data['borderWidth']
             required_imports&.add(:border)
             required_imports&.add(:shape)
-            
+
             if json_data['cornerRadius']
               modifiers << ".clip(RoundedCornerShape(#{json_data['cornerRadius']}.dp))"
             end
-            
+
             if json_data['borderColor'] && json_data['borderWidth']
-              # Use ResourceResolver to process border color
-              border_color = ResourceResolver.process_color(json_data['borderColor'], required_imports)
-              border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
-              modifiers << ".border(#{json_data['borderWidth']}.dp, #{border_color}, #{border_shape})"
+              modifiers << build_border_modifier(json_data, required_imports)
             end
           end
           
@@ -631,6 +625,25 @@ module KjuiTools
         end
 
         private
+
+        # Build border modifier with support for solid/dashed/dotted styles
+        def self.build_border_modifier(json_data, required_imports = nil)
+          border_color = ResourceResolver.process_color(json_data['borderColor'], required_imports)
+          border_width = json_data['borderWidth']
+          border_style = json_data['borderStyle'] || 'solid'
+          border_shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
+
+          case border_style
+          when 'dashed'
+            required_imports&.add(:dashed_border)
+            ".dashedBorder(#{border_width}.dp, #{border_color}, #{border_shape})"
+          when 'dotted'
+            required_imports&.add(:dashed_border)
+            ".dottedBorder(#{border_width}.dp, #{border_color}, #{border_shape})"
+          else # 'solid' or default
+            ".border(#{border_width}.dp, #{border_color}, #{border_shape})"
+          end
+        end
 
         # Process dimension value - handles data bindings and numeric values
         def self.process_dimension(value)

@@ -20,6 +20,8 @@ import coil.request.ImageRequest
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.dashedBorder
+import com.kotlinjsonui.dynamic.helpers.dottedBorder
 
 /**
  * Dynamic NetworkImage Component Converter
@@ -110,26 +112,23 @@ class DynamicNetworkImageComponent {
             
             // Corner radius and shape
             val cornerRadius = json.get("cornerRadius")?.asFloat
-            if (cornerRadius != null && cornerRadius > 0) {
-                val shape = if (cornerRadius >= 500) {
-                    CircleShape
-                } else {
-                    RoundedCornerShape(cornerRadius.dp)
-                }
+            val shape = if (cornerRadius != null && cornerRadius > 0) {
+                if (cornerRadius >= 500) CircleShape else RoundedCornerShape(cornerRadius.dp)
+            } else null
+
+            if (shape != null) {
                 modifier = modifier.clip(shape)
-                
-                // Apply border with the same shape if specified
-                val borderWidth = json.get("borderWidth")?.asFloat
-                val borderColor = ColorParser.parseColor(json, "borderColor")
-                if (borderWidth != null && borderWidth > 0 && borderColor != null) {
-                    modifier = modifier.border(borderWidth.dp, borderColor, shape)
-                }
-            } else {
-                // Apply border without corner radius
-                val borderWidth = json.get("borderWidth")?.asFloat
-                val borderColor = ColorParser.parseColor(json, "borderColor")
-                if (borderWidth != null && borderWidth > 0 && borderColor != null) {
-                    modifier = modifier.border(borderWidth.dp, borderColor, RectangleShape)
+            }
+
+            // Apply border (supports solid/dashed/dotted)
+            val borderWidth = json.get("borderWidth")?.asFloat
+            val borderColor = ColorParser.parseColor(json, "borderColor")
+            if (borderWidth != null && borderWidth > 0 && borderColor != null) {
+                val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+                modifier = when (borderStyle) {
+                    "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
+                    "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
+                    else -> modifier.border(borderWidth.dp, borderColor, shape ?: RectangleShape)
                 }
             }
             

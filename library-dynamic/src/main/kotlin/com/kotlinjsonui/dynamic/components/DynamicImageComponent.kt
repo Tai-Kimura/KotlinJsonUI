@@ -23,6 +23,8 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.dashedBorder
+import com.kotlinjsonui.dynamic.helpers.dottedBorder
 
 /**
  * Dynamic Image Component Converter
@@ -104,23 +106,28 @@ class DynamicImageComponent {
             }
 
             // Corner radius (clip)
-            json.get("cornerRadius")?.asFloat?.let { radius ->
-                val shape = RoundedCornerShape(radius.dp)
-                modifier = modifier.clip(shape)
-
-                // If we have a border, apply it with the same shape
-                json.get("borderColor")?.asString?.let { borderColorStr ->
-                    ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
-                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                        modifier = modifier.border(borderWidth.dp, borderColor, shape)
-                    }
+            val shape = json.get("cornerRadius")?.asFloat?.let { radius ->
+                RoundedCornerShape(radius.dp).also {
+                    modifier = modifier.clip(it)
                 }
-            } ?: run {
-                // No corner radius, but might still have border
-                json.get("borderColor")?.asString?.let { borderColorStr ->
-                    ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
-                        val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                        modifier = modifier.border(borderWidth.dp, borderColor)
+            }
+
+            // Border (supports solid/dashed/dotted)
+            json.get("borderColor")?.asString?.let { borderColorStr ->
+                ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
+                    val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                    val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+
+                    modifier = when (borderStyle) {
+                        "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
+                        "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
+                        else -> { // "solid" or default
+                            if (shape != null) {
+                                modifier.border(borderWidth.dp, borderColor, shape)
+                            } else {
+                                modifier.border(borderWidth.dp, borderColor)
+                            }
+                        }
                     }
                 }
             }

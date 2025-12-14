@@ -28,6 +28,8 @@ import com.kotlinjsonui.components.PartialAttributesText
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.dashedBorder
+import com.kotlinjsonui.dynamic.helpers.dottedBorder
 
 /**
  * Dynamic Text/Label Component Converter
@@ -352,17 +354,24 @@ class DynamicTextComponent {
                 }
             }
 
-            // 5. Border (after background)
+            // 5. Border (after background, supports solid/dashed/dotted)
             json.get("borderColor")?.asString?.let { borderColorStr ->
                 ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+                    val borderStyle = json.get("borderStyle")?.asString ?: "solid"
                     val shape = json.get("cornerRadius")?.asFloat?.let {
                         RoundedCornerShape(it.dp)
                     }
-                    if (shape != null) {
-                        modifier = modifier.border(borderWidth.dp, borderColor, shape)
-                    } else {
-                        modifier = modifier.border(borderWidth.dp, borderColor)
+                    modifier = when (borderStyle) {
+                        "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
+                        "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
+                        else -> { // "solid" or default
+                            if (shape != null) {
+                                modifier.border(borderWidth.dp, borderColor, shape)
+                            } else {
+                                modifier.border(borderWidth.dp, borderColor)
+                            }
+                        }
                     }
                 }
             }
