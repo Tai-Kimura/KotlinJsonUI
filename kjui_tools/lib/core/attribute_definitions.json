@@ -207,6 +207,12 @@
       ],
       "description": "Border color - hex string or color name from colors.json (binding supported)"
     },
+    "borderStyle": {
+      "type": "string",
+      "enum": ["solid", "dashed", "dotted"],
+      "default": "solid",
+      "description": "Border line style - solid (default), dashed, or dotted"
+    },
     "alpha": {
       "type": [
         "number",
@@ -873,6 +879,16 @@
       "type": "string",
       "description": "Lifecycle callback when view disappears (SwiftUI/Compose only)",
       "mode": "compose"
+    },
+    "className": {
+      "type": "string",
+      "description": "Custom CSS class name",
+      "platform": "react"
+    },
+    "testId": {
+      "type": "string",
+      "description": "Test ID for testing (data-testid)",
+      "platform": "react"
     }
   },
   "Label": {
@@ -911,6 +927,30 @@
         "binding"
       ],
       "description": "Font color - hex string or color name from colors.json (can be data binding)"
+    },
+    "fontWeight": {
+      "type": [
+        "string",
+        "number"
+      ],
+      "description": "Font weight: 'normal', 'bold', 'semibold', 'light', 'medium', 'heavy', 'black', 'thin', 'ultraLight' or numeric (100-900)",
+      "platform": "react"
+    },
+    "fontFamily": {
+      "type": "string",
+      "description": "Font family name",
+      "platform": "react"
+    },
+    "lineHeight": {
+      "type": "number",
+      "description": "Line height",
+      "platform": "react"
+    },
+    "textTransform": {
+      "type": "string",
+      "enum": ["none", "capitalize", "uppercase", "lowercase"],
+      "description": "Text transformation",
+      "platform": "react"
     },
     "selected": {
       "type": [
@@ -1612,6 +1652,42 @@
     "onTextChange": {
       "type": "string",
       "description": "Text change event selector"
+    },
+    "maxLength": {
+      "type": "number",
+      "description": "Maximum input length",
+      "platform": "react"
+    },
+    "pattern": {
+      "type": "string",
+      "description": "Input validation pattern",
+      "platform": "react"
+    },
+    "required": {
+      "type": "boolean",
+      "description": "Required field validation",
+      "platform": "react"
+    },
+    "selectable": {
+      "type": "boolean",
+      "description": "Whether text is selectable",
+      "platform": "react"
+    },
+    "rows": {
+      "type": "number",
+      "description": "Number of visible rows",
+      "platform": "react"
+    },
+    "cols": {
+      "type": "number",
+      "description": "Number of visible columns",
+      "platform": "react"
+    },
+    "resize": {
+      "type": "string",
+      "enum": ["none", "both", "horizontal", "vertical"],
+      "description": "Resize behavior",
+      "platform": "react"
     }
   },
   "EditText": {
@@ -1737,6 +1813,12 @@
       "description": "Button configuration (iOS 15+)",
       "platform": "swift",
       "mode": "uikit"
+    },
+    "buttonType": {
+      "type": "string",
+      "enum": ["button", "submit", "reset"],
+      "description": "HTML button type",
+      "platform": "react"
     }
   },
   "Image": {
@@ -1801,6 +1883,17 @@
         "template"
       ],
       "description": "Rendering mode"
+    },
+    "alt": {
+      "type": "string",
+      "description": "Alt text for accessibility",
+      "platform": "react"
+    },
+    "loading": {
+      "type": "string",
+      "enum": ["lazy", "eager"],
+      "description": "Loading behavior",
+      "platform": "react"
     }
   },
   "NetworkImage": {
@@ -1868,6 +1961,17 @@
       "description": "Download timeout in seconds",
       "platform": "swift",
       "mode": "uikit"
+    },
+    "alt": {
+      "type": "string",
+      "description": "Alt text for accessibility",
+      "platform": "react"
+    },
+    "loading": {
+      "type": "string",
+      "enum": ["lazy", "eager"],
+      "description": "Loading behavior",
+      "platform": "react"
     }
   },
   "SelectBox": {
@@ -2148,6 +2252,16 @@
     "onValueChange": {
       "type": "binding",
       "description": "Value change handler - binding only (@{functionName})"
+    },
+    "multiple": {
+      "type": "boolean",
+      "description": "Allow multiple selection",
+      "platform": "react"
+    },
+    "size": {
+      "type": "number",
+      "description": "Number of visible options",
+      "platform": "react"
     }
   },
   "Switch": {
@@ -2447,6 +2561,11 @@
       "description": "Image at maximum end",
       "platform": "swift",
       "mode": "uikit"
+    },
+    "step": {
+      "type": "number",
+      "description": "Step increment value",
+      "platform": "react"
     }
   },
   "Progress": {
@@ -2578,6 +2697,12 @@
     "highlighted": {
       "type": "boolean",
       "description": "View highlighted state"
+    },
+    "flexWrap": {
+      "type": "string",
+      "enum": ["nowrap", "wrap", "wrap-reverse"],
+      "description": "Flex wrap behavior",
+      "platform": "react"
     }
   },
   "ScrollView": {
@@ -2682,6 +2807,12 @@
       "type": "boolean",
       "description": "Enable keyboard avoidance",
       "platform": "swift"
+    },
+    "scrollBehavior": {
+      "type": "string",
+      "enum": ["auto", "smooth"],
+      "description": "Scroll behavior animation",
+      "platform": "react"
     }
   },
   "Collection": {
@@ -2811,6 +2942,11 @@
       "type": "boolean",
       "description": "Set target as data source",
       "platform": "swift"
+    },
+    "columnCount": {
+      "type": "number",
+      "description": "Number of columns for CSS grid",
+      "platform": "react"
     }
   },
   "Radio": {
@@ -3201,6 +3337,16 @@
     "allowsLinkPreview": {
       "type": "boolean",
       "description": "Enable link preview"
+    },
+    "sandbox": {
+      "type": "string",
+      "description": "Iframe sandbox attribute",
+      "platform": "react"
+    },
+    "allow": {
+      "type": "string",
+      "description": "Iframe allow attribute for feature policy",
+      "platform": "react"
     }
   },
   "SafeAreaView": {
