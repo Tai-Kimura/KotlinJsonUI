@@ -42,6 +42,19 @@ RSpec.describe KjuiTools::Compose::Components::TextComponent do
       expect(result).to include('fontWeight = FontWeight.Bold')
     end
 
+    it 'generates text with font attribute for semibold' do
+      json_data = { 'type' => 'Text', 'text' => 'Test', 'font' => 'semibold' }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('fontWeight = FontWeight.SemiBold')
+    end
+
+    it 'generates text with custom font family' do
+      json_data = { 'type' => 'Text', 'text' => 'Test', 'font' => 'Roboto-Regular' }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('fontFamily = FontFamily(Font(R.font.roboto_regular))')
+      expect(required_imports).to include(:font_family)
+    end
+
     it 'generates text with various font weights' do
       weights = {
         'thin' => 'Thin',

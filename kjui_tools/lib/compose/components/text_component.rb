@@ -44,23 +44,38 @@ module KjuiTools
             component_code += "\n" + indent("color = #{color_value},", depth + 1) if color_value
           end
           
-          # Font weight - handle both 'font' and 'fontWeight' attributes
-          if json_data['font'] == 'bold' || json_data['fontWeight'] == 'bold'
-            component_code += "\n" + indent("fontWeight = FontWeight.Bold,", depth + 1)
+          # Font weight values that should use system font weight
+          weight_names = ['bold', 'semibold', 'medium', 'light', 'thin', 'extralight', 'heavy', 'black', 'normal']
+          weight_mapping = {
+            'thin' => 'Thin',
+            'extralight' => 'ExtraLight',
+            'light' => 'Light',
+            'normal' => 'Normal',
+            'medium' => 'Medium',
+            'semibold' => 'SemiBold',
+            'bold' => 'Bold',
+            'extrabold' => 'ExtraBold',
+            'heavy' => 'ExtraBold',
+            'black' => 'Black'
+          }
+
+          # Handle font attribute - can be weight name or custom font family
+          if json_data['font']
+            font_value = json_data['font'].to_s.downcase
+            if weight_names.include?(font_value)
+              # It's a weight name, use FontWeight
+              weight = weight_mapping[font_value] || 'Normal'
+              required_imports&.add(:font_weight)
+              component_code += "\n" + indent("fontWeight = FontWeight.#{weight},", depth + 1)
+            else
+              # It's a custom font family name
+              required_imports&.add(:font_family)
+              component_code += "\n" + indent("fontFamily = FontFamily(Font(R.font.#{json_data['font'].gsub('-', '_').downcase})),", depth + 1)
+            end
           elsif json_data['fontWeight']
-            # Map font weight values to Compose FontWeight constants
-            weight_mapping = {
-              'thin' => 'Thin',
-              'extralight' => 'ExtraLight',
-              'light' => 'Light',
-              'normal' => 'Normal',
-              'medium' => 'Medium',
-              'semibold' => 'SemiBold',  # Note: SemiBold with capital B
-              'bold' => 'Bold',
-              'extrabold' => 'ExtraBold',
-              'black' => 'Black'
-            }
+            # fontWeight attribute takes precedence if font not specified
             weight = weight_mapping[json_data['fontWeight'].downcase] || json_data['fontWeight'].capitalize
+            required_imports&.add(:font_weight)
             component_code += "\n" + indent("fontWeight = FontWeight.#{weight},", depth + 1)
           end
           
@@ -245,23 +260,9 @@ module KjuiTools
             style_parts << "color = #{color_value}" if color_value
           end
           
-          if json_data['font'] == 'bold' || json_data['fontWeight'] == 'bold'
-            style_parts << "fontWeight = FontWeight.Bold"
-          elsif json_data['fontWeight']
-            weight_mapping = {
-              'thin' => 'Thin',
-              'extralight' => 'ExtraLight',
-              'light' => 'Light',
-              'normal' => 'Normal',
-              'medium' => 'Medium',
-              'semibold' => 'SemiBold',
-              'bold' => 'Bold',
-              'extrabold' => 'ExtraBold',
-              'black' => 'Black'
-            }
-            weight = weight_mapping[json_data['fontWeight'].downcase] || json_data['fontWeight'].capitalize
-            style_parts << "fontWeight = FontWeight.#{weight}"
-          end
+          # Handle font attribute for linkable text style
+          font_weight_result = resolve_font_attribute(json_data, required_imports)
+          style_parts << font_weight_result if font_weight_result
           
           if json_data['textAlign']
             required_imports&.add(:text_align)
@@ -581,6 +582,39 @@ module KjuiTools
           nil
         end
         
+        # Resolve font attribute - returns style string for fontWeight or fontFamily
+        def self.resolve_font_attribute(json_data, required_imports)
+          weight_names = ['bold', 'semibold', 'medium', 'light', 'thin', 'extralight', 'heavy', 'black', 'normal']
+          weight_mapping = {
+            'thin' => 'Thin',
+            'extralight' => 'ExtraLight',
+            'light' => 'Light',
+            'normal' => 'Normal',
+            'medium' => 'Medium',
+            'semibold' => 'SemiBold',
+            'bold' => 'Bold',
+            'extrabold' => 'ExtraBold',
+            'heavy' => 'ExtraBold',
+            'black' => 'Black'
+          }
+
+          if json_data['font']
+            font_value = json_data['font'].to_s.downcase
+            if weight_names.include?(font_value)
+              weight = weight_mapping[font_value] || 'Normal'
+              required_imports&.add(:font_weight)
+              "fontWeight = FontWeight.#{weight}"
+            else
+              required_imports&.add(:font_family)
+              "fontFamily = FontFamily(Font(R.font.#{json_data['font'].gsub('-', '_').downcase}))"
+            end
+          elsif json_data['fontWeight']
+            weight = weight_mapping[json_data['fontWeight'].downcase] || json_data['fontWeight'].capitalize
+            required_imports&.add(:font_weight)
+            "fontWeight = FontWeight.#{weight}"
+          end
+        end
+
         def self.escape_string(text)
           text.gsub('\\', '\\\\\\\\')
               .gsub('"', '\\"')
