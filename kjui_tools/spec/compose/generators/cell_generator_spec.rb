@@ -91,6 +91,32 @@ RSpec.describe KjuiTools::Compose::Generators::CellGenerator do
       expect(File.exist?(json_path)).to be true
     end
 
+    it 'converts PascalCase subdirectory to snake_case for JSON path' do
+      generator = described_class.new('MyProducts/ProductCell')
+      expect { generator.generate }.to output(/Generated Collection Cell/).to_stdout
+
+      # JSON uses snake_case path
+      json_path = File.join(temp_dir, 'src/main/assets/Layouts/my_products/product_cell.json')
+      expect(File.exist?(json_path)).to be true
+
+      # View keeps original casing for package
+      view_path = File.join(temp_dir, 'src/main/kotlin/com/example/app/views/MyProducts/product_cell/ProductCellView.kt')
+      expect(File.exist?(view_path)).to be true
+    end
+
+    it 'handles deeply nested paths with snake_case JSON directory' do
+      generator = described_class.new('Home/Footer/ItemCell')
+      expect { generator.generate }.to output(/Generated Collection Cell/).to_stdout
+
+      # JSON uses snake_case nested path
+      json_path = File.join(temp_dir, 'src/main/assets/Layouts/home/footer/item_cell.json')
+      expect(File.exist?(json_path)).to be true
+
+      # View uses original casing
+      view_path = File.join(temp_dir, 'src/main/kotlin/com/example/app/views/Home/Footer/item_cell/ItemCellView.kt')
+      expect(File.exist?(view_path)).to be true
+    end
+
     it 'converts PascalCase names to snake_case for files' do
       generator = described_class.new('MyAwesomeCell')
       expect { generator.generate }.to output(/Generated Collection Cell/).to_stdout

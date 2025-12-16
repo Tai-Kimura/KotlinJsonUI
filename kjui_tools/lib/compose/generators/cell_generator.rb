@@ -20,12 +20,14 @@ module KjuiTools
           parts = @name.split('/')
           cell_name = parts.last
           subdirectory = parts[0...-1].join('/') if parts.length > 1
-          
+          # Convert subdirectory to snake_case for JSON layouts
+          snake_subdirectory = parts[0...-1].map { |p| to_snake_case(p) }.join('/') if parts.length > 1
+
           # Keep original PascalCase if provided, otherwise convert
           # If the name is already in PascalCase (e.g., ProductCell), keep it
           cell_class_name = cell_name
           json_file_name = to_snake_case(cell_name)
-          
+
           # Get directories from config
           source_dir = @config['source_directory'] || 'src/main'
           layouts_dir = @config['layouts_directory'] || 'assets/Layouts'
@@ -33,13 +35,14 @@ module KjuiTools
           viewmodel_dir = @config['viewmodel_directory'] || 'kotlin/com/example/kotlinjsonui/sample/viewmodels'
           data_dir = @config['data_directory'] || 'kotlin/com/example/kotlinjsonui/sample/data'
           package_name = @config['package_name'] || 'com.example.kotlinjsonui.sample'
-          
+
           # Create full paths with subdirectory support
           # Each cell gets its own directory (using snake_case for Android)
           cell_folder_name = to_snake_case(cell_name)
-          
+
           if subdirectory
-            json_path = File.join(source_dir, layouts_dir, subdirectory)
+            # JSON uses snake_case subdirectory, view/viewmodel/data use original casing
+            json_path = File.join(source_dir, layouts_dir, snake_subdirectory)
             swift_path = File.join(source_dir, view_dir, subdirectory, cell_folder_name)
             viewmodel_path = File.join(source_dir, viewmodel_dir, subdirectory)
             data_path = File.join(source_dir, data_dir, subdirectory)
