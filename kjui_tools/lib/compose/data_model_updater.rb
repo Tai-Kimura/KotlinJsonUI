@@ -29,9 +29,10 @@ module KjuiTools
             process_json_file(json_file)
           end
         else
-          # Process all JSON files in Layouts directory but exclude Resources folder
+          # Process all JSON files in Layouts directory but exclude Resources and Styles folders
           json_files = Dir.glob(File.join(@layouts_dir, '**/*.json')).reject do |file|
-            file.include?('/Resources/')
+            # Skip Resources and Styles folders (styles don't need data models)
+            file.include?('/Resources/') || file.include?('/Styles/')
           end
 
           puts "  Updating data models for #{json_files.length} files..."
