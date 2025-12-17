@@ -12,7 +12,8 @@ module KjuiTools
           
           # Check if sections are defined
           sections = json_data['sections'] || []
-          layout = json_data['layout'] || 'vertical'
+          # Support both 'layout' and 'orientation' attributes for horizontal/vertical
+          layout = json_data['layout'] || json_data['orientation'] || 'vertical'
           is_horizontal = layout == 'horizontal'
           
           # Legacy: Extract cellClasses, headerClasses, footerClasses (string arrays)
