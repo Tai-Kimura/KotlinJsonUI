@@ -71,6 +71,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       validator = described_class.new
       component = {
         'type' => 'TestCustomComponent',
+        'width' => 'wrapContent',
+        'height' => 'wrapContent',
         'customTitle' => 'Test Title',
         'customCount' => 42
       }
@@ -107,6 +109,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Text',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => 'Hello World',
           'fontSize' => 14,
           'fontColor' => '#333333'
@@ -166,6 +170,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Text',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'textAlign' => 'center'
         }
       end
@@ -208,6 +214,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Text',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{userName}'
         }
       end
@@ -222,6 +230,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'visibility' => '@{isVisible}'
         }
       end
@@ -250,6 +260,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'visibility' => 'visible'
         }
       end
@@ -293,6 +305,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'gravity' => ['centerVertical']
         }
       end
@@ -307,6 +321,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'gravity' => ['centerVertical', 'left']
         }
       end
@@ -350,7 +366,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
-          'width' => 'matchParent'
+          'width' => 'matchParent',
+          'height' => 'wrapContent'
         }
       end
 
@@ -364,6 +381,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
           'height' => 'wrapContent'
         }
       end
@@ -392,7 +410,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
-          'width' => 100
+          'width' => 100,
+          'height' => 'wrapContent'
         }
       end
 
@@ -406,7 +425,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
-          'width' => '@{dynamicWidth}'
+          'width' => '@{dynamicWidth}',
+          'height' => 'wrapContent'
         }
       end
 
@@ -424,6 +444,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Button',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => 'Click Me',
           'onclick' => 'handleClick',
           'enabled' => true
@@ -440,6 +462,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'TextField',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'hint' => 'Enter text',
           'input' => 'email',
           'returnKeyType' => 'Done',
@@ -480,6 +504,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Switch',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => true,
           'onTintColor' => '#00FF00',
           'onValueChange' => '@{handleSwitch}'
@@ -496,6 +522,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'SelectBox',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'items' => ['Option 1', 'Option 2'],
           'hint' => 'Select option',
           'datePickerMode' => 'date'
@@ -512,6 +540,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Collection',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'columns' => 2,
           'columnSpacing' => 8,
           'layout' => 'vertical'
@@ -528,6 +558,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'orientation' => 'vertical',
           'gravity' => 'center',
           'spacing' => 8
@@ -544,6 +576,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'ScrollView',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'orientation' => 'vertical',
           'scrollEnabled' => true
         }
@@ -592,6 +626,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'padding' => 16,
           'paddingTop' => 8,
           'paddingBottom' => 8
@@ -614,6 +650,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'margins' => [8, 8, 8, 8],
           'topMargin' => 16
         }
@@ -629,6 +667,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'background' => '#FFFFFF',
           'cornerRadius' => 8,
           'borderWidth' => 1,
@@ -647,6 +687,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'alignTopOfView' => 'otherId',
           'alignLeftView' => 'otherId',
           'alignCenterVerticalView' => 'parent'
@@ -667,6 +709,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'aspectWidth' => 16,
           'aspectHeight' => 9
         }
@@ -684,6 +728,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'background' => '#FFFFFF'
         }
       end
@@ -699,7 +745,7 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
     let(:validator) { described_class.new }
 
     it 'returns false when no warnings' do
-      validator.validate({ 'type' => 'Text', 'text' => 'Hello' })
+      validator.validate({ 'type' => 'Text', 'width' => 'wrapContent', 'height' => 'wrapContent', 'text' => 'Hello' })
       expect(validator.has_warnings?).to be false
     end
 
@@ -713,31 +759,31 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
     let(:validator) { described_class.new }
 
     it 'maps Label to Text' do
-      component = { 'type' => 'Label', 'text' => 'Hello' }
+      component = { 'type' => 'Label', 'width' => 'wrapContent', 'height' => 'wrapContent', 'text' => 'Hello' }
       warnings = validator.validate(component)
       expect(warnings).to be_empty
     end
 
     it 'maps EditText to TextField' do
-      component = { 'type' => 'EditText', 'hint' => 'Enter' }
+      component = { 'type' => 'EditText', 'width' => 'wrapContent', 'height' => 'wrapContent', 'hint' => 'Enter' }
       warnings = validator.validate(component)
       expect(warnings).to be_empty
     end
 
     it 'maps Toggle to Switch' do
-      component = { 'type' => 'Toggle', 'isOn' => true }
+      component = { 'type' => 'Toggle', 'width' => 'wrapContent', 'height' => 'wrapContent', 'isOn' => true }
       warnings = validator.validate(component)
       expect(warnings).to be_empty
     end
 
     it 'maps RecyclerView to Collection' do
-      component = { 'type' => 'RecyclerView', 'columns' => 2 }
+      component = { 'type' => 'RecyclerView', 'width' => 'wrapContent', 'height' => 'wrapContent', 'columns' => 2 }
       warnings = validator.validate(component)
       expect(warnings).to be_empty
     end
 
     it 'maps Container to View' do
-      component = { 'type' => 'Container', 'orientation' => 'vertical' }
+      component = { 'type' => 'Container', 'width' => 'wrapContent', 'height' => 'wrapContent', 'orientation' => 'vertical' }
       warnings = validator.validate(component)
       expect(warnings).to be_empty
     end
@@ -751,6 +797,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'TextField',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'onFocus' => 'handleFocus'
         }
@@ -766,6 +814,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'TextField',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'onBlur' => 'handleBlur'
         }
@@ -781,6 +831,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'TextField',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'onBeginEditing' => 'handleBeginEditing'
         }
@@ -796,6 +848,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'TextField',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'onEndEditing' => 'handleEndEditing'
         }
@@ -811,6 +865,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'TextField',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'hint' => 'Enter text',
           'onFocus' => 'handleFocus',
@@ -855,6 +911,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Switch',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => '@{isEnabled}',
           'onTintColor' => '#00FF00'
         }
@@ -870,6 +928,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Switch',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'bind' => '@{isToggled}'
         }
       end
@@ -884,6 +944,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Switch',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => true,
           'enabled' => '@{canToggle}'
         }
@@ -899,6 +961,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Switch',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => '@{isOn}',
           'bind' => '@{switchState}',
           'enabled' => true,
@@ -918,6 +982,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Toggle',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => '@{isOn}',
           'bind' => '@{toggleState}',
           'enabled' => true,
@@ -960,6 +1026,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'CheckBox',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'bind' => '@{isChecked}'
         }
       end
@@ -974,6 +1042,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'CheckBox',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => true,
           'enabled' => '@{canCheck}'
         }
@@ -989,6 +1059,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'CheckBox',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'isOn' => '@{isChecked}',
           'onValueChange' => '@{handleCheckChange}'
         }
@@ -1004,6 +1076,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'CheckBox',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'label' => 'Accept terms',
           'isOn' => '@{isAccepted}',
           'bind' => '@{checkState}',
@@ -1024,6 +1098,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Check',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'checked' => '@{isChecked}',
           'bind' => '@{checkState}',
           'enabled' => true,
@@ -1073,6 +1149,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'EditText',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'hint' => 'Enter text',
           'hintColor' => '#999999'
@@ -1089,6 +1167,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'EditText',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{email}',
           'placeholder' => 'Enter email'
         }
@@ -1104,6 +1184,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Input',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{inputText}',
           'hint' => 'Enter text',
           'placeholder' => 'Type here'
@@ -1206,6 +1288,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Text',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => '@{userName}'
         }
       end
@@ -1252,6 +1336,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Text',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => 'Hello World'
         }
       end
@@ -1266,6 +1352,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'Text',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'text' => 'Email: @{email}'
         }
       end
@@ -1320,6 +1408,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'onAppear' => 'handleAppear'
         }
       end
@@ -1334,6 +1424,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'onDisappear' => 'handleDisappear'
         }
       end
@@ -1348,6 +1440,8 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
       let(:component) do
         {
           'type' => 'View',
+          'width' => 'wrapContent',
+          'height' => 'wrapContent',
           'onAppear' => 'handleAppear',
           'onDisappear' => 'handleDisappear'
         }

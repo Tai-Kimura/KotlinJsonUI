@@ -380,13 +380,13 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
         json_data = { 'onAppear' => 'loadData' }
         result = described_class.build_lifecycle_effects(json_data, 1, imports)
         expect(result[:before]).to include('LaunchedEffect(Unit)')
-        expect(result[:before]).to include('viewModel.loadData()')
+        expect(result[:before]).to include('data.loadData?.invoke()')
       end
 
       it 'handles handler with colon' do
         json_data = { 'onAppear' => 'loadData:' }
         result = described_class.build_lifecycle_effects(json_data, 1, imports)
-        expect(result[:before]).to include('viewModel.loadData()')
+        expect(result[:before]).to include('data.loadData?.invoke()')
       end
 
       it 'adds launched_effect import' do
@@ -408,13 +408,13 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
         result = described_class.build_lifecycle_effects(json_data, 1, imports)
         expect(result[:before]).to include('DisposableEffect(Unit)')
         expect(result[:before]).to include('onDispose {')
-        expect(result[:before]).to include('viewModel.cleanup()')
+        expect(result[:before]).to include('data.cleanup?.invoke()')
       end
 
       it 'handles handler with colon' do
         json_data = { 'onDisappear' => 'cleanup:' }
         result = described_class.build_lifecycle_effects(json_data, 1, imports)
-        expect(result[:before]).to include('viewModel.cleanup()')
+        expect(result[:before]).to include('data.cleanup?.invoke()')
       end
 
       it 'adds disposable_effect import' do
@@ -436,8 +436,8 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
         result = described_class.build_lifecycle_effects(json_data, 1, imports)
         expect(result[:before]).to include('LaunchedEffect(Unit)')
         expect(result[:before]).to include('DisposableEffect(Unit)')
-        expect(result[:before]).to include('viewModel.loadData()')
-        expect(result[:before]).to include('viewModel.cleanup()')
+        expect(result[:before]).to include('data.loadData?.invoke()')
+        expect(result[:before]).to include('data.cleanup?.invoke()')
       end
 
       it 'adds both imports' do
@@ -469,14 +469,14 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
         json_data = { 'onAppear' => 'loadData' }
         result = described_class.build_lifecycle_effects(json_data, 0, imports)
         expect(result[:before]).to include('LaunchedEffect(Unit) {')
-        expect(result[:before]).to include('    viewModel.loadData()')
+        expect(result[:before]).to include('    data.loadData?.invoke()')
       end
 
       it 'applies correct indentation at depth 2' do
         json_data = { 'onAppear' => 'loadData' }
         result = described_class.build_lifecycle_effects(json_data, 2, imports)
         expect(result[:before]).to include('        LaunchedEffect(Unit) {')
-        expect(result[:before]).to include('            viewModel.loadData()')
+        expect(result[:before]).to include('            data.loadData?.invoke()')
       end
     end
   end

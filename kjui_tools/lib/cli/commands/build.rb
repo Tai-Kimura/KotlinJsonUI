@@ -6,6 +6,7 @@ require_relative '../../core/config_manager'
 require_relative '../../core/project_finder'
 require_relative '../../core/logger'
 require_relative '../../core/attribute_validator'
+require_relative '../../core/binding_validator'
 
 module KjuiTools
   module CLI
@@ -210,8 +211,9 @@ module KjuiTools
 
           Core::Logger.info "Updating #{files_to_update.length} of #{json_files.length} files..."
 
-          # Initialize validator if validation is enabled
+          # Initialize validators if validation is enabled
           validator = options[:validate] ? Core::AttributeValidator.new(:compose) : nil
+          binding_validator = options[:validate] ? Core::BindingValidator.new : nil
 
           builder = Compose::ComposeBuilder.new
 
@@ -224,13 +226,22 @@ module KjuiTools
               json_content = File.read(json_file)
               json_data = JSON.parse(json_content)
 
-              # Validate if enabled
+              # Validate attributes if enabled
               if validator
                 warnings = validate_json(json_data, validator, file_name)
                 if warnings.any?
                   @validation_warnings.concat(warnings.map { |w| "[#{relative_path}] #{w}" })
                   @validation_errors += warnings.length
-                  Core::Logger.warn "  #{warnings.length} validation warning(s) in #{relative_path}"
+                  Core::Logger.warn "  #{warnings.length} attribute warning(s) in #{relative_path}"
+                end
+              end
+
+              # Validate bindings for business logic
+              if binding_validator
+                binding_warnings = binding_validator.validate(json_data, relative_path)
+                if binding_warnings.any?
+                  @validation_warnings.concat(binding_warnings)
+                  Core::Logger.warn "  #{binding_warnings.length} binding warning(s) in #{relative_path}"
                 end
               end
 

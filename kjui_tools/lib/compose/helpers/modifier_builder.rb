@@ -549,9 +549,9 @@ module KjuiTools
             result[:before] += "\n" + indent("LaunchedEffect(Unit) {", depth)
             if handler.include?(':')
               method_name = handler.gsub(':', '')
-              result[:before] += "\n" + indent("viewModel.#{method_name}()", depth + 1)
+              result[:before] += "\n" + indent("data.#{method_name}?.invoke()", depth + 1)
             else
-              result[:before] += "\n" + indent("viewModel.#{handler}()", depth + 1)
+              result[:before] += "\n" + indent("data.#{handler}?.invoke()", depth + 1)
             end
             result[:before] += "\n" + indent("}", depth)
             result[:before] += "\n"
@@ -566,9 +566,9 @@ module KjuiTools
             result[:before] += "\n" + indent("onDispose {", depth + 1)
             if handler.include?(':')
               method_name = handler.gsub(':', '')
-              result[:before] += "\n" + indent("viewModel.#{method_name}()", depth + 2)
+              result[:before] += "\n" + indent("data.#{method_name}?.invoke()", depth + 2)
             else
-              result[:before] += "\n" + indent("viewModel.#{handler}()", depth + 2)
+              result[:before] += "\n" + indent("data.#{handler}?.invoke()", depth + 2)
             end
             result[:before] += "\n" + indent("}", depth + 1)
             result[:before] += "\n" + indent("}", depth)
@@ -584,27 +584,15 @@ module KjuiTools
         end
 
         # Convert event handler to method call
-        # onclick (lowercase) -> selector format (string only): functionName: -> viewModel.functionName()
-        # onClick (camelCase) -> binding format only: @{functionName} -> viewModel.functionName()
+        # onClick -> binding format only: @{functionName} -> data.functionName?.invoke()
         def self.get_event_handler_call(handler, is_camel_case: false)
-          if is_camel_case
-            # camelCase events (onClick, onLongPress, etc.) - binding format only
-            if handler.match?(/^@\{(.+)\}$/)
-              method_name = handler.match(/^@\{(.+)\}$/)[1]
-              "viewModel.#{method_name}()"
-            else
-              "// ERROR: #{handler} - camelCase events require binding format @{functionName}"
-            end
+          # Extract function name from binding format @{functionName}
+          if handler.match?(/^@\{(.+)\}$/)
+            method_name = handler.match(/^@\{(.+)\}$/)[1]
+            "data.#{method_name}?.invoke()"
           else
-            # lowercase events (onclick, onlongpress, etc.) - selector format only
-            if handler.match?(/^@\{/)
-              "// ERROR: #{handler} - lowercase events require selector format (functionName:)"
-            elsif handler.include?(':')
-              method_name = handler.gsub(':', '')
-              "viewModel.#{method_name}()"
-            else
-              "viewModel.#{handler}()"
-            end
+            # Direct function name (non-binding)
+            "data.#{handler}?.invoke()"
           end
         end
 

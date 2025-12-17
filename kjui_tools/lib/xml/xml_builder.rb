@@ -5,6 +5,7 @@ require 'fileutils'
 require_relative '../core/config_manager'
 require_relative '../core/project_finder'
 require_relative '../core/attribute_validator'
+require_relative '../core/binding_validator'
 require_relative 'xml_generator'
 
 module KjuiTools
@@ -25,6 +26,7 @@ module KjuiTools
         @validation_enabled = false
         @validation_callback = nil
         @validator = nil
+        @binding_validator = nil
       end
 
       def build(options = {})
@@ -47,8 +49,9 @@ module KjuiTools
         # Ensure output directory exists
         FileUtils.mkdir_p(@output_dir)
 
-        # Initialize validator if validation is enabled
+        # Initialize validators if validation is enabled
         @validator = Core::AttributeValidator.new(:xml) if @validation_enabled
+        @binding_validator = Core::BindingValidator.new if @validation_enabled
 
         # Get all JSON files (excluding Resources folder)
         json_files = Dir.glob(File.join(@layouts_dir, '*.json'))
@@ -166,8 +169,17 @@ module KjuiTools
             warnings = validate_json(json_data)
 
             if warnings.any?
-              puts " ⚠️  #{warnings.length} warning(s)"
+              puts " ⚠️  #{warnings.length} attribute warning(s)"
               @validation_callback&.call(layout_name, warnings)
+            end
+
+            # Validate bindings for business logic
+            if @binding_validator
+              binding_warnings = @binding_validator.validate(json_data, layout_name)
+              if binding_warnings.any?
+                puts " ⚠️  #{binding_warnings.length} binding warning(s)"
+                @validation_callback&.call(layout_name, binding_warnings)
+              end
             end
           end
 

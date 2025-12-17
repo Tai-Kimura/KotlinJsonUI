@@ -108,9 +108,9 @@ RSpec.describe KjuiTools::Compose::Generators::ConverterGenerator do
     end
 
     describe '#map_type_to_json_type' do
-      it 'maps string types to string' do
+      it 'maps string types to string with binding support' do
         result = generator.send(:map_type_to_json_type, 'String')
-        expect(result).to eq('string')
+        expect(result).to eq(['string', 'binding'])
       end
 
       it 'maps text type to binding (custom types require binding syntax)' do
@@ -123,34 +123,34 @@ RSpec.describe KjuiTools::Compose::Generators::ConverterGenerator do
         expect(result).to eq('binding')
       end
 
-      it 'maps int to number' do
+      it 'maps int to number with binding support' do
         result = generator.send(:map_type_to_json_type, 'Int')
-        expect(result).to eq('number')
+        expect(result).to eq(['number', 'binding'])
       end
 
-      it 'maps integer to number' do
+      it 'maps integer to number with binding support' do
         result = generator.send(:map_type_to_json_type, 'Integer')
-        expect(result).to eq('number')
+        expect(result).to eq(['number', 'binding'])
       end
 
-      it 'maps float to number' do
+      it 'maps float to number with binding support' do
         result = generator.send(:map_type_to_json_type, 'Float')
-        expect(result).to eq('number')
+        expect(result).to eq(['number', 'binding'])
       end
 
-      it 'maps double to number' do
+      it 'maps double to number with binding support' do
         result = generator.send(:map_type_to_json_type, 'Double')
-        expect(result).to eq('number')
+        expect(result).to eq(['number', 'binding'])
       end
 
-      it 'maps bool to boolean' do
+      it 'maps bool to boolean with binding support' do
         result = generator.send(:map_type_to_json_type, 'Bool')
-        expect(result).to eq('boolean')
+        expect(result).to eq(['boolean', 'binding'])
       end
 
-      it 'maps boolean to boolean' do
+      it 'maps boolean to boolean with binding support' do
         result = generator.send(:map_type_to_json_type, 'Boolean')
-        expect(result).to eq('boolean')
+        expect(result).to eq(['boolean', 'binding'])
       end
 
       it 'defaults unknown types to binding (custom types require binding syntax)' do
@@ -237,10 +237,10 @@ RSpec.describe KjuiTools::Compose::Generators::ConverterGenerator do
       expect(definition_content['MyCustomCard']).to have_key('count')
       expect(definition_content['MyCustomCard']).to have_key('active')
 
-      # Check type mapping
-      expect(definition_content['MyCustomCard']['title']['type']).to eq('string')
-      expect(definition_content['MyCustomCard']['count']['type']).to eq('number')
-      expect(definition_content['MyCustomCard']['active']['type']).to eq('boolean')
+      # Check type mapping (with binding support)
+      expect(definition_content['MyCustomCard']['title']['type']).to eq(['string', 'binding'])
+      expect(definition_content['MyCustomCard']['count']['type']).to eq(['number', 'binding'])
+      expect(definition_content['MyCustomCard']['active']['type']).to eq(['boolean', 'binding'])
 
       # Check descriptions
       expect(definition_content['MyCustomCard']['title']['description']).to eq('title attribute')

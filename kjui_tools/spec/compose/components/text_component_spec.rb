@@ -214,7 +214,7 @@ RSpec.describe KjuiTools::Compose::Components::TextComponent do
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onClick = { viewModel.handleClick() }')
+      expect(result).to include('onClick = { data.handleClick?.invoke() }')
     end
   end
 

@@ -23,7 +23,7 @@ RSpec.describe KjuiTools::Compose::Components::ButtonComponent do
     it 'generates Button with onClick handler' do
       json_data = { 'type' => 'Button', 'text' => 'Submit', 'onclick' => 'handleSubmit' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onClick = { viewModel.handleSubmit() }')
+      expect(result).to include('onClick = { data.handleSubmit?.invoke() }')
     end
 
     it 'generates Button with empty onClick when no handler' do

@@ -224,7 +224,7 @@ RSpec.describe KjuiTools::Compose::Components::ConstraintLayoutComponent do
 
     it 'generates Button with onclick' do
       result = described_class.send(:generate_button_component, { 'text' => 'Click', 'onclick' => 'handleClick' }, 0, required_imports)
-      expect(result).to include('onClick = { viewModel.handleClick() }')
+      expect(result).to include('onClick = { data.handleClick?.invoke() }')
     end
 
     it 'generates Button with empty onClick when no handler' do

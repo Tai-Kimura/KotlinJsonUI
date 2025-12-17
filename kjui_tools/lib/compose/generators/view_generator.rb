@@ -189,11 +189,8 @@ module KjuiTools
                 viewModel: #{view_name}ViewModel = viewModel()
             ) {
                 val data by viewModel.data.collectAsState()
-                
-                #{view_name}GeneratedView(
-                    data = data,
-                    viewModel = viewModel
-                )
+
+                #{view_name}GeneratedView(data = data)
             }
           KOTLIN
           
@@ -226,12 +223,10 @@ module KjuiTools
             import androidx.compose.ui.unit.dp
             import androidx.compose.ui.unit.sp
             import #{package_name}.data.#{view_name}Data
-            import #{package_name}.viewmodels.#{view_name}ViewModel
 
             @Composable
             fun #{view_name}GeneratedView(
-                data: #{view_name}Data,
-                viewModel: #{view_name}ViewModel
+                data: #{view_name}Data
             ) {
                 // Generated Compose code from #{json_reference}.json
                 // This will be updated when you run 'kjui build'
@@ -247,9 +242,9 @@ module KjuiTools
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     Text(
                         text = "Run 'kjui build' to generate Compose code",
                         fontSize = 14.sp,
@@ -273,21 +268,23 @@ module KjuiTools
             package #{data_package}
 
             data class #{view_name}Data(
-                var title: String = "#{view_name}"
+                var title: String = "#{view_name}",
+
+                // Action closures (called from generated views)
+                var onGetStarted: (() -> Unit)? = null
                 // Add more data properties as needed based on your JSON structure
             ) {
                 // Update properties from map
                 fun update(map: Map<String, Any>) {
-                    map["title"]?.let { 
-                        if (it is String) title = it 
+                    map["title"]?.let {
+                        if (it is String) title = it
                     }
                 }
-                
+
                 // Convert to map for dynamic mode
-                fun toMap(viewModel: Any? = null): Map<String, Any> {
+                fun toMap(): Map<String, Any> {
                     return mutableMapOf(
                         "title" to title
-                        // Add action handlers if viewModel is provided
                     )
                 }
             }
