@@ -306,7 +306,9 @@ module KjuiTools
         case attribute_name
         when 'onClick', 'onValueChanged', 'onValueChange', 'onTap'
           '(() -> Unit)?'
-        when 'items', 'sections'
+        when 'items'
+          'CollectionDataSource'
+        when 'sections'
           'List<Any>'
         when 'visibility', 'text', 'fontColor', 'background'
           'String'

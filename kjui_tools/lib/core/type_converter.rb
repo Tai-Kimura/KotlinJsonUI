@@ -34,7 +34,9 @@ module KjuiTools
         'void' => 'Unit',
         # Kotlin/Compose-specific types
         'Dp' => 'Dp',
-        'Alignment' => 'Alignment'
+        'Alignment' => 'Alignment',
+        # Collection types
+        'CollectionDataSource' => 'CollectionDataSource'
       }.freeze
 
       # Mode-specific type mapping (types that differ between compose and xml)
@@ -56,7 +58,8 @@ module KjuiTools
         'Dp' => '0.dp',
         'Alignment' => 'Alignment.TopStart',
         'Painter' => 'EmptyPainter()',
-        'Drawable' => 'null'
+        'Drawable' => 'null',
+        'CollectionDataSource' => 'CollectionDataSource()'
       }.freeze
 
       class << self

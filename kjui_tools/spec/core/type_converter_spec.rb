@@ -62,7 +62,6 @@ RSpec.describe KjuiTools::Core::TypeConverter do
 
     context 'with unknown types' do
       it 'returns the type as-is' do
-        expect(described_class.to_kotlin_type('CollectionDataSource')).to eq('CollectionDataSource')
         expect(described_class.to_kotlin_type('CustomType')).to eq('CustomType')
         expect(described_class.to_kotlin_type('MyViewModel')).to eq('MyViewModel')
       end
@@ -309,7 +308,6 @@ RSpec.describe KjuiTools::Core::TypeConverter do
 
     it 'returns false for non-primitive types' do
       expect(described_class.primitive?('Color')).to be false
-      expect(described_class.primitive?('CollectionDataSource')).to be false
       expect(described_class.primitive?('CustomType')).to be false
     end
 
@@ -327,10 +325,25 @@ RSpec.describe KjuiTools::Core::TypeConverter do
       expect(described_class.default_value('Float')).to eq('0f')
       expect(described_class.default_value('Boolean')).to eq('false')
       expect(described_class.default_value('Color')).to eq('Color.Unspecified')
+      expect(described_class.default_value('CollectionDataSource')).to eq('CollectionDataSource()')
     end
 
     it 'returns null for unknown types' do
       expect(described_class.default_value('CustomType')).to eq('null')
+    end
+  end
+
+  describe 'CollectionDataSource type' do
+    it 'is recognized as a known type' do
+      expect(described_class.to_kotlin_type('CollectionDataSource')).to eq('CollectionDataSource')
+    end
+
+    it 'has correct default value' do
+      expect(described_class.default_value('CollectionDataSource')).to eq('CollectionDataSource()')
+    end
+
+    it 'is in TYPE_MAPPING (primitive? returns true)' do
+      expect(described_class.primitive?('CollectionDataSource')).to be true
     end
   end
 end
