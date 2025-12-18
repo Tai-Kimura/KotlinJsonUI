@@ -19,25 +19,39 @@ object ModifierBuilder {
     
     /**
      * Build a complete modifier from JSON including size, margins, padding, and opacity
+     * Note: This version does NOT support binding expressions in margins
+     * Use buildModifier(json, data, defaultFillMaxWidth) for binding support
      */
     fun buildModifier(
         json: JsonObject,
         defaultFillMaxWidth: Boolean = false
     ): Modifier {
+        return buildModifier(json, emptyMap(), defaultFillMaxWidth)
+    }
+
+    /**
+     * Build a complete modifier from JSON with binding support
+     * Includes size, margins (with binding), padding, and opacity
+     */
+    fun buildModifier(
+        json: JsonObject,
+        data: Map<String, Any>,
+        defaultFillMaxWidth: Boolean = false
+    ): Modifier {
         var modifier: Modifier = Modifier
-        
+
         // Apply size modifiers
         modifier = applySize(modifier, json, defaultFillMaxWidth)
-        
-        // Apply margins (outer spacing)
-        modifier = applyMargins(modifier, json)
-        
+
+        // Apply margins (outer spacing) with binding support
+        modifier = applyMargins(modifier, json, data)
+
         // Apply padding (inner spacing)
         modifier = applyPadding(modifier, json)
-        
+
         // Apply opacity/alpha
         modifier = applyOpacity(modifier, json)
-        
+
         return modifier
     }
     
@@ -135,10 +149,20 @@ object ModifierBuilder {
     /**
      * Apply margins (outer spacing) to modifier
      * Supports: margins array, individual margin properties
+     * Note: This version does NOT support binding expressions
+     * Use applyMargins(modifier, json, data) for binding support
      */
     fun applyMargins(modifier: Modifier, json: JsonObject): Modifier {
+        return applyMargins(modifier, json, emptyMap())
+    }
+
+    /**
+     * Apply margins (outer spacing) to modifier with binding support
+     * Supports: margins array, individual margin properties, binding expressions like @{propertyName}
+     */
+    fun applyMargins(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
         var result = modifier
-        
+
         // Handle margins array first
         json.get("margins")?.asJsonArray?.let { margins ->
             return when (margins.size()) {
@@ -156,21 +180,21 @@ object ModifierBuilder {
                 else -> result
             }
         }
-        
-        // Handle individual margin properties
-        val topMargin = json.get("topMargin")?.asFloat ?: 
-                       json.get("marginTop")?.asFloat ?: 0f
-        val bottomMargin = json.get("bottomMargin")?.asFloat ?: 
-                          json.get("marginBottom")?.asFloat ?: 0f
-        val leftMargin = json.get("leftMargin")?.asFloat ?: 
-                        json.get("marginLeft")?.asFloat ?: 
-                        json.get("startMargin")?.asFloat ?: 
-                        json.get("marginStart")?.asFloat ?: 0f
-        val rightMargin = json.get("rightMargin")?.asFloat ?: 
-                         json.get("marginRight")?.asFloat ?: 
-                         json.get("endMargin")?.asFloat ?: 
-                         json.get("marginEnd")?.asFloat ?: 0f
-        
+
+        // Handle individual margin properties with binding support
+        val topMargin = resolveMarginValue(json, "topMargin", data)
+                       ?: resolveMarginValue(json, "marginTop", data) ?: 0f
+        val bottomMargin = resolveMarginValue(json, "bottomMargin", data)
+                          ?: resolveMarginValue(json, "marginBottom", data) ?: 0f
+        val leftMargin = resolveMarginValue(json, "leftMargin", data)
+                        ?: resolveMarginValue(json, "marginLeft", data)
+                        ?: resolveMarginValue(json, "startMargin", data)
+                        ?: resolveMarginValue(json, "marginStart", data) ?: 0f
+        val rightMargin = resolveMarginValue(json, "rightMargin", data)
+                         ?: resolveMarginValue(json, "marginRight", data)
+                         ?: resolveMarginValue(json, "endMargin", data)
+                         ?: resolveMarginValue(json, "marginEnd", data) ?: 0f
+
         return if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
             result.padding(
                 top = topMargin.dp,
@@ -180,6 +204,40 @@ object ModifierBuilder {
             )
         } else {
             result
+        }
+    }
+
+    /**
+     * Resolve margin value from JSON with binding support
+     * Handles both numeric values and binding expressions like @{propertyName}
+     */
+    private fun resolveMarginValue(json: JsonObject, key: String, data: Map<String, Any>): Float? {
+        val element = json.get(key) ?: return null
+
+        return when {
+            element.isJsonPrimitive -> {
+                val primitive = element.asJsonPrimitive
+                when {
+                    primitive.isNumber -> primitive.asFloat
+                    primitive.isString -> {
+                        val stringValue = primitive.asString
+                        // Check for binding expression @{propertyName}
+                        if (stringValue.startsWith("@{") && stringValue.endsWith("}")) {
+                            val evaluated = com.kotlinjsonui.dynamic.DataBindingContext.evaluateExpression(stringValue, data)
+                            when (evaluated) {
+                                is Number -> evaluated.toFloat()
+                                is String -> evaluated.toFloatOrNull() ?: 0f
+                                else -> 0f
+                            }
+                        } else {
+                            // Try to parse as number
+                            stringValue.toFloatOrNull()
+                        }
+                    }
+                    else -> null
+                }
+            }
+            else -> null
         }
     }
     
