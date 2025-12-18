@@ -49,7 +49,7 @@ module KjuiTools
         
         def self.build_margins(json_data)
           modifiers = []
-          
+
           # Handle margins attribute (can be array [top, right, bottom, left] or single value)
           if json_data['margins']
             if json_data['margins'].is_a?(Array)
@@ -63,14 +63,28 @@ module KjuiTools
               modifiers << ".padding(#{json_data['margins']}.dp)"
             end
           end
-          
-          # Individual margin attributes
-          modifiers << ".padding(top = #{json_data['topMargin']}.dp)" if json_data['topMargin']
-          modifiers << ".padding(bottom = #{json_data['bottomMargin']}.dp)" if json_data['bottomMargin']
-          modifiers << ".padding(start = #{json_data['leftMargin']}.dp)" if json_data['leftMargin']
-          modifiers << ".padding(end = #{json_data['rightMargin']}.dp)" if json_data['rightMargin']
-          
+
+          # Individual margin attributes (with binding support)
+          modifiers << ".padding(top = #{margin_value(json_data['topMargin'])})" if json_data['topMargin']
+          modifiers << ".padding(bottom = #{margin_value(json_data['bottomMargin'])})" if json_data['bottomMargin']
+          modifiers << ".padding(start = #{margin_value(json_data['leftMargin'])})" if json_data['leftMargin']
+          modifiers << ".padding(end = #{margin_value(json_data['rightMargin'])})" if json_data['rightMargin']
+          # RTL aware margins
+          modifiers << ".padding(start = #{margin_value(json_data['startMargin'])})" if json_data['startMargin']
+          modifiers << ".padding(end = #{margin_value(json_data['endMargin'])})" if json_data['endMargin']
+
           modifiers
+        end
+
+        # Convert margin value to Kotlin/Compose format with binding support
+        def self.margin_value(value)
+          if is_binding?(value)
+            # Data binding: @{propertyName} -> data.propertyName.dp
+            property = extract_binding_property(value)
+            "data.#{property}.dp"
+          else
+            "#{value}.dp"
+          end
         end
         
         def self.build_weight(json_data, parent_orientation = nil)

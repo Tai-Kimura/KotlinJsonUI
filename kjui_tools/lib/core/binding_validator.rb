@@ -302,6 +302,9 @@ module KjuiTools
         # xxxIndex, xxxCount, xxxTab -> Int
         return 'Int' if var_name.end_with?('Index', 'Count', 'Tab')
 
+        # xxxMargin, xxxPadding -> Dp (Kotlin Compose)
+        return 'Dp' if var_name.end_with?('Margin', 'Padding')
+
         # Based on attribute name
         case attribute_name
         when 'onClick', 'onValueChanged', 'onValueChange', 'onTap'
@@ -316,6 +319,10 @@ module KjuiTools
           'Int'
         when 'hidden', 'enabled', 'disabled'
           'Boolean'
+        when 'topMargin', 'bottomMargin', 'leftMargin', 'rightMargin', 'startMargin', 'endMargin'
+          'Dp'
+        when 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight', 'paddingStart', 'paddingEnd'
+          'Dp'
         else
           'Any'
         end
