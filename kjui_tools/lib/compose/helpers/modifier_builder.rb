@@ -407,101 +407,101 @@ module KjuiTools
           # These attributes require ConstraintLayout
           # They generate constraint references instead of modifiers
           constraints = []
-          
-          # Extract margins for use in constraints
-          top_margin = json_data['topMargin'] || 0
-          bottom_margin = json_data['bottomMargin'] || 0
-          start_margin = json_data['leftMargin'] || 0
-          end_margin = json_data['rightMargin'] || 0
-          
+
+          # Extract margins for use in constraints (with binding support)
+          top_margin = constraint_margin_value(json_data['topMargin'])
+          bottom_margin = constraint_margin_value(json_data['bottomMargin'])
+          start_margin = constraint_margin_value(json_data['leftMargin'])
+          end_margin = constraint_margin_value(json_data['rightMargin'])
+
           if json_data['margins'] && json_data['margins'].is_a?(Array) && json_data['margins'].length == 4
-            top_margin = json_data['margins'][0] unless json_data['topMargin']
-            end_margin = json_data['margins'][1] unless json_data['rightMargin']
-            bottom_margin = json_data['margins'][2] unless json_data['bottomMargin']
-            start_margin = json_data['margins'][3] unless json_data['leftMargin']
+            top_margin = json_data['margins'][0].to_s + ".dp" unless json_data['topMargin']
+            end_margin = json_data['margins'][1].to_s + ".dp" unless json_data['rightMargin']
+            bottom_margin = json_data['margins'][2].to_s + ".dp" unless json_data['bottomMargin']
+            start_margin = json_data['margins'][3].to_s + ".dp" unless json_data['leftMargin']
           end
           
           # Relative to other views
           if json_data['alignTopOfView']
-            margin = bottom_margin > 0 ? ", margin = #{bottom_margin}.dp" : ""
+            margin = has_constraint_margin?(bottom_margin) ? ", margin = #{bottom_margin}" : ""
             constraints << "bottom.linkTo(#{json_data['alignTopOfView']}.top#{margin})"
           end
-          
+
           if json_data['alignBottomOfView']
-            margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
+            margin = has_constraint_margin?(top_margin) ? ", margin = #{top_margin}" : ""
             constraints << "top.linkTo(#{json_data['alignBottomOfView']}.bottom#{margin})"
           end
-          
+
           if json_data['alignLeftOfView']
-            margin = end_margin > 0 ? ", margin = #{end_margin}.dp" : ""
+            margin = has_constraint_margin?(end_margin) ? ", margin = #{end_margin}" : ""
             constraints << "end.linkTo(#{json_data['alignLeftOfView']}.start#{margin})"
           end
-          
+
           if json_data['alignRightOfView']
-            margin = start_margin > 0 ? ", margin = #{start_margin}.dp" : ""
+            margin = has_constraint_margin?(start_margin) ? ", margin = #{start_margin}" : ""
             constraints << "start.linkTo(#{json_data['alignRightOfView']}.end#{margin})"
           end
-          
+
           # Align edges with other views
           # For align operations, use negative margins to move in the expected direction
           if json_data['alignTopView']
             # alignTop with topMargin means move DOWN from the aligned position
             # linkTo margin pushes away, so use negative to pull closer (move down)
-            margin = top_margin > 0 ? ", margin = (-#{top_margin}).dp" : ""
+            margin = has_constraint_margin?(top_margin) ? ", margin = (-#{top_margin})" : ""
             constraints << "top.linkTo(#{json_data['alignTopView']}.top#{margin})"
           end
-          
+
           if json_data['alignBottomView']
-            # alignBottom with bottomMargin means move UP from the aligned position  
+            # alignBottom with bottomMargin means move UP from the aligned position
             # linkTo margin pushes away, so use negative to pull closer (move up)
-            margin = bottom_margin > 0 ? ", margin = (-#{bottom_margin}).dp" : ""
+            margin = has_constraint_margin?(bottom_margin) ? ", margin = (-#{bottom_margin})" : ""
             constraints << "bottom.linkTo(#{json_data['alignBottomView']}.bottom#{margin})"
           end
-          
+
           if json_data['alignLeftView']
             # alignLeft with leftMargin means move RIGHT from the aligned position
             # linkTo margin pushes away, so use negative to pull closer (move right)
-            margin = start_margin > 0 ? ", margin = (-#{start_margin}).dp" : ""
+            margin = has_constraint_margin?(start_margin) ? ", margin = (-#{start_margin})" : ""
             constraints << "start.linkTo(#{json_data['alignLeftView']}.start#{margin})"
           end
-          
+
           if json_data['alignRightView']
             # alignRight with rightMargin means move LEFT from the aligned position
             # linkTo margin pushes away, so use negative to pull closer (move left)
-            margin = end_margin > 0 ? ", margin = (-#{end_margin}).dp" : ""
+            margin = has_constraint_margin?(end_margin) ? ", margin = (-#{end_margin})" : ""
             constraints << "end.linkTo(#{json_data['alignRightView']}.end#{margin})"
           end
-          
+
           # Center with other views
           if json_data['alignCenterVerticalView']
             constraints << "top.linkTo(#{json_data['alignCenterVerticalView']}.top)"
             constraints << "bottom.linkTo(#{json_data['alignCenterVerticalView']}.bottom)"
           end
-          
+
           if json_data['alignCenterHorizontalView']
             constraints << "start.linkTo(#{json_data['alignCenterHorizontalView']}.start)"
             constraints << "end.linkTo(#{json_data['alignCenterHorizontalView']}.end)"
           end
-          
+
           # Parent constraints
           # For parent alignment, margins should work normally as offsets
           if json_data['alignTop']
-            margin = top_margin > 0 ? ", margin = #{top_margin}.dp" : ""
+            margin = has_constraint_margin?(top_margin) ? ", margin = #{top_margin}" : ""
             constraints << "top.linkTo(parent.top#{margin})"
           end
-          
+
           if json_data['alignBottom']
-            margin = bottom_margin > 0 ? ", margin = #{bottom_margin}.dp" : ""
+            margin = has_constraint_margin?(bottom_margin) ? ", margin = #{bottom_margin}" : ""
             constraints << "bottom.linkTo(parent.bottom#{margin})"
           end
-          
+
           if json_data['alignLeft']
-            margin = start_margin > 0 ? ", margin = #{start_margin}.dp" : ""
+            margin = has_constraint_margin?(start_margin) ? ", margin = #{start_margin}" : ""
             constraints << "start.linkTo(parent.start#{margin})"
           end
-          
+
           if json_data['alignRight']
-            margin = end_margin > 0 ? ", margin = #{end_margin}.dp" : ""
+            margin = has_constraint_margin?(end_margin) ? ", margin = #{end_margin}" : ""
             constraints << "end.linkTo(parent.end#{margin})"
           end
           
@@ -624,6 +624,33 @@ module KjuiTools
           else
             value
           end
+        end
+
+        # Convert margin value to Kotlin/Compose format for constraint linkTo() with binding support
+        # Returns nil for no margin, or the formatted value (e.g., "8.dp" or "data.margin.dp")
+        def self.constraint_margin_value(value)
+          return nil if value.nil?
+
+          if is_binding?(value)
+            # Data binding: @{propertyName} -> data.propertyName.dp
+            property = extract_binding_property(value)
+            "data.#{property}.dp"
+          elsif value.is_a?(Numeric) && value > 0
+            "#{value}.dp"
+          elsif value.is_a?(String)
+            # Try to parse as number
+            num = value.to_i
+            num > 0 ? "#{num}.dp" : nil
+          else
+            nil
+          end
+        end
+
+        # Check if constraint margin value is present
+        def self.has_constraint_margin?(margin_value)
+          return false if margin_value.nil?
+          return true if margin_value.is_a?(String) && margin_value.length > 0
+          false
         end
 
         private
