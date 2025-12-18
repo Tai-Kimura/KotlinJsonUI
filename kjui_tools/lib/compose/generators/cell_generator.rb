@@ -124,55 +124,52 @@ module KjuiTools
 
         def create_main_cell_template(file_path, class_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
-          
+
           # Calculate relative package path
           view_package = if subdirectory
             "#{package_name}.views.#{subdirectory.gsub('/', '.')}.#{to_snake_case(class_name)}"
           else
             "#{package_name}.views.#{to_snake_case(class_name)}"
           end
-          
+
           content = <<~KOTLIN
             package #{view_package}
-            
+
             import androidx.compose.runtime.Composable
             import androidx.compose.ui.Modifier
             import #{package_name}.data.#{class_name}Data
-            import #{package_name}.viewmodels.#{class_name}ViewModel
-            
+
             @Composable
             fun #{class_name}View(
                 data: #{class_name}Data,
-                viewModel: #{class_name}ViewModel,
                 modifier: Modifier = Modifier
             ) {
                 // This is a cell view for use in Collection components
                 // The data parameter contains an 'item' property with the cell's data
-                
+
                 #{class_name}GeneratedView(
                     data = data,
-                    viewModel = viewModel,
                     modifier = modifier
                 )
             }
           KOTLIN
-          
+
           File.write(file_path, content)
         end
 
         def create_generated_cell_template(file_path, class_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
-          
+
           # Calculate relative package path
           view_package = if subdirectory
             "#{package_name}.views.#{subdirectory.gsub('/', '.')}.#{to_snake_case(class_name)}"
           else
             "#{package_name}.views.#{to_snake_case(class_name)}"
           end
-          
+
           content = <<~KOTLIN
             package #{view_package}
-            
+
             import androidx.compose.foundation.background
             import androidx.compose.foundation.layout.*
             import androidx.compose.material3.*
@@ -185,16 +182,14 @@ module KjuiTools
             import androidx.compose.ui.unit.dp
             import androidx.compose.ui.unit.sp
             import #{package_name}.data.#{class_name}Data
-            import #{package_name}.viewmodels.#{class_name}ViewModel
             import androidx.compose.material3.CircularProgressIndicator
             import androidx.compose.foundation.layout.Box
             import com.kotlinjsonui.core.DynamicModeManager
             import com.kotlinjsonui.core.SafeDynamicView
-            
+
             @Composable
             fun #{class_name}GeneratedView(
                 data: #{class_name}Data,
-                viewModel: #{class_name}ViewModel,
                 modifier: Modifier = Modifier
             ) {
                 // Generated Compose code from #{json_name}.json
@@ -205,7 +200,7 @@ module KjuiTools
                     // Dynamic Mode - use SafeDynamicView for real-time updates
                     SafeDynamicView(
                         layoutName = "#{json_name}",
-                        data = data.toMap(viewModel),
+                        data = data.toMap(),
                         modifier = modifier,
                         fallback = {
                             // Show error or loading state when dynamic view is not available
@@ -250,20 +245,16 @@ module KjuiTools
                 // >>> GENERATED_CODE_END
             }
           KOTLIN
-          
+
           File.write(file_path, content)
         end
 
         def create_cell_data_template(file_path, class_name, package_name)
           return if File.exist?(file_path)
-          
+
           content = <<~KOTLIN
             package #{package_name}.data
-            
-            import androidx.compose.runtime.MutableState
-            import androidx.compose.runtime.mutableStateOf
-            import #{package_name}.viewmodels.#{class_name}ViewModel
-            
+
             data class #{class_name}Data(
                 var item: Map<String, Any> = emptyMap()
             ) {
@@ -275,19 +266,19 @@ module KjuiTools
                         )
                     }
                 }
-            
+
                 // Convert properties to map for runtime use
-                fun toMap(viewModel: #{class_name}ViewModel? = null): MutableMap<String, Any> {
+                fun toMap(): MutableMap<String, Any> {
                     val map = mutableMapOf<String, Any>()
-                    
+
                     // Data properties
                     map["item"] = item
-                    
+
                     return map
                 }
             }
           KOTLIN
-          
+
           File.write(file_path, content)
         end
 
