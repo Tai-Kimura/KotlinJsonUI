@@ -40,9 +40,9 @@ RSpec.describe KjuiTools::CLI::Commands::Init do
         expect { init.run(['--mode', 'compose']) }.to output(/Initialization complete/).to_stdout
       end
 
-      it 'shows compose mode message' do
+      it 'shows next steps with setup instruction' do
         init = described_class.new
-        expect { init.run(['--mode', 'compose']) }.to output(/Compose mode initialized/).to_stdout
+        expect { init.run(['--mode', 'compose']) }.to output(/Run 'kjui setup'/).to_stdout
       end
     end
 

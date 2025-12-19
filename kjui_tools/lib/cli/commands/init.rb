@@ -24,30 +24,16 @@ module KjuiTools
           mode = options[:mode] || installer_mode || Core::ConfigManager.detect_mode
           
           puts "Initializing KotlinJsonUI project in #{mode} mode..."
-          
-          # Create config file
+
+          # Create config file only - directories will be created by 'setup' command
           create_config_file(mode)
-          
-          # Create directory structure based on mode
-          case mode
-          when 'xml'
-            create_xml_structure
-          when 'compose'
-            create_compose_structure
-          when 'all'
-            create_xml_structure
-            create_compose_structure
-          end
-          
+
           puts "Initialization complete!"
           puts
-          if mode == 'compose'
-            puts "Compose mode initialized. Use Compose-specific commands for your project."
-          else
-            puts "Next steps:"
-            puts "  1. Run 'kjui setup' to install dependencies and base files"
-            puts "  2. Run 'kjui g view HomeView' to generate your first view"
-          end
+          puts "Next steps:"
+          puts "  1. Edit kjui.config.json to customize paths if needed"
+          puts "  2. Run 'kjui setup' to create directories and base files"
+          puts "  3. Run 'kjui g view HomeView' to generate your first view"
         end
 
         private
@@ -195,60 +181,6 @@ module KjuiTools
           puts "Created config file: #{config_file}"
         end
 
-        def create_xml_structure
-          directories = %w[
-            res/raw/layouts
-            res/raw/styles
-            java/com/example/app/ui
-            java/com/example/app/ui/activities
-            java/com/example/app/ui/fragments
-            java/com/example/app/data
-            java/com/example/app/viewmodel
-            java/com/example/app/bindings
-            java/com/example/app/core
-            java/com/example/app/core/base
-          ]
-          
-          create_directories(directories)
-        end
-
-        def create_compose_structure
-          # Read config to get directory names
-          config = Core::ConfigManager.load_config
-          source_dir = config['source_directory'] || 'app/src/main'
-          
-          directories = [
-            File.join(source_dir, config['layouts_directory'] || 'assets/Layouts'),
-            File.join(source_dir, config['styles_directory'] || 'assets/Styles')
-          ]
-          
-          # Add data directory if configured
-          if config['data_directory']
-            directories << File.join(source_dir, config['data_directory'])
-          end
-          
-          # Add viewmodel directory if configured
-          if config['viewmodel_directory']
-            directories << File.join(source_dir, config['viewmodel_directory'])
-          end
-          
-          # Add view directory if configured
-          if config['view_directory']
-            directories << File.join(source_dir, config['view_directory'])
-          end
-          
-          create_directories(directories)
-        end
-
-        def create_directories(directories)
-          directories.each do |dir|
-            unless Dir.exist?(dir)
-              FileUtils.mkdir_p(dir)
-              puts "Created directory: #{dir}"
-            end
-          end
-        end
-        
         def get_project_name_from_gradle
           # Try settings.gradle.kts first
           if File.exist?('settings.gradle.kts')
