@@ -137,8 +137,14 @@ class DynamicContainerComponent {
                             Box(
                                 modifier = Modifier
                                     .weight(weight)
-                                    .then(if (hasMatchParentWidth) Modifier.fillMaxWidth() else Modifier.wrapContentWidth())
-                                    .align(childAlignment)
+                                    .fillMaxWidth()
+                                    .align(childAlignment),
+                                contentAlignment = when (childAlignment) {
+                                    Alignment.Start -> Alignment.CenterStart
+                                    Alignment.End -> Alignment.CenterEnd
+                                    Alignment.CenterHorizontally -> Alignment.Center
+                                    else -> Alignment.Center
+                                }
                             ) {
                                 DynamicView(modifiedChild, data)
                             }
@@ -154,7 +160,15 @@ class DynamicContainerComponent {
                         }
                         childAlignment != null && childAlignment is Alignment.Horizontal -> {
                             Box(
-                                modifier = Modifier.align(childAlignment)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(childAlignment),
+                                contentAlignment = when (childAlignment) {
+                                    Alignment.Start -> Alignment.CenterStart
+                                    Alignment.End -> Alignment.CenterEnd
+                                    Alignment.CenterHorizontally -> Alignment.Center
+                                    else -> Alignment.Center
+                                }
                             ) {
                                 DynamicView(child, data)
                             }
@@ -325,7 +339,7 @@ class DynamicContainerComponent {
                 distribution == "equalSpacing" -> Arrangement.SpaceAround
                 gravity == "top" -> Arrangement.Top
                 gravity == "bottom" -> Arrangement.Bottom
-                gravity == "centerVertical" -> Arrangement.Center
+                gravity == "centerVertical" || gravity == "center" -> Arrangement.Center
                 else -> Arrangement.Top
             }
         }
@@ -342,7 +356,7 @@ class DynamicContainerComponent {
                 distribution == "equalSpacing" -> Arrangement.SpaceAround
                 gravity == "left" -> Arrangement.Start
                 gravity == "right" -> Arrangement.End
-                gravity == "centerHorizontal" -> Arrangement.Center
+                gravity == "centerHorizontal" || gravity == "center" -> Arrangement.Center
                 else -> Arrangement.Start
             }
         }
@@ -351,16 +365,16 @@ class DynamicContainerComponent {
             return when (json.get("gravity")?.asString) {
                 "left" -> Alignment.Start
                 "right" -> Alignment.End
-                "centerHorizontal" -> Alignment.CenterHorizontally
+                "centerHorizontal", "center" -> Alignment.CenterHorizontally
                 else -> Alignment.Start
             }
         }
-        
+
         private fun parseVerticalAlignment(json: JsonObject): Alignment.Vertical {
             return when (json.get("gravity")?.asString) {
                 "top" -> Alignment.Top
                 "bottom" -> Alignment.Bottom
-                "centerVertical" -> Alignment.CenterVertically
+                "centerVertical", "center" -> Alignment.CenterVertically
                 else -> Alignment.Top
             }
         }

@@ -1,5 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,6 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.kotlinjsonui.dynamic.helpers.dashedBorder
+import com.kotlinjsonui.dynamic.helpers.dottedBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,6 +55,7 @@ import kotlinx.coroutines.withContext
  * - background: String hex color for background
  * - borderColor: String hex color for border
  * - borderWidth: Float width of border
+ * - borderStyle: String style of border (solid, dashed, dotted)
  * - cornerRadius: Float corner radius
  * - padding/paddings: Number or Array for content padding
  * - margins: Array or individual margin properties
@@ -194,11 +199,32 @@ class DynamicButtonComponent {
                 disabledContentColor = textColor.copy(alpha = 0.5f)
             )
 
+            // Parse border
+            val borderColor = json.get("borderColor")?.asString?.let {
+                ColorParser.parseColorString(it)
+            }
+            val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+            val borderStyle = json.get("borderStyle")?.asString?.lowercase()
+
+            // For solid borders, use BorderStroke; for dashed/dotted, use null and apply to modifier
+            val border = if (borderColor != null && (borderStyle == null || borderStyle == "solid")) {
+                BorderStroke(borderWidth.dp, borderColor)
+            } else {
+                null
+            }
+
             // Build content padding
             val contentPadding = buildContentPadding(json)
 
-            // Build modifier
-            val modifier = buildModifier(json)
+            // Build modifier with border for dashed/dotted styles
+            var modifier = buildModifier(json)
+            if (borderColor != null && borderStyle != null && borderStyle != "solid") {
+                modifier = when (borderStyle) {
+                    "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
+                    "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
+                    else -> modifier
+                }
+            }
 
             // Create the button
             Button(
@@ -208,6 +234,7 @@ class DynamicButtonComponent {
                 shape = shape,
                 colors = colors,
                 elevation = elevation,
+                border = border,
                 contentPadding = contentPadding
             ) {
                 if (isLoading) {

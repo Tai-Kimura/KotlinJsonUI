@@ -148,7 +148,7 @@ module KjuiTools
         
         def self.add_gravity_settings(layout, gravity, depth)
           code = ""
-          
+
           if layout == 'Column'
             case gravity
             when 'top'
@@ -162,6 +162,10 @@ module KjuiTools
             when 'right'
               code += ",\n" + indent("horizontalAlignment = Alignment.End", depth + 1)
             when 'centerHorizontal'
+              code += ",\n" + indent("horizontalAlignment = Alignment.CenterHorizontally", depth + 1)
+            when 'center'
+              # center applies both vertical arrangement and horizontal alignment
+              code += ",\n" + indent("verticalArrangement = Arrangement.Center", depth + 1)
               code += ",\n" + indent("horizontalAlignment = Alignment.CenterHorizontally", depth + 1)
             end
           elsif layout == 'Row'
@@ -178,9 +182,13 @@ module KjuiTools
               code += ",\n" + indent("verticalAlignment = Alignment.Bottom", depth + 1)
             when 'centerVertical'
               code += ",\n" + indent("verticalAlignment = Alignment.CenterVertically", depth + 1)
+            when 'center'
+              # center applies both horizontal arrangement and vertical alignment
+              code += ",\n" + indent("horizontalArrangement = Arrangement.Center", depth + 1)
+              code += ",\n" + indent("verticalAlignment = Alignment.CenterVertically", depth + 1)
             end
           end
-          
+
           code
         end
         
