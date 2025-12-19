@@ -30,13 +30,10 @@ module KjuiTools
           
           # Setup network security for hot reload
           setup_network_security
-          
+
           # Update build.gradle
           update_build_gradle
-          
-          # Create sample layouts
-          create_sample_layouts
-          
+
           puts "Compose setup complete!"
         end
         
@@ -413,84 +410,6 @@ module KjuiTools
           nil
         rescue
           nil
-        end
-        
-        def create_sample_layouts
-          puts "Creating sample layouts..."
-          
-          # Create main.json
-          source_dir = @config['source_directory'] || 'src/main'
-          main_layout = File.join(source_dir, 'assets/Layouts/main.json')
-          
-          content = <<~JSON
-            {
-              "type": "SafeAreaView",
-              "background": "#FFFFFF",
-              "child": [
-                {
-                  "type": "View",
-                  "orientation": "vertical",
-                  "padding": 16,
-                  "child": [
-                    {
-                      "type": "Label",
-                      "text": "Welcome to KotlinJsonUI",
-                      "fontSize": 24,
-                      "fontWeight": "bold",
-                      "fontColor": "#000000",
-                      "marginBottom": 20
-                    },
-                    {
-                      "type": "Label",
-                      "text": "Build native Android UIs with JSON",
-                      "fontSize": 16,
-                      "fontColor": "#666666",
-                      "marginBottom": 30
-                    },
-                    {
-                      "type": "Button",
-                      "text": "Get Started",
-                      "onclick": "getStarted",
-                      "background": "#6200EE",
-                      "fontColor": "#FFFFFF",
-                      "padding": [12, 24],
-                      "cornerRadius": 8
-                    }
-                  ]
-                }
-              ],
-              "data": [
-                {
-                  "name": "title",
-                  "class": "String",
-                  "defaultValue": "'Welcome'"
-                }
-              ]
-            }
-          JSON
-          
-          FileUtils.mkdir_p(File.dirname(main_layout))
-          File.write(main_layout, content) unless File.exist?(main_layout)
-          puts "  Created: main.json" unless File.exist?(main_layout)
-          
-          # Create sample style
-          source_dir = @config['source_directory'] || 'src/main'
-          button_style = File.join(source_dir, 'assets/Styles/primary_button.json')
-          
-          style_content = <<~JSON
-            {
-              "background": "#6200EE",
-              "fontColor": "#FFFFFF",
-              "fontSize": 16,
-              "fontWeight": "medium",
-              "padding": [12, 24],
-              "cornerRadius": 8
-            }
-          JSON
-          
-          FileUtils.mkdir_p(File.dirname(button_style))
-          File.write(button_style, style_content) unless File.exist?(button_style)
-          puts "  Created: primary_button.json style" unless File.exist?(button_style)
         end
         
         def package_path(subpath)
