@@ -24,7 +24,7 @@ module KjuiTools
           if checked_value.start_with?('@{')
             variable = checked_value[2..-2]
             code += "\n" + indent("checked = data.#{variable},", depth + 1)
-            code += "\n" + indent("onCheckedChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
+            code += "\n" + indent("onCheckedChange = { newValue -> data.#{variable} = newValue },", depth + 1)
           else
             code += "\n" + indent("checked = #{checked_value},", depth + 1)
             

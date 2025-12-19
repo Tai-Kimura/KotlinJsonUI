@@ -337,7 +337,8 @@ module KjuiTools
           else
             source_dir = @config['source_directory'] || 'src/main'
             res_dir = File.join(project_root, source_dir, 'res', 'xml')
-            debug_dir = File.join(project_root, 'src', 'debug')
+            # Derive debug path from source_dir (e.g., 'app/src/main' -> 'app/src/debug')
+            debug_dir = File.join(project_root, source_dir.sub('/main', '/debug'))
             manifest_path = File.join(project_root, source_dir, 'AndroidManifest.xml')
           end
           

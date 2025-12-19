@@ -30,11 +30,19 @@ module KjuiTools
           code += "\n" + indent("value = #{value},", depth + 1)
 
           # onValueChange handler
+          # Data binding: directly update data property, then call onTextChange callback if specified
           if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
             variable = extract_variable_name(json_data['text'])
-            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
+            if json_data['onTextChange']
+              # Data binding + explicit callback
+              code += "\n" + indent("onValueChange = { newValue -> data.#{variable} = newValue; data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+            else
+              # Data binding only
+              code += "\n" + indent("onValueChange = { newValue -> data.#{variable} = newValue },", depth + 1)
+            end
           elsif json_data['onTextChange']
-            code += "\n" + indent("onValueChange = { viewModel.#{json_data['onTextChange']}(it) },", depth + 1)
+            # Explicit callback only (no data binding)
+            code += "\n" + indent("onValueChange = { newValue -> data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end

@@ -71,26 +71,35 @@ module KjuiTools
         base_name = File.basename(json_file, '.json')
         snake_case_name = to_snake_case(base_name)
         pascal_case_name = to_pascal_case(base_name)
-        
+
         begin
           json_content = File.read(json_file)
           json_data = JSON.parse(json_content)
           json_data = StyleLoader.load_and_merge(json_data)
-          
+
           @required_imports = Set.new
           @included_views = Set.new
           @cell_views = Set.new
           @custom_components = Set.new
-          
+
           # Find the GeneratedView file
           generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
-          
+
           if File.exist?(generated_view_file)
             update_generated_file(generated_view_file, json_data)
           else
             Core::Logger.warn "GeneratedView file not found: #{generated_view_file}"
           end
-          
+
+          # Update ViewModel's updateData function
+          source_directory = @config['source_directory'] || 'src/main'
+          viewmodel_dir = File.join(@source_path, source_directory, @config['viewmodel_directory'] || 'kotlin/viewmodels')
+          viewmodel_file = File.join(viewmodel_dir, "#{pascal_case_name}ViewModel.kt")
+
+          if File.exist?(viewmodel_file)
+            update_viewmodel_file(viewmodel_file, json_data, pascal_case_name)
+          end
+
         rescue JSON::ParserError => e
           Core::Logger.error "Failed to parse #{json_file}: #{e.message}"
         rescue => e
@@ -493,25 +502,40 @@ module KjuiTools
       
       def update_generated_file(file_path, json_data)
         existing_content = File.read(file_path)
-        
-        if existing_content.include?('// >>> GENERATED_CODE_START') && 
+
+        if existing_content.include?('// >>> GENERATED_CODE_START') &&
            existing_content.include?('// >>> GENERATED_CODE_END')
-          
+
           # Extract the layout name from file path
           layout_name = File.basename(File.dirname(file_path))
-          
+          view_name = to_pascal_case(layout_name)
+
           # Generate both static and dynamic versions
           static_content = generate_component(json_data, 1)
           dynamic_content = generate_dynamic_view_content(layout_name, json_data, 1)
-          
+
           # Create content that switches based on DynamicModeManager
           composable_content = generate_mode_aware_content(layout_name, static_content, dynamic_content, 1)
-          
+
           updated_content = existing_content.gsub(
             /\/\/ >>> GENERATED_CODE_START.*?\/\/ >>> GENERATED_CODE_END/m,
             "// >>> GENERATED_CODE_START\n#{composable_content}    // >>> GENERATED_CODE_END"
           )
-          
+
+          # Update function signature to include viewModel parameter
+          updated_content = updated_content.gsub(
+            /fun #{view_name}GeneratedView\(\s*\n\s*data: #{view_name}Data\s*\n\s*\)/m,
+            "fun #{view_name}GeneratedView(\n    data: #{view_name}Data,\n    viewModel: #{view_name}ViewModel\n)"
+          )
+
+          # Add ViewModel import if not present
+          viewmodel_import = "import #{@package_name}.viewmodels.#{view_name}ViewModel"
+          unless updated_content.include?(viewmodel_import)
+            # Add after Data import
+            data_import = "import #{@package_name}.data.#{view_name}Data"
+            updated_content = updated_content.gsub(data_import, "#{data_import}\n#{viewmodel_import}")
+          end
+
           updated_content = update_imports(updated_content)
           File.write(file_path, updated_content)
           Core::Logger.success "Updated: #{file_path}"
@@ -519,7 +543,126 @@ module KjuiTools
           Core::Logger.warn "Generated code markers not found in #{file_path}"
         end
       end
-      
+
+      def update_viewmodel_file(file_path, json_data, view_name)
+        existing_content = File.read(file_path)
+
+        # Check if the file has generated code markers
+        unless existing_content.include?('// >>> GENERATED_CODE_START') &&
+               existing_content.include?('// >>> GENERATED_CODE_END')
+          return # Skip files without markers
+        end
+
+        # Extract data properties from JSON
+        data_properties = extract_data_properties(json_data)
+
+        # Generate the updateData function content
+        update_data_content = generate_update_data_function(data_properties, view_name)
+
+        # Replace the generated section
+        updated_content = existing_content.gsub(
+          /\/\/ >>> GENERATED_CODE_START.*?\/\/ >>> GENERATED_CODE_END/m,
+          "// >>> GENERATED_CODE_START\n#{update_data_content}    // >>> GENERATED_CODE_END"
+        )
+
+        # Add kotlinx.coroutines.flow.update import if not present
+        update_import = "import kotlinx.coroutines.flow.update"
+        unless updated_content.include?(update_import)
+          # Add after asStateFlow import
+          as_state_flow_import = "import kotlinx.coroutines.flow.asStateFlow"
+          if updated_content.include?(as_state_flow_import)
+            updated_content = updated_content.gsub(as_state_flow_import, "#{as_state_flow_import}\n#{update_import}")
+          end
+        end
+
+        File.write(file_path, updated_content)
+        Core::Logger.success "Updated ViewModel: #{file_path}"
+      end
+
+      def extract_data_properties(json_data, properties = [])
+        if json_data.is_a?(Hash)
+          # Stop if this is an include - includes have their own data models
+          return properties if json_data['include']
+
+          # Check for data section at any level, but only process the first one found
+          if json_data['data'] && properties.empty?
+            if json_data['data'].is_a?(Array)
+              json_data['data'].each do |data_item|
+                if data_item.is_a?(Hash) && data_item['name']
+                  unless properties.any? { |p| p['name'] == data_item['name'] }
+                    properties << data_item
+                  end
+                end
+              end
+            end
+          end
+
+          # If we haven't found data yet, continue searching in children
+          if properties.empty? && json_data['child']
+            if json_data['child'].is_a?(Array)
+              json_data['child'].each do |child|
+                extract_data_properties(child, properties)
+                break unless properties.empty?
+              end
+            else
+              extract_data_properties(json_data['child'], properties)
+            end
+          end
+        elsif json_data.is_a?(Array)
+          json_data.each do |item|
+            extract_data_properties(item, properties)
+            break unless properties.empty?
+          end
+        end
+
+        properties
+      end
+
+      def generate_update_data_function(data_properties, view_name)
+        code = "    // Auto-generated updateData function - updated by 'kjui build'\n"
+        code += "    fun updateData(updates: Map<String, Any>) {\n"
+        code += "        _data.update { current ->\n"
+        code += "            var updated = current\n"
+        code += "            updates.forEach { (key, value) ->\n"
+        code += "                updated = when (key) {\n"
+
+        if data_properties.empty?
+          code += "                    else -> updated\n"
+        else
+          data_properties.each do |prop|
+            name = prop['name']
+            class_type = prop['class'] || 'String'
+            kotlin_cast = get_kotlin_cast(class_type, name)
+            code += "                    \"#{name}\" -> updated.copy(#{name} = #{kotlin_cast})\n"
+          end
+          code += "                    else -> updated\n"
+        end
+
+        code += "                }\n"
+        code += "            }\n"
+        code += "            updated\n"
+        code += "        }\n"
+        code += "    }\n"
+        code
+      end
+
+      def get_kotlin_cast(class_type, name)
+        case class_type
+        when 'String'
+          "value as? String ?: updated.#{name}"
+        when 'Int'
+          "(value as? Number)?.toInt() ?: updated.#{name}"
+        when 'Double'
+          "(value as? Number)?.toDouble() ?: updated.#{name}"
+        when 'Float', 'CGFloat'
+          "(value as? Number)?.toFloat() ?: updated.#{name}"
+        when 'Bool', 'Boolean'
+          "value as? Boolean ?: updated.#{name}"
+        else
+          "value as? #{class_type} ?: updated.#{name}"
+        end
+      end
+
       def generate_mode_aware_content(layout_name, static_content, dynamic_content, depth)
         indent_str = "    " * depth
 

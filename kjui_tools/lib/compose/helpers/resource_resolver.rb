@@ -107,13 +107,13 @@ module KjuiTools
           # Check if a color resource exists
           def resolve_color(color, config, source_path)
             return nil unless color.is_a?(String)
-            
+
             # Skip if it's a data binding expression
             return "Color(android.graphics.Color.parseColor(#{quote(color)}))" if color.start_with?('@{') || color.start_with?('${')
-            
+
             # Try to find the color in colors.json
             color_key = find_color_key(color, config, source_path)
-            
+
             if color_key
               # Return colorResource reference
               "colorResource(R.color.#{color_key})"
