@@ -546,7 +546,7 @@ module KjuiTools
         code = ""
         code += "#{indent_str}    SafeDynamicView(\n"
         code += "#{indent_str}        layoutName = \"#{layout_name}\",\n"
-        code += "#{indent_str}        data = data.toMap(viewModel),\n"
+        code += "#{indent_str}        data = data.toMap(),\n"
         code += "#{indent_str}        fallback = {\n"
         code += "#{indent_str}            // Show error or loading state when dynamic view is not available\n"
         code += "#{indent_str}            Box(\n"
