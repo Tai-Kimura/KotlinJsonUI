@@ -389,6 +389,13 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
         expect(result[:before]).to include('data.loadData?.invoke()')
       end
 
+      it 'strips @{} binding syntax' do
+        json_data = { 'onAppear' => '@{onInitComplete}' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('data.onInitComplete?.invoke()')
+        expect(result[:before]).not_to include('@{')
+      end
+
       it 'adds launched_effect import' do
         json_data = { 'onAppear' => 'loadData' }
         described_class.build_lifecycle_effects(json_data, 1, imports)
@@ -415,6 +422,13 @@ RSpec.describe KjuiTools::Compose::Helpers::ModifierBuilder do
         json_data = { 'onDisappear' => 'cleanup:' }
         result = described_class.build_lifecycle_effects(json_data, 1, imports)
         expect(result[:before]).to include('data.cleanup?.invoke()')
+      end
+
+      it 'strips @{} binding syntax' do
+        json_data = { 'onDisappear' => '@{onCleanup}' }
+        result = described_class.build_lifecycle_effects(json_data, 1, imports)
+        expect(result[:before]).to include('data.onCleanup?.invoke()')
+        expect(result[:before]).not_to include('@{')
       end
 
       it 'adds disposable_effect import' do

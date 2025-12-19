@@ -558,15 +558,14 @@ module KjuiTools
           if json_data['onAppear']
             required_imports&.add(:launched_effect)
             handler = json_data['onAppear']
+            # Strip @{} binding syntax if present
+            property = is_binding?(handler) ? extract_binding_property(handler) : handler
+            # Also strip : prefix if present
+            property = property.gsub(':', '') if property.include?(':')
 
             result[:before] += indent("// onAppear lifecycle event", depth)
             result[:before] += "\n" + indent("LaunchedEffect(Unit) {", depth)
-            if handler.include?(':')
-              method_name = handler.gsub(':', '')
-              result[:before] += "\n" + indent("data.#{method_name}?.invoke()", depth + 1)
-            else
-              result[:before] += "\n" + indent("data.#{handler}?.invoke()", depth + 1)
-            end
+            result[:before] += "\n" + indent("data.#{property}?.invoke()", depth + 1)
             result[:before] += "\n" + indent("}", depth)
             result[:before] += "\n"
           end
@@ -574,16 +573,15 @@ module KjuiTools
           if json_data['onDisappear']
             required_imports&.add(:disposable_effect)
             handler = json_data['onDisappear']
+            # Strip @{} binding syntax if present
+            property = is_binding?(handler) ? extract_binding_property(handler) : handler
+            # Also strip : prefix if present
+            property = property.gsub(':', '') if property.include?(':')
 
             result[:before] += indent("// onDisappear lifecycle event", depth)
             result[:before] += "\n" + indent("DisposableEffect(Unit) {", depth)
             result[:before] += "\n" + indent("onDispose {", depth + 1)
-            if handler.include?(':')
-              method_name = handler.gsub(':', '')
-              result[:before] += "\n" + indent("data.#{method_name}?.invoke()", depth + 2)
-            else
-              result[:before] += "\n" + indent("data.#{handler}?.invoke()", depth + 2)
-            end
+            result[:before] += "\n" + indent("data.#{property}?.invoke()", depth + 2)
             result[:before] += "\n" + indent("}", depth + 1)
             result[:before] += "\n" + indent("}", depth)
             result[:before] += "\n"
