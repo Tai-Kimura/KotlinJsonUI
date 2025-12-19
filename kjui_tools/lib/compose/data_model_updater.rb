@@ -218,11 +218,8 @@ module KjuiTools
         content = <<~KOTLIN
         package #{@package_name}.data
 
-        import androidx.compose.runtime.MutableState
-        import androidx.compose.runtime.mutableStateOf
-        import #{@package_name}.viewmodels.#{view_name}ViewModel
         KOTLIN
-        
+
         # Add Color import if any property uses Color type
         if data_properties.any? { |prop| prop['class'] == 'Color' }
           content += "import androidx.compose.ui.graphics.Color\n"
@@ -311,12 +308,12 @@ module KjuiTools
         content += "        }\n"
         content += "    }\n"
         
-        # Add toMap function with viewModel parameter
+        # Add toMap function
         content += "\n"
         content += "    // Convert properties to map for runtime use\n"
-        content += "    fun toMap(viewModel: #{view_name}ViewModel? = null): MutableMap<String, Any> {\n"
+        content += "    fun toMap(): MutableMap<String, Any> {\n"
         content += "        val map = mutableMapOf<String, Any>()\n"
-        
+
         # Add data properties
         if !data_properties.empty?
           content += "        \n"
@@ -324,7 +321,7 @@ module KjuiTools
           data_properties.each do |prop|
             name = prop['name']
             default_value = prop['defaultValue']
-            
+
             # If it's nullable, check for null
             if default_value.nil? || default_value == 'nil'
               content += "        #{name}?.let { map[\"#{name}\"] = it }\n"
@@ -333,22 +330,11 @@ module KjuiTools
             end
           end
         end
-        
-        # Add onclick actions if viewModel is provided
-        if !onclick_actions.empty?
-          content += "        \n"
-          content += "        // Add onclick action lambdas if viewModel is provided\n"
-          content += "        viewModel?.let { vm ->\n"
-          onclick_actions.each do |action|
-            content += "            map[\"#{action}\"] = { vm.#{action}() }\n"
-          end
-          content += "        }\n"
-        end
-        
-        if data_properties.empty? && onclick_actions.empty?
+
+        if data_properties.empty?
           content += "        // No properties to add\n"
         end
-        
+
         content += "        \n"
         content += "        return map\n"
         content += "    }\n"

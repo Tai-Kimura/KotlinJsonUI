@@ -381,13 +381,6 @@ RSpec.describe KjuiTools::Compose::DataModelUpdater do
         expect(result).to include('= null')
       end
 
-      it 'generates content with onclick actions' do
-        actions = ['onSubmit', 'onCancel']
-        result = updater.send(:generate_data_content, 'Test', [], actions)
-        expect(result).to include('onSubmit')
-        expect(result).to include('onCancel')
-      end
-
       it 'generates content with Color import' do
         properties = [
           { 'name' => 'bgColor', 'class' => 'Color', 'defaultValue' => '#FF0000' }
