@@ -131,25 +131,25 @@ RSpec.describe KjuiTools::Compose::Components::TextFieldComponent do
     it 'generates TextField with onFocus handler' do
       json_data = { 'type' => 'TextField', 'onFocus' => 'handleFocus' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onFocus = { viewModel.handleFocus() }')
+      expect(result).to include('onFocus = { data.handleFocus?.invoke() }')
     end
 
     it 'generates TextField with onBlur handler' do
       json_data = { 'type' => 'TextField', 'onBlur' => 'handleBlur' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onBlur = { viewModel.handleBlur() }')
+      expect(result).to include('onBlur = { data.handleBlur?.invoke() }')
     end
 
     it 'generates TextField with onBeginEditing handler' do
       json_data = { 'type' => 'TextField', 'onBeginEditing' => 'startEdit' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onBeginEditing = { viewModel.startEdit() }')
+      expect(result).to include('onBeginEditing = { data.startEdit?.invoke() }')
     end
 
     it 'generates TextField with onEndEditing handler' do
       json_data = { 'type' => 'TextField', 'onEndEditing' => 'endEdit' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onEndEditing = { viewModel.endEdit() }')
+      expect(result).to include('onEndEditing = { data.endEdit?.invoke() }')
     end
 
     it 'generates TextField with email keyboard type' do
@@ -229,7 +229,14 @@ RSpec.describe KjuiTools::Compose::Components::TextFieldComponent do
     it 'generates TextField with onTextChange handler' do
       json_data = { 'type' => 'TextField', 'onTextChange' => 'handleTextChange' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('viewModel.handleTextChange(newValue)')
+      expect(result).to include('data.handleTextChange?.invoke()')
+    end
+
+    it 'strips @{} binding syntax from onTextChange' do
+      json_data = { 'type' => 'TextField', 'onTextChange' => '@{onEmailChange}' }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('data.onEmailChange?.invoke()')
+      expect(result).not_to include('@{')
     end
 
     it 'generates TextField with margins using CustomTextFieldWithMargins' do

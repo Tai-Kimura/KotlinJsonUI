@@ -41,15 +41,23 @@ module KjuiTools
           code += "\n" + indent("value = #{value},", depth + 1)
           
           # Handle onValueChange/onTextChange
-          # Priority: onTextChange (explicit handler) > data binding > empty
-          if json_data['onTextChange']
-            # Explicit event handler
-            code += "\n" + indent("onValueChange = { newValue -> viewModel.#{json_data['onTextChange']}(newValue) },", depth + 1)
-          elsif json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
-            # Data binding update
+          # Data binding: update via viewModel.updateData to trigger StateFlow, then call onTextChange callback if specified
+          if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
             variable = extract_variable_name(json_data['text'])
-            # Use a map update to notify the viewModel
-            code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
+            if json_data['onTextChange']
+              # Data binding + explicit callback
+              # Strip @{} binding syntax from callback name
+              callback_name = extract_binding_name(json_data['onTextChange'])
+              code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)); data.#{callback_name}?.invoke() },", depth + 1)
+            else
+              # Data binding only
+              code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
+            end
+          elsif json_data['onTextChange']
+            # Explicit callback only (no data binding)
+            # Strip @{} binding syntax from callback name
+            callback_name = extract_binding_name(json_data['onTextChange'])
+            code += "\n" + indent("onValueChange = { newValue -> data.#{callback_name}?.invoke() },", depth + 1)
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end
@@ -236,19 +244,19 @@ module KjuiTools
           
           # Add focus/blur event handlers
           if json_data['onFocus']
-            code += ",\n" + indent("onFocus = { viewModel.#{json_data['onFocus']}() }", depth + 1)
+            code += ",\n" + indent("onFocus = { data.#{json_data['onFocus']}?.invoke() }", depth + 1)
           end
-          
+
           if json_data['onBlur']
-            code += ",\n" + indent("onBlur = { viewModel.#{json_data['onBlur']}() }", depth + 1)
+            code += ",\n" + indent("onBlur = { data.#{json_data['onBlur']}?.invoke() }", depth + 1)
           end
-          
+
           if json_data['onBeginEditing']
-            code += ",\n" + indent("onBeginEditing = { viewModel.#{json_data['onBeginEditing']}() }", depth + 1)
+            code += ",\n" + indent("onBeginEditing = { data.#{json_data['onBeginEditing']}?.invoke() }", depth + 1)
           end
-          
+
           if json_data['onEndEditing']
-            code += ",\n" + indent("onEndEditing = { viewModel.#{json_data['onEndEditing']}() }", depth + 1)
+            code += ",\n" + indent("onEndEditing = { data.#{json_data['onEndEditing']}?.invoke() }", depth + 1)
           end
           
           # Keyboard options (input, returnKeyType, contentType, autocapitalizationType, autocorrectionType)
@@ -362,6 +370,15 @@ module KjuiTools
             $1.split('.').last
           else
             'value'
+          end
+        end
+
+        # Strip @{} binding syntax from a value and return the property name
+        def self.extract_binding_name(value)
+          if value && value.match(/@\{([^}]+)\}/)
+            $1
+          else
+            value
           end
         end
         
