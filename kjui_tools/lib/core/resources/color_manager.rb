@@ -116,9 +116,12 @@ module KjuiTools
           # Load colors from colors.json
           all_colors = load_colors_json
 
-          # Also include defined colors
+          # Also include defined colors (only those with actual values that don't already exist)
           defined_colors = load_defined_colors_json
-          all_colors.merge!(defined_colors) if defined_colors.any?
+          defined_colors.each do |key, value|
+            # Only add if value exists and all_colors doesn't already have this key
+            all_colors[key] = value if value && !all_colors.key?(key)
+          end
 
           return if all_colors.empty?
 

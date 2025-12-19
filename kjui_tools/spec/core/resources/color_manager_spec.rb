@@ -134,6 +134,61 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
       content = File.read(File.join(colors_dir, 'colors.xml'))
       expect(content).to include('primary')
     end
+
+    it 'does not overwrite colors.json values with nil from defined_colors.json' do
+      colors_dir = File.join(temp_dir, 'src/main/res/values')
+      FileUtils.mkdir_p(colors_dir)
+
+      File.write(File.join(colors_dir, 'colors.xml'), <<~XML)
+        <?xml version="1.0" encoding="utf-8"?>
+        <resources>
+        </resources>
+      XML
+
+      # colors.json has proper color values
+      colors = { 'amber' => '#D4A574', 'charcoal' => '#1a1a1a' }
+      File.write(File.join(resources_dir, 'colors.json'), JSON.generate(colors))
+
+      # defined_colors.json has nil values for the same keys (legacy behavior)
+      defined_colors = { 'amber' => nil, 'charcoal' => nil }
+      File.write(File.join(resources_dir, 'defined_colors.json'), JSON.generate(defined_colors))
+
+      new_manager = described_class.new(config, source_path, resources_dir)
+      new_manager.apply_to_color_assets
+
+      content = File.read(File.join(colors_dir, 'colors.xml'))
+      # Should include colors from colors.json, not be skipped due to nil values
+      expect(content).to include('amber')
+      expect(content).to include('#FFD4A574')
+      expect(content).to include('charcoal')
+      expect(content).to include('#FF1A1A1A')
+    end
+
+    it 'adds defined_colors only when colors.json does not have the key' do
+      colors_dir = File.join(temp_dir, 'src/main/res/values')
+      FileUtils.mkdir_p(colors_dir)
+
+      File.write(File.join(colors_dir, 'colors.xml'), <<~XML)
+        <?xml version="1.0" encoding="utf-8"?>
+        <resources>
+        </resources>
+      XML
+
+      # colors.json has one color
+      colors = { 'primary' => '#007AFF' }
+      File.write(File.join(resources_dir, 'colors.json'), JSON.generate(colors))
+
+      # defined_colors.json has additional colors with values
+      defined_colors = { 'secondary' => '#FF6B6B' }
+      File.write(File.join(resources_dir, 'defined_colors.json'), JSON.generate(defined_colors))
+
+      new_manager = described_class.new(config, source_path, resources_dir)
+      new_manager.apply_to_color_assets
+
+      content = File.read(File.join(colors_dir, 'colors.xml'))
+      expect(content).to include('primary')
+      expect(content).to include('secondary')
+    end
   end
 
   describe '#is_color_property?' do
