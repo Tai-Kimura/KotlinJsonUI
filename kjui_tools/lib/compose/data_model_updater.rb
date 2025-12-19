@@ -396,8 +396,13 @@ module KjuiTools
       def format_default_value(value, json_class)
         case json_class
         when 'String'
-          # For String class, add quotes
-          "\"#{value}\""
+          # Handle '' as empty string (common shorthand)
+          if value == "''"
+            '""'
+          else
+            # For String class, add quotes
+            "\"#{value}\""
+          end
         when 'Bool', 'Boolean'
           # Convert to boolean
           if value.is_a?(TrueClass) || value.is_a?(FalseClass)
