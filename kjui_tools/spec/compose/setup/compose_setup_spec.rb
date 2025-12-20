@@ -68,8 +68,8 @@ RSpec.describe KjuiTools::Compose::Setup::ComposeSetup do
   describe 'private methods' do
     describe '#package_path' do
       it 'constructs correct package path' do
-        result = setup.send(:package_path, 'ui/components')
-        expect(result).to include('kotlin/com/example/app/ui/components')
+        result = setup.send(:package_path, 'ui/theme')
+        expect(result).to include('kotlin/com/example/app/ui/theme')
       end
     end
 
