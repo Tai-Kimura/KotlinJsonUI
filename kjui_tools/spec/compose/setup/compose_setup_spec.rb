@@ -48,7 +48,6 @@ RSpec.describe KjuiTools::Compose::Setup::ComposeSetup do
       allow(setup).to receive(:create_hotloader_config)
       allow(setup).to receive(:setup_network_security)
       allow(setup).to receive(:update_build_gradle)
-      allow(setup).to receive(:create_sample_layouts)
     end
 
     it 'runs all setup steps' do
@@ -57,7 +56,6 @@ RSpec.describe KjuiTools::Compose::Setup::ComposeSetup do
       expect(setup).to receive(:create_hotloader_config)
       expect(setup).to receive(:setup_network_security)
       expect(setup).to receive(:update_build_gradle)
-      expect(setup).to receive(:create_sample_layouts)
 
       expect { setup.run_full_setup }.to output(/Setting up Compose project/).to_stdout
     end
@@ -119,15 +117,5 @@ RSpec.describe KjuiTools::Compose::Setup::ComposeSetup do
       end
     end
 
-    describe '#create_sample_layouts' do
-      before do
-        FileUtils.mkdir_p(File.join(temp_dir, 'src/main/assets/Layouts'))
-        FileUtils.mkdir_p(File.join(temp_dir, 'src/main/assets/Styles'))
-      end
-
-      it 'creates sample layouts' do
-        expect { setup.send(:create_sample_layouts) }.to output(/Creating sample layouts/).to_stdout
-      end
-    end
   end
 end

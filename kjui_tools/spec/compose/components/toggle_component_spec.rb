@@ -36,7 +36,7 @@ RSpec.describe KjuiTools::Compose::Components::ToggleComponent do
       json_data = { 'type' => 'Toggle', 'data' => 'isEnabled' }
       result = described_class.generate(json_data, 0, required_imports)
       expect(result).to include('checked = data.isEnabled')
-      expect(result).to include('onCheckedChange = { newValue -> viewModel.updateData(mapOf("isEnabled" to newValue)) }')
+      expect(result).to include('onCheckedChange = { newValue -> data.isEnabled = newValue }')
     end
 
     it 'generates Switch with onclick handler' do

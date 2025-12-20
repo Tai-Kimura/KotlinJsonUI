@@ -30,7 +30,7 @@ RSpec.describe KjuiTools::Compose::Components::TextViewComponent do
       json_data = { 'type' => 'TextView', 'text' => '@{comment}' }
       result = described_class.generate(json_data, 0, required_imports)
       expect(result).to include('value = data.comment')
-      expect(result).to include('onValueChange = { newValue -> viewModel.updateData')
+      expect(result).to include('onValueChange = { newValue -> data.comment = newValue }')
     end
 
     it 'generates TextField with data binding with null coalescing' do
@@ -42,7 +42,7 @@ RSpec.describe KjuiTools::Compose::Components::TextViewComponent do
     it 'generates TextField with onTextChange handler' do
       json_data = { 'type' => 'TextView', 'onTextChange' => 'handleTextChange' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onValueChange = { viewModel.handleTextChange(it) }')
+      expect(result).to include('onValueChange = { newValue -> data.handleTextChange?.invoke() }')
     end
 
     it 'generates TextField with empty onValueChange when no handler' do

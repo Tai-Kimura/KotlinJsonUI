@@ -172,7 +172,7 @@ RSpec.describe KjuiTools::Core::BindingValidator do
             { 'name' => 'isLoggedIn', 'class' => 'Boolean' },
             { 'name' => 'hasPermission', 'class' => 'Boolean' }
           ],
-          'visibility' => '@{isLoggedIn && hasPermission}'
+          'hidden' => '@{isLoggedIn && hasPermission}'
         }
       end
 
@@ -475,7 +475,7 @@ RSpec.describe KjuiTools::Core::BindingValidator do
 
     context 'with type inference' do
       it 'suggests Boolean for isXxx variables' do
-        json_data = { 'type' => 'View', 'visibility' => '@{isVisible}' }
+        json_data = { 'type' => 'View', 'hidden' => '@{isVisible}' }
         warnings = validator.validate(json_data)
         expect(warnings.first).to include('"class": "Boolean"')
       end
