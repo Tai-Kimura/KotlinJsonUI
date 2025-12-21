@@ -85,6 +85,9 @@ module KjuiTools
           end
         end
 
+        # Check for conflicting attributes
+        check_spacing_gravity_conflict(merged_component, type)
+
         @warnings
       end
 
@@ -437,6 +440,17 @@ module KjuiTools
         add_warning("Attribute '#{path}' in '#{component_type}' has invalid binding syntax (starts with '@{' but doesn't end with '}')")
       end
 
+      # Check for conflicting spacing and gravity attributes
+      # Using both spacing and gravity together can cause unexpected layout behavior
+      def check_spacing_gravity_conflict(component, component_type)
+        has_spacing = component.key?('spacing') || component.key?('distribution')
+        has_gravity = component.key?('gravity')
+
+        if has_spacing && has_gravity
+          add_warning("Component '#{component_type}' has both 'spacing'/'distribution' and 'gravity' set. This combination may cause unexpected layout behavior. Consider using only one of these attributes.")
+        end
+      end
+
       # Check if width/height required warning should be skipped
       # When weight is set, the dimension in the parent's orientation direction is not required
       # - parent orientation: horizontal -> width not required if weight is set
@@ -546,10 +560,26 @@ module KjuiTools
       def determine_styles_dir
         return @styles_dir if @styles_dir && Dir.exist?(@styles_dir)
 
-        # Try common locations for Android projects
+        # Try to read from config first
+        config = load_kjui_config
+        if config
+          source_dir = config['source_directory']
+          styles_dir = config['styles_directory']
+          if source_dir && styles_dir
+            config_path = File.join(Dir.pwd, source_dir, styles_dir)
+            return config_path if Dir.exist?(config_path)
+          end
+        end
+
+        # Fallback to common locations for Android projects
         possible_dirs = [
+          # Styles inside Layouts directory (common pattern)
+          File.join(Dir.pwd, 'src', 'main', 'assets', 'Layouts', 'Styles'),
+          File.join(Dir.pwd, 'app', 'src', 'main', 'assets', 'Layouts', 'Styles'),
+          # Styles at assets root
           File.join(Dir.pwd, 'src', 'main', 'assets', 'Styles'),
           File.join(Dir.pwd, 'app', 'src', 'main', 'assets', 'Styles'),
+          # Other common locations
           File.join(Dir.pwd, 'Styles'),
           File.join(Dir.pwd, 'styles'),
           File.join(Dir.pwd, 'Layouts', 'Styles'),
@@ -557,6 +587,17 @@ module KjuiTools
         ]
 
         possible_dirs.find { |dir| Dir.exist?(dir) }
+      end
+
+      # Load kjui.config.json if it exists
+      # @return [Hash, nil] Config hash or nil
+      def load_kjui_config
+        config_path = File.join(Dir.pwd, 'kjui.config.json')
+        return nil unless File.exist?(config_path)
+
+        JSON.parse(File.read(config_path))
+      rescue JSON::ParserError
+        nil
       end
 
       # Deep merge two hashes

@@ -312,14 +312,17 @@ module KjuiTools
             <?xml version="1.0" encoding="utf-8"?>
             <manifest xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools">
-            
+
+                <!-- Internet permission for hot reload -->
+                <uses-permission android:name="android.permission.INTERNET" />
+
                 <!-- Debug-only configuration for hot reload -->
                 <application
                     android:networkSecurityConfig="@xml/network_security_config"
                     android:usesCleartextTraffic="true"
                     tools:targetApi="31">
                 </application>
-            
+
             </manifest>
           XML
           

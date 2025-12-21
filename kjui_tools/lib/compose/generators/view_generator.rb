@@ -351,65 +351,85 @@ module KjuiTools
         
         def update_main_activity(view_name, package_name)
           source_dir = @config['source_directory'] || 'src/main'
-          
+
           # Find MainActivity file
           activity_files = Dir.glob(File.join(source_dir, '**/MainActivity.kt'))
           if activity_files.empty?
             puts "Warning: Could not find MainActivity.kt file to update"
             return
           end
-          
+
           activity_file = activity_files.first
           content = File.read(activity_file)
-          
-          # Add import for the new view (view is in its own package with snake_case folder)
+
+          # Add required imports for DynamicModeManager and view
           view_folder_name = to_snake_case(view_name)
-          import_line = "import #{package_name}.views.#{view_folder_name}.#{view_name}View"
-          unless content.include?(import_line)
-            # Find the last import line and add after it
-            if content =~ /^((?:.*\nimport .*\n)+)/m
-              imports_block = $1
-              # Add the new import after the last import
-              new_imports = imports_block.chomp + "\n#{import_line}\n"
-              content.sub!(imports_block, new_imports)
+          required_imports = [
+            "import com.kotlinjsonui.core.DynamicModeManager",
+            "import #{package_name}.views.#{view_folder_name}.#{view_name}View"
+          ]
+
+          required_imports.each do |import_line|
+            unless content.include?(import_line)
+              # Find the last import line and add after it
+              if content =~ /(^import .+$)/m
+                last_import_match = content.scan(/^import .+$/).last
+                if last_import_match
+                  content.sub!(last_import_match, "#{last_import_match}\n#{import_line}")
+                end
+              end
             end
           end
-          
-          # Update setContent - look for the pattern and replace the content inside
+
+          # Add DynamicModeManager.setDynamicModeEnabled after super.onCreate if not present
+          unless content.include?("DynamicModeManager.setDynamicModeEnabled")
+            if content =~ /(super\.onCreate\(savedInstanceState\))/
+              content.sub!($1, "#{$1}\n\n        // Enable Dynamic Mode for HotLoader (debug builds only)\n        DynamicModeManager.setDynamicModeEnabled(this, true)")
+            end
+          end
+
+          # Update setContent block with DynamicModeManager integration
           updated = false
-          
-          # Pattern 1: Full setContent block with theme
+
+          # Find and replace the entire setContent block
           if content =~ /setContent\s*\{[\s\S]*?\n\s{8}\}/m
             content.gsub!(/setContent\s*\{[\s\S]*?\n\s{8}\}/m) do
               <<~KOTLIN.chomp
                 setContent {
+                            val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
+
                             KotlinJsonUITheme {
                                 Surface(
                                     modifier = Modifier.fillMaxSize(),
                                     color = MaterialTheme.colorScheme.background
                                 ) {
-                                    #{view_name}View()
+                                    key(isDynamicModeEnabled) {
+                                        #{view_name}View()
+                                    }
                                 }
                             }
                         }
               KOTLIN
             end
             updated = true
-          # Pattern 2: Simple setContent
           elsif content =~ /setContent\s*\{[^}]*\}/m
             content.gsub!(/setContent\s*\{[^}]*\}/m) do
               <<~KOTLIN.chomp
                 setContent {
-                            #{view_name}View()
+                            val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
+
+                            key(isDynamicModeEnabled) {
+                                #{view_name}View()
+                            }
                         }
               KOTLIN
             end
             updated = true
           end
-          
+
           if updated
             File.write(activity_file, content)
-            puts "Updated MainActivity to use #{view_name}View as root"
+            puts "Updated MainActivity to use #{view_name}View as root with DynamicModeManager"
           else
             puts "Warning: Could not update MainActivity automatically"
             puts "Please manually update your MainActivity to use #{view_name}View()"

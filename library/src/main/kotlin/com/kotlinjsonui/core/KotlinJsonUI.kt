@@ -26,11 +26,11 @@ object KotlinJsonUI {
         // Initialize DynamicModeManager first
         DynamicModeManager.initialize(context)
         
-        // Check if the host app is in debug mode
+        // Check if the host app is in debug mode using ApplicationInfo flags
+        // This is more reliable than BuildConfig.DEBUG which may not exist in AGP 8.0+
         val isHostAppDebug = try {
-            val buildConfigClass = Class.forName("${context.packageName}.BuildConfig")
-            val debugField = buildConfigClass.getField("DEBUG")
-            debugField.getBoolean(null)
+            val appInfo = context.applicationInfo
+            (appInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
         } catch (e: Exception) {
             false
         }
@@ -43,7 +43,7 @@ object KotlinJsonUI {
         
         // Initialize dynamic view support (only works when dynamic module is available)
         initializeDynamicViewSupport()
-        
+
         initialized = true
         Log.d(TAG, "KotlinJsonUI initialized")
     }
@@ -69,7 +69,7 @@ object KotlinJsonUI {
             Log.e(TAG, "Failed to initialize dynamic view support", e)
         }
     }
-    
+
     /**
      * Clear all cached JSON files
      * This includes HotLoader caches, .kjui_cache, and other temporary JSON storage

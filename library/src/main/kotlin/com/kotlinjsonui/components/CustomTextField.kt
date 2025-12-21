@@ -92,7 +92,7 @@ fun CustomTextField(
         cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
         interactionSource = interactionSource,
         decorationBox = { innerTextField ->
-            if (isOutlined || isSecure) {
+            if (isOutlined) {
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = value,
                     innerTextField = innerTextField,
