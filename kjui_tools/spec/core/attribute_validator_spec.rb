@@ -561,7 +561,6 @@ RSpec.describe KjuiTools::Core::AttributeValidator do
           'width' => 'wrapContent',
           'height' => 'wrapContent',
           'orientation' => 'vertical',
-          'gravity' => 'center',
           'spacing' => 8
         }
       end
