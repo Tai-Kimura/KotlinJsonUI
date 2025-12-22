@@ -166,11 +166,11 @@ class DynamicButtonComponent {
 
             // Parse colors with Configuration defaults
             val textColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.Button.defaultTextColor
 
             val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.Button.defaultBackgroundColor
 
             // Parse shape with Configuration default
@@ -201,7 +201,7 @@ class DynamicButtonComponent {
 
             // Parse border
             val borderColor = json.get("borderColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
             val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
             val borderStyle = json.get("borderStyle")?.asString?.lowercase()
