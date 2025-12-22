@@ -54,19 +54,7 @@ module KjuiTools
             modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           end
 
-          # Corner radius for rounded images
-          if json_data['cornerRadius']
-            required_imports&.add(:shape)
-            modifiers << ".clip(RoundedCornerShape(#{json_data['cornerRadius']}.dp))"
-          end
-
-          # Border
-          if json_data['borderWidth'] && json_data['borderColor']
-            required_imports&.add(:border)
-            shape = json_data['cornerRadius'] ? "RoundedCornerShape(#{json_data['cornerRadius']}.dp)" : "RectangleShape"
-            modifiers << ".border(#{json_data['borderWidth']}.dp, Helpers::ResourceResolver.process_color('#{json_data['borderColor']}', required_imports), #{shape})"
-          end
-
+          # cornerRadius and border are handled by build_background to avoid duplication
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
