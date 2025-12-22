@@ -149,7 +149,15 @@ module KjuiTools
           colors_code += "\n" + color_params.map { |param| indent(param, depth + 2) }.join(",\n")
           colors_code += "\n" + indent(")", depth + 1)
           code += ",\n" + indent(colors_code, depth + 1)
-          
+
+          # Handle border
+          if json_data['borderColor']
+            required_imports&.add(:border_stroke)
+            border_color = Helpers::ResourceResolver.process_color(json_data['borderColor'], required_imports)
+            border_width = json_data['borderWidth'] || 1
+            code += ",\n" + indent("border = BorderStroke(#{border_width}.dp, #{border_color})", depth + 1)
+          end
+
           # Handle enabled attribute
           if json_data.key?('enabled')
             if json_data['enabled'].is_a?(String) && json_data['enabled'].start_with?('@{')

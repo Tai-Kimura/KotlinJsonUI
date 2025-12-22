@@ -110,7 +110,8 @@ module KjuiTools
             JsonObject: "import com.google.gson.JsonObject",
             JsonParser: "import com.google.gson.JsonParser",
             dashed_border: ["import com.kotlinjsonui.dynamic.helpers.dashedBorder",
-                            "import com.kotlinjsonui.dynamic.helpers.dottedBorder"]
+                            "import com.kotlinjsonui.dynamic.helpers.dottedBorder"],
+            border_stroke: "import androidx.compose.foundation.BorderStroke"
           }
         end
         

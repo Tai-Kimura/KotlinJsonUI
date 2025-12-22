@@ -13,7 +13,7 @@
       <img src="./assets/0.13.2/loading.gif" alt="loading"/>
     </div>
     <div id="wrapper" class="hide">
-      <div class="timestamp">Generated <abbr class="timeago" title="2025-12-22T20:00:30+09:00">2025-12-22T20:00:30+09:00</abbr></div>
+      <div class="timestamp">Generated <abbr class="timeago" title="2025-12-22T20:47:17+09:00">2025-12-22T20:47:17+09:00</abbr></div>
       <ul class="group_tabs"></ul>
 
       <div id="content">
@@ -29,7 +29,7 @@
      covered at
      <span class="covered_strength">
        <span class="green">
-         4.11
+         4.14
        </span>
     </span> hits/line
     )
@@ -42,9 +42,9 @@
   </div>
 
   <div class="t-line-summary">
-    <b>753</b> relevant lines,
-    <span class="green"><b>253</b> lines covered</span> and
-    <span class="red"><b>500</b> lines missed. </span>
+    <b>759</b> relevant lines,
+    <span class="green"><b>255</b> lines covered</span> and
+    <span class="red"><b>504</b> lines missed. </span>
     (<span class="red">
   33.6%
 </span>
@@ -71,12 +71,12 @@
         
           <tr class="t-file">
             <td class="strong t-file__name"><a href="#10fb432d3656d522afab9c59982f7100c0d1d8a2" class="src_link" title="lib/compose/components/button_component.rb">lib/compose/components/button_component.rb</a></td>
-            <td class="green strong cell--number t-file__coverage">97.06 %</td>
-            <td class="cell--number">191</td>
-            <td class="cell--number">102</td>
-            <td class="cell--number">99</td>
-            <td class="cell--number">3</td>
-            <td class="cell--number">19.02</td>
+            <td class="green strong cell--number t-file__coverage">93.52 %</td>
+            <td class="cell--number">200</td>
+            <td class="cell--number">108</td>
+            <td class="cell--number">101</td>
+            <td class="cell--number">7</td>
+            <td class="cell--number">18.43</td>
             
           </tr>
         
@@ -274,14 +274,14 @@
     <span class="group_name">Compose</span>
     (<span class="covered_percent">
       <span class="red">
-  35.15%
+  35.13%
 </span>
 
      </span>
      covered at
      <span class="covered_strength">
        <span class="green">
-         5.04
+         5.07
        </span>
     </span> hits/line
     )
@@ -294,11 +294,11 @@
   </div>
 
   <div class="t-line-summary">
-    <b>606</b> relevant lines,
-    <span class="green"><b>213</b> lines covered</span> and
-    <span class="red"><b>393</b> lines missed. </span>
+    <b>612</b> relevant lines,
+    <span class="green"><b>215</b> lines covered</span> and
+    <span class="red"><b>397</b> lines missed. </span>
     (<span class="red">
-  35.15%
+  35.13%
 </span>
 )
   </div>
@@ -323,12 +323,12 @@
         
           <tr class="t-file">
             <td class="strong t-file__name"><a href="#10fb432d3656d522afab9c59982f7100c0d1d8a2" class="src_link" title="lib/compose/components/button_component.rb">lib/compose/components/button_component.rb</a></td>
-            <td class="green strong cell--number t-file__coverage">97.06 %</td>
-            <td class="cell--number">191</td>
-            <td class="cell--number">102</td>
-            <td class="cell--number">99</td>
-            <td class="cell--number">3</td>
-            <td class="cell--number">19.02</td>
+            <td class="green strong cell--number t-file__coverage">93.52 %</td>
+            <td class="cell--number">200</td>
+            <td class="cell--number">108</td>
+            <td class="cell--number">101</td>
+            <td class="cell--number">7</td>
+            <td class="cell--number">18.43</td>
             
           </tr>
         
@@ -433,7 +433,7 @@
     <h3>lib/compose/components/button_component.rb</h3>
     <h4>
       <span class="green">
-  97.06%
+  93.52%
 </span>
 
       lines covered
@@ -442,9 +442,9 @@
     
 
     <div class="t-line-summary">
-      <b>102</b> relevant lines.
-      <span class="green"><b>99</b> lines covered</span> and
-      <span class="red"><b>3</b> lines missed.</span>
+      <b>108</b> relevant lines.
+      <span class="green"><b>101</b> lines covered</span> and
+      <span class="red"><b>7</b> lines missed.</span>
     </div>
 
     
@@ -926,7 +926,7 @@
 
             
 
-            <code class="ruby">          corner_radius = json_data[&#39;cornerRadius&#39;] || &#39;Configuration.Button.defaultCornerRadius&#39;</code>
+            <code class="ruby">          required_imports&amp;.add(:configuration)</code>
           </li>
         </div>
       
@@ -938,17 +938,19 @@
 
             
 
-            <code class="ruby">          code += &quot;,\n&quot; + indent(&quot;shape = RoundedCornerShape(#{corner_radius}.dp)&quot;, depth + 1)</code>
+            <code class="ruby">          corner_radius = json_data[&#39;cornerRadius&#39;] || &#39;Configuration.Button.defaultCornerRadius&#39;</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="45">
+          <li class="covered" data-hits="25" data-linenumber="45">
+            
+              <span class="hits">25</span>
             
 
             
 
-            <code class="ruby">          </code>
+            <code class="ruby">          code += &quot;,\n&quot; + indent(&quot;shape = RoundedCornerShape(#{corner_radius}.dp)&quot;, depth + 1)</code>
           </li>
         </div>
       
@@ -958,7 +960,7 @@
 
             
 
-            <code class="ruby">          # Add contentPadding for internal padding</code>
+            <code class="ruby">          </code>
           </li>
         </div>
       
@@ -968,12 +970,22 @@
 
             
 
+            <code class="ruby">          # Add contentPadding for internal padding</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="48">
+            
+
+            
+
             <code class="ruby">          # Support both &#39;padding&#39; (number), &#39;paddings&#39; (array), and individual padding attributes</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="48">
+          <li class="covered" data-hits="25" data-linenumber="49">
             
               <span class="hits">25</span>
             
@@ -985,7 +997,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="49">
+          <li class="never" data-hits="" data-linenumber="50">
             
 
             
@@ -995,7 +1007,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="50">
+          <li class="covered" data-hits="25" data-linenumber="51">
             
               <span class="hits">25</span>
             
@@ -1007,7 +1019,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="51">
+          <li class="never" data-hits="" data-linenumber="52">
             
 
             
@@ -1017,7 +1029,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="52">
+          <li class="never" data-hits="" data-linenumber="53">
             
 
             
@@ -1027,7 +1039,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="53">
+          <li class="covered" data-hits="7" data-linenumber="54">
             
               <span class="hits">7</span>
             
@@ -1039,7 +1051,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="54">
+          <li class="never" data-hits="" data-linenumber="55">
             
 
             
@@ -1049,7 +1061,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="55">
+          <li class="covered" data-hits="7" data-linenumber="56">
             
               <span class="hits">7</span>
             
@@ -1061,7 +1073,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="56">
+          <li class="never" data-hits="" data-linenumber="57">
             
 
             
@@ -1071,7 +1083,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="57">
+          <li class="covered" data-hits="7" data-linenumber="58">
             
               <span class="hits">7</span>
             
@@ -1083,7 +1095,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="58">
+          <li class="never" data-hits="" data-linenumber="59">
             
 
             
@@ -1093,7 +1105,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="5" data-linenumber="59">
+          <li class="covered" data-hits="5" data-linenumber="60">
             
               <span class="hits">5</span>
             
@@ -1105,7 +1117,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="4" data-linenumber="60">
+          <li class="covered" data-hits="4" data-linenumber="61">
             
               <span class="hits">4</span>
             
@@ -1117,7 +1129,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="61">
+          <li class="never" data-hits="" data-linenumber="62">
             
 
             
@@ -1127,7 +1139,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="62">
+          <li class="never" data-hits="" data-linenumber="63">
             
 
             
@@ -1137,7 +1149,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="63">
+          <li class="covered" data-hits="1" data-linenumber="64">
             
               <span class="hits">1</span>
             
@@ -1149,7 +1161,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="64">
+          <li class="never" data-hits="" data-linenumber="65">
             
 
             
@@ -1159,24 +1171,12 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="65">
+          <li class="never" data-hits="" data-linenumber="66">
             
 
             
 
             <code class="ruby">                  # Two values: [vertical, horizontal]</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="66">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">                  padding_values &lt;&lt; &quot;vertical = #{padding_data[0]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1188,17 +1188,19 @@
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;horizontal = #{padding_data[1]}.dp&quot;</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;vertical = #{padding_data[0]}.dp&quot;</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="68">
+          <li class="covered" data-hits="1" data-linenumber="68">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">                when 3</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;horizontal = #{padding_data[1]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1208,19 +1210,17 @@
 
             
 
-            <code class="ruby">                  # Three values: [top, horizontal, bottom]</code>
+            <code class="ruby">                when 3</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="70">
-            
-              <span class="hits">1</span>
+          <li class="never" data-hits="" data-linenumber="70">
             
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;top = #{padding_data[0]}.dp&quot;</code>
+            <code class="ruby">                  # Three values: [top, horizontal, bottom]</code>
           </li>
         </div>
       
@@ -1232,7 +1232,7 @@
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;horizontal = #{padding_data[1]}.dp&quot;</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;top = #{padding_data[0]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1244,17 +1244,19 @@
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;bottom = #{padding_data[2]}.dp&quot;</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;horizontal = #{padding_data[1]}.dp&quot;</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="73">
+          <li class="covered" data-hits="1" data-linenumber="73">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">                when 4</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;bottom = #{padding_data[2]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1264,19 +1266,17 @@
 
             
 
-            <code class="ruby">                  # Four values: [top, right, bottom, left]</code>
+            <code class="ruby">                when 4</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="75">
-            
-              <span class="hits">1</span>
+          <li class="never" data-hits="" data-linenumber="75">
             
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;top = #{padding_data[0]}.dp&quot;</code>
+            <code class="ruby">                  # Four values: [top, right, bottom, left]</code>
           </li>
         </div>
       
@@ -1288,7 +1288,7 @@
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;end = #{padding_data[1]}.dp&quot;</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;top = #{padding_data[0]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1300,7 +1300,7 @@
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;bottom = #{padding_data[2]}.dp&quot;</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;end = #{padding_data[1]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1312,17 +1312,19 @@
 
             
 
-            <code class="ruby">                  padding_values &lt;&lt; &quot;start = #{padding_data[3]}.dp&quot;</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;bottom = #{padding_data[2]}.dp&quot;</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="79">
+          <li class="covered" data-hits="1" data-linenumber="79">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">                end</code>
+            <code class="ruby">                  padding_values &lt;&lt; &quot;start = #{padding_data[3]}.dp&quot;</code>
           </li>
         </div>
       
@@ -1332,7 +1334,7 @@
 
             
 
-            <code class="ruby">              else</code>
+            <code class="ruby">                end</code>
           </li>
         </div>
       
@@ -1342,12 +1344,22 @@
 
             
 
+            <code class="ruby">              else</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="82">
+            
+
+            
+
             <code class="ruby">                # Single number: all sides</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="82">
+          <li class="covered" data-hits="1" data-linenumber="83">
             
               <span class="hits">1</span>
             
@@ -1359,7 +1371,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="83">
+          <li class="never" data-hits="" data-linenumber="84">
             
 
             
@@ -1369,7 +1381,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="84">
+          <li class="never" data-hits="" data-linenumber="85">
             
 
             
@@ -1379,24 +1391,12 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="85">
+          <li class="never" data-hits="" data-linenumber="86">
             
 
             
 
             <code class="ruby">              # Handle individual padding attributes</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="2" data-linenumber="86">
-            
-              <span class="hits">2</span>
-            
-
-            
-
-            <code class="ruby">              top_padding = json_data[&#39;paddingTop&#39;] || json_data[&#39;paddingVertical&#39;] || 0</code>
           </li>
         </div>
       
@@ -1408,7 +1408,7 @@
 
             
 
-            <code class="ruby">              bottom_padding = json_data[&#39;paddingBottom&#39;] || json_data[&#39;paddingVertical&#39;] || 0</code>
+            <code class="ruby">              top_padding = json_data[&#39;paddingTop&#39;] || json_data[&#39;paddingVertical&#39;] || 0</code>
           </li>
         </div>
       
@@ -1420,7 +1420,7 @@
 
             
 
-            <code class="ruby">              start_padding = json_data[&#39;paddingStart&#39;] || json_data[&#39;paddingLeft&#39;] || json_data[&#39;paddingHorizontal&#39;] || 0</code>
+            <code class="ruby">              bottom_padding = json_data[&#39;paddingBottom&#39;] || json_data[&#39;paddingVertical&#39;] || 0</code>
           </li>
         </div>
       
@@ -1432,12 +1432,24 @@
 
             
 
+            <code class="ruby">              start_padding = json_data[&#39;paddingStart&#39;] || json_data[&#39;paddingLeft&#39;] || json_data[&#39;paddingHorizontal&#39;] || 0</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="2" data-linenumber="90">
+            
+              <span class="hits">2</span>
+            
+
+            
+
             <code class="ruby">              end_padding = json_data[&#39;paddingEnd&#39;] || json_data[&#39;paddingRight&#39;] || json_data[&#39;paddingHorizontal&#39;] || 0</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="90">
+          <li class="never" data-hits="" data-linenumber="91">
             
 
             
@@ -1447,7 +1459,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="91">
+          <li class="covered" data-hits="2" data-linenumber="92">
             
               <span class="hits">2</span>
             
@@ -1459,7 +1471,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="92">
+          <li class="never" data-hits="" data-linenumber="93">
             
 
             
@@ -1469,7 +1481,7 @@
         </div>
       
         <div>
-          <li class="missed" data-hits="0" data-linenumber="93">
+          <li class="missed" data-hits="0" data-linenumber="94">
             
 
             
@@ -1479,7 +1491,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="94">
+          <li class="covered" data-hits="2" data-linenumber="95">
             
               <span class="hits">2</span>
             
@@ -1491,24 +1503,12 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="95">
+          <li class="never" data-hits="" data-linenumber="96">
             
 
             
 
             <code class="ruby">                # Different horizontal and vertical</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="96">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">                padding_values &lt;&lt; &quot;horizontal = #{start_padding}.dp&quot; if start_padding &gt; 0</code>
           </li>
         </div>
       
@@ -1520,17 +1520,19 @@
 
             
 
-            <code class="ruby">                padding_values &lt;&lt; &quot;vertical = #{top_padding}.dp&quot; if top_padding &gt; 0</code>
+            <code class="ruby">                padding_values &lt;&lt; &quot;horizontal = #{start_padding}.dp&quot; if start_padding &gt; 0</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="98">
+          <li class="covered" data-hits="1" data-linenumber="98">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">              else</code>
+            <code class="ruby">                padding_values &lt;&lt; &quot;vertical = #{top_padding}.dp&quot; if top_padding &gt; 0</code>
           </li>
         </div>
       
@@ -1540,19 +1542,17 @@
 
             
 
-            <code class="ruby">                # All different, need to specify each</code>
+            <code class="ruby">              else</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="100">
-            
-              <span class="hits">1</span>
+          <li class="never" data-hits="" data-linenumber="100">
             
 
             
 
-            <code class="ruby">                padding_values &lt;&lt; &quot;start = #{start_padding}.dp&quot; if start_padding &gt; 0</code>
+            <code class="ruby">                # All different, need to specify each</code>
           </li>
         </div>
       
@@ -1564,7 +1564,7 @@
 
             
 
-            <code class="ruby">                padding_values &lt;&lt; &quot;top = #{top_padding}.dp&quot; if top_padding &gt; 0</code>
+            <code class="ruby">                padding_values &lt;&lt; &quot;start = #{start_padding}.dp&quot; if start_padding &gt; 0</code>
           </li>
         </div>
       
@@ -1576,7 +1576,7 @@
 
             
 
-            <code class="ruby">                padding_values &lt;&lt; &quot;end = #{end_padding}.dp&quot; if end_padding &gt; 0</code>
+            <code class="ruby">                padding_values &lt;&lt; &quot;top = #{top_padding}.dp&quot; if top_padding &gt; 0</code>
           </li>
         </div>
       
@@ -1588,17 +1588,19 @@
 
             
 
-            <code class="ruby">                padding_values &lt;&lt; &quot;bottom = #{bottom_padding}.dp&quot; if bottom_padding &gt; 0</code>
+            <code class="ruby">                padding_values &lt;&lt; &quot;end = #{end_padding}.dp&quot; if end_padding &gt; 0</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="104">
+          <li class="covered" data-hits="1" data-linenumber="104">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">              end</code>
+            <code class="ruby">                padding_values &lt;&lt; &quot;bottom = #{bottom_padding}.dp&quot; if bottom_padding &gt; 0</code>
           </li>
         </div>
       
@@ -1608,7 +1610,7 @@
 
             
 
-            <code class="ruby">            end</code>
+            <code class="ruby">              end</code>
           </li>
         </div>
       
@@ -1618,19 +1620,17 @@
 
             
 
-            <code class="ruby">            </code>
+            <code class="ruby">            end</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="107">
-            
-              <span class="hits">7</span>
+          <li class="never" data-hits="" data-linenumber="107">
             
 
             
 
-            <code class="ruby">            if padding_values.any?</code>
+            <code class="ruby">            </code>
           </li>
         </div>
       
@@ -1642,17 +1642,19 @@
 
             
 
-            <code class="ruby">              code += &quot;,\n&quot; + indent(&quot;contentPadding = PaddingValues(#{padding_values.join(&#39;, &#39;)})&quot;, depth + 1)</code>
+            <code class="ruby">            if padding_values.any?</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="109">
+          <li class="covered" data-hits="7" data-linenumber="109">
+            
+              <span class="hits">7</span>
             
 
             
 
-            <code class="ruby">            end</code>
+            <code class="ruby">              code += &quot;,\n&quot; + indent(&quot;contentPadding = PaddingValues(#{padding_values.join(&#39;, &#39;)})&quot;, depth + 1)</code>
           </li>
         </div>
       
@@ -1662,7 +1664,7 @@
 
             
 
-            <code class="ruby">          end</code>
+            <code class="ruby">            end</code>
           </li>
         </div>
       
@@ -1672,7 +1674,7 @@
 
             
 
-            <code class="ruby">          </code>
+            <code class="ruby">          end</code>
           </li>
         </div>
       
@@ -1682,7 +1684,7 @@
 
             
 
-            <code class="ruby">          # Button colors including normal, disabled, and pressed states</code>
+            <code class="ruby">          </code>
           </li>
         </div>
       
@@ -1692,19 +1694,17 @@
 
             
 
-            <code class="ruby">          # Always set to match dynamic defaults</code>
+            <code class="ruby">          # Button colors including normal, disabled, and pressed states</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="114">
-            
-              <span class="hits">25</span>
+          <li class="never" data-hits="" data-linenumber="114">
             
 
             
 
-            <code class="ruby">          required_imports&amp;.add(:button_colors)</code>
+            <code class="ruby">          # Always set to match dynamic defaults</code>
           </li>
         </div>
       
@@ -1716,7 +1716,7 @@
 
             
 
-            <code class="ruby">          colors_code = &quot;colors = ButtonDefaults.buttonColors(&quot;</code>
+            <code class="ruby">          required_imports&amp;.add(:button_colors)</code>
           </li>
         </div>
       
@@ -1728,12 +1728,24 @@
 
             
 
+            <code class="ruby">          colors_code = &quot;colors = ButtonDefaults.buttonColors(&quot;</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="25" data-linenumber="117">
+            
+              <span class="hits">25</span>
+            
+
+            
+
             <code class="ruby">          color_params = []</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="117">
+          <li class="never" data-hits="" data-linenumber="118">
             
 
             
@@ -1743,7 +1755,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="118">
+          <li class="covered" data-hits="25" data-linenumber="119">
             
               <span class="hits">25</span>
             
@@ -1755,7 +1767,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="119">
+          <li class="covered" data-hits="1" data-linenumber="120">
             
               <span class="hits">1</span>
             
@@ -1767,7 +1779,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="120">
+          <li class="covered" data-hits="1" data-linenumber="121">
             
               <span class="hits">1</span>
             
@@ -1779,7 +1791,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="121">
+          <li class="never" data-hits="" data-linenumber="122">
             
 
             
@@ -1789,7 +1801,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="24" data-linenumber="122">
+          <li class="covered" data-hits="24" data-linenumber="123">
             
               <span class="hits">24</span>
             
@@ -1801,7 +1813,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="123">
+          <li class="never" data-hits="" data-linenumber="124">
             
 
             
@@ -1811,7 +1823,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="124">
+          <li class="never" data-hits="" data-linenumber="125">
             
 
             
@@ -1821,7 +1833,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="125">
+          <li class="covered" data-hits="25" data-linenumber="126">
             
               <span class="hits">25</span>
             
@@ -1833,7 +1845,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="126">
+          <li class="covered" data-hits="1" data-linenumber="127">
             
               <span class="hits">1</span>
             
@@ -1845,7 +1857,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="127">
+          <li class="covered" data-hits="1" data-linenumber="128">
             
               <span class="hits">1</span>
             
@@ -1857,7 +1869,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="128">
+          <li class="never" data-hits="" data-linenumber="129">
             
 
             
@@ -1867,7 +1879,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="129">
+          <li class="never" data-hits="" data-linenumber="130">
             
 
             
@@ -1877,7 +1889,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="130">
+          <li class="covered" data-hits="25" data-linenumber="131">
             
               <span class="hits">25</span>
             
@@ -1889,7 +1901,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="131">
+          <li class="covered" data-hits="1" data-linenumber="132">
             
               <span class="hits">1</span>
             
@@ -1901,7 +1913,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="132">
+          <li class="covered" data-hits="1" data-linenumber="133">
             
               <span class="hits">1</span>
             
@@ -1913,7 +1925,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="133">
+          <li class="never" data-hits="" data-linenumber="134">
             
 
             
@@ -1923,7 +1935,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="24" data-linenumber="134">
+          <li class="covered" data-hits="24" data-linenumber="135">
             
               <span class="hits">24</span>
             
@@ -1935,7 +1947,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="135">
+          <li class="never" data-hits="" data-linenumber="136">
             
 
             
@@ -1945,7 +1957,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="136">
+          <li class="never" data-hits="" data-linenumber="137">
             
 
             
@@ -1955,7 +1967,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="137">
+          <li class="covered" data-hits="25" data-linenumber="138">
             
               <span class="hits">25</span>
             
@@ -1967,7 +1979,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="138">
+          <li class="covered" data-hits="1" data-linenumber="139">
             
               <span class="hits">1</span>
             
@@ -1979,7 +1991,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="139">
+          <li class="covered" data-hits="1" data-linenumber="140">
             
               <span class="hits">1</span>
             
@@ -1991,7 +2003,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="140">
+          <li class="never" data-hits="" data-linenumber="141">
             
 
             
@@ -2001,7 +2013,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="141">
+          <li class="never" data-hits="" data-linenumber="142">
             
 
             
@@ -2011,7 +2023,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="142">
+          <li class="never" data-hits="" data-linenumber="143">
             
 
             
@@ -2021,7 +2033,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="143">
+          <li class="never" data-hits="" data-linenumber="144">
             
 
             
@@ -2031,7 +2043,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="144">
+          <li class="covered" data-hits="25" data-linenumber="145">
             
               <span class="hits">25</span>
             
@@ -2043,7 +2055,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="145">
+          <li class="covered" data-hits="1" data-linenumber="146">
             
               <span class="hits">1</span>
             
@@ -2055,7 +2067,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="146">
+          <li class="never" data-hits="" data-linenumber="147">
             
 
             
@@ -2065,7 +2077,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="147">
+          <li class="never" data-hits="" data-linenumber="148">
             
 
             
@@ -2075,7 +2087,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="78" data-linenumber="148">
+          <li class="covered" data-hits="78" data-linenumber="149">
             
               <span class="hits">78</span>
             
@@ -2087,7 +2099,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="149">
+          <li class="covered" data-hits="25" data-linenumber="150">
             
               <span class="hits">25</span>
             
@@ -2099,7 +2111,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="150">
+          <li class="covered" data-hits="25" data-linenumber="151">
             
               <span class="hits">25</span>
             
@@ -2111,17 +2123,99 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="151">
+          <li class="never" data-hits="" data-linenumber="152">
             
 
             
 
-            <code class="ruby">          </code>
+            <code class="ruby"></code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="152">
+          <li class="never" data-hits="" data-linenumber="153">
+            
+
+            
+
+            <code class="ruby">          # Handle border</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="25" data-linenumber="154">
+            
+              <span class="hits">25</span>
+            
+
+            
+
+            <code class="ruby">          if json_data[&#39;borderColor&#39;]</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="155">
+            
+
+            
+
+            <code class="ruby">            required_imports&amp;.add(:border_stroke)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="156">
+            
+
+            
+
+            <code class="ruby">            border_color = Helpers::ResourceResolver.process_color(json_data[&#39;borderColor&#39;], required_imports)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="157">
+            
+
+            
+
+            <code class="ruby">            border_width = json_data[&#39;borderWidth&#39;] || 1</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="missed" data-hits="0" data-linenumber="158">
+            
+
+            
+
+            <code class="ruby">            code += &quot;,\n&quot; + indent(&quot;border = BorderStroke(#{border_width}.dp, #{border_color})&quot;, depth + 1)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="159">
+            
+
+            
+
+            <code class="ruby">          end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="160">
+            
+
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="161">
             
 
             
@@ -2131,7 +2225,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="153">
+          <li class="covered" data-hits="25" data-linenumber="162">
             
               <span class="hits">25</span>
             
@@ -2143,7 +2237,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="3" data-linenumber="154">
+          <li class="covered" data-hits="3" data-linenumber="163">
             
               <span class="hits">3</span>
             
@@ -2155,7 +2249,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="155">
+          <li class="never" data-hits="" data-linenumber="164">
             
 
             
@@ -2165,7 +2259,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="156">
+          <li class="covered" data-hits="1" data-linenumber="165">
             
               <span class="hits">1</span>
             
@@ -2177,7 +2271,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="157">
+          <li class="covered" data-hits="1" data-linenumber="166">
             
               <span class="hits">1</span>
             
@@ -2189,7 +2283,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="158">
+          <li class="never" data-hits="" data-linenumber="167">
             
 
             
@@ -2199,7 +2293,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="2" data-linenumber="159">
+          <li class="covered" data-hits="2" data-linenumber="168">
             
               <span class="hits">2</span>
             
@@ -2211,7 +2305,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="160">
+          <li class="never" data-hits="" data-linenumber="169">
             
 
             
@@ -2221,7 +2315,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="161">
+          <li class="never" data-hits="" data-linenumber="170">
             
 
             
@@ -2231,7 +2325,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="162">
+          <li class="never" data-hits="" data-linenumber="171">
             
 
             
@@ -2241,7 +2335,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="163">
+          <li class="covered" data-hits="25" data-linenumber="172">
             
               <span class="hits">25</span>
             
@@ -2253,7 +2347,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="25" data-linenumber="164">
+          <li class="covered" data-hits="25" data-linenumber="173">
             
               <span class="hits">25</span>
             
@@ -2265,7 +2359,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="165">
+          <li class="never" data-hits="" data-linenumber="174">
             
 
             
@@ -2275,116 +2369,12 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="166">
+          <li class="never" data-hits="" data-linenumber="175">
             
 
             
 
             <code class="ruby">          # Apply text attributes if specified (fontColor handled in ButtonDefaults.buttonColors)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="25" data-linenumber="167">
-            
-              <span class="hits">25</span>
-            
-
-            
-
-            <code class="ruby">          if json_data[&#39;fontSize&#39;]</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="168">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">            text_code = &quot;\n&quot; + indent(&quot;Text(&quot;, depth + 1)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="169">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">            text_code += &quot;\n&quot; + indent(&quot;text = #{text},&quot;, depth + 2)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="170">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">            text_code += &quot;\n&quot; + indent(&quot;fontSize = #{json_data[&#39;fontSize&#39;]}.sp&quot;, depth + 2)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="171">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">            text_code += &quot;\n&quot; + indent(&quot;)&quot;, depth + 1)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="1" data-linenumber="172">
-            
-              <span class="hits">1</span>
-            
-
-            
-
-            <code class="ruby">            code = code.sub(/Text\(#{Regexp.escape(text)}\)/, text_code.strip)</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="173">
-            
-
-            
-
-            <code class="ruby">          end</code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="never" data-hits="" data-linenumber="174">
-            
-
-            
-
-            <code class="ruby">          </code>
-          </li>
-        </div>
-      
-        <div>
-          <li class="covered" data-hits="25" data-linenumber="175">
-            
-              <span class="hits">25</span>
-            
-
-            
-
-            <code class="ruby">          code += &quot;\n&quot; + indent(&quot;}&quot;, depth)</code>
           </li>
         </div>
       
@@ -2396,27 +2386,31 @@
 
             
 
-            <code class="ruby">          code</code>
+            <code class="ruby">          if json_data[&#39;fontSize&#39;]</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="177">
+          <li class="covered" data-hits="1" data-linenumber="177">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">        end</code>
+            <code class="ruby">            text_code = &quot;\n&quot; + indent(&quot;Text(&quot;, depth + 1)</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="178">
+          <li class="covered" data-hits="1" data-linenumber="178">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">        </code>
+            <code class="ruby">            text_code += &quot;\n&quot; + indent(&quot;text = #{text},&quot;, depth + 2)</code>
           </li>
         </div>
       
@@ -2428,17 +2422,19 @@
 
             
 
-            <code class="ruby">        private</code>
+            <code class="ruby">            text_code += &quot;\n&quot; + indent(&quot;fontSize = #{json_data[&#39;fontSize&#39;]}.sp&quot;, depth + 2)</code>
           </li>
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="180">
+          <li class="covered" data-hits="1" data-linenumber="180">
+            
+              <span class="hits">1</span>
             
 
             
 
-            <code class="ruby">        </code>
+            <code class="ruby">            text_code += &quot;\n&quot; + indent(&quot;)&quot;, depth + 1)</code>
           </li>
         </div>
       
@@ -2450,12 +2446,110 @@
 
             
 
+            <code class="ruby">            code = code.sub(/Text\(#{Regexp.escape(text)}\)/, text_code.strip)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="182">
+            
+
+            
+
+            <code class="ruby">          end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="183">
+            
+
+            
+
+            <code class="ruby">          </code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="25" data-linenumber="184">
+            
+              <span class="hits">25</span>
+            
+
+            
+
+            <code class="ruby">          code += &quot;\n&quot; + indent(&quot;}&quot;, depth)</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="25" data-linenumber="185">
+            
+              <span class="hits">25</span>
+            
+
+            
+
+            <code class="ruby">          code</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="186">
+            
+
+            
+
+            <code class="ruby">        end</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="187">
+            
+
+            
+
+            <code class="ruby">        </code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="188">
+            
+              <span class="hits">1</span>
+            
+
+            
+
+            <code class="ruby">        private</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="189">
+            
+
+            
+
+            <code class="ruby">        </code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="covered" data-hits="1" data-linenumber="190">
+            
+              <span class="hits">1</span>
+            
+
+            
+
             <code class="ruby">        def self.indent(text, level)</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="270" data-linenumber="182">
+          <li class="covered" data-hits="270" data-linenumber="191">
             
               <span class="hits">270</span>
             
@@ -2467,7 +2561,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="194" data-linenumber="183">
+          <li class="covered" data-hits="194" data-linenumber="192">
             
               <span class="hits">194</span>
             
@@ -2479,7 +2573,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="194" data-linenumber="184">
+          <li class="covered" data-hits="194" data-linenumber="193">
             
               <span class="hits">194</span>
             
@@ -2491,7 +2585,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="272" data-linenumber="185">
+          <li class="covered" data-hits="272" data-linenumber="194">
             
               <span class="hits">272</span>
             
@@ -2503,7 +2597,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="186">
+          <li class="never" data-hits="" data-linenumber="195">
             
 
             
@@ -2513,7 +2607,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="187">
+          <li class="never" data-hits="" data-linenumber="196">
             
 
             
@@ -2523,7 +2617,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="188">
+          <li class="never" data-hits="" data-linenumber="197">
             
 
             
@@ -2533,7 +2627,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="189">
+          <li class="never" data-hits="" data-linenumber="198">
             
 
             
@@ -2543,7 +2637,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="190">
+          <li class="never" data-hits="" data-linenumber="199">
             
 
             
@@ -2553,7 +2647,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="191">
+          <li class="never" data-hits="" data-linenumber="200">
             
 
             
