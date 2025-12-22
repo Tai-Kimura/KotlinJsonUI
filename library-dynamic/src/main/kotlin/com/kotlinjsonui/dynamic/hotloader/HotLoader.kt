@@ -209,7 +209,7 @@ class HotLoader private constructor(context: Context) {
         try {
             val json = JSONObject(message)
             val type = json.optString("type")
-            
+
             when (type) {
                 "connected" -> {
                     Log.i(TAG, "Server confirmed connection")
@@ -217,43 +217,70 @@ class HotLoader private constructor(context: Context) {
                 "file_changed" -> {
                     val path = json.optString("path")
                     val fileName = json.optString("fileName")
-                    val dirName = json.optString("dirName")
-                    
+
                     Log.i(TAG, "File changed: $path")
-                    
-                    when (dirName) {
-                        "Layouts" -> {
-                            if (fileName.isNotEmpty()) {
-                                // Download the updated layout
-                                downloadLayout(fileName)
-                            }
+
+                    // Extract layout path from full path (e.g., "app/src/main/assets/Layouts/home/home_header.json")
+                    val layoutPath = extractLayoutPath(path)
+                    val stylePath = extractStylePath(path)
+
+                    when {
+                        layoutPath != null -> {
+                            // Download the updated layout with subdirectory path
+                            downloadLayout(layoutPath)
                         }
-                        "Styles" -> {
-                            if (fileName.isNotEmpty()) {
-                                // Download the updated style
-                                downloadStyle(fileName)
-                            }
+                        stylePath != null -> {
+                            // Download the updated style
+                            downloadStyle(stylePath)
                         }
                     }
                 }
                 "file_added" -> {
                     val path = json.optString("path")
-                    val fileName = json.optString("fileName")
-                    
+                    val layoutPath = extractLayoutPath(path)
+
                     Log.i(TAG, "File added: $path")
-                    listeners.forEach { it.onLayoutAdded(fileName) }
+                    if (layoutPath != null) {
+                        listeners.forEach { it.onLayoutAdded(layoutPath) }
+                    }
                 }
                 "file_removed" -> {
                     val path = json.optString("path")
-                    val fileName = json.optString("fileName")
-                    
+                    val layoutPath = extractLayoutPath(path)
+
                     Log.i(TAG, "File removed: $path")
-                    listeners.forEach { it.onLayoutRemoved(fileName) }
+                    if (layoutPath != null) {
+                        listeners.forEach { it.onLayoutRemoved(layoutPath) }
+                    }
                 }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling message", e)
         }
+    }
+
+    /**
+     * Extract layout path from full file path
+     * e.g., "app/src/main/assets/Layouts/home/home_header.json" -> "home/home_header"
+     */
+    private fun extractLayoutPath(path: String): String? {
+        val layoutsIndex = path.indexOf("Layouts/")
+        if (layoutsIndex == -1) return null
+
+        val relativePath = path.substring(layoutsIndex + "Layouts/".length)
+        return relativePath.removeSuffix(".json")
+    }
+
+    /**
+     * Extract style path from full file path
+     * e.g., "app/src/main/assets/Styles/common.json" -> "common"
+     */
+    private fun extractStylePath(path: String): String? {
+        val stylesIndex = path.indexOf("Styles/")
+        if (stylesIndex == -1) return null
+
+        val relativePath = path.substring(stylesIndex + "Styles/".length)
+        return relativePath.removeSuffix(".json")
     }
     
     private fun downloadLayout(layoutName: String) {
@@ -324,11 +351,13 @@ class HotLoader private constructor(context: Context) {
         try {
             val ctx = contextRef.get() ?: return
             val cacheDir = File(ctx.cacheDir, "hotloader_layouts")
-            cacheDir.mkdirs()
-            
+
+            // Handle subdirectory paths (e.g., "home/home_header")
             val file = File(cacheDir, "$layoutName.json")
+            file.parentFile?.mkdirs()
+
             file.writeText(content)
-            
+
             Log.d(TAG, "Saved layout to cache: ${file.absolutePath}")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving layout to cache", e)
