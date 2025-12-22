@@ -283,7 +283,7 @@ module KjuiTools
                 else
                   code += "\n" + indent("items(cellData.data.size) { cellIndex ->", depth + 3)
                 end
-                code += "\n" + indent("val cellViewModel: #{cell_view_name}ViewModel = viewModel(key = \"#{cell_view_name}_cell_\\$cellIndex\")", depth + 4)
+                code += "\n" + indent("val cellViewModel: #{cell_view_name}ViewModel = viewModel(key = \"#{cell_view_name}_cell_\$cellIndex\")", depth + 4)
                 code += "\n" + indent("cellViewModel.updateData(cellData.data[cellIndex])", depth + 4)
                 code += "\n" + indent("#{cell_view_name}View(", depth + 4)
                 code += "\n" + indent("viewModel = cellViewModel,", depth + 5)
