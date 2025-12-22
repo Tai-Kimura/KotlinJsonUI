@@ -20,15 +20,15 @@ module KjuiTools
           code += "\n" + indent("model = #{url},", depth + 1)
           code += "\n" + indent("contentDescription = \"#{content_description}\",", depth + 1)
 
-          # Content scale
+          # Content scale (case-insensitive check)
           if json_data['contentMode']
             required_imports&.add(:content_scale)
-            scale = case json_data['contentMode']
-            when 'aspectFit'
+            scale = case json_data['contentMode'].to_s.downcase
+            when 'aspectfit'
               'ContentScale.Fit'
-            when 'aspectFill'
+            when 'aspectfill'
               'ContentScale.Crop'
-            when 'fill', 'scaleToFill'
+            when 'fill', 'scaletofill'
               'ContentScale.FillBounds'
             when 'center'
               'ContentScale.None'

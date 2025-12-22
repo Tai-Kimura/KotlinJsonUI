@@ -54,14 +54,16 @@ module KjuiTools
 
           code += Helpers::ModifierBuilder.format(modifiers, depth)
           
-          # Content mode
+          # Content mode (case-insensitive)
           if json_data['contentMode']
             required_imports&.add(:content_scale)
-            case json_data['contentMode'].downcase
+            case json_data['contentMode'].to_s.downcase
             when 'aspectfill'
               code += ",\n" + indent("contentScale = ContentScale.Crop", depth + 1)
             when 'aspectfit'
               code += ",\n" + indent("contentScale = ContentScale.Fit", depth + 1)
+            when 'fill', 'scaletofill'
+              code += ",\n" + indent("contentScale = ContentScale.FillBounds", depth + 1)
             when 'center'
               code += ",\n" + indent("contentScale = ContentScale.None", depth + 1)
             end
