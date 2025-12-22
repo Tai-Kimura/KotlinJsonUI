@@ -55,13 +55,22 @@ module KjuiTools
           end
           
           # Content padding
-          if json_data['contentPadding']
-            padding = json_data['contentPadding']
-            if padding.is_a?(Array) && padding.length == 4
-              code += "\n" + indent("contentPadding = PaddingValues(top = #{padding[0]}.dp, end = #{padding[1]}.dp, bottom = #{padding[2]}.dp, start = #{padding[3]}.dp),", depth + 1)
-            elsif padding.is_a?(Numeric)
-              code += "\n" + indent("contentPadding = PaddingValues(#{padding}.dp),", depth + 1)
+          # Support contentPadding (array or number), insetHorizontal, insetVertical
+          content_padding = json_data['contentPadding']
+          inset_horizontal = json_data['insetHorizontal']
+          inset_vertical = json_data['insetVertical']
+
+          if content_padding
+            if content_padding.is_a?(Array) && content_padding.length == 4
+              code += "\n" + indent("contentPadding = PaddingValues(top = #{content_padding[0]}.dp, end = #{content_padding[1]}.dp, bottom = #{content_padding[2]}.dp, start = #{content_padding[3]}.dp),", depth + 1)
+            elsif content_padding.is_a?(Numeric)
+              code += "\n" + indent("contentPadding = PaddingValues(#{content_padding}.dp),", depth + 1)
             end
+          elsif inset_horizontal || inset_vertical
+            # Use insetHorizontal and/or insetVertical
+            h_inset = inset_horizontal || 0
+            v_inset = inset_vertical || 0
+            code += "\n" + indent("contentPadding = PaddingValues(horizontal = #{h_inset}.dp, vertical = #{v_inset}.dp),", depth + 1)
           end
           
           # Item spacing
