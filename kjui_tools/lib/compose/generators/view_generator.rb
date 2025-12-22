@@ -38,10 +38,11 @@ module KjuiTools
           view_folder_name = to_snake_case(view_name)
           
           if subdirectory
+            # Views use subdirectory structure, but data and viewmodels are flat
             json_path = File.join(source_dir, layouts_dir, subdirectory)
             swift_path = File.join(source_dir, view_dir, subdirectory, view_folder_name)
-            viewmodel_path = File.join(source_dir, viewmodel_dir, subdirectory)
-            data_path = File.join(source_dir, data_dir, subdirectory)
+            viewmodel_path = File.join(source_dir, viewmodel_dir)
+            data_path = File.join(source_dir, data_dir)
           else
             json_path = File.join(source_dir, layouts_dir)
             # Create a folder for each view (e.g., views/home_view/ for HomeView)

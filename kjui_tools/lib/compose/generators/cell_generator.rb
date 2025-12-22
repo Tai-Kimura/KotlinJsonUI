@@ -41,11 +41,12 @@ module KjuiTools
           cell_folder_name = to_snake_case(cell_name)
 
           if subdirectory
-            # JSON uses snake_case subdirectory, view/viewmodel/data use original casing
+            # JSON uses snake_case subdirectory
+            # Views use subdirectory structure, but data and viewmodels are flat
             json_path = File.join(source_dir, layouts_dir, snake_subdirectory)
             swift_path = File.join(source_dir, view_dir, subdirectory, cell_folder_name)
-            viewmodel_path = File.join(source_dir, viewmodel_dir, subdirectory)
-            data_path = File.join(source_dir, data_dir, subdirectory)
+            viewmodel_path = File.join(source_dir, viewmodel_dir)
+            data_path = File.join(source_dir, data_dir)
           else
             json_path = File.join(source_dir, layouts_dir)
             swift_path = File.join(source_dir, view_dir, cell_folder_name)
