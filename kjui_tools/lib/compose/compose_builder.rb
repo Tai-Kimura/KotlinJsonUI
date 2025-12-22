@@ -82,8 +82,15 @@ module KjuiTools
           @cell_views = Set.new
           @custom_components = Set.new
 
-          # Find the GeneratedView file
-          generated_view_file = File.join(@view_dir, snake_case_name, "#{pascal_case_name}GeneratedView.kt")
+          # Find the GeneratedView file - preserve subdirectory structure from layouts
+          relative_path = json_file.sub(@layouts_dir + '/', '')
+          relative_dir = File.dirname(relative_path)
+          if relative_dir == '.'
+            view_subdir = snake_case_name
+          else
+            view_subdir = File.join(relative_dir, snake_case_name)
+          end
+          generated_view_file = File.join(@view_dir, view_subdir, "#{pascal_case_name}GeneratedView.kt")
 
           if File.exist?(generated_view_file)
             update_generated_file(generated_view_file, json_data)
