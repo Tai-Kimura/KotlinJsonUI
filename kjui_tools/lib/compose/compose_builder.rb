@@ -576,6 +576,15 @@ module KjuiTools
           end
         end
 
+        # Add Painter import if any property uses Image type
+        if data_properties.any? { |prop| prop['class'] == 'Image' || prop['class'] == 'Painter' }
+          painter_import = "import androidx.compose.ui.graphics.painter.Painter"
+          unless updated_content.include?(painter_import)
+            # Add after package line
+            updated_content = updated_content.sub(/^(package .+\n)/, "\\1\n#{painter_import}\n")
+          end
+        end
+
         File.write(file_path, updated_content)
         Core::Logger.success "Updated ViewModel: #{file_path}"
       end

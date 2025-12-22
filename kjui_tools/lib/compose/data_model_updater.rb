@@ -225,7 +225,12 @@ module KjuiTools
         if data_properties.any? { |prop| prop['class'] == 'Color' }
           content += "import androidx.compose.ui.graphics.Color\n"
         end
-        
+
+        # Add Painter import if any property uses Image/Painter type
+        if data_properties.any? { |prop| prop['class'] == 'Image' || prop['class'] == 'Painter' }
+          content += "import androidx.compose.ui.graphics.painter.Painter\n"
+        end
+
         content += "\ndata class #{view_name}Data(\n"
         
         if data_properties.empty?
@@ -359,6 +364,8 @@ module KjuiTools
           'Float'
         when 'Color'
           'Color'
+        when 'Image', 'Painter'
+          'Painter'
         when 'CollectionDataSource'
           # Use the actual CollectionDataSource type
           'com.kotlinjsonui.data.CollectionDataSource'
