@@ -93,7 +93,9 @@ module KjuiTools
           generated_view_file = File.join(@view_dir, view_subdir, "#{pascal_case_name}GeneratedView.kt")
 
           if File.exist?(generated_view_file)
-            update_generated_file(generated_view_file, json_data)
+            # Calculate the layout name for dynamic mode (relative path without .json)
+            dynamic_layout_name = relative_path.sub(/\.json$/, '')
+            update_generated_file(generated_view_file, json_data, dynamic_layout_name)
           else
             Core::Logger.warn "GeneratedView file not found: #{generated_view_file}"
           end
@@ -508,15 +510,15 @@ module KjuiTools
         end
       end
       
-      def update_generated_file(file_path, json_data)
+      def update_generated_file(file_path, json_data, dynamic_layout_name = nil)
         existing_content = File.read(file_path)
 
         if existing_content.include?('// >>> GENERATED_CODE_START') &&
            existing_content.include?('// >>> GENERATED_CODE_END')
 
-          # Extract the layout name from file path
-          layout_name = File.basename(File.dirname(file_path))
-          view_name = to_pascal_case(layout_name)
+          # Use the provided dynamic layout name or extract from file path as fallback
+          layout_name = dynamic_layout_name || File.basename(File.dirname(file_path))
+          view_name = to_pascal_case(File.basename(layout_name))
 
           # Generate both static and dynamic versions
           static_content = generate_component(json_data, 1)
