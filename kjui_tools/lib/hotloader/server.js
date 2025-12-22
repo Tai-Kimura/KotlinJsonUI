@@ -94,16 +94,16 @@ app.get('/', (req, res) => {
     });
 });
 
-// Get layout file
-app.get('/layout/:name', (req, res) => {
-    const layoutName = req.params.name;
+// Get layout file (supports subdirectories like home/home_header)
+app.get('/layout/*', (req, res) => {
+    const layoutName = req.params[0];
     const layoutPath = path.join(layoutsDir, `${layoutName}.json`);
-    
+
     if (fs.existsSync(layoutPath)) {
         const content = fs.readFileSync(layoutPath, 'utf8');
         res.json(JSON.parse(content));
     } else {
-        res.status(404).json({ error: 'Layout not found' });
+        res.status(404).json({ error: 'Layout not found', path: layoutPath });
     }
 });
 
@@ -120,12 +120,22 @@ app.get('/style/:name', (req, res) => {
     }
 });
 
-// List all layouts
+// List all layouts (including subdirectories)
 app.get('/layouts', (req, res) => {
     if (fs.existsSync(layoutsDir)) {
-        const files = fs.readdirSync(layoutsDir)
-            .filter(file => file.endsWith('.json'))
-            .map(file => file.replace('.json', ''));
+        const files = [];
+        function scanDir(dir, prefix = '') {
+            const entries = fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+                if (entry.isDirectory()) {
+                    scanDir(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name);
+                } else if (entry.name.endsWith('.json')) {
+                    const name = entry.name.replace('.json', '');
+                    files.push(prefix ? `${prefix}/${name}` : name);
+                }
+            }
+        }
+        scanDir(layoutsDir);
         res.json(files);
     } else {
         res.json([]);

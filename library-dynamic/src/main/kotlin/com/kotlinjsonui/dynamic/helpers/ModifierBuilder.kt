@@ -247,9 +247,16 @@ object ModifierBuilder {
      */
     fun applyPadding(modifier: Modifier, json: JsonObject): Modifier {
         var result = modifier
-        
-        // Handle paddings array first
-        json.get("paddings")?.asJsonArray?.let { paddings ->
+
+        // Handle paddings - can be a single number or an array
+        json.get("paddings")?.let { paddingsElement ->
+            // Handle single number value
+            if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
+                return result.padding(paddingsElement.asFloat.dp)
+            }
+            // Handle array
+            if (!paddingsElement.isJsonArray) return@let
+            val paddings = paddingsElement.asJsonArray
             return when (paddings.size()) {
                 1 -> result.padding(paddings[0].asFloat.dp)
                 2 -> result.padding(
