@@ -52,7 +52,10 @@ class DynamicCollectionComponent {
         ) {
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
-            val layout = json.get("layout")?.asString ?: "vertical"
+            // Support both 'layout' and 'orientation' attributes for horizontal/vertical
+            val layout = json.get("layout")?.asString
+                ?: json.get("orientation")?.asString
+                ?: "vertical"
             val isHorizontal = layout == "horizontal"
             
             // Legacy: Extract cellClasses, headerClasses, footerClasses
