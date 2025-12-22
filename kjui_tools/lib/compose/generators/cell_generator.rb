@@ -125,9 +125,10 @@ module KjuiTools
         def create_main_cell_template(file_path, class_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
 
-          # Calculate relative package path
-          view_package = if subdirectory
-            "#{package_name}.views.#{subdirectory.gsub('/', '.')}.#{to_snake_case(class_name)}"
+          # Calculate relative package path (must use snake_case for subdirectory in package names)
+          snake_subdir = subdirectory&.split('/')&.map { |p| to_snake_case(p) }&.join('.')
+          view_package = if snake_subdir
+            "#{package_name}.views.#{snake_subdir}.#{to_snake_case(class_name)}"
           else
             "#{package_name}.views.#{to_snake_case(class_name)}"
           end
@@ -160,9 +161,10 @@ module KjuiTools
         def create_generated_cell_template(file_path, class_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
 
-          # Calculate relative package path
-          view_package = if subdirectory
-            "#{package_name}.views.#{subdirectory.gsub('/', '.')}.#{to_snake_case(class_name)}"
+          # Calculate relative package path (must use snake_case for subdirectory in package names)
+          snake_subdir = subdirectory&.split('/')&.map { |p| to_snake_case(p) }&.join('.')
+          view_package = if snake_subdir
+            "#{package_name}.views.#{snake_subdir}.#{to_snake_case(class_name)}"
           else
             "#{package_name}.views.#{to_snake_case(class_name)}"
           end

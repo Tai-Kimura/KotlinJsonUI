@@ -780,29 +780,35 @@ module KjuiTools
         if @cell_views && @cell_views.any?
           # Add necessary imports for creating ViewModels in collections
           imports_to_add << "import androidx.lifecycle.viewmodel.compose.viewModel" unless imports_to_add.include?("import androidx.lifecycle.viewmodel.compose.viewModel")
-          
+
           # First, remove any old/incorrect cell view imports
           lines = content.split("\n")
           @cell_views.each do |cell_class|
             snake_name = to_snake_case(cell_class)
             # Remove any existing imports with incorrect capitalization
-            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.views\.#{Regexp.escape(snake_name)}\.\w+View$/) }
+            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.views\..*#{Regexp.escape(snake_name)}\.\w+View$/) }
             lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.data\.\w+Data$/) && line.downcase.include?(cell_class.downcase) }
             lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.viewmodels\.\w+ViewModel$/) && line.downcase.include?(cell_class.downcase) }
           end
           content = lines.join("\n")
-          
+
           @cell_views.each do |cell_class|
-            # Cell class names are already in PascalCase (e.g., "ProductCell")
+            # Cell class names are already in PascalCase (e.g., "WhiskyCard")
             # Convert to snake_case for folder path
             snake_name = to_snake_case(cell_class)
-            # Keep the original cell class name for the class itself
-            
-            # Add imports for the cell view and data
-            view_import = "import #{@package_name}.views.#{snake_name}.#{cell_class}View"
+
+            # Find the cell's subdirectory by locating its JSON file
+            cell_subdir = find_cell_subdirectory(snake_name)
+
+            # Build the view import path with subdirectory if found
+            if cell_subdir
+              view_import = "import #{@package_name}.views.#{cell_subdir}.#{snake_name}.#{cell_class}View"
+            else
+              view_import = "import #{@package_name}.views.#{snake_name}.#{cell_class}View"
+            end
             data_import = "import #{@package_name}.data.#{cell_class}Data"
             viewmodel_import = "import #{@package_name}.viewmodels.#{cell_class}ViewModel"
-            
+
             imports_to_add << view_import unless imports_to_add.include?(view_import)
             imports_to_add << data_import unless imports_to_add.include?(data_import)
             imports_to_add << viewmodel_import unless imports_to_add.include?(viewmodel_import)
@@ -879,6 +885,26 @@ module KjuiTools
         str.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
            .gsub(/([a-z\d])([A-Z])/, '\1_\2')
            .downcase
+      end
+
+      # Find the subdirectory where a cell's JSON file is located
+      # Returns the subdirectory path in dot notation (e.g., "home" for home/whisky_card.json)
+      # Returns nil if the cell is in the root Layouts directory
+      def find_cell_subdirectory(cell_snake_name)
+        # Search for the cell's JSON file in the layouts directory
+        json_files = Dir.glob(File.join(@layouts_dir, '**', "#{cell_snake_name}.json"))
+
+        return nil if json_files.empty?
+
+        # Get the first match and extract its relative path
+        json_file = json_files.first
+        relative_path = json_file.sub(@layouts_dir + '/', '')
+        dir_path = File.dirname(relative_path)
+
+        return nil if dir_path == '.'
+
+        # Convert directory path to dot notation and ensure snake_case
+        dir_path.split('/').map { |p| to_snake_case(p) }.join('.')
       end
     end
   end

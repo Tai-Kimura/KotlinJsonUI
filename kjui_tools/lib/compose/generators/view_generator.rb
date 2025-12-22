@@ -169,11 +169,13 @@ module KjuiTools
 
         def create_main_view_template(file_path, view_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
-          
+
           package_parts = package_name.split('.')
           # Each view has its own package (e.g., com.example.views.home_view)
+          # Must use snake_case for subdirectory in package names
           view_folder_name = to_snake_case(view_name)
-          view_package = subdirectory ? "#{package_name}.views.#{subdirectory.gsub('/', '.')}.#{view_folder_name}" : "#{package_name}.views.#{view_folder_name}"
+          snake_subdir = subdirectory&.split('/')&.map { |p| to_snake_case(p) }&.join('.')
+          view_package = snake_subdir ? "#{package_name}.views.#{snake_subdir}.#{view_folder_name}" : "#{package_name}.views.#{view_folder_name}"
           
           template = <<~KOTLIN
             package #{view_package}
@@ -200,11 +202,13 @@ module KjuiTools
         
         def create_generated_view_template(file_path, view_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
-          
+
           json_reference = subdirectory ? "#{subdirectory}/#{json_name}" : json_name
           # Each view has its own package (using snake_case for folder)
+          # Must use snake_case for subdirectory in package names
           view_folder_name = to_snake_case(view_name)
-          view_package = subdirectory ? "#{package_name}.views.#{subdirectory.gsub('/', '.')}.#{view_folder_name}" : "#{package_name}.views.#{view_folder_name}"
+          snake_subdir = subdirectory&.split('/')&.map { |p| to_snake_case(p) }&.join('.')
+          view_package = snake_subdir ? "#{package_name}.views.#{snake_subdir}.#{view_folder_name}" : "#{package_name}.views.#{view_folder_name}"
           
           template = <<~KOTLIN
             package #{view_package}
