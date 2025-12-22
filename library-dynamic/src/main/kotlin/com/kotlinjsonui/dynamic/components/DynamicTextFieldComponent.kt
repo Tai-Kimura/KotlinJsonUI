@@ -299,24 +299,50 @@ class DynamicTextFieldComponent {
         }
 
         /**
-         * Build contentPadding from paddings or fieldPadding JSON attribute
+         * Build contentPadding from paddings, padding, or fieldPadding JSON attribute
          */
         private fun buildContentPadding(json: JsonObject): PaddingValues? {
             // Check for paddings array first
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                return when (paddings.size()) {
-                    1 -> PaddingValues(paddings[0].asFloat.dp)
-                    2 -> PaddingValues(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-                    4 -> PaddingValues(
-                        start = paddings[3].asFloat.dp,
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp
-                    )
-                    else -> null
+            json.get("paddings")?.let { paddingsElement ->
+                if (paddingsElement.isJsonArray) {
+                    val paddings = paddingsElement.asJsonArray
+                    return when (paddings.size()) {
+                        1 -> PaddingValues(paddings[0].asFloat.dp)
+                        2 -> PaddingValues(
+                            vertical = paddings[0].asFloat.dp,
+                            horizontal = paddings[1].asFloat.dp
+                        )
+                        4 -> PaddingValues(
+                            start = paddings[3].asFloat.dp,
+                            top = paddings[0].asFloat.dp,
+                            end = paddings[1].asFloat.dp,
+                            bottom = paddings[2].asFloat.dp
+                        )
+                        else -> null
+                    }
+                }
+            }
+
+            // Check for padding (single value or array)
+            json.get("padding")?.let { paddingElement ->
+                if (paddingElement.isJsonPrimitive && paddingElement.asJsonPrimitive.isNumber) {
+                    return PaddingValues(paddingElement.asFloat.dp)
+                } else if (paddingElement.isJsonArray) {
+                    val paddings = paddingElement.asJsonArray
+                    return when (paddings.size()) {
+                        1 -> PaddingValues(paddings[0].asFloat.dp)
+                        2 -> PaddingValues(
+                            vertical = paddings[0].asFloat.dp,
+                            horizontal = paddings[1].asFloat.dp
+                        )
+                        4 -> PaddingValues(
+                            start = paddings[3].asFloat.dp,
+                            top = paddings[0].asFloat.dp,
+                            end = paddings[1].asFloat.dp,
+                            bottom = paddings[2].asFloat.dp
+                        )
+                        else -> null
+                    }
                 }
             }
 
