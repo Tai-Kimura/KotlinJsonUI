@@ -18,6 +18,7 @@ import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicViews
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic SafeAreaView Component Converter
@@ -41,6 +42,8 @@ class DynamicSafeAreaViewComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Apply lifecycle effects first
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
@@ -60,7 +63,7 @@ class DynamicSafeAreaViewComponent {
             
             // Parse background color
             val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
             
             // Build base modifier

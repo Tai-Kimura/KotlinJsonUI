@@ -24,6 +24,7 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic TextView Component Converter
@@ -53,6 +54,8 @@ class DynamicTextViewComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Parse text value with data binding
             val textBinding = json.get("text")?.asString ?: ""
             val initialText = processDataBinding(textBinding, data)
@@ -83,21 +86,21 @@ class DynamicTextViewComponent {
             // Parse text style
             val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
             val textColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultTextColor
-            
+
             // Parse background colors
             val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultBackgroundColor
-            
+
             val highlightBackgroundColor = json.get("highlightBackground")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultHighlightBackgroundColor
-            
+
             // Parse border color
             val borderColor = json.get("borderColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultBorderColor
             
             // Parse shape

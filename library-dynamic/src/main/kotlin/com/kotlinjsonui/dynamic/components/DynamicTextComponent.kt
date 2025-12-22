@@ -177,12 +177,14 @@ class DynamicTextComponent {
 
         @Composable
         private fun createStandardText(json: JsonObject, text: String) {
+            val context = LocalContext.current
+
             // Font size
             val fontSize = json.get("fontSize")?.asInt ?: 14
 
             // Font color (official attribute)
             val fontColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Color.Black
 
             // Font weight - handle both 'font' and 'fontWeight' attributes
@@ -268,6 +270,7 @@ class DynamicTextComponent {
 
         @Composable
         private fun buildTextStyle(json: JsonObject): TextStyle {
+            val context = LocalContext.current
             var style = LocalTextStyle.current
 
             json.get("fontSize")?.asInt?.let { fontSize ->
@@ -275,7 +278,7 @@ class DynamicTextComponent {
             }
 
             json.get("fontColor")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr)?.let { color ->
+                ColorParser.parseColorString(colorStr, context)?.let { color ->
                     style = style.copy(color = color)
                 }
             }
@@ -331,7 +334,10 @@ class DynamicTextComponent {
             return style
         }
 
+        @Composable
         private fun buildModifier(json: JsonObject): Modifier {
+            val context = LocalContext.current
+
             // Start with base modifier
             var modifier: Modifier = Modifier
 
@@ -349,14 +355,14 @@ class DynamicTextComponent {
 
             // 4. Background color
             json.get("background")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr)?.let { color ->
+                ColorParser.parseColorString(colorStr, context)?.let { color ->
                     modifier = modifier.background(color)
                 }
             }
 
             // 5. Border (after background, supports solid/dashed/dotted)
             json.get("borderColor")?.asString?.let { borderColorStr ->
-                ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
+                ColorParser.parseColorString(borderColorStr, context)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
                     val borderStyle = json.get("borderStyle")?.asString ?: "solid"
                     val shape = json.get("cornerRadius")?.asFloat?.let {

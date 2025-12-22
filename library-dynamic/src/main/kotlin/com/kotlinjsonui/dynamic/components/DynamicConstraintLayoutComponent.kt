@@ -17,6 +17,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic ConstraintLayout Component Converter
@@ -44,6 +45,8 @@ class DynamicConstraintLayoutComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {
                 json.has("children") && json.get("children").isJsonArray -> 
@@ -72,7 +75,7 @@ class DynamicConstraintLayoutComponent {
             
             // Parse background color
             val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
             
             // Build modifier

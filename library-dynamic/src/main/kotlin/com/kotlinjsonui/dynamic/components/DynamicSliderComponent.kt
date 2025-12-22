@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import androidx.compose.ui.platform.LocalContext
 import kotlin.math.roundToInt
 
 /**
@@ -35,6 +36,8 @@ class DynamicSliderComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Parse binding variable
             val bindingVariable = when {
                 json.get("value")?.isJsonPrimitive == true && 
@@ -181,15 +184,15 @@ class DynamicSliderComponent {
             
             // Parse colors
             val thumbColor = json.get("thumbTintColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
-            
+
             val activeTrackColor = json.get("minimumTrackTintColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
-            
+
             val inactiveTrackColor = json.get("maximumTrackTintColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
             
             val colors = if (thumbColor != null || activeTrackColor != null || inactiveTrackColor != null) {

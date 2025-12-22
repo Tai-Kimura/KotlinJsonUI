@@ -17,6 +17,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic Radio Component Converter
@@ -56,6 +57,8 @@ class DynamicRadioComponent {
 
         @Composable
         private fun createRadioGroup(json: JsonObject, data: Map<String, Any>) {
+            val context = LocalContext.current
+
             // Parse binding variable
             val bindingVariable = json.get("bind")?.asString?.let { bind ->
                 if (bind.contains("@{")) {
@@ -178,11 +181,11 @@ class DynamicRadioComponent {
 
             // Parse colors
             val selectedColor = json.get("selectedColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
 
             val unselectedColor = json.get("unselectedColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
 
             val colors = RadioButtonDefaults.colors()
@@ -211,6 +214,7 @@ class DynamicRadioComponent {
 
         @Composable
         private fun createRadioItem(json: JsonObject, data: Map<String, Any>) {
+            val context = LocalContext.current
             val group = json.get("group")?.asString ?: "default"
             val id = json.get("id")?.asString ?: "radio_${System.currentTimeMillis()}"
             val text = json.get("text")?.asString ?: ""
@@ -299,7 +303,7 @@ class DynamicRadioComponent {
                                 contentDescription = text,
                                 tint = if (isSelected) {
                                     json.get("selectedColor")?.asString?.let {
-                                        ColorParser.parseColorString(it)
+                                        ColorParser.parseColorString(it, context)
                                     } ?: MaterialTheme.colorScheme.primary
                                 } else {
                                     Color.Gray
@@ -333,7 +337,7 @@ class DynamicRadioComponent {
                     Spacer(modifier = Modifier.width(8.dp))
                     val textColor =
                         (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            ColorParser.parseColorString(it)
+                            ColorParser.parseColorString(it, context)
                         } ?: Color.Black
                     Text(text = text, color = textColor)
                 }
@@ -342,6 +346,7 @@ class DynamicRadioComponent {
 
         @Composable
         private fun createRadioGroupWithItems(json: JsonObject, data: Map<String, Any>) {
+            val context = LocalContext.current
             val items = json.get("items")?.asJsonArray?.map { it.asString } ?: emptyList()
 
             // Parse selected value binding
@@ -400,7 +405,7 @@ class DynamicRadioComponent {
                 json.get("text")?.asString?.let { label ->
                     val textColor =
                         (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            ColorParser.parseColorString(it)
+                            ColorParser.parseColorString(it, context)
                         } ?: Color.Black
                     Text(text = label, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -421,7 +426,7 @@ class DynamicRadioComponent {
                         Spacer(modifier = Modifier.width(8.dp))
                         val textColor =
                             (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                                ColorParser.parseColorString(it)
+                                ColorParser.parseColorString(it, context)
                             } ?: Color.Black
                         Text(text = item, color = textColor)
                     }

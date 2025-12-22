@@ -11,6 +11,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic Switch Component Converter
@@ -35,6 +36,8 @@ class DynamicSwitchComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Parse checked state with data binding
             val bindingVariable = when {
                 json.get("isOn")?.isJsonPrimitive == true &&
@@ -160,11 +163,11 @@ class DynamicSwitchComponent {
 
             // Parse colors
             val checkedTrackColor = json.get("onTintColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
 
             val checkedThumbColor = json.get("thumbTintColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
 
             val colors = if (checkedTrackColor != null || checkedThumbColor != null) {

@@ -13,6 +13,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic CheckBox Component Converter
@@ -38,6 +39,8 @@ class DynamicCheckBoxComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Parse binding variable
             val bindingVariable = json.get("bind")?.asString?.let { bind ->
                 if (bind.contains("@{")) {
@@ -140,11 +143,11 @@ class DynamicCheckBoxComponent {
 
             // Parse colors
             val checkedColor = json.get("checkColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
 
             val uncheckedColor = json.get("uncheckedColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             }
 
             val colors = CheckboxDefaults.colors()

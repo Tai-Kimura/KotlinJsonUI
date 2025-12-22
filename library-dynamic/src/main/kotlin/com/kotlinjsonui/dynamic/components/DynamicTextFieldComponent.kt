@@ -110,23 +110,23 @@ class DynamicTextFieldComponent {
 
             // Parse colors with Configuration defaults
             val textColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultTextColor
 
             val placeholderColor = json.get("hintColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultPlaceholderColor
 
             val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultBackgroundColor
-            
+
             val highlightBackgroundColor = json.get("highlightBackground")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultHighlightBackgroundColor
-            
+
             val borderColor = json.get("borderColor")?.asString?.let {
-                ColorParser.parseColorString(it)
+                ColorParser.parseColorString(it, context)
             } ?: Configuration.TextField.defaultBorderColor
 
             // Parse font size with Configuration defaults
@@ -302,8 +302,13 @@ class DynamicTextFieldComponent {
          * Build contentPadding from paddings, padding, or fieldPadding JSON attribute
          */
         private fun buildContentPadding(json: JsonObject): PaddingValues? {
-            // Check for paddings array first
+            // Check for paddings (can be array or single number)
             json.get("paddings")?.let { paddingsElement ->
+                // Single number
+                if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
+                    return PaddingValues(paddingsElement.asFloat.dp)
+                }
+                // Array
                 if (paddingsElement.isJsonArray) {
                     val paddings = paddingsElement.asJsonArray
                     return when (paddings.size()) {
