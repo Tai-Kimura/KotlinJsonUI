@@ -40,12 +40,34 @@ class DynamicViewRendererImpl {
         var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
         var error by remember { mutableStateOf<String?>(null) }
         var isLoading by remember { mutableStateOf(true) }
-        
+        var styleUpdateCounter by remember { mutableStateOf(0) }
+
         // Observe HotLoader updates for this layout
         val hotLoader = com.kotlinjsonui.dynamic.hotloader.HotLoader.getInstance(context)
         val lastUpdate by hotLoader.lastUpdate.collectAsState()
-        
-        LaunchedEffect(layoutName, lastUpdate) {
+
+        // Set up listener for style updates
+        DisposableEffect(layoutName) {
+            val listener = object : com.kotlinjsonui.dynamic.hotloader.HotLoader.HotLoaderListener {
+                override fun onConnected() {}
+                override fun onDisconnected() {}
+                override fun onLayoutUpdated(name: String, content: String) {}
+                override fun onLayoutAdded(name: String) {}
+                override fun onLayoutRemoved(name: String) {}
+                override fun onError(err: Throwable) {}
+                override fun onStyleUpdated(styleName: String, content: String) {
+                    // Increment counter to trigger recomposition
+                    styleUpdateCounter++
+                    Log.d(TAG, "Style updated: $styleName, triggering recomposition (counter=$styleUpdateCounter)")
+                }
+            }
+            hotLoader.addListener(listener)
+            onDispose {
+                hotLoader.removeListener(listener)
+            }
+        }
+
+        LaunchedEffect(layoutName, lastUpdate, styleUpdateCounter) {
             isLoading = true
             error = null
             
