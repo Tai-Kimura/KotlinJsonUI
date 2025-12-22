@@ -5,36 +5,47 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.io.File
 import java.io.InputStreamReader
 
 /**
  * Loads and manages styles for dynamic components from JSON files
- * Styles are loaded from assets/Styles/ directory
+ * Styles are loaded from HotLoader cache first, then assets/Styles/ directory
  */
 object DynamicStyleLoader {
     private const val TAG = "DynamicStyleLoader"
     private const val STYLES_DIR = "Styles"
-    
+
     private val styleCache = mutableMapOf<String, JsonObject>()
     private val gson = Gson()
-    
+
     /**
      * Load a style by name from the Styles directory
+     * First checks HotLoader cache, then falls back to assets
      * @param context Android context for asset access
      * @param styleName Name of the style file (without .json extension)
      * @return JsonObject containing the style properties, or null if not found
      */
     fun loadStyle(context: Context, styleName: String): JsonObject? {
-        // Check cache first
+        // Check memory cache first
         styleCache[styleName]?.let { return it }
-        
+
+        // Try to load from HotLoader cache first (for hot reload support)
+        val cachedStyle = loadFromHotLoaderCache(context, styleName)
+        if (cachedStyle != null) {
+            styleCache[styleName] = cachedStyle
+            Log.d(TAG, "Loaded style from HotLoader cache: $styleName")
+            return cachedStyle
+        }
+
+        // Fall back to loading from assets
         return try {
             val fileName = if (styleName.endsWith(".json")) {
                 "$STYLES_DIR/$styleName"
             } else {
                 "$STYLES_DIR/$styleName.json"
             }
-            
+
             context.assets.open(fileName).use { inputStream ->
                 InputStreamReader(inputStream).use { reader ->
                     val jsonElement = JsonParser.parseReader(reader)
@@ -52,6 +63,32 @@ object DynamicStyleLoader {
             }
         } catch (e: Exception) {
             Log.d(TAG, "Style not found or error loading: $styleName - ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Load style from HotLoader cache directory
+     */
+    private fun loadFromHotLoaderCache(context: Context, styleName: String): JsonObject? {
+        return try {
+            val cacheDir = File(context.cacheDir, "hotloader_styles")
+            val fileName = if (styleName.endsWith(".json")) styleName else "$styleName.json"
+            val cacheFile = File(cacheDir, fileName)
+
+            if (cacheFile.exists()) {
+                val content = cacheFile.readText()
+                val jsonElement = JsonParser.parseString(content)
+                if (jsonElement.isJsonObject) {
+                    jsonElement.asJsonObject
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "Failed to load style from HotLoader cache: $styleName - ${e.message}")
             null
         }
     }

@@ -56,9 +56,11 @@ class DynamicViewRendererImpl {
                 override fun onLayoutRemoved(name: String) {}
                 override fun onError(err: Throwable) {}
                 override fun onStyleUpdated(styleName: String, content: String) {
+                    // Clear style cache so new styles are loaded from HotLoader cache
+                    DynamicStyleLoader.clearCache()
                     // Increment counter to trigger recomposition
                     styleUpdateCounter++
-                    Log.d(TAG, "Style updated: $styleName, triggering recomposition (counter=$styleUpdateCounter)")
+                    Log.d(TAG, "Style updated: $styleName, cache cleared, triggering recomposition (counter=$styleUpdateCounter)")
                 }
             }
             hotLoader.addListener(listener)
