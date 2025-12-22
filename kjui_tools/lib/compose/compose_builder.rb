@@ -79,7 +79,6 @@ module KjuiTools
 
           @required_imports = Set.new
           @included_views = Set.new
-          @cell_views = Set.new
           @custom_components = Set.new
 
           # Find the GeneratedView file - preserve subdirectory structure from layouts
@@ -165,11 +164,6 @@ module KjuiTools
         when 'TextView'
           Components::TextViewComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Collection'
-          # Extract cell classes for imports
-          cell_classes = json_data['cellClasses'] || []
-          cell_classes.each do |cell_class|
-            @cell_views&.add(cell_class)
-          end
           Components::CollectionComponent.generate(json_data, depth, @required_imports, parent_type)
         when 'Table'
           Components::TableComponent.generate(json_data, depth, @required_imports, parent_type)
@@ -776,25 +770,16 @@ module KjuiTools
           end
         end
         
-        # Add imports for cell views (used in Collection components)
-        if @cell_views && @cell_views.any?
+        # Add imports for cell views (from sections in Collection components)
+        # Process "cell:CellName" entries from required_imports
+        cell_imports = @required_imports.select { |imp| imp.to_s.start_with?('cell:') }
+        if cell_imports.any?
           # Add necessary imports for creating ViewModels in collections
           imports_to_add << "import androidx.lifecycle.viewmodel.compose.viewModel" unless imports_to_add.include?("import androidx.lifecycle.viewmodel.compose.viewModel")
 
-          # First, remove any old/incorrect cell view imports
-          lines = content.split("\n")
-          @cell_views.each do |cell_class|
-            snake_name = to_snake_case(cell_class)
-            # Remove any existing imports with incorrect capitalization
-            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.views\..*#{Regexp.escape(snake_name)}\.\w+View$/) }
-            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.data\.\w+Data$/) && line.downcase.include?(cell_class.downcase) }
-            lines.reject! { |line| line.match(/^import #{Regexp.escape(@package_name)}\.viewmodels\.\w+ViewModel$/) && line.downcase.include?(cell_class.downcase) }
-          end
-          content = lines.join("\n")
-
-          @cell_views.each do |cell_class|
-            # Cell class names are already in PascalCase (e.g., "WhiskyCard")
-            # Convert to snake_case for folder path
+          cell_imports.each do |cell_import|
+            # Extract cell class name from "cell:CellName"
+            cell_class = cell_import.to_s.sub('cell:', '')
             snake_name = to_snake_case(cell_class)
 
             # Find the cell's subdirectory by locating its JSON file

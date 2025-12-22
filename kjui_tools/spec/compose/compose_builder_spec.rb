@@ -296,9 +296,10 @@ RSpec.describe KjuiTools::Compose::ComposeBuilder do
       end
 
       it 'generates Collection component' do
-        result = builder.send(:generate_component, { 'type' => 'Collection', 'cellClasses' => ['ProductCell'] })
+        result = builder.send(:generate_component, { 'type' => 'Collection', 'sections' => [{ 'cell' => 'ProductCell' }] })
         expect(result).not_to be_empty
-        expect(builder.instance_variable_get(:@cell_views)).to include('ProductCell')
+        # Cell imports are now handled via required_imports with "cell:" prefix
+        expect(builder.instance_variable_get(:@required_imports)).to include('cell:ProductCell')
       end
 
       it 'generates Table component' do

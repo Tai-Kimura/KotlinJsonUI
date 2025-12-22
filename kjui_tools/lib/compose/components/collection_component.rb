@@ -200,31 +200,33 @@ module KjuiTools
           if has_headers_or_footers || section_columns_vary || needs_span
             required_imports&.add(:grid_item_span)
           end
-          
+
+          # Always add cell imports for all sections (regardless of items binding)
+          sections.each do |section|
+            cell_view_name = section['cell']
+            if cell_view_name
+              required_imports&.add("cell:#{cell_view_name}")
+            end
+            if section['header']
+              required_imports&.add("cell:#{section['header']}")
+            end
+            if section['footer']
+              required_imports&.add("cell:#{section['footer']}")
+            end
+          end
+
           if items_property && items_property.match(/@\{([^}]+)\}/)
             property_name = $1
-            
+
             # Generate sections with GridItemSpan for different column counts
             sections.each_with_index do |section, index|
               cell_view_name = section['cell']
               section_columns = section['columns'] || default_columns
-              
+
               # Calculate the span for items in this section
               item_span = grid_columns / section_columns
-              
+
               if cell_view_name
-                # Add cell view imports
-                required_imports&.add("cell:#{cell_view_name}")
-                
-                # Add header import if exists
-                if section['header']
-                  required_imports&.add("cell:#{section['header']}")
-                end
-                
-                # Add footer import if exists
-                if section['footer']
-                  required_imports&.add("cell:#{section['footer']}")
-                end
                 
                 code += "\n" + indent("// Section #{index + 1}: #{cell_view_name} (#{section_columns} columns)", depth + 1)
                 code += "\n" + indent("data.#{property_name}.sections.getOrNull(#{index})?.let { section ->", depth + 1)
