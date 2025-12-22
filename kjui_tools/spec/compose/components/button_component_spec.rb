@@ -160,7 +160,7 @@ RSpec.describe KjuiTools::Compose::Components::ButtonComponent do
     it 'generates Button with fontColor' do
       json_data = { 'type' => 'Button', 'text' => 'Test', 'fontColor' => '#FFFFFF' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('color =')
+      expect(result).to include('contentColor =')
     end
 
     it 'generates Text content inside button' do

@@ -38,11 +38,10 @@ module KjuiTools
             code += Helpers::ModifierBuilder.format(modifiers, depth)
           end
           
-          # Add shape with cornerRadius if specified
-          if json_data['cornerRadius']
-            required_imports&.add(:shape)
-            code += ",\n" + indent("shape = RoundedCornerShape(#{json_data['cornerRadius']}.dp)", depth + 1)
-          end
+          # Add shape with cornerRadius (always set to match dynamic defaults)
+          required_imports&.add(:shape)
+          corner_radius = json_data['cornerRadius'] || 'Configuration.Button.defaultCornerRadius'
+          code += ",\n" + indent("shape = RoundedCornerShape(#{corner_radius}.dp)", depth + 1)
           
           # Add contentPadding for internal padding
           # Support both 'padding' (number), 'paddings' (array), and individual padding attributes
@@ -111,38 +110,44 @@ module KjuiTools
           end
           
           # Button colors including normal, disabled, and pressed states
-          if json_data['background'] || json_data['disabledBackground'] || json_data['disabledFontColor'] || json_data['hilightColor']
-            required_imports&.add(:button_colors)
-            colors_code = "colors = ButtonDefaults.buttonColors("
-            color_params = []
-            
-            if json_data['background']
-              background_color = Helpers::ResourceResolver.process_color(json_data['background'], required_imports)
-              color_params << "containerColor = #{background_color}"
-            end
-            
-            if json_data['disabledBackground']
-              disabled_bg_color = Helpers::ResourceResolver.process_color(json_data['disabledBackground'], required_imports)
-              color_params << "disabledContainerColor = #{disabled_bg_color}"
-            end
-            
-            if json_data['disabledFontColor']
-              disabled_font_color = Helpers::ResourceResolver.process_color(json_data['disabledFontColor'], required_imports)
-              color_params << "disabledContentColor = #{disabled_font_color}"
-            end
-            
-            # Note: hilightColor (pressed state) isn't directly supported in Material3 ButtonDefaults
-            # We'd need a custom button implementation or InteractionSource for true pressed state
-            if json_data['hilightColor']
-              color_params << "// hilightColor: #{json_data['hilightColor']} - Use InteractionSource for pressed state"
-            end
-            
-            if color_params.any?
-              colors_code += "\n" + color_params.map { |param| indent(param, depth + 2) }.join(",\n")
-              colors_code += "\n" + indent(")", depth + 1)
-              code += ",\n" + indent(colors_code, depth + 1)
-            end
+          # Always set to match dynamic defaults
+          required_imports&.add(:button_colors)
+          colors_code = "colors = ButtonDefaults.buttonColors("
+          color_params = []
+
+          if json_data['background']
+            background_color = Helpers::ResourceResolver.process_color(json_data['background'], required_imports)
+            color_params << "containerColor = #{background_color}"
+          else
+            color_params << "containerColor = Configuration.Button.defaultBackgroundColor"
           end
+
+          if json_data['disabledBackground']
+            disabled_bg_color = Helpers::ResourceResolver.process_color(json_data['disabledBackground'], required_imports)
+            color_params << "disabledContainerColor = #{disabled_bg_color}"
+          end
+
+          if json_data['fontColor']
+            font_color = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
+            color_params << "contentColor = #{font_color}"
+          else
+            color_params << "contentColor = Configuration.Button.defaultTextColor"
+          end
+
+          if json_data['disabledFontColor']
+            disabled_font_color = Helpers::ResourceResolver.process_color(json_data['disabledFontColor'], required_imports)
+            color_params << "disabledContentColor = #{disabled_font_color}"
+          end
+
+          # Note: hilightColor (pressed state) isn't directly supported in Material3 ButtonDefaults
+          # We'd need a custom button implementation or InteractionSource for true pressed state
+          if json_data['hilightColor']
+            color_params << "// hilightColor: #{json_data['hilightColor']} - Use InteractionSource for pressed state"
+          end
+
+          colors_code += "\n" + color_params.map { |param| indent(param, depth + 2) }.join(",\n")
+          colors_code += "\n" + indent(")", depth + 1)
+          code += ",\n" + indent(colors_code, depth + 1)
           
           # Handle enabled attribute
           if json_data.key?('enabled')
@@ -157,21 +162,12 @@ module KjuiTools
           
           code += "\n" + indent(") {", depth)
           code += "\n" + indent("Text(#{text})", depth + 1)
-          
-          # Apply text attributes if specified
-          if json_data['fontSize'] || json_data['fontColor']
+
+          # Apply text attributes if specified (fontColor handled in ButtonDefaults.buttonColors)
+          if json_data['fontSize']
             text_code = "\n" + indent("Text(", depth + 1)
             text_code += "\n" + indent("text = #{text},", depth + 2)
-            
-            if json_data['fontSize']
-              text_code += "\n" + indent("fontSize = #{json_data['fontSize']}.sp,", depth + 2)
-            end
-            
-            if json_data['fontColor']
-              color_value = Helpers::ResourceResolver.process_color(json_data['fontColor'], required_imports)
-              text_code += "\n" + indent("color = #{color_value},", depth + 2) if color_value
-            end
-            
+            text_code += "\n" + indent("fontSize = #{json_data['fontSize']}.sp", depth + 2)
             text_code += "\n" + indent(")", depth + 1)
             code = code.sub(/Text\(#{Regexp.escape(text)}\)/, text_code.strip)
           end
