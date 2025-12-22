@@ -40,6 +40,7 @@ module KjuiTools
           
           # Add shape with cornerRadius (always set to match dynamic defaults)
           required_imports&.add(:shape)
+          required_imports&.add(:configuration)
           corner_radius = json_data['cornerRadius'] || 'Configuration.Button.defaultCornerRadius'
           code += ",\n" + indent("shape = RoundedCornerShape(#{corner_radius}.dp)", depth + 1)
           
