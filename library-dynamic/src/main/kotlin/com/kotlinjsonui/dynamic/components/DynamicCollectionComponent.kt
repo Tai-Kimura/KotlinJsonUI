@@ -101,6 +101,7 @@ class DynamicCollectionComponent {
             }
             
             // Parse content padding
+            // Support contentPadding (array or number), insetHorizontal, insetVertical
             val contentPadding = when {
                 json.has("contentPadding") -> {
                     val padding = json.get("contentPadding")
@@ -123,6 +124,11 @@ class DynamicCollectionComponent {
                         }
                         else -> PaddingValues(0.dp)
                     }
+                }
+                json.has("insetHorizontal") || json.has("insetVertical") -> {
+                    val hInset = json.get("insetHorizontal")?.asFloat ?: 0f
+                    val vInset = json.get("insetVertical")?.asFloat ?: 0f
+                    PaddingValues(horizontal = hInset.dp, vertical = vInset.dp)
                 }
                 else -> PaddingValues(0.dp)
             }
