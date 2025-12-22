@@ -26,10 +26,11 @@ module KjuiTools
             code += "\n" + indent("onClick = { }", depth + 1)
           end
           
-          # Build modifiers (only margins and size, not padding)
+          # Build modifiers (only margins, size, and weight, not padding)
           modifiers = []
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           
           # Format modifiers only if there are modifiers
           if modifiers.any?
