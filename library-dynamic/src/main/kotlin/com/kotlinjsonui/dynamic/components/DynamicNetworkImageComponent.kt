@@ -71,11 +71,11 @@ class DynamicNetworkImageComponent {
             // Parse content description
             val contentDescription = json.get("contentDescription")?.asString ?: "Image"
             
-            // Parse content scale
-            val contentScale = when (json.get("contentMode")?.asString) {
-                "aspectFit" -> ContentScale.Fit
-                "aspectFill" -> ContentScale.Crop
-                "fill", "scaleToFill" -> ContentScale.FillBounds
+            // Parse content scale (case-insensitive)
+            val contentScale = when (json.get("contentMode")?.asString?.lowercase()) {
+                "aspectfit" -> ContentScale.Fit
+                "aspectfill" -> ContentScale.Crop
+                "fill", "scaletofill" -> ContentScale.FillBounds
                 "center" -> ContentScale.None
                 else -> ContentScale.Fit
             }
