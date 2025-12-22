@@ -39,7 +39,8 @@ module KjuiTools
           end
           
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
-          
+          modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+
           code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
           code += "\n" + indent(") {", depth)
           

@@ -75,9 +75,10 @@ module KjuiTools
               code += ","
             end
 
-            # TextField modifier (size only, padding goes to contentPadding)
+            # TextField modifier (size and weight, padding goes to contentPadding)
             textfield_modifiers = []
             textfield_modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+            textfield_modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
             if textfield_modifiers.any?
               code += "\n" + indent("textFieldModifier = Modifier", depth + 1)
               textfield_modifiers.each do |mod|
@@ -86,10 +87,11 @@ module KjuiTools
               code += ","
             end
           else
-            # Regular modifiers for CustomTextField (size and margins only, padding goes to contentPadding)
+            # Regular modifiers for CustomTextField (size, margins, and weight, padding goes to contentPadding)
             modifiers = []
             modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
             modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+            modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
 
             if modifiers.any?
               code += "\n" + indent("modifier = Modifier", depth + 1)

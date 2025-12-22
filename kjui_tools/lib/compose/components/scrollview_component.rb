@@ -48,6 +48,7 @@ module KjuiTools
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
+          modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
 
           # Apply keyboard avoidance at the end of modifier chain
           if keyboard_avoidance

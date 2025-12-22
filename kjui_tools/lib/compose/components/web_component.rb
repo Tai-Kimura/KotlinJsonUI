@@ -72,7 +72,8 @@ module KjuiTools
           
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          
+          modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+
           # Border for WebView
           if json_data['borderWidth'] && json_data['borderColor']
             required_imports&.add(:border)

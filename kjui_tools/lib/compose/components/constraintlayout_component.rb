@@ -17,7 +17,7 @@ module KjuiTools
           has_constraints = children.any? { |child| has_relative_positioning?(child) }
           
           if has_constraints
-            generate_constraint_layout(json_data, children, depth, required_imports)
+            generate_constraint_layout(json_data, children, depth, required_imports, parent_type)
           else
             # Fall back to regular Box/Column/Row
             Components::ContainerComponent.generate(json_data, depth, required_imports)
@@ -66,7 +66,7 @@ module KjuiTools
           return !has_positioning_constraints?(component)
         end
         
-        def self.generate_constraint_layout(json_data, children, depth, required_imports)
+        def self.generate_constraint_layout(json_data, children, depth, required_imports, parent_type = nil)
           code = indent("ConstraintLayout(", depth)
           
           # Build modifiers
@@ -75,7 +75,8 @@ module KjuiTools
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
-          
+          modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+
           code += Helpers::ModifierBuilder.format(modifiers, depth) if modifiers.any?
           code += "\n" + indent(") {", depth)
           

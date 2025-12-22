@@ -119,6 +119,7 @@ module KjuiTools
 
             modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
             modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+            modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
 
             if modifiers.any?
               code += "\n" + indent("modifier = Modifier", depth + 1)
