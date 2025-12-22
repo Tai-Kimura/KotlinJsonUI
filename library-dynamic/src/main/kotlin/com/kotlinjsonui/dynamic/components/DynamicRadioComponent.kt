@@ -484,22 +484,25 @@ class DynamicRadioComponent {
             }
 
             // Apply padding
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                modifier = when (paddings.size()) {
-                    1 -> modifier.padding(paddings[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-
-                    4 -> modifier.padding(
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp,
-                        start = paddings[3].asFloat.dp
-                    )
-
-                    else -> modifier
+            json.get("paddings")?.let { paddingsElement ->
+                if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
+                    modifier = modifier.padding(paddingsElement.asFloat.dp)
+                } else if (paddingsElement.isJsonArray) {
+                    val paddings = paddingsElement.asJsonArray
+                    modifier = when (paddings.size()) {
+                        1 -> modifier.padding(paddings[0].asFloat.dp)
+                        2 -> modifier.padding(
+                            vertical = paddings[0].asFloat.dp,
+                            horizontal = paddings[1].asFloat.dp
+                        )
+                        4 -> modifier.padding(
+                            top = paddings[0].asFloat.dp,
+                            end = paddings[1].asFloat.dp,
+                            bottom = paddings[2].asFloat.dp,
+                            start = paddings[3].asFloat.dp
+                        )
+                        else -> modifier
+                    }
                 }
             } ?: json.get("padding")?.asFloat?.let { padding ->
                 modifier = modifier.padding(padding.dp)

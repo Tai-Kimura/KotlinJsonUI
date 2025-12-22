@@ -264,38 +264,42 @@ class DynamicButtonComponent {
         }
 
         private fun buildContentPadding(json: JsonObject): PaddingValues {
-            // Check for paddings array
-            json.get("paddings")?.asJsonArray?.let { paddings ->
-                return when (paddings.size()) {
-                    1 -> PaddingValues(paddings[0].asFloat.dp)
-                    2 -> PaddingValues(
-                        vertical = paddings[0].asFloat.dp,
-                        horizontal = paddings[1].asFloat.dp
-                    )
-
-                    3 -> {
-                        // Three values: [top, horizontal, bottom]
-                        // PaddingValues doesn't have this constructor, so use 4-parameter version
-                        PaddingValues(
-                            start = paddings[1].asFloat.dp,
+            // Check for paddings (can be array or single number)
+            json.get("paddings")?.let { paddingsElement ->
+                // Single number
+                if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
+                    return PaddingValues(paddingsElement.asFloat.dp)
+                }
+                // Array
+                if (paddingsElement.isJsonArray) {
+                    val paddings = paddingsElement.asJsonArray
+                    return when (paddings.size()) {
+                        1 -> PaddingValues(paddings[0].asFloat.dp)
+                        2 -> PaddingValues(
+                            vertical = paddings[0].asFloat.dp,
+                            horizontal = paddings[1].asFloat.dp
+                        )
+                        3 -> {
+                            // Three values: [top, horizontal, bottom]
+                            PaddingValues(
+                                start = paddings[1].asFloat.dp,
+                                top = paddings[0].asFloat.dp,
+                                end = paddings[1].asFloat.dp,
+                                bottom = paddings[2].asFloat.dp
+                            )
+                        }
+                        4 -> PaddingValues(
+                            start = paddings[3].asFloat.dp,
                             top = paddings[0].asFloat.dp,
                             end = paddings[1].asFloat.dp,
                             bottom = paddings[2].asFloat.dp
                         )
+                        else -> ButtonDefaults.ContentPadding
                     }
-
-                    4 -> PaddingValues(
-                        start = paddings[3].asFloat.dp,
-                        top = paddings[0].asFloat.dp,
-                        end = paddings[1].asFloat.dp,
-                        bottom = paddings[2].asFloat.dp
-                    )
-
-                    else -> ButtonDefaults.ContentPadding
                 }
             }
 
-            // Check for single padding value
+            // Check for padding (single value or array)
             json.get("padding")?.let { paddingElement ->
                 when {
                     paddingElement.isJsonPrimitive && paddingElement.asJsonPrimitive.isNumber -> {
