@@ -17,11 +17,13 @@ module KjuiTools
 
           # Check if src is a binding expression
           if Helpers::ModifierBuilder.is_binding?(raw_src)
-            # @{mapTabIcon} -> viewModel.data.mapTabIcon (expects Painter type in Data)
+            # @{mapTabIcon} -> data.mapTabIcon (expects Painter type in Data)
             property_name = Helpers::ModifierBuilder.extract_binding_property(raw_src)
             camel_case_name = to_camel_case(property_name)
             # Binding case doesn't need painterResource import since Data provides Painter directly
-            code += "\n" + indent("painter = viewModel.data.#{camel_case_name},", depth + 1)
+            # Painter is optional, so use inline empty painter as default
+            required_imports&.add(:painter_class)
+            code += "\n" + indent("painter = data.#{camel_case_name} ?: object : Painter() { override val intrinsicSize get() = Size.Unspecified; override fun DrawScope.onDraw() {} },", depth + 1)
           else
             # Static resource name needs painterResource
             required_imports&.add(:painter_resource)

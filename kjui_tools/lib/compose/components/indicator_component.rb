@@ -61,20 +61,26 @@ module KjuiTools
             modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           end
           
-          code += Helpers::ModifierBuilder.format(modifiers, actual_depth) if modifiers.any?
-          
+          has_modifiers = modifiers.any?
+          code += Helpers::ModifierBuilder.format(modifiers, actual_depth) if has_modifiers
+
           # Color
           if json_data['color']
             color_resolved = Helpers::ResourceResolver.process_color(json_data['color'], required_imports)
-            code += ",\n" + indent("color = #{color_resolved}", actual_depth + 1)
+            if has_modifiers
+              code += ",\n" + indent("color = #{color_resolved}", actual_depth + 1)
+            else
+              code += "\n" + indent("color = #{color_resolved}", actual_depth + 1)
+              has_modifiers = true
+            end
           end
-          
+
           # Track color for linear progress
           if style == 'linear' && json_data['trackColor']
             trackcolor_resolved = Helpers::ResourceResolver.process_color(json_data['trackColor'], required_imports)
             code += ",\n" + indent("trackColor = #{trackcolor_resolved}", actual_depth + 1)
           end
-          
+
           # Stroke width for circular progress
           if style != 'linear' && json_data['strokeWidth']
             code += ",\n" + indent("strokeWidth = #{json_data['strokeWidth']}.dp", actual_depth + 1)

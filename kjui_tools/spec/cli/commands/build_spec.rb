@@ -112,4 +112,134 @@ RSpec.describe KjuiTools::CLI::Commands::Build do
       expect { build.run(['--no-validate']) }.not_to raise_error
     end
   end
+
+  describe '#validate_json (private)' do
+    let(:build) { described_class.new }
+    let(:validator) { KjuiTools::Core::AttributeValidator.new(:compose) }
+
+    context 'with nested components and orientation' do
+      it 'passes parent orientation to child components' do
+        # Parent with horizontal orientation
+        json_data = {
+          'type' => 'View',
+          'orientation' => 'horizontal',
+          'width' => 'matchParent',
+          'height' => 'wrapContent',
+          'child' => [
+            {
+              'type' => 'View',
+              'width' => 100,  # This should trigger warning: weight + width in horizontal
+              'height' => 'wrapContent',
+              'weight' => 1
+            }
+          ]
+        }
+
+        warnings = build.send(:validate_json, json_data, validator, 'test', nil)
+        # Should warn about weight + width conflict in horizontal layout
+        expect(warnings.any? { |w| w.include?("'weight' and 'width'") && w.include?('horizontal') }).to be true
+      end
+
+      it 'does not warn when weight is used correctly with parent orientation' do
+        # Parent with horizontal orientation, child with weight but no width
+        json_data = {
+          'type' => 'View',
+          'orientation' => 'horizontal',
+          'width' => 'matchParent',
+          'height' => 'wrapContent',
+          'child' => [
+            {
+              'type' => 'View',
+              'height' => 'wrapContent',
+              'weight' => 1
+            }
+          ]
+        }
+
+        warnings = build.send(:validate_json, json_data, validator, 'test', nil)
+        # Should not warn about weight conflict
+        expect(warnings.none? { |w| w.include?("'weight'") && w.include?('conflict') }).to be true
+      end
+
+      it 'warns when weight is used without parent orientation' do
+        # No orientation on parent (ZStack-like)
+        json_data = {
+          'type' => 'View',
+          'width' => 'matchParent',
+          'height' => 'wrapContent',
+          'child' => [
+            {
+              'type' => 'View',
+              'width' => 'wrapContent',
+              'height' => 'wrapContent',
+              'weight' => 1
+            }
+          ]
+        }
+
+        warnings = build.send(:validate_json, json_data, validator, 'test', nil)
+        # Should warn about weight in ZStack (no orientation)
+        expect(warnings.any? { |w| w.include?("'weight'") && w.include?('ZStack') }).to be true
+      end
+
+      it 'handles deeply nested components with alternating orientations' do
+        json_data = {
+          'type' => 'View',
+          'orientation' => 'vertical',
+          'width' => 'matchParent',
+          'height' => 'matchParent',
+          'child' => [
+            {
+              'type' => 'View',
+              'orientation' => 'horizontal',
+              'width' => 'matchParent',
+              'height' => 'wrapContent',
+              'child' => [
+                {
+                  'type' => 'Label',
+                  'text' => 'Test',
+                  'width' => 100,  # Should trigger warning
+                  'height' => 'wrapContent',
+                  'weight' => 1
+                }
+              ]
+            }
+          ]
+        }
+
+        warnings = build.send(:validate_json, json_data, validator, 'test', nil)
+        # Should warn about weight + width in horizontal (the inner horizontal View)
+        expect(warnings.any? { |w| w.include?("'weight' and 'width'") && w.include?('horizontal') }).to be true
+      end
+    end
+
+    context 'with data definition arrays (not components)' do
+      it 'skips data definition objects in child array' do
+        json_data = {
+          'type' => 'View',
+          'orientation' => 'horizontal',
+          'width' => 'matchParent',
+          'height' => 'wrapContent',
+          'child' => [
+            {
+              'data' => [
+                { 'name' => 'userName', 'class' => 'String' }
+              ]
+            },
+            {
+              'type' => 'Label',
+              'text' => 'Hello',
+              'width' => 'wrapContent',
+              'height' => 'wrapContent'
+            }
+          ]
+        }
+
+        # Should not raise error and should process the Label correctly
+        warnings = build.send(:validate_json, json_data, validator, 'test', nil)
+        # Data object has no type, so it's skipped or generates minimal warnings
+        expect(warnings.none? { |w| w.include?('ZStack') }).to be true
+      end
+    end
+  end
 end

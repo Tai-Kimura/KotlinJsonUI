@@ -267,6 +267,16 @@ module KjuiTools
         # Add companion object with update function
         content += "    companion object {\n"
         content += "        // Update properties from map\n"
+
+        # Add @Suppress("UNCHECKED_CAST") if there are callback properties
+        has_callback_properties = data_properties.any? { |prop|
+          class_type = prop['class'].to_s
+          class_type.include?('-> Unit') || class_type.include?('-> Void')
+        }
+        if has_callback_properties
+          content += "        @Suppress(\"UNCHECKED_CAST\")\n"
+        end
+
         content += "        fun fromMap(map: Map<String, Any>): #{view_name}Data {\n"
         content += "            return #{view_name}Data(\n"
         

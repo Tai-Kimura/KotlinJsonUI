@@ -83,7 +83,27 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
-          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+
+          # IMPORTANT: LazyVerticalGrid requires bounded width from parent
+          # LazyHorizontalGrid requires bounded height from parent
+          # If width/height is wrapContent, we MUST change it to avoid runtime crash
+          width_value = json_data['width']
+          height_value = json_data['height']
+
+          if !is_horizontal && width_value == 'wrapContent'
+            # LazyVerticalGrid with wrapContent width causes crash
+            # Use fillMaxWidth to take parent's width (works when parent has bounded width)
+            modified_json = json_data.merge('width' => 'matchParent')
+            modifiers.concat(Helpers::ModifierBuilder.build_size(modified_json))
+          elsif is_horizontal && height_value == 'wrapContent'
+            # LazyHorizontalGrid with wrapContent height causes crash
+            # Use fillMaxHeight to take parent's height
+            modified_json = json_data.merge('height' => 'matchParent')
+            modifiers.concat(Helpers::ModifierBuilder.build_size(modified_json))
+          else
+            modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
+          end
+
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
@@ -107,7 +127,7 @@ module KjuiTools
               # Items should be a Map<String, List<Any>> where key is cell class name
               # Get the items for this specific cell class
               code += "\n" + indent("// Collection with data source: #{property_name}[\"#{cell_class_name}\"]", depth + 1)
-              code += "\n" + indent("val cellItems = data.#{property_name}[\"#{cell_class_name}\"] ?: emptyList()", depth + 1)
+              code += "\n" + indent("val cellItems = data.#{property_name}?.get(\"#{cell_class_name}\") ?: emptyList()", depth + 1)
               code += "\n" + indent("items(cellItems.size) { index ->", depth + 1)
               code += "\n" + indent("val item = cellItems[index]", depth + 2)
             else
@@ -229,7 +249,7 @@ module KjuiTools
               if cell_view_name
                 
                 code += "\n" + indent("// Section #{index + 1}: #{cell_view_name} (#{section_columns} columns)", depth + 1)
-                code += "\n" + indent("data.#{property_name}.sections.getOrNull(#{index})?.let { section ->", depth + 1)
+                code += "\n" + indent("data.#{property_name}?.sections?.getOrNull(#{index})?.let { section ->", depth + 1)
                 
                 # Generate header if present
                 if section['header']
@@ -237,10 +257,10 @@ module KjuiTools
                   code += "\n" + indent("// Section #{index + 1} Header: #{header_view_name}", depth + 2)
                   code += "\n" + indent("section.header?.let { headerData ->", depth + 2)
                   code += "\n" + indent("item(span = { GridItemSpan(maxLineSpan) }) {", depth + 3)
-                  code += "\n" + indent("val data = #{header_view_name}Data.fromMap(headerData.data)", depth + 4)
+                  code += "\n" + indent("val headerViewModel: #{header_view_name}ViewModel = viewModel(key = \"#{header_view_name}_header_#{index}\")", depth + 4)
+                  code += "\n" + indent("headerViewModel.updateData(headerData.data)", depth + 4)
                   code += "\n" + indent("#{header_view_name}View(", depth + 4)
-                  code += "\n" + indent("data = data,", depth + 5)
-                  code += "\n" + indent("viewModel = viewModel(),", depth + 5)
+                  code += "\n" + indent("viewModel = headerViewModel,", depth + 5)
                   code += "\n" + indent("modifier = Modifier.fillMaxWidth()", depth + 5)
                   code += "\n" + indent(")", depth + 4)
                   code += "\n" + indent("}", depth + 3)
@@ -254,34 +274,14 @@ module KjuiTools
                 else
                   code += "\n" + indent("items(cellData.data.size) { cellIndex ->", depth + 3)
                 end
-                code += "\n" + indent("val item = cellData.data[cellIndex]", depth + 4)
-                
-                # Generate cell view instantiation
-                code += "\n" + indent("when (item) {", depth + 4)
-                code += "\n" + indent("is Map<*, *> -> {", depth + 5)
-                code += "\n" + indent("val data = #{cell_view_name}Data.fromMap(item as Map<String, Any>)", depth + 6)
-                code += "\n" + indent("#{cell_view_name}View(", depth + 6)
-                code += "\n" + indent("data = data,", depth + 7)
-                code += "\n" + indent("viewModel = viewModel(),", depth + 7)
-                code += "\n" + indent("modifier = Modifier", depth + 7)
-                
-                # Add modifiers
-                if json_data['cellWidth'] && json_data['layout'] == 'horizontal'
-                  code += "\n" + indent("    .width(#{json_data['cellWidth']}.dp)", depth + 7)
-                elsif json_data['cellHeight']
-                  code += "\n" + indent("    .height(#{json_data['cellHeight']}.dp)", depth + 7)
-                end
-                
-                if section_columns > 1 && json_data['layout'] != 'horizontal'
-                  code += "\n" + indent("    .fillMaxWidth()", depth + 7)
-                end
-                
-                code += "\n" + indent(")", depth + 6)
-                code += "\n" + indent("}", depth + 5)
-                code += "\n" + indent("else -> {", depth + 5)
-                code += "\n" + indent("// Unsupported item type", depth + 6)
-                code += "\n" + indent("}", depth + 5)
-                code += "\n" + indent("}", depth + 4)
+                code += "\n" + indent("val cellViewModel: #{cell_view_name}ViewModel = viewModel(key = \"#{cell_view_name}_cell_\\$cellIndex\")", depth + 4)
+                code += "\n" + indent("cellViewModel.updateData(cellData.data[cellIndex])", depth + 4)
+                code += "\n" + indent("#{cell_view_name}View(", depth + 4)
+                code += "\n" + indent("viewModel = cellViewModel,", depth + 5)
+
+                code += "\n" + indent("modifier = Modifier", depth + 5)
+
+                code += "\n" + indent(")", depth + 4)
                 code += "\n" + indent("}", depth + 3)
                 code += "\n" + indent("}", depth + 2)
                 
@@ -291,10 +291,10 @@ module KjuiTools
                   code += "\n" + indent("// Section #{index + 1} Footer: #{footer_view_name}", depth + 2)
                   code += "\n" + indent("section.footer?.let { footerData ->", depth + 2)
                   code += "\n" + indent("item(span = { GridItemSpan(maxLineSpan) }) {", depth + 3)
-                  code += "\n" + indent("val data = #{footer_view_name}Data.fromMap(footerData.data)", depth + 4)
+                  code += "\n" + indent("val footerViewModel: #{footer_view_name}ViewModel = viewModel(key = \"#{footer_view_name}_footer_#{index}\")", depth + 4)
+                  code += "\n" + indent("footerViewModel.updateData(footerData.data)", depth + 4)
                   code += "\n" + indent("#{footer_view_name}View(", depth + 4)
-                  code += "\n" + indent("data = data,", depth + 5)
-                  code += "\n" + indent("viewModel = viewModel(),", depth + 5)
+                  code += "\n" + indent("viewModel = footerViewModel,", depth + 5)
                   code += "\n" + indent("modifier = Modifier.fillMaxWidth()", depth + 5)
                   code += "\n" + indent(")", depth + 4)
                   code += "\n" + indent("}", depth + 3)

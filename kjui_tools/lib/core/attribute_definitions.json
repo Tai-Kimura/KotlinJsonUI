@@ -2839,6 +2839,14 @@
       "type": "boolean",
       "description": "Enable horizontal scroll"
     },
+    "orientation": {
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ],
+      "description": "Scroll orientation (horizontal or vertical)"
+    },
     "layout": {
       "type": "string",
       "enum": [

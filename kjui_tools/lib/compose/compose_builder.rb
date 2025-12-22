@@ -6,6 +6,7 @@ require 'set'
 require_relative '../core/config_manager'
 require_relative '../core/project_finder'
 require_relative '../core/logger'
+require_relative '../core/type_converter'
 require_relative 'style_loader'
 require_relative 'data_model_updater'
 require_relative 'helpers/import_manager'
@@ -104,6 +105,12 @@ module KjuiTools
 
           if File.exist?(viewmodel_file)
             update_viewmodel_file(viewmodel_file, json_data, pascal_case_name)
+          else
+            # Check for cell ViewModels in subdirectories (e.g., viewmodels/Home/WhiskyCardViewModel.kt)
+            cell_viewmodel_files = Dir.glob(File.join(viewmodel_dir, '**', "#{pascal_case_name}ViewModel.kt"))
+            cell_viewmodel_files.each do |cell_vm_file|
+              update_viewmodel_file(cell_vm_file, json_data, pascal_case_name)
+            end
           end
 
         rescue JSON::ParserError => e
@@ -630,6 +637,16 @@ module KjuiTools
 
       def generate_update_data_function(data_properties, view_name)
         code = "    // Auto-generated updateData function - updated by 'kjui build'\n"
+
+        # Add @Suppress("UNCHECKED_CAST") if there are callback properties
+        has_callback_properties = data_properties.any? { |prop|
+          class_type = prop['class'].to_s
+          class_type.include?('-> Unit') || class_type.include?('-> Void')
+        }
+        if has_callback_properties
+          code += "    @Suppress(\"UNCHECKED_CAST\")\n"
+        end
+
         code += "    fun updateData(updates: Map<String, Any>) {\n"
         code += "        _data.update { current ->\n"
         code += "            var updated = current\n"
@@ -657,6 +674,9 @@ module KjuiTools
       end
 
       def get_kotlin_cast(class_type, name)
+        # Convert Swift types to Kotlin types using TypeConverter
+        kotlin_type = Core::TypeConverter.to_kotlin_type(class_type, @mode)
+
         case class_type
         when 'String'
           "value as? String ?: updated.#{name}"
@@ -668,8 +688,10 @@ module KjuiTools
           "(value as? Number)?.toFloat() ?: updated.#{name}"
         when 'Bool', 'Boolean'
           "value as? Boolean ?: updated.#{name}"
+        when 'Image', 'Painter'
+          "value as? Painter ?: updated.#{name}"
         else
-          "value as? #{class_type} ?: updated.#{name}"
+          "value as? #{kotlin_type} ?: updated.#{name}"
         end
       end
 

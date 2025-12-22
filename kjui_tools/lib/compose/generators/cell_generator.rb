@@ -138,19 +138,23 @@ module KjuiTools
             package #{view_package}
 
             import androidx.compose.runtime.Composable
+            import androidx.compose.runtime.collectAsState
+            import androidx.compose.runtime.getValue
             import androidx.compose.ui.Modifier
-            import #{package_name}.data.#{class_name}Data
+            import #{package_name}.viewmodels.#{class_name}ViewModel
 
             @Composable
             fun #{class_name}View(
-                data: #{class_name}Data,
+                viewModel: #{class_name}ViewModel,
                 modifier: Modifier = Modifier
             ) {
                 // This is a cell view for use in Collection components
-                // The data parameter contains an 'item' property with the cell's data
+                // Data is observed from viewModel using collectAsState
+                val data by viewModel.data.collectAsState()
 
                 #{class_name}GeneratedView(
                     data = data,
+                    viewModel = viewModel,
                     modifier = modifier
                 )
             }
@@ -185,6 +189,7 @@ module KjuiTools
             import androidx.compose.ui.unit.dp
             import androidx.compose.ui.unit.sp
             import #{package_name}.data.#{class_name}Data
+            import #{package_name}.viewmodels.#{class_name}ViewModel
             import androidx.compose.material3.CircularProgressIndicator
             import androidx.compose.foundation.layout.Box
             import com.kotlinjsonui.core.DynamicModeManager
@@ -193,6 +198,7 @@ module KjuiTools
             @Composable
             fun #{class_name}GeneratedView(
                 data: #{class_name}Data,
+                viewModel: #{class_name}ViewModel,
                 modifier: Modifier = Modifier
             ) {
                 // Generated Compose code from #{json_name}.json
@@ -287,37 +293,48 @@ module KjuiTools
 
         def create_cell_viewmodel_template(file_path, class_name, json_name, subdirectory, package_name)
           return if File.exist?(file_path)
-          
+
           content = <<~KOTLIN
             package #{package_name}.viewmodels
-            
+
             import android.app.Application
             import androidx.lifecycle.AndroidViewModel
             import androidx.lifecycle.viewModelScope
             import androidx.compose.runtime.mutableStateOf
             import androidx.compose.runtime.getValue
             import androidx.compose.runtime.setValue
+            import kotlinx.coroutines.flow.MutableStateFlow
+            import kotlinx.coroutines.flow.StateFlow
+            import kotlinx.coroutines.flow.asStateFlow
+            import kotlinx.coroutines.flow.update
             import kotlinx.coroutines.launch
             import #{package_name}.data.#{class_name}Data
-            
+
             class #{class_name}ViewModel(application: Application) : AndroidViewModel(application) {
-                // Cell data - managed by parent Collection
-                var data by mutableStateOf(#{class_name}Data())
-                    private set
-                
-                // This is a cell view model
-                // Data is typically provided by the parent Collection component
-                
-                fun updateData(newData: #{class_name}Data) {
-                    data = newData
+                // JSON file reference for hot reload
+                val jsonFileName = "#{json_name}"
+
+                // Data model
+                private val _data = MutableStateFlow(#{class_name}Data())
+                val data: StateFlow<#{class_name}Data> = _data.asStateFlow()
+
+                // >>> GENERATED_CODE_START
+                // Auto-generated updateData function - updated by 'kjui build'
+                fun updateData(updates: Map<String, Any>) {
+                    _data.update { current ->
+                        var updated = current
+                        updates.forEach { (key, value) ->
+                            updated = when (key) {
+                                else -> updated
+                            }
+                        }
+                        updated
+                    }
                 }
-                
-                fun updateItem(item: Map<String, Any>) {
-                    data = data.copy(item = item)
-                }
+                // >>> GENERATED_CODE_END
             }
           KOTLIN
-          
+
           File.write(file_path, content)
         end
 

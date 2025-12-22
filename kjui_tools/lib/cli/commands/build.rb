@@ -87,25 +87,33 @@ module KjuiTools
         end
 
         # Validate a JSON component and all its children recursively
-        def validate_json(json_data, validator, file_name)
+        # @param json_data [Hash] The JSON component to validate
+        # @param validator [AttributeValidator] The validator instance
+        # @param file_name [String] The name of the file being validated
+        # @param parent_orientation [String, nil] The orientation of the parent component
+        def validate_json(json_data, validator, file_name, parent_orientation = nil)
           return [] unless json_data.is_a?(Hash)
 
-          warnings = validator.validate(json_data)
+          warnings = validator.validate(json_data, nil, parent_orientation)
+
+          # Get this component's orientation for passing to children
+          current_orientation = json_data['orientation']
 
           # Validate children recursively
           children = json_data['child'] || json_data['children'] || []
           children = [children] unless children.is_a?(Array)
 
           children.each do |child|
-            warnings.concat(validate_json(child, validator, file_name)) if child.is_a?(Hash)
+            warnings.concat(validate_json(child, validator, file_name, current_orientation)) if child.is_a?(Hash)
           end
 
           # Validate sections (for Collection/Table)
+          # Section headers, footers, and cells are top-level components, so parent_orientation is nil
           if json_data['sections'].is_a?(Array)
             json_data['sections'].each do |section|
               if section.is_a?(Hash)
                 ['header', 'footer', 'cell'].each do |key|
-                  warnings.concat(validate_json(section[key], validator, file_name)) if section[key].is_a?(Hash)
+                  warnings.concat(validate_json(section[key], validator, file_name, nil)) if section[key].is_a?(Hash)
                 end
               end
             end
