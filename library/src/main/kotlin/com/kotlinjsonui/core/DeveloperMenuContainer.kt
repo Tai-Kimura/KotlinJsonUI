@@ -1,6 +1,5 @@
 package com.kotlinjsonui.core
 
-import android.content.Context
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -10,29 +9,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.kotlinjsonui.BuildConfig
 import kotlinx.coroutines.launch
 
 /**
  * Interface for defining screens in the developer menu
  */
 interface DeveloperScreen {
-    val name: String
+    val displayName: String
 }
 
 /**
  * Container composable that wraps content with developer menu gestures
  *
- * Features (DEBUG builds only):
+ * Features (DEBUG builds only, when enabled = true):
  * - Double tap to show view selector
  * - Long press to toggle dynamic mode
  *
- * In RELEASE builds, just displays content without any developer features.
+ * In RELEASE builds or when enabled = false, just displays content without any developer features.
  *
  * @param currentScreen The currently selected screen
  * @param screens List of available screens
  * @param onScreenChange Callback when a screen is selected
  * @param modifier Modifier for the container
+ * @param enabled Whether developer menu is enabled. Forced to false in RELEASE builds.
  * @param content Content builder that receives the current screen
  */
 @Composable
@@ -41,10 +40,14 @@ fun <T : DeveloperScreen> DeveloperMenuContainer(
     screens: List<T>,
     onScreenChange: (T) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable (T) -> Unit
 ) {
-    // In RELEASE builds, just show content without any developer features
-    if (!BuildConfig.DEBUG) {
+    // Check if the host app is in debug mode (not the library's BuildConfig)
+    val isDynamicModeAvailable by DynamicModeManager.isDynamicModeAvailable.collectAsState()
+
+    // In RELEASE builds or when disabled, just show content without any developer features
+    if (!isDynamicModeAvailable || !enabled) {
         content(currentScreen)
         return
     }
@@ -162,7 +165,7 @@ fun <T : DeveloperScreen> DeveloperMenuDialog(
                             horizontalArrangement = Arrangement.Start
                         ) {
                             Text(
-                                text = if (screen == currentScreen) "● ${screen.name}" else "○ ${screen.name}",
+                                text = if (screen == currentScreen) "● ${screen.displayName}" else "○ ${screen.displayName}",
                                 color = if (screen == currentScreen)
                                     MaterialTheme.colorScheme.primary
                                 else
