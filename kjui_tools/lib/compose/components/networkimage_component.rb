@@ -44,20 +44,29 @@ module KjuiTools
           end
 
           # Build modifiers
+          # Compose Modifier order (top to bottom = outer to inner):
+          # 1. margins (outer spacing)
+          # 2. size
+          # 3. clip/background
+          # 4. padding (inner spacing)
           modifiers = []
 
-          # Handle size
+          # Margins first (outer spacing, before size)
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+
+          # Size
           if json_data['size']
-            # size is a single value for both width and height
             modifiers << ".size(#{json_data['size']}.dp)"
           else
             modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           end
 
-          # cornerRadius and border are handled by build_background to avoid duplication
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+          # clip/background (after size, before padding)
           modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, required_imports))
+
+          # Padding (inner spacing)
+          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+
           modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
 

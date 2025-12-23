@@ -274,10 +274,12 @@ module KjuiTools
         code = indent("#{container}(", depth)
 
         # Build modifiers
+        # Background must come BEFORE systemBarsPadding so it extends to screen edges
         modifiers = ["Modifier"]
         modifiers << ".fillMaxWidth()"
+        modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, @required_imports))
 
-        # Apply safe area padding based on edges
+        # Apply safe area padding based on edges (after background)
         if edges.include?('all')
           modifiers << ".systemBarsPadding()"
         else
@@ -293,7 +295,6 @@ module KjuiTools
 
         modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
         modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-        modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, @required_imports))
 
         code += Helpers::ModifierBuilder.format(modifiers, depth)
         code += "\n" + indent(") {", depth)

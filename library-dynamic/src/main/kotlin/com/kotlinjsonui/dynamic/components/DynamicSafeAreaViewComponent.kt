@@ -65,11 +65,16 @@ class DynamicSafeAreaViewComponent {
             val backgroundColor = json.get("background")?.asString?.let {
                 ColorParser.parseColorString(it, context)
             }
-            
+
             // Build base modifier
             var modifier = ModifierBuilder.buildSizeModifier(json, defaultFillMaxWidth = true)
-            
-            // Apply safe area padding based on edges
+
+            // Apply background color BEFORE systemBarsPadding so it extends to screen edges
+            backgroundColor?.let {
+                modifier = modifier.background(it)
+            }
+
+            // Apply safe area padding based on edges (after background)
             modifier = when {
                 edges.contains("all") -> {
                     modifier.systemBarsPadding()
@@ -88,20 +93,15 @@ class DynamicSafeAreaViewComponent {
                     modifier
                 }
             }
-            
+
             // Apply keyboard padding unless ignored
             if (!ignoreKeyboard) {
                 modifier = modifier.imePadding()
             }
-            
+
             // Apply additional margins and padding
             modifier = ModifierBuilder.applyMargins(modifier, json)
             modifier = ModifierBuilder.applyPadding(modifier, json)
-            
-            // Apply background color
-            backgroundColor?.let {
-                modifier = modifier.background(it)
-            }
             
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {

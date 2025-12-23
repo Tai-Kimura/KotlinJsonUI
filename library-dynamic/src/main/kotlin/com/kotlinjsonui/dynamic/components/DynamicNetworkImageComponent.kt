@@ -96,21 +96,24 @@ class DynamicNetworkImageComponent {
             }
             
             // Build modifier
+            // Compose Modifier order (top to bottom = outer to inner):
+            // 1. margins (outer spacing)
+            // 2. size
+            // 3. clip/border
+            // 4. padding (inner spacing)
             var modifier: Modifier = Modifier
-            
-            // Handle size attribute (single value for both width and height)
+
+            // 1. Margins first (outer spacing, before size)
+            modifier = ModifierBuilder.applyMargins(modifier, json)
+
+            // 2. Size
             json.get("size")?.asFloat?.let { size ->
                 modifier = modifier.size(size.dp)
             } ?: run {
-                // Use ModifierBuilder for width/height
                 modifier = ModifierBuilder.applySize(modifier, json)
             }
-            
-            // Apply margins and padding
-            modifier = ModifierBuilder.applyMargins(modifier, json)
-            modifier = ModifierBuilder.applyPadding(modifier, json)
-            
-            // Corner radius and shape
+
+            // 3. Corner radius and shape (after size)
             val cornerRadius = json.get("cornerRadius")?.asFloat
             val shape = if (cornerRadius != null && cornerRadius > 0) {
                 if (cornerRadius >= 500) CircleShape else RoundedCornerShape(cornerRadius.dp)
@@ -131,7 +134,10 @@ class DynamicNetworkImageComponent {
                     else -> modifier.border(borderWidth.dp, borderColor, shape ?: RectangleShape)
                 }
             }
-            
+
+            // 4. Padding (inner spacing, after clip)
+            modifier = ModifierBuilder.applyPadding(modifier, json)
+
             // Alpha/opacity
             json.get("alpha")?.asFloat?.let { alpha ->
                 modifier = modifier.alpha(alpha.coerceIn(0f, 1f))
