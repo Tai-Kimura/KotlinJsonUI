@@ -31,7 +31,8 @@ object ModifierBuilder {
 
     /**
      * Build a complete modifier from JSON with binding support
-     * Includes size, margins (with binding), padding, and opacity
+     * Includes margins, size, padding, and opacity
+     * Note: Order matters in Compose - margins must come BEFORE size
      */
     fun buildModifier(
         json: JsonObject,
@@ -40,11 +41,11 @@ object ModifierBuilder {
     ): Modifier {
         var modifier: Modifier = Modifier
 
+        // Apply margins (outer spacing) with binding support - MUST come before size
+        modifier = applyMargins(modifier, json, data)
+
         // Apply size modifiers
         modifier = applySize(modifier, json, defaultFillMaxWidth)
-
-        // Apply margins (outer spacing) with binding support
-        modifier = applyMargins(modifier, json, data)
 
         // Apply padding (inner spacing)
         modifier = applyPadding(modifier, json)

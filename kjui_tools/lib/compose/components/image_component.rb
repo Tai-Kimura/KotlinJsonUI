@@ -37,7 +37,10 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
-          
+
+          # Margins (outer spacing) - must be applied BEFORE size in Compose
+          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+
           # Size handling
           if json_data['width'] && json_data['height']
             modifiers << ".size(#{json_data['width']}.dp, #{json_data['height']}.dp)"
@@ -46,9 +49,9 @@ module KjuiTools
           else
             modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           end
-          
+
+          # Padding (inner spacing) - applied after size
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
 
