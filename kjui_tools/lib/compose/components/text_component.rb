@@ -101,12 +101,12 @@ module KjuiTools
           
           # Text shadow and line height
           style_parts = []
-          
+
           if json_data['textShadow']
             required_imports&.add(:shadow_style)
             style_parts << "shadow = Shadow(color = Color.Black, offset = Offset(2f, 2f), blurRadius = 4f)"
           end
-          
+
           if json_data['lineHeightMultiple']
             required_imports&.add(:text_style)
             # Line height multiplier - apply to font size
@@ -118,8 +118,12 @@ module KjuiTools
             base_size = json_data['fontSize'] ? json_data['fontSize'].to_f : 14.0
             line_height = base_size + json_data['lineSpacing'].to_f
             style_parts << "lineHeight = #{line_height}.sp"
+          elsif json_data['fontSize']
+            # Default: set lineHeight = fontSize to match iOS default behavior
+            required_imports&.add(:text_style)
+            style_parts << "lineHeight = #{json_data['fontSize']}.sp"
           end
-          
+
           if style_parts.any?
             required_imports&.add(:text_style)
             component_code += "\n" + indent("style = TextStyle(#{style_parts.join(', ')}),", depth + 1)

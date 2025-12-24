@@ -255,6 +255,17 @@ class DynamicTextComponent {
             // Build modifier
             val modifier = buildModifier(json)
 
+            // Calculate line height (default to fontSize to match iOS behavior)
+            val lineHeight = when {
+                json.get("lineHeightMultiple")?.asFloat != null -> {
+                    fontSize * json.get("lineHeightMultiple").asFloat
+                }
+                json.get("lineSpacing")?.asFloat != null -> {
+                    fontSize + json.get("lineSpacing").asFloat
+                }
+                else -> fontSize.toFloat() // Default: lineHeight = fontSize to match iOS
+            }
+
             Text(
                 text = text,
                 fontSize = fontSize.sp,
@@ -264,6 +275,7 @@ class DynamicTextComponent {
                 textDecoration = textDecoration,
                 maxLines = maxLines,
                 overflow = overflow,
+                style = TextStyle(lineHeight = lineHeight.sp),
                 modifier = modifier
             )
         }
@@ -305,10 +317,19 @@ class DynamicTextComponent {
             }
             fontWeight?.let { style = style.copy(fontWeight = it) }
 
-            // Line height
-            json.get("lineHeight")?.asFloat?.let { lineHeight ->
-                style = style.copy(lineHeight = lineHeight.sp)
+            // Line height (default to fontSize to match iOS behavior)
+            val fontSize = json.get("fontSize")?.asInt ?: 14
+            val lineHeight = when {
+                json.get("lineHeight")?.asFloat != null -> json.get("lineHeight").asFloat
+                json.get("lineHeightMultiple")?.asFloat != null -> {
+                    fontSize * json.get("lineHeightMultiple").asFloat
+                }
+                json.get("lineSpacing")?.asFloat != null -> {
+                    fontSize + json.get("lineSpacing").asFloat
+                }
+                else -> fontSize.toFloat() // Default: lineHeight = fontSize to match iOS
             }
+            style = style.copy(lineHeight = lineHeight.sp)
 
             // Letter spacing
             json.get("letterSpacing")?.asFloat?.let { letterSpacing ->

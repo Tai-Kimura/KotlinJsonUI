@@ -89,6 +89,32 @@ module KjuiTools
               code += "\n" + indent("horizontalArrangement = Arrangement.spacedBy(#{column_spacing}.dp),", depth + 1)
             end
           end
+
+          # Parse gravity for item alignment (Box contentAlignment uses Alignment, not Alignment.Vertical/Horizontal)
+          # Horizontal scroll: default is TopStart, can be Center/BottomStart
+          # Vertical scroll: default is TopStart, can be TopCenter/TopEnd
+          gravity = json_data['gravity']
+          if is_horizontal
+            # Horizontal scroll - vertical alignment
+            gravity_alignment = case gravity.to_s.downcase
+            when 'center', 'centervertical'
+              'Alignment.CenterStart'
+            when 'bottom'
+              'Alignment.BottomStart'
+            else # 'top' is default for horizontal scroll
+              'Alignment.TopStart'
+            end
+          else
+            # Vertical scroll - horizontal alignment
+            gravity_alignment = case gravity.to_s.downcase
+            when 'center', 'centerhorizontal'
+              'Alignment.TopCenter'
+            when 'right'
+              'Alignment.TopEnd'
+            else # 'left' is default for vertical scroll
+              'Alignment.TopStart'
+            end
+          end
           
           # Build modifiers
           modifiers = []
@@ -125,7 +151,7 @@ module KjuiTools
           # Check if sections are defined
           if sections.any?
             # Generate section-based collection
-            code += generate_sections_content(json_data, sections, columns, depth, required_imports)
+            code += generate_sections_content(json_data, sections, columns, depth, required_imports, gravity_alignment)
           elsif cell_class_name
             # Check if items property is specified (e.g., "@{items}")
             items_property = json_data['items']
@@ -216,7 +242,7 @@ module KjuiTools
           code
         end
         
-        def self.generate_sections_content(json_data, sections, grid_columns, depth, required_imports)
+        def self.generate_sections_content(json_data, sections, grid_columns, depth, required_imports, gravity_alignment)
           code = ""
           items_property = json_data['items']
           default_columns = json_data['columns'] || 1
@@ -284,14 +310,18 @@ module KjuiTools
                 else
                   code += "\n" + indent("items(cellData.data.size) { cellIndex ->", depth + 3)
                 end
-                code += "\n" + indent("val cellViewModel: #{cell_view_name}ViewModel = viewModel(key = \"#{cell_view_name}_cell_\$cellIndex\")", depth + 4)
-                code += "\n" + indent("cellViewModel.updateData(cellData.data[cellIndex])", depth + 4)
-                code += "\n" + indent("#{cell_view_name}View(", depth + 4)
-                code += "\n" + indent("viewModel = cellViewModel,", depth + 5)
-
-                code += "\n" + indent("modifier = Modifier", depth + 5)
-
-                code += "\n" + indent(")", depth + 4)
+                # Wrap cell in Box for alignment
+                code += "\n" + indent("Box(", depth + 4)
+                code += "\n" + indent("modifier = Modifier.fillMaxSize(),", depth + 5)
+                code += "\n" + indent("contentAlignment = #{gravity_alignment}", depth + 5)
+                code += "\n" + indent(") {", depth + 4)
+                code += "\n" + indent("val cellViewModel: #{cell_view_name}ViewModel = viewModel(key = \"#{cell_view_name}_cell_\$cellIndex\")", depth + 5)
+                code += "\n" + indent("cellViewModel.updateData(cellData.data[cellIndex])", depth + 5)
+                code += "\n" + indent("#{cell_view_name}View(", depth + 5)
+                code += "\n" + indent("viewModel = cellViewModel,", depth + 6)
+                code += "\n" + indent("modifier = Modifier", depth + 6)
+                code += "\n" + indent(")", depth + 5)
+                code += "\n" + indent("}", depth + 4)
                 code += "\n" + indent("}", depth + 3)
                 code += "\n" + indent("}", depth + 2)
                 

@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -150,7 +151,26 @@ class DynamicCollectionComponent {
             
             // Get cell template (fallback if no cellClasses)
             val cellTemplate = json.get("cell")?.asJsonObject
-            
+
+            // Parse gravity for item alignment
+            // Box.contentAlignment uses Alignment (compound), not Alignment.Vertical/Horizontal
+            val gravity = json.get("gravity")?.asString?.lowercase()
+            val gravityAlignment = if (isHorizontal) {
+                // Horizontal scroll: vertical alignment (TopStart, CenterStart, BottomStart)
+                when (gravity) {
+                    "center", "centervertical" -> Alignment.CenterStart
+                    "bottom" -> Alignment.BottomStart
+                    else -> Alignment.TopStart // 'top' is default for horizontal scroll
+                }
+            } else {
+                // Vertical scroll: horizontal alignment (TopStart, TopCenter, TopEnd)
+                when (gravity) {
+                    "center", "centerhorizontal" -> Alignment.TopCenter
+                    "right" -> Alignment.TopEnd
+                    else -> Alignment.TopStart // 'left' is default for vertical scroll
+                }
+            }
+
             // Create the appropriate grid based on layout
             if (isHorizontal) {
                 LazyHorizontalGrid(
@@ -170,7 +190,8 @@ class DynamicCollectionComponent {
                         cellHeight = cellHeight,
                         isHorizontal = true,
                         gridColumns = gridColumns,
-                        defaultColumns = defaultColumns
+                        defaultColumns = defaultColumns,
+                        gravityAlignment = gravityAlignment
                     )
                 }
             } else {
@@ -192,7 +213,8 @@ class DynamicCollectionComponent {
                         cellHeight = cellHeight,
                         isHorizontal = false,
                         gridColumns = gridColumns,
-                        defaultColumns = defaultColumns
+                        defaultColumns = defaultColumns,
+                        gravityAlignment = gravityAlignment
                     )
                 }
             }
@@ -208,7 +230,8 @@ class DynamicCollectionComponent {
             cellHeight: androidx.compose.ui.unit.Dp?,
             isHorizontal: Boolean,
             gridColumns: Int,
-            defaultColumns: Int
+            defaultColumns: Int,
+            gravityAlignment: Alignment
         ) {
             when {
                 // If we have sections and data source
@@ -244,12 +267,13 @@ class DynamicCollectionComponent {
                                     val item = cellData.data[cellIndex]
                                     Box(
                                         modifier = Modifier
-                                            .fillMaxWidth()
+                                            .fillMaxSize()
                                             .then(
                                                 if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
                                                 else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
                                                 else Modifier
-                                            )
+                                            ),
+                                        contentAlignment = gravityAlignment
                                     ) {
                                         renderCellView(cellViewName ?: cellClassName, item, cellIndex, data)
                                     }
@@ -273,11 +297,14 @@ class DynamicCollectionComponent {
                     // Use a default list of 10 items for template
                     items(10) { index ->
                         Box(
-                            modifier = Modifier.then(
-                                if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
-                                else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
-                                else Modifier
-                            )
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
+                                    else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
+                                    else Modifier
+                                ),
+                            contentAlignment = gravityAlignment
                         ) {
                             val cellData = data.toMutableMap().apply {
                                 put("index", index)
@@ -303,7 +330,7 @@ class DynamicCollectionComponent {
                         ) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
-                                contentAlignment = androidx.compose.ui.Alignment.Center
+                                contentAlignment = gravityAlignment
                             ) {
                                 Text("Item $index")
                             }
