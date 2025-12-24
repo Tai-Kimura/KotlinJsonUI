@@ -400,12 +400,23 @@ module KjuiTools
       def format_default_value(value, json_class)
         case json_class
         when 'String'
-          # Handle '' as empty string (common shorthand)
-          if value == "''"
+          # Handle string default values (matching SwiftUI implementation)
+          value_str = value.to_s
+          if value_str == "''"
+            # Handle '' as empty string (common shorthand)
             '""'
+          elsif value_str.start_with?("'") && value_str.end_with?("'") && value_str.length > 1
+            # Handle single-quoted strings like "'gone'" -> "gone"
+            inner_content = value_str[1...-1]
+            escaped_content = inner_content.gsub('\\', '\\\\').gsub('"', '\\"')
+            "\"#{escaped_content}\""
+          elsif !value_str.start_with?('"') || !value_str.end_with?('"')
+            # Handle unquoted strings like "gone" -> "gone"
+            escaped_content = value_str.gsub('\\', '\\\\').gsub('"', '\\"')
+            "\"#{escaped_content}\""
           else
-            # For String class, add quotes
-            "\"#{value}\""
+            # Already properly quoted
+            value_str
           end
         when 'Bool', 'Boolean'
           # Convert to boolean
