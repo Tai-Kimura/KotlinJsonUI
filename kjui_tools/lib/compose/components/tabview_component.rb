@@ -8,95 +8,163 @@ module KjuiTools
     module Components
       class TabviewComponent
         def self.generate(json_data, depth, required_imports = nil, parent_type = nil)
-          # TabView maps to TabRow with Tab items in Compose
-          required_imports&.add(:tab_row)
+          # TabView maps to NavigationBar with NavigationBarItem in Compose (Material 3)
+          required_imports&.add(:navigation_bar)
           required_imports&.add(:remember_state)
-          
-          # Generate state variable for selected tab
-          state_var = "selectedTab_#{Time.now.to_i}_#{rand(1000)}"
-          
-          code = indent("// Tab view with content", depth)
-          code += "\n" + indent("var #{state_var} by remember { mutableStateOf(0) }", depth)
-          code += "\n\n" + indent("Column(", depth)
-          
-          # Column modifiers
-          modifiers = []
-          modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
+          required_imports&.add(:scaffold)
 
-          code += Helpers::ModifierBuilder.format(modifiers, depth)
-          code += "\n" + indent(") {", depth)
-          
-          # TabRow
-          code += "\n" + indent("TabRow(", depth + 1)
-          code += "\n" + indent("selectedTabIndex = #{state_var},", depth + 2)
-          
-          # TabRow modifiers
-          tab_modifiers = []
-          if json_data['backgroundColor']
-            tab_modifiers << ".background(Helpers::ResourceResolver.process_color('#{json_data['backgroundColor']}', required_imports))"
+          tabs = json_data['tabs'] || []
+
+          # Generate state variable for selected tab
+          state_var = "selectedTab"
+          selected_binding = json_data['selectedIndex']
+
+          code = indent("// TabView with NavigationBar", depth)
+
+          # If there's a binding, use it; otherwise create local state
+          if selected_binding && selected_binding.is_a?(String) && selected_binding.start_with?('@{')
+            binding_prop = selected_binding.gsub(/@\{|\}/, '')
+            state_expr = "data.#{binding_prop}"
+            setter_expr = "viewModel.updateData(mapOf(\"#{binding_prop}\" to it))"
+          else
+            code += "\n" + indent("var #{state_var} by remember { mutableStateOf(0) }", depth)
+            state_expr = state_var
+            setter_expr = "#{state_var} = it"
           end
-          
-          if tab_modifiers.any?
-            code += "\n" + indent("modifier = Modifier", depth + 2)
-            tab_modifiers.each do |mod|
-              code += "\n" + indent(mod, depth + 3)
+
+          code += "\n\n" + indent("Scaffold(", depth)
+          code += "\n" + indent("bottomBar = {", depth + 1)
+
+          # NavigationBar
+          code += "\n" + indent("NavigationBar(", depth + 2)
+
+          # Tab bar background color
+          if json_data['tabBarBackground']
+            bg_color = Helpers::ResourceResolver.process_color(json_data['tabBarBackground'], required_imports)
+            code += "\n" + indent("containerColor = #{bg_color},", depth + 3)
+          end
+
+          code += "\n" + indent(") {", depth + 2)
+
+          # Generate NavigationBarItem for each tab
+          tabs.each_with_index do |tab, index|
+            title = tab['title'] || "Tab #{index + 1}"
+            icon = tab['icon'] || 'circle'
+            selected_icon = tab['selectedIcon'] || icon
+
+            code += "\n" + indent("NavigationBarItem(", depth + 3)
+            code += "\n" + indent("selected = #{state_expr} == #{index},", depth + 4)
+            code += "\n" + indent("onClick = { #{setter_expr.gsub('it', index.to_s)} },", depth + 4)
+
+            # Icon with selected/unselected state
+            code += "\n" + indent("icon = {", depth + 4)
+            code += "\n" + indent("Icon(", depth + 5)
+            code += "\n" + indent("imageVector = if (#{state_expr} == #{index}) Icons.Filled.#{to_icon_name(selected_icon)} else Icons.Outlined.#{to_icon_name(icon)},", depth + 6)
+            code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
+            code += "\n" + indent(")", depth + 5)
+            code += "\n" + indent("},", depth + 4)
+
+            # Label (show/hide based on showLabels)
+            show_labels = json_data['showLabels'] != false
+            if show_labels
+              code += "\n" + indent("label = { Text(\"#{title}\") },", depth + 4)
             end
-            code += ","
-          end
-          
-          code += "\n" + indent(") {", depth + 1)
-          
-          # Generate tabs from items
-          if json_data['items'] && json_data['items'].is_a?(Array)
-            json_data['items'].each_with_index do |item, index|
-              title = item['title'] || "Tab #{index + 1}"
-              code += "\n" + indent("Tab(", depth + 2)
-              code += "\n" + indent("selected = #{state_var} == #{index},", depth + 3)
-              code += "\n" + indent("onClick = { #{state_var} = #{index} },", depth + 3)
-              code += "\n" + indent("text = { Text(\"#{title}\") }", depth + 3)
-              code += "\n" + indent(")", depth + 2)
+
+            # Tint colors
+            if json_data['tintColor'] || json_data['unselectedColor']
+              tint = json_data['tintColor'] ? Helpers::ResourceResolver.process_color(json_data['tintColor'], required_imports) : 'MaterialTheme.colorScheme.primary'
+              unselected = json_data['unselectedColor'] ? Helpers::ResourceResolver.process_color(json_data['unselectedColor'], required_imports) : 'MaterialTheme.colorScheme.onSurfaceVariant'
+              code += "\n" + indent("colors = NavigationBarItemDefaults.colors(", depth + 4)
+              code += "\n" + indent("selectedIconColor = #{tint},", depth + 5)
+              code += "\n" + indent("selectedTextColor = #{tint},", depth + 5)
+              code += "\n" + indent("unselectedIconColor = #{unselected},", depth + 5)
+              code += "\n" + indent("unselectedTextColor = #{unselected}", depth + 5)
+              code += "\n" + indent(")", depth + 4)
             end
-          end
-          
-          code += "\n" + indent("}", depth + 1)
-          
-          # Tab content using when expression
-          if json_data['items'] && json_data['items'].is_a?(Array)
-            code += "\n\n" + indent("// Tab content", depth + 1)
-            code += "\n" + indent("when (#{state_var}) {", depth + 1)
-            
-            json_data['items'].each_with_index do |item, index|
-              code += "\n" + indent("#{index} -> {", depth + 2)
-              
-              # Content for each tab
-              if item['child']
-                code += "\n" + indent("// Content for tab #{index}", depth + 3)
-                # Note: Actual child content would be generated by the parent
-              else
-                code += "\n" + indent("Text(\"Content for #{item['title'] || "Tab #{index + 1}"}\")", depth + 3)
+
+            # Badge
+            if tab['badge']
+              badge_value = tab['badge']
+              if badge_value.is_a?(String) && badge_value.start_with?('@{')
+                binding_prop = badge_value.gsub(/@\{|\}/, '')
+                code = code.gsub(/icon = \{/, "icon = {\n#{indent('BadgedBox(badge = { Badge { Text(\"${data.' + binding_prop + '}\") } }) {', depth + 5)}")
+              elsif badge_value.is_a?(Integer) && badge_value > 0
+                code = code.gsub(/icon = \{/, "icon = {\n#{indent("BadgedBox(badge = { Badge { Text(\"#{badge_value}\") } }) {", depth + 5)}")
               end
-              
-              code += "\n" + indent("}", depth + 2)
             end
-            
+
+            code += "\n" + indent(")", depth + 3)
+          end
+
+          code += "\n" + indent("}", depth + 2)
+          code += "\n" + indent("}", depth + 1)
+          code += "\n" + indent(") { innerPadding ->", depth)
+
+          # Tab content using when expression
+          if tabs.any?
+            code += "\n" + indent("Box(modifier = Modifier.padding(innerPadding)) {", depth + 1)
+            code += "\n" + indent("when (#{state_expr}) {", depth + 2)
+
+            tabs.each_with_index do |tab, index|
+              code += "\n" + indent("#{index} -> {", depth + 3)
+
+              # Content for each tab - reference view by name
+              view_name = tab['view']
+              if view_name
+                # Convert snake_case to PascalCase for Kotlin class name
+                pascal_name = view_name.split('_').map(&:capitalize).join
+                code += "\n" + indent("#{pascal_name}View()", depth + 4)
+              else
+                code += "\n" + indent("Text(\"#{tab['title'] || "Tab #{index + 1}"} content\")", depth + 4)
+              end
+
+              code += "\n" + indent("}", depth + 3)
+            end
+
+            code += "\n" + indent("}", depth + 2)
             code += "\n" + indent("}", depth + 1)
           end
-          
+
           code += "\n" + indent("}", depth)
           code
         end
-        
+
         private
-        
+
         def self.indent(text, level)
           return text if level == 0
           spaces = '    ' * level
-          text.split("\n").map { |line| 
-            line.empty? ? line : spaces + line 
+          text.split("\n").map { |line|
+            line.empty? ? line : spaces + line
           }.join("\n")
+        end
+
+        # Convert icon name to Material Icons format
+        # e.g., "house" -> "Home", "person" -> "Person"
+        def self.to_icon_name(icon)
+          # Map common SF Symbol names to Material Icons
+          icon_map = {
+            'house' => 'Home',
+            'house.fill' => 'Home',
+            'person' => 'Person',
+            'person.fill' => 'Person',
+            'gearshape' => 'Settings',
+            'gearshape.fill' => 'Settings',
+            'gear' => 'Settings',
+            'magnifyingglass' => 'Search',
+            'heart' => 'Favorite',
+            'heart.fill' => 'Favorite',
+            'star' => 'Star',
+            'star.fill' => 'Star',
+            'bell' => 'Notifications',
+            'bell.fill' => 'Notifications',
+            'cart' => 'ShoppingCart',
+            'cart.fill' => 'ShoppingCart',
+            'list.bullet' => 'List',
+            'square.grid.2x2' => 'GridView',
+            'circle' => 'Circle'
+          }
+          icon_map[icon] || icon.split('.').first.capitalize
         end
       end
     end

@@ -291,6 +291,9 @@ module KjuiTools
       # Infer type from variable name and attribute context
       # Returns Kotlin type format
       def infer_type(var_name, attribute_name, component_type = nil)
+        # onTabChange -> ((Int) -> Unit)? (Kotlin callback with Int parameter)
+        return '((Int) -> Unit)?' if var_name == 'onTabChange' || attribute_name == 'onTabChange'
+
         # onClick, onXxx -> (() -> Unit)? (Kotlin callback type)
         return '(() -> Unit)?' if var_name.start_with?('on') && var_name[2]&.match?(/[A-Z]/)
 
@@ -311,6 +314,8 @@ module KjuiTools
 
         # Based on attribute name
         case attribute_name
+        when 'onTabChange'
+          '((Int) -> Unit)?'
         when 'onClick', 'onValueChanged', 'onValueChange', 'onTap'
           '(() -> Unit)?'
         when 'items'

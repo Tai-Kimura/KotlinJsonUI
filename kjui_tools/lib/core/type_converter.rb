@@ -104,64 +104,169 @@ module KjuiTools
         def to_kotlin_type(json_type, mode = nil)
           return json_type if json_type.nil? || json_type.to_s.empty?
 
-          type_str = json_type.to_s
+          type_str = json_type.to_s.strip
+
+          # Check for optional type suffix
+          is_optional = type_str.end_with?('?')
+          base_type = is_optional ? type_str[0...-1] : type_str
 
           # Check for Array(ElementType) syntax -> List<ElementType>
-          if (match = type_str.match(/^Array\((.+)\)$/))
+          if (match = base_type.match(/^Array\((.+)\)$/))
             element_type = to_kotlin_type(match[1].strip, mode)
-            return "List<#{element_type}>"
+            result = "List<#{element_type}>"
+            return is_optional ? "#{result}?" : result
           end
 
           # Check for Dictionary(KeyType,ValueType) syntax -> Map<KeyType, ValueType>
-          if (match = type_str.match(/^Dictionary\((.+),\s*(.+)\)$/))
+          if (match = base_type.match(/^Dictionary\((.+),\s*(.+)\)$/))
             key_type = to_kotlin_type(match[1].strip, mode)
             value_type = to_kotlin_type(match[2].strip, mode)
-            return "Map<#{key_type}, #{value_type}>"
+            result = "Map<#{key_type}, #{value_type}>"
+            return is_optional ? "#{result}?" : result
           end
 
-          # Check for Swift optional callback syntax (() -> Void)? -> (() -> Unit)?
-          if (match = type_str.match(/^\(\((.*)?\)\s*->\s*Void\)\?$/))
-            params = match[1]&.strip
-            if params.nil? || params.empty?
-              return "(() -> Unit)?"
-            else
-              # Convert parameter types
-              param_types = params.split(',').map { |p| to_kotlin_type(p.strip, mode) }.join(', ')
-              return "((#{param_types}) -> Unit)?"
-            end
-          end
-
-          # Check for Swift callback syntax (() -> Void) -> () -> Unit (with outer parens)
-          if (match = type_str.match(/^\(\((.*)?\)\s*->\s*Void\)$/))
-            params = match[1]&.strip
-            if params.nil? || params.empty?
-              return "() -> Unit"
-            else
-              # Convert parameter types
-              param_types = params.split(',').map { |p| to_kotlin_type(p.strip, mode) }.join(', ')
-              return "(#{param_types}) -> Unit"
-            end
-          end
-
-          # Check for Swift simple callback syntax () -> Void -> (() -> Unit)? (without outer parens, treated as optional)
-          if (match = type_str.match(/^\((.*)?\)\s*->\s*Void$/))
-            params = match[1]&.strip
-            if params.nil? || params.empty?
-              return "(() -> Unit)?"
-            else
-              # Convert parameter types
-              param_types = params.split(',').map { |p| to_kotlin_type(p.strip, mode) }.join(', ')
-              return "((#{param_types}) -> Unit)?"
-            end
-          end
+          # Check for function type: (params) -> ReturnType or ((params) -> ReturnType)?
+          func_result = parse_function_type(type_str, mode)
+          return func_result if func_result
 
           # Check mode-specific mapping first
-          if mode && MODE_TYPE_MAPPING.key?(type_str)
-            return MODE_TYPE_MAPPING[type_str][mode] || MODE_TYPE_MAPPING[type_str]['compose']
+          if mode && MODE_TYPE_MAPPING.key?(base_type)
+            result = MODE_TYPE_MAPPING[base_type][mode] || MODE_TYPE_MAPPING[base_type]['compose']
+            return is_optional ? "#{result}?" : result
           end
 
           # Then check common mapping, or return as-is if not found
-          TYPE_MAPPING[type_str] || type_str
+          result = TYPE_MAPPING[base_type] || base_type
+          is_optional ? "#{result}?" : result
+        end
+
+        # Parse a function type string and convert to Kotlin
+        # Handles: (Int) -> Void, ((Image) -> Color), (() -> Unit)?, etc.
+        # All function types are converted to optional by default (for callbacks)
+        # @param type_str [String] the type string to parse
+        # @param mode [String] the mode (compose, xml)
+        # @return [String, nil] the Kotlin function type or nil if not a function type
+        def parse_function_type(type_str, mode = nil)
+          working_str = type_str.strip
+
+          # Check for optional wrapper: ((...) -> ...)? or (() -> ...)?
+          if working_str.end_with?(')?')
+            if working_str.start_with?('(')
+              inner = extract_balanced_content(working_str[1...-2], '(', ')')
+              if inner && inner == working_str[1...-2]
+                working_str = working_str[1...-2]
+              end
+            end
+          # Check for grouping parentheses: ((params) -> ReturnType) without ?
+          elsif working_str.start_with?('(') && working_str.end_with?(')')
+            inner = working_str[1...-1]
+            if find_arrow_position(inner)
+              working_str = inner
+            end
+          end
+
+          # Now try to parse as function: (params) -> ReturnType
+          arrow_pos = find_arrow_position(working_str)
+          return nil unless arrow_pos
+
+          params_part = working_str[0...arrow_pos].strip
+          return_part = working_str[(arrow_pos + 2)..].strip
+
+          # params_part should be (...)
+          return nil unless params_part.start_with?('(') && params_part.end_with?(')')
+
+          params_inner = params_part[1...-1].strip
+
+          # Parse parameters (handling nested types)
+          converted_params = parse_parameter_list_no_optional(params_inner, mode)
+
+          # Convert return type (Void -> Unit)
+          converted_return = convert_single_type(return_part, mode)
+
+          # Build result - all function types become optional (for callbacks)
+          "((#{converted_params}) -> #{converted_return})?"
+        end
+
+        # Convert a single type without making it optional
+        def convert_single_type(type_str, mode = nil)
+          return type_str if type_str.nil? || type_str.to_s.empty?
+
+          str = type_str.to_s.strip
+          is_optional = str.end_with?('?')
+          base = is_optional ? str[0...-1] : str
+
+          # Check mode-specific mapping first
+          if mode && MODE_TYPE_MAPPING.key?(base)
+            result = MODE_TYPE_MAPPING[base][mode] || MODE_TYPE_MAPPING[base]['compose']
+            return is_optional ? "#{result}?" : result
+          end
+
+          result = TYPE_MAPPING[base] || base
+          is_optional ? "#{result}?" : result
+        end
+
+        # Parse parameter list without making types optional
+        def parse_parameter_list_no_optional(params_str, mode = nil)
+          return '' if params_str.nil? || params_str.empty?
+
+          params = split_parameters(params_str)
+          params.map { |p| convert_single_type(p.strip, mode) }.join(', ')
+        end
+
+        # Find the position of the arrow (->) that separates params from return type
+        def find_arrow_position(str)
+          depth = 0
+          i = 0
+          while i < str.length
+            char = str[i]
+            if char == '('
+              depth += 1
+            elsif char == ')'
+              depth -= 1
+            elsif char == '-' && str[i + 1] == '>' && depth == 0
+              return i
+            end
+            i += 1
+          end
+          nil
+        end
+
+        # Split parameters by comma, respecting nested parentheses and generics
+        def split_parameters(str)
+          return [] if str.nil? || str.empty?
+
+          params = []
+          current = ''
+          depth = 0
+
+          str.each_char do |char|
+            if char == '(' || char == '<' || char == '['
+              depth += 1
+              current += char
+            elsif char == ')' || char == '>' || char == ']'
+              depth -= 1
+              current += char
+            elsif char == ',' && depth == 0
+              params << current.strip unless current.strip.empty?
+              current = ''
+            else
+              current += char
+            end
+          end
+
+          params << current.strip unless current.strip.empty?
+          params
+        end
+
+        # Extract balanced content
+        def extract_balanced_content(str, open_char, close_char)
+          depth = 0
+          str.each_char do |char|
+            depth += 1 if char == open_char
+            depth -= 1 if char == close_char
+            return nil if depth < 0
+          end
+          depth == 0 ? str : nil
         end
 
         # Check if the type is a primitive type

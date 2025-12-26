@@ -486,6 +486,18 @@ RSpec.describe KjuiTools::Core::BindingValidator do
         expect(warnings.first).to include('"class": "(() -> Unit)?"')
       end
 
+      it 'suggests ((Int) -> Unit)? for onTabChange variable' do
+        json_data = { 'type' => 'TabView', 'onTabChange' => '@{handleTabChange}' }
+        warnings = validator.validate(json_data)
+        expect(warnings.first).to include('"class": "((Int) -> Unit)?"')
+      end
+
+      it 'suggests ((Int) -> Unit)? for onTabChange attribute' do
+        json_data = { 'type' => 'TabView', 'onTabChange' => '@{tabHandler}' }
+        warnings = validator.validate(json_data)
+        expect(warnings.first).to include('"class": "((Int) -> Unit)?"')
+      end
+
       it 'suggests List<Any> for xxxItems variables' do
         json_data = { 'type' => 'View', 'items' => '@{menuItems}' }
         warnings = validator.validate(json_data)

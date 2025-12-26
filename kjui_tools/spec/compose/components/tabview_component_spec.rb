@@ -13,38 +13,50 @@ RSpec.describe KjuiTools::Compose::Components::TabviewComponent do
   end
 
   describe '.generate' do
-    it 'generates TabRow component' do
+    it 'generates NavigationBar with tabs array' do
       json_data = {
         'type' => 'TabView',
-        'items' => [
-          { 'title' => 'Tab 1' },
-          { 'title' => 'Tab 2' }
+        'tabs' => [
+          { 'title' => 'Home', 'icon' => 'house', 'view' => 'home' },
+          { 'title' => 'Profile', 'icon' => 'person', 'view' => 'profile' }
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('TabRow(')
-      expect(result).to include('Tab(')
-      expect(required_imports).to include(:tab_row)
-      expect(required_imports).to include(:remember_state)
+      expect(result).to include('NavigationBar(')
+      expect(result).to include('NavigationBarItem(')
+      expect(result).to include('HomeView()')
+      expect(result).to include('ProfileView()')
+      expect(required_imports).to include(:navigation_bar)
+      expect(required_imports).to include(:scaffold)
     end
 
     it 'generates state variable for selected tab' do
       json_data = {
         'type' => 'TabView',
-        'items' => [{ 'title' => 'Tab' }]
+        'tabs' => [{ 'title' => 'Tab', 'icon' => 'circle' }]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('var selectedTab_')
-      expect(result).to include('by remember { mutableStateOf(0) }')
+      expect(result).to include('var selectedTab by remember { mutableStateOf(0) }')
     end
 
-    it 'generates tabs for each item' do
+    it 'handles selectedIndex binding' do
       json_data = {
         'type' => 'TabView',
-        'items' => [
-          { 'title' => 'First' },
-          { 'title' => 'Second' },
-          { 'title' => 'Third' }
+        'selectedIndex' => '@{currentTab}',
+        'tabs' => [{ 'title' => 'Tab', 'icon' => 'circle' }]
+      }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('data.currentTab')
+      expect(result).to include('viewModel.updateData')
+    end
+
+    it 'generates tabs for each item in tabs array' do
+      json_data = {
+        'type' => 'TabView',
+        'tabs' => [
+          { 'title' => 'First', 'icon' => 'house' },
+          { 'title' => 'Second', 'icon' => 'person' },
+          { 'title' => 'Third', 'icon' => 'gear' }
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
@@ -56,9 +68,9 @@ RSpec.describe KjuiTools::Compose::Components::TabviewComponent do
     it 'generates default title when not provided' do
       json_data = {
         'type' => 'TabView',
-        'items' => [
-          {},
-          {}
+        'tabs' => [
+          { 'icon' => 'circle' },
+          { 'icon' => 'circle' }
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
@@ -69,86 +81,146 @@ RSpec.describe KjuiTools::Compose::Components::TabviewComponent do
     it 'generates when expression for tab content' do
       json_data = {
         'type' => 'TabView',
-        'items' => [
-          { 'title' => 'Home' },
-          { 'title' => 'Settings' }
+        'tabs' => [
+          { 'title' => 'Home', 'icon' => 'house' },
+          { 'title' => 'Settings', 'icon' => 'gear' }
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('when (selectedTab_')
+      expect(result).to include('when (selectedTab)')
       expect(result).to include('0 -> {')
       expect(result).to include('1 -> {')
     end
 
-    it 'handles child content in tabs' do
+    it 'references view by name with PascalCase' do
       json_data = {
         'type' => 'TabView',
-        'items' => [
-          { 'title' => 'Tab 1', 'child' => { 'type' => 'Text', 'text' => 'Content' } }
+        'tabs' => [
+          { 'title' => 'My Tab', 'icon' => 'house', 'view' => 'home_screen' }
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('// Content for tab 0')
+      expect(result).to include('HomeScreenView()')
     end
 
-    it 'generates default content when no child' do
+    it 'generates default content when no view specified' do
       json_data = {
         'type' => 'TabView',
-        'items' => [
-          { 'title' => 'My Tab' }
+        'tabs' => [
+          { 'title' => 'My Tab', 'icon' => 'circle' }
         ]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('Text("Content for My Tab")')
+      expect(result).to include('Text("My Tab content")')
     end
 
-    it 'wraps in Column container' do
+    it 'wraps in Scaffold container' do
       json_data = {
         'type' => 'TabView',
-        'items' => [{ 'title' => 'Tab' }]
+        'tabs' => [{ 'title' => 'Tab', 'icon' => 'circle' }]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('Column(')
+      expect(result).to include('Scaffold(')
+      expect(result).to include('bottomBar = {')
     end
 
-    it 'applies size modifiers' do
+    it 'applies tabBarBackground color' do
       json_data = {
         'type' => 'TabView',
-        'width' => 'matchParent',
-        'height' => 200,
-        'items' => [{ 'title' => 'Tab' }]
+        'tabBarBackground' => 'primary',
+        'tabs' => [{ 'title' => 'Tab', 'icon' => 'circle' }]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('Modifier')
+      expect(result).to include('containerColor =')
     end
 
-    it 'applies padding modifiers' do
+    it 'applies tintColor to NavigationBarItem' do
       json_data = {
         'type' => 'TabView',
-        'padding' => 16,
-        'items' => [{ 'title' => 'Tab' }]
+        'tintColor' => 'blue',
+        'tabs' => [{ 'title' => 'Tab', 'icon' => 'circle' }]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('.padding(16.dp)')
+      expect(result).to include('NavigationBarItemDefaults.colors(')
+      expect(result).to include('selectedIconColor =')
     end
 
-    it 'handles empty items array' do
+    it 'respects showLabels setting' do
       json_data = {
         'type' => 'TabView',
-        'items' => []
+        'showLabels' => false,
+        'tabs' => [{ 'title' => 'Tab', 'icon' => 'circle' }]
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('TabRow(')
-      expect(result).not_to include('Tab(')
+      expect(result).not_to include('label = { Text("Tab") }')
     end
 
-    it 'adds tab click handler' do
+    it 'handles empty tabs array' do
       json_data = {
         'type' => 'TabView',
-        'items' => [{ 'title' => 'Tab 1' }]
+        'tabs' => []
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onClick = { selectedTab_')
+      expect(result).to include('NavigationBar(')
+      expect(result).not_to include('NavigationBarItem(')
+    end
+
+    it 'adds click handler to each tab' do
+      json_data = {
+        'type' => 'TabView',
+        'tabs' => [{ 'title' => 'Tab 1', 'icon' => 'circle' }]
+      }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('onClick = { selectedTab = 0 }')
+    end
+
+    it 'maps SF Symbol icon names to Material Icons' do
+      json_data = {
+        'type' => 'TabView',
+        'tabs' => [
+          { 'title' => 'Home', 'icon' => 'house' },
+          { 'title' => 'Profile', 'icon' => 'person' },
+          { 'title' => 'Settings', 'icon' => 'gearshape' }
+        ]
+      }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('Icons.Filled.Home')
+      expect(result).to include('Icons.Filled.Person')
+      expect(result).to include('Icons.Filled.Settings')
+    end
+
+    it 'uses selectedIcon when provided' do
+      json_data = {
+        'type' => 'TabView',
+        'tabs' => [
+          { 'title' => 'Heart', 'icon' => 'heart', 'selectedIcon' => 'heart.fill' }
+        ]
+      }
+      result = described_class.generate(json_data, 0, required_imports)
+      expect(result).to include('Icons.Filled.Favorite')
+      expect(result).to include('Icons.Outlined.Favorite')
+    end
+  end
+
+  describe '.to_icon_name' do
+    it 'maps house to Home' do
+      result = described_class.send(:to_icon_name, 'house')
+      expect(result).to eq('Home')
+    end
+
+    it 'maps person to Person' do
+      result = described_class.send(:to_icon_name, 'person')
+      expect(result).to eq('Person')
+    end
+
+    it 'maps gearshape to Settings' do
+      result = described_class.send(:to_icon_name, 'gearshape')
+      expect(result).to eq('Settings')
+    end
+
+    it 'capitalizes unknown icon names' do
+      result = described_class.send(:to_icon_name, 'custom')
+      expect(result).to eq('Custom')
     end
   end
 

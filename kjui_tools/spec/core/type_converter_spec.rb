@@ -91,17 +91,18 @@ RSpec.describe KjuiTools::Core::TypeConverter do
     end
 
     context 'with Swift callback syntax conversion' do
-      it 'converts (() -> Void) to () -> Unit' do
-        expect(described_class.to_kotlin_type('(() -> Void)')).to eq('() -> Unit')
+      # Note: All function types are converted to optional (?) by default for callbacks
+      it 'converts (() -> Void) to (() -> Unit)?' do
+        expect(described_class.to_kotlin_type('(() -> Void)')).to eq('(() -> Unit)?')
       end
 
-      it 'converts ((ParamType) -> Void) to (ParamType) -> Unit' do
-        expect(described_class.to_kotlin_type('((String) -> Void)')).to eq('(String) -> Unit')
-        expect(described_class.to_kotlin_type('((ItemData) -> Void)')).to eq('(ItemData) -> Unit')
+      it 'converts ((ParamType) -> Void) to ((ParamType) -> Unit)?' do
+        expect(described_class.to_kotlin_type('((String) -> Void)')).to eq('((String) -> Unit)?')
+        expect(described_class.to_kotlin_type('((ItemData) -> Void)')).to eq('((ItemData) -> Unit)?')
       end
 
-      it 'converts ((Param1, Param2) -> Void) to (Param1, Param2) -> Unit' do
-        expect(described_class.to_kotlin_type('((Int, String) -> Void)')).to eq('(Int, String) -> Unit')
+      it 'converts ((Param1, Param2) -> Void) to ((Param1, Param2) -> Unit)?' do
+        expect(described_class.to_kotlin_type('((Int, String) -> Void)')).to eq('((Int, String) -> Unit)?')
       end
 
       it 'converts optional callback (() -> Void)? to (() -> Unit)?' do
@@ -113,7 +114,7 @@ RSpec.describe KjuiTools::Core::TypeConverter do
       end
 
       it 'converts parameter types in callbacks' do
-        expect(described_class.to_kotlin_type('((Bool) -> Void)')).to eq('(Boolean) -> Unit')
+        expect(described_class.to_kotlin_type('((Bool) -> Void)')).to eq('((Boolean) -> Unit)?')
       end
     end
 
@@ -124,6 +125,30 @@ RSpec.describe KjuiTools::Core::TypeConverter do
 
       it 'converts (ParamType) -> Void to ((ParamType) -> Unit)? (optional)' do
         expect(described_class.to_kotlin_type('(String) -> Void')).to eq('((String) -> Unit)?')
+      end
+    end
+
+    context 'with complex function types' do
+      it 'converts ((Image) -> Color) with mode-specific type mapping' do
+        result = described_class.to_kotlin_type('((Image) -> Color)', 'compose')
+        expect(result).to eq('((Painter) -> Color)?')
+      end
+
+      it 'converts ((String, Int) -> Bool)?' do
+        result = described_class.to_kotlin_type('((String, Int) -> Bool)?')
+        expect(result).to eq('((String, Int) -> Boolean)?')
+      end
+
+      it 'converts function with nested function parameter' do
+        result = described_class.to_kotlin_type('((Int) -> String, Bool) -> Void')
+        expect(result).to include('-> Unit)?')
+      end
+    end
+
+    context 'with optional parameter types in functions' do
+      it 'converts (String?) -> Int' do
+        result = described_class.to_kotlin_type('(String?) -> Int')
+        expect(result).to eq('((String?) -> Int)?')
       end
     end
 
