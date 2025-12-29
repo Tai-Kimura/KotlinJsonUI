@@ -14,6 +14,8 @@ module KjuiTools
           required_imports&.add(:scaffold)
           required_imports&.add(:painter_resource)
           required_imports&.add(:r_class)
+          required_imports&.add(:safe_area_config)
+          required_imports&.add(:composition_local_provider)
 
           tabs = json_data['tabs'] || []
 
@@ -139,26 +141,32 @@ module KjuiTools
           code += "\n" + indent(") { innerPadding ->", depth)
 
           # Tab content using when expression
+          # Only apply bottom padding for NavigationBar - child views handle their own top safe area
           if tabs.any?
-            code += "\n" + indent("Box(modifier = Modifier.padding(innerPadding)) {", depth + 1)
-            code += "\n" + indent("when (#{state_expr}) {", depth + 2)
+            code += "\n" + indent("Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {", depth + 1)
+            # Provide SafeAreaConfig to tell child views to ignore bottom safe area
+            code += "\n" + indent("CompositionLocalProvider(", depth + 2)
+            code += "\n" + indent("LocalSafeAreaConfig provides SafeAreaConfig(ignoreBottom = true)", depth + 3)
+            code += "\n" + indent(") {", depth + 2)
+            code += "\n" + indent("when (#{state_expr}) {", depth + 3)
 
             tabs.each_with_index do |tab, index|
-              code += "\n" + indent("#{index} -> {", depth + 3)
+              code += "\n" + indent("#{index} -> {", depth + 4)
 
               # Content for each tab - reference view by name
               view_name = tab['view']
               if view_name
                 # Convert snake_case to PascalCase for Kotlin class name
                 pascal_name = view_name.split('_').map(&:capitalize).join
-                code += "\n" + indent("#{pascal_name}View()", depth + 4)
+                code += "\n" + indent("#{pascal_name}View()", depth + 5)
               else
-                code += "\n" + indent("Text(\"#{tab['title'] || "Tab #{index + 1}"} content\")", depth + 4)
+                code += "\n" + indent("Text(\"#{tab['title'] || "Tab #{index + 1}"} content\")", depth + 5)
               end
 
-              code += "\n" + indent("}", depth + 3)
+              code += "\n" + indent("}", depth + 4)
             end
 
+            code += "\n" + indent("}", depth + 3)
             code += "\n" + indent("}", depth + 2)
             code += "\n" + indent("}", depth + 1)
           end

@@ -261,6 +261,9 @@ module KjuiTools
       end
       
       def generate_safe_area_view(json_data, depth)
+        # Add import for SafeAreaConfig
+        @required_imports&.add(:safe_area_config)
+
         # Parse edges - support both 'edges' and 'safeAreaInsetPositions' (alias)
         edges_array = json_data['edges'] || json_data['safeAreaInsetPositions'] || ['all']
         edges = edges_array.is_a?(Array) ? edges_array : [edges_array]
@@ -275,7 +278,21 @@ module KjuiTools
                     when 'vertical' then 'Column'
                     else 'Box'
                     end
-        code = indent("#{container}(", depth)
+
+        # Get parent SafeAreaConfig and filter edges
+        code = indent("val safeAreaConfig = LocalSafeAreaConfig.current", depth)
+        code += "\n" + indent("val edges = mutableListOf(#{edges.map { |e| "\"#{e}\"" }.join(', ')}).apply {", depth)
+        code += "\n" + indent("if (safeAreaConfig.ignoreBottom) {", depth + 1)
+        code += "\n" + indent("remove(\"bottom\")", depth + 2)
+        code += "\n" + indent("if (contains(\"all\")) { remove(\"all\"); addAll(listOf(\"top\", \"start\", \"end\")) }", depth + 2)
+        code += "\n" + indent("}", depth + 1)
+        code += "\n" + indent("if (safeAreaConfig.ignoreTop) {", depth + 1)
+        code += "\n" + indent("remove(\"top\")", depth + 2)
+        code += "\n" + indent("if (contains(\"all\")) { remove(\"all\"); addAll(listOf(\"bottom\", \"start\", \"end\")) }", depth + 2)
+        code += "\n" + indent("}", depth + 1)
+        code += "\n" + indent("}.distinct()", depth)
+
+        code += "\n\n" + indent("#{container}(", depth)
 
         # Build modifiers
         # Background must come BEFORE systemBarsPadding so it extends to screen edges
@@ -284,14 +301,10 @@ module KjuiTools
         modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, @required_imports))
 
         # Apply safe area padding based on edges (after background)
-        if edges.include?('all')
-          modifiers << ".systemBarsPadding()"
-        else
-          modifiers << ".statusBarsPadding()" if edges.include?('top')
-          modifiers << ".navigationBarsPadding()" if edges.include?('bottom')
-          # For start/end, use systemBarsPadding
-          modifiers << ".systemBarsPadding()" if edges.include?('start') || edges.include?('end')
-        end
+        # Use conditional modifiers based on runtime edges
+        modifiers << ".then(if (edges.contains(\"all\")) Modifier.systemBarsPadding() else Modifier)"
+        modifiers << ".then(if (!edges.contains(\"all\") && edges.contains(\"top\")) Modifier.statusBarsPadding() else Modifier)"
+        modifiers << ".then(if (!edges.contains(\"all\") && edges.contains(\"bottom\")) Modifier.navigationBarsPadding() else Modifier)"
 
         # Check if keyboard padding should be applied
         ignore_keyboard = json_data['ignoreKeyboard'] == true
@@ -599,6 +612,15 @@ module KjuiTools
           end
         end
 
+        # Add Color import if any property uses Color type
+        if data_properties.any? { |prop| prop['class'] == 'Color' }
+          color_import = "import androidx.compose.ui.graphics.Color"
+          unless updated_content.include?(color_import)
+            # Add after package line
+            updated_content = updated_content.sub(/^(package .+\n)/, "\\1\n#{color_import}\n")
+          end
+        end
+
         File.write(file_path, updated_content)
         Core::Logger.success "Updated ViewModel: #{file_path}"
       end
@@ -697,6 +719,8 @@ module KjuiTools
           "value as? Boolean ?: updated.#{name}"
         when 'Image', 'Painter'
           "value as? Painter ?: updated.#{name}"
+        when 'Color'
+          "value as? Color ?: updated.#{name}"
         else
           "value as? #{kotlin_type} ?: updated.#{name}"
         end

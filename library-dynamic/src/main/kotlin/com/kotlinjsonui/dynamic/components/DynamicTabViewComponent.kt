@@ -9,12 +9,15 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
+import com.kotlinjsonui.dynamic.SafeAreaConfig
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 
 /**
@@ -111,10 +114,10 @@ class DynamicTabViewComponent {
                 }
             }
 
-            // Parse colors
-            val tintColor = ColorParser.parseColor(json, "tintColor")
-            val unselectedColor = ColorParser.parseColor(json, "unselectedColor")
-            val tabBarBackground = ColorParser.parseColor(json, "tabBarBackground")
+            // Parse colors - handle both static values and bindings
+            val tintColor = parseColorWithBinding(json, "tintColor", data)
+            val unselectedColor = parseColorWithBinding(json, "unselectedColor", data)
+            val tabBarBackground = parseColorWithBinding(json, "tabBarBackground", data)
             val showLabels = json.get("showLabels")?.asBoolean ?: true
 
             // Build tab items data
@@ -202,23 +205,37 @@ class DynamicTabViewComponent {
                     }
                 }
             ) { innerPadding ->
-                // Tab content
-                Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                    if (selectedTab < tabItems.size) {
-                        val selectedItem = tabItems[selectedTab]
-                        if (selectedItem.view != null) {
-                            // Load and display the referenced layout
-                            val layoutJson = DynamicLayoutLoader.loadLayout(selectedItem.view)
-                            if (layoutJson != null) {
-                                DynamicView(layoutJson, data)
+                // Tab content - only apply bottom padding for NavigationBar
+                // Child views (SafeAreaView) handle their own top safe area
+                Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()).fillMaxSize()) {
+                    // Provide SafeAreaConfig to tell child views to ignore bottom safe area
+                    CompositionLocalProvider(
+                        LocalSafeAreaConfig provides SafeAreaConfig(ignoreBottom = true)
+                    ) {
+                        if (selectedTab < tabItems.size) {
+                            val selectedItem = tabItems[selectedTab]
+                            if (selectedItem.view != null) {
+                                // Load and display the referenced layout
+                                val layoutJson = DynamicLayoutLoader.loadLayout(selectedItem.view)
+                                if (layoutJson != null) {
+                                    DynamicView(layoutJson, data)
+                                } else {
+                                    // Layout not found - show error message
+                                    Text(
+                                        text = "Layout not found: ${selectedItem.view}",
+                                        modifier = Modifier.fillMaxSize(),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            } else {
+                                // Default placeholder when no view specified
+                                Text(
+                                    text = selectedItem.title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                             }
-                        } else {
-                            // Default placeholder when no view specified
-                            Text(
-                                text = selectedItem.title,
-                                modifier = Modifier.fillMaxSize(),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
                         }
                     }
                 }
@@ -300,6 +317,32 @@ class DynamicTabViewComponent {
                     contentDescription = contentDescription
                 )
             }
+        }
+
+        /**
+         * Parse color from JSON with binding support
+         * If value is a binding like @{colorProperty}, get Color from data
+         * Otherwise parse as static color string
+         */
+        private fun parseColorWithBinding(
+            json: JsonObject,
+            key: String,
+            data: Map<String, Any>
+        ): Color? {
+            val value = json.get(key)?.asString ?: return null
+
+            // Check if it's a binding
+            if (value.startsWith("@{") && value.endsWith("}")) {
+                val bindingProp = value.drop(2).dropLast(1)
+                return when (val boundValue = data[bindingProp]) {
+                    is Color -> boundValue
+                    is String -> ColorParser.parseColorString(boundValue)
+                    else -> null
+                }
+            }
+
+            // Static color value
+            return ColorParser.parseColorString(value)
         }
 
         private fun getIconVector(iconName: String, filled: Boolean): ImageVector {

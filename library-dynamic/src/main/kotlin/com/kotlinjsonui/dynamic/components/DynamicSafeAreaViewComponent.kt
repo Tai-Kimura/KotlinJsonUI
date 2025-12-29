@@ -16,6 +16,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicViews
+import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import androidx.compose.ui.platform.LocalContext
@@ -44,6 +45,9 @@ class DynamicSafeAreaViewComponent {
         ) {
             val context = LocalContext.current
 
+            // Get parent SafeAreaConfig (e.g., from TabView)
+            val safeAreaConfig = LocalSafeAreaConfig.current
+
             // Apply lifecycle effects first
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
@@ -51,10 +55,28 @@ class DynamicSafeAreaViewComponent {
             // Support both "edges" and "safeAreaInsetPositions" (alias for cross-platform compatibility)
             val edgesArray = json.get("edges")?.asJsonArray
                 ?: json.get("safeAreaInsetPositions")?.asJsonArray
-            val edges = edgesArray?.let { arr ->
+            val requestedEdges = edgesArray?.let { arr ->
                 arr.map { it.asString }
             } ?: listOf("all")
-            
+
+            // Filter edges based on parent SafeAreaConfig
+            val edges = requestedEdges.toMutableList().apply {
+                if (safeAreaConfig.ignoreBottom) {
+                    remove("bottom")
+                    if (contains("all")) {
+                        remove("all")
+                        addAll(listOf("top", "start", "end"))
+                    }
+                }
+                if (safeAreaConfig.ignoreTop) {
+                    remove("top")
+                    if (contains("all")) {
+                        remove("all")
+                        addAll(listOf("bottom", "start", "end"))
+                    }
+                }
+            }.distinct()
+
             // Check if keyboard padding should be applied
             val ignoreKeyboard = json.get("ignoreKeyboard")?.asBoolean ?: false
 

@@ -51,9 +51,10 @@ fun DynamicView(
 ) {
     val context = LocalContext.current
 
-    // Initialize ResourceCache and ColorParser with context
+    // Initialize ResourceCache, ColorParser, and DynamicLayoutLoader with context
     ResourceCache.init(context)
     ColorParser.init(context)
+    DynamicLayoutLoader.init(context)
 
     // Apply styles if a style attribute is present
     val styledJson = if (json.has("style")) {
