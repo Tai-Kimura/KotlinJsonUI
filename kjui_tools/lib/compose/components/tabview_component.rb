@@ -12,6 +12,7 @@ module KjuiTools
           required_imports&.add(:navigation_bar)
           required_imports&.add(:remember_state)
           required_imports&.add(:scaffold)
+          required_imports&.add(:icons)
 
           tabs = json_data['tabs'] || []
 
