@@ -225,15 +225,6 @@ module KjuiTools
         has_color = data_properties.any? { |prop| prop['class'] == 'Color' }
         if has_color
           content += "import androidx.compose.ui.graphics.Color\n"
-          # Check if any Color default value uses ColorManager (named color from colors.json)
-          needs_color_manager = data_properties.any? do |prop|
-            prop['class'] == 'Color' &&
-              prop['defaultValue'].is_a?(String) &&
-              (prop['defaultValue'].match?(/^[a-z_]+[a-z0-9_]*$/) || prop['defaultValue'].include?('ColorManager'))
-          end
-          if needs_color_manager
-            content += "import com.kotlinjsonui.generated.ColorManager\n"
-          end
         end
 
         # Add Painter import if any property uses Image/Painter type
@@ -454,33 +445,20 @@ module KjuiTools
           # Ensure it's a float with f suffix
           "#{value.to_f}f"
         when 'Color'
-          # Handle color values
-          if value.is_a?(String) && value.start_with?('#')
-            "Color(android.graphics.Color.parseColor(\"#{value}\"))"
+          # Handle color values - type_converter already converts color names to Color(0xFFxxxxxx)
+          if value.is_a?(String) && value.start_with?('Color(')
+            value # Already converted Color() expression
           elsif value.is_a?(String) && value.start_with?('Color.')
             value # Direct Color reference like Color.Red
-          elsif value.is_a?(String) && value.start_with?('Color(')
-            value # Already converted Color() expression
-          elsif value.is_a?(String) && value.start_with?('colorResource(')
-            value # Already converted colorResource() expression
-          elsif value.is_a?(String) && value.start_with?('ColorManager.')
-            value # Already using ColorManager
-          elsif value.is_a?(String) && value.match?(/^[a-z_]+[a-z0-9_]*$/)
-            # Color name from colors.json (like "light_pink") - use ColorManager
-            "ColorManager.getColor(\"#{value}\") ?: Color.Unspecified"
-          elsif value.is_a?(String) && value.downcase.include?('color')
-            # Map common color names
-            case value.downcase
-            when 'red' then 'Color.Red'
-            when 'green' then 'Color.Green'
-            when 'blue' then 'Color.Blue'
-            when 'black' then 'Color.Black'
-            when 'white' then 'Color.White'
-            when 'gray', 'grey' then 'Color.Gray'
-            when 'yellow' then 'Color.Yellow'
-            when 'cyan' then 'Color.Cyan'
-            when 'magenta' then 'Color.Magenta'
-            else 'Color.Unspecified'
+          elsif value.is_a?(String) && value.start_with?('#')
+            # Hex color - convert to Color()
+            hex = value.sub('#', '')
+            if hex.length == 6
+              "Color(0xFF#{hex.upcase})"
+            elsif hex.length == 8
+              "Color(0x#{hex.upcase})"
+            else
+              'Color.Unspecified'
             end
           else
             'Color.Unspecified'

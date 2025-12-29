@@ -55,6 +55,14 @@ module KjuiTools
           @colors_data.key?(color_name)
         end
 
+        # Get hex value for a color name from colors.json
+        # @param color_name [String] the color name
+        # @return [String, nil] the hex value or nil if not found
+        def get_color_hex(color_name)
+          load_colors_json
+          @colors_data[color_name]
+        end
+
         # Clear the cached colors data (useful for testing)
         def clear_colors_cache
           @colors_data = nil
@@ -446,17 +454,35 @@ module KjuiTools
             end
           else
             # Color name from colors.json (e.g., "medium_gray", "deep_blue")
-            # Validate that the color exists in colors.json
-            unless color_exists?(value)
-              warn "[TypeConverter] Warning: Color '#{value}' is not defined in colors.json"
-            end
-
-            if mode == 'xml'
-              "R.color.#{value}"
+            # Get hex value from colors.json and convert to Color()
+            hex_value = get_color_hex(value)
+            if hex_value
+              hex = hex_value.sub('#', '')
+              if mode == 'xml'
+                if hex.length == 6
+                  "0xFF#{hex.upcase}"
+                elsif hex.length == 8
+                  "0x#{hex.upcase}"
+                else
+                  "0"
+                end
+              else
+                # For Compose, use Color() with hex value from colors.json
+                if hex.length == 6
+                  "Color(0xFF#{hex.upcase})"
+                elsif hex.length == 8
+                  "Color(0x#{hex.upcase})"
+                else
+                  "Color.Unspecified"
+                end
+              end
             else
-              # For Compose, use ColorManager.getColor for data class default values
-              # (colorResource is a Composable function and can't be used as default value)
-              "ColorManager.getColor(\"#{value}\") ?: Color.Unspecified"
+              warn "[TypeConverter] Warning: Color '#{value}' is not defined in colors.json"
+              if mode == 'xml'
+                "0"
+              else
+                "Color.Unspecified"
+              end
             end
           end
         end
