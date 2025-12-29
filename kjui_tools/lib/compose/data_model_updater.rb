@@ -225,14 +225,14 @@ module KjuiTools
         has_color = data_properties.any? { |prop| prop['class'] == 'Color' }
         if has_color
           content += "import androidx.compose.ui.graphics.Color\n"
-          # Check if any Color default value uses colorResource (named color from colors.json)
-          needs_color_resource = data_properties.any? do |prop|
+          # Check if any Color default value uses ColorManager (named color from colors.json)
+          needs_color_manager = data_properties.any? do |prop|
             prop['class'] == 'Color' &&
               prop['defaultValue'].is_a?(String) &&
-              prop['defaultValue'].include?('colorResource')
+              (prop['defaultValue'].match?(/^[a-z_]+[a-z0-9_]*$/) || prop['defaultValue'].include?('ColorManager'))
           end
-          if needs_color_resource
-            content += "import androidx.compose.ui.res.colorResource\n"
+          if needs_color_manager
+            content += "import com.kotlinjsonui.generated.ColorManager\n"
           end
         end
 
@@ -459,6 +459,15 @@ module KjuiTools
             "Color(android.graphics.Color.parseColor(\"#{value}\"))"
           elsif value.is_a?(String) && value.start_with?('Color.')
             value # Direct Color reference like Color.Red
+          elsif value.is_a?(String) && value.start_with?('Color(')
+            value # Already converted Color() expression
+          elsif value.is_a?(String) && value.start_with?('colorResource(')
+            value # Already converted colorResource() expression
+          elsif value.is_a?(String) && value.start_with?('ColorManager.')
+            value # Already using ColorManager
+          elsif value.is_a?(String) && value.match?(/^[a-z_]+[a-z0-9_]*$/)
+            # Color name from colors.json (like "light_pink") - use ColorManager
+            "ColorManager.getColor(\"#{value}\") ?: Color.Unspecified"
           elsif value.is_a?(String) && value.downcase.include?('color')
             # Map common color names
             case value.downcase

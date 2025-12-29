@@ -454,8 +454,9 @@ module KjuiTools
             if mode == 'xml'
               "R.color.#{value}"
             else
-              # For Compose, use colorResource(R.color.color_name)
-              "colorResource(R.color.#{value})"
+              # For Compose, use ColorManager.getColor for data class default values
+              # (colorResource is a Composable function and can't be used as default value)
+              "ColorManager.getColor(\"#{value}\") ?: Color.Unspecified"
             end
           end
         end
