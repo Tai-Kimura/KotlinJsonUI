@@ -1,10 +1,67 @@
 # frozen_string_literal: true
 
+require 'json'
+require_relative 'config_manager'
+
 module KjuiTools
   module Core
     # Converts JSON primitive types to Kotlin types
     # This ensures cross-platform compatibility with SwiftJsonUI and ReactJsonUI
     class TypeConverter
+      # Cache for colors.json data
+      @colors_data = nil
+      @colors_file_path = nil
+
+      class << self
+        attr_accessor :colors_data, :colors_file_path
+
+        # Load colors.json from the specified path or auto-detect from project config
+        # @param path [String, nil] optional path to colors.json
+        # @return [Hash] the colors data
+        def load_colors_json(path = nil)
+          return @colors_data if @colors_data && (@colors_file_path == path || path.nil?)
+
+          if path
+            @colors_file_path = path
+          else
+            # Use ConfigManager to get correct path
+            config = ConfigManager.load_config
+            config_dir = config['_config_dir'] || Dir.pwd
+            source_dir = config['source_directory'] || 'app/src/main'
+            layouts_dir = config['layouts_directory'] || 'assets/Layouts'
+            resources_path = File.join(config_dir, source_dir, layouts_dir, 'Resources', 'colors.json')
+            @colors_file_path = resources_path
+          end
+
+          if @colors_file_path && File.exist?(@colors_file_path)
+            begin
+              @colors_data = JSON.parse(File.read(@colors_file_path))
+            rescue JSON::ParserError => e
+              warn "[TypeConverter] Warning: Failed to parse colors.json: #{e.message}"
+              @colors_data = {}
+            end
+          else
+            @colors_data = {}
+          end
+
+          @colors_data
+        end
+
+        # Check if a color name exists in colors.json
+        # @param color_name [String] the color name to check
+        # @return [Boolean] true if the color exists
+        def color_exists?(color_name)
+          load_colors_json
+          @colors_data.key?(color_name)
+        end
+
+        # Clear the cached colors data (useful for testing)
+        def clear_colors_cache
+          @colors_data = nil
+          @colors_file_path = nil
+        end
+      end
+
       # Language key for this platform
       LANGUAGE = 'kotlin'
 
@@ -320,17 +377,104 @@ module KjuiTools
           normalized = data_prop.dup
 
           # Extract platform-specific class
+          raw_class = nil
           if normalized['class']
             raw_class = extract_platform_value(normalized['class'], mode)
             normalized['class'] = to_kotlin_type(raw_class, mode)
           end
 
-          # Extract platform-specific defaultValue
+          # Extract platform-specific defaultValue and convert for special types
           if normalized['defaultValue']
-            normalized['defaultValue'] = extract_platform_value(normalized['defaultValue'], mode)
+            raw_value = extract_platform_value(normalized['defaultValue'], mode)
+            normalized['defaultValue'] = convert_default_value(raw_value, raw_class, mode)
           end
 
           normalized
+        end
+
+        # Convert defaultValue based on the type
+        # For Color: convert hex/color name to platform-specific format
+        # For Image: convert image name to platform-specific format
+        # @param value [Object] the raw default value
+        # @param raw_class [String] the original class type from JSON
+        # @param mode [String] the mode (compose, xml)
+        # @return [Object] the converted default value
+        def convert_default_value(value, raw_class, mode = nil)
+          return value unless value.is_a?(String) && raw_class.is_a?(String)
+
+          base_class = raw_class.end_with?('?') ? raw_class[0...-1] : raw_class
+
+          case base_class.downcase
+          when 'color'
+            convert_color_default_value(value, mode)
+          when 'image'
+            convert_image_default_value(value, mode)
+          else
+            value
+          end
+        end
+
+        # Convert color value (hex or color name) to Kotlin Color
+        # @param value [String] hex string (#RRGGBB or #RRGGBBAA) or color name
+        # @param mode [String] the mode (compose, xml)
+        # @return [String] Kotlin color code
+        def convert_color_default_value(value, mode = nil)
+          # Already formatted as Kotlin code
+          return value if value.start_with?('Color') || value.start_with?('0x') || value.start_with?('0X')
+
+          if value.start_with?('#')
+            # Hex color
+            hex = value.sub('#', '')
+            if mode == 'xml'
+              # For XML, use Int format
+              if hex.length == 6
+                "0xFF#{hex.upcase}"
+              elsif hex.length == 8
+                "0x#{hex.upcase}"
+              else
+                "0"
+              end
+            else
+              # For Compose, use Color()
+              if hex.length == 6
+                "Color(0xFF#{hex.upcase})"
+              elsif hex.length == 8
+                "Color(0x#{hex.upcase})"
+              else
+                "Color.Unspecified"
+              end
+            end
+          else
+            # Color name from colors.json (e.g., "medium_gray", "deep_blue")
+            # Validate that the color exists in colors.json
+            unless color_exists?(value)
+              warn "[TypeConverter] Warning: Color '#{value}' is not defined in colors.json"
+            end
+
+            if mode == 'xml'
+              "R.color.#{value}"
+            else
+              # For Compose, use colorResource(R.color.color_name)
+              "colorResource(R.color.#{value})"
+            end
+          end
+        end
+
+        # Convert image name to Kotlin Painter/Drawable
+        # @param value [String] image name
+        # @param mode [String] the mode (compose, xml)
+        # @return [String] Kotlin image code
+        def convert_image_default_value(value, mode = nil)
+          # Already formatted as Kotlin code
+          return value if value.start_with?('painterResource') || value.start_with?('R.')
+
+          if mode == 'xml'
+            # For XML, reference drawable resource
+            "R.drawable.#{value}"
+          else
+            # For Compose, use painterResource
+            "painterResource(R.drawable.#{value})"
+          end
         end
 
         # Convert array of data properties

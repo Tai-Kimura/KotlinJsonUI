@@ -386,6 +386,58 @@ RSpec.describe KjuiTools::Core::Resources::ColorManager do
       expect(modified).to be false
       expect(data['background']).to eq('@{viewModel.backgroundColor}')
     end
+
+    context 'with data Color defaultValue' do
+      before do
+        manager.instance_variable_get(:@colors_data)['light_pink'] = '#D4A574'
+      end
+
+      it 'replaces hex defaultValue with color key' do
+        data = {
+          'data' => [
+            { 'name' => 'selectedTabColor', 'class' => 'Color', 'defaultValue' => '#D4A574' }
+          ]
+        }
+        manager.send(:replace_colors_recursive, data)
+        expect(data['data'][0]['defaultValue']).to eq('light_pink')
+      end
+
+      it 'skips binding expressions in defaultValue' do
+        data = {
+          'data' => [
+            { 'name' => 'backgroundColor', 'class' => 'Color', 'defaultValue' => '@{viewModel.themeColor}' }
+          ]
+        }
+        manager.send(:replace_colors_recursive, data)
+        expect(data['data'][0]['defaultValue']).to eq('@{viewModel.themeColor}')
+      end
+
+      it 'does not modify defaultValue when class is not Color' do
+        data = {
+          'data' => [
+            { 'name' => 'hexValue', 'class' => 'String', 'defaultValue' => '#D4A574' }
+          ]
+        }
+        manager.send(:replace_colors_recursive, data)
+        expect(data['data'][0]['defaultValue']).to eq('#D4A574')
+      end
+
+      it 'processes data Color in nested structures' do
+        data = {
+          'type' => 'View',
+          'children' => [
+            {
+              'type' => 'TabView',
+              'data' => [
+                { 'name' => 'tabColor', 'class' => 'Color', 'defaultValue' => '#D4A574' }
+              ]
+            }
+          ]
+        }
+        manager.send(:replace_colors_recursive, data)
+        expect(data['children'][0]['data'][0]['defaultValue']).to eq('light_pink')
+      end
+    end
   end
 
   describe '#snake_to_camel' do

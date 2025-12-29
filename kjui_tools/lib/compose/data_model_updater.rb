@@ -222,13 +222,32 @@ module KjuiTools
         KOTLIN
 
         # Add Color import if any property uses Color type
-        if data_properties.any? { |prop| prop['class'] == 'Color' }
+        has_color = data_properties.any? { |prop| prop['class'] == 'Color' }
+        if has_color
           content += "import androidx.compose.ui.graphics.Color\n"
+          # Check if any Color default value uses colorResource (named color from colors.json)
+          needs_color_resource = data_properties.any? do |prop|
+            prop['class'] == 'Color' &&
+              prop['defaultValue'].is_a?(String) &&
+              prop['defaultValue'].include?('colorResource')
+          end
+          if needs_color_resource
+            content += "import androidx.compose.ui.res.colorResource\n"
+          end
         end
 
         # Add Painter import if any property uses Image/Painter type
         if data_properties.any? { |prop| prop['class'] == 'Image' || prop['class'] == 'Painter' }
           content += "import androidx.compose.ui.graphics.painter.Painter\n"
+          # Check if any Image default value uses painterResource
+          needs_painter_resource = data_properties.any? do |prop|
+            (prop['class'] == 'Image' || prop['class'] == 'Painter') &&
+              prop['defaultValue'].is_a?(String) &&
+              prop['defaultValue'].include?('painterResource')
+          end
+          if needs_painter_resource
+            content += "import androidx.compose.ui.res.painterResource\n"
+          end
         end
 
         content += "\ndata class #{view_name}Data(\n"
