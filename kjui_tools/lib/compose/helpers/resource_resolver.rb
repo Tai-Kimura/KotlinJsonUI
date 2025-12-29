@@ -57,10 +57,11 @@ module KjuiTools
           # Process color with resource resolution
           def process_color(color, required_imports = nil)
             return nil unless color.is_a?(String)
-            
-            # Handle data binding expressions
-            if color.start_with?('@{') || color.start_with?('${}')
-              return "Color(android.graphics.Color.parseColor(#{quote(color)}))"
+
+            # Handle data binding expressions - convert to data property access
+            if color.start_with?('@{') && color.end_with?('}')
+              variable = color.gsub(/@\{|\}/, '')
+              return "data.#{variable}"
             end
             
             # Skip resource resolution if we're in the extraction phase
