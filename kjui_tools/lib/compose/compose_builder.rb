@@ -837,7 +837,30 @@ module KjuiTools
             imports_to_add << viewmodel_import unless imports_to_add.include?(viewmodel_import)
           end
         end
-        
+
+        # Add imports for TabView tab views
+        # Process "tabview:ViewName" entries from required_imports
+        tabview_imports = @required_imports.select { |imp| imp.to_s.start_with?('tabview:') }
+        if tabview_imports.any?
+          tabview_imports.each do |tabview_import|
+            # Extract view class name from "tabview:ViewName"
+            view_class = tabview_import.to_s.sub('tabview:', '')
+            snake_name = to_snake_case(view_class)
+
+            # Find the view's subdirectory by locating its JSON file
+            view_subdir = find_cell_subdirectory(snake_name)
+
+            # Build the view import path with subdirectory if found
+            if view_subdir
+              view_import = "import #{@package_name}.views.#{view_subdir}.#{snake_name}.#{view_class}View"
+            else
+              view_import = "import #{@package_name}.views.#{snake_name}.#{view_class}View"
+            end
+
+            imports_to_add << view_import unless imports_to_add.include?(view_import)
+          end
+        end
+
         if imports_to_add.any?
           lines = content.split("\n")
           package_index = lines.find_index { |line| line.start_with?("package ") }

@@ -16,6 +16,14 @@ module KjuiTools
 
           tabs = json_data['tabs'] || []
 
+          # Add imports for tab views
+          tabs.each do |tab|
+            if tab['view']
+              pascal_name = tab['view'].split('_').map(&:capitalize).join
+              required_imports&.add("tabview:#{pascal_name}")
+            end
+          end
+
           # Generate state variable for selected tab
           state_var = "selectedTab"
           selected_binding = json_data['selectedIndex']
