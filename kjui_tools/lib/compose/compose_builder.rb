@@ -33,6 +33,7 @@ require_relative 'components/table_component'
 require_relative 'components/web_component'
 require_relative 'components/gradientview_component'
 require_relative 'components/blurview_component'
+require_relative 'components/tabview_component'
 
 module KjuiTools
   module Compose
@@ -183,6 +184,9 @@ module KjuiTools
           handle_container_result(result, depth, parent_type)
         when 'BlurView'
           result = Components::BlurviewComponent.generate(json_data, depth, @required_imports, parent_type)
+          handle_container_result(result, depth, parent_type)
+        when 'TabView'
+          result = Components::TabviewComponent.generate(json_data, depth, @required_imports, parent_type)
           handle_container_result(result, depth, parent_type)
         when 'Spacer'
           "Spacer(modifier = Modifier.height(#{json_data['height'] || 8}.dp))"
