@@ -10,6 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
@@ -123,6 +125,7 @@ class DynamicTabViewComponent {
                     title = itemObj.get("title")?.asString ?: "Tab ${index + 1}",
                     icon = itemObj.get("icon")?.asString ?: "circle",
                     selectedIcon = itemObj.get("selectedIcon")?.asString,
+                    iconType = itemObj.get("iconType")?.asString ?: "system",
                     badge = itemObj.get("badge"),
                     view = itemObj.get("view")?.asString
                 )
@@ -169,14 +172,18 @@ class DynamicTabViewComponent {
                                     val badgeValue = getBadgeValue(tabItem.badge, data)
                                     if (badgeValue != null) {
                                         BadgedBox(badge = { Badge { Text(badgeValue) } }) {
-                                            Icon(
-                                                imageVector = getIconVector(icon, isSelected),
+                                            TabIcon(
+                                                iconName = icon,
+                                                iconType = tabItem.iconType,
+                                                isSelected = isSelected,
                                                 contentDescription = tabItem.title
                                             )
                                         }
                                     } else {
-                                        Icon(
-                                            imageVector = getIconVector(icon, isSelected),
+                                        TabIcon(
+                                            iconName = icon,
+                                            iconType = tabItem.iconType,
+                                            isSelected = isSelected,
                                             contentDescription = tabItem.title
                                         )
                                     }
@@ -223,6 +230,7 @@ class DynamicTabViewComponent {
             val title: String,
             val icon: String,
             val selectedIcon: String?,
+            val iconType: String,
             val badge: com.google.gson.JsonElement?,
             val view: String?
         )
@@ -255,6 +263,42 @@ class DynamicTabViewComponent {
                     }
                 }
                 else -> null
+            }
+        }
+
+        @Composable
+        private fun TabIcon(
+            iconName: String,
+            iconType: String,
+            isSelected: Boolean,
+            contentDescription: String
+        ) {
+            if (iconType == "resource") {
+                // Use drawable resource
+                val context = LocalContext.current
+                val drawableId = context.resources.getIdentifier(
+                    iconName,
+                    "drawable",
+                    context.packageName
+                )
+                if (drawableId != 0) {
+                    Icon(
+                        painter = painterResource(id = drawableId),
+                        contentDescription = contentDescription
+                    )
+                } else {
+                    // Fallback to Material icon
+                    Icon(
+                        imageVector = getIconVector(iconName, isSelected),
+                        contentDescription = contentDescription
+                    )
+                }
+            } else {
+                // Use Material Icons (system)
+                Icon(
+                    imageVector = getIconVector(iconName, isSelected),
+                    contentDescription = contentDescription
+                )
             }
         }
 
