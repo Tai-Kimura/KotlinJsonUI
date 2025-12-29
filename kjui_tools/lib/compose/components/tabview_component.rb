@@ -61,17 +61,45 @@ module KjuiTools
             title = tab['title'] || "Tab #{index + 1}"
             icon = tab['icon'] || 'circle'
             selected_icon = tab['selectedIcon'] || icon
+            icon_type = tab['iconType'] || 'system'
 
             code += "\n" + indent("NavigationBarItem(", depth + 3)
             code += "\n" + indent("selected = #{state_expr} == #{index},", depth + 4)
             code += "\n" + indent("onClick = { #{setter_expr.gsub('it', index.to_s)} },", depth + 4)
 
-            # Icon from drawable resource
+            # Icon - handle iconType for system vs resource
             code += "\n" + indent("icon = {", depth + 4)
-            code += "\n" + indent("Icon(", depth + 5)
-            code += "\n" + indent("painter = painterResource(R.drawable.#{icon}),", depth + 6)
-            code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
-            code += "\n" + indent(")", depth + 5)
+            if icon_type == 'resource'
+              # Use drawable resource
+              if icon != selected_icon
+                # Different icons for selected/unselected
+                code += "\n" + indent("Icon(", depth + 5)
+                code += "\n" + indent("painter = if (#{state_expr} == #{index}) painterResource(R.drawable.#{selected_icon}) else painterResource(R.drawable.#{icon}),", depth + 6)
+                code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
+                code += "\n" + indent(")", depth + 5)
+              else
+                code += "\n" + indent("Icon(", depth + 5)
+                code += "\n" + indent("painter = painterResource(R.drawable.#{icon}),", depth + 6)
+                code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
+                code += "\n" + indent(")", depth + 5)
+              end
+            else
+              # Use Material Icons (system)
+              required_imports&.add(:material_icons)
+              material_icon = to_icon_name(icon)
+              material_selected_icon = to_icon_name(selected_icon)
+              if icon != selected_icon
+                code += "\n" + indent("Icon(", depth + 5)
+                code += "\n" + indent("imageVector = if (#{state_expr} == #{index}) Icons.Filled.#{material_selected_icon} else Icons.Outlined.#{material_icon},", depth + 6)
+                code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
+                code += "\n" + indent(")", depth + 5)
+              else
+                code += "\n" + indent("Icon(", depth + 5)
+                code += "\n" + indent("imageVector = Icons.Filled.#{material_icon},", depth + 6)
+                code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
+                code += "\n" + indent(")", depth + 5)
+              end
+            end
             code += "\n" + indent("},", depth + 4)
 
             # Label (show/hide based on showLabels)
