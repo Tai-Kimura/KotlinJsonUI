@@ -12,7 +12,8 @@ module KjuiTools
           required_imports&.add(:navigation_bar)
           required_imports&.add(:remember_state)
           required_imports&.add(:scaffold)
-          required_imports&.add(:icons)
+          required_imports&.add(:painter_resource)
+          required_imports&.add(:r_class)
 
           tabs = json_data['tabs'] || []
 
@@ -65,10 +66,10 @@ module KjuiTools
             code += "\n" + indent("selected = #{state_expr} == #{index},", depth + 4)
             code += "\n" + indent("onClick = { #{setter_expr.gsub('it', index.to_s)} },", depth + 4)
 
-            # Icon with selected/unselected state
+            # Icon from drawable resource
             code += "\n" + indent("icon = {", depth + 4)
             code += "\n" + indent("Icon(", depth + 5)
-            code += "\n" + indent("imageVector = if (#{state_expr} == #{index}) Icons.Filled.#{to_icon_name(selected_icon)} else Icons.Outlined.#{to_icon_name(icon)},", depth + 6)
+            code += "\n" + indent("painter = painterResource(R.drawable.#{icon}),", depth + 6)
             code += "\n" + indent("contentDescription = \"#{title}\"", depth + 6)
             code += "\n" + indent(")", depth + 5)
             code += "\n" + indent("},", depth + 4)
