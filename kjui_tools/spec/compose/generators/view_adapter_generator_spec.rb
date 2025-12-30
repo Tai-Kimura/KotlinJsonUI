@@ -86,7 +86,7 @@ RSpec.describe KjuiTools::Compose::Generators::ViewAdapterGenerator do
       generator.generate
       template = generator.send(:adapter_template)
       expect(template).to include('HomeViewAdapter')
-      expect(template).to include('HomeView(data = data)')
+      expect(template).to include('HomeView()')
     end
 
     it 'generates lowercase component type' do
@@ -280,13 +280,13 @@ RSpec.describe KjuiTools::Compose::Generators::ViewAdapterGenerator do
       expect(content).to match(/fun create\(/)
     end
 
-    it 'passes data to view' do
+    it 'calls view without parameters' do
       generator = described_class.new('Settings')
       generator.generate
 
       adapter_file = File.join(adapter_dir, 'SettingsViewAdapter.kt')
       content = File.read(adapter_file, encoding: 'UTF-8')
-      expect(content).to include('SettingsView(data = data)')
+      expect(content).to include('SettingsView()')
     end
   end
 

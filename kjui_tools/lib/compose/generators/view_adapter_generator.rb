@@ -193,15 +193,15 @@ REGISTRATION
             object #{@adapter_class_name} {
 
                 /**
-                 * Create the view with data bindings
+                 * Create the view
                  */
                 @Composable
                 fun create(
                     json: JsonObject,
                     data: Map<String, Any>
                 ) {
-                    // Render the actual view with data
-                    #{@view_name}(data = data)
+                    // Render the actual view
+                    #{@view_name}()
                 }
             }
           KOTLIN
