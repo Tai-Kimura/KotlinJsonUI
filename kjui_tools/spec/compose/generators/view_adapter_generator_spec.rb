@@ -116,13 +116,13 @@ RSpec.describe KjuiTools::Compose::Generators::ViewAdapterGenerator do
       expect(template).to include('@Composable')
     end
 
-    it 'imports the View' do
+    it 'imports the View with subdirectory' do
       generator = described_class.new('Search')
       allow(generator).to receive(:create_adapter_file)
       allow(generator).to receive(:update_registry_file)
       generator.generate
       template = generator.send(:adapter_template)
-      expect(template).to include('import com.example.app.views.SearchView')
+      expect(template).to include('import com.example.app.views.search.SearchView')
     end
   end
 

@@ -174,7 +174,7 @@ REGISTRATION
         end
 
         def adapter_template
-          # Convert name to snake_case for component type matching
+          # Convert name to snake_case for component type matching and subdirectory
           # e.g., "Home" -> "home", "HomeScreen" -> "home_screen"
           component_type = to_snake_case(@name)
 
@@ -183,7 +183,7 @@ REGISTRATION
 
             import androidx.compose.runtime.Composable
             import com.google.gson.JsonObject
-            import #{@package_name}.views.#{@view_name}
+            import #{@package_name}.views.#{component_type}.#{@view_name}
 
             /**
              * Adapter to render #{@view_name} in Dynamic mode
