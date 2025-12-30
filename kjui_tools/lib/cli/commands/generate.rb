@@ -10,11 +10,12 @@ module KjuiTools
       class Generate
         SUBCOMMANDS = {
           'view' => 'Generate a new view with JSON and binding',
-          'partial' => 'Generate a partial view', 
+          'partial' => 'Generate a partial view',
           'collection' => 'Generate a collection view',
           'cell' => 'Generate a collection cell view',
           'binding' => 'Generate binding file',
-          'converter' => 'Generate a custom component converter'
+          'converter' => 'Generate a custom component converter',
+          'adapter' => 'Generate adapter for existing View (for Dynamic mode)'
         }.freeze
 
         def run(args)
@@ -74,6 +75,8 @@ module KjuiTools
             generate_binding(args, mode)
           when 'converter'
             generate_converter(args, mode)
+          when 'adapter'
+            generate_adapter(args, mode)
           end
         end
 
@@ -379,6 +382,29 @@ module KjuiTools
           system("ruby #{File.join(File.dirname(__FILE__), '../../..', 'bin', 'kjui')} build")
         end
 
+        def generate_adapter(args, mode)
+          name = args.shift
+
+          if name.nil? || name.empty?
+            puts "Error: View name is required"
+            puts "Usage: kjui generate adapter <name>"
+            puts "Example: kjui g adapter Home  # Creates HomeViewAdapter for HomeView"
+            exit 1
+          end
+
+          unless mode == 'compose'
+            puts "Adapter generation is only available in Compose mode"
+            exit 1
+          end
+
+          # Setup project paths
+          Core::ProjectFinder.setup_paths
+
+          require_relative '../../compose/generators/view_adapter_generator'
+          generator = KjuiTools::Compose::Generators::ViewAdapterGenerator.new(name)
+          generator.generate
+        end
+
         def show_help
           puts "Usage: kjui generate [SUBCOMMAND] [options]"
           puts
@@ -412,6 +438,10 @@ module KjuiTools
           puts "  kjui g view ProfileView --mode xml --fragment # Generate Fragment"
           puts "  kjui g view MainView --mode compose  # Generate Compose view"
           puts "  kjui g converter MyCard --container # Generate custom component"
+          puts
+          puts "  # View adapter for Dynamic mode (allows TabView to render existing views)"
+          puts "  kjui g adapter Home            # Creates HomeViewAdapter for HomeView"
+          puts "  kjui g adapter Search          # Creates SearchViewAdapter for SearchView"
         end
       end
     end

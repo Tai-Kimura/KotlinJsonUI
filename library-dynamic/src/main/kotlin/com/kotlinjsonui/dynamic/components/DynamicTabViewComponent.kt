@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
@@ -215,18 +216,30 @@ class DynamicTabViewComponent {
                         if (selectedTab < tabItems.size) {
                             val selectedItem = tabItems[selectedTab]
                             if (selectedItem.view != null) {
-                                // Load and display the referenced layout
-                                val layoutJson = DynamicLayoutLoader.loadLayout(selectedItem.view)
-                                if (layoutJson != null) {
-                                    DynamicView(layoutJson, data)
-                                } else {
-                                    // Layout not found - show error message
-                                    Text(
-                                        text = "Layout not found: ${selectedItem.view}",
-                                        modifier = Modifier.fillMaxSize(),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
+                                // First, check if there's a registered custom component handler
+                                val viewJson = JsonObject().apply {
+                                    addProperty("type", selectedItem.view)
+                                }
+                                val handled = Configuration.customComponentHandler?.invoke(
+                                    selectedItem.view,
+                                    viewJson,
+                                    data
+                                ) ?: false
+
+                                if (!handled) {
+                                    // Fallback: Load and display the referenced layout from JSON
+                                    val layoutJson = DynamicLayoutLoader.loadLayout(selectedItem.view)
+                                    if (layoutJson != null) {
+                                        DynamicView(layoutJson, data)
+                                    } else {
+                                        // Layout not found - show error message
+                                        Text(
+                                            text = "Layout not found: ${selectedItem.view}",
+                                            modifier = Modifier.fillMaxSize(),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
                                 }
                             } else {
                                 // Default placeholder when no view specified
