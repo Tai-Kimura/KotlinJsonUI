@@ -146,7 +146,6 @@ fun DynamicView(
                         Log.w("DynamicView", "Unknown component type: $type")
                         ErrorComponent("Unknown component type: $type")
                     } else if (Configuration.fallbackComponent != null) {
-                        Log.d("ここ", "エラー")
                         // Use custom fallback component if configured
                         Configuration.fallbackComponent?.invoke(styledJson, data)
                     }

@@ -289,4 +289,50 @@ RSpec.describe KjuiTools::Compose::Generators::ViewAdapterGenerator do
       expect(content).to include('SettingsView(data = data)')
     end
   end
+
+  describe '#create_dynamic_initializers' do
+    let(:debug_initializer_file) { File.join(temp_dir, 'src/debug/kotlin/com/example/app/DynamicComponentInitializer.kt') }
+    let(:release_initializer_file) { File.join(temp_dir, 'src/release/kotlin/com/example/app/DynamicComponentInitializer.kt') }
+
+    it 'creates debug DynamicComponentInitializer' do
+      generator = described_class.new('Home')
+      generator.generate
+      expect(File.exist?(debug_initializer_file)).to be true
+    end
+
+    it 'creates release DynamicComponentInitializer' do
+      generator = described_class.new('Home')
+      generator.generate
+      expect(File.exist?(release_initializer_file)).to be true
+    end
+
+    it 'debug initializer sets customComponentHandler' do
+      generator = described_class.new('Home')
+      generator.generate
+      content = File.read(debug_initializer_file, encoding: 'UTF-8')
+      expect(content).to include('Configuration.customComponentHandler')
+      expect(content).to include('DynamicComponentRegistry.createCustomComponent')
+    end
+
+    it 'release initializer is no-op' do
+      generator = described_class.new('Home')
+      generator.generate
+      content = File.read(release_initializer_file, encoding: 'UTF-8')
+      expect(content).to include('fun initialize()')
+      expect(content).not_to include('Configuration.customComponentHandler')
+    end
+
+    it 'does not overwrite existing initializers' do
+      # Create existing initializer
+      debug_dir = File.dirname(debug_initializer_file)
+      FileUtils.mkdir_p(debug_dir)
+      File.write(debug_initializer_file, 'EXISTING CONTENT')
+
+      generator = described_class.new('Home')
+      generator.generate
+
+      content = File.read(debug_initializer_file, encoding: 'UTF-8')
+      expect(content).to eq('EXISTING CONTENT')
+    end
+  end
 end
