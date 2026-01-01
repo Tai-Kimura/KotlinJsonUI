@@ -21,9 +21,29 @@ RSpec.describe KjuiTools::Compose::Helpers::ResourceResolver do
   end
 
   describe '.process_text' do
-    it 'processes simple data binding' do
-      result = described_class.process_text('@{userName}', required_imports)
-      expect(result).to eq('"${data.userName}"')
+    after(:each) do
+      # Clean up thread-local storage
+      described_class.data_definitions = {}
+    end
+
+    context 'with data binding' do
+      it 'returns binding with ?: "" for optional property (no defaultValue)' do
+        # Property without defaultValue is optional
+        described_class.data_definitions = {
+          'userName' => { 'name' => 'userName', 'type' => 'String' }
+        }
+        result = described_class.process_text('@{userName}', required_imports)
+        expect(result).to eq('"${data.userName ?: ""}"')
+      end
+
+      it 'returns binding without ?: for non-optional property (with defaultValue)' do
+        # Property with defaultValue is non-optional
+        described_class.data_definitions = {
+          'userName' => { 'name' => 'userName', 'type' => 'String', 'defaultValue' => 'Guest' }
+        }
+        result = described_class.process_text('@{userName}', required_imports)
+        expect(result).to eq('"${data.userName}"')
+      end
     end
 
     it 'processes data binding with null coalescing' do

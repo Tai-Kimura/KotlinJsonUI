@@ -37,7 +37,7 @@ module KjuiTools
           # Process text with data binding and resource resolution
           def process_text(text, required_imports = nil)
             return quote(text) unless text.is_a?(String)
-            
+
             # Handle data binding expressions
             if text.match(/@\{([^}]+)\}/)
               variable = $1
@@ -46,7 +46,13 @@ module KjuiTools
                 var_name = parts[0].strip
                 return "\"\${data.#{var_name}}\""
               else
-                return "\"\${data.#{variable}}\""
+                # Check if property has defaultValue (non-optional)
+                if has_default_value?(variable)
+                  return "\"\${data.#{variable}}\""
+                else
+                  # Optional - add ?: "" fallback
+                  return "\"\${data.#{variable} ?: \"\"}\""
+                end
               end
             end
             
