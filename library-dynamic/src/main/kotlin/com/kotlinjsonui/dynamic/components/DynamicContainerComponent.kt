@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -60,10 +61,11 @@ class DynamicContainerComponent {
                 return
             }
 
+            val context = LocalContext.current
             val orientation = json.get("orientation")?.asString
 
             // Build modifier with all visual properties
-            val modifier = buildModifier(json)
+            val modifier = buildModifier(json, data, context)
 
             when (orientation) {
                 "vertical" -> createColumn(json, modifier, children, data)
@@ -396,7 +398,7 @@ class DynamicContainerComponent {
             }
         }
         
-        private fun buildModifier(json: JsonObject): Modifier {
+        private fun buildModifier(json: JsonObject, data: Map<String, Any>, context: android.content.Context): Modifier {
             // Build modifier with correct order: size -> margins -> background -> padding
             var modifier: Modifier = Modifier
             
@@ -414,16 +416,13 @@ class DynamicContainerComponent {
                 modifier = modifier.clip(shape)
             }
 
-            // 4. Background color (after clip so it respects corner radius)
-            json.get("background")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr)?.let { color ->
-                    modifier = modifier.background(color)
-                }
+            // 4. Background color (after clip so it respects corner radius, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
+                modifier = modifier.background(color)
             }
 
-            // 5. Border (with or without corner radius, supports solid/dashed/dotted)
-            json.get("borderColor")?.asString?.let { borderColorStr ->
-                ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
+            // 5. Border (with or without corner radius, supports solid/dashed/dotted, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "borderColor", data, context)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
                     val borderStyle = json.get("borderStyle")?.asString ?: "solid"
 
@@ -438,9 +437,8 @@ class DynamicContainerComponent {
                             }
                         }
                     }
-                }
             }
-            
+
             // 6. Shadow/elevation
             json.get("shadow")?.let { shadow ->
                 when {

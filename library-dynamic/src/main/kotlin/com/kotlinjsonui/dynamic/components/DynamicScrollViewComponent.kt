@@ -21,6 +21,7 @@ import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.dashedBorder
 import com.kotlinjsonui.dynamic.helpers.dottedBorder
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic ScrollView Component Converter
@@ -93,8 +94,10 @@ class DynamicScrollViewComponent {
             // Check if keyboard avoidance is enabled (default true)
             val keyboardAvoidance = json.get("keyboardAvoidance")?.asBoolean ?: true
 
+            val context = LocalContext.current
+
             // Build modifier with scroll
-            var modifier = buildModifier(json)
+            var modifier = buildModifier(json, data, context)
 
             // Apply keyboard avoidance if enabled
             if (keyboardAvoidance) {
@@ -136,15 +139,13 @@ class DynamicScrollViewComponent {
             }
         }
 
-        private fun buildModifier(json: JsonObject): Modifier {
+        private fun buildModifier(json: JsonObject, data: Map<String, Any>, context: android.content.Context): Modifier {
             // Use ModifierBuilder for basic size, margins, and padding
             var modifier = ModifierBuilder.buildModifier(json)
 
-            // Background color (before clip for proper rendering)
-            json.get("background")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr)?.let { color ->
-                    modifier = modifier.background(color)
-                }
+            // Background color (before clip for proper rendering, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
+                modifier = modifier.background(color)
             }
 
             // Corner radius (clip)
@@ -154,9 +155,8 @@ class DynamicScrollViewComponent {
                 }
             }
 
-            // Border (supports solid/dashed/dotted)
-            json.get("borderColor")?.asString?.let { borderColorStr ->
-                ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
+            // Border (supports solid/dashed/dotted, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "borderColor", data, context)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
                     val borderStyle = json.get("borderStyle")?.asString ?: "solid"
 
@@ -171,7 +171,6 @@ class DynamicScrollViewComponent {
                             }
                         }
                     }
-                }
             }
 
             // Shadow/elevation

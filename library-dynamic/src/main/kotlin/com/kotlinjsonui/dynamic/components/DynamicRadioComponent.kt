@@ -179,13 +179,13 @@ class DynamicRadioComponent {
                 }
             }
 
-            // Parse colors
+            // Parse colors (supports @{binding})
             val selectedColor = json.get("selectedColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
+                ColorParser.parseColorStringWithBinding(it, data, context)
             }
 
             val unselectedColor = json.get("unselectedColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
+                ColorParser.parseColorStringWithBinding(it, data, context)
             }
 
             val colors = RadioButtonDefaults.colors()
@@ -303,7 +303,7 @@ class DynamicRadioComponent {
                                 contentDescription = text,
                                 tint = if (isSelected) {
                                     json.get("selectedColor")?.asString?.let {
-                                        ColorParser.parseColorString(it, context)
+                                        ColorParser.parseColorStringWithBinding(it, data, context)
                                     } ?: MaterialTheme.colorScheme.primary
                                 } else {
                                     Color.Gray
@@ -332,12 +332,12 @@ class DynamicRadioComponent {
                     }
                 }
 
-                // Add label text
+                // Add label text (supports @{binding})
                 if (text.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
                     val textColor =
                         (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            ColorParser.parseColorString(it, context)
+                            ColorParser.parseColorStringWithBinding(it, data, context)
                         } ?: Color.Black
                     Text(text = text, color = textColor)
                 }
@@ -401,17 +401,17 @@ class DynamicRadioComponent {
             Column(
                 modifier = buildModifier(json)
             ) {
-                // Add label if present
+                // Add label if present (supports @{binding})
                 json.get("text")?.asString?.let { label ->
                     val textColor =
                         (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            ColorParser.parseColorString(it, context)
+                            ColorParser.parseColorStringWithBinding(it, data, context)
                         } ?: Color.Black
                     Text(text = label, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Generate radio items
+                // Generate radio items (supports @{binding})
                 items.forEach { item ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -426,7 +426,7 @@ class DynamicRadioComponent {
                         Spacer(modifier = Modifier.width(8.dp))
                         val textColor =
                             (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                                ColorParser.parseColorString(it, context)
+                                ColorParser.parseColorStringWithBinding(it, data, context)
                             } ?: Color.Black
                         Text(text = item, color = textColor)
                     }

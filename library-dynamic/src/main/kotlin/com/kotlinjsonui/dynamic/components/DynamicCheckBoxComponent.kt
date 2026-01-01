@@ -141,14 +141,10 @@ class DynamicCheckBoxComponent {
                 }
             }
 
-            // Parse colors
-            val checkedColor = json.get("checkColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            // Parse colors (supports @{binding})
+            val checkedColor = ColorParser.parseColorWithBinding(json, "checkColor", data, context)
 
-            val uncheckedColor = json.get("uncheckedColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            val uncheckedColor = ColorParser.parseColorWithBinding(json, "uncheckedColor", data, context)
 
             val colors = CheckboxDefaults.colors()
 

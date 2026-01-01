@@ -64,7 +64,7 @@ class DynamicImageComponent {
             )
 
             // Build modifier
-            val modifier = buildModifier(json)
+            val modifier = buildModifier(json, data, context)
 
             // Parse content scale/mode
             val contentScale = when (json.get("contentMode")?.asString?.lowercase()) {
@@ -94,15 +94,13 @@ class DynamicImageComponent {
             }
         }
 
-        private fun buildModifier(json: JsonObject): Modifier {
+        private fun buildModifier(json: JsonObject, data: Map<String, Any>, context: android.content.Context): Modifier {
             // Use ModifierBuilder for basic size and spacing
             var modifier = ModifierBuilder.buildModifier(json)
 
-            // Background color (before clip for proper rendering)
-            json.get("background")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr)?.let { color ->
-                    modifier = modifier.background(color)
-                }
+            // Background color (before clip for proper rendering, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
+                modifier = modifier.background(color)
             }
 
             // Corner radius (clip)
@@ -112,9 +110,8 @@ class DynamicImageComponent {
                 }
             }
 
-            // Border (supports solid/dashed/dotted)
-            json.get("borderColor")?.asString?.let { borderColorStr ->
-                ColorParser.parseColorString(borderColorStr)?.let { borderColor ->
+            // Border (supports solid/dashed/dotted, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "borderColor", data, context)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
                     val borderStyle = json.get("borderStyle")?.asString ?: "solid"
 
@@ -129,7 +126,6 @@ class DynamicImageComponent {
                             }
                         }
                     }
-                }
             }
 
             // Shadow/elevation

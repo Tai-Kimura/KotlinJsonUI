@@ -161,14 +161,10 @@ class DynamicSwitchComponent {
                 }
             }
 
-            // Parse colors
-            val checkedTrackColor = json.get("onTintColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            // Parse colors (supports @{binding})
+            val checkedTrackColor = ColorParser.parseColorWithBinding(json, "onTintColor", data, context)
 
-            val checkedThumbColor = json.get("thumbTintColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            val checkedThumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
 
             val colors = if (checkedTrackColor != null || checkedThumbColor != null) {
                 SwitchDefaults.colors(

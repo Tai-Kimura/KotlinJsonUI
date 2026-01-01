@@ -108,26 +108,21 @@ class DynamicTextFieldComponent {
                 else -> ImeAction.Default
             }
 
-            // Parse colors with Configuration defaults
-            val textColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultTextColor
+            // Parse colors with Configuration defaults (supports @{binding})
+            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: Configuration.TextField.defaultTextColor
 
-            val placeholderColor = json.get("hintColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultPlaceholderColor
+            val placeholderColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
+                ?: Configuration.TextField.defaultPlaceholderColor
 
-            val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultBackgroundColor
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: Configuration.TextField.defaultBackgroundColor
 
-            val highlightBackgroundColor = json.get("highlightBackground")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultHighlightBackgroundColor
+            val highlightBackgroundColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+                ?: Configuration.TextField.defaultHighlightBackgroundColor
 
-            val borderColor = json.get("borderColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultBorderColor
+            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
+                ?: Configuration.TextField.defaultBorderColor
 
             // Parse font size with Configuration defaults
             val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize

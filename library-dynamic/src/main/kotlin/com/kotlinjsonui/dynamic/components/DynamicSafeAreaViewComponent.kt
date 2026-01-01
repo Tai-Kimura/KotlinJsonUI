@@ -83,10 +83,8 @@ class DynamicSafeAreaViewComponent {
             // Parse orientation for child layout (null means Box/ZStack)
             val orientation = json.get("orientation")?.asString
             
-            // Parse background color
-            val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            // Parse background color (supports @{binding})
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
 
             // Build base modifier
             var modifier = ModifierBuilder.buildSizeModifier(json, defaultFillMaxWidth = true)

@@ -83,25 +83,21 @@ class DynamicTextViewComponent {
                 }
             } ?: true
             
-            // Parse text style
+            // Parse text style (supports @{binding})
             val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
-            val textColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultTextColor
+            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: Configuration.TextField.defaultTextColor
 
-            // Parse background colors
-            val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultBackgroundColor
+            // Parse background colors (supports @{binding})
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: Configuration.TextField.defaultBackgroundColor
 
-            val highlightBackgroundColor = json.get("highlightBackground")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultHighlightBackgroundColor
+            val highlightBackgroundColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+                ?: Configuration.TextField.defaultHighlightBackgroundColor
 
-            // Parse border color
-            val borderColor = json.get("borderColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.TextField.defaultBorderColor
+            // Parse border color (supports @{binding})
+            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
+                ?: Configuration.TextField.defaultBorderColor
             
             // Parse shape
             val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.TextField.defaultCornerRadius.toFloat()

@@ -182,18 +182,12 @@ class DynamicSliderComponent {
                 }
             }
             
-            // Parse colors
-            val thumbColor = json.get("thumbTintColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            // Parse colors (supports @{binding})
+            val thumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
 
-            val activeTrackColor = json.get("minimumTrackTintColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            val activeTrackColor = ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
 
-            val inactiveTrackColor = json.get("maximumTrackTintColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
             
             val colors = if (thumbColor != null || activeTrackColor != null || inactiveTrackColor != null) {
                 SliderDefaults.colors(

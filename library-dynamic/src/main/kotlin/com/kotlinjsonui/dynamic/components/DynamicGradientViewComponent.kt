@@ -15,6 +15,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic GradientView Component Converter
@@ -42,11 +43,13 @@ class DynamicGradientViewComponent {
             // Apply lifecycle effects first
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
-            // Parse gradient colors
+            val context = LocalContext.current
+
+            // Parse gradient colors (supports @{binding})
             val colorsElement = json.get("colors") ?: json.get("items")
             val colors = when {
                 colorsElement?.isJsonArray == true -> {
-                    parseColors(colorsElement.asJsonArray)
+                    parseColors(colorsElement.asJsonArray, data, context)
                 }
                 colorsElement?.isJsonPrimitive == true && colorsElement.asString.contains("@{") -> {
                     // Dynamic colors from data binding
@@ -55,10 +58,10 @@ class DynamicGradientViewComponent {
                     if (variable != null) {
                         when (val colorList = data[variable]) {
                             is List<*> -> colorList.mapNotNull { colorStr ->
-                                ColorParser.parseColorString(colorStr?.toString())
+                                ColorParser.parseColorStringWithBinding(colorStr?.toString(), data, context)
                             }
                             is Array<*> -> colorList.mapNotNull { colorStr ->
-                                ColorParser.parseColorString(colorStr?.toString())
+                                ColorParser.parseColorStringWithBinding(colorStr?.toString(), data, context)
                             }
                             else -> listOf(Color.Black, Color.White)
                         }
@@ -124,11 +127,11 @@ class DynamicGradientViewComponent {
             }
         }
         
-        private fun parseColors(jsonArray: JsonArray): List<Color> {
+        private fun parseColors(jsonArray: JsonArray, data: Map<String, Any>, context: android.content.Context): List<Color> {
             return jsonArray.mapNotNull { element ->
                 when {
                     element.isJsonPrimitive -> {
-                        ColorParser.parseColorString(element.asString)
+                        ColorParser.parseColorStringWithBinding(element.asString, data, context)
                     }
                     else -> null
                 }

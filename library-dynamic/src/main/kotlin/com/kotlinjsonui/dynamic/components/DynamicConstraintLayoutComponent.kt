@@ -73,10 +73,8 @@ class DynamicConstraintLayoutComponent {
                 return
             }
             
-            // Parse background color
-            val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            // Parse background color (supports @{binding})
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
             
             // Build modifier
             var modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)

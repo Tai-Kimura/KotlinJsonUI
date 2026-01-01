@@ -80,7 +80,7 @@ class DynamicTextComponent {
                 createPartialAttributesText(json, text, data)
             } else {
                 // Use standard Text composable
-                createStandardText(json, text)
+                createStandardText(json, text, data)
             }
         }
 
@@ -90,6 +90,7 @@ class DynamicTextComponent {
             text: String,
             data: Map<String, Any>
         ) {
+            val context = LocalContext.current
             val partialAttributes = mutableListOf<PartialAttribute>()
 
             // Parse partial attributes
@@ -161,10 +162,10 @@ class DynamicTextComponent {
             }
 
             // Build text style
-            val style = buildTextStyle(json)
+            val style = buildTextStyle(json, data, context)
 
             // Build modifier
-            val modifier = buildModifier(json)
+            val modifier = buildModifier(json, data, context)
 
             PartialAttributesText(
                 text = text,
@@ -176,16 +177,15 @@ class DynamicTextComponent {
         }
 
         @Composable
-        private fun createStandardText(json: JsonObject, text: String) {
+        private fun createStandardText(json: JsonObject, text: String, data: Map<String, Any>) {
             val context = LocalContext.current
 
             // Font size
             val fontSize = json.get("fontSize")?.asInt ?: 14
 
-            // Font color (official attribute)
-            val fontColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Color.Black
+            // Font color (official attribute, supports @{binding})
+            val fontColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: Color.Black
 
             // Font weight - handle both 'font' and 'fontWeight' attributes
             val fontWeight = when {
@@ -253,7 +253,7 @@ class DynamicTextComponent {
             }
 
             // Build modifier
-            val modifier = buildModifier(json)
+            val modifier = buildModifier(json, data, context)
 
             // Calculate line height (default to fontSize to match iOS behavior)
             val lineHeight = when {
@@ -281,18 +281,15 @@ class DynamicTextComponent {
         }
 
         @Composable
-        private fun buildTextStyle(json: JsonObject): TextStyle {
-            val context = LocalContext.current
+        private fun buildTextStyle(json: JsonObject, data: Map<String, Any>, context: android.content.Context): TextStyle {
             var style = LocalTextStyle.current
 
             json.get("fontSize")?.asInt?.let { fontSize ->
                 style = style.copy(fontSize = fontSize.sp)
             }
 
-            json.get("fontColor")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr, context)?.let { color ->
-                    style = style.copy(color = color)
-                }
+            ColorParser.parseColorWithBinding(json, "fontColor", data, context)?.let { color ->
+                style = style.copy(color = color)
             }
 
             // Font weight
@@ -356,8 +353,7 @@ class DynamicTextComponent {
         }
 
         @Composable
-        private fun buildModifier(json: JsonObject): Modifier {
-            val context = LocalContext.current
+        private fun buildModifier(json: JsonObject, data: Map<String, Any>, context: android.content.Context): Modifier {
 
             // Start with base modifier
             var modifier: Modifier = Modifier
@@ -374,16 +370,13 @@ class DynamicTextComponent {
                 modifier = modifier.clip(shape)
             }
 
-            // 4. Background color
-            json.get("background")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr, context)?.let { color ->
-                    modifier = modifier.background(color)
-                }
+            // 4. Background color (supports @{binding})
+            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
+                modifier = modifier.background(color)
             }
 
-            // 5. Border (after background, supports solid/dashed/dotted)
-            json.get("borderColor")?.asString?.let { borderColorStr ->
-                ColorParser.parseColorString(borderColorStr, context)?.let { borderColor ->
+            // 5. Border (after background, supports solid/dashed/dotted, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "borderColor", data, context)?.let { borderColor ->
                     val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
                     val borderStyle = json.get("borderStyle")?.asString ?: "solid"
                     val shape = json.get("cornerRadius")?.asFloat?.let {
@@ -400,7 +393,6 @@ class DynamicTextComponent {
                             }
                         }
                     }
-                }
             }
 
             // 6. Shadow/elevation

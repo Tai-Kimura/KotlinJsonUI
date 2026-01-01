@@ -12,6 +12,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic ZStack Component Converter
@@ -36,6 +37,8 @@ class DynamicZStackComponent {
             // Apply lifecycle effects first
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
+            val context = LocalContext.current
+
             // Parse alignment
             val alignment = when (json.get("alignment")?.asString?.lowercase()) {
                 "topleft", "topstart" -> Alignment.TopStart
@@ -59,11 +62,9 @@ class DynamicZStackComponent {
             // 2. Apply margins (outer spacing)
             modifier = ModifierBuilder.applyMargins(modifier, json)
             
-            // 3. Background color (before padding so padding is inside the background)
-            json.get("background")?.asString?.let { colorStr ->
-                ColorParser.parseColorString(colorStr)?.let { color ->
-                    modifier = modifier.background(color)
-                }
+            // 3. Background color (before padding so padding is inside the background, supports @{binding})
+            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
+                modifier = modifier.background(color)
             }
             
             // 4. Apply padding (inner spacing) - MUST be applied last
