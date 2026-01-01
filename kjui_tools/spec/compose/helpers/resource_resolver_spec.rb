@@ -59,6 +59,11 @@ RSpec.describe KjuiTools::Compose::Helpers::ResourceResolver do
   end
 
   describe '.process_color' do
+    after(:each) do
+      # Clean up thread-local storage
+      described_class.data_definitions = {}
+    end
+
     it 'returns nil for non-string' do
       result = described_class.process_color(nil, required_imports)
       expect(result).to be_nil
@@ -70,9 +75,31 @@ RSpec.describe KjuiTools::Compose::Helpers::ResourceResolver do
       expect(result).to include('parseColor')
     end
 
-    it 'processes data binding color' do
-      result = described_class.process_color('@{themeColor}', required_imports)
-      expect(result).to include('parseColor')
+    context 'with data binding color' do
+      it 'returns data binding with ?: Color.Unspecified for optional property (no defaultValue)' do
+        # Property without defaultValue is optional
+        described_class.data_definitions = {
+          'themeColor' => { 'name' => 'themeColor', 'type' => 'Color' }
+        }
+        result = described_class.process_color('@{themeColor}', required_imports)
+        expect(result).to eq('data.themeColor ?: Color.Unspecified')
+      end
+
+      it 'returns data binding without ?: for non-optional property (with defaultValue)' do
+        # Property with defaultValue is non-optional
+        described_class.data_definitions = {
+          'themeColor' => { 'name' => 'themeColor', 'type' => 'Color', 'defaultValue' => '#FF0000' }
+        }
+        result = described_class.process_color('@{themeColor}', required_imports)
+        expect(result).to eq('data.themeColor')
+      end
+
+      it 'returns data binding with ?: Color.Unspecified when property not in definitions' do
+        # Property not in definitions is treated as optional
+        described_class.data_definitions = {}
+        result = described_class.process_color('@{unknownColor}', required_imports)
+        expect(result).to eq('data.unknownColor ?: Color.Unspecified')
+      end
     end
 
     context 'with Resources directory' do

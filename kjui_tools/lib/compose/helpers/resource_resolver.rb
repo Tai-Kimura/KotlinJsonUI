@@ -10,11 +10,26 @@ module KjuiTools
     module Helpers
       class ResourceResolver
         class << self
+          # Thread-local storage for data definitions during build
+          def data_definitions
+            Thread.current[:kjui_data_definitions] || {}
+          end
+
+          def data_definitions=(definitions)
+            Thread.current[:kjui_data_definitions] = definitions
+          end
+
+          # Check if a property has a default value (non-optional)
+          def has_default_value?(property_name)
+            return false unless data_definitions[property_name]
+            !data_definitions[property_name]['defaultValue'].nil?
+          end
+
           # Don't cache - just load each time to avoid issues
           def cached_config
             Core::ConfigManager.load_config
           end
-          
+
           def cached_source_path
             Core::ProjectFinder.get_full_source_path || Dir.pwd
           end
@@ -61,7 +76,13 @@ module KjuiTools
             # Handle data binding expressions - convert to data property access
             if color.start_with?('@{') && color.end_with?('}')
               variable = color.gsub(/@\{|\}/, '')
-              return "data.#{variable}"
+              # Check if property has defaultValue (non-optional)
+              if has_default_value?(variable)
+                return "data.#{variable}"
+              else
+                # Nullable (Color?) - need default value
+                return "data.#{variable} ?: Color.Unspecified"
+              end
             end
             
             # Skip resource resolution if we're in the extraction phase

@@ -11,6 +11,7 @@ require_relative 'style_loader'
 require_relative 'data_model_updater'
 require_relative 'helpers/import_manager'
 require_relative 'helpers/modifier_builder'
+require_relative 'helpers/resource_resolver'
 require_relative 'components/text_component'
 require_relative 'components/button_component'
 require_relative 'components/textfield_component'
@@ -82,6 +83,14 @@ module KjuiTools
           @required_imports = Set.new
           @included_views = Set.new
           @custom_components = Set.new
+
+          # Collect data definitions for ResourceResolver to check optional/non-optional
+          data_properties = extract_data_properties(json_data)
+          data_definitions = {}
+          data_properties.each do |prop|
+            data_definitions[prop['name']] = prop
+          end
+          Helpers::ResourceResolver.data_definitions = data_definitions
 
           # Find the GeneratedView file - preserve subdirectory structure from layouts
           relative_path = json_file.sub(@layouts_dir + '/', '')
