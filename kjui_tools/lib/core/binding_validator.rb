@@ -106,6 +106,7 @@ module KjuiTools
       def initialize
         @warnings = []
         @data_properties = Set.new
+        @data_types = {} # Store property name -> type mapping
       end
 
       # Validate all bindings in a JSON component tree
@@ -116,8 +117,9 @@ module KjuiTools
         @warnings = []
         @current_file = file_name
         @data_properties = Set.new
+        @data_types = {}
 
-        # First pass: collect all data property names
+        # First pass: collect all data property names and types
         collect_data_properties(json_data)
 
         # Second pass: validate bindings
@@ -162,7 +164,7 @@ module KjuiTools
 
       private
 
-      # Collect all data property names from the component tree
+      # Collect all data property names and types from the component tree
       def collect_data_properties(component)
         return unless component.is_a?(Hash)
 
@@ -174,9 +176,10 @@ module KjuiTools
             # e.g., { "class": "MyViewModel" } - this is a ViewModel class, not a property
             # But include property declarations: { "name": "userName", "class": "String" }
             next if data_item['class'] && !data_item['name']
-            # Add property name to the set
+            # Add property name and type to the maps
             if data_item['name']
               @data_properties << data_item['name']
+              @data_types[data_item['name']] = data_item['class'] if data_item['class']
             end
           end
         end
@@ -240,6 +243,9 @@ module KjuiTools
 
             # Check if binding variables are defined in data
             check_undefined_variables(binding_expr, attribute_name, component_type)
+
+            # Check if color attributes have correct type (should be Color, not String)
+            check_color_type(binding_expr, attribute_name, component_type)
           end
         when Hash
           value.each do |k, v|
@@ -369,6 +375,40 @@ module KjuiTools
             context = @current_file ? "[#{@current_file}] " : ""
             @warnings << "#{context}'#{component_type}.visibility' binding '@{#{binding_expr}}' appears to be Boolean. Use String property with values: \"visible\", \"gone\", or \"invisible\"."
           end
+        end
+      end
+
+      # Color attributes that should use Color type, not String
+      COLOR_ATTRIBUTES = %w[
+        background fontColor borderColor tintColor
+        disabledBackground disabledFontColor
+        selectedBackground selectedFontColor
+        highlightedBackground highlightedFontColor
+        placeholderColor cursorColor
+        trackColor progressColor thumbColor
+        separatorColor indicatorColor
+      ].freeze
+
+      # Check if color attributes have correct type (should be Color, not String)
+      def check_color_type(binding_expr, attribute_name, component_type)
+        # Get the base attribute name (without nested path like "shadow.color")
+        base_attr = attribute_name.split('.').last
+
+        # Check if this is a color attribute
+        return unless COLOR_ATTRIBUTES.include?(base_attr) || base_attr.end_with?('Color')
+
+        # Extract the variable name from binding expression
+        var_name = binding_expr.split('.').first.gsub(/[^a-zA-Z0-9_]/, '')
+        return if var_name.empty?
+
+        # Check the declared type in data
+        declared_type = @data_types[var_name]
+        return unless declared_type
+
+        # Warn if type is String instead of Color
+        if declared_type == 'String'
+          context = @current_file ? "[#{@current_file}] " : ""
+          @warnings << "#{context}'#{component_type}.#{attribute_name}' binding '@{#{binding_expr}}' has type 'String' but should be 'Color'. Change the data declaration to: { \"name\": \"#{var_name}\", \"class\": \"Color\" }"
         end
       end
     end
