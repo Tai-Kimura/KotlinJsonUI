@@ -149,4 +149,57 @@ object ColorParser {
         val disabledBackgroundColor: Color? = null,
         val disabledTextColor: Color? = null
     )
+
+    /**
+     * Parse color from JSON with binding support
+     * If value is a binding like @{colorProperty}, get Color from data
+     * Otherwise parse as static color string
+     */
+    fun parseColorWithBinding(
+        json: JsonObject,
+        key: String,
+        data: Map<String, Any>,
+        context: Context? = cachedContext
+    ): Color? {
+        val value = json.get(key)?.asString ?: return null
+
+        // Check if it's a binding
+        if (value.startsWith("@{") && value.endsWith("}")) {
+            val bindingProp = value.drop(2).dropLast(1)
+            return when (val boundValue = data[bindingProp]) {
+                is Color -> boundValue
+                is String -> parseColorString(boundValue, context)
+                else -> null
+            }
+        }
+
+        // Static color value
+        return parseColorString(value, context)
+    }
+
+    /**
+     * Parse color string with binding support
+     * If value is a binding like @{colorProperty}, get Color from data
+     * Otherwise parse as static color string
+     */
+    fun parseColorStringWithBinding(
+        value: String?,
+        data: Map<String, Any>,
+        context: Context? = cachedContext
+    ): Color? {
+        if (value == null) return null
+
+        // Check if it's a binding
+        if (value.startsWith("@{") && value.endsWith("}")) {
+            val bindingProp = value.drop(2).dropLast(1)
+            return when (val boundValue = data[bindingProp]) {
+                is Color -> boundValue
+                is String -> parseColorString(boundValue, context)
+                else -> null
+            }
+        }
+
+        // Static color value
+        return parseColorString(value, context)
+    }
 }

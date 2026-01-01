@@ -164,14 +164,12 @@ class DynamicButtonComponent {
                 else -> FontWeight.Normal
             }
 
-            // Parse colors with Configuration defaults
-            val textColor = json.get("fontColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.Button.defaultTextColor
+            // Parse colors with Configuration defaults (supports @{binding})
+            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: Configuration.Button.defaultTextColor
 
-            val backgroundColor = json.get("background")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            } ?: Configuration.Button.defaultBackgroundColor
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: Configuration.Button.defaultBackgroundColor
 
             // Parse shape with Configuration default
             val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.Button.defaultCornerRadius.toFloat()
@@ -199,10 +197,8 @@ class DynamicButtonComponent {
                 disabledContentColor = textColor.copy(alpha = 0.5f)
             )
 
-            // Parse border
-            val borderColor = json.get("borderColor")?.asString?.let {
-                ColorParser.parseColorString(it, context)
-            }
+            // Parse border (supports @{binding})
+            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
             val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
             val borderStyle = json.get("borderStyle")?.asString?.lowercase()
 

@@ -116,9 +116,9 @@ class DynamicTabViewComponent {
             }
 
             // Parse colors - handle both static values and bindings
-            val tintColor = parseColorWithBinding(json, "tintColor", data)
-            val unselectedColor = parseColorWithBinding(json, "unselectedColor", data)
-            val tabBarBackground = parseColorWithBinding(json, "tabBarBackground", data)
+            val tintColor = ColorParser.parseColorWithBinding(json, "tintColor", data)
+            val unselectedColor = ColorParser.parseColorWithBinding(json, "unselectedColor", data)
+            val tabBarBackground = ColorParser.parseColorWithBinding(json, "tabBarBackground", data)
             val showLabels = json.get("showLabels")?.asBoolean ?: true
 
             // Build tab items data
@@ -330,32 +330,6 @@ class DynamicTabViewComponent {
                     contentDescription = contentDescription
                 )
             }
-        }
-
-        /**
-         * Parse color from JSON with binding support
-         * If value is a binding like @{colorProperty}, get Color from data
-         * Otherwise parse as static color string
-         */
-        private fun parseColorWithBinding(
-            json: JsonObject,
-            key: String,
-            data: Map<String, Any>
-        ): Color? {
-            val value = json.get(key)?.asString ?: return null
-
-            // Check if it's a binding
-            if (value.startsWith("@{") && value.endsWith("}")) {
-                val bindingProp = value.drop(2).dropLast(1)
-                return when (val boundValue = data[bindingProp]) {
-                    is Color -> boundValue
-                    is String -> ColorParser.parseColorString(boundValue)
-                    else -> null
-                }
-            }
-
-            // Static color value
-            return ColorParser.parseColorString(value)
         }
 
         private fun getIconVector(iconName: String, filled: Boolean): ImageVector {
