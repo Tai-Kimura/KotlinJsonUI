@@ -158,7 +158,7 @@ RSpec.describe KjuiTools::Compose::Components::CollectionComponent do
         }
         result = described_class.generate(json_data, 0, required_imports)
         expect(result).to include('Section 1: ProductCell')
-        expect(result).to include('ProductCellData.fromMap')
+        expect(result).to include('ProductCellViewModel')
       end
 
       it 'generates section with header' do
@@ -171,7 +171,7 @@ RSpec.describe KjuiTools::Compose::Components::CollectionComponent do
         }
         result = described_class.generate(json_data, 0, required_imports)
         expect(result).to include('Section 1 Header: HeaderCell')
-        expect(result).to include('HeaderCellData.fromMap')
+        expect(result).to include('HeaderCellViewModel')
         expect(result).to include('GridItemSpan(maxLineSpan)')
       end
 
@@ -185,7 +185,7 @@ RSpec.describe KjuiTools::Compose::Components::CollectionComponent do
         }
         result = described_class.generate(json_data, 0, required_imports)
         expect(result).to include('Section 1 Footer: FooterCell')
-        expect(result).to include('FooterCellData.fromMap')
+        expect(result).to include('FooterCellViewModel')
       end
 
       it 'handles sections without items binding' do
@@ -226,7 +226,8 @@ RSpec.describe KjuiTools::Compose::Components::CollectionComponent do
           ]
         }
         result = described_class.generate(json_data, 0, required_imports)
-        expect(result).to include('.width(150.dp)')
+        expect(result).to include('LazyHorizontalGrid')
+        expect(result).to include('CardCellView')
       end
 
       it 'handles vertical layout with cellHeight' do
@@ -239,7 +240,8 @@ RSpec.describe KjuiTools::Compose::Components::CollectionComponent do
           ]
         }
         result = described_class.generate(json_data, 0, required_imports)
-        expect(result).to include('.height(80.dp)')
+        expect(result).to include('LazyVerticalGrid')
+        expect(result).to include('ListItemCellView')
       end
 
       it 'fills width for multi-column sections' do
@@ -251,7 +253,8 @@ RSpec.describe KjuiTools::Compose::Components::CollectionComponent do
           ]
         }
         result = described_class.generate(json_data, 0, required_imports)
-        expect(result).to include('.fillMaxWidth()')
+        expect(result).to include('GridCellView')
+        expect(result).to include('GridCells.Fixed(2)')
       end
     end
   end

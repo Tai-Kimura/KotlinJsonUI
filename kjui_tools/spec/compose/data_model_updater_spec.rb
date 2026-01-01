@@ -285,8 +285,7 @@ RSpec.describe KjuiTools::Compose::DataModelUpdater do
 
       it 'formats Color hex values' do
         result = updater.send(:format_default_value, '#FF0000', 'Color')
-        expect(result).to include('Color')
-        expect(result).to include('parseColor')
+        expect(result).to eq('Color(0xFFFF0000)')
       end
 
       it 'formats Color named values' do

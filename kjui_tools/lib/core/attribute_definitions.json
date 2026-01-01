@@ -252,6 +252,13 @@
       ],
       "description": "Whether component is hidden (can be data binding)"
     },
+    "padding": {
+      "type": [
+        "number",
+        "binding"
+      ],
+      "description": "Uniform padding value (binding supported)"
+    },
     "paddings": {
       "type": [
         "number",
