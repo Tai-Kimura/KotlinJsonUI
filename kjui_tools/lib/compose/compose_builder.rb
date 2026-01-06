@@ -277,6 +277,15 @@ module KjuiTools
         edges_array = json_data['edges'] || json_data['safeAreaInsetPositions'] || ['all']
         edges = edges_array.is_a?(Array) ? edges_array : [edges_array]
 
+        # Get children - support both 'child' and 'children'
+        children = json_data['children'] || json_data['child'] || []
+        children = [children] unless children.is_a?(Array)
+
+        # Check if any child has relative positioning - if so, use ConstraintLayout
+        if has_relative_positioning_in_children?(children)
+          return generate_safe_area_view_with_constraints(json_data, children, edges, depth)
+        end
+
         # Parse orientation for child layout
         orientation = json_data['orientation']
 
@@ -325,10 +334,6 @@ module KjuiTools
         code += Helpers::ModifierBuilder.format(modifiers, depth)
         code += "\n" + indent(") {", depth)
 
-        # Get children - support both 'child' and 'children'
-        children = json_data['children'] || json_data['child'] || []
-        children = [children] unless children.is_a?(Array)
-
         children.each do |child|
           child_code = generate_component(child, depth + 1)
           code += "\n" + child_code unless child_code.empty?
@@ -336,6 +341,187 @@ module KjuiTools
 
         code += "\n" + indent("}", depth)
         code
+      end
+
+      def has_relative_positioning_in_children?(children)
+        relative_attrs = [
+          'alignTopOfView', 'alignBottomOfView', 'alignLeftOfView', 'alignRightOfView',
+          'alignTopView', 'alignBottomView', 'alignLeftView', 'alignRightView',
+          'alignCenterVerticalView', 'alignCenterHorizontalView'
+        ]
+
+        children.any? do |child|
+          next false unless child.is_a?(Hash)
+          relative_attrs.any? { |attr| child[attr] }
+        end
+      end
+
+      def generate_safe_area_view_with_constraints(json_data, children, edges, depth)
+        @required_imports&.add(:constraint_layout)
+
+        # Get parent SafeAreaConfig and filter edges
+        code = indent("val safeAreaConfig = LocalSafeAreaConfig.current", depth)
+        code += "\n" + indent("val edges = mutableListOf(#{edges.map { |e| "\"#{e}\"" }.join(', ')}).apply {", depth)
+        code += "\n" + indent("if (safeAreaConfig.ignoreBottom) {", depth + 1)
+        code += "\n" + indent("remove(\"bottom\")", depth + 2)
+        code += "\n" + indent("if (contains(\"all\")) { remove(\"all\"); addAll(listOf(\"top\", \"start\", \"end\")) }", depth + 2)
+        code += "\n" + indent("}", depth + 1)
+        code += "\n" + indent("if (safeAreaConfig.ignoreTop) {", depth + 1)
+        code += "\n" + indent("remove(\"top\")", depth + 2)
+        code += "\n" + indent("if (contains(\"all\")) { remove(\"all\"); addAll(listOf(\"bottom\", \"start\", \"end\")) }", depth + 2)
+        code += "\n" + indent("}", depth + 1)
+        code += "\n" + indent("}.distinct()", depth)
+
+        code += "\n\n" + indent("ConstraintLayout(", depth)
+
+        # Build modifiers
+        modifiers = ["Modifier"]
+        modifiers << ".fillMaxSize()"
+        modifiers.concat(Helpers::ModifierBuilder.build_background(json_data, @required_imports))
+
+        # Apply safe area padding based on edges (after background)
+        modifiers << ".then(if (edges.contains(\"all\")) Modifier.systemBarsPadding() else Modifier)"
+        modifiers << ".then(if (!edges.contains(\"all\") && edges.contains(\"top\")) Modifier.statusBarsPadding() else Modifier)"
+        modifiers << ".then(if (!edges.contains(\"all\") && edges.contains(\"bottom\")) Modifier.navigationBarsPadding() else Modifier)"
+
+        # Check if keyboard padding should be applied
+        ignore_keyboard = json_data['ignoreKeyboard'] == true
+        modifiers << ".imePadding()" unless ignore_keyboard
+
+        modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
+        modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
+
+        code += Helpers::ModifierBuilder.format(modifiers, depth)
+        code += "\n" + indent(") {", depth)
+
+        # Create constraint references for children with IDs
+        children.each do |child|
+          next unless child.is_a?(Hash) && child['id']
+          ref_name = child['id']
+          code += "\n" + indent("val #{ref_name} = createRef()", depth + 1)
+        end
+        code += "\n"
+
+        # Generate children with constraints
+        children.each do |child|
+          next unless child.is_a?(Hash)
+          child_code = generate_safe_area_child_with_constraints(child, depth + 1)
+          code += "\n" + child_code unless child_code.empty?
+        end
+
+        code += "\n" + indent("}", depth)
+        code
+      end
+
+      def generate_safe_area_child_with_constraints(child_data, depth)
+        ref_name = child_data['id']
+        component_type = child_data['type'] || 'View'
+
+        # Build constraints for this child
+        constraints = Helpers::ModifierBuilder.build_relative_positioning(child_data)
+
+        # Generate the component based on type
+        case component_type
+        when 'ScrollView', 'Scroll'
+          generate_scroll_with_constraints(child_data, ref_name, constraints, depth)
+        when 'View'
+          generate_view_with_constraints(child_data, ref_name, constraints, depth)
+        else
+          # For other types, generate normally but wrap with constraint modifier
+          generate_component_with_constraints(child_data, ref_name, constraints, depth)
+        end
+      end
+
+      def generate_scroll_with_constraints(child_data, ref_name, constraints, depth)
+        # Generate LazyColumn with constrainAs modifier
+        code = indent("LazyColumn(", depth)
+
+        modifiers = ["Modifier"]
+
+        # Add constrainAs if we have a ref_name
+        if ref_name
+          constraint_block = constraints.any? ? constraints.join("\n" + "    " * (depth + 2)) : ""
+          modifiers << ".constrainAs(#{ref_name}) {\n" + indent(constraint_block, depth + 2) + "\n" + indent("}", depth + 1)
+        end
+
+        modifiers.concat(Helpers::ModifierBuilder.build_size(child_data))
+
+        # Check if keyboard padding should be applied
+        ignore_keyboard = child_data['ignoreKeyboard'] == true
+        modifiers << ".imePadding()" unless ignore_keyboard
+
+        code += Helpers::ModifierBuilder.format(modifiers, depth)
+        code += "\n" + indent(") {", depth)
+
+        # Process scroll content
+        scroll_children = child_data['child'] || child_data['children'] || []
+        scroll_children = [scroll_children] unless scroll_children.is_a?(Array)
+
+        code += "\n" + indent("item {", depth + 1)
+        scroll_children.each do |scroll_child|
+          child_code = generate_component(scroll_child, depth + 2)
+          code += "\n" + child_code unless child_code.empty?
+        end
+        code += "\n" + indent("}", depth + 1)
+
+        code += "\n" + indent("}", depth)
+        code
+      end
+
+      def generate_view_with_constraints(child_data, ref_name, constraints, depth)
+        # Determine layout type based on orientation
+        orientation = child_data['orientation']
+        container = case orientation
+                    when 'horizontal' then 'Row'
+                    when 'vertical' then 'Column'
+                    else 'Box'
+                    end
+
+        code = indent("#{container}(", depth)
+
+        modifiers = ["Modifier"]
+
+        # Add constrainAs if we have a ref_name
+        if ref_name
+          constraint_block = constraints.any? ? constraints.join("\n" + "    " * (depth + 2)) : ""
+          modifiers << ".constrainAs(#{ref_name}) {\n" + indent(constraint_block, depth + 2) + "\n" + indent("}", depth + 1)
+        end
+
+        modifiers.concat(Helpers::ModifierBuilder.build_size(child_data))
+        modifiers.concat(Helpers::ModifierBuilder.build_margins(child_data))
+        modifiers.concat(Helpers::ModifierBuilder.build_background(child_data, @required_imports))
+        modifiers.concat(Helpers::ModifierBuilder.build_padding(child_data))
+
+        code += Helpers::ModifierBuilder.format(modifiers, depth)
+        code += "\n" + indent(") {", depth)
+
+        # Process children
+        view_children = child_data['child'] || child_data['children'] || []
+        view_children = [view_children] unless view_children.is_a?(Array)
+
+        view_children.each do |view_child|
+          child_code = generate_component(view_child, depth + 1, container)
+          code += "\n" + child_code unless child_code.empty?
+        end
+
+        code += "\n" + indent("}", depth)
+        code
+      end
+
+      def generate_component_with_constraints(child_data, ref_name, constraints, depth)
+        # Generate the component normally and then add constrainAs modifier
+        result = generate_component(child_data, depth)
+
+        # If we have constraints, we need to inject them
+        if ref_name && constraints.any? && result.include?("modifier = Modifier")
+          constraint_block = constraints.join("\n" + "    " * (depth + 2))
+          constraint_modifier = ".constrainAs(#{ref_name}) {\n" + indent(constraint_block, depth + 2) + "\n" + indent("}", depth + 1)
+
+          # Insert after "modifier = Modifier"
+          result = result.sub(/modifier = Modifier/, "modifier = Modifier#{constraint_modifier}")
+        end
+
+        result
       end
       
       def generate_include(json_data, depth)

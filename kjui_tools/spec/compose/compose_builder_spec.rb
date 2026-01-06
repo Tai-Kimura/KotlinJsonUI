@@ -357,6 +357,9 @@ RSpec.describe KjuiTools::Compose::ComposeBuilder do
     describe '#generate_safe_area_view' do
       before do
         builder.instance_variable_set(:@required_imports, Set.new)
+        builder.instance_variable_set(:@included_views, Set.new)
+        builder.instance_variable_set(:@cell_views, Set.new)
+        builder.instance_variable_set(:@custom_components, Set.new)
       end
 
       it 'generates Box with systemBarsPadding' do
@@ -375,6 +378,149 @@ RSpec.describe KjuiTools::Compose::ComposeBuilder do
         data = { 'child' => [{ 'type' => 'Text', 'text' => 'Hello' }] }
         result = builder.send(:generate_safe_area_view, data, 0)
         expect(result).to include('Text(')
+      end
+
+      context 'with relative positioning in children' do
+        it 'uses ConstraintLayout when child has alignBottomOfView' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'headerContainer', 'orientation' => 'vertical' },
+              { 'type' => 'ScrollView', 'id' => 'scrollContent', 'alignBottomOfView' => 'headerContainer' }
+            ]
+          }
+          result = builder.send(:generate_safe_area_view, data, 0)
+          expect(result).to include('ConstraintLayout(')
+          expect(result).to include('val headerContainer = createRef()')
+          expect(result).to include('.constrainAs(')
+          expect(result).to include('top.linkTo(headerContainer.bottom')
+        end
+
+        it 'uses ConstraintLayout when child has alignTopOfView' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'footer', 'orientation' => 'vertical' },
+              { 'type' => 'View', 'alignTopOfView' => 'footer' }
+            ]
+          }
+          result = builder.send(:generate_safe_area_view, data, 0)
+          expect(result).to include('ConstraintLayout(')
+        end
+
+        it 'uses ConstraintLayout when child has alignLeftOfView' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'sidebar' },
+              { 'type' => 'View', 'alignLeftOfView' => 'sidebar' }
+            ]
+          }
+          result = builder.send(:generate_safe_area_view, data, 0)
+          expect(result).to include('ConstraintLayout(')
+        end
+
+        it 'uses ConstraintLayout when child has alignRightOfView' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'sidebar' },
+              { 'type' => 'View', 'alignRightOfView' => 'sidebar' }
+            ]
+          }
+          result = builder.send(:generate_safe_area_view, data, 0)
+          expect(result).to include('ConstraintLayout(')
+        end
+
+        it 'generates LazyColumn for ScrollView with constraints' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'header', 'orientation' => 'vertical' },
+              { 'type' => 'ScrollView', 'id' => 'content', 'alignBottomOfView' => 'header', 'child' => { 'type' => 'Text', 'text' => 'Content' } }
+            ]
+          }
+          result = builder.send(:generate_safe_area_view, data, 0)
+          expect(result).to include('LazyColumn(')
+          expect(result).to include('item {')
+        end
+
+        it 'does not use ConstraintLayout without relative positioning' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'header' },
+              { 'type' => 'View', 'id' => 'content' }
+            ]
+          }
+          result = builder.send(:generate_safe_area_view, data, 0)
+          expect(result).to include('Box(')
+          expect(result).not_to include('ConstraintLayout(')
+        end
+
+        it 'adds constraint_layout to required imports when using ConstraintLayout' do
+          data = {
+            'child' => [
+              { 'type' => 'View', 'id' => 'header' },
+              { 'type' => 'ScrollView', 'alignBottomOfView' => 'header' }
+            ]
+          }
+          builder.send(:generate_safe_area_view, data, 0)
+          expect(builder.instance_variable_get(:@required_imports)).to include(:constraint_layout)
+        end
+      end
+    end
+
+    describe '#has_relative_positioning_in_children?' do
+      it 'returns true when child has alignBottomOfView' do
+        children = [{ 'type' => 'View', 'alignBottomOfView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignTopOfView' do
+        children = [{ 'type' => 'View', 'alignTopOfView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignLeftOfView' do
+        children = [{ 'type' => 'View', 'alignLeftOfView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignRightOfView' do
+        children = [{ 'type' => 'View', 'alignRightOfView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignTopView' do
+        children = [{ 'type' => 'View', 'alignTopView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignBottomView' do
+        children = [{ 'type' => 'View', 'alignBottomView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignCenterVerticalView' do
+        children = [{ 'type' => 'View', 'alignCenterVerticalView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns true when child has alignCenterHorizontalView' do
+        children = [{ 'type' => 'View', 'alignCenterHorizontalView' => 'other' }]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be true
+      end
+
+      it 'returns false when no children have relative positioning' do
+        children = [
+          { 'type' => 'View', 'id' => 'header' },
+          { 'type' => 'View', 'id' => 'content' }
+        ]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be false
+      end
+
+      it 'returns false for empty children' do
+        expect(builder.send(:has_relative_positioning_in_children?, [])).to be false
+      end
+
+      it 'returns false for non-hash children' do
+        children = ['not a hash', 123, nil]
+        expect(builder.send(:has_relative_positioning_in_children?, children)).to be false
       end
     end
 
