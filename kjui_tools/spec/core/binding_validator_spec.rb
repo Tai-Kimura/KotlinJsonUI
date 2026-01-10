@@ -549,4 +549,103 @@ RSpec.describe KjuiTools::Core::BindingValidator do
       expect(validator.has_warnings?).to be true
     end
   end
+
+  describe 'unused data property detection' do
+    context 'with unused data property' do
+      let(:json_data) do
+        {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'usedProp', 'class' => 'String' },
+            { 'name' => 'unusedProp', 'class' => 'String' }
+          ],
+          'child' => [
+            { 'type' => 'Text', 'text' => '@{usedProp}' }
+          ]
+        }
+      end
+
+      it 'warns for unused data property' do
+        warnings = validator.validate(json_data, 'Test.json')
+        expect(warnings.any? { |w| w.include?("'unusedProp'") && w.include?('never used') }).to be true
+      end
+
+      it 'does not warn for used data property' do
+        warnings = validator.validate(json_data, 'Test.json')
+        expect(warnings.none? { |w| w.include?("'usedProp'") && w.include?('never used') }).to be true
+      end
+    end
+
+    context 'with property used in shared_data' do
+      let(:json_data) do
+        {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'headerTitle', 'class' => 'String' }
+          ],
+          'child' => [
+            {
+              'include' => 'header',
+              'shared_data' => {
+                'title' => 'headerTitle'
+              }
+            }
+          ]
+        }
+      end
+
+      it 'does not warn for property used in shared_data' do
+        warnings = validator.validate(json_data)
+        expect(warnings.none? { |w| w.include?("'headerTitle'") && w.include?('never used') }).to be true
+      end
+    end
+
+    context 'with property used in include data' do
+      let(:json_data) do
+        {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'itemName', 'class' => 'String' }
+          ],
+          'child' => [
+            {
+              'include' => 'item_view',
+              'data' => {
+                'name' => 'itemName'
+              }
+            }
+          ]
+        }
+      end
+
+      it 'does not warn for property used in include data' do
+        warnings = validator.validate(json_data)
+        expect(warnings.none? { |w| w.include?("'itemName'") && w.include?('never used') }).to be true
+      end
+    end
+
+    context 'with multiple unused properties' do
+      let(:json_data) do
+        {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'unused1', 'class' => 'String' },
+            { 'name' => 'unused2', 'class' => 'Int' },
+            { 'name' => 'used', 'class' => 'Boolean' }
+          ],
+          'child' => [
+            { 'type' => 'View', 'hidden' => '@{used}' }
+          ]
+        }
+      end
+
+      it 'warns for each unused property' do
+        warnings = validator.validate(json_data)
+        unused_warnings = warnings.select { |w| w.include?('never used') }
+        expect(unused_warnings.length).to eq(2)
+        expect(warnings.any? { |w| w.include?("'unused1'") }).to be true
+        expect(warnings.any? { |w| w.include?("'unused2'") }).to be true
+      end
+    end
+  end
 end
