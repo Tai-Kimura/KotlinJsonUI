@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun HorizontalCardGeneratedView(
@@ -37,7 +38,7 @@ fun HorizontalCardGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "horizontal_card",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -89,12 +90,14 @@ fun HorizontalCardGeneratedView(
             fontSize = 14.sp,
             color = colorResource(R.color.dark_gray),
             fontWeight = FontWeight.SemiBold,
+            style = TextStyle(lineHeight = 14.sp),
             modifier = Modifier.padding(top = 8.dp)
         )
         Text(
             text = "${data.description}",
             fontSize = 12.sp,
             color = colorResource(R.color.medium_gray_4),
+            style = TextStyle(lineHeight = 12.sp),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

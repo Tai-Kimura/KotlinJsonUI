@@ -8,6 +8,7 @@ require_relative '../core/project_finder'
 require_relative '../core/logger'
 require_relative '../core/type_converter'
 require_relative 'style_loader'
+require_relative 'include_expander'
 require_relative 'data_model_updater'
 require_relative 'helpers/import_manager'
 require_relative 'helpers/modifier_builder'
@@ -78,7 +79,16 @@ module KjuiTools
         begin
           json_content = File.read(json_file)
           json_data = JSON.parse(json_content)
+
+          # Skip partial files (they are included in other views, not standalone)
+          if json_data['partial'] == true
+            return nil
+          end
+
           json_data = StyleLoader.load_and_merge(json_data)
+
+          # Process includes - expand inline with ID prefix support (like SwiftJsonUI)
+          json_data = IncludeExpander.process_includes(json_data, File.dirname(json_file))
 
           @required_imports = Set.new
           @included_views = Set.new
@@ -139,8 +149,11 @@ module KjuiTools
         
         component_type = json_data['type'] || 'View'
         
-        # Handle includes
-        return generate_include(json_data, depth) if json_data['include']
+        # Includes should have been expanded by IncludeExpander.process_includes
+        # If we still see an include here, it's a bug
+        if json_data['include']
+          raise "Include should have been expanded by IncludeExpander.process_includes. This is a bug."
+        end
         
         # Generate component based on type
         case component_type
@@ -523,206 +536,7 @@ module KjuiTools
 
         result
       end
-      
-      def generate_include(json_data, depth)
-        include_name = json_data['include']
-        pascal_name = to_pascal_case(include_name)
-        snake_name = to_snake_case(include_name)
-        
-        # Check if we should use DynamicView
-        use_dynamic = json_data['dynamic'] == true
-        
-        # Track this included view for imports
-        @included_views&.add(snake_name) unless use_dynamic
-        
-        # Track required imports for LaunchedEffect if we have data bindings
-        has_data_bindings = false
-        
-        # Check if there's data or shared_data to pass
-        include_data = json_data['data'] || {}
-        shared_data = json_data['shared_data'] || {}
-        
-        # Check for @{} bindings in data
-        include_data.each do |key, value|
-          if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-            has_data_bindings = true
-            unless use_dynamic
-              @required_imports.add(:LaunchedEffect)
-              @required_imports.add(:remember)
-            end
-            break
-          end
-        end
-        
-        # If using dynamic view, generate DynamicView call
-        if use_dynamic
-          return generate_dynamic_include(json_data, depth, include_data, shared_data, has_data_bindings)
-        end
-        
-        # Generate unique instance ID for this include
-        instance_id = "#{to_camel_case(include_name)}Instance#{depth}"
-        
-        code = ""
-        
-        # Create a remember block for the ViewModel instance
-        code += indent("val context = LocalContext.current", depth)
-        code += "\n"
-        code += indent("val #{instance_id} = remember { #{pascal_name}ViewModel(context.applicationContext as Application) }", depth)
-        code += "\n"
-        
-        # If we have data bindings, add LaunchedEffect to update on parent data changes
-        if has_data_bindings || shared_data.any?
-          code += "\n" + indent("// Update included view when parent data changes", depth)
-          code += "\n" + indent("LaunchedEffect(", depth)
-          
-          # Add keys for all bound variables
-          keys = []
-          include_data.each do |key, value|
-            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-              variable = $1
-              keys << "data.#{variable}"
-            end
-          end
-          shared_data.each do |key, value|
-            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-              variable = $1
-              keys << "data.#{variable}"
-            end
-          end
-          
-          if keys.any?
-            code += keys.join(", ")
-          else
-            code += "Unit"
-          end
-          
-          code += ") {"
-          code += "\n" + indent("val updates = mutableMapOf<String, Any>()", depth + 1)
-          
-          # Process data (one-way binding from parent to child)
-          include_data.each do |key, value|
-            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-              # This is a data binding reference to parent data
-              variable = $1
-              code += "\n" + indent("updates[\"#{key}\"] = data.#{variable}", depth + 1)
-            else
-              # This is a static value
-              formatted_value = format_value_for_kotlin(value)
-              code += "\n" + indent("updates[\"#{key}\"] = #{formatted_value}", depth + 1)
-            end
-          end
-          
-          # Process shared_data (two-way binding)
-          if shared_data.any?
-            code += "\n" + indent("// Shared data for two-way binding", depth + 1)
-            shared_data.each do |key, value|
-              if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-                # This creates a two-way binding
-                variable = $1
-                code += "\n" + indent("updates[\"#{key}\"] = data.#{variable}", depth + 1)
-                # TODO: Also need to update parent when child changes
-              else
-                # Static value for shared_data
-                formatted_value = format_value_for_kotlin(value)
-                code += "\n" + indent("updates[\"#{key}\"] = #{formatted_value}", depth + 1)
-              end
-            end
-          end
-          
-          code += "\n" + indent("#{instance_id}.updateData(updates)", depth + 1)
-          code += "\n" + indent("}", depth)
-        end
-        
-        # Generate the included view call
-        code += "\n" + indent("#{pascal_name}View(", depth)
-        code += "\n" + indent("viewModel = #{instance_id}", depth + 1)
-        code += "\n" + indent(")", depth)
-        
-        code
-      end
-      
-      def generate_dynamic_include(json_data, depth, include_data, shared_data, has_data_bindings)
-        include_name = json_data['include']
-        
-        # Add required imports for SafeDynamicView
-        @required_imports.add(:safe_dynamic_view)
-        
-        code = ""
-        
-        # Build data map from bindings and current data
-        code += indent("// Build data map with bindings", depth)
-        code += "\n" + indent("val dynamicData = mutableMapOf<String, Any>()", depth)
-        
-        # Add all current data values
-        code += "\n" + indent("// Add current data values", depth)
-        code += "\n" + indent("data.forEach { (key, value) ->", depth)
-        code += "\n" + indent("dynamicData[key] = value", depth + 1)
-        code += "\n" + indent("}", depth)
-        
-        # Process include_data bindings
-        if include_data.any?
-          code += "\n" + indent("// Process include data bindings", depth)
-          include_data.each do |key, value|
-            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-              # This is a data binding reference to parent data
-              variable = $1
-              code += "\n" + indent("data[\"#{variable}\"]?.let { dynamicData[\"#{key}\"] = it }", depth)
-            else
-              # This is a static value
-              formatted_value = format_value_for_kotlin(value)
-              code += "\n" + indent("dynamicData[\"#{key}\"] = #{formatted_value}", depth)
-            end
-          end
-        end
-        
-        # Process shared_data bindings
-        if shared_data.any?
-          code += "\n" + indent("// Process shared data bindings", depth)
-          shared_data.each do |key, value|
-            if value.is_a?(String) && value.match(/@\{([^}]+)\}/)
-              # This creates a two-way binding
-              variable = $1
-              code += "\n" + indent("data[\"#{variable}\"]?.let { dynamicData[\"#{key}\"] = it }", depth)
-            else
-              # Static value for shared_data
-              formatted_value = format_value_for_kotlin(value)
-              code += "\n" + indent("dynamicData[\"#{key}\"] = #{formatted_value}", depth)
-            end
-          end
-        end
-        
-        # Add all viewModel methods as functions to the data map
-        code += "\n" + indent("// Add viewModel methods as event handlers", depth)
-        code += "\n" + indent("// Note: Add specific method references as needed", depth)
-        code += "\n" + indent("// Example: dynamicData[\"onButtonClick\"] = { viewModel.onButtonClick() }", depth)
-        
-        # Call SafeDynamicView
-        code += "\n" + indent("// Render dynamic view", depth)
-        code += "\n" + indent("SafeDynamicView(", depth)
-        code += "\n" + indent("layoutName = \"#{include_name}\",", depth + 1)
-        code += "\n" + indent("data = dynamicData", depth + 1)
-        code += "\n" + indent(")", depth)
-        
-        code
-      end
-      
-      def format_value_for_kotlin(value)
-        case value
-        when String
-          "\"#{value.gsub('"', '\\"')}\""
-        when Integer
-          value.to_s
-        when Float
-          "#{value}f"
-        when TrueClass, FalseClass
-          value.to_s
-        when nil
-          "null"
-        else
-          "\"#{value}\""
-        end
-      end
-      
+
       def update_generated_file(file_path, json_data, dynamic_layout_name = nil)
         existing_content = File.read(file_path)
 
@@ -822,11 +636,12 @@ module KjuiTools
 
       def extract_data_properties(json_data, properties = [])
         if json_data.is_a?(Hash)
-          # Stop if this is an include - includes have their own data models
-          return properties if json_data['include']
+          # Note: includes are now expanded inline by IncludeExpander, so we should
+          # not see 'include' keys here. All data definitions (including those from
+          # expanded includes with ID prefixes) should be collected.
 
-          # Check for data section at any level, but only process the first one found
-          if json_data['data'] && properties.empty?
+          # Check for data section at any level and collect ALL data definitions
+          if json_data['data']
             if json_data['data'].is_a?(Array)
               json_data['data'].each do |data_item|
                 if data_item.is_a?(Hash) && data_item['name']
@@ -838,12 +653,11 @@ module KjuiTools
             end
           end
 
-          # If we haven't found data yet, continue searching in children
-          if properties.empty? && json_data['child']
+          # Continue searching in children (collect all data, not just the first)
+          if json_data['child']
             if json_data['child'].is_a?(Array)
               json_data['child'].each do |child|
                 extract_data_properties(child, properties)
-                break unless properties.empty?
               end
             else
               extract_data_properties(json_data['child'], properties)
@@ -852,7 +666,6 @@ module KjuiTools
         elsif json_data.is_a?(Array)
           json_data.each do |item|
             extract_data_properties(item, properties)
-            break unless properties.empty?
           end
         end
 

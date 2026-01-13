@@ -41,6 +41,12 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -55,7 +61,7 @@ fun DatePickerTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "date_picker_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -92,6 +98,7 @@ fun DatePickerTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -100,27 +107,30 @@ fun DatePickerTestGeneratedView(
                 .wrapContentHeight()
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
                 color = colorResource(R.color.black),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
+                    .testTag("title_label")
+                    .semantics { contentDescription = "title_label" }
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
@@ -130,6 +140,7 @@ fun DatePickerTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             DateSelectBox(
@@ -140,6 +151,8 @@ fun DatePickerTestGeneratedView(
                 datePickerMode = "date",
                 dateFormat = "yyyy-MM-dd",
                 modifier = Modifier
+                    .testTag("basic_date_picker")
+                    .semantics { contentDescription = "basic_date_picker" }
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
@@ -151,12 +164,14 @@ fun DatePickerTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             Text(
                 text = stringResource(R.string.date_picker_test_min_20250101_max_20251231),
                 fontSize = 12.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 12.sp),
                 modifier = Modifier.padding(top = 5.dp)
             )
             DateSelectBox(
@@ -169,6 +184,8 @@ fun DatePickerTestGeneratedView(
                 minimumDate = "2025-01-01",
                 maximumDate = "2025-12-31",
                 modifier = Modifier
+                    .testTag("limited_date_picker")
+                    .semantics { contentDescription = "limited_date_picker" }
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
@@ -180,6 +197,7 @@ fun DatePickerTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             DateSelectBox(
@@ -190,6 +208,8 @@ fun DatePickerTestGeneratedView(
                 datePickerMode = "time",
                 dateFormat = "HH:mm",
                 modifier = Modifier
+                    .testTag("time_picker")
+                    .semantics { contentDescription = "time_picker" }
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
@@ -201,6 +221,7 @@ fun DatePickerTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             DateSelectBox(
@@ -211,6 +232,8 @@ fun DatePickerTestGeneratedView(
                 datePickerMode = "dateAndTime",
                 dateFormat = "yyyy-MM-dd HH:mm",
                 modifier = Modifier
+                    .testTag("datetime_picker")
+                    .semantics { contentDescription = "datetime_picker" }
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
@@ -222,12 +245,14 @@ fun DatePickerTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             Text(
                 text = stringResource(R.string.date_picker_test_15_minute_intervals),
                 fontSize = 12.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 12.sp),
                 modifier = Modifier.padding(top = 5.dp)
             )
             DateSelectBox(
@@ -239,6 +264,8 @@ fun DatePickerTestGeneratedView(
                 dateFormat = "HH:mm",
                 minuteInterval = 15,
                 modifier = Modifier
+                    .testTag("interval_picker")
+                    .semantics { contentDescription = "interval_picker" }
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 10.dp)
@@ -250,6 +277,7 @@ fun DatePickerTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             DateSelectBox(
@@ -261,6 +289,8 @@ fun DatePickerTestGeneratedView(
                 datePickerStyle = "graphical",
                 dateFormat = "yyyy-MM-dd",
                 modifier = Modifier
+                    .testTag("calendar_picker")
+                    .semantics { contentDescription = "calendar_picker" }
                     .fillMaxWidth()
                     .height(300.dp)
                     .padding(top = 10.dp)
@@ -272,6 +302,8 @@ fun DatePickerTestGeneratedView(
                 onValueChange = { },
                 placeholder = "Select Date Range",
                 modifier = Modifier
+                    .testTag("date_range_select")
+                    .semantics { contentDescription = "date_range_select" }
                     .fillMaxWidth()
                     .height(50.dp)
                     .padding(top = 30.dp)
@@ -294,18 +326,21 @@ fun DatePickerTestGeneratedView(
                     fontSize = 14.sp,
                     color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.Bold,
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                 )
                 Text(
                     text = "${data.selectedDate}",
                     fontSize = 12.sp,
                     color = colorResource(R.color.medium_gray_4),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier.padding(top = 5.dp)
                 )
                 Text(
                     text = "${data.startDate}",
                     fontSize = 12.sp,
                     color = colorResource(R.color.medium_gray_4),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier.padding(top = 5.dp)
                 )
             }

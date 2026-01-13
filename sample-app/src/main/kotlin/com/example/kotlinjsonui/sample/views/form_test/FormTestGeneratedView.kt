@@ -31,6 +31,12 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.foundation.BorderStroke
 
 @Composable
 fun FormTestGeneratedView(
@@ -45,7 +51,7 @@ fun FormTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "form_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -82,6 +88,7 @@ fun FormTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -91,20 +98,20 @@ fun FormTestGeneratedView(
                 .padding(16.dp)
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
@@ -112,6 +119,7 @@ fun FormTestGeneratedView(
                 fontSize = 28.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 28.sp),
                 modifier = Modifier.padding(bottom = 24.dp)
             )
             Text(
@@ -119,23 +127,30 @@ fun FormTestGeneratedView(
                 fontSize = 20.sp,
                 color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
+                style = TextStyle(lineHeight = 20.sp),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
                 text = stringResource(R.string.form_test_first_name),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.firstName}",
+                value = data.firstName,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("firstName" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("firstName")
+                    .semantics { contentDescription = "firstName" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                placeholder = { Text(stringResource(R.string.form_test_enter_your_first_name)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_enter_your_first_name),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -146,17 +161,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_last_name),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.lastName}",
+                value = data.lastName,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("lastName" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("lastName")
+                    .semantics { contentDescription = "lastName" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_enter_your_last_name)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_enter_your_last_name),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -167,17 +188,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_email_address),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.email}",
+                value = data.email,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("email" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("email")
+                    .semantics { contentDescription = "email" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_emailexamplecom)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_emailexamplecom),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -188,17 +215,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_phone_number),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.phone}",
+                value = data.phone,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("phone" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("phone")
+                    .semantics { contentDescription = "phone" }
                     .padding(bottom = 24.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("+1 234 567 8900") },
+                placeholder = { Text(
+                                    text = "+1 234 567 8900",
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -210,23 +243,30 @@ fun FormTestGeneratedView(
                 fontSize = 20.sp,
                 color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
+                style = TextStyle(lineHeight = 20.sp),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
                 text = stringResource(R.string.form_test_street_address),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.address}",
+                value = data.address,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("address" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("address")
+                    .semantics { contentDescription = "address" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_123_main_street)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_123_main_street),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -237,17 +277,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_city),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.city}",
+                value = data.city,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("city" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("city")
+                    .semantics { contentDescription = "city" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_new_york)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_new_york),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -258,17 +304,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_zip_code),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.zipCode}",
+                value = data.zipCode,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("zipCode" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("zipCode")
+                    .semantics { contentDescription = "zipCode" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text("10001") },
+                placeholder = { Text(
+                                    text = "10001",
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -279,17 +331,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_country),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.country}",
+                value = data.country,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("country" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("country")
+                    .semantics { contentDescription = "country" }
                     .padding(bottom = 24.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_united_states)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_united_states),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -301,23 +359,30 @@ fun FormTestGeneratedView(
                 fontSize = 20.sp,
                 color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
+                style = TextStyle(lineHeight = 20.sp),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
                 text = stringResource(R.string.form_test_company),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.company}",
+                value = data.company,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("company" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("company")
+                    .semantics { contentDescription = "company" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_company_name)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_company_name),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -328,17 +393,23 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_job_title),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.jobTitle}",
+                value = data.jobTitle,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("jobTitle" to newValue)) },
                 boxModifier = Modifier
+                    .testTag("jobTitle")
+                    .semantics { contentDescription = "jobTitle" }
                     .padding(bottom = 24.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                placeholder = { Text(stringResource(R.string.form_test_software_engineer)) },
+                placeholder = { Text(
+                                    text = stringResource(R.string.form_test_software_engineer),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -350,23 +421,28 @@ fun FormTestGeneratedView(
                 fontSize = 20.sp,
                 color = colorResource(R.color.medium_blue),
                 fontWeight = FontWeight.SemiBold,
+                style = TextStyle(lineHeight = 20.sp),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             Text(
                 text = stringResource(R.string.form_test_bio_flexible_height),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
                 value = data.bio,
-                onValueChange = { newValue -> viewModel.updateData(mapOf("bio" to newValue)) },
+                onValueChange = { newValue -> data.bio = newValue },
                 boxModifier = Modifier
+                    .testTag("bio")
+                    .semantics { contentDescription = "bio" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
                 placeholder = { Text("Tell us about yourself...\nThis field will grow as you type") },
+                // flexible: true - height adjusts to content
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -379,12 +455,15 @@ fun FormTestGeneratedView(
                 text = stringResource(R.string.form_test_notes_fixed_height),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
                 value = data.notes,
-                onValueChange = { newValue -> viewModel.updateData(mapOf("notes" to newValue)) },
+                onValueChange = { newValue -> data.notes = newValue },
                 boxModifier = Modifier
+                    .testTag("notes")
+                    .semantics { contentDescription = "notes" }
                     .padding(bottom = 16.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
@@ -396,23 +475,28 @@ fun FormTestGeneratedView(
                 isOutlined = true,
                 maxLines = Int.MAX_VALUE,
                 singleLine = false,
-                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.dark_gray))
+                textStyle = TextStyle(fontSize = 16.sp, color = colorResource(R.color.dark_gray)),
+                // hideOnFocused = false
             )
             Text(
                 text = stringResource(R.string.form_test_comments_very_flexible),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 6.dp)
             )
             CustomTextFieldWithMargins(
                 value = data.comments,
-                onValueChange = { newValue -> viewModel.updateData(mapOf("comments" to newValue)) },
+                onValueChange = { newValue -> data.comments = newValue },
                 boxModifier = Modifier
+                    .testTag("comments")
+                    .semantics { contentDescription = "comments" }
                     .padding(bottom = 24.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp),
                 placeholder = { Text("Any comments?\nThis can grow very tall (up to 300pt)") },
+                // flexible: true - height adjusts to content
                 shape = RoundedCornerShape(10.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray),
@@ -430,47 +514,52 @@ fun FormTestGeneratedView(
                 Switch(
                     checked = data.agreeToTerms,
                     onCheckedChange = { newValue -> viewModel.updateData(mapOf("agreeToTerms" to newValue)) },
-                    modifier = Modifier.padding(end = 12.dp)
+                    modifier = Modifier
+                        .testTag("agreeToggle")
+                        .semantics { contentDescription = "agreeToggle" }
+                        .padding(end = 12.dp)
                 )
                 Text(
                     text = stringResource(R.string.form_test_i_agree_to_the_terms_and_condit),
                     fontSize = 14.sp,
                     color = colorResource(R.color.dark_gray),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier.wrapContentWidth()
                 )
             }
             Button(
-                onClick = { viewModel.submitForm() },
+                onClick = { data.submitForm?.invoke() },
                 modifier = Modifier
                     .padding(bottom = 16.dp)
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue)
+                                    containerColor = colorResource(R.color.medium_blue),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = stringResource(R.string.form_test_submit_form),
-                    fontSize = 18.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 18.sp
                 )
             }
             Button(
-                onClick = { viewModel.clearForm() },
+                onClick = { data.clearForm?.invoke() },
                 modifier = Modifier
                     .padding(bottom = 40.dp)
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.white)
-                                )
+                                    containerColor = colorResource(R.color.white),
+                                    contentColor = colorResource(R.color.white)
+                                ),
+                border = BorderStroke(2.dp, colorResource(R.color.medium_red))
             ) {
                 Text(
                     text = stringResource(R.string.form_test_clear_all_fields),
-                    fontSize = 18.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 18.sp
                 )
             }
         }

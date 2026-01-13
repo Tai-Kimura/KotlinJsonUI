@@ -13,10 +13,11 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          
+
           # Add gradient background
           # Support both 'colors' and 'items' for color list
           colors = json_data['colors'] || json_data['items'] || ['#000000', '#FFFFFF']

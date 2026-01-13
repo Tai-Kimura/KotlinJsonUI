@@ -7,6 +7,7 @@ require_relative '../core/config_manager'
 require_relative '../core/project_finder'
 require_relative '../core/type_converter'
 require_relative 'style_loader'
+require_relative 'include_expander'
 
 module KjuiTools
   module Compose
@@ -47,10 +48,18 @@ module KjuiTools
       def process_json_file(json_file)
         json_content = File.read(json_file)
         json_data = JSON.parse(json_content)
-        
+
+        # Skip partial files (they are included in other views, not standalone)
+        if json_data['partial'] == true
+          return
+        end
+
         # Load and merge styles into the JSON data
         json_data = StyleLoader.load_and_merge(json_data)
-        
+
+        # Process includes - expand inline with ID prefix support (like SwiftJsonUI)
+        json_data = IncludeExpander.process_includes(json_data, File.dirname(json_file))
+
         # Extract data properties from JSON
         data_properties = extract_data_properties(json_data)
         
@@ -93,11 +102,12 @@ module KjuiTools
 
       def extract_data_properties(json_data, properties = [], depth = 0)
         if json_data.is_a?(Hash)
-          # Stop if this is an include - includes have their own data models
-          return properties if json_data['include']
-          
-          # Check for data section at any level, but only process the first one found
-          if json_data['data'] && properties.empty?
+          # Note: includes are now expanded inline by IncludeExpander, so we should
+          # not see 'include' keys here. All data definitions (including those from
+          # expanded includes with ID prefixes) should be collected.
+
+          # Check for data section at any level and collect ALL data definitions
+          if json_data['data']
             if json_data['data'].is_a?(Array)
               json_data['data'].each do |data_item|
                 if data_item.is_a?(Hash) && data_item['name']
@@ -123,7 +133,7 @@ module KjuiTools
                   else
                     'String'
                   end
-                  
+
                   properties << {
                     'name' => name,
                     'class' => class_type,
@@ -133,14 +143,12 @@ module KjuiTools
               end
             end
           end
-          
-          # If we haven't found data yet, continue searching in children
-          if properties.empty? && json_data['child']
+
+          # Continue searching in children (collect all data, not just the first)
+          if json_data['child']
             if json_data['child'].is_a?(Array)
               json_data['child'].each do |child|
                 extract_data_properties(child, properties, depth + 1)
-                # Stop after finding the first data section
-                break unless properties.empty?
               end
             else
               extract_data_properties(json_data['child'], properties, depth + 1)
@@ -149,11 +157,9 @@ module KjuiTools
         elsif json_data.is_a?(Array)
           json_data.each do |item|
             extract_data_properties(item, properties, depth)
-            # Stop after finding the first data section
-            break unless properties.empty?
           end
         end
-        
+
         properties
       end
 

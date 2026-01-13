@@ -27,6 +27,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun AlignmentComboTestGeneratedView(
@@ -41,7 +47,7 @@ fun AlignmentComboTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "alignment_combo_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -78,6 +84,7 @@ fun AlignmentComboTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -87,27 +94,30 @@ fun AlignmentComboTestGeneratedView(
                 .padding(20.dp)
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
                 color = colorResource(R.color.black),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
+                    .testTag("title_label")
+                    .semantics { contentDescription = "title_label" }
                     .align(Alignment.CenterHorizontally)
                     .wrapContentWidth()
                     .wrapContentHeight()
@@ -119,6 +129,7 @@ fun AlignmentComboTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(bottom = 10.dp)
             )
             Box(
@@ -132,6 +143,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_topleft),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .background(colorResource(R.color.pale_pink))
@@ -149,6 +161,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_topright),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .background(colorResource(R.color.pale_yellow))
@@ -166,6 +179,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_bottomleft),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .background(colorResource(R.color.pale_cyan))
@@ -183,6 +197,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_bottomright),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .background(colorResource(R.color.white_2))
@@ -194,6 +209,7 @@ fun AlignmentComboTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)
@@ -209,6 +225,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_topcenter),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
                         .background(colorResource(R.color.white_3))
@@ -227,6 +244,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_bottomcenter),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(0f, 1f))
                         .background(colorResource(R.color.white_4))
@@ -245,6 +263,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_leftcenter),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .background(colorResource(R.color.pale_red))
@@ -262,6 +281,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_rightcenter),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
                         .background(colorResource(R.color.pale_green))
@@ -273,6 +293,7 @@ fun AlignmentComboTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)
@@ -288,6 +309,7 @@ fun AlignmentComboTestGeneratedView(
                     text = "TL",
                     fontSize = 12.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .background(colorResource(R.color.white_5))
@@ -297,6 +319,7 @@ fun AlignmentComboTestGeneratedView(
                     text = "TR",
                     fontSize = 12.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .background(colorResource(R.color.white_6))
@@ -306,6 +329,7 @@ fun AlignmentComboTestGeneratedView(
                     text = "BL",
                     fontSize = 12.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .background(colorResource(R.color.white_7))
@@ -315,6 +339,7 @@ fun AlignmentComboTestGeneratedView(
                     text = "BR",
                     fontSize = 12.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .background(colorResource(R.color.white_8))
@@ -324,6 +349,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_center),
                     fontSize = 12.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 12.sp),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .background(colorResource(R.color.white_9))
@@ -335,6 +361,7 @@ fun AlignmentComboTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)
@@ -377,6 +404,7 @@ fun AlignmentComboTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)
@@ -418,6 +446,7 @@ fun AlignmentComboTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)
@@ -433,6 +462,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_only_horizontal_center),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
                         .background(colorResource(R.color.white_10))
@@ -450,6 +480,7 @@ fun AlignmentComboTestGeneratedView(
                     text = stringResource(R.string.alignment_combo_test_only_vertical_center),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, 0f))
                         .background(colorResource(R.color.white_11))

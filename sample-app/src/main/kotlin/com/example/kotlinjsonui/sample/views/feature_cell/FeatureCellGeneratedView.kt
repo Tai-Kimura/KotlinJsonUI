@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun FeatureCellGeneratedView(
@@ -38,7 +39,7 @@ fun FeatureCellGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "feature_cell",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -80,6 +81,7 @@ fun FeatureCellGeneratedView(
             text = "${data.badge}",
             fontSize = 10.sp,
             color = colorResource(R.color.white),
+            style = TextStyle(lineHeight = 10.sp),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .clip(RoundedCornerShape(12.dp))
@@ -90,6 +92,7 @@ fun FeatureCellGeneratedView(
             fontSize = 18.sp,
             color = colorResource(R.color.white),
             fontWeight = FontWeight.Bold,
+            style = TextStyle(lineHeight = 18.sp),
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(top = 12.dp)
@@ -98,6 +101,7 @@ fun FeatureCellGeneratedView(
             text = "${data.description}",
             fontSize = 14.sp,
             color = colorResource(R.color.white),
+            style = TextStyle(lineHeight = 14.sp),
             modifier = Modifier
                 .alpha(0.9f)
                 .align(Alignment.TopStart)

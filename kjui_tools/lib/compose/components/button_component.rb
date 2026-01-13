@@ -28,6 +28,7 @@ module KjuiTools
           
           # Build modifiers (only margins, size, and weight, not padding)
           modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))

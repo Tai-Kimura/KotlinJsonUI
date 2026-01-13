@@ -35,6 +35,12 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -49,7 +55,7 @@ fun ComponentsTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "components_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -86,6 +92,7 @@ fun ComponentsTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -95,44 +102,52 @@ fun ComponentsTestGeneratedView(
                 .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = stringResource(R.string.components_test_new_components_test),
                 fontSize = 24.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
             )
             Text(
                 text = stringResource(R.string.components_test_togglecheckbox_components),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             Switch(
                 checked = data.toggle1IsOn,
                 onCheckedChange = { newValue -> viewModel.updateData(mapOf("toggle1IsOn" to newValue)) },
+                modifier = Modifier
+                    .testTag("toggle1")
+                    .semantics { contentDescription = "toggle1" }
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .testTag("checkbox1")
+                    .semantics { contentDescription = "checkbox1" }
             ) {
                 Checkbox(
-                    checked = false,
-                    onCheckedChange = { }
+                    checked = data.checkbox1IsOn,
+                    onCheckedChange = { newValue -> viewModel.updateData(mapOf("checkbox1IsOn" to newValue)) }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("I agree to terms")
@@ -141,23 +156,34 @@ fun ComponentsTestGeneratedView(
                 text = stringResource(R.string.components_test_progress_slider),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             LinearProgressIndicator(
+                modifier = Modifier
+                    .testTag("progress1")
+                    .semantics { contentDescription = "progress1" }
             )
             Slider(
                 value = data.slider1Value.toFloat(),
                 onValueChange = { newValue -> viewModel.updateData(mapOf("slider1Value" to newValue.toDouble())) },
                 valueRange = 0f..100f,
+                modifier = Modifier
+                    .testTag("slider1")
+                    .semantics { contentDescription = "slider1" }
             )
             Text(
                 text = stringResource(R.string.components_test_selection_components),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             Segment(
                 selectedTabIndex = data.selectedSegment1,
+                modifier = Modifier
+                    .testTag("segment1")
+                    .semantics { contentDescription = "segment1" }
             ) {
                 Tab(
                     selected = (data.selectedSegment1 == 0),
@@ -241,6 +267,7 @@ fun ComponentsTestGeneratedView(
                 text = stringResource(R.string.components_test_loading_indicator),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             CircularProgressIndicator(
@@ -249,6 +276,7 @@ fun ComponentsTestGeneratedView(
                 text = stringResource(R.string.components_test_circle_image),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             AsyncImage(
@@ -263,6 +291,7 @@ fun ComponentsTestGeneratedView(
                 text = stringResource(R.string.components_test_gradient_view),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             Box(
@@ -277,6 +306,7 @@ fun ComponentsTestGeneratedView(
                 text = stringResource(R.string.components_test_blur_view),
                 fontSize = 18.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
             )
             Box(

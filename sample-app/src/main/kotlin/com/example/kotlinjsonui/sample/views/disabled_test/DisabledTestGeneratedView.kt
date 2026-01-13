@@ -32,6 +32,11 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun DisabledTestGeneratedView(
@@ -46,7 +51,7 @@ fun DisabledTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "disabled_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -83,6 +88,7 @@ fun DisabledTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -91,27 +97,30 @@ fun DisabledTestGeneratedView(
                 .wrapContentHeight()
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
                 color = colorResource(R.color.black),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
+                    .testTag("title_label")
+                    .semantics { contentDescription = "title_label" }
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
@@ -120,10 +129,11 @@ fun DisabledTestGeneratedView(
                 text = stringResource(R.string.disabled_test_enabled_button),
                 fontSize = 16.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 16.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Button(
-                onClick = { viewModel.onEnabledButtonTap() },
+                onClick = { data.onEnabledButtonTap?.invoke() },
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -132,23 +142,22 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue)
+                                    containerColor = colorResource(R.color.medium_blue),
+                                    contentColor = colorResource(R.color.white)
                                 ),
                 enabled = true
             ) {
-                Text(
-                    text = stringResource(R.string.disabled_test_enabled_button),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.disabled_test_enabled_button))
             }
             Text(
                 text = stringResource(R.string.disabled_test_disabled_button),
                 fontSize = 16.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 16.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Button(
-                onClick = { viewModel.onDisabledButtonTap() },
+                onClick = { data.onDisabledButtonTap?.invoke() },
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -159,23 +168,22 @@ fun DisabledTestGeneratedView(
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(R.color.medium_blue),
                                     disabledContainerColor = colorResource(R.color.pale_gray_4),
+                                    contentColor = colorResource(R.color.white),
                                     disabledContentColor = colorResource(R.color.light_gray_8)
                                 ),
                 enabled = false
             ) {
-                Text(
-                    text = stringResource(R.string.disabled_test_disabled_button),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.disabled_test_disabled_button))
             }
             Text(
                 text = stringResource(R.string.disabled_test_touchdisabledstate_button),
                 fontSize = 16.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 16.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Button(
-                onClick = { viewModel.onTouchDisabledTap() },
+                onClick = { data.onTouchDisabledTap?.invoke() },
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -184,22 +192,21 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_red_3)
+                                    containerColor = colorResource(R.color.medium_red_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
-                Text(
-                    text = stringResource(R.string.disabled_test_touch_disabled),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.disabled_test_touch_disabled))
             }
             Text(
                 text = stringResource(R.string.disabled_test_enabled_textfield),
                 fontSize = 16.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 16.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.textFieldValue}",
+                value = data.textFieldValue,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textFieldValue" to newValue)) },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -207,9 +214,11 @@ fun DisabledTestGeneratedView(
                     .padding(end = 20.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
-                    .padding(10.dp),
-                placeholder = { Text(stringResource(R.string.disabled_test_enabled_can_type_here)) },
+                    .height(44.dp),
+                placeholder = { Text(
+                                    text = stringResource(R.string.disabled_test_enabled_can_type_here),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(8.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray_4),
@@ -220,6 +229,7 @@ fun DisabledTestGeneratedView(
                 text = stringResource(R.string.disabled_test_disabled_textfield),
                 fontSize = 16.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 16.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
@@ -231,9 +241,11 @@ fun DisabledTestGeneratedView(
                     .padding(end = 20.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
-                    .padding(10.dp),
-                placeholder = { Text(stringResource(R.string.disabled_test_disabled_cannot_type)) },
+                    .height(44.dp),
+                placeholder = { Text(
+                                    text = stringResource(R.string.disabled_test_disabled_cannot_type),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(8.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray_4),
@@ -245,10 +257,11 @@ fun DisabledTestGeneratedView(
                 fontSize = 16.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 16.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             Button(
-                onClick = { viewModel.toggleEnableState() },
+                onClick = { data.toggleEnableState?.invoke() },
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -257,16 +270,14 @@ fun DisabledTestGeneratedView(
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_green)
+                                    containerColor = colorResource(R.color.medium_green),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
-                Text(
-                    text = stringResource(R.string.disabled_test_toggle_enable_state),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.disabled_test_toggle_enable_state))
             }
             Button(
-                onClick = { viewModel.onDynamicButtonTap() },
+                onClick = { data.onDynamicButtonTap?.invoke() },
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -277,19 +288,18 @@ fun DisabledTestGeneratedView(
                 colors = ButtonDefaults.buttonColors(
                                     containerColor = colorResource(R.color.medium_blue_3),
                                     disabledContainerColor = colorResource(R.color.pale_gray_3),
+                                    contentColor = colorResource(R.color.white),
                                     disabledContentColor = colorResource(R.color.medium_gray_2)
                                 ),
                 enabled = data.isEnabled
             ) {
-                Text(
-                    text = stringResource(R.string.disabled_test_dynamic_button),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.disabled_test_dynamic_button))
             }
             Text(
                 text = "${data.isEnabled}",
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 10.dp),

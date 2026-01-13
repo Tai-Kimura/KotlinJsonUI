@@ -190,12 +190,13 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
-          
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Ensure fillMaxWidth if width is not specified for date pickers
           if is_date_picker && !json_data['width']
             modifiers << ".fillMaxWidth()"
           end
-          
+
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))

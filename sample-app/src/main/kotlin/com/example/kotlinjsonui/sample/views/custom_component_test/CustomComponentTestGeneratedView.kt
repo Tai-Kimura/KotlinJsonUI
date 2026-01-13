@@ -40,6 +40,11 @@ import com.example.kotlinjsonui.sample.extensions.SampleCard
 import com.example.kotlinjsonui.sample.extensions.StatusBadge
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.colorResource
+import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
+import com.kotlinjsonui.dynamic.SafeAreaConfig
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.ui.text.TextStyle
+import com.kotlinjsonui.core.Configuration
 
 @Composable
 fun CustomComponentTestGeneratedView(
@@ -54,7 +59,7 @@ fun CustomComponentTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "custom_component_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -86,14 +91,31 @@ fun CustomComponentTestGeneratedView(
         }
     } else {
         // Static Mode - use generated code
-        Box(
+        val safeAreaConfig = LocalSafeAreaConfig.current
+    val edges = mutableListOf("all").apply {
+        if (safeAreaConfig.ignoreBottom) {
+            remove("bottom")
+            if (contains("all")) { remove("all"); addAll(listOf("top", "start", "end")) }
+        }
+        if (safeAreaConfig.ignoreTop) {
+            remove("top")
+            if (contains("all")) { remove("all"); addAll(listOf("bottom", "start", "end")) }
+        }
+    }.distinct()
+
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .systemBarsPadding()
+            .fillMaxWidth()
             .background(colorResource(R.color.white_12))
+            .then(if (edges.contains("all")) Modifier.systemBarsPadding() else Modifier)
+            .then(if (!edges.contains("all") && edges.contains("top")) Modifier.statusBarsPadding() else Modifier)
+            .then(if (!edges.contains("all") && edges.contains("bottom")) Modifier.navigationBarsPadding() else Modifier)
+            .imePadding()
     ) {
         LazyColumn(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .padding(16.dp)
+                .imePadding()
         ) {
             item {
             Column(
@@ -103,6 +125,7 @@ fun CustomComponentTestGeneratedView(
                     fontSize = 28.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.Bold,
+                    style = TextStyle(lineHeight = 28.sp),
                     modifier = Modifier.padding(top = 0.dp, end = 0.dp, bottom = 20.dp, start = 0.dp)
                 )
                 Text(
@@ -110,195 +133,64 @@ fun CustomComponentTestGeneratedView(
                     fontSize = 18.sp,
                     color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 18.sp),
                     modifier = Modifier.padding(top = 0.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
-                SampleCard(
-                    title = "Static Title",
-                    subtitle = "This is a static subtitle",
-                    count = 42,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, colorResource(R.color.pale_gray), RoundedCornerShape(12.dp))
-                        .background(colorResource(R.color.white))
-                ) {
-                    Column(
-                    ) {
-                        Text(
-                            text = stringResource(R.string.custom_component_test_card_content),
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.medium_gray_4),
-                            modifier = Modifier
-                        )
-                        Text(
-                            text = stringResource(R.string.custom_component_test_this_content_is_inside_the_cust),
-                            fontSize = 12.sp,
-                            color = colorResource(R.color.light_gray_8),
-                            modifier = Modifier
-                        )
-                    }
-                }
+// TODO: Implement component type: SampleCard
                 Text(
                     text = stringResource(R.string.custom_component_test_testing_samplecard_dynamic_valu),
                     fontSize = 18.sp,
                     color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 18.sp),
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
-                SampleCard(
-                    title = data.cardTitle,
-                    subtitle = data.cardSubtitle,
-                    count = data.itemCount,
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(1.dp, colorResource(R.color.pale_gray), RoundedCornerShape(12.dp))
-                        .background(colorResource(R.color.white))
-                ) {
-                    Column(
-                    ) {
-                        Text(
-                            text = "${data.itemCount}",
-                            fontSize = 16.sp,
-                            color = colorResource(R.color.medium_blue_3),
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier
-                        )
-                        Row(
-                        ) {
-                            Button(
-                                onClick = { },
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                                                    containerColor = colorResource(R.color.medium_blue_3)
-                                                                )
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.custom_component_test_increment),
-                                    color = colorResource(R.color.white),
-                                )
-                            }
-                            Button(
-                                onClick = { },
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                                                    containerColor = colorResource(R.color.medium_red)
-                                                                )
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.custom_component_test_decrement),
-                                    color = colorResource(R.color.white),
-                                )
-                            }
-                        }
-                    }
-                }
+// TODO: Implement component type: SampleCard
                 Text(
                     text = stringResource(R.string.custom_component_test_testing_multiple_cards),
                     fontSize = 18.sp,
                     color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 18.sp),
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
                 Column(
                 ) {
-                    SampleCard(
-                        title = "Card 1",
-                        subtitle = "First custom card",
-                        count = 1,
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(colorResource(R.color.white_13))
-                    ) {
-                        Text(
-                            text = stringResource(R.string.custom_component_test_content_for_card_1),
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.dark_green),
-                            modifier = Modifier
-                        )
-                    }
-                    SampleCard(
-                        title = "Card 2",
-                        subtitle = "Second custom card",
-                        count = 2,
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(colorResource(R.color.white_14))
-                    ) {
-                        Text(
-                            text = stringResource(R.string.custom_component_test_content_for_card_2),
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.medium_red_4),
-                            modifier = Modifier
-                        )
-                    }
-                    SampleCard(
-                        title = "Card 3",
-                        subtitle = "Third custom card",
-                        count = 3,
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(colorResource(R.color.white_15))
-                    ) {
-                        Text(
-                            text = stringResource(R.string.custom_component_test_content_for_card_3),
-                            fontSize = 14.sp,
-                            color = colorResource(R.color.dark_purple),
-                            modifier = Modifier
-                        )
-                    }
+// TODO: Implement component type: SampleCard
+// TODO: Implement component type: SampleCard
+// TODO: Implement component type: SampleCard
                 }
                 Text(
                     text = stringResource(R.string.custom_component_test_testing_statusbadge_noncontaine),
                     fontSize = 18.sp,
                     color = colorResource(R.color.dark_gray),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 18.sp),
                     modifier = Modifier.padding(top = 20.dp, end = 0.dp, bottom = 8.dp, start = 0.dp)
                 )
                 Column(
                 ) {
-                    StatusBadge(
-                        title = "Static Status",
-                        status = "Active",
-                        color = colorResource(R.color.medium_green_2),
-                        count = 5
-                    )
-                    StatusBadge(
-                        title = "Dynamic Status",
-                        status = data.currentStatus,
-                        color = data.statusColor,
-                        count = data.notificationCount
-                    )
-                    StatusBadge(
-                        title = "Error Status",
-                        status = "Error",
-                        color = colorResource(R.color.medium_red),
-                        count = 0
-                    )
+// TODO: Implement component type: StatusBadge
+// TODO: Implement component type: StatusBadge
+// TODO: Implement component type: StatusBadge
                 }
                 Button(
-                    onClick = { },
+                    onClick = { data.toggleDynamicMode?.invoke() },
                     modifier = Modifier.wrapContentWidth(),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_blue_3)
+                                            containerColor = colorResource(R.color.medium_blue_3),
+                                            contentColor = colorResource(R.color.white)
                                         )
                 ) {
-                    Text(
-                        text = stringResource(R.string.custom_component_test_toggle_dynamic_mode),
-                        color = colorResource(R.color.white),
-                    )
+                    Text(stringResource(R.string.custom_component_test_toggle_dynamic_mode))
                 }
                 Text(
                     text = "${data.dynamicModeStatus}",
                     fontSize = 14.sp,
                     color = colorResource(R.color.medium_gray_4),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier,
                     textAlign = TextAlign.Center
                 )

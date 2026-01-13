@@ -42,7 +42,10 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
-          
+
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Size based on style
           if style == 'large'
             modifiers << ".size(48.dp)"

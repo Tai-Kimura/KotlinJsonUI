@@ -131,11 +131,14 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
-          
+
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Get visibility info (but don't add to modifiers, will be handled by wrapper)
           visibility_result = Helpers::ModifierBuilder.build_visibility(json_data, required_imports)
           modifiers.concat(visibility_result[:modifiers]) if visibility_result[:modifiers].any?
-          
+
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
           
           # Add weight modifier if in Row or Column

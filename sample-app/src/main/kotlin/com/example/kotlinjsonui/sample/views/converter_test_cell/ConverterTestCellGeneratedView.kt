@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun ConverterTestCellGeneratedView(
@@ -37,7 +38,7 @@ fun ConverterTestCellGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "converter_test_cell",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -76,16 +77,18 @@ fun ConverterTestCellGeneratedView(
             .padding(12.dp)
     ) {
         Text(
-            text = "${data.item["label"] as? String ?: ""}",
+            text = "${data.item["label"] as? String ?: "" ?: ""}",
             fontSize = 14.sp,
             color = colorResource(R.color.black),
+            style = TextStyle(lineHeight = 14.sp),
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = "${data.item["value"] as? String ?: ""}",
+            text = "${data.item["value"] as? String ?: "" ?: ""}",
             fontSize = 14.sp,
             color = colorResource(R.color.medium_blue),
             fontWeight = FontWeight.Bold,
+            style = TextStyle(lineHeight = 14.sp),
             modifier = Modifier
         )
     }    }

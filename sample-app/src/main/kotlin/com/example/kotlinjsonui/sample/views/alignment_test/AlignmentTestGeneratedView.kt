@@ -28,6 +28,12 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun AlignmentTestGeneratedView(
@@ -42,7 +48,7 @@ fun AlignmentTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "alignment_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -79,6 +85,7 @@ fun AlignmentTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -88,27 +95,30 @@ fun AlignmentTestGeneratedView(
                 .padding(20.dp)
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
                 color = colorResource(R.color.black),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
+                    .testTag("title_label")
+                    .semantics { contentDescription = "title_label" }
                     .align(Alignment.CenterHorizontally)
                     .wrapContentWidth()
                     .wrapContentHeight()
@@ -120,6 +130,7 @@ fun AlignmentTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .wrapContentWidth()
                     .wrapContentHeight()
@@ -136,6 +147,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_aligntop),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, -1f))
                         .background(colorResource(R.color.pale_pink))
@@ -153,6 +165,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_alignbottom),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, 1f))
                         .background(colorResource(R.color.pale_yellow))
@@ -170,6 +183,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_alignleft),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, -1f))
                         .background(colorResource(R.color.pale_cyan))
@@ -187,6 +201,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_alignright),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(1f, -1f))
                         .wrapContentWidth()
@@ -206,6 +221,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_centerhorizontal),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(0f, -1f))
                         .wrapContentWidth()
@@ -226,6 +242,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_centervertical),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(BiasAlignment(-1f, 0f))
                         .wrapContentWidth()
@@ -245,6 +262,7 @@ fun AlignmentTestGeneratedView(
                     text = stringResource(R.string.alignment_test_centerinparent),
                     fontSize = 14.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 14.sp),
                     modifier = Modifier
                         .align(Alignment.Center)
                         .background(colorResource(R.color.pale_red))
@@ -256,6 +274,7 @@ fun AlignmentTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)
@@ -312,6 +331,7 @@ fun AlignmentTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 10.dp)

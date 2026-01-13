@@ -24,6 +24,7 @@ import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun ImageCellGeneratedView(
@@ -39,7 +40,7 @@ fun ImageCellGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "image_cell",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -85,19 +86,20 @@ fun ImageCellGeneratedView(
                 .fillMaxWidth()
                 .height(120.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .clip(RoundedCornerShape(8.dp))
         )
         Text(
             text = "${data.title}",
             fontSize = 14.sp,
             color = colorResource(R.color.dark_gray),
             fontWeight = FontWeight.SemiBold,
+            style = TextStyle(lineHeight = 14.sp),
             modifier = Modifier.padding(top = 8.dp)
         )
         Text(
             text = "${data.price}",
             fontSize = 12.sp,
             color = colorResource(R.color.medium_blue),
+            style = TextStyle(lineHeight = 12.sp),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

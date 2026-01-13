@@ -75,6 +75,9 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.ui.text.TextStyle
+import com.kotlinjsonui.core.Configuration
 
 @Composable
 fun CollectionTestGeneratedView(
@@ -89,7 +92,7 @@ fun CollectionTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "collection_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -125,6 +128,7 @@ fun CollectionTestGeneratedView(
         modifier = Modifier.background(colorResource(R.color.white_12))
     ) {
         LazyColumn(
+            modifier = Modifier.imePadding()
         ) {
             item {
             Column(
@@ -135,6 +139,7 @@ fun CollectionTestGeneratedView(
                     fontSize = 28.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.Bold,
+                    style = TextStyle(lineHeight = 28.sp),
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
                 Text(
@@ -142,6 +147,7 @@ fun CollectionTestGeneratedView(
                     fontSize = 20.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 20.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
@@ -151,44 +157,40 @@ fun CollectionTestGeneratedView(
                         .padding(bottom = 20.dp)
                 ) {
                     // Section 1: BasicCell (2 columns)
-                    data.items1.sections.getOrNull(0)?.let { section ->
+                    data.items1?.sections?.getOrNull(0)?.let { section ->
                         // Section 1 Header: SectionHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = SectionHeaderData.fromMap(headerData.data)
+                                val headerViewModel: SectionHeaderViewModel = viewModel(key = "SectionHeader_header_0")
+                                headerViewModel.updateData(headerData.data)
                                 SectionHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = BasicCellData.fromMap(item as Map<String, Any>)
-                                        BasicCellView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: BasicCellViewModel = viewModel(key = "BasicCell_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    BasicCellView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
                         // Section 1 Footer: SectionFooter
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = SectionFooterData.fromMap(footerData.data)
+                                val footerViewModel: SectionFooterViewModel = viewModel(key = "SectionFooter_footer_0")
+                                footerViewModel.updateData(footerData.data)
                                 SectionFooterView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
@@ -200,6 +202,7 @@ fun CollectionTestGeneratedView(
                     fontSize = 20.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 20.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
@@ -209,44 +212,40 @@ fun CollectionTestGeneratedView(
                         .padding(bottom = 20.dp)
                 ) {
                     // Section 1: ImageCell (3 columns)
-                    data.mixedItems.sections.getOrNull(0)?.let { section ->
+                    data.mixedItems?.sections?.getOrNull(0)?.let { section ->
                         // Section 1 Header: GridHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = GridHeaderData.fromMap(headerData.data)
+                                val headerViewModel: GridHeaderViewModel = viewModel(key = "GridHeader_header_0")
+                                headerViewModel.updateData(headerData.data)
                                 GridHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = ImageCellData.fromMap(item as Map<String, Any>)
-                                        ImageCellView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: ImageCellViewModel = viewModel(key = "ImageCell_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    ImageCellView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
                         // Section 1 Footer: GridFooter
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = GridFooterData.fromMap(footerData.data)
+                                val footerViewModel: GridFooterViewModel = viewModel(key = "GridFooter_footer_0")
+                                footerViewModel.updateData(footerData.data)
                                 GridFooterView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
@@ -258,6 +257,7 @@ fun CollectionTestGeneratedView(
                     fontSize = 20.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 20.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyHorizontalGrid(
@@ -267,33 +267,30 @@ fun CollectionTestGeneratedView(
                         .padding(bottom = 20.dp)
                 ) {
                     // Section 1: HorizontalCard (1 columns)
-                    data.horizontalItems.sections.getOrNull(0)?.let { section ->
+                    data.horizontalItems?.sections?.getOrNull(0)?.let { section ->
                         // Section 1 Header: HorizontalHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = HorizontalHeaderData.fromMap(headerData.data)
+                                val headerViewModel: HorizontalHeaderViewModel = viewModel(key = "HorizontalHeader_header_0")
+                                headerViewModel.updateData(headerData.data)
                                 HorizontalHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = HorizontalCardData.fromMap(item as Map<String, Any>)
-                                        HorizontalCardView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: HorizontalCardViewModel = viewModel(key = "HorizontalCard_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    HorizontalCardView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
@@ -304,6 +301,7 @@ fun CollectionTestGeneratedView(
                     fontSize = 20.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 20.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
@@ -313,44 +311,40 @@ fun CollectionTestGeneratedView(
                         .padding(bottom = 20.dp)
                 ) {
                     // Section 1: ProductCell (2 columns)
-                    data.sectionedItems.sections.getOrNull(0)?.let { section ->
+                    data.sectionedItems?.sections?.getOrNull(0)?.let { section ->
                         // Section 1 Header: CategoryHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = CategoryHeaderData.fromMap(headerData.data)
+                                val headerViewModel: CategoryHeaderViewModel = viewModel(key = "CategoryHeader_header_0")
+                                headerViewModel.updateData(headerData.data)
                                 CategoryHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = ProductCellData.fromMap(item as Map<String, Any>)
-                                        ProductCellView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: ProductCellViewModel = viewModel(key = "ProductCell_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    ProductCellView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
                         // Section 1 Footer: CategoryFooter
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = CategoryFooterData.fromMap(footerData.data)
+                                val footerViewModel: CategoryFooterViewModel = viewModel(key = "CategoryFooter_footer_0")
+                                footerViewModel.updateData(footerData.data)
                                 CategoryFooterView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
@@ -362,6 +356,7 @@ fun CollectionTestGeneratedView(
                     fontSize = 20.sp,
                     color = colorResource(R.color.black),
                     fontWeight = FontWeight.SemiBold,
+                    style = TextStyle(lineHeight = 20.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
@@ -369,121 +364,109 @@ fun CollectionTestGeneratedView(
                     modifier = Modifier.height(600.dp)
                 ) {
                     // Section 1: ProductCell (3 columns)
-                    data.multiSectionItems.sections.getOrNull(0)?.let { section ->
+                    data.multiSectionItems?.sections?.getOrNull(0)?.let { section ->
                         // Section 1 Header: CategoryHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = CategoryHeaderData.fromMap(headerData.data)
+                                val headerViewModel: CategoryHeaderViewModel = viewModel(key = "CategoryHeader_header_0")
+                                headerViewModel.updateData(headerData.data)
                                 CategoryHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size, span = { GridItemSpan(4) }) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = ProductCellData.fromMap(item as Map<String, Any>)
-                                        ProductCellView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: ProductCellViewModel = viewModel(key = "ProductCell_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    ProductCellView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
                         // Section 1 Footer: CategoryFooter
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = CategoryFooterData.fromMap(footerData.data)
+                                val footerViewModel: CategoryFooterViewModel = viewModel(key = "CategoryFooter_footer_0")
+                                footerViewModel.updateData(footerData.data)
                                 CategoryFooterView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                     }
                     // Section 2: FeatureCell (2 columns)
-                    data.multiSectionItems.sections.getOrNull(1)?.let { section ->
+                    data.multiSectionItems?.sections?.getOrNull(1)?.let { section ->
                         // Section 2 Header: FeaturedHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = FeaturedHeaderData.fromMap(headerData.data)
+                                val headerViewModel: FeaturedHeaderViewModel = viewModel(key = "FeaturedHeader_header_1")
+                                headerViewModel.updateData(headerData.data)
                                 FeaturedHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size, span = { GridItemSpan(6) }) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = FeatureCellData.fromMap(item as Map<String, Any>)
-                                        FeatureCellView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: FeatureCellViewModel = viewModel(key = "FeatureCell_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    FeatureCellView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
                     }
                     // Section 3: ImageCell (4 columns)
-                    data.multiSectionItems.sections.getOrNull(2)?.let { section ->
+                    data.multiSectionItems?.sections?.getOrNull(2)?.let { section ->
                         // Section 3 Header: GridHeader
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = GridHeaderData.fromMap(headerData.data)
+                                val headerViewModel: GridHeaderViewModel = viewModel(key = "GridHeader_header_2")
+                                headerViewModel.updateData(headerData.data)
                                 GridHeaderView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
                         section.cells?.let { cellData ->
                             items(cellData.data.size, span = { GridItemSpan(3) }) { cellIndex ->
-                                val item = cellData.data[cellIndex]
-                                when (item) {
-                                    is Map<*, *> -> {
-                                        val data = ImageCellData.fromMap(item as Map<String, Any>)
-                                        ImageCellView(
-                                            data = data,
-                                            viewModel = viewModel(),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                        )
-                                    }
-                                    else -> {
-                                        // Unsupported item type
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.TopStart
+                                ) {
+                                    val cellViewModel: ImageCellViewModel = viewModel(key = "ImageCell_cell_$cellIndex")
+                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    ImageCellView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier
+                                    )
                                 }
                             }
                         }
                         // Section 3 Footer: GridFooter
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val data = GridFooterData.fromMap(footerData.data)
+                                val footerViewModel: GridFooterViewModel = viewModel(key = "GridFooter_footer_2")
+                                footerViewModel.updateData(footerData.data)
                                 GridFooterView(
-                                    data = data,
-                                    viewModel = viewModel(),
+                                    viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
@@ -491,7 +474,7 @@ fun CollectionTestGeneratedView(
                     }
                 }
                 Button(
-                    onClick = { viewModel.toggleDynamicMode() },
+                    onClick = { data.toggleDynamicMode?.invoke() },
                     modifier = Modifier
                         .padding(top = 20.dp)
                         .wrapContentWidth()
@@ -499,13 +482,13 @@ fun CollectionTestGeneratedView(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_blue_3)
+                                            containerColor = colorResource(R.color.medium_blue_3),
+                                            contentColor = colorResource(R.color.white)
                                         )
                 ) {
                     Text(
                         text = "${data.dynamicModeStatus}",
-                        fontSize = 14.sp,
-                        color = colorResource(R.color.white),
+                        fontSize = 14.sp
                     )
                 }
             }

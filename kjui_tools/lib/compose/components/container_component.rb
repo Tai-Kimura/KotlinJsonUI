@@ -27,12 +27,15 @@ module KjuiTools
           
           # Build modifiers (correct order for Compose)
           modifiers = []
-          
+
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Add weight modifier if in Row or Column
           if parent_type == 'Row' || parent_type == 'Column'
             modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))
           end
-          
+
           # 1. Size first (total size including padding)
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           

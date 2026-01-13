@@ -36,7 +36,10 @@ module KjuiTools
           
           # Build modifiers for circular shape
           modifiers = []
-          
+
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Size (use 'size' attribute or default to 48dp)
           size = json_data['size'] || 48
           modifiers << ".size(#{size}.dp)"

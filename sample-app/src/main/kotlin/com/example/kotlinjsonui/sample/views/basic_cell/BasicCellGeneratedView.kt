@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun BasicCellGeneratedView(
@@ -37,7 +38,7 @@ fun BasicCellGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "basic_cell",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -79,12 +80,14 @@ fun BasicCellGeneratedView(
             text = "${data.title}",
             fontSize = 16.sp,
             color = colorResource(R.color.dark_gray),
+            style = TextStyle(lineHeight = 16.sp),
             modifier = Modifier
         )
         Text(
             text = "${data.subtitle}",
             fontSize = 12.sp,
             color = colorResource(R.color.medium_gray_4),
+            style = TextStyle(lineHeight = 12.sp),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

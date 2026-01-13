@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStreamReader
@@ -72,69 +73,85 @@ class DynamicViewRendererImpl {
         LaunchedEffect(layoutName, lastUpdate, styleUpdateCounter) {
             isLoading = true
             error = null
-            
+
+            // Initialize IncludeExpander with context for include expansion
+            IncludeExpander.init(context)
+            DynamicLayoutLoader.init(context)
+
             try {
                 withContext(Dispatchers.IO) {
                     // First try to load from HotLoader cache
                     val cachedLayout = hotLoader.getCachedLayout(layoutName)
                     if (cachedLayout != null) {
                         Log.d(TAG, "Loading layout from HotLoader cache: $layoutName")
-                        val gson = Gson()
-                        jsonObject = gson.fromJson(cachedLayout, JsonObject::class.java)
-                        Log.d(TAG, "Successfully loaded layout from cache")
+                        val rawJson = JsonParser.parseString(cachedLayout).asJsonObject
+                        // Process includes to expand them inline with ID prefixes
+                        jsonObject = IncludeExpander.processIncludes(rawJson)
+                        Log.d(TAG, "Successfully loaded and expanded layout from cache")
                         return@withContext
                     }
-                    
-                    // If not in cache, try to load from assets/Layouts/ directory (capital L)
+
+                    // Use DynamicLayoutLoader which handles include expansion
+                    val loadedJson = DynamicLayoutLoader.loadLayout(layoutName)
+                    if (loadedJson != null) {
+                        Log.d(TAG, "Successfully loaded layout via DynamicLayoutLoader: $layoutName")
+                        jsonObject = loadedJson
+                        return@withContext
+                    }
+
+                    // Fallback: try to load from assets/Layouts/ directory (capital L)
                     val fileName = if (layoutName.endsWith(".json")) {
                         "Layouts/$layoutName"
                     } else {
                         "Layouts/$layoutName.json"
                     }
-                    
+
                     Log.d(TAG, "Attempting to load layout from assets: $fileName")
-                    
+
                     try {
                         context.assets.open(fileName).use { inputStream ->
                             InputStreamReader(inputStream).use { reader ->
-                                val gson = Gson()
-                                jsonObject = gson.fromJson(reader, JsonObject::class.java)
-                                Log.d(TAG, "Successfully loaded layout from: $fileName")
+                                val rawJson = JsonParser.parseReader(reader).asJsonObject
+                                // Process includes to expand them inline with ID prefixes
+                                jsonObject = IncludeExpander.processIncludes(rawJson)
+                                Log.d(TAG, "Successfully loaded and expanded layout from: $fileName")
                             }
                         }
                     } catch (e: Exception) {
                         Log.d(TAG, "Failed to load from $fileName, trying alternate paths: ${e.message}")
-                        
+
                         // Try with lowercase layouts/ directory
                         val lowercaseFileName = if (layoutName.endsWith(".json")) {
                             "layouts/$layoutName"
                         } else {
                             "layouts/$layoutName.json"
                         }
-                        
+
                         try {
                             context.assets.open(lowercaseFileName).use { inputStream ->
                                 InputStreamReader(inputStream).use { reader ->
-                                    val gson = Gson()
-                                    jsonObject = gson.fromJson(reader, JsonObject::class.java)
-                                    Log.d(TAG, "Successfully loaded layout from: $lowercaseFileName")
+                                    val rawJson = JsonParser.parseReader(reader).asJsonObject
+                                    // Process includes to expand them inline with ID prefixes
+                                    jsonObject = IncludeExpander.processIncludes(rawJson)
+                                    Log.d(TAG, "Successfully loaded and expanded layout from: $lowercaseFileName")
                                 }
                             }
                         } catch (e2: Exception) {
                             Log.d(TAG, "Failed to load from $lowercaseFileName, trying without prefix: ${e2.message}")
-                            
+
                             // Try without any prefix
                             val alternateFileName = if (layoutName.endsWith(".json")) {
                                 layoutName
                             } else {
                                 "$layoutName.json"
                             }
-                            
+
                             context.assets.open(alternateFileName).use { inputStream ->
                                 InputStreamReader(inputStream).use { reader ->
-                                    val gson = Gson()
-                                    jsonObject = gson.fromJson(reader, JsonObject::class.java)
-                                    Log.d(TAG, "Successfully loaded layout from: $alternateFileName")
+                                    val rawJson = JsonParser.parseReader(reader).asJsonObject
+                                    // Process includes to expand them inline with ID prefixes
+                                    jsonObject = IncludeExpander.processIncludes(rawJson)
+                                    Log.d(TAG, "Successfully loaded and expanded layout from: $alternateFileName")
                                 }
                             }
                         }

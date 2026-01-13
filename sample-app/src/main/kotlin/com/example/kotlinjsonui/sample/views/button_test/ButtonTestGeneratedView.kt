@@ -28,6 +28,9 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.ui.text.TextStyle
+import com.kotlinjsonui.core.Configuration
 
 @Composable
 fun ButtonTestGeneratedView(
@@ -42,7 +45,7 @@ fun ButtonTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "button_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -79,6 +82,7 @@ fun ButtonTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -89,12 +93,14 @@ fun ButtonTestGeneratedView(
                 fontSize = 20.sp,
                 color = colorResource(R.color.black),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 20.sp),
                 modifier = Modifier.padding(bottom = 20.dp)
             )
             Text(
                 text = stringResource(R.string.button_test_height_55_padding_12_20),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -105,18 +111,17 @@ fun ButtonTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue)
+                                    containerColor = colorResource(R.color.medium_blue),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
-                Text(
-                    text = stringResource(R.string.button_test_test_button_1),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.button_test_test_button_1))
             }
             Text(
                 text = stringResource(R.string.button_test_height_55_no_padding),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -126,18 +131,17 @@ fun ButtonTestGeneratedView(
                     .height(55.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_green)
+                                    containerColor = colorResource(R.color.medium_green),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
-                Text(
-                    text = stringResource(R.string.button_test_test_button_2),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.button_test_test_button_2))
             }
             Text(
                 text = stringResource(R.string.button_test_no_height_padding_12_20),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -146,18 +150,17 @@ fun ButtonTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_red_3)
+                                    containerColor = colorResource(R.color.medium_red_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
-                Text(
-                    text = stringResource(R.string.button_test_test_button_3),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.button_test_test_button_3))
             }
             Text(
                 text = stringResource(R.string.button_test_with_bottommargin_8_height_55_p),
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             Button(
@@ -168,13 +171,11 @@ fun ButtonTestGeneratedView(
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue)
+                                    containerColor = colorResource(R.color.medium_blue),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
-                Text(
-                    text = stringResource(R.string.button_test_like_primarybutton_style),
-                    color = colorResource(R.color.white),
-                )
+                Text(stringResource(R.string.button_test_like_primarybutton_style))
             }
         }
         }

@@ -45,6 +45,11 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 
 @Composable
 fun BindingTestGeneratedView(
@@ -59,7 +64,7 @@ fun BindingTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "binding_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -96,6 +101,7 @@ fun BindingTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -104,27 +110,30 @@ fun BindingTestGeneratedView(
                 .wrapContentHeight()
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
                 color = colorResource(R.color.black),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
+                    .testTag("title_label")
+                    .semantics { contentDescription = "title_label" }
                     .wrapContentWidth()
                     .wrapContentHeight()
                     .padding(top = 20.dp)
@@ -134,10 +143,11 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             CustomTextFieldWithMargins(
-                value = "${data.textValue}",
+                value = data.textValue,
                 onValueChange = { newValue -> viewModel.updateData(mapOf("textValue" to newValue)) },
                 boxModifier = Modifier
                     .padding(top = 10.dp)
@@ -145,9 +155,11 @@ fun BindingTestGeneratedView(
                     .padding(end = 20.dp),
                 textFieldModifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp)
-                    .padding(10.dp),
-                placeholder = { Text(stringResource(R.string.binding_test_enter_text)) },
+                    .height(44.dp),
+                placeholder = { Text(
+                                    text = stringResource(R.string.binding_test_enter_text),
+                                    color = Configuration.TextField.defaultPlaceholderColor
+                                ) },
                 shape = RoundedCornerShape(8.dp),
                 backgroundColor = colorResource(R.color.white),
                 borderColor = colorResource(R.color.pale_gray_4),
@@ -158,6 +170,7 @@ fun BindingTestGeneratedView(
                 text = "${data.textValue}",
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -167,6 +180,7 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             Row(
@@ -178,24 +192,24 @@ fun BindingTestGeneratedView(
                     .padding(end = 20.dp)
             ) {
                 Button(
-                    onClick = { viewModel.decreaseCounter() },
+                    onClick = { data.decreaseCounter?.invoke() },
                     modifier = Modifier
                         .padding(end = 5.dp)
-                        .height(44.dp),
+                        .height(44.dp)
+                        .weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_red)
+                                            containerColor = colorResource(R.color.medium_red),
+                                            contentColor = colorResource(R.color.white)
                                         )
                 ) {
-                    Text(
-                        text = stringResource(R.string.binding_test_decrease),
-                        color = colorResource(R.color.white),
-                    )
+                    Text(stringResource(R.string.binding_test_decrease))
                 }
                 Text(
                     text = "${data.counter}",
                     fontSize = 20.sp,
                     color = colorResource(R.color.black),
+                    style = TextStyle(lineHeight = 20.sp),
                     modifier = Modifier
                         .width(100.dp)
                         .height(44.dp)
@@ -206,19 +220,18 @@ fun BindingTestGeneratedView(
                     textAlign = TextAlign.Center
                 )
                 Button(
-                    onClick = { viewModel.increaseCounter() },
+                    onClick = { data.increaseCounter?.invoke() },
                     modifier = Modifier
                         .padding(start = 5.dp)
-                        .height(44.dp),
+                        .height(44.dp)
+                        .weight(1f),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_green)
+                                            containerColor = colorResource(R.color.medium_green),
+                                            contentColor = colorResource(R.color.white)
                                         )
                 ) {
-                    Text(
-                        text = stringResource(R.string.binding_test_increase),
-                        color = colorResource(R.color.white),
-                    )
+                    Text(stringResource(R.string.binding_test_increase))
                 }
             }
             Text(
@@ -226,12 +239,15 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             Switch(
-                checked = false,
-                onCheckedChange = { },
+                checked = data.toggleValue,
+                onCheckedChange = { newValue -> viewModel.updateData(mapOf("toggleValue" to newValue)) },
                 modifier = Modifier
+                    .testTag("toggle_switch")
+                    .semantics { contentDescription = "toggle_switch" }
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
             )
@@ -239,6 +255,7 @@ fun BindingTestGeneratedView(
                 text = "${data.toggleValue}",
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -257,6 +274,7 @@ fun BindingTestGeneratedView(
                     text = stringResource(R.string.binding_test_onoff),
                     fontSize = 16.sp,
                     color = colorResource(R.color.white),
+                    style = TextStyle(lineHeight = 16.sp),
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -265,13 +283,16 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             Slider(
                 value = data.sliderValue.toFloat(),
-                onValueChange = { viewModel.sliderChanged(it) },
+                onValueChange = { // ERROR: sliderChanged - camelCase events require binding format @{functionName} },
                 valueRange = 0f..100f,
                 modifier = Modifier
+                    .testTag("value_slider")
+                    .semantics { contentDescription = "value_slider" }
                     .fillMaxWidth()
                     .height(40.dp)
                     .padding(top = 10.dp)
@@ -282,6 +303,7 @@ fun BindingTestGeneratedView(
                 text = "${data.sliderValue}",
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -310,6 +332,7 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             SelectBox(
@@ -325,6 +348,8 @@ fun BindingTestGeneratedView(
                 hintColor = colorResource(R.color.light_gray_8),
                 cornerRadius = 8,
                 modifier = Modifier
+                    .testTag("option_select")
+                    .semantics { contentDescription = "option_select" }
                     .fillMaxWidth()
                     .height(44.dp)
                     .padding(top = 10.dp)
@@ -335,6 +360,7 @@ fun BindingTestGeneratedView(
                 text = "${data.selectedOption}",
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)
@@ -344,6 +370,7 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             DateSelectBox(
@@ -373,6 +400,7 @@ fun BindingTestGeneratedView(
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
                 fontWeight = FontWeight.Bold,
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 30.dp)
             )
             DateSelectBox(
@@ -399,6 +427,7 @@ fun BindingTestGeneratedView(
                 text = "${data.selectedDate}",
                 fontSize = 14.sp,
                 color = colorResource(R.color.medium_gray_4),
+                style = TextStyle(lineHeight = 14.sp),
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .padding(bottom = 30.dp)

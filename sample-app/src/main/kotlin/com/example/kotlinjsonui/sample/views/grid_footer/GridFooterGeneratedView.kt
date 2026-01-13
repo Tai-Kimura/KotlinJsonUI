@@ -19,6 +19,7 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.colorResource
 import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun GridFooterGeneratedView(
@@ -34,7 +35,7 @@ fun GridFooterGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "grid_footer",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -75,6 +76,7 @@ fun GridFooterGeneratedView(
             text = "${data.title}",
             fontSize = 16.sp,
             color = colorResource(R.color.dark_gray),
+            style = TextStyle(lineHeight = 16.sp),
             modifier = Modifier.align(Alignment.TopStart)
         )
     }    }

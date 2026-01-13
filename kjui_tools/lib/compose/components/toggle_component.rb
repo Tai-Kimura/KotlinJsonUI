@@ -43,10 +43,11 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_alignment(json_data, required_imports, parent_type))
-          
+
           # Add weight modifier if in Row or Column
           if parent_type == 'Row' || parent_type == 'Column'
             modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))

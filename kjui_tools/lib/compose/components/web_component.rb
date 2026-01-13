@@ -62,7 +62,8 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
-          
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Default size for WebView
           if !json_data['width'] && !json_data['height']
             modifiers << ".fillMaxSize()"

@@ -119,6 +119,9 @@ module KjuiTools
           # Build modifiers
           modifiers = []
 
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # IMPORTANT: LazyVerticalGrid requires bounded width from parent
           # LazyHorizontalGrid requires bounded height from parent
           # If width/height is wrapContent, we MUST change it to avoid runtime crash

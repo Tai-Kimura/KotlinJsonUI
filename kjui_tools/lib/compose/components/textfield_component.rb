@@ -66,6 +66,7 @@ module KjuiTools
           if has_margins
             # Box modifier with margins
             box_modifiers = []
+            box_modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
             box_modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
             if box_modifiers.any?
               code += "\n" + indent("boxModifier = Modifier", depth + 1)
@@ -89,6 +90,7 @@ module KjuiTools
           else
             # Regular modifiers for CustomTextField (size, margins, and weight, padding goes to contentPadding)
             modifiers = []
+            modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
             modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
             modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
             modifiers.concat(Helpers::ModifierBuilder.build_weight(json_data, parent_type))

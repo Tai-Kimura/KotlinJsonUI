@@ -14,10 +14,11 @@ module KjuiTools
           
           # Build modifiers
           modifiers = []
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
           modifiers.concat(Helpers::ModifierBuilder.build_size(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_padding(json_data))
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
-          
+
           # Add blur effect
           blur_radius = json_data['blurRadius'] || 10
           

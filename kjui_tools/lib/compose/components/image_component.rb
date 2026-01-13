@@ -38,6 +38,9 @@ module KjuiTools
           # Build modifiers
           modifiers = []
 
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Margins (outer spacing) - must be applied BEFORE size in Compose
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
 

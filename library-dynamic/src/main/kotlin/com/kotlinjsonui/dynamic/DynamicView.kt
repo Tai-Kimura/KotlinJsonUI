@@ -51,10 +51,11 @@ fun DynamicView(
 ) {
     val context = LocalContext.current
 
-    // Initialize ResourceCache, ColorParser, and DynamicLayoutLoader with context
+    // Initialize ResourceCache, ColorParser, DynamicLayoutLoader, and IncludeExpander with context
     ResourceCache.init(context)
     ColorParser.init(context)
     DynamicLayoutLoader.init(context)
+    IncludeExpander.init(context)
 
     // Apply styles if a style attribute is present
     val styledJson = if (json.has("style")) {
@@ -63,9 +64,12 @@ fun DynamicView(
         json
     }
 
-    // Check if this is an include element
+    // Note: Includes are now expanded by DynamicLayoutLoader/IncludeExpander
+    // If we still see an include here, it means it was loaded without expansion
     if (styledJson.has("include")) {
-        DynamicIncludeComponent.create(styledJson, data)
+        // Expand inline and render
+        val expandedJson = IncludeExpander.processIncludes(styledJson)
+        DynamicView(expandedJson, data, onError)
         return
     }
 

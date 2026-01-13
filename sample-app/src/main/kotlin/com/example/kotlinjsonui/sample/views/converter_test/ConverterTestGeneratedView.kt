@@ -43,6 +43,16 @@ import com.example.kotlinjsonui.sample.viewmodels.ConverterTestCellViewModel
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.layout.imePadding
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
+import com.kotlinjsonui.dynamic.SafeAreaConfig
+import androidx.compose.runtime.CompositionLocalProvider
 
 @Composable
 fun ConverterTestGeneratedView(
@@ -57,7 +67,7 @@ fun ConverterTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "converter_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -94,6 +104,7 @@ fun ConverterTestGeneratedView(
             .fillMaxWidth()
             .fillMaxHeight()
             .background(colorResource(R.color.white))
+            .imePadding()
     ) {
         item {
         Column(
@@ -102,26 +113,27 @@ fun ConverterTestGeneratedView(
                 .wrapContentHeight()
         ) {
             Button(
-                onClick = { viewModel.toggleDynamicMode() },
+                onClick = { data.toggleDynamicMode?.invoke() },
                 modifier = Modifier
                     .wrapContentWidth()
                     .height(44.dp),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = colorResource(R.color.medium_blue_3)
+                                    containerColor = colorResource(R.color.medium_blue_3),
+                                    contentColor = colorResource(R.color.white)
                                 )
             ) {
                 Text(
                     text = "${data.dynamicModeStatus}",
-                    fontSize = 14.sp,
-                    color = colorResource(R.color.white),
+                    fontSize = 14.sp
                 )
             }
             Text(
                 text = "${data.title}",
                 fontSize = 24.sp,
                 color = colorResource(R.color.black),
+                style = TextStyle(lineHeight = 24.sp),
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .padding(bottom = 20.dp)
@@ -130,6 +142,7 @@ fun ConverterTestGeneratedView(
                 text = stringResource(R.string.converter_test_gradientview_test),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 10.dp)
             )
             Box(
@@ -143,6 +156,7 @@ fun ConverterTestGeneratedView(
                     text = stringResource(R.string.converter_test_diagonal_gradient),
                     fontSize = 16.sp,
                     color = colorResource(R.color.white),
+                    style = TextStyle(lineHeight = 16.sp),
                     modifier = Modifier
                 )
             }
@@ -150,6 +164,7 @@ fun ConverterTestGeneratedView(
                 text = stringResource(R.string.converter_test_blurview_test),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Box(
@@ -169,12 +184,14 @@ fun ConverterTestGeneratedView(
                         fontSize = 24.sp,
                         color = colorResource(R.color.white),
                         fontWeight = FontWeight.Bold,
+                        style = TextStyle(lineHeight = 24.sp),
                         modifier = Modifier.align(Alignment.Center)
                     )
                     Text(
                         text = stringResource(R.string.converter_test_this_will_be_blurred),
                         fontSize = 16.sp,
                         color = colorResource(R.color.light_orange),
+                        style = TextStyle(lineHeight = 16.sp),
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(top = 50.dp)
@@ -193,6 +210,7 @@ fun ConverterTestGeneratedView(
                         fontSize = 18.sp,
                         color = colorResource(R.color.white),
                         fontWeight = FontWeight.Bold,
+                        style = TextStyle(lineHeight = 18.sp),
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -201,6 +219,7 @@ fun ConverterTestGeneratedView(
                 text = stringResource(R.string.converter_test_webview_test),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
 // TODO: Implement component type: WebView
@@ -208,13 +227,61 @@ fun ConverterTestGeneratedView(
                 text = stringResource(R.string.converter_test_tabview_test),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
-// TODO: Implement component type: TabView
+            // TabView with NavigationBar
+            var selectedTab by remember { mutableStateOf(0) }
+
+            Scaffold(
+                bottomBar = {
+                    NavigationBar(
+                    ) {
+                        NavigationBarItem(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Circle,
+                                    contentDescription = "Tab 1"
+                                )
+                            },
+                            label = { Text("Tab 1") },
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Circle,
+                                    contentDescription = "Tab 2"
+                                )
+                            },
+                            label = { Text("Tab 2") },
+                        )
+                    }
+                }
+            ) { innerPadding ->
+                Box(modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
+                    CompositionLocalProvider(
+                        LocalSafeAreaConfig provides SafeAreaConfig(ignoreBottom = true)
+                    ) {
+                        when (selectedTab) {
+                            0 -> {
+                                Text("Tab 1 content")
+                            }
+                            1 -> {
+                                Text("Tab 2 content")
+                            }
+                        }
+                    }
+                }
+            }
             Text(
                 text = stringResource(R.string.converter_test_collection_test_2),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             LazyVerticalGrid(
@@ -227,23 +294,19 @@ fun ConverterTestGeneratedView(
                     .padding(top = 10.dp)
             ) {
                 // Section 1: ConverterTestCell (3 columns)
-                data.items.sections.getOrNull(0)?.let { section ->
+                data.items?.sections?.getOrNull(0)?.let { section ->
                     section.cells?.let { cellData ->
                         items(cellData.data.size) { cellIndex ->
-                            val item = cellData.data[cellIndex]
-                            when (item) {
-                                is Map<*, *> -> {
-                                    val data = ConverterTestCellData.fromMap(item as Map<String, Any>)
-                                    ConverterTestCellView(
-                                        data = data,
-                                        viewModel = viewModel(),
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                    )
-                                }
-                                else -> {
-                                    // Unsupported item type
-                                }
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.TopStart
+                            ) {
+                                val cellViewModel: ConverterTestCellViewModel = viewModel(key = "ConverterTestCell_cell_$cellIndex")
+                                cellViewModel.updateData(cellData.data[cellIndex])
+                                ConverterTestCellView(
+                                    viewModel = cellViewModel,
+                                    modifier = Modifier
+                                )
                             }
                         }
                     }
@@ -253,19 +316,21 @@ fun ConverterTestGeneratedView(
                 text = stringResource(R.string.converter_test_image_test),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             Image(
                 painter = painterResource(id = R.drawable.placeholder),
                 contentDescription = "",
                 modifier = Modifier
-                    .size(100.dp, 100.dp)
                     .padding(top = 10.dp)
+                    .size(100.dp, 100.dp)
             )
             Text(
                 text = stringResource(R.string.converter_test_networkimage_test),
                 fontSize = 18.sp,
                 color = colorResource(R.color.dark_gray),
+                style = TextStyle(lineHeight = 18.sp),
                 modifier = Modifier.padding(top = 20.dp)
             )
             AsyncImage(
@@ -273,10 +338,9 @@ fun ConverterTestGeneratedView(
                 contentDescription = "Image",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
+                    .padding(top = 10.dp)
                     .width(200.dp)
                     .height(150.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .padding(top = 10.dp)
                     .clip(RoundedCornerShape(10.dp))
             )
         }

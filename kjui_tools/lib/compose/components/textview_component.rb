@@ -51,6 +51,7 @@ module KjuiTools
           if has_margins
             # Box modifier with margins
             box_modifiers = []
+            box_modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
             box_modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
             if box_modifiers.any?
               code += "\n" + indent("boxModifier = Modifier", depth + 1)
@@ -95,6 +96,7 @@ module KjuiTools
           else
             # Regular modifiers for CustomTextField
             modifiers = []
+            modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
 
             # Size - default to fillMaxWidth for text areas
             if json_data['width'] == 'matchParent' || !json_data['width']

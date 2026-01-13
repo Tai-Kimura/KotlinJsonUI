@@ -51,6 +51,9 @@ module KjuiTools
           # 4. padding (inner spacing)
           modifiers = []
 
+          # Add testTag and contentDescription for UI testing
+          modifiers.concat(Helpers::ModifierBuilder.build_test_tag(json_data, required_imports))
+
           # Margins first (outer spacing, before size)
           modifiers.concat(Helpers::ModifierBuilder.build_margins(json_data))
 

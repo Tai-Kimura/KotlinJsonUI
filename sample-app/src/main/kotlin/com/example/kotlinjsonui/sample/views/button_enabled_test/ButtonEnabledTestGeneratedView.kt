@@ -25,6 +25,8 @@ import com.kotlinjsonui.components.SafeDynamicView
 import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
 import androidx.compose.ui.res.colorResource
+import com.kotlinjsonui.core.Configuration
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun ButtonEnabledTestGeneratedView(
@@ -39,7 +41,7 @@ fun ButtonEnabledTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "button_enabled_test",
-            data = data.toMap(viewModel),
+            data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
                 Box(
@@ -79,88 +81,82 @@ fun ButtonEnabledTestGeneratedView(
             .padding(20.dp)
     ) {
         Button(
-            onClick = { viewModel.toggleDynamicMode() },
+            onClick = { data.toggleDynamicMode?.invoke() },
             modifier = Modifier
                 .wrapContentWidth()
                 .height(44.dp),
             shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.medium_blue_3)
+                            containerColor = colorResource(R.color.medium_blue_3),
+                            contentColor = colorResource(R.color.white)
                         )
         ) {
             Text(
                 text = "${data.dynamicModeStatus}",
-                fontSize = 14.sp,
-                color = colorResource(R.color.white),
+                fontSize = 14.sp
             )
         }
         Text(
             text = "${data.title}",
             fontSize = 24.sp,
             color = colorResource(R.color.black),
+            style = TextStyle(lineHeight = 24.sp),
             modifier = Modifier
         )
         Text(
             text = "${data.isButtonEnabled}",
             fontSize = 16.sp,
             color = colorResource(R.color.medium_gray_4),
+            style = TextStyle(lineHeight = 16.sp),
             modifier = Modifier
         )
         Button(
-            onClick = { viewModel.testAction() },
+            onClick = { data.testAction?.invoke() },
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.medium_green_2)
+                            containerColor = colorResource(R.color.medium_green_2),
+                            contentColor = colorResource(R.color.white)
                         ),
             enabled = data.isButtonEnabled
         ) {
-            Text(
-                text = stringResource(R.string.button_enabled_test_test_button_controlled_by_data),
-                color = colorResource(R.color.white),
-            )
+            Text(stringResource(R.string.button_enabled_test_test_button_controlled_by_data))
         }
         Button(
-            onClick = { viewModel.toggleEnabled() },
+            onClick = { data.toggleEnabled?.invoke() },
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.medium_blue_2)
+                            containerColor = colorResource(R.color.medium_blue_2),
+                            contentColor = colorResource(R.color.white)
                         )
         ) {
-            Text(
-                text = stringResource(R.string.button_enabled_test_toggle_enabled_state),
-                color = colorResource(R.color.white),
-            )
+            Text(stringResource(R.string.button_enabled_test_toggle_enabled_state))
         }
         Button(
-            onClick = { viewModel.neverCalled() },
+            onClick = { data.neverCalled?.invoke() },
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.medium_red_2)
+                            containerColor = colorResource(R.color.medium_red_2),
+                            contentColor = colorResource(R.color.white)
                         ),
             enabled = false
         ) {
-            Text(
-                text = stringResource(R.string.button_enabled_test_always_disabled_button),
-                color = colorResource(R.color.white),
-            )
+            Text(stringResource(R.string.button_enabled_test_always_disabled_button))
         }
         Button(
-            onClick = { viewModel.alwaysCalled() },
+            onClick = { data.alwaysCalled?.invoke() },
             shape = RoundedCornerShape(5.dp),
             contentPadding = PaddingValues(10.dp),
             colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.medium_purple)
+                            containerColor = colorResource(R.color.medium_purple),
+                            contentColor = colorResource(R.color.white)
                         ),
             enabled = true
         ) {
-            Text(
-                text = stringResource(R.string.button_enabled_test_always_enabled_button),
-                color = colorResource(R.color.white),
-            )
+            Text(stringResource(R.string.button_enabled_test_always_enabled_button))
         }
     }    }
     // >>> GENERATED_CODE_END

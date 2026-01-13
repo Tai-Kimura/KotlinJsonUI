@@ -8,26 +8,52 @@ import java.io.InputStreamReader
 /**
  * Loader for dynamic layout files
  * Handles loading JSON layouts from assets
+ *
+ * Note: This loader automatically expands includes with ID prefix support.
+ * Use loadLayoutRaw() to get the raw JSON without include expansion.
  */
 object DynamicLayoutLoader {
     private var context: Context? = null
     private val layoutCache = mutableMapOf<String, JsonObject?>()
-    
+    private val rawLayoutCache = mutableMapOf<String, JsonObject?>()
+
     /**
      * Initialize the loader with an application context
      */
     fun init(appContext: Context) {
         context = appContext.applicationContext
+        IncludeExpander.init(appContext)
     }
-    
+
     /**
-     * Load a layout from assets/Layouts directory
+     * Load a layout from assets/Layouts directory with include expansion.
+     * Includes are expanded inline with ID prefix support.
      * Supports both direct paths (e.g., "screens/detail_view") and simple names (e.g., "detail_view")
      * For simple names, it will search in subdirectories if not found at root level
      */
     fun loadLayout(layoutName: String): JsonObject? {
         // Return from cache if available
-        layoutCache[layoutName]?.let { return it }
+        layoutCache[layoutName]?.let { return it.deepCopy() }
+
+        // Load raw JSON first
+        val rawJson = loadLayoutRaw(layoutName) ?: return null
+
+        // Process includes (expand inline with ID prefixes)
+        val expandedJson = IncludeExpander.processIncludes(rawJson.deepCopy())
+
+        // Cache the expanded result
+        layoutCache[layoutName] = expandedJson
+
+        return expandedJson.deepCopy()
+    }
+
+    /**
+     * Load a layout without include expansion (raw JSON)
+     * Used internally by IncludeExpander to load included files
+     */
+    fun loadLayoutRaw(layoutName: String): JsonObject? {
+        // Return from cache if available
+        rawLayoutCache[layoutName]?.let { return it.deepCopy() }
 
         val ctx = context ?: return null
 
@@ -38,8 +64,8 @@ object DynamicLayoutLoader {
                 InputStreamReader(inputStream).use { reader ->
                     val json = JsonParser.parseReader(reader).asJsonObject
                     // Cache the result
-                    layoutCache[layoutName] = json
-                    return json
+                    rawLayoutCache[layoutName] = json
+                    return json.deepCopy()
                 }
             }
         } catch (e: Exception) {
@@ -75,9 +101,9 @@ object DynamicLayoutLoader {
                                     val json = JsonParser.parseReader(reader).asJsonObject
                                     // Cache with the full path for future lookups
                                     val fullPath = "$item/$layoutName"
-                                    layoutCache[layoutName] = json
-                                    layoutCache[fullPath] = json
-                                    return json
+                                    rawLayoutCache[layoutName] = json
+                                    rawLayoutCache[fullPath] = json
+                                    return json.deepCopy()
                                 }
                             }
                         } catch (e: Exception) {
@@ -94,18 +120,20 @@ object DynamicLayoutLoader {
 
         return null
     }
-    
+
     /**
-     * Clear the layout cache
+     * Clear all layout caches (both expanded and raw)
      */
     fun clearCache() {
         layoutCache.clear()
+        rawLayoutCache.clear()
     }
-    
+
     /**
-     * Remove a specific layout from cache
+     * Remove a specific layout from both caches
      */
     fun clearCache(layoutName: String) {
         layoutCache.remove(layoutName)
+        rawLayoutCache.remove(layoutName)
     }
 }

@@ -245,6 +245,22 @@ module KjuiTools
           modifiers
         end
         
+        def self.build_test_tag(json_data, required_imports = nil)
+          modifiers = []
+
+          if json_data['id']
+            id_value = json_data['id']
+            required_imports&.add(:semantics)
+            required_imports&.add(:test_tag)
+            # Add testTag for UI testing (used by Espresso/UI Automator)
+            modifiers << ".testTag(\"#{id_value}\")"
+            # Add contentDescription for accessibility (also enables element identification)
+            modifiers << ".semantics { contentDescription = \"#{id_value}\" }"
+          end
+
+          modifiers
+        end
+
         def self.build_visibility(json_data, required_imports = nil)
           modifiers = []
           visibility_info = {}
