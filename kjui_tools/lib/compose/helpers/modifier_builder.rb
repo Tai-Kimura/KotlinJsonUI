@@ -252,10 +252,11 @@ module KjuiTools
             id_value = json_data['id']
             required_imports&.add(:semantics)
             required_imports&.add(:test_tag)
+            required_imports&.add(:test_tags_as_resource_id)
             # Add testTag for UI testing (used by Espresso/UI Automator)
             modifiers << ".testTag(\"#{id_value}\")"
-            # Add contentDescription for accessibility (also enables element identification)
-            modifiers << ".semantics { contentDescription = \"#{id_value}\" }"
+            # Expose testTag as resource-id for UIAutomator compatibility (Compose 1.2+)
+            modifiers << ".semantics { testTagsAsResourceId = true }"
           end
 
           modifiers

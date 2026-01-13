@@ -32,7 +32,8 @@ module KjuiTools
           end
           
           # Content description for accessibility
-          content_desc = json_data['contentDescription'] || ''
+          # Use 'id' (testId) as contentDescription if available, for UIAutomator compatibility
+          content_desc = json_data['contentDescription'] || json_data['id'] || ''
           code += "\n" + indent("contentDescription = #{quote(content_desc)},", depth + 1)
           
           # Build modifiers

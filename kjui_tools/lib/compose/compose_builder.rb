@@ -801,7 +801,8 @@ module KjuiTools
       
       def update_imports(content)
         imports_map = Helpers::ImportManager.get_imports_map(@package_name)
-        
+
+        # Collect all required imports
         imports_to_add = []
         @required_imports.each do |import_type|
           import_lines = imports_map[import_type]
@@ -813,25 +814,25 @@ module KjuiTools
             end
           end
         end
-        
+
         # Add imports for included views
         if @included_views && @included_views.any?
           # Add necessary imports for creating ViewModels
           imports_to_add << "import android.app.Application" unless imports_to_add.include?("import android.app.Application")
           imports_to_add << "import androidx.compose.ui.platform.LocalContext" unless imports_to_add.include?("import androidx.compose.ui.platform.LocalContext")
-          
+
           @included_views.each do |view_name|
             pascal_name = to_pascal_case(view_name)
             view_import = "import #{@package_name}.views.#{view_name}.#{pascal_name}View"
             data_import = "import #{@package_name}.data.#{pascal_name}Data"
             viewmodel_import = "import #{@package_name}.viewmodels.#{pascal_name}ViewModel"
-            
+
             imports_to_add << view_import unless imports_to_add.include?(view_import)
             imports_to_add << data_import unless imports_to_add.include?(data_import)
             imports_to_add << viewmodel_import unless imports_to_add.include?(viewmodel_import)
           end
         end
-        
+
         # Add imports for custom components
         if @custom_components && @custom_components.any?
           @custom_components.each do |component_name|
@@ -839,7 +840,7 @@ module KjuiTools
             imports_to_add << component_import unless imports_to_add.include?(component_import)
           end
         end
-        
+
         # Add imports for cell views (from sections in Collection components)
         # Process "cell:CellName" entries from required_imports
         cell_imports = @required_imports.select { |imp| imp.to_s.start_with?('cell:') }
@@ -893,26 +894,59 @@ module KjuiTools
           end
         end
 
-        if imports_to_add.any?
-          lines = content.split("\n")
-          package_index = lines.find_index { |line| line.start_with?("package ") }
-          
-          if package_index
-            last_import_index = lines.each_with_index.select { |line, i| 
-              i > package_index && line.start_with?("import ")
-            }.map(&:last).max || package_index
-            
-            imports_to_add.each do |import|
-              unless lines.any? { |line| line == import }
-                lines.insert(last_import_index + 1, import)
-                last_import_index += 1
-              end
+        # Rebuild imports section completely (remove unused imports)
+        lines = content.split("\n")
+        package_index = lines.find_index { |line| line.start_with?("package ") }
+
+        if package_index
+          # Find the range of import statements
+          first_import_index = nil
+          last_import_index = nil
+
+          lines.each_with_index do |line, i|
+            next if i <= package_index
+            if line.start_with?("import ")
+              first_import_index ||= i
+              last_import_index = i
+            elsif first_import_index && !line.strip.empty? && !line.start_with?("import ")
+              # Stop when we hit non-import, non-empty line after imports started
+              break
             end
-            
-            content = lines.join("\n")
+          end
+
+          if first_import_index && last_import_index
+            # Extract existing project-specific imports (Data, ViewModel imports that are always needed)
+            existing_project_imports = lines[first_import_index..last_import_index].select do |line|
+              line.include?("#{@package_name}.data.") ||
+              line.include?("#{@package_name}.viewmodels.")
+            end
+
+            # Build the base imports that are always needed
+            base_imports = [
+              "import androidx.compose.foundation.background",
+              "import androidx.compose.foundation.layout.*",
+              "import androidx.compose.foundation.lazy.LazyColumn",
+              "import androidx.compose.foundation.lazy.LazyRow",
+              "import androidx.compose.material3.*",
+              "import androidx.compose.runtime.Composable",
+              "import androidx.compose.ui.Alignment",
+              "import androidx.compose.ui.Modifier",
+              "import androidx.compose.ui.graphics.Color",
+              "import androidx.compose.ui.text.font.FontWeight",
+              "import androidx.compose.ui.text.style.TextAlign",
+              "import androidx.compose.ui.unit.dp",
+              "import androidx.compose.ui.unit.sp"
+            ]
+
+            # Combine: base imports + project imports + dynamically required imports
+            all_imports = (base_imports + existing_project_imports + imports_to_add).uniq.sort
+
+            # Replace the import section
+            new_lines = lines[0..package_index] + [""] + all_imports + [""] + lines[(last_import_index + 1)..-1]
+            content = new_lines.join("\n")
           end
         end
-        
+
         content
       end
       
