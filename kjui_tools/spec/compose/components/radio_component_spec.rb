@@ -10,6 +10,8 @@ RSpec.describe KjuiTools::Compose::Components::RadioComponent do
   before do
     allow(KjuiTools::Core::ConfigManager).to receive(:load_config).and_return({})
     allow(KjuiTools::Core::ProjectFinder).to receive(:get_full_source_path).and_return('/tmp')
+    # Clear data definitions before each test
+    KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {}
   end
 
   describe '.generate' do
@@ -168,7 +170,7 @@ RSpec.describe KjuiTools::Compose::Components::RadioComponent do
           'onValueChange' => '@{handleChange}'
         }
         result = described_class.generate(json_data, 0, required_imports)
-        expect(result).to include('viewModel.handleChange')
+        expect(result).to include('data.handleChange?.invoke()')
       end
 
       it 'handles selectedColor and unselectedColor' do
@@ -224,6 +226,99 @@ RSpec.describe KjuiTools::Compose::Components::RadioComponent do
     it 'adds indentation for level 1' do
       result = described_class.send(:indent, 'text', 1)
       expect(result).to eq('    text')
+    end
+  end
+
+  describe 'event handler invocation' do
+    it 'generates invoke() without arguments when handler type is () -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onRadioChange' => { 'name' => 'onRadioChange', 'class' => '(() -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Radio',
+        'id' => 'genderRadio',
+        'options' => ['Male', 'Female'],
+        'bind' => '@{gender}',
+        'onValueChange' => '@{onRadioChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onRadioChange?.invoke()')
+      expect(result).not_to include('invoke("genderRadio"')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (Event) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onRadioChange' => { 'name' => 'onRadioChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Radio',
+        'id' => 'genderRadio',
+        'options' => ['Male', 'Female'],
+        'bind' => '@{gender}',
+        'onValueChange' => '@{onRadioChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onRadioChange?.invoke("genderRadio", "Male")')
+      expect(result).to include('data.onRadioChange?.invoke("genderRadio", "Female")')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (String, String) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onRadioChange' => { 'name' => 'onRadioChange', 'class' => '((String, String) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Radio',
+        'id' => 'sizeRadio',
+        'options' => ['Small', 'Large'],
+        'onValueChange' => '@{onRadioChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onRadioChange?.invoke("sizeRadio", "Small")')
+      expect(result).to include('data.onRadioChange?.invoke("sizeRadio", "Large")')
+    end
+
+    it 'includes both viewModel.updateData and handler invocation when both binding and handler exist' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onRadioChange' => { 'name' => 'onRadioChange', 'class' => '((String, String) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Radio',
+        'id' => 'genderRadio',
+        'options' => ['Male', 'Female'],
+        'bind' => '@{gender}',
+        'onValueChange' => '@{onRadioChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('viewModel.updateData')
+      expect(result).to include('data.onRadioChange?.invoke("genderRadio", "Male")')
+    end
+
+    it 'uses default radio id when no id specified' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onRadioChange' => { 'name' => 'onRadioChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Radio',
+        'options' => ['Yes', 'No'],
+        'onValueChange' => '@{onRadioChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onRadioChange?.invoke("radio", "Yes")')
     end
   end
 end

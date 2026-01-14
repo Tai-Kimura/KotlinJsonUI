@@ -625,6 +625,48 @@ module KjuiTools
           end
         end
 
+        # Generate event handler invocation code based on data section type definition
+        # @param handler [String] The event handler value from JSON (e.g., "@{onToggle}")
+        # @param view_id [String] The view's id attribute value
+        # @param value_expr [String] The Kotlin expression for the value (e.g., "it", "newValue")
+        # @return [String] The Kotlin code to invoke the handler
+        #
+        # Examples:
+        #   - If data section has `() -> Unit`: returns "data.onToggle?.invoke()"
+        #   - If data section has `(Event) -> Unit` or `(String, Boolean) -> Unit`:
+        #     returns "data.onToggle?.invoke(\"viewId\", it)"
+        def self.get_event_handler_invocation(handler, view_id, value_expr)
+          method_name = extract_binding_property(handler) || handler
+
+          # Look up the handler's type in data_definitions
+          data_def = ResourceResolver.data_definitions[method_name]
+
+          if data_def && data_def['class']
+            class_type = data_def['class'].to_s
+
+            # Check if the type has parameters (contains Event or has tuple like (String, Boolean))
+            # Pattern: ((Event) -> ...) or ((String, Type) -> ...) or ((String) -> ...)
+            if class_type.include?('Event') || class_type.match?(/\(\s*\(?\s*String\s*[,)]/)
+              # Handler expects viewId (and optionally value) arguments
+              if value_expr.nil?
+                # Click events without value - only pass viewId
+                "data.#{method_name}?.invoke(\"#{view_id}\")"
+              else
+                "data.#{method_name}?.invoke(\"#{view_id}\", #{value_expr})"
+              end
+            elsif class_type.match?(/\(\s*\)\s*->/)
+              # Handler is () -> Unit (no arguments)
+              "data.#{method_name}?.invoke()"
+            else
+              # Default: assume no arguments
+              "data.#{method_name}?.invoke()"
+            end
+          else
+            # No data definition found, default to no arguments
+            "data.#{method_name}?.invoke()"
+          end
+        end
+
         # Check if handler is binding format (@{functionName})
         def self.is_binding?(value)
           value.is_a?(String) && value.match?(/^@\{.+\}$/)

@@ -50,14 +50,21 @@ module KjuiTools
                 code += "\n" + indent("    .fillMaxWidth()", depth + 2)
                 code += "\n" + indent("    .clickable {", depth + 2)
                 
+                view_id = json_data['id'] || 'radio'
                 if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                   variable = $1
-                  code += "\n" + indent("        viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 2)
+                  if json_data['onValueChange'] && Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                    handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, "\"#{option_value}\"")
+                    code += "\n" + indent("        viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 2)
+                    code += "\n" + indent("        #{handler_call}", depth + 2)
+                  else
+                    code += "\n" + indent("        viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 2)
+                  end
                 elsif json_data['onValueChange']
                   # onValueChange (camelCase) -> binding format only (@{functionName})
                   if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
-                    method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
-                    code += "\n" + indent("        viewModel.#{method_name}(\"#{option_value}\")", depth + 2)
+                    handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, "\"#{option_value}\"")
+                    code += "\n" + indent("        #{handler_call}", depth + 2)
                   else
                     code += "\n" + indent("        // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 2)
                   end
@@ -73,17 +80,23 @@ module KjuiTools
                 
                 if json_data['bind'] && json_data['bind'].match(/@\{([^}]+)\}/)
                   variable = $1
-                  code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 4)
+                  if json_data['onValueChange'] && Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+                    handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, "\"#{option_value}\"")
+                    code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 4)
+                    code += "\n" + indent("#{handler_call}", depth + 4)
+                  else
+                    code += "\n" + indent("viewModel.updateData(mapOf(\"#{variable}\" to \"#{option_value}\"))", depth + 4)
+                  end
                 elsif json_data['onValueChange']
                   # onValueChange (camelCase) -> binding format only (@{functionName})
                   if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
-                    method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
-                    code += "\n" + indent("viewModel.#{method_name}(\"#{option_value}\")", depth + 4)
+                    handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, "\"#{option_value}\"")
+                    code += "\n" + indent("#{handler_call}", depth + 4)
                   else
                     code += "\n" + indent("// ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 4)
                   end
                 end
-                
+
                 code += "\n" + indent("}", depth + 3)
                 
                 # RadioButton colors

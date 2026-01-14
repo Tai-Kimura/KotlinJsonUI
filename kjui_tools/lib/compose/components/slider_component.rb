@@ -39,16 +39,23 @@ module KjuiTools
             binding_variable = $1
           end
           
+          view_id = json_data['id'] || 'slider'
           if json_data['onValueChange']
             # onValueChange (camelCase) -> binding format only (@{functionName})
             if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
-              method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
-              code += "\n" + indent("onValueChange = { viewModel.#{method_name}(it) },", depth + 1)
+              handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, 'it')
+              if binding_variable
+                # Both data binding and event handler
+                code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue.toDouble())); #{handler_call} },", depth + 1)
+              else
+                # Event handler only
+                code += "\n" + indent("onValueChange = { #{handler_call} },", depth + 1)
+              end
             else
               code += "\n" + indent("onValueChange = { // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName} },", depth + 1)
             end
           elsif binding_variable
-            # Update the bound variable - check if it's Int or Double/Float based on the data type
+            # Update the bound variable only
             code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue.toDouble())) },", depth + 1)
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)

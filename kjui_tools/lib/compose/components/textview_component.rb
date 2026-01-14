@@ -31,18 +31,31 @@ module KjuiTools
 
           # onValueChange handler
           # Data binding: directly update data property, then call onTextChange callback if specified
+          view_id = json_data['id'] || 'textview'
           if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
             variable = extract_variable_name(json_data['text'])
             if json_data['onTextChange']
               # Data binding + explicit callback
-              code += "\n" + indent("onValueChange = { newValue -> data.#{variable} = newValue; data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+              if Helpers::ModifierBuilder.is_binding?(json_data['onTextChange'])
+                handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onTextChange'], view_id, 'newValue')
+                code += "\n" + indent("onValueChange = { newValue -> data.#{variable} = newValue; #{handler_call} },", depth + 1)
+              else
+                # Non-binding format callback (legacy support)
+                code += "\n" + indent("onValueChange = { newValue -> data.#{variable} = newValue; data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+              end
             else
               # Data binding only
               code += "\n" + indent("onValueChange = { newValue -> data.#{variable} = newValue },", depth + 1)
             end
           elsif json_data['onTextChange']
             # Explicit callback only (no data binding)
-            code += "\n" + indent("onValueChange = { newValue -> data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+            if Helpers::ModifierBuilder.is_binding?(json_data['onTextChange'])
+              handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onTextChange'], view_id, 'newValue')
+              code += "\n" + indent("onValueChange = { newValue -> #{handler_call} },", depth + 1)
+            else
+              # Non-binding format callback (legacy support)
+              code += "\n" + indent("onValueChange = { newValue -> data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+            end
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end

@@ -10,6 +10,8 @@ RSpec.describe KjuiTools::Compose::Components::SegmentComponent do
   before do
     allow(KjuiTools::Core::ConfigManager).to receive(:load_config).and_return({})
     allow(KjuiTools::Core::ProjectFinder).to receive(:get_full_source_path).and_return('/tmp')
+    # Clear data definitions before each test
+    KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {}
   end
 
   describe '.generate' do
@@ -171,7 +173,7 @@ RSpec.describe KjuiTools::Compose::Components::SegmentComponent do
         'items' => ['A', 'B']
       }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('viewModel.handleTabChange')
+      expect(result).to include('data.handleTabChange?.invoke()')
     end
 
     it 'generates update when binding is set' do
@@ -239,6 +241,100 @@ RSpec.describe KjuiTools::Compose::Components::SegmentComponent do
     it 'adds indentation for level 1' do
       result = described_class.send(:indent, 'text', 1)
       expect(result).to eq('    text')
+    end
+  end
+
+  describe 'event handler invocation' do
+    it 'generates invoke() without arguments when handler type is () -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTabChange' => { 'name' => 'onTabChange', 'class' => '(() -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Segment',
+        'id' => 'tabSegment',
+        'items' => ['Tab1', 'Tab2'],
+        'selectedIndex' => '@{selectedTab}',
+        'onValueChange' => '@{onTabChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTabChange?.invoke()')
+      expect(result).not_to include('invoke("tabSegment"')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (Event) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTabChange' => { 'name' => 'onTabChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Segment',
+        'id' => 'tabSegment',
+        'items' => ['Tab1', 'Tab2'],
+        'selectedIndex' => '@{selectedTab}',
+        'onValueChange' => '@{onTabChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTabChange?.invoke("tabSegment", 0)')
+      expect(result).to include('data.onTabChange?.invoke("tabSegment", 1)')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (String, Int) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTabChange' => { 'name' => 'onTabChange', 'class' => '((String, Int) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Segment',
+        'id' => 'categorySegment',
+        'items' => ['All', 'Active', 'Completed'],
+        'onValueChange' => '@{onTabChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTabChange?.invoke("categorySegment", 0)')
+      expect(result).to include('data.onTabChange?.invoke("categorySegment", 1)')
+      expect(result).to include('data.onTabChange?.invoke("categorySegment", 2)')
+    end
+
+    it 'includes both viewModel.updateData and handler invocation when both binding and handler exist' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTabChange' => { 'name' => 'onTabChange', 'class' => '((String, Int) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Segment',
+        'id' => 'tabSegment',
+        'items' => ['Tab1', 'Tab2'],
+        'selectedIndex' => '@{selectedTab}',
+        'onValueChange' => '@{onTabChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('viewModel.updateData')
+      expect(result).to include('data.onTabChange?.invoke("tabSegment", 0)')
+    end
+
+    it 'uses default segment id when no id specified' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTabChange' => { 'name' => 'onTabChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Segment',
+        'items' => ['A', 'B'],
+        'onValueChange' => '@{onTabChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTabChange?.invoke("segment", 0)')
     end
   end
 end

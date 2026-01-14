@@ -10,6 +10,8 @@ RSpec.describe KjuiTools::Compose::Components::SliderComponent do
   before do
     allow(KjuiTools::Core::ConfigManager).to receive(:load_config).and_return({})
     allow(KjuiTools::Core::ProjectFinder).to receive(:get_full_source_path).and_return('/tmp')
+    # Clear data definitions before each test
+    KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {}
   end
 
   describe '.generate' do
@@ -40,10 +42,11 @@ RSpec.describe KjuiTools::Compose::Components::SliderComponent do
       expect(result).to include('updateData(mapOf("volume"')
     end
 
-    it 'generates Slider with onValueChange handler' do
+    it 'generates Slider with onValueChange handler (no data definition)' do
       json_data = { 'type' => 'Slider', 'onValueChange' => '@{handleSliderChange}' }
       result = described_class.generate(json_data, 0, required_imports)
-      expect(result).to include('onValueChange = { viewModel.handleSliderChange(it) }')
+      # When no data definition, defaults to invoke() without arguments
+      expect(result).to include('data.handleSliderChange?.invoke()')
     end
 
     it 'generates Slider with empty onValueChange when no handler' do
@@ -173,6 +176,92 @@ RSpec.describe KjuiTools::Compose::Components::SliderComponent do
     it 'handles multi-line text' do
       result = described_class.send(:indent, "line1\nline2", 1)
       expect(result).to eq("    line1\n    line2")
+    end
+  end
+
+  describe 'event handler invocation' do
+    it 'generates invoke() without arguments when handler type is () -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onSliderChange' => { 'name' => 'onSliderChange', 'class' => '(() -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Slider',
+        'id' => 'volumeSlider',
+        'value' => '@{volume}',
+        'onValueChange' => '@{onSliderChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onSliderChange?.invoke()')
+      expect(result).not_to include('invoke("volumeSlider"')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (Event) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onSliderChange' => { 'name' => 'onSliderChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Slider',
+        'id' => 'volumeSlider',
+        'value' => '@{volume}',
+        'onValueChange' => '@{onSliderChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onSliderChange?.invoke("volumeSlider", it)')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (String, Float) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onSliderChange' => { 'name' => 'onSliderChange', 'class' => '((String, Float) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Slider',
+        'id' => 'brightnessSlider',
+        'onValueChange' => '@{onSliderChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onSliderChange?.invoke("brightnessSlider", it)')
+    end
+
+    it 'includes both viewModel.updateData and handler invocation when both binding and handler exist' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onSliderChange' => { 'name' => 'onSliderChange', 'class' => '((String, Float) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Slider',
+        'id' => 'volumeSlider',
+        'value' => '@{volume}',
+        'onValueChange' => '@{onSliderChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('viewModel.updateData')
+      expect(result).to include('data.onSliderChange?.invoke("volumeSlider", it)')
+    end
+
+    it 'uses default slider id when no id specified' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onSliderChange' => { 'name' => 'onSliderChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Slider',
+        'onValueChange' => '@{onSliderChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onSliderChange?.invoke("slider", it)')
     end
   end
 end

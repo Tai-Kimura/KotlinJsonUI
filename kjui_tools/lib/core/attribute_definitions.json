@@ -1522,6 +1522,48 @@
       "type": "string",
       "description": "End editing event handler"
     },
+    "onDeleteBackward": {
+      "type": "string",
+      "description": "Delete backward (backspace) event handler",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldReturn": {
+      "type": "string",
+      "description": "Should return event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldChangeCharacters": {
+      "type": "string",
+      "description": "Should change characters event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldClear": {
+      "type": "string",
+      "description": "Should clear event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onChangeSelection": {
+      "type": "string",
+      "description": "Selection change event handler",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldBeginEditing": {
+      "type": "string",
+      "description": "Should begin editing event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldEndEditing": {
+      "type": "string",
+      "description": "Should end editing event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
     "leftView": {
       "type": "object",
       "description": "Left view configuration",
@@ -1698,6 +1740,42 @@
     "onTextChange": {
       "type": "string",
       "description": "Text change event selector"
+    },
+    "onBeginEditing": {
+      "type": "string",
+      "description": "Begin editing event handler",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onEndEditing": {
+      "type": "string",
+      "description": "End editing event handler",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onChangeSelection": {
+      "type": "string",
+      "description": "Selection change event handler",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldChangeText": {
+      "type": "string",
+      "description": "Should change text event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldBeginEditing": {
+      "type": "string",
+      "description": "Should begin editing event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
+    },
+    "onShouldEndEditing": {
+      "type": "string",
+      "description": "Should end editing event handler (return true to allow)",
+      "platform": "swift",
+      "mode": "uikit"
     },
     "maxLength": {
       "type": "number",

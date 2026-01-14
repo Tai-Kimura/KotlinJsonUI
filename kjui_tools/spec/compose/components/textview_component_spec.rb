@@ -10,6 +10,8 @@ RSpec.describe KjuiTools::Compose::Components::TextViewComponent do
   before do
     allow(KjuiTools::Core::ConfigManager).to receive(:load_config).and_return({})
     allow(KjuiTools::Core::ProjectFinder).to receive(:get_full_source_path).and_return('/tmp')
+    # Clear data definitions before each test
+    KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {}
   end
 
   describe '.generate' do
@@ -385,6 +387,92 @@ RSpec.describe KjuiTools::Compose::Components::TextViewComponent do
     it 'preserves empty lines' do
       result = described_class.send(:indent, "line1\n\nline2", 1)
       expect(result).to eq("    line1\n\n    line2")
+    end
+  end
+
+  describe 'event handler invocation' do
+    it 'generates invoke() without arguments when handler type is () -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTextChange' => { 'name' => 'onTextChange', 'class' => '(() -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'TextView',
+        'id' => 'commentField',
+        'text' => '@{comment}',
+        'onTextChange' => '@{onTextChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTextChange?.invoke()')
+      expect(result).not_to include('invoke("commentField"')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (Event) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTextChange' => { 'name' => 'onTextChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'TextView',
+        'id' => 'commentField',
+        'text' => '@{comment}',
+        'onTextChange' => '@{onTextChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTextChange?.invoke("commentField", newValue)')
+    end
+
+    it 'generates invoke(viewId, value) when handler type is (String, String) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTextChange' => { 'name' => 'onTextChange', 'class' => '((String, String) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'TextView',
+        'id' => 'noteField',
+        'onTextChange' => '@{onTextChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTextChange?.invoke("noteField", newValue)')
+    end
+
+    it 'includes both data binding and handler invocation when both exist' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTextChange' => { 'name' => 'onTextChange', 'class' => '((String, String) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'TextView',
+        'id' => 'commentField',
+        'text' => '@{comment}',
+        'onTextChange' => '@{onTextChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.comment = newValue')
+      expect(result).to include('data.onTextChange?.invoke("commentField", newValue)')
+    end
+
+    it 'uses default textview id when no id specified' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onTextChange' => { 'name' => 'onTextChange', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'TextView',
+        'onTextChange' => '@{onTextChange}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onTextChange?.invoke("textview", newValue)')
     end
   end
 end

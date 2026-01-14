@@ -141,6 +141,15 @@ RSpec.describe KjuiTools::Compose::DataModelUpdater do
 
     context 'with includes' do
       it 'stops at include nodes' do
+        # Create the include file first
+        File.write(File.join(layouts_dir, 'header.json'), JSON.generate({
+          'partial' => true,
+          'type' => 'View',
+          'child' => [
+            { 'type' => 'Text', 'text' => 'Header' }
+          ]
+        }))
+
         File.write(File.join(layouts_dir, 'with_include.json'), JSON.generate({
           'type' => 'View',
           'child' => [
@@ -386,6 +395,164 @@ RSpec.describe KjuiTools::Compose::DataModelUpdater do
         ]
         result = updater.send(:generate_data_content, 'Test', properties, [])
         expect(result).to include('import androidx.compose.ui.graphics.Color')
+      end
+    end
+
+    describe '#extract_event_bindings' do
+      it 'extracts event bindings from onClick' do
+        json_data = {
+          'type' => 'Button',
+          'onClick' => '@{handleTap}'
+        }
+
+        result = updater.send(:extract_event_bindings, json_data)
+        expect(result['handleTap']).to eq({ component: 'Button', attribute: 'onClick' })
+      end
+
+      it 'extracts event bindings from onValueChange' do
+        json_data = {
+          'type' => 'Switch',
+          'onValueChange' => '@{onToggle}'
+        }
+
+        result = updater.send(:extract_event_bindings, json_data)
+        expect(result['onToggle']).to eq({ component: 'Switch', attribute: 'onValueChange' })
+      end
+
+      it 'extracts event bindings from nested children' do
+        json_data = {
+          'type' => 'View',
+          'child' => [
+            { 'type' => 'Button', 'onClick' => '@{buttonTap}' },
+            { 'type' => 'Toggle', 'onValueChange' => '@{toggleChange}' }
+          ]
+        }
+
+        result = updater.send(:extract_event_bindings, json_data)
+        expect(result['buttonTap']).to eq({ component: 'Button', attribute: 'onClick' })
+        expect(result['toggleChange']).to eq({ component: 'Toggle', attribute: 'onValueChange' })
+      end
+
+      it 'ignores non-binding values' do
+        json_data = {
+          'type' => 'Button',
+          'onClick' => 'notABinding'
+        }
+
+        result = updater.send(:extract_event_bindings, json_data)
+        expect(result).to be_empty
+      end
+
+      it 'handles single child (not array)' do
+        json_data = {
+          'type' => 'View',
+          'child' => { 'type' => 'Slider', 'onValueChange' => '@{sliderChange}' }
+        }
+
+        result = updater.send(:extract_event_bindings, json_data)
+        expect(result['sliderChange']).to eq({ component: 'Slider', attribute: 'onValueChange' })
+      end
+    end
+
+    describe '#extract_data_properties with Event type conversion' do
+      before do
+        KjuiTools::Core::TypeConverter.clear_type_mapping_cache
+      end
+
+      it 'converts Event type to tuple type based on event binding' do
+        json_data = {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'onToggle', 'class' => '((Event) -> Unit)?' }
+          ],
+          'child' => {
+            'type' => 'Switch',
+            'onValueChange' => '@{onToggle}'
+          }
+        }
+
+        event_bindings = updater.send(:extract_event_bindings, json_data)
+        result = updater.send(:extract_data_properties, json_data, [], 0, event_bindings)
+
+        expect(result.length).to eq(1)
+        # Event should be converted to (String, Boolean) for Switch.onValueChange in Compose
+        expect(result[0]['class']).to eq('((String, Boolean) -> Unit)?')
+      end
+
+      it 'converts Event type for Button onClick' do
+        json_data = {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'handleTap', 'class' => '((Event) -> Unit)?' }
+          ],
+          'child' => {
+            'type' => 'Button',
+            'onClick' => '@{handleTap}'
+          }
+        }
+
+        event_bindings = updater.send(:extract_event_bindings, json_data)
+        result = updater.send(:extract_data_properties, json_data, [], 0, event_bindings)
+
+        expect(result.length).to eq(1)
+        # Event should be converted to (String, Unit) for Button.onClick in Compose
+        expect(result[0]['class']).to eq('((String, Unit) -> Unit)?')
+      end
+
+      it 'converts Event type for TextField onTextChange' do
+        json_data = {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'onTextUpdate', 'class' => '((Event) -> Unit)?' }
+          ],
+          'child' => {
+            'type' => 'TextField',
+            'onTextChange' => '@{onTextUpdate}'
+          }
+        }
+
+        event_bindings = updater.send(:extract_event_bindings, json_data)
+        result = updater.send(:extract_data_properties, json_data, [], 0, event_bindings)
+
+        expect(result.length).to eq(1)
+        # Event should be converted to (String, String) for TextField.onTextChange in Compose
+        expect(result[0]['class']).to eq('((String, String) -> Unit)?')
+      end
+
+      it 'leaves non-Event types unchanged' do
+        json_data = {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'onToggle', 'class' => '((Boolean) -> Unit)?' }
+          ],
+          'child' => {
+            'type' => 'Switch',
+            'onValueChange' => '@{onToggle}'
+          }
+        }
+
+        event_bindings = updater.send(:extract_event_bindings, json_data)
+        result = updater.send(:extract_data_properties, json_data, [], 0, event_bindings)
+
+        expect(result.length).to eq(1)
+        # Non-Event type should remain unchanged
+        expect(result[0]['class']).to eq('((Boolean) -> Unit)?')
+      end
+
+      it 'handles unbound Event type (no conversion)' do
+        json_data = {
+          'type' => 'View',
+          'data' => [
+            { 'name' => 'unboundHandler', 'class' => '((Event) -> Unit)?' }
+          ]
+        }
+
+        event_bindings = updater.send(:extract_event_bindings, json_data)
+        result = updater.send(:extract_data_properties, json_data, [], 0, event_bindings)
+
+        expect(result.length).to eq(1)
+        # Unbound Event type should remain unchanged
+        expect(result[0]['class']).to eq('((Event) -> Unit)?')
       end
     end
   end

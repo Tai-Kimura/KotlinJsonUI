@@ -42,22 +42,31 @@ module KjuiTools
           
           # Handle onValueChange/onTextChange
           # Data binding: update via viewModel.updateData to trigger StateFlow, then call onTextChange callback if specified
+          view_id = json_data['id'] || 'textfield'
           if json_data['text'] && json_data['text'].match(/@\{([^}]+)\}/)
             variable = extract_variable_name(json_data['text'])
             if json_data['onTextChange']
               # Data binding + explicit callback
-              # Strip @{} binding syntax from callback name
-              callback_name = extract_binding_name(json_data['onTextChange'])
-              code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)); data.#{callback_name}?.invoke() },", depth + 1)
+              if Helpers::ModifierBuilder.is_binding?(json_data['onTextChange'])
+                handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onTextChange'], view_id, 'newValue')
+                code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)); #{handler_call} },", depth + 1)
+              else
+                # Non-binding format callback (legacy support)
+                code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)); data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+              end
             else
               # Data binding only
               code += "\n" + indent("onValueChange = { newValue -> viewModel.updateData(mapOf(\"#{variable}\" to newValue)) },", depth + 1)
             end
           elsif json_data['onTextChange']
             # Explicit callback only (no data binding)
-            # Strip @{} binding syntax from callback name
-            callback_name = extract_binding_name(json_data['onTextChange'])
-            code += "\n" + indent("onValueChange = { newValue -> data.#{callback_name}?.invoke() },", depth + 1)
+            if Helpers::ModifierBuilder.is_binding?(json_data['onTextChange'])
+              handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onTextChange'], view_id, 'newValue')
+              code += "\n" + indent("onValueChange = { newValue -> #{handler_call} },", depth + 1)
+            else
+              # Non-binding format callback (legacy support)
+              code += "\n" + indent("onValueChange = { newValue -> data.#{json_data['onTextChange']}?.invoke() },", depth + 1)
+            end
           else
             code += "\n" + indent("onValueChange = { },", depth + 1)
           end

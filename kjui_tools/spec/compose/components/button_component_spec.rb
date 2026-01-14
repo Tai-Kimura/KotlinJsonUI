@@ -10,6 +10,8 @@ RSpec.describe KjuiTools::Compose::Components::ButtonComponent do
   before do
     allow(KjuiTools::Core::ConfigManager).to receive(:load_config).and_return({})
     allow(KjuiTools::Core::ProjectFinder).to receive(:get_full_source_path).and_return('/tmp')
+    # Clear data definitions before each test
+    KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {}
   end
 
   describe '.generate' do
@@ -191,6 +193,91 @@ RSpec.describe KjuiTools::Compose::Components::ButtonComponent do
     it 'adds indentation for level 2' do
       result = described_class.send(:indent, 'text', 2)
       expect(result).to eq('        text')
+    end
+  end
+
+  describe 'event handler invocation' do
+    it 'generates invoke() without arguments when handler type is () -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onClick' => { 'name' => 'onClick', 'class' => '(() -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Button',
+        'id' => 'submitButton',
+        'text' => 'Submit',
+        'onClick' => '@{onClick}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onClick?.invoke()')
+      expect(result).not_to include('invoke("submitButton"')
+    end
+
+    it 'generates invoke(viewId) when handler type is (Event) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onClick' => { 'name' => 'onClick', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Button',
+        'id' => 'submitButton',
+        'text' => 'Submit',
+        'onClick' => '@{onClick}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      # For click events without value, only viewId should be passed
+      expect(result).to include('data.onClick?.invoke("submitButton")')
+      expect(result).not_to include('invoke("submitButton",')
+    end
+
+    it 'generates invoke(viewId) when handler type is (String) -> Unit' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onClick' => { 'name' => 'onClick', 'class' => '((String) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Button',
+        'id' => 'cancelButton',
+        'text' => 'Cancel',
+        'onClick' => '@{onClick}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onClick?.invoke("cancelButton")')
+    end
+
+    it 'uses default button id when no id specified' do
+      KjuiTools::Compose::Helpers::ResourceResolver.data_definitions = {
+        'onClick' => { 'name' => 'onClick', 'class' => '((Event) -> Unit)?' }
+      }
+
+      json_data = {
+        'type' => 'Button',
+        'text' => 'Click',
+        'onClick' => '@{onClick}'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('data.onClick?.invoke("button")')
+    end
+
+    it 'generates error comment for camelCase onClick without binding format' do
+      json_data = {
+        'type' => 'Button',
+        'text' => 'Click',
+        'onClick' => 'handleClick'
+      }
+
+      result = described_class.generate(json_data, 0, required_imports)
+
+      expect(result).to include('ERROR')
+      expect(result).to include('camelCase events require binding format')
     end
   end
 end

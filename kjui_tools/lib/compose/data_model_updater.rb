@@ -60,27 +60,69 @@ module KjuiTools
         # Process includes - expand inline with ID prefix support (like SwiftJsonUI)
         json_data = IncludeExpander.process_includes(json_data, File.dirname(json_file))
 
-        # Extract data properties from JSON
-        data_properties = extract_data_properties(json_data)
-        
+        # Extract event bindings (handler name => component/attribute info)
+        event_bindings = extract_event_bindings(json_data)
+
+        # Extract data properties from JSON (pass event_bindings for Event type conversion)
+        data_properties = extract_data_properties(json_data, [], 0, event_bindings)
+
         # Extract onclick actions from JSON (now includes actions from styles)
         onclick_actions = extract_onclick_actions(json_data)
-        
+
         # Always create/update data file, even if no properties
         # Get the view name from file path
         base_name = File.basename(json_file, '.json')
-        
+
         # Update the Data model file
         update_data_file(base_name, data_properties, onclick_actions)
       end
       
+      # Extract event bindings from JSON to map handler names to component/attribute
+      # Used for converting Event type to platform-specific types
+      # @param json_data [Hash] the JSON data
+      # @param bindings [Hash] accumulated bindings (handler_name => { component:, attribute: })
+      # @return [Hash] event bindings
+      def extract_event_bindings(json_data, bindings = {})
+        return bindings unless json_data.is_a?(Hash) || json_data.is_a?(Array)
+
+        if json_data.is_a?(Hash)
+          component_type = json_data['type']
+
+          # Event attributes to check (both camelCase and snake_case)
+          event_attrs = %w[onClick onclick onValueChange onTextChange onChange onLongPress]
+
+          event_attrs.each do |attr|
+            value = json_data[attr]
+            next unless value.is_a?(String) && value.start_with?('@{') && value.end_with?('}')
+
+            handler_name = value[2...-1]
+            bindings[handler_name] = {
+              component: component_type,
+              attribute: attr
+            }
+          end
+
+          # Process children
+          child = json_data['child']
+          if child.is_a?(Array)
+            child.each { |c| extract_event_bindings(c, bindings) }
+          elsif child
+            extract_event_bindings(child, bindings)
+          end
+        elsif json_data.is_a?(Array)
+          json_data.each { |item| extract_event_bindings(item, bindings) }
+        end
+
+        bindings
+      end
+
       def extract_onclick_actions(json_data, actions = Set.new)
         if json_data.is_a?(Hash)
           # Check for onclick attribute
           if json_data['onclick'] && json_data['onclick'].is_a?(String)
             actions.add(json_data['onclick'])
           end
-          
+
           # Process children
           if json_data['child']
             if json_data['child'].is_a?(Array)
@@ -96,11 +138,11 @@ module KjuiTools
             extract_onclick_actions(item, actions)
           end
         end
-        
+
         actions.to_a
       end
 
-      def extract_data_properties(json_data, properties = [], depth = 0)
+      def extract_data_properties(json_data, properties = [], depth = 0, event_bindings = {})
         if json_data.is_a?(Hash)
           # Note: includes are now expanded inline by IncludeExpander, so we should
           # not see 'include' keys here. All data definitions (including those from
@@ -115,6 +157,33 @@ module KjuiTools
                   unless properties.any? { |p| p['name'] == data_item['name'] }
                     # Normalize type using TypeConverter with mode
                     normalized = Core::TypeConverter.normalize_data_property(data_item, @mode)
+
+                    # Check if this property is bound to an event and has Event type
+                    prop_name = normalized['name']
+                    prop_class = normalized['class'].to_s
+
+                    if event_bindings[prop_name] && prop_class.include?('Event')
+                      # Get event type from type_mapping.json
+                      binding_info = event_bindings[prop_name]
+                      event_type = Core::TypeConverter.get_event_type(
+                        binding_info[:component],
+                        binding_info[:attribute],
+                        'compose'
+                      )
+
+                      if event_type
+                        # Convert Event to platform-specific type in the function signature
+                        # event_type is an array like ["String", "Boolean"] for compose
+                        if event_type.is_a?(Array)
+                          # Convert to Kotlin Pair type or multiple params
+                          converted_type = event_type.join(', ')
+                          normalized['class'] = prop_class.gsub('Event', converted_type)
+                        else
+                          normalized['class'] = prop_class.gsub('Event', event_type)
+                        end
+                      end
+                    end
+
                     properties << normalized
                   end
                 end
@@ -148,15 +217,15 @@ module KjuiTools
           if json_data['child']
             if json_data['child'].is_a?(Array)
               json_data['child'].each do |child|
-                extract_data_properties(child, properties, depth + 1)
+                extract_data_properties(child, properties, depth + 1, event_bindings)
               end
             else
-              extract_data_properties(json_data['child'], properties, depth + 1)
+              extract_data_properties(json_data['child'], properties, depth + 1, event_bindings)
             end
           end
         elsif json_data.is_a?(Array)
           json_data.each do |item|
-            extract_data_properties(item, properties, depth)
+            extract_data_properties(item, properties, depth, event_bindings)
           end
         end
 

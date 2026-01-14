@@ -12,8 +12,78 @@ module KjuiTools
       @colors_data = nil
       @colors_file_path = nil
 
+      # Cache for type_mapping.json data
+      @type_mapping = nil
+
       class << self
-        attr_accessor :colors_data, :colors_file_path
+        attr_accessor :colors_data, :colors_file_path, :type_mapping
+
+        # Load type_mapping.json
+        # @return [Hash] the type mapping data
+        def load_type_mapping
+          return @type_mapping if @type_mapping
+
+          mapping_path = File.join(File.dirname(__FILE__), 'type_mapping.json')
+          if File.exist?(mapping_path)
+            begin
+              @type_mapping = JSON.parse(File.read(mapping_path))
+            rescue JSON::ParserError => e
+              warn "[TypeConverter] Warning: Failed to parse type_mapping.json: #{e.message}"
+              @type_mapping = { 'types' => {}, 'events' => {}, 'defaults' => {} }
+            end
+          else
+            warn "[TypeConverter] Warning: type_mapping.json not found at #{mapping_path}"
+            @type_mapping = { 'types' => {}, 'events' => {}, 'defaults' => {} }
+          end
+
+          @type_mapping
+        end
+
+        # Get type mapping for a JSON type
+        # @param json_type [String] the JSON type
+        # @param mode [String] the mode (compose, xml)
+        # @return [String, nil] the mapped type or nil
+        def get_type_mapping(json_type, mode = nil)
+          mapping = load_type_mapping
+          type_info = mapping.dig('types', json_type, LANGUAGE)
+          return nil unless type_info
+
+          if type_info.is_a?(Hash) && mode
+            type_info[mode] || type_info.values.first
+          else
+            type_info
+          end
+        end
+
+        # Get event type mapping for a component and attribute
+        # @param component [String] the component type (e.g., "Button")
+        # @param attribute [String] the attribute name (e.g., "onClick")
+        # @param mode [String] the mode (compose, xml)
+        # @return [String, Array, nil] the event type or nil
+        def get_event_type(component, attribute, mode = nil)
+          mapping = load_type_mapping
+          event_info = mapping.dig('events', component, attribute, LANGUAGE)
+          return nil unless event_info
+
+          if event_info.is_a?(Hash) && mode
+            event_info[mode] || event_info.values.first
+          else
+            event_info
+          end
+        end
+
+        # Get default value for a type
+        # @param kotlin_type [String] the Kotlin type
+        # @return [String] the default value
+        def get_default_value(kotlin_type)
+          mapping = load_type_mapping
+          mapping.dig('defaults', LANGUAGE, kotlin_type) || 'null'
+        end
+
+        # Clear the type mapping cache (useful for testing)
+        def clear_type_mapping_cache
+          @type_mapping = nil
+        end
 
         # Load colors.json from the specified path or auto-detect from project config
         # @param path [String, nil] optional path to colors.json
@@ -77,6 +147,7 @@ module KjuiTools
       MODES = %w[compose xml].freeze
 
       # JSON type -> Kotlin type mapping (common types)
+      # NOTE: These are kept for backward compatibility, but type_mapping.json is preferred
       TYPE_MAPPING = {
         # Standard types (cross-platform)
         'String' => 'String',
@@ -105,6 +176,7 @@ module KjuiTools
       }.freeze
 
       # Mode-specific type mapping (types that differ between compose and xml)
+      # NOTE: These are kept for backward compatibility, but type_mapping.json is preferred
       MODE_TYPE_MAPPING = {
         'Color' => { 'compose' => 'Color', 'xml' => 'Int' },
         'color' => { 'compose' => 'Color', 'xml' => 'Int' },
@@ -113,6 +185,7 @@ module KjuiTools
       }.freeze
 
       # Default values for each Kotlin type
+      # NOTE: These are kept for backward compatibility, but type_mapping.json is preferred
       DEFAULT_VALUES = {
         'String' => '""',
         'Int' => '0',

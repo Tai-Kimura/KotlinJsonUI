@@ -48,7 +48,23 @@ module KjuiTools
             binding_variable = $1
           end
 
-          if binding_variable
+          view_id = json_data['id'] || 'selectbox'
+          if json_data['onValueChange']
+            # onValueChange (camelCase) -> binding format only (@{functionName})
+            if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
+              handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, 'newValue')
+              if binding_variable
+                code += "\n" + indent("onValueChange = { newValue ->", depth + 1)
+                code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue))", depth + 2)
+                code += "\n" + indent("#{handler_call}", depth + 2)
+                code += "\n" + indent("},", depth + 1)
+              else
+                code += "\n" + indent("onValueChange = { newValue -> #{handler_call} },", depth + 1)
+              end
+            else
+              code += "\n" + indent("onValueChange = { // ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName} },", depth + 1)
+            end
+          elsif binding_variable
             code += "\n" + indent("onValueChange = { newValue ->", depth + 1)
             code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to newValue))", depth + 2)
             code += "\n" + indent("},", depth + 1)

@@ -16,12 +16,19 @@ module KjuiTools
           # Handle click events
           # onclick (lowercase) -> selector format (string only)
           # onClick (camelCase) -> binding format only (@{functionName})
+          view_id = json_data['id'] || 'button'
           if json_data['onclick']
+            # Lowercase onclick - legacy selector format
             handler_call = Helpers::ModifierBuilder.get_event_handler_call(json_data['onclick'], is_camel_case: false)
             code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
           elsif json_data['onClick']
-            handler_call = Helpers::ModifierBuilder.get_event_handler_call(json_data['onClick'], is_camel_case: true)
-            code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
+            # camelCase onClick - binding format only (@{functionName})
+            if Helpers::ModifierBuilder.is_binding?(json_data['onClick'])
+              handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onClick'], view_id, nil)
+              code += "\n" + indent("onClick = { #{handler_call} }", depth + 1)
+            else
+              code += "\n" + indent("onClick = { // ERROR: #{json_data['onClick']} - camelCase events require binding format @{functionName} }", depth + 1)
+            end
           else
             code += "\n" + indent("onClick = { }", depth + 1)
           end

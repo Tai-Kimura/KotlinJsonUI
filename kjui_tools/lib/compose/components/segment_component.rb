@@ -126,10 +126,16 @@ module KjuiTools
               
               # Generate onClick handler
               # onValueChange (camelCase) -> binding format only (@{functionName})
+              view_id = json_data['id'] || 'segment'
               if json_data['onValueChange']
                 if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
-                  method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
-                  code += "\n" + indent("viewModel.#{method_name}(#{index})", depth + 3)
+                  handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, index.to_s)
+                  if has_binding
+                    code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to #{index}))", depth + 3)
+                    code += "\n" + indent("#{handler_call}", depth + 3)
+                  else
+                    code += "\n" + indent("#{handler_call}", depth + 3)
+                  end
                 else
                   code += "\n" + indent("// ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 3)
                 end
@@ -222,10 +228,16 @@ module KjuiTools
             
             # Generate onClick handler
             # onValueChange (camelCase) -> binding format only (@{functionName})
+            view_id = json_data['id'] || 'segment'
             if json_data['onValueChange']
               if Helpers::ModifierBuilder.is_binding?(json_data['onValueChange'])
-                method_name = Helpers::ModifierBuilder.extract_binding_property(json_data['onValueChange'])
-                code += "\n" + indent("viewModel.#{method_name}(index)", depth + 4)
+                handler_call = Helpers::ModifierBuilder.get_event_handler_invocation(json_data['onValueChange'], view_id, 'index')
+                if has_binding
+                  code += "\n" + indent("viewModel.updateData(mapOf(\"#{binding_variable}\" to index))", depth + 4)
+                  code += "\n" + indent("#{handler_call}", depth + 4)
+                else
+                  code += "\n" + indent("#{handler_call}", depth + 4)
+                end
               else
                 code += "\n" + indent("// ERROR: #{json_data['onValueChange']} - camelCase events require binding format @{functionName}", depth + 4)
               end

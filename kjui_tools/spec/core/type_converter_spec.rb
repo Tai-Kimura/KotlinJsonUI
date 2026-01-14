@@ -371,4 +371,145 @@ RSpec.describe KjuiTools::Core::TypeConverter do
       expect(described_class.primitive?('CollectionDataSource')).to be true
     end
   end
+
+  describe '.load_type_mapping' do
+    before(:each) do
+      described_class.clear_type_mapping_cache
+    end
+
+    it 'loads type_mapping.json' do
+      mapping = described_class.load_type_mapping
+      expect(mapping).to be_a(Hash)
+      expect(mapping).to have_key('types')
+      expect(mapping).to have_key('events')
+      expect(mapping).to have_key('defaults')
+    end
+
+    it 'caches the loaded mapping' do
+      first_load = described_class.load_type_mapping
+      second_load = described_class.load_type_mapping
+      expect(first_load).to equal(second_load)
+    end
+  end
+
+  describe '.get_type_mapping' do
+    before(:each) do
+      described_class.clear_type_mapping_cache
+    end
+
+    it 'returns mapped type for known types' do
+      expect(described_class.get_type_mapping('String')).to eq('String')
+      expect(described_class.get_type_mapping('Int')).to eq('Int')
+      expect(described_class.get_type_mapping('Bool')).to eq('Boolean')
+    end
+
+    it 'returns mode-specific type for Color' do
+      expect(described_class.get_type_mapping('Color', 'compose')).to eq('Color')
+      expect(described_class.get_type_mapping('Color', 'xml')).to eq('Int')
+    end
+
+    it 'returns nil for unknown types' do
+      expect(described_class.get_type_mapping('UnknownType')).to be_nil
+    end
+  end
+
+  describe '.get_event_type' do
+    before(:each) do
+      described_class.clear_type_mapping_cache
+    end
+
+    context 'with Button onClick' do
+      it 'returns View for xml mode' do
+        result = described_class.get_event_type('Button', 'onClick', 'xml')
+        expect(result).to eq('View')
+      end
+
+      it 'returns [String, Unit] tuple for compose mode' do
+        result = described_class.get_event_type('Button', 'onClick', 'compose')
+        expect(result).to eq(['String', 'Unit'])
+      end
+    end
+
+    context 'with Switch onValueChange' do
+      it 'returns CompoundButton for xml mode' do
+        result = described_class.get_event_type('Switch', 'onValueChange', 'xml')
+        expect(result).to eq('CompoundButton')
+      end
+
+      it 'returns [String, Boolean] tuple for compose mode' do
+        result = described_class.get_event_type('Switch', 'onValueChange', 'compose')
+        expect(result).to eq(['String', 'Boolean'])
+      end
+    end
+
+    context 'with Toggle onValueChange' do
+      it 'returns [String, Boolean] tuple for compose mode' do
+        result = described_class.get_event_type('Toggle', 'onValueChange', 'compose')
+        expect(result).to eq(['String', 'Boolean'])
+      end
+    end
+
+    context 'with Slider onValueChange' do
+      it 'returns [String, Float] tuple for compose mode' do
+        result = described_class.get_event_type('Slider', 'onValueChange', 'compose')
+        expect(result).to eq(['String', 'Float'])
+      end
+    end
+
+    context 'with TextField onTextChange' do
+      it 'returns [String, String] tuple for compose mode' do
+        result = described_class.get_event_type('TextField', 'onTextChange', 'compose')
+        expect(result).to eq(['String', 'String'])
+      end
+    end
+
+    context 'with SelectBox onValueChange' do
+      it 'returns [String, String] tuple for compose mode' do
+        result = described_class.get_event_type('SelectBox', 'onValueChange', 'compose')
+        expect(result).to eq(['String', 'String'])
+      end
+    end
+
+    context 'with CheckBox onValueChange' do
+      it 'returns [String, Boolean] tuple for compose mode' do
+        result = described_class.get_event_type('CheckBox', 'onValueChange', 'compose')
+        expect(result).to eq(['String', 'Boolean'])
+      end
+    end
+
+    context 'with Segment onValueChange' do
+      it 'returns [String, Int] tuple for compose mode' do
+        result = described_class.get_event_type('Segment', 'onValueChange', 'compose')
+        expect(result).to eq(['String', 'Int'])
+      end
+    end
+
+    it 'returns nil for unknown component' do
+      result = described_class.get_event_type('UnknownComponent', 'onClick', 'compose')
+      expect(result).to be_nil
+    end
+
+    it 'returns nil for unknown attribute' do
+      result = described_class.get_event_type('Button', 'unknownEvent', 'compose')
+      expect(result).to be_nil
+    end
+  end
+
+  describe '.get_default_value from type_mapping' do
+    before(:each) do
+      described_class.clear_type_mapping_cache
+    end
+
+    it 'returns default value for known Kotlin types from type_mapping.json' do
+      expect(described_class.get_default_value('String')).to eq('""')
+      expect(described_class.get_default_value('Int')).to eq('0')
+      expect(described_class.get_default_value('Boolean')).to eq('false')
+      expect(described_class.get_default_value('Float')).to eq('0f')
+      expect(described_class.get_default_value('Color')).to eq('Color.Unspecified')
+    end
+
+    it 'returns null for unknown types' do
+      expect(described_class.get_default_value('UnknownType')).to eq('null')
+    end
+  end
 end
