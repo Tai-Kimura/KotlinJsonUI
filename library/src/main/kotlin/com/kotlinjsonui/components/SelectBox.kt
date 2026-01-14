@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -19,6 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.IntrinsicMeasurable
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -140,11 +144,13 @@ fun SelectBox(
                         .fillMaxWidth()
                         .weight(1f, fill = false)
                         .heightIn(max = 400.dp) // Maximum height before scrolling
+                        .testTag("kjui_x7q_optionList")
                 ) {
-                    items(options) { option ->
+                    itemsIndexed(options) { index, option ->
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .testTag("kjui_x7q_option_$index")
                                 .clickable {
                                     onValueChange(option)
                                     scope.launch {
@@ -194,7 +200,8 @@ fun SelectBox(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { 
+                        .testTag("kjui_x7q_cancel")
+                        .clickable {
                             scope.launch {
                                 sheetState.hide()
                                 showBottomSheet = false
@@ -321,11 +328,13 @@ fun <T> SelectBox(
                         .fillMaxWidth()
                         .weight(1f, fill = false)
                         .heightIn(max = 400.dp) // Maximum height before scrolling
+                        .testTag("kjui_x7q_optionList")
                 ) {
-                    items(options) { option ->
+                    itemsIndexed(options) { index, option ->
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .testTag("kjui_x7q_option_$index")
                                 .clickable {
                                     onValueChange(option.value)
                                     showBottomSheet = false
@@ -366,13 +375,14 @@ fun <T> SelectBox(
                         }
                     }
                 }
-                
+
                 // Cancel button
                 Divider()
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { 
+                        .testTag("kjui_x7q_cancel")
+                        .clickable {
                             scope.launch {
                                 sheetState.hide()
                                 showBottomSheet = false
