@@ -246,7 +246,7 @@ fun DateSelectBox(
                                     .padding(horizontal = 20.dp, vertical = 16.dp),
                                 textColor = sheetTextColor
                             )
-                            
+
                             // Confirm and Cancel buttons
                             Row(
                                 modifier = Modifier
@@ -261,7 +261,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
                                     colors = ButtonDefaults.textButtonColors(
                                         contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
@@ -273,7 +273,7 @@ fun DateSelectBox(
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
-                                
+
                                 Button(
                                     onClick = {
                                         val newValue = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
@@ -283,7 +283,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done"),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Configuration.DatePicker.SheetButton.defaultButtonBackgroundColor,
                                         contentColor = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -323,7 +323,7 @@ fun DateSelectBox(
                                     .padding(horizontal = 20.dp, vertical = 16.dp),
                                 textColor = sheetTextColor
                             )
-                            
+
                             // Confirm and Cancel buttons
                             Row(
                                 modifier = Modifier
@@ -338,7 +338,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
                                     colors = ButtonDefaults.textButtonColors(
                                         contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
@@ -350,7 +350,7 @@ fun DateSelectBox(
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
-                                
+
                                 Button(
                                     onClick = {
                                         val newValue = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
@@ -360,7 +360,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done"),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Configuration.DatePicker.SheetButton.defaultButtonBackgroundColor,
                                         contentColor = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -389,9 +389,9 @@ fun DateSelectBox(
                                     .align(Alignment.CenterHorizontally)
                                     .padding(vertical = 16.dp)
                             )
-                            
+
                             Divider(color = sheetTextColor.copy(alpha = 0.12f))
-                            
+
                             DateTimeWheelPicker(
                                 selectedDateTime = calendar,
                                 onDateTimeSelected = { year, month, day, hour, minute ->
@@ -406,7 +406,7 @@ fun DateSelectBox(
                                     .padding(horizontal = 20.dp, vertical = 16.dp),
                                 textColor = sheetTextColor
                             )
-                            
+
                             // Confirm and Cancel buttons
                             Row(
                                 modifier = Modifier
@@ -421,7 +421,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
                                     colors = ButtonDefaults.textButtonColors(
                                         contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
@@ -433,7 +433,7 @@ fun DateSelectBox(
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
-                                
+
                                 Button(
                                     onClick = {
                                         val newValue = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.time)
@@ -443,7 +443,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
                                 ) {
                                     Text(
                                         text = "確定",
@@ -463,9 +463,9 @@ fun DateSelectBox(
                                     .align(Alignment.CenterHorizontally)
                                     .padding(vertical = 16.dp)
                             )
-                            
+
                             Divider(color = sheetTextColor.copy(alpha = 0.12f))
-                            
+
                             // Use wheel picker as default for date/time
                             DateTimeWheelPicker(
                                 selectedDateTime = calendar,
@@ -481,7 +481,7 @@ fun DateSelectBox(
                                     .padding(horizontal = 20.dp, vertical = 16.dp),
                                 textColor = sheetTextColor
                             )
-                            
+
                             // Confirm and Cancel buttons
                             Row(
                                 modifier = Modifier
@@ -496,7 +496,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel"),
                                     colors = ButtonDefaults.textButtonColors(
                                         contentColor = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
@@ -508,7 +508,7 @@ fun DateSelectBox(
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
-                                
+
                                 Button(
                                     onClick = {
                                         val newValue = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.time)
@@ -518,7 +518,7 @@ fun DateSelectBox(
                                             showBottomSheet = false
                                         }
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
                                 ) {
                                     Text(
                                         text = "確定",
@@ -530,7 +530,7 @@ fun DateSelectBox(
                             }
                         }
                     }
-                    
+
                     else -> {
                         // Date picker (default)
                         when (datePickerStyle) {
@@ -544,9 +544,9 @@ fun DateSelectBox(
                                         .align(Alignment.CenterHorizontally)
                                         .padding(vertical = 16.dp)
                                 )
-                                
+
                                 Divider()
-                                
+
                                 DateWheelPicker(
                                     selectedDate = calendar,
                                     onDateSelected = { year, month, day ->
@@ -560,7 +560,7 @@ fun DateSelectBox(
                                         .padding(horizontal = 20.dp, vertical = 16.dp),
                                     textColor = sheetTextColor
                                 )
-                                
+
                                 // Confirm and Cancel buttons
                                 Row(
                                     modifier = Modifier
@@ -575,7 +575,7 @@ fun DateSelectBox(
                                                 showBottomSheet = false
                                             }
                                         },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel")
                                     ) {
                                         Text(
                                             text = "キャンセル",
@@ -584,7 +584,7 @@ fun DateSelectBox(
                                             color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                         )
                                     }
-                                    
+
                                     Button(
                                         onClick = {
                                             val newValue = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
@@ -594,7 +594,7 @@ fun DateSelectBox(
                                                 showBottomSheet = false
                                             }
                                         },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
                                     ) {
                                         Text(
                                             text = "確定",
@@ -605,7 +605,7 @@ fun DateSelectBox(
                                     }
                                 }
                             }
-                            
+
                             "graphical", "inline" -> {
                                 // Material3 DatePicker
                                 DateCalendarPicker(
@@ -671,38 +671,39 @@ fun DateWheelPicker(
     maxDate: Calendar? = null,
     dateFormat: String,
     modifier: Modifier = Modifier,
-    textColor: Color = Configuration.DatePicker.defaultSheetTextColor
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    enableTestTags: Boolean = true
 ) {
     var selectedYear by remember { mutableStateOf(selectedDate.get(Calendar.YEAR)) }
     var selectedMonth by remember { mutableStateOf(selectedDate.get(Calendar.MONTH)) }
     var selectedDay by remember { mutableStateOf(selectedDate.get(Calendar.DAY_OF_MONTH)) }
-    
+
     val currentYear = Calendar.getInstance().get(Calendar.YEAR)
     val years = remember {
         val minYear = minDate?.get(Calendar.YEAR) ?: (currentYear - 100)
         val maxYear = maxDate?.get(Calendar.YEAR) ?: (currentYear + 100)
         (minYear..maxYear).toList()
     }
-    
+
     // Determine month format based on dateFormat string
     val months = if (dateFormat.contains("MM月") || dateFormat.contains("月")) {
-        listOf("1月", "2月", "3月", "4月", "5月", "6月", 
+        listOf("1月", "2月", "3月", "4月", "5月", "6月",
                "7月", "8月", "9月", "10月", "11月", "12月")
     } else {
-        listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+        listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun",
                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
     }
-    
+
     val daysInMonth = remember(selectedYear, selectedMonth) {
         val cal = Calendar.getInstance()
         cal.set(selectedYear, selectedMonth, 1)
         cal.getActualMaximum(Calendar.DAY_OF_MONTH)
     }
-    
+
     val days = remember(daysInMonth) {
         (1..daysInMonth).toList()
     }
-    
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -710,20 +711,21 @@ fun DateWheelPicker(
         // Year spinner
         NumberPicker(
             value = selectedYear,
-            onValueChange = { 
+            onValueChange = {
                 selectedYear = it
                 onDateSelected(it, selectedMonth, selectedDay)
             },
             range = years,
             label = "年",
             modifier = Modifier.weight(1f),
-            textColor = textColor
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_year" else null
         )
-        
-        // Month spinner
+
+        // Month spinner (uses 1-12 for testTag instead of 0-11)
         NumberPicker(
             value = selectedMonth,
-            onValueChange = { 
+            onValueChange = {
                 selectedMonth = it
                 onDateSelected(selectedYear, it, selectedDay)
             },
@@ -731,20 +733,22 @@ fun DateWheelPicker(
             labels = months,
             label = "月",
             modifier = Modifier.weight(1f),
-            textColor = textColor
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_month" else null
         )
-        
+
         // Day spinner
         NumberPicker(
             value = selectedDay,
-            onValueChange = { 
+            onValueChange = {
                 selectedDay = it
                 onDateSelected(selectedYear, selectedMonth, it)
             },
             range = days,
             label = "日",
             modifier = Modifier.weight(1f),
-            textColor = textColor
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_day" else null
         )
     }
 }
@@ -758,14 +762,15 @@ fun TimeWheelPicker(
     onTimeSelected: (hour: Int, minute: Int) -> Unit,
     minuteInterval: Int = 1,
     modifier: Modifier = Modifier,
-    textColor: Color = Configuration.DatePicker.defaultSheetTextColor
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    enableTestTags: Boolean = true
 ) {
     var selectedHour by remember { mutableStateOf(selectedTime.get(Calendar.HOUR_OF_DAY)) }
     var selectedMinute by remember { mutableStateOf(selectedTime.get(Calendar.MINUTE)) }
-    
+
     val hours = (0..23).toList()
     val minutes = (0..59 step minuteInterval).toList()
-    
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -773,27 +778,29 @@ fun TimeWheelPicker(
         // Hour spinner
         NumberPicker(
             value = selectedHour,
-            onValueChange = { 
+            onValueChange = {
                 selectedHour = it
                 onTimeSelected(it, selectedMinute)
             },
             range = hours,
             label = "時",
             modifier = Modifier.weight(1f),
-            textColor = textColor
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_hour" else null
         )
-        
+
         // Minute spinner
         NumberPicker(
             value = selectedMinute,
-            onValueChange = { 
+            onValueChange = {
                 selectedMinute = it
                 onTimeSelected(selectedHour, it)
             },
             range = minutes,
             label = "分",
             modifier = Modifier.weight(1f),
-            textColor = textColor
+            textColor = textColor,
+            testTagPrefix = if (enableTestTags) "kjui_x7q_minute" else null
         )
     }
 }
@@ -859,7 +866,8 @@ fun NumberPicker(
     labels: List<String>? = null,
     label: String? = null,
     modifier: Modifier = Modifier,
-    textColor: Color = Configuration.DatePicker.defaultSheetTextColor
+    textColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    testTagPrefix: String? = null
 ) {
     Column(
         modifier = modifier,
@@ -938,7 +946,11 @@ fun NumberPicker(
                             )
                         },
                         modifier = Modifier
-                            .clickable { 
+                            .then(
+                                if (testTagPrefix != null) Modifier.testTag("${testTagPrefix}_$item")
+                                else Modifier
+                            )
+                            .clickable {
                                 onValueChange(item)
                             }
                             .padding(vertical = if (isSelected) 4.dp else 6.dp)
@@ -1040,7 +1052,8 @@ fun DateCalendarPicker(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp),
+                .padding(top = 8.dp)
+                .testTag("kjui_x7q_done"),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Configuration.DatePicker.SheetButton.defaultButtonBackgroundColor,
                 contentColor = Configuration.DatePicker.SheetButton.defaultButtonTextColor
