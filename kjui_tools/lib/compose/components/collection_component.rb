@@ -182,18 +182,23 @@ module KjuiTools
             code += "\n" + indent("#{cell_class_name}View(", depth + 4)
             code += "\n" + indent("data = itemData,", depth + 5)
             code += "\n" + indent("viewModel = viewModel(),", depth + 5)
-            code += "\n" + indent("modifier = Modifier", depth + 5)
-            
+            # Add testTag for test automation (tapItem action)
+            if json_data['id']
+              code += "\n" + indent("modifier = Modifier.testTag(\"#{json_data['id']}_item_\$index\")", depth + 5)
+            else
+              code += "\n" + indent("modifier = Modifier", depth + 5)
+            end
+
             # Cell-specific modifiers
             if json_data['cellHeight']
               code += "\n" + indent("    .height(#{json_data['cellHeight']}.dp)", depth + 5)
             end
-            
+
             # For grid layouts, ensure cells expand to fill width
             if columns > 1
               code += "\n" + indent("    .fillMaxWidth()", depth + 5)
             end
-            
+
             code += "\n" + indent(")", depth + 4)
             code += "\n" + indent("}", depth + 3)
             code += "\n" + indent("is Map<*, *> -> {", depth + 3)
@@ -202,18 +207,23 @@ module KjuiTools
             code += "\n" + indent("#{cell_class_name}View(", depth + 4)
             code += "\n" + indent("data = data,", depth + 5)
             code += "\n" + indent("viewModel = viewModel(),", depth + 5)
-            code += "\n" + indent("modifier = Modifier", depth + 5)
-            
+            # Add testTag for test automation (tapItem action)
+            if json_data['id']
+              code += "\n" + indent("modifier = Modifier.testTag(\"#{json_data['id']}_item_\$index\")", depth + 5)
+            else
+              code += "\n" + indent("modifier = Modifier", depth + 5)
+            end
+
             # Cell-specific modifiers
             if json_data['cellHeight']
               code += "\n" + indent("    .height(#{json_data['cellHeight']}.dp)", depth + 5)
             end
-            
+
             # For grid layouts, ensure cells expand to fill width
             if columns > 1
               code += "\n" + indent("    .fillMaxWidth()", depth + 5)
             end
-            
+
             code += "\n" + indent(")", depth + 4)
             code += "\n" + indent("}", depth + 3)
             code += "\n" + indent("else -> {", depth + 3)
@@ -322,7 +332,13 @@ module KjuiTools
                 code += "\n" + indent("cellViewModel.updateData(cellData.data[cellIndex])", depth + 5)
                 code += "\n" + indent("#{cell_view_name}View(", depth + 5)
                 code += "\n" + indent("viewModel = cellViewModel,", depth + 6)
-                code += "\n" + indent("modifier = Modifier", depth + 6)
+                # Add testTag for test automation (tapItem action)
+                collection_id = json_data['id']
+                if collection_id
+                  code += "\n" + indent("modifier = Modifier.testTag(\"#{collection_id}_item_\$cellIndex\")", depth + 6)
+                else
+                  code += "\n" + indent("modifier = Modifier", depth + 6)
+                end
                 code += "\n" + indent(")", depth + 5)
                 code += "\n" + indent("}", depth + 4)
                 code += "\n" + indent("}", depth + 3)
