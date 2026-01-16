@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -121,6 +122,9 @@ class DynamicTabViewComponent {
             val tabBarBackground = ColorParser.parseColorWithBinding(json, "tabBarBackground", data)
             val showLabels = json.get("showLabels")?.asBoolean ?: true
 
+            // Get TabView id for test automation
+            val tabViewId = json.get("id")?.asString
+
             // Build tab items data
             val tabItems = tabsArray.mapIndexed { index, item ->
                 val itemObj = item.asJsonObject
@@ -150,6 +154,11 @@ class DynamicTabViewComponent {
                             }
 
                             NavigationBarItem(
+                                modifier = if (tabViewId != null) {
+                                    Modifier.testTag("${tabViewId}_tab_${tabItem.index}")
+                                } else {
+                                    Modifier
+                                },
                                 selected = isSelected,
                                 onClick = {
                                     if (selectedTab != tabItem.index) {
