@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 
@@ -143,8 +144,44 @@ object ModifierBuilder {
                 else -> result
             }
         }
-        
+
+        // Apply maxWidth/maxHeight constraints
+        // When width is not set (wrapContent) and maxWidth is specified,
+        // use wrapContent + widthIn(max=) to prevent expansion beyond max
+        // This is equivalent to SwiftUI's fixedSize + frame(maxWidth:)
+        val hasExplicitWidth = json.has("width")
+        val hasExplicitHeight = json.has("height")
+        val maxWidth = parseOptionalDp(json, "maxWidth")
+        val maxHeight = parseOptionalDp(json, "maxHeight")
+
+        if (maxWidth != null && !hasExplicitWidth) {
+            result = result.wrapContentWidth().widthIn(max = maxWidth)
+        } else if (maxWidth != null) {
+            result = result.widthIn(max = maxWidth)
+        }
+
+        if (maxHeight != null && !hasExplicitHeight) {
+            result = result.wrapContentHeight().heightIn(max = maxHeight)
+        } else if (maxHeight != null) {
+            result = result.heightIn(max = maxHeight)
+        }
+
         return result
+    }
+
+    /**
+     * Parse an optional Dp value from JSON.
+     * Returns null if key doesn't exist or value is not a number.
+     */
+    private fun parseOptionalDp(json: JsonObject, key: String): Dp? {
+        val element = json.get(key) ?: return null
+        return try {
+            if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
+                element.asFloat.dp
+            } else null
+        } catch (e: Exception) {
+            null
+        }
     }
     
     /**

@@ -7,16 +7,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -28,6 +34,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.FocusManager
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -53,6 +60,9 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
  * - width/height: Number dimensions
+ * - fieldId: String unique identifier for focus management
+ * - nextFocusId: String fieldId to focus next on submit
+ * - onSubmit: String method name for submit handler
  */
 class DynamicTextFieldComponent {
     companion object {
@@ -97,15 +107,41 @@ class DynamicTextFieldComponent {
                 else -> KeyboardType.Text
             }
 
-            // Parse IME action
-            val imeAction = when (json.get("imeAction")?.asString?.lowercase()) {
-                "done" -> ImeAction.Done
-                "go" -> ImeAction.Go
-                "next" -> ImeAction.Next
-                "previous" -> ImeAction.Previous
-                "search" -> ImeAction.Search
-                "send" -> ImeAction.Send
-                else -> ImeAction.Default
+            // Parse focus management
+            val fieldId = json.get("fieldId")?.asString
+            val nextFocusId = json.get("nextFocusId")?.asString
+            val onSubmitHandler = json.get("onSubmit")?.asString
+
+            // Parse IME action - auto-set to Next if nextFocusId is specified
+            val imeAction = when {
+                nextFocusId != null && json.get("imeAction") == null -> ImeAction.Next
+                else -> when (json.get("imeAction")?.asString?.lowercase()) {
+                    "done" -> ImeAction.Done
+                    "go" -> ImeAction.Go
+                    "next" -> ImeAction.Next
+                    "previous" -> ImeAction.Previous
+                    "search" -> ImeAction.Search
+                    "send" -> ImeAction.Send
+                    else -> ImeAction.Default
+                }
+            }
+
+            // FocusRequester for programmatic focus control
+            val focusRequester = remember { FocusRequester() }
+            val composeFocusManager = LocalFocusManager.current
+            var hasFocus by remember { mutableStateOf(false) }
+
+            // Listen for focus requests from FocusManager
+            if (fieldId != null) {
+                LaunchedEffect(fieldId) {
+                    FocusManager.focusRequestFlow.collect { requestedId ->
+                        if (requestedId == fieldId) {
+                            focusRequester.requestFocus()
+                        } else if (hasFocus && requestedId.isEmpty()) {
+                            composeFocusManager.clearFocus()
+                        }
+                    }
+                }
             }
 
             // Parse colors with Configuration defaults (supports @{binding})
@@ -213,6 +249,38 @@ class DynamicTextFieldComponent {
                 imeAction = imeAction
             )
 
+            // Keyboard actions for submit/focus chain
+            val keyboardActions = KeyboardActions(
+                onDone = {
+                    nextFocusId?.let { FocusManager.requestFocus(it) }
+                    onSubmitHandler?.let { handlerName ->
+                        (data[handlerName] as? (() -> Unit))?.invoke()
+                    }
+                },
+                onNext = {
+                    nextFocusId?.let { FocusManager.requestFocus(it) }
+                    onSubmitHandler?.let { handlerName ->
+                        (data[handlerName] as? (() -> Unit))?.invoke()
+                    }
+                },
+                onGo = {
+                    nextFocusId?.let { FocusManager.requestFocus(it) }
+                    onSubmitHandler?.let { handlerName ->
+                        (data[handlerName] as? (() -> Unit))?.invoke()
+                    }
+                },
+                onSearch = {
+                    onSubmitHandler?.let { handlerName ->
+                        (data[handlerName] as? (() -> Unit))?.invoke()
+                    }
+                },
+                onSend = {
+                    onSubmitHandler?.let { handlerName ->
+                        (data[handlerName] as? (() -> Unit))?.invoke()
+                    }
+                }
+            )
+
             // Check if we need CustomTextField for margins
             val hasMargins = json.get("margins") != null ||
                     json.get("topMargin") != null ||
@@ -222,8 +290,13 @@ class DynamicTextFieldComponent {
                     json.get("startMargin") != null ||
                     json.get("endMargin") != null
 
-            // Build modifier
-            val modifier = buildModifier(json, !hasMargins)
+            // Build modifier with focus support
+            var modifier = buildModifier(json, !hasMargins)
+            if (fieldId != null) {
+                modifier = modifier
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState -> hasFocus = focusState.isFocused }
+            }
 
             if (hasMargins) {
                 // Use CustomTextFieldWithMargins for margin support
@@ -236,6 +309,7 @@ class DynamicTextFieldComponent {
                     placeholder = placeholder,
                     visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions,
                     textStyle = textStyle,
                     shape = shape,
                     contentPadding = contentPadding,
@@ -256,6 +330,7 @@ class DynamicTextFieldComponent {
                     placeholder = placeholder,
                     visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions,
                     textStyle = textStyle,
                     shape = shape,
                     contentPadding = contentPadding,

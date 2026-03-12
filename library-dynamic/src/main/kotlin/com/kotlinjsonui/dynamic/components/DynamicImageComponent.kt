@@ -31,7 +31,9 @@ import com.kotlinjsonui.dynamic.helpers.dottedBorder
  * Converts JSON to Image composable at runtime
  *
  * Supported JSON attributes (matching Ruby implementation):
+ * - srcName: String resource name (highest priority, supports @{variable} binding)
  * - src: String resource name (supports @{variable} binding)
+ * - defaultImage: String fallback resource name
  * - contentDescription: String for accessibility
  * - contentMode: String ("aspectFill", "aspectFit", "center")
  * - size: Number for square size
@@ -49,7 +51,12 @@ class DynamicImageComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             // Parse image source with data binding
-            val rawSrc = json.get("src")?.asString ?: "placeholder"
+            // Priority: srcName > src > defaultImage > text > "placeholder"
+            val rawSrc = json.get("srcName")?.asString
+                ?: json.get("src")?.asString
+                ?: json.get("defaultImage")?.asString
+                ?: json.get("text")?.asString
+                ?: "placeholder"
             val imageName = processDataBinding(rawSrc, data)
 
             // Get content description
