@@ -118,7 +118,7 @@ class DynamicTextComponent {
                             text = text,
                             fontColor = attr.get("fontColor")?.asString,
                             fontSize = attr.get("fontSize")?.asInt,
-                            fontWeight = attr.get("fontWeight")?.asString,
+                            fontWeight = attr.get("fontWeight")?.asString ?: attr.get("font")?.asString,
                             background = attr.get("background")?.asString,
                             underline = attr.get("underline")?.asBoolean ?: false,
                             strikethrough = attr.get("strikethrough")?.asBoolean ?: false,

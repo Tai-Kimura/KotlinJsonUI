@@ -114,25 +114,20 @@ private fun PartialAttributesTextImpl(
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current
 ) {
+    val context = LocalContext.current
     val annotatedString = buildAnnotatedString {
         append(text)
-        
+
         partialAttributes.forEach { attr ->
             val start = attr.startIndex
             val end = attr.endIndex
-            
+
             // Validate range
             if (start >= 0 && end <= text.length && start < end) {
-                
+
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
-                    color = attr.fontColor?.let { 
-                        try {
-                            Color(android.graphics.Color.parseColor(it))
-                        } catch (e: Exception) {
-                            style.color
-                        }
-                    } ?: style.color,
+                    color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
                     fontSize = attr.fontSize?.sp ?: style.fontSize,
                     fontWeight = when (attr.fontWeight?.lowercase()) {
                         "bold" -> FontWeight.Bold
@@ -144,28 +139,22 @@ private fun PartialAttributesTextImpl(
                         "black" -> FontWeight.Black
                         else -> style.fontWeight
                     },
-                    background = attr.background?.let {
-                        try {
-                            Color(android.graphics.Color.parseColor(it))
-                        } catch (e: Exception) {
-                            Color.Transparent
-                        }
-                    } ?: Color.Transparent,
+                    background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = when {
-                        attr.underline && attr.strikethrough -> 
+                        attr.underline && attr.strikethrough ->
                             TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
                         attr.underline -> TextDecoration.Underline
                         attr.strikethrough -> TextDecoration.LineThrough
                         else -> TextDecoration.None
                     }
                 )
-                
+
                 try {
                     addStyle(spanStyle, start, end)
                 } catch (e: Exception) {
                     // Handle out of bounds
                 }
-                
+
                 // Add clickable annotation with index
                 attr.onClick?.let {
                     try {
@@ -227,13 +216,7 @@ private fun LinkablePartialAttributesText(
                 
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
-                    color = attr.fontColor?.let { 
-                        try {
-                            Color(android.graphics.Color.parseColor(it))
-                        } catch (e: Exception) {
-                            style.color
-                        }
-                    } ?: style.color,
+                    color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
                     fontSize = attr.fontSize?.sp ?: style.fontSize,
                     fontWeight = when (attr.fontWeight?.lowercase()) {
                         "bold" -> FontWeight.Bold
@@ -245,28 +228,22 @@ private fun LinkablePartialAttributesText(
                         "black" -> FontWeight.Black
                         else -> style.fontWeight
                     },
-                    background = attr.background?.let {
-                        try {
-                            Color(android.graphics.Color.parseColor(it))
-                        } catch (e: Exception) {
-                            Color.Transparent
-                        }
-                    } ?: Color.Transparent,
+                    background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = when {
-                        attr.underline && attr.strikethrough -> 
+                        attr.underline && attr.strikethrough ->
                             TextDecoration.combine(listOf(TextDecoration.Underline, TextDecoration.LineThrough))
                         attr.underline -> TextDecoration.Underline
                         attr.strikethrough -> TextDecoration.LineThrough
                         else -> TextDecoration.None
                     }
                 )
-                
+
                 try {
                     addStyle(spanStyle, start, end)
                 } catch (e: Exception) {
                     // Handle out of bounds
                 }
-                
+
                 // Add clickable annotation with index
                 attr.onClick?.let {
                     try {
@@ -383,4 +360,26 @@ private fun LinkablePartialAttributesText(
                 }
         }
     )
+}
+
+/**
+ * Resolve a color string to a Color.
+ * Tries Android color resource by name first, then hex parsing, then fallback.
+ */
+private fun resolveColorString(colorString: String, context: android.content.Context): Color? {
+    // 1. Try to resolve as Android color resource (e.g., "gold" -> R.color.gold)
+    try {
+        val resId = context.resources.getIdentifier(colorString, "color", context.packageName)
+        if (resId != 0) {
+            val androidColor = androidx.core.content.ContextCompat.getColor(context, resId)
+            return Color(androidColor)
+        }
+    } catch (_: Exception) {}
+
+    // 2. Try to parse as hex color (e.g., "#FFD700")
+    try {
+        return Color(android.graphics.Color.parseColor(colorString))
+    } catch (_: Exception) {}
+
+    return null
 }
