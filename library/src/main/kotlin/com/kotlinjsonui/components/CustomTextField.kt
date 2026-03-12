@@ -46,7 +46,8 @@ fun CustomTextField(
     onFocus: (() -> Unit)? = null,
     onBlur: (() -> Unit)? = null,
     onBeginEditing: (() -> Unit)? = null,
-    onEndEditing: (() -> Unit)? = null
+    onEndEditing: (() -> Unit)? = null,
+    enabled: Boolean = true
 ) {
     // Determine background colors
     val unfocusedBackground = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
@@ -86,6 +87,7 @@ fun CustomTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = focusModifier,
+        enabled = enabled,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -99,7 +101,7 @@ fun CustomTextField(
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = value,
                     innerTextField = innerTextField,
-                    enabled = true,
+                    enabled = enabled,
                     singleLine = singleLine,
                     visualTransformation = visualTransformation,
                     interactionSource = interactionSource,
@@ -116,7 +118,7 @@ fun CustomTextField(
                     ),
                     container = {
                         OutlinedTextFieldDefaults.ContainerBox(
-                            enabled = true,
+                            enabled = enabled,
                             isError = isError,
                             interactionSource = interactionSource,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -133,7 +135,7 @@ fun CustomTextField(
                 TextFieldDefaults.DecorationBox(
                     value = value,
                     innerTextField = innerTextField,
-                    enabled = true,
+                    enabled = enabled,
                     singleLine = singleLine,
                     visualTransformation = visualTransformation,
                     interactionSource = interactionSource,
@@ -149,7 +151,7 @@ fun CustomTextField(
                     ),
                     container = {
                         TextFieldDefaults.ContainerBox(
-                            enabled = true,
+                            enabled = enabled,
                             isError = isError,
                             interactionSource = interactionSource,
                             colors = TextFieldDefaults.colors(
@@ -195,7 +197,8 @@ fun CustomTextFieldWithMargins(
     onFocus: (() -> Unit)? = null,
     onBlur: (() -> Unit)? = null,
     onBeginEditing: (() -> Unit)? = null,
-    onEndEditing: (() -> Unit)? = null
+    onEndEditing: (() -> Unit)? = null,
+    enabled: Boolean = true
 ) {
     Box(modifier = boxModifier) {
         CustomTextField(
@@ -220,7 +223,8 @@ fun CustomTextFieldWithMargins(
             onFocus = onFocus,
             onBlur = onBlur,
             onBeginEditing = onBeginEditing,
-            onEndEditing = onEndEditing
+            onEndEditing = onEndEditing,
+            enabled = enabled
         )
     }
 }
