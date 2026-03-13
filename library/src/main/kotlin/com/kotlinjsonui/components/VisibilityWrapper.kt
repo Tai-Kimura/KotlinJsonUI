@@ -17,25 +17,19 @@ fun VisibilityWrapper(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    when (visibility.lowercase()) {
-        "gone" -> {
-            // Don't render anything when gone
+    if (visibility.lowercase() == "gone") return
+
+    if (visibility.lowercase() == "invisible") {
+        androidx.compose.foundation.layout.Box(
+            modifier = modifier.alpha(0f)
+        ) {
+            content()
         }
-        "invisible" -> {
-            // Render but make it invisible (keeps layout space)
-            androidx.compose.foundation.layout.Box(
-                modifier = modifier.alpha(0f)
-            ) {
-                content()
-            }
-        }
-        else -> {
-            // "visible" or any other value defaults to visible
-            androidx.compose.foundation.layout.Box(
-                modifier = modifier
-            ) {
-                content()
-            }
+    } else {
+        androidx.compose.foundation.layout.Box(
+            modifier = modifier
+        ) {
+            content()
         }
     }
 }
@@ -84,25 +78,19 @@ fun VisibilityWrapper(
     }
     
     // Then handle visibility
-    when (visibility?.lowercase()) {
-        "gone" -> {
-            // Don't render anything when gone
+    if (visibility?.lowercase() == "gone") return
+
+    if (visibility?.lowercase() == "invisible") {
+        androidx.compose.foundation.layout.Box(
+            modifier = modifier.alpha(0f)
+        ) {
+            content()
         }
-        "invisible" -> {
-            // Render but make it invisible (keeps layout space)
-            androidx.compose.foundation.layout.Box(
-                modifier = modifier.alpha(0f)
-            ) {
-                content()
-            }
-        }
-        else -> {
-            // "visible", null, or any other value defaults to visible
-            androidx.compose.foundation.layout.Box(
-                modifier = modifier
-            ) {
-                content()
-            }
+    } else {
+        androidx.compose.foundation.layout.Box(
+            modifier = modifier
+        ) {
+            content()
         }
     }
 }
