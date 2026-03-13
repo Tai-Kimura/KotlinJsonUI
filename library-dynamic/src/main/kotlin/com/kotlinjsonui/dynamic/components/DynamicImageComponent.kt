@@ -1,159 +1,97 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.processDataBinding
-import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.dashedBorder
-import com.kotlinjsonui.dynamic.helpers.dottedBorder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
 /**
  * Dynamic Image Component Converter
- * Converts JSON to Image composable at runtime
+ * Converts JSON to Image composable at runtime.
+ * Reference: image_component.rb in kjui_tools.
  *
- * Supported JSON attributes (matching Ruby implementation):
- * - srcName: String resource name (highest priority, supports @{variable} binding)
- * - src: String resource name (supports @{variable} binding)
- * - defaultImage: String fallback resource name
- * - contentDescription: String for accessibility
- * - contentMode: String ("aspectFill", "aspectFit", "center")
- * - size: Number for square size
- * - width/height: Number dimensions
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
- * - tint: String hex color for tinting
- * - alpha: Float opacity value (0-1)
+ * Source priority: srcName > src > defaultImage > text > "placeholder"
+ * Binding: @{variable} resolves via data map then getIdentifier for drawable
+ * ContentScale: aspectfill->Crop, aspectfit->Fit, fill/scaletofill->FillBounds, center->None
+ * Modifier order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
  */
 class DynamicImageComponent {
     companion object {
         @Composable
-        fun create(
-            json: JsonObject,
-            data: Map<String, Any> = emptyMap()
-        ) {
-            // Parse image source with data binding
-            // Priority: srcName > src > defaultImage > text > "placeholder"
+        fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
+            val context = LocalContext.current
+
+            // Source priority: srcName > src > defaultImage > text > "placeholder"
             val rawSrc = json.get("srcName")?.asString
                 ?: json.get("src")?.asString
                 ?: json.get("defaultImage")?.asString
                 ?: json.get("text")?.asString
                 ?: "placeholder"
-            val imageName = processDataBinding(rawSrc, data)
 
-            // Get content description
-            val contentDescription = json.get("contentDescription")?.asString ?: ""
+            // Resolve drawable resource ID (handles @{binding} internally)
+            var resourceId = ResourceResolver.resolveDrawable(rawSrc, data, context)
 
-            // Try to get the resource ID
-            val context = LocalContext.current
-            val resourceId = context.resources.getIdentifier(
-                imageName,
-                "drawable",
-                context.packageName
-            )
+            // Fallback to defaultImage when binding src resolves to 0
+            if (resourceId == 0 && ModifierBuilder.isBinding(rawSrc)) {
+                val fallback = json.get("defaultImage")?.asString
+                if (fallback != null && fallback != rawSrc) {
+                    resourceId = ResourceResolver.resolveDrawable(fallback, data, context)
+                }
+            }
 
-            // Build modifier
-            val modifier = buildModifier(json, data, context)
+            // Nothing to render if resource not found
+            if (resourceId == 0) return
 
-            // Parse content scale/mode
-            val contentScale = when (json.get("contentMode")?.asString?.lowercase()) {
+            // Content description
+            val contentDescription = json.get("contentDescription")?.asString
+                ?: json.get("id")?.asString
+                ?: ""
+
+            // ContentScale mapping (case-insensitive)
+            val contentScale = when (
+                ResourceResolver.resolveString(json, "contentMode", data)?.lowercase()
+            ) {
                 "aspectfill" -> ContentScale.Crop
                 "aspectfit" -> ContentScale.Fit
+                "fill", "scaletofill" -> ContentScale.FillBounds
                 "center" -> ContentScale.None
-                "fill" -> ContentScale.FillBounds
-                "inside" -> ContentScale.Inside
-                else -> ContentScale.Fit // Default
+                else -> ContentScale.Fit
             }
 
-            // Parse alpha
-            val alpha = json.get("alpha")?.asFloat ?: 1f
+            // Alpha with binding support
+            val alpha = ResourceResolver.resolveFloat(json, "alpha", data)
+                ?: ResourceResolver.resolveFloat(json, "opacity", data)
+                ?: 1f
 
-            // Create the Image
-            if (resourceId != 0) {
-                Image(
-                    painter = painterResource(id = resourceId),
-                    contentDescription = contentDescription,
-                    modifier = modifier,
-                    contentScale = contentScale,
-                    alpha = alpha
-                )
-            } else {
-                // Fallback for missing image - could show placeholder or error image
-                // For now, just create an empty composable
-            }
-        }
+            // Build modifier using composite builder
+            // Order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
-        private fun buildModifier(json: JsonObject, data: Map<String, Any>, context: android.content.Context): Modifier {
-            // Use ModifierBuilder for basic size and spacing
-            var modifier = ModifierBuilder.buildModifier(json)
-
-            // Background color (before clip for proper rendering, supports @{binding})
-            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
-                modifier = modifier.background(color)
-            }
-
-            // Corner radius (clip)
-            val shape = json.get("cornerRadius")?.asFloat?.let { radius ->
-                RoundedCornerShape(radius.dp).also {
-                    modifier = modifier.clip(it)
+            // Handle "size" attribute for square dimensions (not covered by buildModifier)
+            json.get("size")?.let { sizeElement ->
+                if (sizeElement.isJsonPrimitive && sizeElement.asJsonPrimitive.isNumber) {
+                    val s = sizeElement.asFloat
+                    modifier = modifier.size(s.dp)
                 }
             }
 
-            // Border (supports solid/dashed/dotted, supports @{binding})
-            ColorParser.parseColorWithBinding(json, "borderColor", data, context)?.let { borderColor ->
-                    val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                    val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+            // Lifecycle effects
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
 
-                    modifier = when (borderStyle) {
-                        "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
-                        "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
-                        else -> { // "solid" or default
-                            if (shape != null) {
-                                modifier.border(borderWidth.dp, borderColor, shape)
-                            } else {
-                                modifier.border(borderWidth.dp, borderColor)
-                            }
-                        }
-                    }
-            }
-
-            // Shadow/elevation
-            json.get("shadow")?.let { shadow ->
-                when {
-                    shadow.isJsonPrimitive -> {
-                        val primitive = shadow.asJsonPrimitive
-                        when {
-                            primitive.isBoolean && primitive.asBoolean -> {
-                                modifier = modifier.shadow(6.dp)
-                            }
-
-                            primitive.isNumber -> {
-                                modifier = modifier.shadow(primitive.asFloat.dp)
-                            }
-                        }
-                    }
-                }
-            }
-
-            return modifier
+            Image(
+                painter = painterResource(id = resourceId),
+                contentDescription = contentDescription,
+                modifier = modifier,
+                contentScale = contentScale,
+                alpha = alpha.coerceIn(0f, 1f)
+            )
         }
     }
 }

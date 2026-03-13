@@ -1,11 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -18,16 +13,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
@@ -35,103 +33,92 @@ import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.FocusManager
-import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
 /**
- * Dynamic TextField Component Converter
- * Converts JSON to TextField/TextInput composable at runtime
+ * TextField component → CustomTextField / CustomTextFieldWithMargins.
+ * Reference: textfield_component.rb in kjui_tools.
  *
- * Supported JSON attributes (matching Ruby implementation):
- * - text: String value (supports @{variable} binding)
- * - hint/placeholder: String placeholder text
- * - hintColor: String hex color for placeholder
- * - hintFontSize: Int size for placeholder text
- * - secure: Boolean for password field
- * - onTextChange: String method name for text change handler
- * - keyboardType: String type (text, number, email, phone, password)
- * - maxLines: Int maximum lines (default 1)
- * - disabled: Boolean to disable input
- * - fontSize: Int text size
- * - fontColor: String hex color for text
- * - background: String hex color for background
- * - cornerRadius: Float corner radius
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
- * - width/height: Number dimensions
- * - fieldId: String unique identifier for focus management
- * - nextFocusId: String fieldId to focus next on submit
- * - onSubmit: String method name for submit handler
+ * Features:
+ * - Data binding for text value (@{property})
+ * - Secure/password input
+ * - Focus chain (fieldId → nextFocusId)
+ * - Keyboard type, IME action, auto-capitalization
+ * - Content padding, border style, outlined mode
+ * - Hidden TextField (fontColor: "transparent" for 2FA auto-fill)
  */
 class DynamicTextFieldComponent {
     companion object {
         @Composable
-        fun create(
-            json: JsonObject,
-            data: Map<String, Any> = emptyMap()
-        ) {
+        fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
 
             // Parse text value with data binding
             val rawText = json.get("text")?.asString ?: ""
-            val initialText = processDataBinding(rawText, data, context)
-
-            // State for the text field value
+            val initialText = ResourceResolver.resolveTextValue(rawText, data, context)
             var textValue by remember(initialText) { mutableStateOf(initialText) }
 
             // Parse placeholder with resource resolution
             val rawPlaceholder = json.get("hint")?.asString
-                ?: json.get("placeholder")?.asString
-                ?: ""
-            val placeholderText = processDataBinding(rawPlaceholder, data, context)
+                ?: json.get("placeholder")?.asString ?: ""
+            val placeholderText = ResourceResolver.resolveTextValue(rawPlaceholder, data, context)
+
+            // Detect hidden TextField (fontColor: "transparent")
+            val isHidden = json.get("fontColor")?.asString?.lowercase() == "transparent"
 
             // Parse secure field
-            val isSecure = json.get("secure")?.asBoolean ?: false
+            val isSecure = json.get("secure")?.asBoolean == true ||
+                    json.get("input")?.asString?.lowercase() == "password" ||
+                    json.get("contentType")?.asString?.lowercase()?.let {
+                        it == "password" || it == "newpassword"
+                    } ?: false
 
-            // Parse disabled state
-            val isDisabled = json.get("disabled")?.asBoolean ?: false
+            // Parse enabled state
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
 
             // Parse max lines
             val maxLines = json.get("maxLines")?.asInt ?: 1
             val singleLine = maxLines == 1
 
-            // Parse keyboard type
-            val keyboardType = when (json.get("keyboardType")?.asString?.lowercase()) {
-                "number", "numeric" -> KeyboardType.Number
-                "phone" -> KeyboardType.Phone
-                "email" -> KeyboardType.Email
-                "password" -> KeyboardType.Password
-                "decimal" -> KeyboardType.Decimal
-                "uri", "url" -> KeyboardType.Uri
-                else -> KeyboardType.Text
+            // onValueChange handler with data binding update
+            val viewId = json.get("id")?.asString ?: "textfield"
+            val onValueChange: (String) -> Unit = { newValue ->
+                textValue = newValue
+
+                // Update data binding if text is bound
+                if (rawText.contains("@{")) {
+                    val variable = extractBindingVariable(rawText)
+                    variable?.let { varName ->
+                        val updateData = data["updateData"]
+                        if (updateData is Function<*>) {
+                            try {
+                                @Suppress("UNCHECKED_CAST")
+                                (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
+                            } catch (_: Exception) {}
+                        }
+                    }
+                }
+
+                // Call onTextChange handler if specified
+                val onTextChangeHandler = json.get("onTextChange")?.asString
+                if (onTextChangeHandler != null) {
+                    ModifierBuilder.resolveEventHandler(
+                        onTextChangeHandler, data, viewId, newValue
+                    )
+                }
             }
 
-            // Parse focus management
+            // Focus management
             val fieldId = json.get("fieldId")?.asString
             val nextFocusId = json.get("nextFocusId")?.asString
             val onSubmitHandler = json.get("onSubmit")?.asString
 
-            // Parse IME action - auto-set to Next if nextFocusId is specified
-            val imeAction = when {
-                nextFocusId != null && json.get("imeAction") == null -> ImeAction.Next
-                else -> when (json.get("imeAction")?.asString?.lowercase()) {
-                    "done" -> ImeAction.Done
-                    "go" -> ImeAction.Go
-                    "next" -> ImeAction.Next
-                    "previous" -> ImeAction.Previous
-                    "search" -> ImeAction.Search
-                    "send" -> ImeAction.Send
-                    else -> ImeAction.Default
-                }
-            }
-
-            // FocusRequester for programmatic focus control
             val focusRequester = remember { FocusRequester() }
             val composeFocusManager = LocalFocusManager.current
             var hasFocus by remember { mutableStateOf(false) }
 
-            // Listen for focus requests from FocusManager
             if (fieldId != null) {
                 LaunchedEffect(fieldId) {
                     FocusManager.focusRequestFlow.collect { requestedId ->
@@ -144,99 +131,38 @@ class DynamicTextFieldComponent {
                 }
             }
 
-            // Parse colors with Configuration defaults (supports @{binding})
+            // Colors (supports @{binding})
             val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
                 ?: Configuration.TextField.defaultTextColor
-
             val placeholderColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
                 ?: Configuration.TextField.defaultPlaceholderColor
-
             val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
                 ?: Configuration.TextField.defaultBackgroundColor
-
             val highlightBackgroundColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
                 ?: Configuration.TextField.defaultHighlightBackgroundColor
-
             val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
                 ?: Configuration.TextField.defaultBorderColor
 
-            // Parse font size with Configuration defaults
+            // Font size
             val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
-            val hintFontSize = json.get("hintFontSize")?.asInt ?: Configuration.TextField.defaultFontSize
-            
-            // Parse shape
-            val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.TextField.defaultCornerRadius.toFloat()
-            val shape = RoundedCornerShape(cornerRadius.dp)
-            
-            // Parse isOutlined - automatically use outlined style if borderColor or borderWidth is specified
-            val isOutlined = json.get("outlined")?.asBoolean == true ||
-                             json.get("borderColor") != null ||
-                             json.get("borderWidth") != null
+            val hintFontSize = json.get("hintFontSize")?.asInt
 
-            // Parse contentPadding from paddings or fieldPadding
+            // Shape
+            val cornerRadius = json.get("cornerRadius")?.asFloat
+                ?: Configuration.TextField.defaultCornerRadius.toFloat()
+            val shape = RoundedCornerShape(cornerRadius.dp)
+
+            // Outlined mode
+            val isOutlined = resolveIsOutlined(json)
+
+            // Content padding
             val contentPadding = buildContentPadding(json)
 
-            // Handle onTextChange event
-            val onValueChange: (String) -> Unit = { newValue ->
-                textValue = newValue
+            // Text style
+            val textStyleParts = mutableListOf<String>()
+            val textStyle = buildTextStyle(json, textColor, fontSize, data)
 
-                // Call the event handler if specified
-                json.get("onTextChange")?.asString?.let { methodName ->
-                    // Look for the function in the data map
-                    val handler = data[methodName]
-                    if (handler is Function<*>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (handler as (String) -> Unit)(newValue)
-                        } catch (e: Exception) {
-                            // Try without parameter
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (handler as () -> Unit)()
-                            } catch (e2: Exception) {
-                                // Handler doesn't match expected signature
-                            }
-                        }
-                    }
-                }
-
-                // Update data binding if text is bound
-                if (rawText.contains("@{")) {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(rawText)?.let { match ->
-                        val variable = match.groupValues[1].split(" ?? ")[0].trim()
-                        // Find update function in data map
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(mapOf(variable to newValue))
-                            } catch (e: Exception) {
-                                // Update function doesn't match expected signature
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Create placeholder composable
-            val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
-                {
-                    Text(
-                        text = placeholderText,
-                        color = placeholderColor ?: Configuration.TextField.defaultPlaceholderColor,
-                        fontSize = (hintFontSize ?: fontSize ?: 14).sp
-                    )
-                }
-            } else null
-
-            // Create text style
-            val textStyle = LocalTextStyle.current.copy(
-                fontSize = (fontSize ?: 14).sp,
-                color = textColor ?: LocalTextStyle.current.color
-            )
-
-            // Visual transformation for password
+            // Visual transformation
             val visualTransformation = if (isSecure) {
                 PasswordVisualTransformation()
             } else {
@@ -244,68 +170,68 @@ class DynamicTextFieldComponent {
             }
 
             // Keyboard options
-            val keyboardOptions = KeyboardOptions(
-                keyboardType = keyboardType,
-                imeAction = imeAction
-            )
+            val keyboardOptions = buildKeyboardOptions(json, nextFocusId)
 
-            // Keyboard actions for submit/focus chain
-            val keyboardActions = KeyboardActions(
-                onDone = {
-                    nextFocusId?.let { FocusManager.requestFocus(it) }
-                    onSubmitHandler?.let { handlerName ->
-                        (data[handlerName] as? (() -> Unit))?.invoke()
-                    }
-                },
-                onNext = {
-                    nextFocusId?.let { FocusManager.requestFocus(it) }
-                    onSubmitHandler?.let { handlerName ->
-                        (data[handlerName] as? (() -> Unit))?.invoke()
-                    }
-                },
-                onGo = {
-                    nextFocusId?.let { FocusManager.requestFocus(it) }
-                    onSubmitHandler?.let { handlerName ->
-                        (data[handlerName] as? (() -> Unit))?.invoke()
-                    }
-                },
-                onSearch = {
-                    onSubmitHandler?.let { handlerName ->
-                        (data[handlerName] as? (() -> Unit))?.invoke()
-                    }
-                },
-                onSend = {
-                    onSubmitHandler?.let { handlerName ->
-                        (data[handlerName] as? (() -> Unit))?.invoke()
-                    }
+            // Keyboard actions
+            val keyboardActions = buildKeyboardActions(json, data, nextFocusId, onSubmitHandler, viewId)
+
+            // Placeholder composable
+            val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
+                {
+                    Text(
+                        text = placeholderText,
+                        color = placeholderColor,
+                        fontSize = (hintFontSize ?: fontSize).sp,
+                        fontWeight = if (json.get("hintFont")?.asString == "bold") {
+                            androidx.compose.ui.text.font.FontWeight.Bold
+                        } else null
+                    )
                 }
-            )
+            } else null
 
-            // Check if we need CustomTextField for margins
-            val hasMargins = json.get("margins") != null ||
-                    json.get("topMargin") != null ||
-                    json.get("bottomMargin") != null ||
-                    json.get("leftMargin") != null ||
-                    json.get("rightMargin") != null ||
-                    json.get("startMargin") != null ||
-                    json.get("endMargin") != null
+            // Focus event handlers
+            val onFocusHandler = json.get("onFocus")?.asString
+                ?: json.get("onBeginEditing")?.asString
+            val onBlurHandler = json.get("onBlur")?.asString
+                ?: json.get("onEndEditing")?.asString
 
-            // Build modifier with focus support
-            var modifier = buildModifier(json, !hasMargins)
-            if (fieldId != null) {
-                modifier = modifier
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { focusState -> hasFocus = focusState.isFocused }
-            }
+            // Check if we need margins wrapper
+            val hasMargins = hasMarginAttributes(json)
 
             if (hasMargins) {
-                // Use CustomTextFieldWithMargins for margin support
-                val boxModifier = buildMarginModifier(json)
+                // Box modifier with margins
+                var boxModifier: Modifier = Modifier
+                boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
+                boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
+                if (isHidden) {
+                    boxModifier = boxModifier.alpha(0f)
+                } else {
+                    boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
+                }
+
+                // TextField modifier (size only)
+                var textFieldModifier: Modifier = Modifier
+                textFieldModifier = ModifierBuilder.applySize(textFieldModifier, json)
+                if (fieldId != null) {
+                    textFieldModifier = textFieldModifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            val wasFocused = hasFocus
+                            hasFocus = focusState.isFocused
+                            if (focusState.isFocused && !wasFocused) {
+                                onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                            }
+                            if (!focusState.isFocused && wasFocused) {
+                                onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                            }
+                        }
+                }
+
                 CustomTextFieldWithMargins(
                     value = textValue,
                     onValueChange = onValueChange,
                     boxModifier = boxModifier,
-                    textFieldModifier = modifier,
+                    textFieldModifier = textFieldModifier,
                     placeholder = placeholder,
                     visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
@@ -319,10 +245,36 @@ class DynamicTextFieldComponent {
                     isOutlined = isOutlined,
                     isSecure = isSecure,
                     singleLine = singleLine,
-                    maxLines = maxLines
+                    maxLines = maxLines,
+                    enabled = isEnabled
                 )
             } else {
-                // Use CustomTextField
+                // Regular modifier
+                var modifier: Modifier = Modifier
+                modifier = ModifierBuilder.applyTestTag(modifier, json)
+                modifier = ModifierBuilder.applyMargins(modifier, json, data)
+                modifier = ModifierBuilder.applySize(modifier, json)
+                if (isHidden) {
+                    modifier = modifier.alpha(0f)
+                } else {
+                    modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+                }
+
+                if (fieldId != null) {
+                    modifier = modifier
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            val wasFocused = hasFocus
+                            hasFocus = focusState.isFocused
+                            if (focusState.isFocused && !wasFocused) {
+                                onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                            }
+                            if (!focusState.isFocused && wasFocused) {
+                                onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                            }
+                        }
+                }
+
                 CustomTextField(
                     value = textValue,
                     onValueChange = onValueChange,
@@ -340,94 +292,209 @@ class DynamicTextFieldComponent {
                     isOutlined = isOutlined,
                     isSecure = isSecure,
                     singleLine = singleLine,
-                    maxLines = maxLines
+                    maxLines = maxLines,
+                    enabled = isEnabled
                 )
             }
         }
 
-        private fun buildModifier(json: JsonObject, includeMargins: Boolean): Modifier {
-            // Use ModifierBuilder for size
-            var modifier = ModifierBuilder.buildSizeModifier(json)
+        // ── Helpers ──
 
-            // NOTE: Don't apply padding to modifier for TextField
-            // Padding is handled separately as contentPadding
+        private fun extractBindingVariable(text: String): String? {
+            val pattern = "@\\{([^}]+)\\}".toRegex()
+            val match = pattern.find(text) ?: return null
+            return match.groupValues[1].split(" ?? ")[0].trim()
+        }
 
-            // Apply margins if included
-            if (includeMargins) {
-                modifier = ModifierBuilder.applyMargins(modifier, json)
+        private fun hasMarginAttributes(json: JsonObject): Boolean {
+            return json.has("margins") || json.has("topMargin") || json.has("bottomMargin") ||
+                    json.has("leftMargin") || json.has("rightMargin") ||
+                    json.has("startMargin") || json.has("endMargin") ||
+                    json.has("marginTop") || json.has("marginBottom") ||
+                    json.has("marginLeft") || json.has("marginRight") ||
+                    json.has("marginStart") || json.has("marginEnd")
+        }
+
+        private fun resolveIsOutlined(json: JsonObject): Boolean {
+            // borderStyle: none → not outlined
+            val borderStyle = json.get("borderStyle")?.asString?.lowercase()
+            if (borderStyle == "none") return false
+            if (borderStyle in listOf("line", "bezel", "roundedrect")) return true
+
+            return json.get("outlined")?.asBoolean == true ||
+                    json.get("borderColor") != null ||
+                    json.get("borderWidth") != null
+        }
+
+        private fun buildTextStyle(
+            json: JsonObject,
+            textColor: androidx.compose.ui.graphics.Color,
+            fontSize: Int,
+            data: Map<String, Any>
+        ): TextStyle {
+            var style = TextStyle(
+                fontSize = fontSize.sp,
+                color = textColor
+            )
+
+            // Text alignment
+            json.get("textAlign")?.asString?.let { align ->
+                style = when (align.lowercase()) {
+                    "center" -> style.copy(textAlign = TextAlign.Center)
+                    "right" -> style.copy(textAlign = TextAlign.End)
+                    "left" -> style.copy(textAlign = TextAlign.Start)
+                    else -> style
+                }
             }
 
-            // Apply opacity
-            modifier = ModifierBuilder.applyOpacity(modifier, json)
-
-            return modifier
+            return style
         }
 
-        private fun buildMarginModifier(json: JsonObject): Modifier {
-            // Use ModifierBuilder for margins
-            return ModifierBuilder.applyMargins(Modifier, json)
+        private fun buildKeyboardOptions(json: JsonObject, nextFocusId: String?): KeyboardOptions {
+            // Keyboard type from contentType (priority) or input
+            val keyboardType = resolveKeyboardType(json)
+
+            // IME action
+            val imeAction = when {
+                json.get("returnKeyType") != null -> when (json.get("returnKeyType").asString) {
+                    "Done" -> ImeAction.Done
+                    "Next" -> ImeAction.Next
+                    "Search" -> ImeAction.Search
+                    "Send" -> ImeAction.Send
+                    "Go" -> ImeAction.Go
+                    else -> ImeAction.Default
+                }
+                nextFocusId != null -> ImeAction.Next
+                else -> ImeAction.Default
+            }
+
+            // Auto-capitalization
+            val capitalization = json.get("autocapitalizationType")?.asString?.let { type ->
+                when (type.lowercase()) {
+                    "none" -> KeyboardCapitalization.None
+                    "words" -> KeyboardCapitalization.Words
+                    "sentences" -> KeyboardCapitalization.Sentences
+                    "allcharacters", "characters" -> KeyboardCapitalization.Characters
+                    else -> KeyboardCapitalization.None
+                }
+            } ?: KeyboardCapitalization.None
+
+            // Auto-correction
+            val autoCorrect = json.get("autocorrectionType")?.asString?.let { type ->
+                when (type.lowercase()) {
+                    "no", "false", "off" -> false
+                    else -> true
+                }
+            } ?: true
+
+            return KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = imeAction,
+                capitalization = capitalization,
+                autoCorrect = autoCorrect
+            )
         }
 
-        /**
-         * Build contentPadding from paddings, padding, or fieldPadding JSON attribute
-         */
+        private fun resolveKeyboardType(json: JsonObject): KeyboardType {
+            // contentType takes priority
+            json.get("contentType")?.asString?.let { type ->
+                return when (type.lowercase()) {
+                    "emailaddress", "email" -> KeyboardType.Email
+                    "password", "newpassword" -> KeyboardType.Password
+                    "telephonenumber", "phone" -> KeyboardType.Phone
+                    "url" -> KeyboardType.Uri
+                    "creditcardnumber" -> KeyboardType.Number
+                    else -> KeyboardType.Text
+                }
+            }
+            // Fallback to input
+            json.get("input")?.asString?.let { input ->
+                return when (input.lowercase()) {
+                    "email" -> KeyboardType.Email
+                    "password" -> KeyboardType.Password
+                    "number" -> KeyboardType.Number
+                    "decimal" -> KeyboardType.Decimal
+                    "phone" -> KeyboardType.Phone
+                    else -> KeyboardType.Text
+                }
+            }
+            return KeyboardType.Text
+        }
+
+        private fun buildKeyboardActions(
+            json: JsonObject,
+            data: Map<String, Any>,
+            nextFocusId: String?,
+            onSubmitHandler: String?,
+            viewId: String
+        ): KeyboardActions {
+            return KeyboardActions(
+                onDone = {
+                    if (nextFocusId != null) {
+                        FocusManager.requestFocus(nextFocusId)
+                    }
+                    onSubmitHandler?.let {
+                        ModifierBuilder.resolveEventHandler(it, data, viewId)
+                    }
+                },
+                onNext = {
+                    nextFocusId?.let { FocusManager.requestFocus(it) }
+                },
+                onGo = {
+                    onSubmitHandler?.let {
+                        ModifierBuilder.resolveEventHandler(it, data, viewId)
+                    }
+                },
+                onSearch = {
+                    onSubmitHandler?.let {
+                        ModifierBuilder.resolveEventHandler(it, data, viewId)
+                    }
+                },
+                onSend = {
+                    onSubmitHandler?.let {
+                        ModifierBuilder.resolveEventHandler(it, data, viewId)
+                    }
+                }
+            )
+        }
+
         private fun buildContentPadding(json: JsonObject): PaddingValues? {
-            // Check for paddings (can be array or single number)
-            json.get("paddings")?.let { paddingsElement ->
-                // Single number
-                if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
-                    return PaddingValues(paddingsElement.asFloat.dp)
+            // paddings (array or single number)
+            json.get("paddings")?.let { element ->
+                if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
+                    return PaddingValues(element.asFloat.dp)
                 }
-                // Array
-                if (paddingsElement.isJsonArray) {
-                    val paddings = paddingsElement.asJsonArray
-                    return when (paddings.size()) {
-                        1 -> PaddingValues(paddings[0].asFloat.dp)
+                if (element.isJsonArray) {
+                    val arr = element.asJsonArray
+                    return when (arr.size()) {
+                        1 -> PaddingValues(arr[0].asFloat.dp)
                         2 -> PaddingValues(
-                            vertical = paddings[0].asFloat.dp,
-                            horizontal = paddings[1].asFloat.dp
+                            vertical = arr[0].asFloat.dp,
+                            horizontal = arr[1].asFloat.dp
                         )
                         4 -> PaddingValues(
-                            start = paddings[3].asFloat.dp,
-                            top = paddings[0].asFloat.dp,
-                            end = paddings[1].asFloat.dp,
-                            bottom = paddings[2].asFloat.dp
+                            start = arr[3].asFloat.dp,
+                            top = arr[0].asFloat.dp,
+                            end = arr[1].asFloat.dp,
+                            bottom = arr[2].asFloat.dp
                         )
                         else -> null
                     }
                 }
             }
 
-            // Check for padding (single value or array)
-            json.get("padding")?.let { paddingElement ->
-                if (paddingElement.isJsonPrimitive && paddingElement.asJsonPrimitive.isNumber) {
-                    return PaddingValues(paddingElement.asFloat.dp)
-                } else if (paddingElement.isJsonArray) {
-                    val paddings = paddingElement.asJsonArray
-                    return when (paddings.size()) {
-                        1 -> PaddingValues(paddings[0].asFloat.dp)
-                        2 -> PaddingValues(
-                            vertical = paddings[0].asFloat.dp,
-                            horizontal = paddings[1].asFloat.dp
-                        )
-                        4 -> PaddingValues(
-                            start = paddings[3].asFloat.dp,
-                            top = paddings[0].asFloat.dp,
-                            end = paddings[1].asFloat.dp,
-                            bottom = paddings[2].asFloat.dp
-                        )
-                        else -> null
-                    }
-                }
+            // fieldPadding (legacy)
+            json.get("fieldPadding")?.asFloat?.let {
+                return PaddingValues(it.dp)
             }
 
-            // Check for fieldPadding (legacy single value)
-            json.get("fieldPadding")?.asFloat?.let { padding ->
-                return PaddingValues(padding.dp)
+            // textPaddingLeft
+            json.get("textPaddingLeft")?.asFloat?.let { startPadding ->
+                return PaddingValues(start = startPadding.dp)
             }
 
-            // Return null to use default contentPadding
             return null
         }
+
     }
 }

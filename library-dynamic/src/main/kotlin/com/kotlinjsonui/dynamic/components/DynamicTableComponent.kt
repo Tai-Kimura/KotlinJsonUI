@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
@@ -42,6 +43,9 @@ class DynamicTableComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
+
             // Parse data binding for items
             val itemsBinding = when {
                 json.get("bind")?.asString?.contains("@{") == true -> {
@@ -121,7 +125,7 @@ class DynamicTableComponent {
             val cellTemplate = json.get("cell")?.asJsonObject
             
             // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
             
             // Create the table
             LazyColumn(

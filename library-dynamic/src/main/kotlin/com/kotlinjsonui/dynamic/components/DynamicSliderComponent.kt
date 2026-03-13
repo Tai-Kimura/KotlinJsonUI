@@ -3,31 +3,29 @@ package com.kotlinjsonui.dynamic.components
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import androidx.compose.ui.platform.LocalContext
 import kotlin.math.roundToInt
 
 /**
  * Dynamic Slider Component Converter
- * Converts JSON to Slider composable at runtime
- * 
- * Supported JSON attributes (matching Ruby implementation):
- * - value: Float or @{variable} for current value
- * - bind: @{variable} for two-way binding
+ * Converts JSON to Slider composable at runtime.
+ * Reference: slider_component.rb in kjui_tools.
+ *
+ * Supported JSON attributes:
+ * - value/bind: Float or @{variable} for current value
  * - minimumValue/min: Float minimum value (default 0)
  * - maximumValue/max: Float maximum value (default 100)
- * - step: Float step size for discrete slider
- * - onValueChange: String method name for change handler
- * - enabled: Boolean to enable/disable
- * - minimumTrackTintColor: String hex color for active track
- * - maximumTrackTintColor: String hex color for inactive track
- * - thumbTintColor: String hex color for thumb
- * - width/height: Number dimensions
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
+ * - step: Float step size for discrete slider (steps = ((max-min)/step) - 1)
+ * - onValueChange: @{handler} for change callback (updates binding + calls handler)
+ * - enabled: Boolean or @{variable} to enable/disable
+ * - thumbTintColor: Color for thumb
+ * - minimumTrackTintColor: Color for active track
+ * - maximumTrackTintColor: Color for inactive track
+ * - Modifiers: testTag, margins, size, alpha, clickable, padding, weight
  */
 class DynamicSliderComponent {
     companion object {
@@ -38,26 +36,20 @@ class DynamicSliderComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable
-            val bindingVariable = when {
-                json.get("value")?.isJsonPrimitive == true && 
-                json.get("value").asString.contains("@{") -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("value").asString)?.groupValues?.get(1)
-                }
-                json.get("bind")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
-                }
-                else -> null
-            }
-            
-            // Parse min/max values
-            val minValue = (json.get("minimumValue") ?: json.get("min"))?.asFloat ?: 0f
-            val maxValue = (json.get("maximumValue") ?: json.get("max"))?.asFloat ?: 100f
-            
-            // Get initial value
-            val initialValue = when {
+            // Parse binding variable from value or bind
+            val bindingVariable = extractBindingVariable(json, "value")
+                ?: extractBindingVariable(json, "bind")
+
+            // Parse min/max values (support both naming conventions)
+            val minValue = ResourceResolver.resolveFloat(json, "minimumValue", data)
+                ?: ResourceResolver.resolveFloat(json, "min", data)
+                ?: 0f
+            val maxValue = ResourceResolver.resolveFloat(json, "maximumValue", data)
+                ?: ResourceResolver.resolveFloat(json, "max", data)
+                ?: 100f
+
+            // Resolve current value
+            val currentValue = when {
                 bindingVariable != null -> {
                     when (val boundValue = data[bindingVariable]) {
                         is Number -> boundValue.toFloat()
@@ -65,34 +57,17 @@ class DynamicSliderComponent {
                         else -> minValue
                     }
                 }
-                json.get("value")?.isJsonPrimitive == true -> {
-                    val valueElement = json.get("value")
-                    when {
-                        valueElement.asJsonPrimitive.isNumber -> valueElement.asFloat
-                        valueElement.asJsonPrimitive.isString && 
-                        !valueElement.asString.contains("@{") -> 
-                            valueElement.asString.toFloatOrNull() ?: minValue
-                        else -> minValue
-                    }
+                json.has("value") -> {
+                    ResourceResolver.resolveFloat(json, "value", data, minValue) ?: minValue
                 }
                 else -> minValue
+            }.coerceIn(minValue, maxValue)
+
+            // State for slider value
+            var sliderValue by remember(currentValue, bindingVariable, data) {
+                mutableStateOf(currentValue)
             }
-            
-            // State for the slider value
-            var sliderValue by remember(initialValue, bindingVariable, data) { 
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        when (val boundValue = data[bindingVariable]) {
-                            is Number -> boundValue.toFloat().coerceIn(minValue, maxValue)
-                            is String -> boundValue.toFloatOrNull()?.coerceIn(minValue, maxValue) ?: minValue
-                            else -> minValue
-                        }
-                    } else {
-                        initialValue.coerceIn(minValue, maxValue)
-                    }
-                )
-            }
-            
+
             // Update value when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
@@ -103,92 +78,42 @@ class DynamicSliderComponent {
                     }
                 }
             }
-            
-            // Parse enabled state
-            val isEnabled = when {
-                json.get("enabled")?.isJsonPrimitive == true -> {
-                    val enabledValue = json.get("enabled")
-                    when {
-                        enabledValue.asJsonPrimitive.isBoolean -> enabledValue.asBoolean
-                        enabledValue.asJsonPrimitive.isString && 
-                        enabledValue.asString.contains("@{") -> {
-                            val pattern = "@\\{([^}]+)\\}".toRegex()
-                            val variable = pattern.find(enabledValue.asString)?.groupValues?.get(1)
-                            (data[variable] as? Boolean) ?: true
-                        }
-                        else -> true
-                    }
-                }
-                else -> true
-            }
-            
+
+            // Parse enabled state (supports @{binding})
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, true)
+
             // Calculate steps if specified
             val steps = json.get("step")?.asFloat?.let { step ->
                 if (step > 0) {
-                    ((maxValue - minValue) / step).roundToInt() - 1
+                    val calculated = ((maxValue - minValue) / step).roundToInt() - 1
+                    if (calculated > 0) calculated else 0
                 } else 0
             } ?: 0
-            
-            // Handle value change
+
+            // Handle value change: update binding + call onValueChange handler
+            val viewId = json.get("id")?.asString ?: "slider"
             val onValueChange: (Float) -> Unit = { newValue ->
                 sliderValue = newValue
-                
-                // Update bound variable if data binding is used
+
+                // Update bound variable
                 if (bindingVariable != null) {
-                    val updateData = data["updateData"]
-                    if (updateData is Function<*>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (updateData as (Map<String, Any>) -> Unit)(
-                                mapOf(bindingVariable to newValue.toDouble())
-                            )
-                        } catch (e: Exception) {
-                            // Update function doesn't match expected signature
-                        }
-                    }
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue.toDouble()))
                 }
-                
-                // Also call custom handler if specified
-                // onValueChange (camelCase) -> binding format only (@{functionName})
-                json.get("onValueChange")?.asString?.let { onValueChangeValue ->
-                    // Must be binding format
-                    if (onValueChangeValue.contains("@{")) {
-                        val pattern = "@\\{([^}]+)\\}".toRegex()
-                        val methodName = pattern.find(onValueChangeValue)?.groupValues?.get(1)
-                        methodName?.let { name ->
-                            val handler = data[name]
-                            if (handler is Function<*>) {
-                                try {
-                                    @Suppress("UNCHECKED_CAST")
-                                    (handler as (Float) -> Unit)(newValue)
-                                } catch (e: Exception) {
-                                    // Try with Double
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (handler as (Double) -> Unit)(newValue.toDouble())
-                                    } catch (e2: Exception) {
-                                        // Try without parameter
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (handler as () -> Unit)()
-                                        } catch (e3: Exception) {
-                                            // Handler doesn't match expected signature
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+
+                // Call onValueChange handler if specified
+                val handler = json.get("onValueChange")?.asString
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
             }
-            
+
             // Parse colors (supports @{binding})
             val thumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
-
             val activeTrackColor = ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
-
             val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
-            
+
             val colors = if (thumbColor != null || activeTrackColor != null || inactiveTrackColor != null) {
                 SliderDefaults.colors(
                     thumbColor = thumbColor ?: SliderDefaults.colors().thumbColor,
@@ -198,10 +123,12 @@ class DynamicSliderComponent {
             } else {
                 SliderDefaults.colors()
             }
-            
-            // Build modifier using helper (defaulting to fill width)
-            val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
-            
+
+            // Build modifier: testTag, margins, size, alpha, clickable, padding
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, defaultFillMaxWidth = true
+            )
+
             // Create the Slider
             Slider(
                 value = sliderValue,
@@ -212,6 +139,11 @@ class DynamicSliderComponent {
                 enabled = isEnabled,
                 colors = colors
             )
+        }
+
+        private fun extractBindingVariable(json: JsonObject, key: String): String? {
+            val value = json.get(key)?.asString ?: return null
+            return ModifierBuilder.extractBindingProperty(value)
         }
     }
 }

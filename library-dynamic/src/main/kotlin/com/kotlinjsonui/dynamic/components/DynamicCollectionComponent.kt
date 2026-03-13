@@ -61,6 +61,9 @@ class DynamicCollectionComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
+
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
             // Support both 'layout' and 'orientation' attributes for horizontal/vertical
@@ -157,7 +160,7 @@ class DynamicCollectionComponent {
             val columnSpacing = (json.get("columnSpacing")?.asFloat ?: defaultSpacing).dp
 
             // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
             // Get cell height/width if specified
             val cellHeight = json.get("cellHeight")?.asFloat?.dp
@@ -312,6 +315,7 @@ class DynamicCollectionComponent {
             cellHeight: androidx.compose.ui.unit.Dp?,
             gravityAlignment: Alignment
         ) {
+
             val arrangement = when (flowAlignment) {
                 "center" -> Arrangement.Center
                 "trailing", "end" -> Arrangement.End
@@ -399,6 +403,7 @@ class DynamicCollectionComponent {
             defaultColumns: Int,
             gravityAlignment: Alignment
         ) {
+
             when {
                 // If we have sections and data source
                 sections != null && collectionDataSource != null -> {
@@ -565,6 +570,7 @@ class DynamicCollectionComponent {
             index: Int,
             data: Map<String, Any>
         ) {
+
             if (cellClassName == null) {
                 // Default cell
                 Card(

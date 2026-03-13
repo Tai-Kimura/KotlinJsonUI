@@ -12,31 +12,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic Radio Component Converter
- * Converts JSON to RadioButton/RadioGroup composable at runtime
+ * Converts JSON to RadioButton/RadioGroup composable at runtime.
+ * Reference: radio_component.rb in kjui_tools.
  *
- * Supported JSON attributes (matching Ruby implementation):
+ * Three modes:
+ * 1. Radio group with items array (highest priority)
+ * 2. Individual radio item (has group or text without items/options)
+ * 3. Radio group with options (static array or @{binding})
+ *
+ * Supported JSON attributes:
  * - bind: @{variable} for selected value binding
  * - options: Array of options or @{variable} for dynamic options
  * - items: Array of items for radio group
- * - selectedValue: @{variable} for selected value in group
- * - onValueChange: String method name for change handler
- * - selectedColor: String hex color for selected state
- * - unselectedColor: String hex color for unselected state
- * - icon/selectedIcon: String icon names for custom icons
- * - group: String group identifier
- * - id: String unique identifier
- * - text: String label text
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
+ * - selectedValue: @{variable} for selected value in items mode
+ * - onValueChange: @{handler} for change callback
+ * - selectedColor/unselectedColor: Colors for RadioButtonDefaults.colors
+ * - icon/selectedIcon: Custom icon names
+ * - group: Group identifier for individual radio item
+ * - text: Label text
+ * - fontColor/textColor: Label text color
+ * - Modifiers: testTag, margins, alpha, padding, weight
  */
 class DynamicRadioComponent {
     companion object {
@@ -49,150 +52,75 @@ class DynamicRadioComponent {
                 // Handle radio group with items (highest priority)
                 json.has("items") -> createRadioGroupWithItems(json, data)
                 // Handle individual radio item
-                json.has("group") || json.has("text") -> createRadioItem(json, data)
+                json.has("group") || (json.has("text") && !json.has("options")) -> createRadioItem(json, data)
                 // Handle radio group with options
                 else -> createRadioGroup(json, data)
             }
         }
+
+        // ── Radio group with options (static array or @{binding}) ──
 
         @Composable
         private fun createRadioGroup(json: JsonObject, data: Map<String, Any>) {
             val context = LocalContext.current
 
             // Parse binding variable
-            val bindingVariable = json.get("bind")?.asString?.let { bind ->
-                if (bind.contains("@{")) {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(bind)?.groupValues?.get(1)
-                } else null
-            }
+            val bindingVariable = extractBindingVariable(json, "bind")
 
-            // Get initial selected value
-            val initialSelected = if (bindingVariable != null) {
+            // Get selected value from data
+            val currentSelected = if (bindingVariable != null) {
                 (data[bindingVariable] as? String) ?: ""
-            } else {
-                ""
+            } else ""
+
+            var selectedValue by remember(currentSelected, bindingVariable, data) {
+                mutableStateOf(currentSelected)
             }
 
-            // State for the selected value
-            var selectedValue by remember(initialSelected, bindingVariable, data) {
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        (data[bindingVariable] as? String) ?: ""
-                    } else {
-                        initialSelected
-                    }
-                )
-            }
-
-            // Update selected state when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     selectedValue = (data[bindingVariable] as? String) ?: ""
                 }
             }
 
-            // Parse options
-            val options = when {
-                json.get("options")?.isJsonArray == true -> {
-                    json.get("options").asJsonArray.map { element ->
-                        when {
-                            element.isJsonObject -> {
-                                val obj = element.asJsonObject
-                                Pair(
-                                    obj.get("value")?.asString ?: "",
-                                    obj.get("label")?.asString ?: ""
-                                )
-                            }
+            // Parse options: static array or @{binding}
+            val options = parseOptions(json, data)
 
-                            element.isJsonPrimitive -> {
-                                val value = element.asString
-                                Pair(value, value)
-                            }
+            // Parse colors (supports @{binding})
+            val selectedColor = ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
+            val unselectedColor = ColorParser.parseColorWithBinding(json, "unselectedColor", data, context)
 
-                            else -> Pair("", "")
-                        }
-                    }
-                }
-
-                json.get("options")?.asString?.contains("@{") == true -> {
-                    // Dynamic options from data binding
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    val variable = pattern.find(json.get("options").asString)?.groupValues?.get(1)
-
-                    @Suppress("UNCHECKED_CAST")
-                    val dynamicOptions = data[variable] as? List<String> ?: emptyList()
-                    dynamicOptions.map { Pair(it, it) }
-                }
-
-                else -> emptyList()
+            val colors = if (selectedColor != null || unselectedColor != null) {
+                RadioButtonDefaults.colors(
+                    selectedColor = selectedColor ?: RadioButtonDefaults.colors().selectedColor,
+                    unselectedColor = unselectedColor ?: RadioButtonDefaults.colors().unselectedColor
+                )
+            } else {
+                RadioButtonDefaults.colors()
             }
 
             // Handle value change
+            val viewId = json.get("id")?.asString ?: "radio"
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 
-                // Call custom handler if specified
-                // onValueChange (camelCase) -> binding format only (@{functionName})
-                val onValueChangeHandled = json.get("onValueChange")?.asString?.let { onValueChangeValue ->
-                    // Must be binding format
-                    if (onValueChangeValue.contains("@{")) {
-                        val pattern = "@\\{([^}]+)\\}".toRegex()
-                        val methodName = pattern.find(onValueChangeValue)?.groupValues?.get(1)
-                        methodName?.let { name ->
-                            val handler = data[name]
-                            if (handler is Function<*>) {
-                                try {
-                                    @Suppress("UNCHECKED_CAST")
-                                    (handler as (String) -> Unit)(newValue)
-                                    true
-                                } catch (e: Exception) {
-                                    // Try without parameter
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (handler as () -> Unit)()
-                                        true
-                                    } catch (e2: Exception) {
-                                        false
-                                    }
-                                }
-                            } else false
-                        } ?: false
-                    } else false
-                } ?: false
+                // Update bound variable
+                if (bindingVariable != null) {
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue))
+                }
 
-                if (!onValueChangeHandled) {
-                    // Update bound variable if no custom handler
-                    if (bindingVariable != null) {
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(
-                                    mapOf(bindingVariable to newValue)
-                                )
-                            } catch (e: Exception) {
-                                // Update function doesn't match expected signature
-                            }
-                        }
-                    }
+                // Call onValueChange handler if specified
+                val handler = json.get("onValueChange")?.asString
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
             }
 
-            // Parse colors (supports @{binding})
-            val selectedColor = json.get("selectedColor")?.asString?.let {
-                ColorParser.parseColorStringWithBinding(it, data, context)
-            }
+            // Build modifier
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
-            val unselectedColor = json.get("unselectedColor")?.asString?.let {
-                ColorParser.parseColorStringWithBinding(it, data, context)
-            }
-
-            val colors = RadioButtonDefaults.colors()
-
-            Column(
-                modifier = buildModifier(json)
-            ) {
+            Column(modifier = modifier) {
                 options.forEach { (value, label) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -212,6 +140,8 @@ class DynamicRadioComponent {
             }
         }
 
+        // ── Individual radio item (group/text mode) ──
+
         @Composable
         private fun createRadioItem(json: JsonObject, data: Map<String, Any>) {
             val context = LocalContext.current
@@ -219,7 +149,7 @@ class DynamicRadioComponent {
             val id = json.get("id")?.asString ?: "radio_${System.currentTimeMillis()}"
             val text = json.get("text")?.asString ?: ""
 
-            // Variable name for selected state
+            // Variable name for selected state based on group
             val selectedVar = if (group.lowercase() != "default") {
                 "selected${group.replaceFirstChar { it.uppercase() }}"
             } else {
@@ -229,13 +159,22 @@ class DynamicRadioComponent {
             // Get current selected value
             val isSelected = (data[selectedVar] as? String) == id
 
+            // Build modifier
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = buildModifier(json)
+                modifier = modifier
             ) {
-                // Check for custom icons
                 val icon = json.get("icon")?.asString
                 val selectedIcon = json.get("selectedIcon")?.asString
+
+                // Update function for selection
+                val onSelect: () -> Unit = {
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(selectedVar to id))
+                }
 
                 when {
                     // Standard radio button (circle icons or no icons)
@@ -243,19 +182,7 @@ class DynamicRadioComponent {
                             (selectedIcon == "checkmark.circle.fill" || selectedIcon == null) -> {
                         RadioButton(
                             selected = isSelected,
-                            onClick = {
-                                val updateData = data["updateData"]
-                                if (updateData is Function<*>) {
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (updateData as (Map<String, Any>) -> Unit)(
-                                            mapOf(selectedVar to id)
-                                        )
-                                    } catch (e: Exception) {
-                                        // Update function doesn't match expected signature
-                                    }
-                                }
-                            }
+                            onClick = onSelect
                         )
                     }
                     // Square checkbox appearance
@@ -263,19 +190,7 @@ class DynamicRadioComponent {
                             (selectedIcon == "checkmark.square.fill" || selectedIcon == null) -> {
                         Checkbox(
                             checked = isSelected,
-                            onCheckedChange = {
-                                val updateData = data["updateData"]
-                                if (updateData is Function<*>) {
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (updateData as (Map<String, Any>) -> Unit)(
-                                            mapOf(selectedVar to id)
-                                        )
-                                    } catch (e: Exception) {
-                                        // Update function doesn't match expected signature
-                                    }
-                                }
-                            }
+                            onCheckedChange = { onSelect() }
                         )
                     }
                     // Custom icons
@@ -283,28 +198,14 @@ class DynamicRadioComponent {
                         val iconVector = mapIconName(icon ?: "star")
                         val selectedIconVector = mapIconName(selectedIcon ?: "star.fill")
 
-                        IconButton(
-                            onClick = {
-                                val updateData = data["updateData"]
-                                if (updateData is Function<*>) {
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (updateData as (Map<String, Any>) -> Unit)(
-                                            mapOf(selectedVar to id)
-                                        )
-                                    } catch (e: Exception) {
-                                        // Update function doesn't match expected signature
-                                    }
-                                }
-                            }
-                        ) {
+                        IconButton(onClick = onSelect) {
                             Icon(
                                 imageVector = if (isSelected) selectedIconVector else iconVector,
                                 contentDescription = text,
                                 tint = if (isSelected) {
-                                    json.get("selectedColor")?.asString?.let {
-                                        ColorParser.parseColorStringWithBinding(it, data, context)
-                                    } ?: MaterialTheme.colorScheme.primary
+                                    ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
+                                        ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+                                        ?: MaterialTheme.colorScheme.primary
                                 } else {
                                     Color.Gray
                                 }
@@ -315,103 +216,73 @@ class DynamicRadioComponent {
                     else -> {
                         RadioButton(
                             selected = isSelected,
-                            onClick = {
-                                val updateData = data["updateData"]
-                                if (updateData is Function<*>) {
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (updateData as (Map<String, Any>) -> Unit)(
-                                            mapOf(selectedVar to id)
-                                        )
-                                    } catch (e: Exception) {
-                                        // Update function doesn't match expected signature
-                                    }
-                                }
-                            }
+                            onClick = onSelect
                         )
                     }
                 }
 
-                // Add label text (supports @{binding})
+                // Add label text
                 if (text.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
                     val textColor =
-                        (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            ColorParser.parseColorStringWithBinding(it, data, context)
-                        } ?: Color.Black
+                        ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                            ?: ColorParser.parseColorWithBinding(json, "textColor", data, context)
+                            ?: Color.Black
                     Text(text = text, color = textColor)
                 }
             }
         }
+
+        // ── Radio group with items array ──
 
         @Composable
         private fun createRadioGroupWithItems(json: JsonObject, data: Map<String, Any>) {
             val context = LocalContext.current
             val items = json.get("items")?.asJsonArray?.map { it.asString } ?: emptyList()
 
-            // Parse selected value binding
-            val selectedValueStr = json.get("selectedValue")?.asString
-            val bindingVariable = if (selectedValueStr?.contains("@{") == true) {
-                val pattern = "@\\{([^}]+)\\}".toRegex()
-                pattern.find(selectedValueStr)?.groupValues?.get(1)
-            } else null
+            // Parse selected value binding from selectedValue attribute
+            val bindingVariable = extractBindingVariable(json, "selectedValue")
 
-            // Get initial selected value
-            val initialSelected = if (bindingVariable != null) {
+            val currentSelected = if (bindingVariable != null) {
                 (data[bindingVariable] as? String) ?: ""
-            } else {
-                ""
+            } else ""
+
+            var selectedValue by remember(currentSelected, bindingVariable, data) {
+                mutableStateOf(currentSelected)
             }
 
-            // State for the selected value
-            var selectedValue by remember(initialSelected, bindingVariable, data) {
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        (data[bindingVariable] as? String) ?: ""
-                    } else {
-                        initialSelected
-                    }
-                )
-            }
-
-            // Update selected state when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     selectedValue = (data[bindingVariable] as? String) ?: ""
                 }
             }
 
+            // Handle value change
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
                 if (bindingVariable != null) {
-                    val updateData = data["updateData"]
-                    if (updateData is Function<*>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (updateData as (Map<String, Any>) -> Unit)(
-                                mapOf(bindingVariable to newValue)
-                            )
-                        } catch (e: Exception) {
-                            // Update function doesn't match expected signature
-                        }
-                    }
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue))
                 }
             }
 
-            Column(
-                modifier = buildModifier(json)
-            ) {
-                // Add label if present (supports @{binding})
+            // Build modifier
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
+            // Parse text color
+            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "textColor", data, context)
+                ?: Color.Black
+
+            Column(modifier = modifier) {
+                // Add label if present
                 json.get("text")?.asString?.let { label ->
-                    val textColor =
-                        (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                            ColorParser.parseColorStringWithBinding(it, data, context)
-                        } ?: Color.Black
                     Text(text = label, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Generate radio items (supports @{binding})
+                // Generate radio items
                 items.forEach { item ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -424,14 +295,49 @@ class DynamicRadioComponent {
                             onClick = { onValueChange(item) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        val textColor =
-                            (json.get("fontColor") ?: json.get("textColor"))?.asString?.let {
-                                ColorParser.parseColorStringWithBinding(it, data, context)
-                            } ?: Color.Black
                         Text(text = item, color = textColor)
                     }
                 }
             }
+        }
+
+        // ── Helpers ──
+
+        private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<Pair<String, String>> {
+            val optionsElement = json.get("options") ?: return emptyList()
+
+            return when {
+                optionsElement.isJsonArray -> {
+                    optionsElement.asJsonArray.map { element ->
+                        when {
+                            element.isJsonObject -> {
+                                val obj = element.asJsonObject
+                                Pair(
+                                    obj.get("value")?.asString ?: "",
+                                    obj.get("label")?.asString ?: ""
+                                )
+                            }
+                            element.isJsonPrimitive -> {
+                                val value = element.asString
+                                Pair(value, value)
+                            }
+                            else -> Pair("", "")
+                        }
+                    }
+                }
+                optionsElement.isJsonPrimitive && ModifierBuilder.isBinding(optionsElement.asString) -> {
+                    val variable = ModifierBuilder.extractBindingProperty(optionsElement.asString)
+                    @Suppress("UNCHECKED_CAST")
+                    val dynamicOptions = variable?.let { data[it] as? List<String> } ?: emptyList()
+                    dynamicOptions.map { Pair(it, it) }
+                }
+                else -> emptyList()
+            }
+        }
+
+        private fun extractBindingVariable(json: JsonObject, key: String): String? {
+            val value = json.get(key)?.asString ?: return null
+            return ModifierBuilder.extractBindingProperty(value)
         }
 
         private fun mapIconName(iconName: String): ImageVector {
@@ -446,74 +352,6 @@ class DynamicRadioComponent {
                 "checkmark.square.fill" -> Icons.Default.CheckBox
                 else -> Icons.Outlined.Star
             }
-        }
-
-        private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
-
-            // Apply margins first
-            json.get("margins")?.asJsonArray?.let { margins ->
-                modifier = when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
-
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
-
-                    else -> modifier
-                }
-            }
-
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat
-                ?: json.get("endMargin")?.asFloat ?: 0f
-
-            if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier = modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
-                )
-            }
-
-            // Apply padding
-            json.get("paddings")?.let { paddingsElement ->
-                if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
-                    modifier = modifier.padding(paddingsElement.asFloat.dp)
-                } else if (paddingsElement.isJsonArray) {
-                    val paddings = paddingsElement.asJsonArray
-                    modifier = when (paddings.size()) {
-                        1 -> modifier.padding(paddings[0].asFloat.dp)
-                        2 -> modifier.padding(
-                            vertical = paddings[0].asFloat.dp,
-                            horizontal = paddings[1].asFloat.dp
-                        )
-                        4 -> modifier.padding(
-                            top = paddings[0].asFloat.dp,
-                            end = paddings[1].asFloat.dp,
-                            bottom = paddings[2].asFloat.dp,
-                            start = paddings[3].asFloat.dp
-                        )
-                        else -> modifier
-                    }
-                }
-            } ?: json.get("padding")?.asFloat?.let { padding ->
-                modifier = modifier.padding(padding.dp)
-            }
-
-            return modifier
         }
     }
 }

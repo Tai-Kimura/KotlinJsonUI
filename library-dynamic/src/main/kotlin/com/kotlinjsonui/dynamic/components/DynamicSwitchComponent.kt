@@ -1,31 +1,40 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import androidx.compose.ui.platform.LocalContext
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
 /**
  * Dynamic Switch Component Converter
- * Converts JSON to Switch composable at runtime
+ * Converts JSON to Switch composable at runtime.
  *
- * Switch is the primary component name. Toggle is supported as an alias for backward compatibility.
+ * Reference: switch_component.rb in kjui_tools.
  *
- * Supported JSON attributes (matching Ruby implementation):
- * - isOn: Boolean or @{variable} for checked state
- * - bind: @{variable} for two-way binding
- * - onValueChange: String method name for change handler
- * - enabled: Boolean to enable/disable
- * - onTintColor: String hex color for checked track
+ * Switch is the primary component name. Toggle is supported as an alias
+ * for backward compatibility.
+ *
+ * State binding priority: isOn > value > checked > bind
+ *
+ * Supported JSON attributes:
+ * - isOn/value/checked: Boolean or @{variable} for checked state
+ * - bind: @{variable} for two-way binding (lowest priority)
+ * - onValueChange/onToggle: @{functionName} for change handler (binding format only)
+ * - enabled: Boolean or @{variable} to enable/disable
+ * - onTintColor/tint/tintColor: String hex color for checked track
  * - thumbTintColor: String hex color for checked thumb
+ * - labelAttributes: Object with text/fontSize/fontColor/font for labeled switch
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
  */
@@ -34,155 +43,74 @@ class DynamicSwitchComponent {
         @Composable
         fun create(
             json: JsonObject,
-            data: Map<String, Any> = emptyMap()
+            data: Map<String, Any> = emptyMap(),
+            parentType: String? = null
+        ) {
+            val hasLabel = json.has("labelAttributes")
+            if (hasLabel) {
+                createWithLabel(json, data, parentType)
+            } else {
+                createSwitchOnly(json, data, parentType)
+            }
+        }
+
+        @Composable
+        private fun createSwitchOnly(
+            json: JsonObject,
+            data: Map<String, Any>,
+            parentType: String?
         ) {
             val context = LocalContext.current
 
-            // Parse checked state with data binding
-            val bindingVariable = when {
-                json.get("isOn")?.isJsonPrimitive == true &&
-                        json.get("isOn").asString.contains("@{") -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("isOn").asString)?.groupValues?.get(1)
-                }
+            // Parse binding variable (priority: isOn > value > checked > bind)
+            val bindingVariable = resolveBindingVariable(json)
 
-                json.get("bind")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
-                }
-
-                else -> null
-            }
-
-            // Get initial checked state
-            val initialChecked = when {
-                bindingVariable != null -> {
-                    (data[bindingVariable] as? Boolean) ?: false
-                }
-
-                json.get("isOn")?.isJsonPrimitive == true -> {
-                    when {
-                        json.get("isOn").asJsonPrimitive.isBoolean ->
-                            json.get("isOn").asBoolean
-
-                        json.get("isOn").asJsonPrimitive.isString &&
-                                !json.get("isOn").asString.contains("@{") ->
-                            json.get("isOn").asString.toBoolean()
-
-                        else -> false
-                    }
-                }
-
-                else -> false
-            }
+            // Get checked state from binding or direct value
+            val checked = resolveCheckedState(json, data, bindingVariable)
 
             // State for the switch
-            var checked by remember(initialChecked, bindingVariable, data) {
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        (data[bindingVariable] as? Boolean) ?: false
-                    } else {
-                        initialChecked
-                    }
-                )
+            var checkedState by remember(checked, bindingVariable, data) {
+                mutableStateOf(checked)
             }
 
             // Update checked state when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
-                    checked = (data[bindingVariable] as? Boolean) ?: false
+                    checkedState = (data[bindingVariable] as? Boolean) ?: false
                 }
             }
 
-            // Parse enabled state
-            val isEnabled = when {
-                json.get("enabled")?.isJsonPrimitive == true -> {
-                    val enabledValue = json.get("enabled")
-                    when {
-                        enabledValue.asJsonPrimitive.isBoolean -> enabledValue.asBoolean
-                        enabledValue.asJsonPrimitive.isString &&
-                                enabledValue.asString.contains("@{") -> {
-                            val pattern = "@\\{([^}]+)\\}".toRegex()
-                            val variable = pattern.find(enabledValue.asString)?.groupValues?.get(1)
-                            (data[variable] as? Boolean) ?: true
-                        }
+            // Enabled state (supports @{binding})
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
 
-                        else -> true
-                    }
-                }
-
-                else -> true
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
+                checkedState = newValue
             }
 
-            // Handle value change
-            val onCheckedChange: (Boolean) -> Unit = { newValue ->
-                checked = newValue
+            // Build modifier: testTag, margins, alpha, padding
+            var modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
 
-                // Update bound variable if data binding is used
-                if (bindingVariable != null) {
-                    val updateData = data["updateData"]
-                    if (updateData is Function<*>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (updateData as (Map<String, Any>) -> Unit)(
-                                mapOf(bindingVariable to newValue)
-                            )
-                        } catch (e: Exception) {
-                            // Update function doesn't match expected signature
-                        }
-                    }
-                }
+            // Apply weight if in Row or Column
+            val weight = ModifierBuilder.getWeight(json)
 
-                // Also call custom handler if specified
-                // onValueChange (camelCase) -> binding format only (@{functionName})
-                json.get("onValueChange")?.asString?.let { onValueChangeValue ->
-                    // Must be binding format
-                    if (onValueChangeValue.contains("@{")) {
-                        val pattern = "@\\{([^}]+)\\}".toRegex()
-                        val methodName = pattern.find(onValueChangeValue)?.groupValues?.get(1)
-                        methodName?.let { name ->
-                            val handler = data[name]
-                            if (handler is Function<*>) {
-                                try {
-                                    @Suppress("UNCHECKED_CAST")
-                                    (handler as (Boolean) -> Unit)(newValue)
-                                } catch (e: Exception) {
-                                    // Try without parameter
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (handler as () -> Unit)()
-                                    } catch (e2: Exception) {
-                                        // Handler doesn't match expected signature
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Parse colors (supports @{binding})
+            // Colors: onTintColor/tint/tintColor -> checkedTrackColor, thumbTintColor -> checkedThumbColor
             val checkedTrackColor = ColorParser.parseColorWithBinding(json, "onTintColor", data, context)
-
+                ?: ColorParser.parseColorWithBinding(json, "tint", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
             val checkedThumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
 
             val colors = if (checkedTrackColor != null || checkedThumbColor != null) {
                 SwitchDefaults.colors(
-                    checkedTrackColor = checkedTrackColor
-                        ?: SwitchDefaults.colors().checkedTrackColor,
-                    checkedThumbColor = checkedThumbColor
-                        ?: SwitchDefaults.colors().checkedThumbColor
+                    checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
+                    checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor
                 )
             } else {
                 SwitchDefaults.colors()
             }
 
-            // Build modifier
-            val modifier = buildModifier(json)
-
-            // Create the Switch
             Switch(
-                checked = checked,
+                checked = checkedState,
                 onCheckedChange = onCheckedChange,
                 modifier = modifier,
                 enabled = isEnabled,
@@ -190,72 +118,171 @@ class DynamicSwitchComponent {
             )
         }
 
-        private fun buildModifier(json: JsonObject): Modifier {
-            var modifier: Modifier = Modifier
+        @Composable
+        private fun createWithLabel(
+            json: JsonObject,
+            data: Map<String, Any>,
+            parentType: String?
+        ) {
+            val context = LocalContext.current
+            val labelAttrs = json.getAsJsonObject("labelAttributes")
 
-            // Apply margins first
-            json.get("margins")?.asJsonArray?.let { margins ->
-                modifier = when (margins.size()) {
-                    1 -> modifier.padding(margins[0].asFloat.dp)
-                    2 -> modifier.padding(
-                        vertical = margins[0].asFloat.dp,
-                        horizontal = margins[1].asFloat.dp
-                    )
+            // Parse binding variable (priority: isOn > value > checked > bind)
+            val bindingVariable = resolveBindingVariable(json)
 
-                    4 -> modifier.padding(
-                        top = margins[0].asFloat.dp,
-                        end = margins[1].asFloat.dp,
-                        bottom = margins[2].asFloat.dp,
-                        start = margins[3].asFloat.dp
-                    )
+            // Get checked state from binding or direct value
+            val checked = resolveCheckedState(json, data, bindingVariable)
 
-                    else -> modifier
+            // State for the switch
+            var checkedState by remember(checked, bindingVariable, data) {
+                mutableStateOf(checked)
+            }
+
+            // Update checked state when data changes
+            LaunchedEffect(data, bindingVariable) {
+                if (bindingVariable != null) {
+                    checkedState = (data[bindingVariable] as? Boolean) ?: false
                 }
             }
 
-            // Handle individual margin properties
-            val topMargin = json.get("topMargin")?.asFloat ?: 0f
-            val bottomMargin = json.get("bottomMargin")?.asFloat ?: 0f
-            val leftMargin = json.get("leftMargin")?.asFloat
-                ?: json.get("startMargin")?.asFloat ?: 0f
-            val rightMargin = json.get("rightMargin")?.asFloat
-                ?: json.get("endMargin")?.asFloat ?: 0f
+            // Build onCheckedChange handler
+            val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
+                checkedState = newValue
+            }
 
-            if (topMargin > 0 || bottomMargin > 0 || leftMargin > 0 || rightMargin > 0) {
-                modifier = modifier.padding(
-                    top = topMargin.dp,
-                    bottom = bottomMargin.dp,
-                    start = leftMargin.dp,
-                    end = rightMargin.dp
+            // Build modifier for Row container: testTag, margins, alpha, padding
+            val rowModifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = rowModifier
+            ) {
+                // Label Text with weight(1f)
+                val labelText = labelAttrs?.get("text")?.asString ?: ""
+                val fontSize = labelAttrs?.get("fontSize")?.asFloat
+                val fontColor = labelAttrs?.get("fontColor")?.asString?.let {
+                    ColorParser.parseColorStringWithBinding(it, data, context)
+                }
+                val fontWeightValue = when (labelAttrs?.get("font")?.asString?.lowercase()) {
+                    "bold" -> FontWeight.Bold
+                    else -> FontWeight.Normal
+                }
+
+                Text(
+                    text = labelText,
+                    modifier = Modifier.weight(1f),
+                    fontSize = fontSize?.sp ?: 16.sp,
+                    color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
+                    fontWeight = fontWeightValue
+                )
+
+                // Colors for switch
+                val checkedTrackColor = ColorParser.parseColorWithBinding(json, "onTintColor", data, context)
+                    ?: ColorParser.parseColorWithBinding(json, "tint", data, context)
+                    ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+                val checkedThumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
+
+                val colors = if (checkedTrackColor != null || checkedThumbColor != null) {
+                    SwitchDefaults.colors(
+                        checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
+                        checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor
+                    )
+                } else {
+                    SwitchDefaults.colors()
+                }
+
+                // Enabled state (supports @{binding})
+                val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+
+                Switch(
+                    checked = checkedState,
+                    onCheckedChange = onCheckedChange,
+                    enabled = isEnabled,
+                    colors = colors
                 )
             }
+        }
 
-            // Apply padding
-            json.get("paddings")?.let { paddingsElement ->
-                if (paddingsElement.isJsonPrimitive && paddingsElement.asJsonPrimitive.isNumber) {
-                    modifier = modifier.padding(paddingsElement.asFloat.dp)
-                } else if (paddingsElement.isJsonArray) {
-                    val paddings = paddingsElement.asJsonArray
-                    modifier = when (paddings.size()) {
-                        1 -> modifier.padding(paddings[0].asFloat.dp)
-                        2 -> modifier.padding(
-                            vertical = paddings[0].asFloat.dp,
-                            horizontal = paddings[1].asFloat.dp
-                        )
-                        4 -> modifier.padding(
-                            top = paddings[0].asFloat.dp,
-                            end = paddings[1].asFloat.dp,
-                            bottom = paddings[2].asFloat.dp,
-                            start = paddings[3].asFloat.dp
-                        )
-                        else -> modifier
-                    }
-                }
-            } ?: json.get("padding")?.asFloat?.let { padding ->
-                modifier = modifier.padding(padding.dp)
+        // ── Helper Functions ──
+
+        /**
+         * Resolve the binding variable name from JSON attributes.
+         * Priority: isOn > value > checked > bind
+         */
+        private fun resolveBindingVariable(json: JsonObject): String? {
+            // Check isOn, value, checked in priority order
+            val stateAttr = json.get("isOn") ?: json.get("value") ?: json.get("checked")
+            if (stateAttr != null && stateAttr.isJsonPrimitive && stateAttr.asJsonPrimitive.isString) {
+                ModifierBuilder.extractBindingProperty(stateAttr.asString)?.let { return it }
             }
 
-            return modifier
+            // Fall back to bind
+            json.get("bind")?.asString?.let { bind ->
+                ModifierBuilder.extractBindingProperty(bind)?.let { return it }
+            }
+
+            return null
+        }
+
+        /**
+         * Resolve the current checked state from JSON and data.
+         */
+        private fun resolveCheckedState(
+            json: JsonObject,
+            data: Map<String, Any>,
+            bindingVariable: String?
+        ): Boolean {
+            if (bindingVariable != null) {
+                return (data[bindingVariable] as? Boolean) ?: false
+            }
+
+            // Direct value from isOn/value/checked
+            val stateAttr = json.get("isOn") ?: json.get("value") ?: json.get("checked")
+            if (stateAttr != null && stateAttr.isJsonPrimitive) {
+                val p = stateAttr.asJsonPrimitive
+                if (p.isBoolean) return p.asBoolean
+                if (p.isString && !p.asString.contains("@{")) {
+                    return p.asString.toBoolean()
+                }
+            }
+
+            return false
+        }
+
+        /**
+         * Build the onCheckedChange callback.
+         * Updates bound variable via data["updateData"] and calls onValueChange/onToggle handler.
+         */
+        private fun buildOnCheckedChange(
+            json: JsonObject,
+            data: Map<String, Any>,
+            bindingVariable: String?,
+            updateState: (Boolean) -> Unit
+        ): (Boolean) -> Unit = { newValue ->
+            updateState(newValue)
+
+            // Update bound variable via data["updateData"]
+            if (bindingVariable != null) {
+                val updateData = data["updateData"]
+                if (updateData is Function<*>) {
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        (updateData as (Map<String, Any>) -> Unit)(
+                            mapOf(bindingVariable to newValue)
+                        )
+                    } catch (_: Exception) {
+                        // Update function doesn't match expected signature
+                    }
+                }
+            }
+
+            // Call onValueChange/onToggle handler (binding format only)
+            val handler = json.get("onValueChange")?.asString
+                ?: json.get("onToggle")?.asString
+            if (handler != null && ModifierBuilder.isBinding(handler)) {
+                val viewId = json.get("id")?.asString ?: "switch"
+                ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+            }
         }
     }
 }

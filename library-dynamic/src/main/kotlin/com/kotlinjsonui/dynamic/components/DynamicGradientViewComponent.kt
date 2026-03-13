@@ -9,29 +9,35 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
-import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
-import androidx.compose.ui.platform.LocalContext
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 
 /**
  * Dynamic GradientView Component Converter
- * Converts JSON to Box with gradient background composable at runtime
- * 
- * Supported JSON attributes (matching Ruby implementation):
- * - colors/items: Array of color strings for gradient
+ * Converts JSON to Box with gradient background composable at runtime.
+ * Reference: gradientview_component.rb in kjui_tools.
+ *
+ * Supported JSON attributes:
+ * - colors/items: Array of color strings for gradient (supports @{binding})
  * - orientation: "horizontal" | "vertical" | "diagonal" gradient direction
  * - startPoint/endPoint: Alternative to orientation (top/bottom, left/right, etc.)
- * - cornerRadius: Float corner radius
- * - child: JsonObject or Array of child components
- * - width/height: Number dimensions
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
- * 
- * Note: Defaults to vertical gradient from black to white if no colors specified
+ * - cornerRadius: Float corner radius (applies clip)
+ * - child/children: Child components to render inside gradient
+ * - Standard modifier attributes (padding, margins, alpha, onClick, etc.)
+ *
+ * Gradient types:
+ * - horizontal → Brush.horizontalGradient
+ * - vertical → Brush.verticalGradient
+ * - diagonal/other → Brush.linearGradient
+ *
+ * Defaults to vertical gradient from black to white if no colors specified.
+ *
+ * Modifier order: testTag → margins → size → alpha → clickable → padding + gradient background
  */
 class DynamicGradientViewComponent {
     companion object {
@@ -45,7 +51,7 @@ class DynamicGradientViewComponent {
 
             val context = LocalContext.current
 
-            // Parse gradient colors (supports @{binding})
+            // Parse gradient colors from 'colors' or 'items' array
             val colorsElement = json.get("colors") ?: json.get("items")
             val colors = when {
                 colorsElement?.isJsonArray == true -> {
@@ -56,97 +62,120 @@ class DynamicGradientViewComponent {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
                     val variable = pattern.find(colorsElement.asString)?.groupValues?.get(1)
                     if (variable != null) {
-                        when (val colorList = data[variable]) {
-                            is List<*> -> colorList.mapNotNull { colorStr ->
-                                ColorParser.parseColorStringWithBinding(colorStr?.toString(), data, context)
-                            }
-                            is Array<*> -> colorList.mapNotNull { colorStr ->
-                                ColorParser.parseColorStringWithBinding(colorStr?.toString(), data, context)
-                            }
-                            else -> listOf(Color.Black, Color.White)
-                        }
+                        resolveColorList(data[variable], data, context)
                     } else {
-                        listOf(Color.Black, Color.White)
+                        DEFAULT_COLORS
                     }
                 }
-                else -> listOf(Color.Black, Color.White) // Default gradient
+                else -> DEFAULT_COLORS
             }
-            
-            // Determine gradient type
-            val gradientBrush = when {
-                json.has("orientation") -> {
-                    when (json.get("orientation").asString) {
-                        "horizontal" -> Brush.horizontalGradient(colors)
-                        "vertical" -> Brush.verticalGradient(colors)
-                        "diagonal" -> Brush.linearGradient(
-                            colors = colors,
-                            start = Offset(0f, 0f),
-                            end = Offset.Infinite
-                        )
-                        else -> Brush.verticalGradient(colors)
-                    }
-                }
-                json.has("startPoint") && json.has("endPoint") -> {
-                    val startPoint = json.get("startPoint").asString
-                    val endPoint = json.get("endPoint").asString
-                    when {
-                        (startPoint in listOf("top", "bottom") && endPoint in listOf("top", "bottom")) ->
-                            Brush.verticalGradient(colors)
-                        (startPoint in listOf("left", "leading", "right", "trailing") && 
-                         endPoint in listOf("left", "leading", "right", "trailing")) ->
-                            Brush.horizontalGradient(colors)
-                        else -> Brush.linearGradient(
-                            colors = colors,
-                            start = Offset(0f, 0f),
-                            end = Offset.Infinite
-                        )
-                    }
-                }
-                else -> Brush.verticalGradient(colors) // Default to vertical
-            }
-            
-            // Build modifier
-            var modifier = ModifierBuilder.buildModifier(json)
-            
+
+            // Determine gradient brush based on orientation or startPoint/endPoint
+            val gradientBrush = resolveGradientBrush(json, colors)
+
+            // Build modifier: testTag → margins → size → alpha → clickable → padding
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
             // Apply gradient background
             modifier = modifier.background(gradientBrush)
-            
-            // Apply corner radius if specified
+
+            // Apply corner radius clip
             json.get("cornerRadius")?.asFloat?.let { radius ->
-                val shape = RoundedCornerShape(radius.dp)
-                modifier = modifier.clip(shape)
+                modifier = modifier.clip(RoundedCornerShape(radius.dp))
             }
-            
-            // Create the gradient box
+
+            // Render gradient box with children
             Box(modifier = modifier) {
-                // Parse and render children
-                val children = parseChildren(json)
+                val children = DynamicContainerComponent.getChildren(json)
                 children.forEach { child ->
                     DynamicView(child, data)
                 }
             }
         }
-        
-        private fun parseColors(jsonArray: JsonArray, data: Map<String, Any>, context: android.content.Context): List<Color> {
+
+        private val DEFAULT_COLORS = listOf(Color.Black, Color.White)
+
+        /**
+         * Parse color array from JSON, resolving each color string via ColorParser.
+         */
+        private fun parseColors(
+            jsonArray: JsonArray,
+            data: Map<String, Any>,
+            context: android.content.Context
+        ): List<Color> {
             return jsonArray.mapNotNull { element ->
                 when {
-                    element.isJsonPrimitive -> {
+                    element.isJsonPrimitive ->
                         ColorParser.parseColorStringWithBinding(element.asString, data, context)
-                    }
                     else -> null
                 }
-            }.ifEmpty {
-                listOf(Color.Black, Color.White) // Fallback to default
-            }
+            }.ifEmpty { DEFAULT_COLORS }
         }
-        
-        private fun parseChildren(json: JsonObject): List<JsonObject> {
-            return when (val child = json.get("child")) {
-                null -> emptyList()
-                is JsonObject -> listOf(child.asJsonObject)
-                is JsonArray -> child.map { it.asJsonObject }
-                else -> emptyList()
-            }
+
+        /**
+         * Resolve a bound color list from data (List or Array).
+         */
+        private fun resolveColorList(
+            value: Any?,
+            data: Map<String, Any>,
+            context: android.content.Context
+        ): List<Color> {
+            return when (value) {
+                is List<*> -> value.mapNotNull { colorStr ->
+                    ColorParser.parseColorStringWithBinding(colorStr?.toString(), data, context)
+                }
+                is Array<*> -> value.mapNotNull { colorStr ->
+                    ColorParser.parseColorStringWithBinding(colorStr?.toString(), data, context)
+                }
+                else -> DEFAULT_COLORS
+            }.ifEmpty { DEFAULT_COLORS }
         }
+
+        /**
+         * Determine gradient Brush based on 'orientation' or 'startPoint'/'endPoint'.
+         * Defaults to vertical gradient.
+         */
+        private fun resolveGradientBrush(json: JsonObject, colors: List<Color>): Brush {
+            // Orientation-based
+            if (json.has("orientation")) {
+                return when (json.get("orientation").asString) {
+                    "horizontal" -> Brush.horizontalGradient(colors)
+                    "vertical" -> Brush.verticalGradient(colors)
+                    "diagonal" -> Brush.linearGradient(
+                        colors = colors,
+                        start = Offset(0f, 0f),
+                        end = Offset.Infinite
+                    )
+                    else -> Brush.linearGradient(
+                        colors = colors,
+                        start = Offset(0f, 0f),
+                        end = Offset.Infinite
+                    )
+                }
+            }
+
+            // startPoint/endPoint-based
+            if (json.has("startPoint") && json.has("endPoint")) {
+                val startPoint = json.get("startPoint").asString
+                val endPoint = json.get("endPoint").asString
+                return when {
+                    startPoint in VERTICAL_POINTS && endPoint in VERTICAL_POINTS ->
+                        Brush.verticalGradient(colors)
+                    startPoint in HORIZONTAL_POINTS && endPoint in HORIZONTAL_POINTS ->
+                        Brush.horizontalGradient(colors)
+                    else -> Brush.linearGradient(
+                        colors = colors,
+                        start = Offset(0f, 0f),
+                        end = Offset.Infinite
+                    )
+                }
+            }
+
+            // Default to vertical
+            return Brush.verticalGradient(colors)
+        }
+
+        private val VERTICAL_POINTS = setOf("top", "bottom")
+        private val HORIZONTAL_POINTS = setOf("left", "leading", "right", "trailing")
     }
 }

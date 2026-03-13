@@ -2,6 +2,7 @@ package com.example.kotlinjsonui.sample.dynamic.components.extensions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
 import com.google.gson.JsonElement
 import androidx.compose.ui.text.style.TextAlign
@@ -19,14 +20,16 @@ object DynamicStatusBadgeComponent {
         json: JsonObject,
         data: Map<String, Any> = emptyMap()
     ) {
+        val context = LocalContext.current
+
         // Parse attributes
         val title = parseString(json.get("title"), data)
         val status = parseString(json.get("status"), data)
         val color = parseColor(json.get("color"), data)
         val count = parseInt(json.get("count"), data)
-        
+
         // Build modifier
-        val modifier = ModifierBuilder.buildModifier(json)
+        val modifier = ModifierBuilder.buildModifier(json, data, context = context)
         
         // Call the custom component
         StatusBadge(

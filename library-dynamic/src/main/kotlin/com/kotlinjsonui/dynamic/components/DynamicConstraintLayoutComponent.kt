@@ -22,12 +22,12 @@ import androidx.compose.ui.platform.LocalContext
 /**
  * Dynamic ConstraintLayout Component Converter
  * Converts JSON to ConstraintLayout composable at runtime
- * 
+ *
  * Supported JSON attributes:
  * - child/children: Array of child components with constraint definitions
  * - background: String hex color for background
  * - padding/margins: Spacing properties
- * 
+ *
  * Child relative positioning attributes:
  * - id: String identifier for the component
  * - alignTopOfView/alignBottomOfView/alignLeftOfView/alignRightOfView: Position relative to another view's edge
@@ -47,11 +47,14 @@ class DynamicConstraintLayoutComponent {
         ) {
             val context = LocalContext.current
 
+            // Apply lifecycle effects first
+            ModifierBuilder.ApplyLifecycleEffects(json, data)
+
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {
-                json.has("children") && json.get("children").isJsonArray -> 
+                json.has("children") && json.get("children").isJsonArray ->
                     json.getAsJsonArray("children")
-                json.has("child") && json.get("child").isJsonArray -> 
+                json.has("child") && json.get("child").isJsonArray ->
                     json.getAsJsonArray("child")
                 json.has("child") && json.get("child").isJsonObject -> {
                     // Single child as object, wrap in array
@@ -59,29 +62,23 @@ class DynamicConstraintLayoutComponent {
                 }
                 else -> JsonArray() // Empty array if no children
             }
-            
+
             // Check if any child has relative positioning
             val hasConstraints = childrenArray.any { element ->
                 if (element.isJsonObject) {
                     hasRelativePositioning(element.asJsonObject)
                 } else false
             }
-            
+
             if (!hasConstraints) {
                 // No constraints, use regular Container instead
                 DynamicContainerComponent.create(json, data)
                 return
             }
-            
-            // Parse background color (supports @{binding})
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
-            
-            // Build modifier
-            var modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
-            backgroundColor?.let {
-                modifier = modifier.background(it)
-            }
-            
+
+            // Build modifier using composite buildModifier (handles background internally via applyBackground)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context, defaultFillMaxWidth = true)
+
             // Create constraint set from children
             val constraintSet = ConstraintSet {
                 // Create refs for all children
@@ -93,25 +90,25 @@ class DynamicConstraintLayoutComponent {
                         refs[id] = createRefFor(id)
                     }
                 }
-                
+
                 // Apply constraints to each child
                 childrenArray.forEachIndexed { index, childElement ->
                     if (childElement.isJsonObject) {
                         val childJson = childElement.asJsonObject
                         val id = childJson.get("id")?.asString ?: "view_$index"
                         val ref = refs[id] ?: return@forEachIndexed
-                        
+
                         constrain(ref) {
                             // Apply relative positioning constraints
                             applyRelativePositioning(childJson, this@ConstraintSet, this, refs)
-                            
+
                             // Apply dimension constraints
                             applyDimensionConstraints(childJson, this)
                         }
                     }
                 }
             }
-            
+
             ConstraintLayout(
                 constraintSet = constraintSet,
                 modifier = modifier
@@ -120,7 +117,7 @@ class DynamicConstraintLayoutComponent {
                     if (childElement.isJsonObject) {
                         val childJson = childElement.asJsonObject
                         val id = childJson.get("id")?.asString ?: "view_$index"
-                        
+
                         Box(modifier = Modifier.layoutId(id)) {
                             DynamicView(
                                 json = childJson,
@@ -131,7 +128,7 @@ class DynamicConstraintLayoutComponent {
                 }
             }
         }
-        
+
         private fun hasRelativePositioning(json: JsonObject): Boolean {
             val relativeAttrs = listOf(
                 "alignTopOfView", "alignBottomOfView", "alignLeftOfView", "alignRightOfView",
@@ -140,10 +137,10 @@ class DynamicConstraintLayoutComponent {
                 "alignTop", "alignBottom", "alignLeft", "alignRight",
                 "centerHorizontal", "centerVertical", "centerInParent"
             )
-            
+
             return relativeAttrs.any { json.has(it) }
         }
-        
+
         private fun applyRelativePositioning(
             json: JsonObject,
             setScope: ConstraintSetScope,
@@ -156,7 +153,7 @@ class DynamicConstraintLayoutComponent {
                 var bottomMargin = json.get("bottomMargin")?.asInt ?: 0
                 var leftMargin = json.get("leftMargin")?.asInt ?: 0
                 var rightMargin = json.get("rightMargin")?.asInt ?: 0
-                
+
                 // Handle margins array
                 json.get("margins")?.asJsonArray?.let { margins ->
                     if (margins.size() == 4) {
@@ -164,7 +161,7 @@ class DynamicConstraintLayoutComponent {
                         val arrayRightMargin = margins[1].asInt
                         val arrayBottomMargin = margins[2].asInt
                         val arrayLeftMargin = margins[3].asInt
-                        
+
                         // Use array values if individual margins not specified
                         if (!json.has("topMargin")) topMargin = arrayTopMargin
                         if (!json.has("bottomMargin")) bottomMargin = arrayBottomMargin
@@ -172,32 +169,32 @@ class DynamicConstraintLayoutComponent {
                         if (!json.has("rightMargin")) rightMargin = arrayRightMargin
                     }
                 }
-                
+
                 // Position relative to other views
                 json.get("alignTopOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         bottom.linkTo(targetRef.top, margin = bottomMargin.dp)
                     }
                 }
-                
+
                 json.get("alignBottomOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         top.linkTo(targetRef.bottom, margin = topMargin.dp)
                     }
                 }
-                
+
                 json.get("alignLeftOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         end.linkTo(targetRef.start, margin = rightMargin.dp)
                     }
                 }
-                
+
                 json.get("alignRightOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         start.linkTo(targetRef.end, margin = leftMargin.dp)
                     }
                 }
-                
+
                 // Align edges with other views
                 json.get("alignTopView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
@@ -205,25 +202,25 @@ class DynamicConstraintLayoutComponent {
                         top.linkTo(targetRef.top, margin = if (topMargin > 0) (-topMargin).dp else 0.dp)
                     }
                 }
-                
+
                 json.get("alignBottomView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         bottom.linkTo(targetRef.bottom, margin = if (bottomMargin > 0) (-bottomMargin).dp else 0.dp)
                     }
                 }
-                
+
                 json.get("alignLeftView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         start.linkTo(targetRef.start, margin = if (leftMargin > 0) (-leftMargin).dp else 0.dp)
                     }
                 }
-                
+
                 json.get("alignRightView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         end.linkTo(targetRef.end, margin = if (rightMargin > 0) (-rightMargin).dp else 0.dp)
                     }
                 }
-                
+
                 // Center with other views
                 json.get("alignCenterVerticalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
@@ -231,41 +228,41 @@ class DynamicConstraintLayoutComponent {
                         bottom.linkTo(targetRef.bottom)
                     }
                 }
-                
+
                 json.get("alignCenterHorizontalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         start.linkTo(targetRef.start)
                         end.linkTo(targetRef.end)
                     }
                 }
-                
+
                 // Parent constraints
                 if (json.get("alignTop")?.asBoolean == true) {
                     top.linkTo(parent.top, margin = topMargin.dp)
                 }
-                
+
                 if (json.get("alignBottom")?.asBoolean == true) {
                     bottom.linkTo(parent.bottom, margin = bottomMargin.dp)
                 }
-                
+
                 if (json.get("alignLeft")?.asBoolean == true) {
                     start.linkTo(parent.start, margin = leftMargin.dp)
                 }
-                
+
                 if (json.get("alignRight")?.asBoolean == true) {
                     end.linkTo(parent.end, margin = rightMargin.dp)
                 }
-                
+
                 if (json.get("centerHorizontal")?.asBoolean == true) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
-                
+
                 if (json.get("centerVertical")?.asBoolean == true) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                 }
-                
+
                 if (json.get("centerInParent")?.asBoolean == true) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
@@ -274,7 +271,7 @@ class DynamicConstraintLayoutComponent {
                 }
             }
         }
-        
+
         private fun applyDimensionConstraints(
             json: JsonObject,
             scope: ConstrainScope
@@ -302,7 +299,7 @@ class DynamicConstraintLayoutComponent {
                 } ?: run {
                     width = Dimension.wrapContent
                 }
-                
+
                 // Height constraint
                 json.get("height")?.let { heightElement ->
                     when {

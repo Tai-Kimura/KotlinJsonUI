@@ -1,8 +1,10 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
@@ -12,184 +14,135 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import com.kotlinjsonui.core.Configuration
-import com.kotlinjsonui.dynamic.processDataBinding
-import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
-import androidx.compose.ui.platform.LocalContext
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
 /**
- * Dynamic TextView Component Converter
- * Converts JSON to TextView (multiline text) composable at runtime
- * 
- * Supported JSON attributes:
- * - text: String value or @{binding} for data binding
- * - placeholder/hint: String placeholder text
- * - fontSize: Int text size in sp
- * - fontColor: String hex color for text
- * - background: String hex color for background
- * - highlightBackground: String hex color for focused background
- * - borderColor: String hex color for border
- * - cornerRadius: Float corner radius
- * - maxLines: Int maximum number of lines
- * - height: Number or "wrapContent"/"matchParent" (default: 120dp)
- * - width: Number or "wrapContent"/"matchParent" (default: fillMaxWidth)
- * - enabled: Boolean whether the field is enabled
- * - returnKeyType: String keyboard action (Done, Next, Default)
- * - onTextChange: String method name for text change callback
- * - padding/margins: Spacing properties
+ * TextView component → CustomTextField (multiline) / CustomTextFieldWithMargins.
+ * Reference: textview_component.rb in kjui_tools.
+ *
+ * Key differences from TextField:
+ * - Default height: 120dp
+ * - Default width: fillMaxWidth
+ * - Default maxLines: unlimited
+ * - singleLine: false
+ * - isOutlined: true by default
  */
 class DynamicTextViewComponent {
     companion object {
         @Composable
-        fun create(
-            json: JsonObject,
-            data: Map<String, Any> = emptyMap()
-        ) {
+        fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
 
             // Parse text value with data binding
-            val textBinding = json.get("text")?.asString ?: ""
-            val initialText = processDataBinding(textBinding, data)
+            val rawText = json.get("text")?.asString ?: ""
+            val initialText = ResourceResolver.resolveTextValue(rawText, data, context)
             var currentText by remember(initialText) { mutableStateOf(initialText) }
-            
-            // Parse placeholder
-            val placeholder = json.get("placeholder")?.asString 
-                ?: json.get("hint")?.asString 
-                ?: ""
-            
-            // Parse enabled state
-            val isEnabled = json.get("enabled")?.let { element ->
-                when {
-                    element.isJsonPrimitive && element.asJsonPrimitive.isBoolean -> element.asBoolean
-                    element.isJsonPrimitive && element.asJsonPrimitive.isString -> {
-                        val binding = element.asString
-                        if (binding.startsWith("@{") && binding.endsWith("}")) {
-                            val key = binding.substring(2, binding.length - 1)
-                            data[key] as? Boolean ?: true
-                        } else {
-                            true
-                        }
-                    }
-                    else -> true
-                }
-            } ?: true
-            
-            // Parse text style (supports @{binding})
+
+            // Parse placeholder with resource resolution
+            val rawPlaceholder = json.get("hint")?.asString
+                ?: json.get("placeholder")?.asString ?: ""
+            val placeholderText = ResourceResolver.resolveTextValue(rawPlaceholder, data, context)
+
+            // Enabled state (supports @{binding})
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+
+            // Text style (supports @{binding})
             val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
             val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
                 ?: Configuration.TextField.defaultTextColor
 
-            // Parse background colors (supports @{binding})
+            // Background colors (supports @{binding})
             val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
                 ?: Configuration.TextField.defaultBackgroundColor
-
             val highlightBackgroundColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
                 ?: Configuration.TextField.defaultHighlightBackgroundColor
 
-            // Parse border color (supports @{binding})
+            // Border color (supports @{binding})
             val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
                 ?: Configuration.TextField.defaultBorderColor
-            
-            // Parse shape
-            val cornerRadius = json.get("cornerRadius")?.asFloat ?: Configuration.TextField.defaultCornerRadius.toFloat()
+
+            // Shape
+            val cornerRadius = json.get("cornerRadius")?.asFloat
+                ?: Configuration.TextField.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
-            
-            // Parse isOutlined - automatically use outlined style if borderColor or borderWidth is specified
-            val isOutlined = json.get("outlined")?.asBoolean == true || 
-                             json.get("borderColor") != null || 
-                             json.get("borderWidth") != null
-            
-            // Parse max lines (default to unlimited for TextView)
+
+            // isOutlined (default true for TextView)
+            val isOutlined = true
+
+            // Max lines (default unlimited for TextView)
             val maxLines = json.get("maxLines")?.asInt ?: Int.MAX_VALUE
-            
-            // Parse keyboard options
-            val imeAction = when (json.get("returnKeyType")?.asString) {
-                "Done" -> ImeAction.Done
-                "Next" -> ImeAction.Next
-                "Default" -> ImeAction.Default
-                else -> ImeAction.Default
-            }
-            val keyboardOptions = KeyboardOptions(imeAction = imeAction)
-            
+
+            // Keyboard options
+            val keyboardOptions = buildKeyboardOptions(json)
+
+            // Container inset → contentPadding
+            val contentPadding = buildContainerInset(json)
+
             // Value change handler
+            val viewId = json.get("id")?.asString ?: "textview"
             val onValueChange: (String) -> Unit = { newValue ->
                 currentText = newValue
-                
-                // Call onTextChange method if specified
-                json.get("onTextChange")?.asString?.let { methodName ->
-                    val handler = data[methodName]
-                    if (handler is Function1<*, *>) {
-                        try {
-                            @Suppress("UNCHECKED_CAST")
-                            (handler as (String) -> Unit)(newValue)
-                        } catch (e: Exception) {
-                            // Handler doesn't match expected signature
+
+                // Update data binding
+                if (rawText.contains("@{")) {
+                    val variable = extractBindingVariable(rawText)
+                    variable?.let { varName ->
+                        val updateData = data["updateData"]
+                        if (updateData is Function<*>) {
+                            try {
+                                @Suppress("UNCHECKED_CAST")
+                                (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
+                            } catch (_: Exception) {}
                         }
                     }
+                }
+
+                // Call onTextChange handler
+                val onTextChangeHandler = json.get("onTextChange")?.asString
+                if (onTextChangeHandler != null) {
+                    ModifierBuilder.resolveEventHandler(
+                        onTextChangeHandler, data, viewId, newValue
+                    )
                 }
             }
-            
-            // Check if we need margins wrapper
-            val hasMargins = json.has("margins") || json.has("topMargin") || 
-                            json.has("bottomMargin") || json.has("leftMargin") || 
-                            json.has("rightMargin") || json.has("marginTop") ||
-                            json.has("marginBottom") || json.has("marginLeft") ||
-                            json.has("marginRight") || json.has("marginStart") ||
-                            json.has("marginEnd")
-            
+
+            // Placeholder
+            val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
+                buildPlaceholder(json, placeholderText, fontSize)
+            } else null
+
+            // Check margins
+            val hasMargins = hasMarginAttributes(json)
+
             if (hasMargins) {
-                // Use CustomTextFieldWithMargins for margin support
-                val boxModifier = ModifierBuilder.applyMargins(Modifier, json)
-                
-                // Build text field modifier with size and padding
-                var textFieldModifier: Modifier = Modifier
-                
-                // Apply width (default to fillMaxWidth for TextView)
-                val width = json.get("width")?.asString
-                textFieldModifier = when (width) {
-                    "matchParent", null -> textFieldModifier.fillMaxWidth()
-                    "wrapContent" -> textFieldModifier
-                    else -> {
-                        try {
-                            val widthValue = width?.toFloatOrNull()
-                            if (widthValue != null) {
-                                textFieldModifier.fillMaxWidth()
-                            } else {
-                                textFieldModifier.fillMaxWidth()
-                            }
-                        } catch (e: Exception) {
-                            textFieldModifier.fillMaxWidth()
-                        }
-                    }
-                }
-                
-                // Apply height (default to 120dp for TextView)
-                val heightValue = json.get("height")?.asFloat ?: 120f
-                textFieldModifier = textFieldModifier.height(heightValue.dp)
-                
-                // Apply padding
+                // Box modifier with margins and weight
+                var boxModifier: Modifier = Modifier
+                boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
+                boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
+
+                // TextField modifier with size (default fillMaxWidth + 120dp height)
+                var textFieldModifier = buildTextViewSizeModifier(json)
+                textFieldModifier = ModifierBuilder.applyAlpha(textFieldModifier, json, data)
                 textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json)
-                
-                // Apply opacity
-                textFieldModifier = ModifierBuilder.applyOpacity(textFieldModifier, json)
-                
+
                 CustomTextFieldWithMargins(
                     value = currentText,
                     onValueChange = onValueChange,
                     boxModifier = boxModifier,
                     textFieldModifier = textFieldModifier,
-                    placeholder = if (placeholder.isNotEmpty()) {
-                        { Text(placeholder) }
-                    } else null,
+                    placeholder = placeholder,
                     shape = shape,
                     backgroundColor = backgroundColor,
                     highlightBackgroundColor = highlightBackgroundColor,
@@ -197,49 +150,23 @@ class DynamicTextViewComponent {
                     isOutlined = isOutlined,
                     maxLines = maxLines,
                     singleLine = false,
-                    textStyle = TextStyle(
-                        fontSize = fontSize.sp,
-                        color = textColor
-                    ),
-                    keyboardOptions = keyboardOptions
+                    textStyle = TextStyle(fontSize = fontSize.sp, color = textColor),
+                    keyboardOptions = keyboardOptions,
+                    contentPadding = contentPadding,
+                    enabled = isEnabled
                 )
             } else {
-                // Use regular CustomTextField
-                var modifier: Modifier = Modifier
-                
-                // Apply width (default to fillMaxWidth for TextView)
-                val width = json.get("width")?.asString
-                modifier = when (width) {
-                    "matchParent", null -> modifier.fillMaxWidth()
-                    "wrapContent" -> modifier
-                    else -> {
-                        try {
-                            val widthValue = width?.toFloatOrNull()
-                            if (widthValue != null) {
-                                modifier.fillMaxWidth()
-                            } else {
-                                modifier.fillMaxWidth()
-                            }
-                        } catch (e: Exception) {
-                            modifier.fillMaxWidth()
-                        }
-                    }
-                }
-                
-                // Apply height (default to 120dp for TextView)
-                val heightValue = json.get("height")?.asFloat ?: 120f
-                modifier = modifier.height(heightValue.dp)
-                
-                // Apply padding
+                // Regular modifier with size (default fillMaxWidth + 120dp height)
+                var modifier = buildTextViewSizeModifier(json)
+                modifier = ModifierBuilder.applyTestTag(modifier, json)
+                modifier = ModifierBuilder.applyAlpha(modifier, json, data)
                 modifier = ModifierBuilder.applyPadding(modifier, json)
-                
+
                 CustomTextField(
                     value = currentText,
                     onValueChange = onValueChange,
                     modifier = modifier,
-                    placeholder = if (placeholder.isNotEmpty()) {
-                        { Text(placeholder) }
-                    } else null,
+                    placeholder = placeholder,
                     shape = shape,
                     backgroundColor = backgroundColor,
                     highlightBackgroundColor = highlightBackgroundColor,
@@ -247,12 +174,151 @@ class DynamicTextViewComponent {
                     isOutlined = isOutlined,
                     maxLines = maxLines,
                     singleLine = false,
-                    textStyle = TextStyle(
-                        fontSize = fontSize.sp,
-                        color = textColor
-                    ),
-                    keyboardOptions = keyboardOptions
+                    textStyle = TextStyle(fontSize = fontSize.sp, color = textColor),
+                    keyboardOptions = keyboardOptions,
+                    contentPadding = contentPadding,
+                    enabled = isEnabled
                 )
+            }
+        }
+
+        // ── Helpers ──
+
+        private fun extractBindingVariable(text: String): String? {
+            val pattern = "@\\{([^}]+)\\}".toRegex()
+            val match = pattern.find(text) ?: return null
+            return match.groupValues[1].split(" ?? ")[0].trim()
+        }
+
+        private fun hasMarginAttributes(json: JsonObject): Boolean {
+            return json.has("margins") || json.has("topMargin") || json.has("bottomMargin") ||
+                    json.has("leftMargin") || json.has("rightMargin") ||
+                    json.has("startMargin") || json.has("endMargin") ||
+                    json.has("marginTop") || json.has("marginBottom") ||
+                    json.has("marginLeft") || json.has("marginRight") ||
+                    json.has("marginStart") || json.has("marginEnd")
+        }
+
+        /**
+         * Build size modifier for TextView.
+         * Default: fillMaxWidth + 120dp height (matching textview_component.rb).
+         */
+        private fun buildTextViewSizeModifier(json: JsonObject): Modifier {
+            var modifier: Modifier = Modifier
+
+            // Width (default fillMaxWidth)
+            val widthElement = json.get("width")
+            modifier = when {
+                widthElement == null -> modifier.fillMaxWidth()
+                widthElement.isJsonPrimitive && widthElement.asJsonPrimitive.isString -> {
+                    when (widthElement.asString) {
+                        "matchParent", "match_parent" -> modifier.fillMaxWidth()
+                        "wrapContent", "wrap_content" -> modifier
+                        else -> modifier.fillMaxWidth()
+                    }
+                }
+                else -> modifier.fillMaxWidth()
+            }
+
+            // Height (default 120dp)
+            val heightElement = json.get("height")
+            modifier = when {
+                heightElement == null -> modifier.height(120.dp)
+                heightElement.isJsonPrimitive && heightElement.asJsonPrimitive.isString -> {
+                    when (heightElement.asString) {
+                        "matchParent", "match_parent" -> modifier.fillMaxHeight()
+                        "wrapContent", "wrap_content" -> modifier.wrapContentHeight()
+                        else -> {
+                            heightElement.asString.toFloatOrNull()?.let {
+                                modifier.height(it.dp)
+                            } ?: modifier.height(120.dp)
+                        }
+                    }
+                }
+                heightElement.isJsonPrimitive && heightElement.asJsonPrimitive.isNumber -> {
+                    modifier.height(heightElement.asFloat.dp)
+                }
+                else -> modifier.height(120.dp)
+            }
+
+            return modifier
+        }
+
+        @Composable
+        private fun buildPlaceholder(
+            json: JsonObject,
+            text: String,
+            baseFontSize: Int
+        ): @Composable () -> Unit {
+            val hintLineHeightMultiple = json.get("hintLineHeightMultiple")?.asFloat
+
+            return if (hintLineHeightMultiple != null) {
+                val hintFontSize = json.get("hintFontSize")?.asFloat ?: baseFontSize.toFloat()
+                val lineHeight = hintFontSize * hintLineHeightMultiple
+                {
+                    Text(
+                        text = text,
+                        style = TextStyle(lineHeight = lineHeight.sp)
+                    )
+                }
+            } else {
+                { Text(text = text) }
+            }
+        }
+
+        private fun buildKeyboardOptions(json: JsonObject): KeyboardOptions {
+            val keyboardType = json.get("keyboardType")?.asString?.let { type ->
+                when (type.lowercase()) {
+                    "email" -> KeyboardType.Email
+                    "number" -> KeyboardType.Number
+                    "decimal" -> KeyboardType.Decimal
+                    "phone" -> KeyboardType.Phone
+                    "url" -> KeyboardType.Uri
+                    else -> KeyboardType.Text
+                }
+            } ?: json.get("input")?.asString?.let { input ->
+                when (input.lowercase()) {
+                    "email" -> KeyboardType.Email
+                    "number" -> KeyboardType.Number
+                    "decimal" -> KeyboardType.Decimal
+                    "phone" -> KeyboardType.Phone
+                    "url" -> KeyboardType.Uri
+                    else -> KeyboardType.Text
+                }
+            } ?: KeyboardType.Text
+
+            val imeAction = when (json.get("returnKeyType")?.asString) {
+                "Done" -> ImeAction.Done
+                "Next" -> ImeAction.Next
+                else -> ImeAction.Default
+            }
+
+            return KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction)
+        }
+
+        private fun buildContainerInset(json: JsonObject): PaddingValues? {
+            val inset = json.get("containerInset") ?: return null
+            return when {
+                inset.isJsonArray -> {
+                    val arr = inset.asJsonArray
+                    when (arr.size()) {
+                        4 -> PaddingValues(
+                            top = arr[0].asFloat.dp,
+                            end = arr[1].asFloat.dp,
+                            bottom = arr[2].asFloat.dp,
+                            start = arr[3].asFloat.dp
+                        )
+                        2 -> PaddingValues(
+                            vertical = arr[0].asFloat.dp,
+                            horizontal = arr[1].asFloat.dp
+                        )
+                        else -> null
+                    }
+                }
+                inset.isJsonPrimitive && inset.asJsonPrimitive.isNumber -> {
+                    PaddingValues(inset.asFloat.dp)
+                }
+                else -> null
             }
         }
     }

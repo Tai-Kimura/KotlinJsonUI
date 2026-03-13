@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 /**
  * Dynamic SafeAreaView Component Converter
  * Converts JSON to SafeAreaView composable at runtime
- * 
+ *
  * Supported JSON attributes:
  * - edges: Array of edges to apply padding ["top", "bottom", "start", "end", "all"]
  * - orientation: "horizontal" or "vertical" - determines stack direction for children
@@ -32,9 +32,13 @@ import androidx.compose.ui.platform.LocalContext
  * - background: String hex color for background
  * - child/children: Child components to render within safe area
  * - padding/margins: Additional spacing properties
- * 
+ *
  * This component ensures content doesn't overlap with system UI elements
  * like status bar, navigation bar, and software keyboard
+ *
+ * SafeAreaView needs special modifier ordering: background must go BEFORE
+ * systemBarsPadding so it extends to screen edges. Therefore we build
+ * the modifier chain manually instead of using the composite buildModifier.
  */
 class DynamicSafeAreaViewComponent {
     companion object {
@@ -82,12 +86,14 @@ class DynamicSafeAreaViewComponent {
 
             // Parse orientation for child layout (null means Box/ZStack)
             val orientation = json.get("orientation")?.asString
-            
+
             // Parse background color (supports @{binding})
             val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
 
-            // Build base modifier
-            var modifier = ModifierBuilder.buildSizeModifier(json, defaultFillMaxWidth = true)
+            // Build modifier manually: special ordering required for SafeAreaView
+            // background must go BEFORE systemBarsPadding so it extends to screen edges
+            var modifier = ModifierBuilder.applyTestTag(Modifier, json)
+            modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true)
 
             // Apply background color BEFORE systemBarsPadding so it extends to screen edges
             backgroundColor?.let {
@@ -120,14 +126,14 @@ class DynamicSafeAreaViewComponent {
             }
 
             // Apply additional margins and padding
-            modifier = ModifierBuilder.applyMargins(modifier, json)
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applyPadding(modifier, json)
-            
+
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {
-                json.has("children") && json.get("children").isJsonArray -> 
+                json.has("children") && json.get("children").isJsonArray ->
                     json.getAsJsonArray("children")
-                json.has("child") && json.get("child").isJsonArray -> 
+                json.has("child") && json.get("child").isJsonArray ->
                     json.getAsJsonArray("child")
                 json.has("child") && json.get("child").isJsonObject -> {
                     // Single child as object, wrap in array
@@ -135,7 +141,7 @@ class DynamicSafeAreaViewComponent {
                 }
                 else -> JsonArray() // Empty array if no children
             }
-            
+
             // Render content in safe area based on orientation
             val childList = mutableListOf<JsonObject>()
             childrenArray.forEach { element ->

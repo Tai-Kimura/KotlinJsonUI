@@ -1,116 +1,164 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LocalTextStyle
+import android.content.Context
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.PartialAttribute
 import com.kotlinjsonui.components.PartialAttributesText
-import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.dashedBorder
-import com.kotlinjsonui.dynamic.helpers.dottedBorder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
 /**
- * Dynamic Text/Label Component Converter
- * Converts JSON to Text/Label composable at runtime
+ * Text/Label component → Text / PartialAttributesText.
+ * Reference: text_component.rb in kjui_tools.
  *
  * NOTE: Label is the primary component name in JsonUI.
  * Text is supported as an alias for backward compatibility.
  * Both "type": "Label" and "type": "Text" work identically.
- *
- * Supported JSON attributes (matching Ruby implementation):
- * - text: String content (supports @{variable} binding)
- * - fontSize: Int (default 14)
- * - fontColor: String hex color
- * - font: "bold" for bold text
- * - fontWeight: "thin", "light", "normal", "medium", "semibold", "bold", etc.
- * - textAlign: "center", "left", "right"
- * - centerHorizontal: Boolean (alternative to textAlign: center)
- * - underline: Boolean
- * - strikethrough: Boolean
- * - lines: Int (0 for unlimited, default unlimited)
- * - lineBreakMode: "clip", "tail", "word"
- * - edgeInset: Number or Array[4] for text padding
- * - padding/paddings: Number or Array for general padding
- * - margins: Array[1,2,4] or individual margin properties
- * - width/height: Number (-1 for fillMaxWidth)
- * - partialAttributes: Array of partial text attributes
- * - linkable: Boolean to make URLs/emails/phones clickable
  */
 class DynamicTextComponent {
     companion object {
         @Composable
-        fun create(
-            json: JsonObject,
-            data: Map<String, Any> = emptyMap()
-        ) {
+        fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
 
-            // Parse text with data binding support and resource resolution
-            val rawText = json.get("text")?.asString ?: ""
-            val text = processDataBinding(rawText, data, context)
+            // Resolve text with binding + resource support
+            val text = ResourceResolver.resolveText(json, "text", data, context)
 
             // Check for partialAttributes or linkable
-            val hasPartialAttributes = json.get("partialAttributes")?.isJsonArray == true
+            val hasPartialAttributes = json.get("partialAttributes")?.isJsonArray == true &&
+                    json.get("partialAttributes").asJsonArray.size() > 0
             val isLinkable = json.get("linkable")?.asBoolean == true
 
-            if (hasPartialAttributes || isLinkable) {
-                // Use PartialAttributesText for partial attributes or linkable text
-                createPartialAttributesText(json, text, data)
-            } else {
-                // Use standard Text composable
-                createStandardText(json, text, data)
+            when {
+                hasPartialAttributes -> createPartialAttributesText(json, text, data, context)
+                isLinkable -> createLinkableText(json, text, data, context)
+                else -> createStandardText(json, text, data, context)
             }
         }
+
+        // ── Standard Text ──
+
+        @Composable
+        private fun createStandardText(
+            json: JsonObject,
+            text: String,
+            data: Map<String, Any>,
+            context: Context
+        ) {
+            // Font size
+            val fontSize = json.get("fontSize")?.asFloat
+
+            // Font color (supports @{binding})
+            val fontColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+
+            // Font weight – handle both 'font' and 'fontWeight' attributes
+            val fontWeight = resolveFontWeight(json)
+
+            // Font family – custom font from 'font' attribute (if not a weight name)
+            val fontFamily = resolveFontFamily(json, context)
+
+            // Text decoration
+            val textDecoration = resolveTextDecoration(json)
+
+            // Text alignment
+            val textAlign = resolveTextAlign(json)
+
+            // Max lines
+            val maxLines = when {
+                json.get("autoShrink")?.asBoolean == true -> 1
+                json.get("minimumScaleFactor") != null -> 1
+                json.get("lines")?.asInt == 0 -> Int.MAX_VALUE
+                json.get("lines")?.asInt != null -> json.get("lines").asInt
+                else -> Int.MAX_VALUE
+            }
+
+            // Overflow
+            val overflow = when {
+                json.get("autoShrink")?.asBoolean == true -> TextOverflow.Ellipsis
+                json.get("minimumScaleFactor") != null -> TextOverflow.Ellipsis
+                json.get("lines")?.asInt != null && json.get("lines").asInt > 0 -> TextOverflow.Ellipsis
+                else -> when (json.get("lineBreakMode")?.asString?.lowercase()) {
+                    "clip" -> TextOverflow.Clip
+                    "tail", "word", "truncatetail" -> TextOverflow.Ellipsis
+                    else -> TextOverflow.Clip
+                }
+            }
+
+            // Build style (shadow, lineHeight)
+            val style = buildTextStyle(json, fontSize)
+
+            // Build modifier using composite builder
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
+            // Handle edgeInset for text-specific padding (overrides regular padding)
+            modifier = applyEdgeInset(modifier, json)
+
+            Text(
+                text = text,
+                fontSize = fontSize?.sp ?: 14.sp,
+                color = fontColor ?: Color.Unspecified,
+                fontWeight = fontWeight,
+                fontFamily = fontFamily,
+                textAlign = textAlign,
+                textDecoration = textDecoration,
+                maxLines = maxLines,
+                overflow = overflow,
+                style = style,
+                modifier = modifier
+            )
+        }
+
+        // ── Linkable Text ──
+
+        @Composable
+        private fun createLinkableText(
+            json: JsonObject,
+            text: String,
+            data: Map<String, Any>,
+            context: Context
+        ) {
+            val style = buildFullTextStyle(json, data, context)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
+            PartialAttributesText(
+                text = text,
+                linkable = true,
+                modifier = modifier,
+                style = style
+            )
+        }
+
+        // ── Partial Attributes Text ──
 
         @Composable
         private fun createPartialAttributesText(
             json: JsonObject,
             text: String,
-            data: Map<String, Any>
+            data: Map<String, Any>,
+            context: Context
         ) {
-            val context = LocalContext.current
             val partialAttributes = mutableListOf<PartialAttribute>()
 
-            // Parse partial attributes
             json.get("partialAttributes")?.asJsonArray?.forEach { attrElement ->
                 if (attrElement.isJsonObject) {
                     val attr = attrElement.asJsonObject
-                    val range = when {
-                        attr.get("range")?.isJsonArray == true -> {
-                            val rangeArray = attr.get("range").asJsonArray
-                            if (rangeArray.size() == 2) {
-                                listOf(rangeArray[0].asInt, rangeArray[1].asInt)
-                            } else null
-                        }
-
-                        attr.get("range")?.isJsonPrimitive == true -> {
-                            attr.get("range").asString
-                        }
-
-                        else -> null
-                    }
+                    val range = resolvePartialRange(attr, text)
 
                     range?.let {
                         val partialAttr = PartialAttribute.fromJsonRange(
@@ -118,307 +166,258 @@ class DynamicTextComponent {
                             text = text,
                             fontColor = attr.get("fontColor")?.asString,
                             fontSize = attr.get("fontSize")?.asInt,
-                            fontWeight = attr.get("fontWeight")?.asString ?: attr.get("font")?.asString,
+                            fontWeight = attr.get("fontWeight")?.asString
+                                ?: attr.get("font")?.asString,
                             background = attr.get("background")?.asString,
                             underline = attr.get("underline")?.asBoolean ?: false,
                             strikethrough = attr.get("strikethrough")?.asBoolean ?: false,
-                            // onclick (lowercase) -> selector format only (string)
-                            // onClick (camelCase) -> binding format only (@{functionName})
-                            onClick = run {
-                                val methodName = when {
-                                    // onclick (lowercase) - selector format (string only)
-                                    attr.get("onclick")?.asString != null -> {
-                                        val onclickValue = attr.get("onclick").asString
-                                        if (!onclickValue.contains("@{")) onclickValue else null
-                                    }
-                                    // onClick (camelCase) - binding format only (@{functionName})
-                                    attr.get("onClick")?.asString != null -> {
-                                        val onClickValue = attr.get("onClick").asString
-                                        if (onClickValue.contains("@{")) {
-                                            val pattern = "@\\{([^}]+)\\}".toRegex()
-                                            pattern.find(onClickValue)?.groupValues?.get(1)
-                                        } else null
-                                    }
-                                    else -> null
-                                }
-                                methodName?.let { name ->
-                                    val handler = data[name]
-                                    if (handler is Function<*>) {
-                                        {
-                                            try {
-                                                @Suppress("UNCHECKED_CAST")
-                                                (handler as () -> Unit)()
-                                            } catch (e: Exception) {
-                                                // Handler doesn't match expected signature
-                                            }
-                                        }
-                                    } else null
-                                }
-                            }
+                            onClick = resolvePartialClickHandler(attr, data)
                         )
-                        partialAttr?.let { partialAttributes.add(it) }
+                        partialAttr?.let { pa -> partialAttributes.add(pa) }
                     }
                 }
             }
 
-            // Build text style
-            val style = buildTextStyle(json, data, context)
-
-            // Build modifier
-            val modifier = buildModifier(json, data, context)
+            val style = buildFullTextStyle(json, data, context)
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
             PartialAttributesText(
                 text = text,
                 partialAttributes = partialAttributes,
-                linkable = json.get("linkable")?.asBoolean ?: false,
                 modifier = modifier,
                 style = style
             )
         }
 
-        @Composable
-        private fun createStandardText(json: JsonObject, text: String, data: Map<String, Any>) {
-            val context = LocalContext.current
+        // ── Helpers ──
 
-            // Font size
-            val fontSize = json.get("fontSize")?.asInt ?: 14
+        private val WEIGHT_NAMES = mapOf(
+            "thin" to FontWeight.Thin,
+            "extralight" to FontWeight.ExtraLight,
+            "light" to FontWeight.Light,
+            "normal" to FontWeight.Normal,
+            "medium" to FontWeight.Medium,
+            "semibold" to FontWeight.SemiBold,
+            "bold" to FontWeight.Bold,
+            "extrabold" to FontWeight.ExtraBold,
+            "heavy" to FontWeight.ExtraBold,
+            "black" to FontWeight.Black
+        )
 
-            // Font color (official attribute, supports @{binding})
-            val fontColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
-                ?: Color.Black
-
-            // Font weight - handle both 'font' and 'fontWeight' attributes
-            val fontWeight = when {
-                json.get("font")?.asString == "bold" -> FontWeight.Bold
-                json.get("fontWeight")?.asString != null -> {
-                    when (json.get("fontWeight")?.asString?.lowercase()) {
-                        "thin" -> FontWeight.Thin
-                        "extralight" -> FontWeight.ExtraLight
-                        "light" -> FontWeight.Light
-                        "normal" -> FontWeight.Normal
-                        "medium" -> FontWeight.Medium
-                        "semibold" -> FontWeight.SemiBold
-                        "bold" -> FontWeight.Bold
-                        "extrabold" -> FontWeight.ExtraBold
-                        "black" -> FontWeight.Black
-                        else -> FontWeight.Normal
-                    }
+        private fun resolveFontWeight(json: JsonObject): FontWeight? {
+            // 'font' attribute: if it matches a weight name, use as weight
+            json.get("font")?.asString?.let { font ->
+                val lower = font.lowercase()
+                if (WEIGHT_NAMES.containsKey(lower)) {
+                    return WEIGHT_NAMES[lower]
                 }
-
-                else -> FontWeight.Normal
             }
-
-            // Text alignment
-            val textAlign = when {
-                json.get("textAlign")?.asString != null -> {
-                    when (json.get("textAlign")?.asString?.lowercase()) {
-                        "center" -> TextAlign.Center
-                        "right" -> TextAlign.End
-                        "left" -> TextAlign.Start
-                        else -> TextAlign.Start
-                    }
-                }
-
-                json.get("centerHorizontal")?.asBoolean == true -> TextAlign.Center
-                else -> TextAlign.Start
+            // 'fontWeight' attribute
+            json.get("fontWeight")?.asString?.let { fw ->
+                return WEIGHT_NAMES[fw.lowercase()] ?: FontWeight.Normal
             }
-
-            // Text decorations
-            val textDecoration = when {
-                json.get("underline")?.asBoolean == true && json.get("strikethrough")?.asBoolean == true ->
-                    TextDecoration.combine(
-                        listOf(
-                            TextDecoration.Underline,
-                            TextDecoration.LineThrough
-                        )
-                    )
-
-                json.get("underline")?.asBoolean == true -> TextDecoration.Underline
-                json.get("strikethrough")?.asBoolean == true -> TextDecoration.LineThrough
-                else -> TextDecoration.None
-            }
-
-            // Lines (maxLines)
-            val maxLines = when {
-                json.get("lines")?.asInt == 0 -> Int.MAX_VALUE
-                json.get("lines")?.asInt != null -> json.get("lines").asInt
-                else -> Int.MAX_VALUE
-            }
-
-            // Line break mode (overflow)
-            val overflow = when (json.get("lineBreakMode")?.asString?.lowercase()) {
-                "clip" -> TextOverflow.Clip
-                "tail", "word" -> TextOverflow.Ellipsis
-                else -> TextOverflow.Clip
-            }
-
-            // Build modifier
-            val modifier = buildModifier(json, data, context)
-
-            // Calculate line height (default to fontSize to match iOS behavior)
-            val lineHeight = when {
-                json.get("lineHeightMultiple")?.asFloat != null -> {
-                    fontSize * json.get("lineHeightMultiple").asFloat
-                }
-                json.get("lineSpacing")?.asFloat != null -> {
-                    fontSize + json.get("lineSpacing").asFloat
-                }
-                else -> fontSize.toFloat() // Default: lineHeight = fontSize to match iOS
-            }
-
-            Text(
-                text = text,
-                fontSize = fontSize.sp,
-                color = fontColor,
-                fontWeight = fontWeight,
-                textAlign = textAlign,
-                textDecoration = textDecoration,
-                maxLines = maxLines,
-                overflow = overflow,
-                style = TextStyle(lineHeight = lineHeight.sp),
-                modifier = modifier
-            )
+            return null
         }
 
-        @Composable
-        private fun buildTextStyle(json: JsonObject, data: Map<String, Any>, context: android.content.Context): TextStyle {
-            var style = LocalTextStyle.current
-
-            json.get("fontSize")?.asInt?.let { fontSize ->
-                style = style.copy(fontSize = fontSize.sp)
-            }
-
-            ColorParser.parseColorWithBinding(json, "fontColor", data, context)?.let { color ->
-                style = style.copy(color = color)
-            }
-
-            // Font weight
-            val fontWeight = when {
-                json.get("font")?.asString == "bold" -> FontWeight.Bold
-                json.get("fontWeight")?.asString != null -> {
-                    when (json.get("fontWeight")?.asString?.lowercase()) {
-                        "thin" -> FontWeight.Thin
-                        "extralight" -> FontWeight.ExtraLight
-                        "light" -> FontWeight.Light
-                        "normal" -> FontWeight.Normal
-                        "medium" -> FontWeight.Medium
-                        "semibold" -> FontWeight.SemiBold
-                        "bold" -> FontWeight.Bold
-                        "extrabold" -> FontWeight.ExtraBold
-                        "black" -> FontWeight.Black
-                        else -> null
+        private fun resolveFontFamily(json: JsonObject, context: Context): FontFamily? {
+            json.get("font")?.asString?.let { font ->
+                val lower = font.lowercase()
+                if (!WEIGHT_NAMES.containsKey(lower)) {
+                    // Custom font family – try to resolve via resource
+                    val fontResName = font.replace("-", "_").lowercase()
+                    val resId = context.resources.getIdentifier(
+                        fontResName, "font", context.packageName
+                    )
+                    if (resId != 0) {
+                        return FontFamily(Font(resId))
                     }
                 }
+            }
+            return null
+        }
 
+        private fun resolveTextDecoration(json: JsonObject): TextDecoration? {
+            val hasUnderline = json.get("underline")?.asBoolean == true
+            val hasStrikethrough = json.get("strikethrough")?.asBoolean == true
+
+            return when {
+                hasUnderline && hasStrikethrough -> TextDecoration.combine(
+                    listOf(TextDecoration.Underline, TextDecoration.LineThrough)
+                )
+                hasUnderline -> TextDecoration.Underline
+                hasStrikethrough -> TextDecoration.LineThrough
                 else -> null
             }
-            fontWeight?.let { style = style.copy(fontWeight = it) }
+        }
 
-            // Line height (default to fontSize to match iOS behavior)
-            val fontSize = json.get("fontSize")?.asInt ?: 14
+        private fun resolveTextAlign(json: JsonObject): TextAlign? {
+            json.get("textAlign")?.asString?.let { align ->
+                return when (align.lowercase()) {
+                    "center" -> TextAlign.Center
+                    "right" -> TextAlign.End
+                    "left" -> TextAlign.Start
+                    else -> null
+                }
+            }
+            if (json.get("centerHorizontal")?.asBoolean == true) {
+                return TextAlign.Center
+            }
+            return null
+        }
+
+        /**
+         * Build TextStyle for shadow and lineHeight.
+         * Matches text_component.rb style generation.
+         */
+        private fun buildTextStyle(json: JsonObject, fontSize: Float?): TextStyle {
+            var style = TextStyle()
+
+            // Line height calculation matching Ruby implementation
             val lineHeight = when {
-                json.get("lineHeight")?.asFloat != null -> json.get("lineHeight").asFloat
                 json.get("lineHeightMultiple")?.asFloat != null -> {
-                    fontSize * json.get("lineHeightMultiple").asFloat
+                    val baseFontSize = fontSize ?: 14f
+                    baseFontSize * json.get("lineHeightMultiple").asFloat
                 }
                 json.get("lineSpacing")?.asFloat != null -> {
-                    fontSize + json.get("lineSpacing").asFloat
+                    val baseFontSize = fontSize ?: 14f
+                    baseFontSize + json.get("lineSpacing").asFloat
                 }
-                else -> fontSize.toFloat() // Default: lineHeight = fontSize to match iOS
-            }
-            style = style.copy(lineHeight = lineHeight.sp)
-
-            // Letter spacing
-            json.get("letterSpacing")?.asFloat?.let { letterSpacing ->
-                style = style.copy(letterSpacing = letterSpacing.sp)
-            }
-
-            // Text alignment
-            val textAlign = when {
-                json.get("textAlign")?.asString != null -> {
-                    when (json.get("textAlign")?.asString?.lowercase()) {
-                        "center" -> TextAlign.Center
-                        "right" -> TextAlign.End
-                        "left" -> TextAlign.Start
-                        else -> null
-                    }
+                fontSize != null -> {
+                    // Default lineHeight = fontSize * 1.3 to match iOS compact line spacing
+                    (fontSize * 1.3f)
                 }
-
-                json.get("centerHorizontal")?.asBoolean == true -> TextAlign.Center
                 else -> null
             }
-            textAlign?.let { style = style.copy(textAlign = it) }
+            lineHeight?.let { style = style.copy(lineHeight = it.sp) }
+
+            // Text shadow
+            if (json.get("textShadow") != null) {
+                style = style.copy(
+                    shadow = androidx.compose.ui.graphics.Shadow(
+                        color = Color.Black,
+                        offset = androidx.compose.ui.geometry.Offset(2f, 2f),
+                        blurRadius = 4f
+                    )
+                )
+            }
 
             return style
         }
 
-        @Composable
-        private fun buildModifier(json: JsonObject, data: Map<String, Any>, context: android.content.Context): Modifier {
+        /**
+         * Build full TextStyle for PartialAttributesText (includes fontSize, color, textAlign).
+         */
+        private fun buildFullTextStyle(
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: Context
+        ): TextStyle {
+            var style = buildTextStyle(json, json.get("fontSize")?.asFloat)
 
-            // Start with base modifier
-            var modifier: Modifier = Modifier
-
-            // 1. Apply size first (includes padding in the total size)
-            modifier = ModifierBuilder.applySize(modifier, json)
-
-            // 2. Apply margins (outer spacing)
-            modifier = ModifierBuilder.applyMargins(modifier, json)
-
-            // 3. Corner radius (clip) - apply before background for proper rendering
-            json.get("cornerRadius")?.asFloat?.let { radius ->
-                val shape = RoundedCornerShape(radius.dp)
-                modifier = modifier.clip(shape)
+            json.get("fontSize")?.asFloat?.let {
+                style = style.copy(fontSize = it.sp)
             }
 
-            // 4. Background color (supports @{binding})
-            ColorParser.parseColorWithBinding(json, "background", data, context)?.let { color ->
-                modifier = modifier.background(color)
+            ColorParser.parseColorWithBinding(json, "fontColor", data, context)?.let {
+                style = style.copy(color = it)
             }
 
-            // 5. Border (after background, supports solid/dashed/dotted, supports @{binding})
-            ColorParser.parseColorWithBinding(json, "borderColor", data, context)?.let { borderColor ->
-                    val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
-                    val borderStyle = json.get("borderStyle")?.asString ?: "solid"
-                    val shape = json.get("cornerRadius")?.asFloat?.let {
-                        RoundedCornerShape(it.dp)
-                    }
-                    modifier = when (borderStyle) {
-                        "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
-                        "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
-                        else -> { // "solid" or default
-                            if (shape != null) {
-                                modifier.border(borderWidth.dp, borderColor, shape)
-                            } else {
-                                modifier.border(borderWidth.dp, borderColor)
-                            }
-                        }
-                    }
+            resolveFontWeight(json)?.let {
+                style = style.copy(fontWeight = it)
             }
 
-            // 6. Shadow/elevation
-            json.get("shadow")?.let { shadow ->
-                when {
-                    shadow.isJsonPrimitive -> {
-                        val primitive = shadow.asJsonPrimitive
-                        when {
-                            primitive.isBoolean && primitive.asBoolean -> {
-                                modifier = modifier.shadow(6.dp)
-                            }
-                            primitive.isNumber -> {
-                                modifier = modifier.shadow(primitive.asFloat.dp)
-                            }
-                        }
-                    }
+            resolveFontFamily(json, context)?.let {
+                style = style.copy(fontFamily = it)
+            }
+
+            resolveTextAlign(json)?.let {
+                style = style.copy(textAlign = it)
+            }
+
+            return style
+        }
+
+        /**
+         * Apply edgeInset (text-specific padding) to modifier.
+         * edgeInset takes priority over regular padding for Text components.
+         */
+        private fun applyEdgeInset(modifier: Modifier, json: JsonObject): Modifier {
+            val insets = json.get("edgeInset") ?: return modifier
+            return when {
+                insets.isJsonArray && insets.asJsonArray.size() == 4 -> {
+                    val arr = insets.asJsonArray
+                    modifier.then(
+                        Modifier.padding(
+                            top = arr[0].asFloat.dp,
+                            end = arr[1].asFloat.dp,
+                            bottom = arr[2].asFloat.dp,
+                            start = arr[3].asFloat.dp
+                        )
+                    )
                 }
+                insets.isJsonPrimitive && insets.asJsonPrimitive.isNumber -> {
+                    modifier.then(Modifier.padding(insets.asFloat.dp))
+                }
+                else -> modifier
             }
+        }
 
-            // 7. Apply padding (inner spacing)
-            modifier = ModifierBuilder.applyPadding(modifier, json)
+        /**
+         * Resolve partial attribute range: supports numeric array [start, end] or string pattern.
+         */
+        private fun resolvePartialRange(attr: JsonObject, text: String): Any? {
+            val rangeElement = attr.get("range") ?: return null
+            return when {
+                rangeElement.isJsonArray -> {
+                    val arr = rangeElement.asJsonArray
+                    if (arr.size() == 2) {
+                        // Numeric range – extract substring for localization support
+                        val start = arr[0].asInt
+                        val end = arr[1].asInt
+                        if (start in 0..text.length && end in start..text.length) {
+                            text.substring(start, end)
+                        } else {
+                            listOf(start, end)
+                        }
+                    } else null
+                }
+                rangeElement.isJsonPrimitive && rangeElement.asJsonPrimitive.isString -> {
+                    rangeElement.asString
+                }
+                else -> null
+            }
+        }
 
-            // 8. Apply opacity last
-            modifier = ModifierBuilder.applyOpacity(modifier, json)
+        /**
+         * Resolve click handler for partial attributes.
+         * onclick (lowercase) → selector format (string only)
+         * onClick (camelCase) → binding format only (@{functionName})
+         */
+        private fun resolvePartialClickHandler(
+            attr: JsonObject,
+            data: Map<String, Any>
+        ): (() -> Unit)? {
+            val methodName = when {
+                attr.get("onclick")?.asString != null -> {
+                    val value = attr.get("onclick").asString
+                    if (!value.contains("@{")) value else null
+                }
+                attr.get("onClick")?.asString != null -> {
+                    val value = attr.get("onClick").asString
+                    ModifierBuilder.extractBindingProperty(value)
+                }
+                else -> null
+            } ?: return null
 
-            return modifier
+            val handler = data[methodName] ?: return null
+            return if (handler is Function<*>) {
+                {
+                    try {
+                        @Suppress("UNCHECKED_CAST")
+                        (handler as () -> Unit)()
+                    } catch (_: Exception) {}
+                }
+            } else null
         }
     }
 }

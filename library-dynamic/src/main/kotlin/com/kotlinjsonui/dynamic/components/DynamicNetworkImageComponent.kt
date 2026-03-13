@@ -1,16 +1,8 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -18,29 +10,33 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.ColorParser
-import com.kotlinjsonui.dynamic.helpers.dashedBorder
-import com.kotlinjsonui.dynamic.helpers.dottedBorder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
 /**
  * Dynamic NetworkImage Component Converter
- * Converts JSON to NetworkImage composable at runtime using Coil
- * 
- * Supported JSON attributes (matching Ruby implementation):
+ * Converts JSON to NetworkImage composable at runtime using Coil AsyncImage.
+ *
+ * Supported JSON attributes (matching Ruby networkimage_component.rb):
  * - source/url/src: String URL or @{variable} for image URL
- * - placeholder: String resource name for placeholder image
- * - errorImage: String resource name for error image
- * - contentDescription: String description for accessibility
- * - contentMode: "aspectFit" | "aspectFill" | "fill" | "scaleToFill" | "center"
- * - size: Number for both width and height
+ * - hint/placeholder: String resource name for placeholder image (.png/.jpg extension stripped)
+ * - errorImage: String resource name for error image (.png/.jpg extension stripped)
+ * - contentDescription: String description for accessibility (default: "Image")
+ * - contentMode: "aspectFit" | "aspectFill" | "fill" | "scaleToFill" | "center" (case-insensitive)
+ * - size: Number for square width and height (overrides width/height)
  * - width/height: Number dimensions
- * - cornerRadius: Float corner radius
+ * - cornerRadius: Float corner radius (applied via applyBackground clip)
  * - borderWidth: Float border width
  * - borderColor: String hex color for border
- * - alpha: Float opacity (0.0 to 1.0)
+ * - borderStyle: "solid" | "dashed" | "dotted"
+ * - alpha/opacity: Float opacity (0.0 to 1.0), supports @{binding}
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
+ * - background: String hex color for background
+ * - onClick/onclick: String event handler name
+ * - id: String for testTag
+ * - onAppear/onDisappear: Lifecycle event handlers
  */
 class DynamicNetworkImageComponent {
     companion object {
@@ -50,28 +46,19 @@ class DynamicNetworkImageComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
-            
-            // Parse image URL with data binding support
-            val urlElement = json.get("source") ?: json.get("url") ?: json.get("src")
-            val imageUrl = when {
-                urlElement?.isJsonPrimitive == true -> {
-                    val urlString = urlElement.asString
-                    if (urlString.contains("@{")) {
-                        // Extract variable name from @{variable}
-                        val pattern = "@\\{([^}]+)\\}".toRegex()
-                        val variable = pattern.find(urlString)?.groupValues?.get(1)
-                        data[variable]?.toString() ?: ""
-                    } else {
-                        urlString
-                    }
-                }
-                else -> ""
-            }
-            
-            // Parse content description
-            val contentDescription = json.get("contentDescription")?.asString ?: "Image"
-            
-            // Parse content scale (case-insensitive)
+
+            // ── URL resolution: source > url > src, with @{binding} support ──
+            val rawUrl = json.get("source")?.asString
+                ?: json.get("url")?.asString
+                ?: json.get("src")?.asString
+                ?: ""
+            val imageUrl = processDataBinding(rawUrl, data)
+
+            // ── Content description ──
+            val contentDescription = ResourceResolver.resolveText(json, "contentDescription", data, context)
+                .ifEmpty { "Image" }
+
+            // ── Content scale (case-insensitive) ──
             val contentScale = when (json.get("contentMode")?.asString?.lowercase()) {
                 "aspectfit" -> ContentScale.Fit
                 "aspectfill" -> ContentScale.Crop
@@ -79,71 +66,57 @@ class DynamicNetworkImageComponent {
                 "center" -> ContentScale.None
                 else -> ContentScale.Fit
             }
-            
-            // Parse placeholder and error images
-            val placeholderName = json.get("placeholder")?.asString
-            val errorImageName = json.get("errorImage")?.asString
-            
-            // Get resource IDs for placeholder and error images
+
+            // ── Placeholder: hint > placeholder, strip .png/.jpg extension ──
+            val placeholderName = json.get("hint")?.asString
+                ?: json.get("placeholder")?.asString
             val placeholderResId = placeholderName?.let { name ->
-                val cleanName = name.replace(".png", "").replace(".jpg", "")
+                val cleanName = name
+                    .removeSuffix(".png")
+                    .removeSuffix(".jpg")
+                    .removeSuffix(".jpeg")
+                    .removeSuffix(".webp")
                 context.resources.getIdentifier(cleanName, "drawable", context.packageName)
-            }
-            
+            }?.takeIf { it != 0 }
+
+            // ── Error image: errorImage, strip extension ──
+            val errorImageName = json.get("errorImage")?.asString
             val errorResId = errorImageName?.let { name ->
-                val cleanName = name.replace(".png", "").replace(".jpg", "")
+                val cleanName = name
+                    .removeSuffix(".png")
+                    .removeSuffix(".jpg")
+                    .removeSuffix(".jpeg")
+                    .removeSuffix(".webp")
                 context.resources.getIdentifier(cleanName, "drawable", context.packageName)
-            }
-            
-            // Build modifier
-            // Compose Modifier order (top to bottom = outer to inner):
-            // 1. margins (outer spacing)
-            // 2. size
-            // 3. clip/border
-            // 4. padding (inner spacing)
-            var modifier: Modifier = Modifier
+            }?.takeIf { it != 0 }
 
-            // 1. Margins first (outer spacing, before size)
-            modifier = ModifierBuilder.applyMargins(modifier, json)
-
-            // 2. Size
-            json.get("size")?.asFloat?.let { size ->
-                modifier = modifier.size(size.dp)
-            } ?: run {
-                modifier = ModifierBuilder.applySize(modifier, json)
-            }
-
-            // 3. Corner radius and shape (after size)
-            val cornerRadius = json.get("cornerRadius")?.asFloat
-            val shape = if (cornerRadius != null && cornerRadius > 0) {
-                if (cornerRadius >= 500) CircleShape else RoundedCornerShape(cornerRadius.dp)
-            } else null
-
-            if (shape != null) {
-                modifier = modifier.clip(shape)
+            // ── Build modifier ──
+            // Standard order: testTag → margins → size → alpha → shadow → background(clip+border+bg) → clickable → padding
+            // Special handling: "size" attribute overrides width/height with square .size(N.dp)
+            val sizeValue = json.get("size")?.asFloat
+            val modifier = if (sizeValue != null) {
+                // Build modifier but skip applySize — we apply square size manually
+                var m: Modifier = Modifier
+                m = ModifierBuilder.applyTestTag(m, json)
+                m = ModifierBuilder.applyMargins(m, json, data)
+                // Square size instead of applySize
+                m = m.size(sizeValue.dp)
+                m = ModifierBuilder.applyAlpha(m, json, data)
+                m = ModifierBuilder.applyShadow(m, json)
+                m = ModifierBuilder.applyBackground(m, json, data, context)
+                m = ModifierBuilder.applyClickable(m, json, data)
+                m = ModifierBuilder.applyPadding(m, json)
+                m
+            } else {
+                ModifierBuilder.buildModifier(json, data, context = context)
             }
 
-            // Apply border (supports solid/dashed/dotted)
-            val borderWidth = json.get("borderWidth")?.asFloat
-            val borderColor = ColorParser.parseColor(json, "borderColor")
-            if (borderWidth != null && borderWidth > 0 && borderColor != null) {
-                val borderStyle = json.get("borderStyle")?.asString ?: "solid"
-                modifier = when (borderStyle) {
-                    "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, shape)
-                    "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, shape)
-                    else -> modifier.border(borderWidth.dp, borderColor, shape ?: RectangleShape)
-                }
+            // ── Lifecycle effects ──
+            if (ModifierBuilder.hasLifecycleEvents(json)) {
+                ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
-            // 4. Padding (inner spacing, after clip)
-            modifier = ModifierBuilder.applyPadding(modifier, json)
-
-            // Alpha/opacity
-            json.get("alpha")?.asFloat?.let { alpha ->
-                modifier = modifier.alpha(alpha.coerceIn(0f, 1f))
-            }
-            
-            // Create the AsyncImage
+            // ── AsyncImage ──
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(imageUrl)

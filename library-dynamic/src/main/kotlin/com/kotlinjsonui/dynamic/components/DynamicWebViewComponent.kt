@@ -5,7 +5,7 @@ import com.google.gson.JsonObject
 
 /**
  * Dynamic WebView Component Converter
- * Converts JSON to WebView composable at runtime
+ * Delegates to DynamicWebComponent which handles both "web" and "webview" types.
  */
 class DynamicWebViewComponent {
     companion object {
@@ -14,11 +14,7 @@ class DynamicWebViewComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            // TODO: Implement dynamic web view creation from JSON
-            // - Parse URL or HTML content
-            // - Handle JavaScript settings
-            // - Support web view client callbacks
-            // - Apply sizing and scrolling behavior
+            DynamicWebComponent.create(json, data)
         }
     }
 }

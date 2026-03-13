@@ -2,6 +2,7 @@ package com.example.kotlinjsonui.sample.dynamic.components.extensions
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
 import com.google.gson.JsonElement
 import androidx.compose.ui.text.style.TextAlign
@@ -18,14 +19,16 @@ object DynamicUserAvatarComponent {
         json: JsonObject,
         data: Map<String, Any> = emptyMap()
     ) {
+        val context = LocalContext.current
+
         // Parse attributes
         val name = parseString(json.get("name"), data)
         val avatarUrl = parseString(json.get("avatarUrl"), data)
         val size = parseInt(json.get("size"), data)
         val isOnline = parseBoolean(json.get("isOnline"), data)
-        
+
         // Build modifier
-        val modifier = ModifierBuilder.buildModifier(json)
+        val modifier = ModifierBuilder.buildModifier(json, data, context = context)
         
         // Call the custom component
         UserAvatar(

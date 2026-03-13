@@ -96,8 +96,14 @@ fun DynamicView(
         return
     }
 
-    // Check for visibility attribute
-    val visibility = styledJson.get("visibility")?.asString
+    // Check for visibility / hidden attributes (with data binding support)
+    val visibility = styledJson.get("visibility")?.asString?.let {
+        processDataBinding(it, data, context)
+    }
+    val hidden = resolveHidden(styledJson, data)
+
+    // Short-circuit: hidden = true → don't render at all
+    if (hidden == true) return
 
     // Render the appropriate component based on type
     val renderComponent: @Composable () -> Unit = {
@@ -160,15 +166,38 @@ fun DynamicView(
 
     // Apply visibility wrapper if visibility attribute is present
     if (!visibility.isNullOrEmpty()) {
-        // Process data binding for visibility
-        val processedVisibility = processDataBinding(visibility, data, context)
         VisibilityWrapper(
-            visibility = processedVisibility,
+            visibility = visibility,
             content = renderComponent
         )
     } else {
         renderComponent()
     }
+}
+
+/**
+ * Resolve the 'hidden' attribute with data binding support.
+ * Supports: boolean, string "true"/"false", binding @{prop} → Boolean/String
+ */
+private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
+    val element = json.get("hidden") ?: return null
+    if (element.isJsonPrimitive) {
+        val p = element.asJsonPrimitive
+        if (p.isBoolean) return p.asBoolean
+        if (p.isString) {
+            val s = p.asString
+            if (s.startsWith("@{") && s.endsWith("}")) {
+                val prop = s.drop(2).dropLast(1)
+                return when (val bound = data[prop]) {
+                    is Boolean -> bound
+                    is String -> bound.equals("true", ignoreCase = true)
+                    else -> null
+                }
+            }
+            return s.equals("true", ignoreCase = true)
+        }
+    }
+    return null
 }
 
 /**

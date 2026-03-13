@@ -8,23 +8,24 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.components.Segment
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic Segment Component Converter
- * Converts JSON to Segment (TabRow) composable at runtime
- * 
- * Supported JSON attributes (matching Ruby implementation):
+ * Converts JSON to Segment (TabRow) composable at runtime.
+ * Reference: segment_component.rb in kjui_tools.
+ *
+ * Supported JSON attributes:
  * - selectedIndex/bind: Integer or @{variable} for selected tab index
  * - items/segments: Array of segment titles or @{variable} for dynamic segments
  * - enabled: Boolean or @{variable} to enable/disable
- * - backgroundColor: String hex color for container
- * - normalColor: String hex color for unselected text
- * - selectedColor/tintColor/selectedSegmentTintColor: String hex color for selected text
- * - indicatorColor: String hex color for indicator
- * - onValueChange: String method name for selection change handler
- * - width/height: Number dimensions
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
+ * - backgroundColor: Color for container (containerColor)
+ * - normalColor: Color for unselected text (contentColor)
+ * - selectedColor/tintColor/selectedSegmentTintColor: Color for selected text (selectedContentColor)
+ * - indicatorColor: Color for tab indicator
+ * - onValueChange: @{handler} for selection change callback (receives index)
+ * - Modifiers: testTag, margins, size, alpha, padding, weight
  */
 class DynamicSegmentComponent {
     companion object {
@@ -33,21 +34,14 @@ class DynamicSegmentComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val context = LocalContext.current
+
             // Parse binding variable for selected index
-            val bindingVariable = when {
-                json.get("selectedIndex")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("selectedIndex").asString)?.groupValues?.get(1)
-                }
-                json.get("bind")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
-                }
-                else -> null
-            }
-            
+            val bindingVariable = extractBindingVariable(json, "selectedIndex")
+                ?: extractBindingVariable(json, "bind")
+
             // Get selected index
-            val initialIndex = when {
+            val currentIndex = when {
                 bindingVariable != null -> {
                     when (val boundValue = data[bindingVariable]) {
                         is Number -> boundValue.toInt()
@@ -55,34 +49,23 @@ class DynamicSegmentComponent {
                         else -> 0
                     }
                 }
-                json.get("selectedIndex")?.isJsonPrimitive == true -> {
-                    val indexElement = json.get("selectedIndex")
+                json.has("selectedIndex") -> {
+                    val element = json.get("selectedIndex")
                     when {
-                        indexElement.asJsonPrimitive.isNumber -> indexElement.asInt
-                        indexElement.asJsonPrimitive.isString && 
-                        !indexElement.asString.contains("@{") -> 
-                            indexElement.asString.toIntOrNull() ?: 0
+                        element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> element.asInt
+                        element.isJsonPrimitive && element.asJsonPrimitive.isString &&
+                                !ModifierBuilder.isBinding(element.asString) ->
+                            element.asString.toIntOrNull() ?: 0
                         else -> 0
                     }
                 }
                 else -> 0
             }
-            
-            // State for selected index
-            var selectedIndex by remember(initialIndex, bindingVariable, data) { 
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        when (val boundValue = data[bindingVariable]) {
-                            is Number -> boundValue.toInt()
-                            is String -> boundValue.toIntOrNull() ?: 0
-                            else -> 0
-                        }
-                    } else {
-                        initialIndex
-                    }
-                )
+
+            var selectedIndex by remember(currentIndex, bindingVariable, data) {
+                mutableStateOf(currentIndex)
             }
-            
+
             // Update value when data changes
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
@@ -93,39 +76,27 @@ class DynamicSegmentComponent {
                     }
                 }
             }
-            
+
             // Parse segments
             val segments = parseSegments(json, data)
-            
-            // Parse enabled state
-            val isEnabled = when {
-                json.get("enabled")?.isJsonPrimitive == true -> {
-                    val enabledValue = json.get("enabled")
-                    when {
-                        enabledValue.asJsonPrimitive.isBoolean -> enabledValue.asBoolean
-                        enabledValue.asJsonPrimitive.isString && 
-                        enabledValue.asString.contains("@{") -> {
-                            val pattern = "@\\{([^}]+)\\}".toRegex()
-                            val variable = pattern.find(enabledValue.asString)?.groupValues?.get(1)
-                            (data[variable] as? Boolean) ?: true
-                        }
-                        else -> true
-                    }
-                }
-                else -> true
-            }
-            
+
+            // Parse enabled state (supports @{binding})
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, true)
+
             // Parse colors
-            val backgroundColor = ColorParser.parseColor(json, "backgroundColor")
-            val normalColor = ColorParser.parseColor(json, "normalColor")
-            val selectedColor = ColorParser.parseColor(json, "selectedColor")
-                ?: ColorParser.parseColor(json, "tintColor")
-                ?: ColorParser.parseColor(json, "selectedSegmentTintColor")
-            val indicatorColor = ColorParser.parseColor(json, "indicatorColor")
-            
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
+            val normalColor = ColorParser.parseColorWithBinding(json, "normalColor", data, context)
+            val selectedColor = ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "selectedSegmentTintColor", data, context)
+            val indicatorColor = ColorParser.parseColorWithBinding(json, "indicatorColor", data, context)
+
             // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json)
-            
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
+            // Handle tab click with binding update + event handler
+            val viewId = json.get("id")?.asString ?: "segment"
+
             // Create the Segment using the existing component
             Segment(
                 selectedTabIndex = selectedIndex,
@@ -142,51 +113,18 @@ class DynamicSegmentComponent {
                         enabled = isEnabled,
                         onClick = {
                             selectedIndex = index
-                            
-                            // Call custom handler if specified
-                            // onValueChange (camelCase) -> binding format only (@{functionName})
-                            val onValueChangeHandled = json.get("onValueChange")?.asString?.let { onValueChangeValue ->
-                                // Must be binding format
-                                if (onValueChangeValue.contains("@{")) {
-                                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                                    val methodName = pattern.find(onValueChangeValue)?.groupValues?.get(1)
-                                    methodName?.let { name ->
-                                        val handler = data[name]
-                                        if (handler is Function<*>) {
-                                            try {
-                                                @Suppress("UNCHECKED_CAST")
-                                                (handler as (Int) -> Unit)(index)
-                                                true
-                                            } catch (e: Exception) {
-                                                // Try without parameter
-                                                try {
-                                                    @Suppress("UNCHECKED_CAST")
-                                                    (handler as () -> Unit)()
-                                                    true
-                                                } catch (e2: Exception) {
-                                                    false
-                                                }
-                                            }
-                                        } else false
-                                    } ?: false
-                                } else false
-                            } ?: false
 
-                            if (!onValueChangeHandled) {
-                                // Update bound variable if no custom handler
-                                if (bindingVariable != null) {
-                                    val updateData = data["updateData"]
-                                    if (updateData is Function<*>) {
-                                        try {
-                                            @Suppress("UNCHECKED_CAST")
-                                            (updateData as (Map<String, Any>) -> Unit)(
-                                                mapOf(bindingVariable to index)
-                                            )
-                                        } catch (e: Exception) {
-                                            // Update function doesn't match expected signature
-                                        }
-                                    }
-                                }
+                            // Update bound variable
+                            if (bindingVariable != null) {
+                                @Suppress("UNCHECKED_CAST")
+                                (data["updateData"] as? (Map<String, Any>) -> Unit)
+                                    ?.invoke(mapOf(bindingVariable to index))
+                            }
+
+                            // Call onValueChange handler if specified
+                            val handler = json.get("onValueChange")?.asString
+                            if (handler != null && ModifierBuilder.isBinding(handler)) {
+                                ModifierBuilder.resolveEventHandler(handler, data, viewId, index)
                             }
                         },
                         text = {
@@ -203,10 +141,12 @@ class DynamicSegmentComponent {
                 }
             }
         }
-        
+
+        // ── Helpers ──
+
         private fun parseSegments(json: JsonObject, data: Map<String, Any>): List<String> {
             val segmentsElement = json.get("items") ?: json.get("segments")
-            
+
             return when {
                 segmentsElement == null -> emptyList()
                 segmentsElement.isJsonArray -> {
@@ -217,10 +157,8 @@ class DynamicSegmentComponent {
                         }
                     }
                 }
-                segmentsElement.isJsonPrimitive && segmentsElement.asString.contains("@{") -> {
-                    // Dynamic segments from data binding
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    val variable = pattern.find(segmentsElement.asString)?.groupValues?.get(1)
+                segmentsElement.isJsonPrimitive && ModifierBuilder.isBinding(segmentsElement.asString) -> {
+                    val variable = ModifierBuilder.extractBindingProperty(segmentsElement.asString)
                     if (variable != null) {
                         when (val segments = data[variable]) {
                             is List<*> -> segments.mapNotNull { it?.toString() }
@@ -233,6 +171,11 @@ class DynamicSegmentComponent {
                 }
                 else -> emptyList()
             }
+        }
+
+        private fun extractBindingVariable(json: JsonObject, key: String): String? {
+            val value = json.get(key)?.asString ?: return null
+            return ModifierBuilder.extractBindingProperty(value)
         }
     }
 }

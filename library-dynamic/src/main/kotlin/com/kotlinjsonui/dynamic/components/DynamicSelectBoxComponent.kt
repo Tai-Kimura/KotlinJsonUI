@@ -2,37 +2,38 @@ package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * Dynamic SelectBox Component Converter
- * Converts JSON to dropdown/date picker composable at runtime
- * 
- * Supported JSON attributes (matching Ruby implementation):
- * - selectedItem/bind: String with @{variable} for selected value binding
- * - items/options: Array or @{variable} for dropdown options
+ * Converts JSON to SelectBox/DateSelectBox composable at runtime.
+ * Reference: selectbox_component.rb in kjui_tools.
+ *
+ * Supported JSON attributes:
+ * - selectedItem/selectedDate/bind: @{variable} for selected value binding
  * - selectItemType: "Date" for date picker mode
- * - datePickerMode: "date" | "time" | "dateAndTime" 
+ * - items/options: Array or @{variable} for dropdown options
+ * - datePickerMode: "date" | "time" | "dateAndTime"
  * - datePickerStyle: "wheels" | "inline" | "compact" | "graphical"
  * - dateFormat/dateStringFormat: Date format pattern
  * - minuteInterval: Integer interval for time picker
  * - minimumDate/maximumDate: Date range constraints
- * - hint/placeholder: String placeholder text
+ * - hint/placeholder: Placeholder text
  * - enabled/disabled: Boolean state
- * - background: String hex color
- * - borderColor: String hex color
- * - fontColor: String text color
- * - hintColor: String placeholder color
+ * - background/borderColor/fontColor/hintColor: Colors
  * - cornerRadius: Float corner radius
- * - cancelButtonBackgroundColor: String color for cancel button
- * - cancelButtonTextColor: String color for cancel button text
- * - width/height: Number dimensions
- * - padding/paddings: Number or Array for padding
- * - margins: Array or individual margin properties
+ * - fontSize: Float font size
+ * - font: Font weight string (bold, semibold, medium, light, thin)
+ * - cancelButtonBackgroundColor/cancelButtonTextColor: Cancel button colors
+ * - onValueChange: @{handler} for change callback
+ * - Modifiers: testTag, margins, size, alpha, clickable, padding, alignment, weight
  */
 class DynamicSelectBoxComponent {
     companion object {
@@ -41,110 +42,104 @@ class DynamicSelectBoxComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            // Check if this is a date picker
             val isDatePicker = json.get("selectItemType")?.asString == "Date"
-            
+
             if (isDatePicker) {
                 createDatePicker(json, data)
             } else {
                 createDropdown(json, data)
             }
         }
-        
+
+        // ── Dropdown SelectBox ──
+
         @Composable
-        private fun createDropdown(
-            json: JsonObject,
-            data: Map<String, Any> = emptyMap()
-        ) {
-            // Parse binding variable
-            val bindingVariable = when {
-                json.get("selectedItem")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("selectedItem").asString)?.groupValues?.get(1)
-                }
-                json.get("bind")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
-                }
-                else -> null
+        private fun createDropdown(json: JsonObject, data: Map<String, Any>) {
+            val context = LocalContext.current
+
+            // Parse binding variable: selectedItem > bind
+            val bindingVariable = extractBindingVariable(json, "selectedItem")
+                ?: extractBindingVariable(json, "bind")
+
+            // Get current selected value
+            val currentValue = if (bindingVariable != null) {
+                data[bindingVariable]?.toString() ?: ""
+            } else ""
+
+            var selectedValue by remember(currentValue, bindingVariable, data) {
+                mutableStateOf(currentValue)
             }
-            
-            // Get initial selected value
-            val initialValue = when {
-                bindingVariable != null -> {
-                    data[bindingVariable]?.toString() ?: ""
-                }
-                else -> ""
-            }
-            
-            // State for the selected value
-            var selectedValue by remember(initialValue, bindingVariable, data) { 
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        data[bindingVariable]?.toString() ?: ""
-                    } else {
-                        initialValue
-                    }
-                )
-            }
-            
-            // Update value when data changes
+
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     selectedValue = data[bindingVariable]?.toString() ?: ""
                 }
             }
-            
+
             // Parse options
             val options = parseOptions(json, data)
-            
+
             // Parse enabled state
             val isEnabled = when {
                 json.get("disabled")?.asBoolean == true -> false
-                json.get("enabled")?.asBoolean == false -> false
+                json.has("enabled") -> ResourceResolver.resolveBoolean(json, "enabled", data, true)
                 else -> true
             }
-            
+
             // Parse placeholder
-            val placeholder = json.get("hint")?.asString 
+            val placeholder = json.get("hint")?.asString
                 ?: json.get("placeholder")?.asString
-            
-            // Parse colors using helper
-            val colors = ColorParser.parseTextColors(json)
-            val backgroundColor = colors.backgroundColor ?: Color.White
-            val borderColor = colors.borderColor ?: Color(0xFFCCCCCC)
-            val textColor = colors.textColor ?: Color.Black
-            val hintColor = colors.hintColor ?: Color(0xFF999999)
-            
+
+            // Parse colors
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: Color.White
+            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
+                ?: Color(0xFFCCCCCC)
+            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: Color.Black
+            val hintColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
+                ?: Color(0xFF999999)
+
             val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
-            
-            val cancelButtonBackgroundColor = ColorParser.parseColor(json, "cancelButtonBackgroundColor")
-            val cancelButtonTextColor = ColorParser.parseColor(json, "cancelButtonTextColor")
-            
-            // Build modifier using helper (defaulting to fill width)
-            val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
-            
-            // Create the SelectBox using the existing component
+
+            // Font styling
+            val fontSize = json.get("fontSize")?.asFloat
+            val fontWeight = parseFontWeight(json.get("font")?.asString)
+
+            val cancelButtonBackgroundColor = ColorParser.parseColorWithBinding(
+                json, "cancelButtonBackgroundColor", data, context
+            )
+            val cancelButtonTextColor = ColorParser.parseColorWithBinding(
+                json, "cancelButtonTextColor", data, context
+            )
+
+            // Handle value change
+            val viewId = json.get("id")?.asString ?: "selectbox"
+            val onValueChange: (String) -> Unit = { newValue ->
+                selectedValue = newValue
+
+                // Update bound variable
+                if (bindingVariable != null) {
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue))
+                }
+
+                // Call onValueChange handler if specified
+                val handler = json.get("onValueChange")?.asString
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+            }
+
+            // Build modifier (default fill width)
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, defaultFillMaxWidth = true
+            )
+
             SelectBox(
                 value = selectedValue,
-                onValueChange = { newValue ->
-                    selectedValue = newValue
-                    
-                    // Update bound variable
-                    if (bindingVariable != null) {
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(
-                                    mapOf(bindingVariable to newValue)
-                                )
-                            } catch (e: Exception) {
-                                // Update function doesn't match expected signature
-                            }
-                        }
-                    }
-                },
+                onValueChange = onValueChange,
                 options = options,
                 modifier = modifier,
                 placeholder = placeholder,
@@ -158,105 +153,93 @@ class DynamicSelectBoxComponent {
                 cancelButtonTextColor = cancelButtonTextColor ?: textColor
             )
         }
-        
+
+        // ── Date Picker SelectBox ──
+
         @Composable
-        private fun createDatePicker(
-            json: JsonObject,
-            data: Map<String, Any> = emptyMap()
-        ) {
-            // Parse binding variable
-            val bindingVariable = when {
-                json.get("selectedItem")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("selectedItem").asString)?.groupValues?.get(1)
-                }
-                json.get("bind")?.asString?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
-                }
-                else -> null
+        private fun createDatePicker(json: JsonObject, data: Map<String, Any>) {
+            val context = LocalContext.current
+
+            // Parse binding variable: selectedDate > selectedItem > bind
+            val bindingVariable = extractBindingVariable(json, "selectedDate")
+                ?: extractBindingVariable(json, "selectedItem")
+                ?: extractBindingVariable(json, "bind")
+
+            // Get current value
+            val currentValue = if (bindingVariable != null) {
+                data[bindingVariable]?.toString() ?: ""
+            } else ""
+
+            var selectedDate by remember(currentValue, bindingVariable, data) {
+                mutableStateOf(currentValue)
             }
-            
-            // Get initial value
-            val initialValue = when {
-                bindingVariable != null -> {
-                    data[bindingVariable]?.toString() ?: ""
-                }
-                else -> ""
-            }
-            
-            // State for the selected date
-            var selectedDate by remember(initialValue, bindingVariable, data) { 
-                mutableStateOf(
-                    if (bindingVariable != null) {
-                        data[bindingVariable]?.toString() ?: ""
-                    } else {
-                        initialValue
-                    }
-                )
-            }
-            
-            // Update value when data changes
+
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
                     selectedDate = data[bindingVariable]?.toString() ?: ""
                 }
             }
-            
+
             // Parse date picker attributes
             val datePickerMode = json.get("datePickerMode")?.asString ?: "date"
             val datePickerStyle = json.get("datePickerStyle")?.asString ?: "compact"
-            val dateFormat = json.get("dateFormat")?.asString 
-                ?: json.get("dateStringFormat")?.asString 
+            val dateFormat = json.get("dateFormat")?.asString
+                ?: json.get("dateStringFormat")?.asString
                 ?: "yyyy-MM-dd"
             val minuteInterval = json.get("minuteInterval")?.asInt ?: 1
             val minimumDate = json.get("minimumDate")?.asString
             val maximumDate = json.get("maximumDate")?.asString
-            
+
             // Parse enabled state
             val isEnabled = when {
                 json.get("disabled")?.asBoolean == true -> false
-                json.get("enabled")?.asBoolean == false -> false
+                json.has("enabled") -> ResourceResolver.resolveBoolean(json, "enabled", data, true)
                 else -> true
             }
-            
+
             // Parse placeholder
-            val placeholder = json.get("hint")?.asString 
+            val placeholder = json.get("hint")?.asString
                 ?: json.get("placeholder")?.asString
-            
-            // Parse colors using helper
-            val colors = ColorParser.parseTextColors(json)
-            val backgroundColor = colors.backgroundColor ?: Color.White
-            val borderColor = colors.borderColor ?: Color(0xFFCCCCCC)
-            val textColor = colors.textColor ?: Color.Black
-            val hintColor = colors.hintColor ?: Color(0xFF999999)
-            
+
+            // Parse colors
+            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: Color.White
+            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
+                ?: Color(0xFFCCCCCC)
+            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+                ?: Color.Black
+            val hintColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
+                ?: Color(0xFF999999)
+
             val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
-            
-            // Build modifier using helper (defaulting to fill width)
-            val modifier = ModifierBuilder.buildModifier(json, defaultFillMaxWidth = true)
-            
-            // Create the DateSelectBox using the existing component
+
+            // Handle value change
+            val viewId = json.get("id")?.asString ?: "selectbox"
+            val onValueChange: (String) -> Unit = { newValue ->
+                selectedDate = newValue
+
+                // Update bound variable
+                if (bindingVariable != null) {
+                    @Suppress("UNCHECKED_CAST")
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)
+                        ?.invoke(mapOf(bindingVariable to newValue))
+                }
+
+                // Call onValueChange handler if specified
+                val handler = json.get("onValueChange")?.asString
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+            }
+
+            // Build modifier (default fill width for date pickers)
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, defaultFillMaxWidth = true
+            )
+
             DateSelectBox(
                 value = selectedDate,
-                onValueChange = { newValue ->
-                    selectedDate = newValue
-                    
-                    // Update bound variable
-                    if (bindingVariable != null) {
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(
-                                    mapOf(bindingVariable to newValue)
-                                )
-                            } catch (e: Exception) {
-                                // Update function doesn't match expected signature
-                            }
-                        }
-                    }
-                },
+                onValueChange = onValueChange,
                 datePickerMode = datePickerMode,
                 datePickerStyle = datePickerStyle,
                 dateFormat = dateFormat,
@@ -273,10 +256,12 @@ class DynamicSelectBoxComponent {
                 cornerRadius = cornerRadius
             )
         }
-        
+
+        // ── Helpers ──
+
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<String> {
             val optionsElement = json.get("items") ?: json.get("options")
-            
+
             return when {
                 optionsElement == null -> emptyList()
                 optionsElement.isJsonArray -> {
@@ -291,10 +276,8 @@ class DynamicSelectBoxComponent {
                         }
                     }
                 }
-                optionsElement.isJsonPrimitive && optionsElement.asString.contains("@{") -> {
-                    // Dynamic options from data binding
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    val variable = pattern.find(optionsElement.asString)?.groupValues?.get(1)
+                optionsElement.isJsonPrimitive && ModifierBuilder.isBinding(optionsElement.asString) -> {
+                    val variable = ModifierBuilder.extractBindingProperty(optionsElement.asString)
                     if (variable != null) {
                         when (val options = data[variable]) {
                             is List<*> -> options.mapNotNull { it?.toString() }
@@ -307,6 +290,22 @@ class DynamicSelectBoxComponent {
                 }
                 else -> emptyList()
             }
+        }
+
+        private fun parseFontWeight(font: String?): FontWeight {
+            return when (font?.lowercase()) {
+                "bold" -> FontWeight.Bold
+                "semibold" -> FontWeight.SemiBold
+                "medium" -> FontWeight.Medium
+                "light" -> FontWeight.Light
+                "thin" -> FontWeight.Thin
+                else -> FontWeight.Normal
+            }
+        }
+
+        private fun extractBindingVariable(json: JsonObject, key: String): String? {
+            val value = json.get(key)?.asString ?: return null
+            return ModifierBuilder.extractBindingProperty(value)
         }
     }
 }
