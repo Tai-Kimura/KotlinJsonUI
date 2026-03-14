@@ -176,7 +176,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "io.github.tai-kimura"  // Maven Central向け
             artifactId = "kotlinjsonui"
-            version = "1.0.2"
+            version = project.findProperty("version") as String
 
             afterEvaluate {
                 from(components["release"])
@@ -261,7 +261,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     
-    coordinates("io.github.tai-kimura", "kotlinjsonui", "1.0.2")
+    coordinates("io.github.tai-kimura", "kotlinjsonui", project.findProperty("version") as String)
     
     pom {
         name.set("KotlinJsonUI")

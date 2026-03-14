@@ -73,7 +73,7 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
     
-    coordinates("io.github.tai-kimura", "kotlinjsonui-dynamic", "1.0.2")
+    coordinates("io.github.tai-kimura", "kotlinjsonui-dynamic", project.findProperty("version") as String)
     
     pom {
         name.set("KotlinJsonUI Dynamic Components")
