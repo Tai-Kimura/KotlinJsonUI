@@ -149,7 +149,7 @@ class DynamicContainerComponent {
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier
-            if (weight != null) childModifier = childModifier.weight(weight).fillMaxHeight()
+            if (weight != null) childModifier = childModifier.weight(weight)
             if (alignment is Alignment.Horizontal) childModifier = childModifier.align(alignment)
 
             if (visibility != null) {
@@ -178,7 +178,7 @@ class DynamicContainerComponent {
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier
-            if (weight != null) childModifier = childModifier.weight(weight).fillMaxWidth()
+            if (weight != null) childModifier = childModifier.weight(weight)
             if (alignment is Alignment.Vertical) childModifier = childModifier.align(alignment)
 
             if (visibility != null) {

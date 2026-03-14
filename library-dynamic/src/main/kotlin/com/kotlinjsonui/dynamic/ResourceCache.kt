@@ -22,6 +22,9 @@ object ResourceCache {
     // Cached resources
     private var stringsCache: Map<String, String>? = null
     private var colorsCache: Map<String, String>? = null
+
+    // Reverse map: unprefixed key → prefixed key (e.g. "edit_profile" → "mypage_edit_profile")
+    private var keyToPrefixedKey: Map<String, String>? = null
     
     // Flag to track if loading has been attempted
     private var stringsLoadAttempted = false
@@ -108,7 +111,8 @@ object ResourceCache {
             val gson = Gson()
             val jsonObject = gson.fromJson(jsonString, JsonObject::class.java)
             val flattenedStrings = mutableMapOf<String, String>()
-            
+            val reverseKeyMap = mutableMapOf<String, String>()
+
             // Flatten the nested structure
             // Format: { "file1": { "key1": "value1" }, "file2": { "key2": "value2" } }
             // Becomes: { "file1_key1": "value1", "file2_key2": "value2" }
@@ -120,17 +124,21 @@ object ResourceCache {
                             // Create flattened key: filename_key
                             val flatKey = "${fileName}_${key}"
                             flattenedStrings[flatKey] = value.asString
-                            
+
                             // Also store without prefix for backward compatibility
                             if (!flattenedStrings.containsKey(key)) {
                                 flattenedStrings[key] = value.asString
                             }
+
+                            // Build reverse map: unprefixed → prefixed
+                            reverseKeyMap[key] = flatKey
                         }
                     }
                 }
             }
-            
+
             stringsCache = flattenedStrings
+            keyToPrefixedKey = reverseKeyMap
             Log.d(TAG, "Loaded ${flattenedStrings.size} strings")
             
         } catch (e: Exception) {
@@ -190,6 +198,7 @@ object ResourceCache {
     fun clearCache() {
         stringsCache = null
         colorsCache = null
+        keyToPrefixedKey = null
         stringsLoadAttempted = false
         colorsLoadAttempted = false
     }
@@ -211,17 +220,29 @@ object ResourceCache {
 
         // Try to resolve from strings.json cache
         loadStringsIfNeeded(context)
-        stringsCache?.get(text)?.let { return it }
+        val cached = stringsCache?.get(text)
+        // If cached value differs from key, it's a real translation
+        if (cached != null && cached != text) return cached
 
-        // Fallback: try Android native string resources (R.string.xxx)
+        // Fallback: try Android native string resources
+        // First try with prefixed key (e.g. "edit_profile" → R.string.mypage_edit_profile)
+        val prefixedKey = keyToPrefixedKey?.get(text)
+        if (prefixedKey != null) {
+            try {
+                val resId = context.resources.getIdentifier(prefixedKey, "string", context.packageName)
+                if (resId != 0) {
+                    return context.getString(resId)
+                }
+            } catch (_: Exception) { }
+        }
+
+        // Then try with original key (R.string.xxx)
         try {
             val resId = context.resources.getIdentifier(text, "string", context.packageName)
             if (resId != 0) {
                 return context.getString(resId)
             }
-        } catch (_: Exception) {
-            // Ignore
-        }
+        } catch (_: Exception) { }
 
         return text
     }
