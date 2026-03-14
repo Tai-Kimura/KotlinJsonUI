@@ -152,18 +152,24 @@ class DynamicContainerComponent {
             if (weight != null) childModifier = childModifier.weight(weight)
             if (alignment is Alignment.Horizontal) childModifier = childModifier.align(alignment)
 
+            // When weight is present, inject fillMaxHeight into the child JSON
+            // so the child component fills the weighted space (matching static tool behavior)
+            val effectiveChild = if (weight != null) {
+                injectFillSize(child, fillHeight = true, fillWidth = false)
+            } else child
+
             if (visibility != null) {
                 // weight + visibility gone guard: skip composition entirely
                 if (weight != null && visibility.lowercase() == "gone") return
                 VisibilityWrapper(visibility = visibility, modifier = childModifier) {
-                    DynamicView(child, data)
+                    DynamicView(effectiveChild, data)
                 }
             } else if (childModifier != Modifier) {
                 Box(modifier = childModifier) {
-                    DynamicView(child, data)
+                    DynamicView(effectiveChild, data)
                 }
             } else {
-                DynamicView(child, data)
+                DynamicView(effectiveChild, data)
             }
         }
 
@@ -181,18 +187,23 @@ class DynamicContainerComponent {
             if (weight != null) childModifier = childModifier.weight(weight)
             if (alignment is Alignment.Vertical) childModifier = childModifier.align(alignment)
 
+            // When weight is present, inject fillMaxWidth into the child JSON
+            val effectiveChild = if (weight != null) {
+                injectFillSize(child, fillHeight = false, fillWidth = true)
+            } else child
+
             if (visibility != null) {
                 // weight + visibility gone guard: skip composition entirely
                 if (weight != null && visibility.lowercase() == "gone") return
                 VisibilityWrapper(visibility = visibility, modifier = childModifier) {
-                    DynamicView(child, data)
+                    DynamicView(effectiveChild, data)
                 }
             } else if (childModifier != Modifier) {
                 Box(modifier = childModifier) {
-                    DynamicView(child, data)
+                    DynamicView(effectiveChild, data)
                 }
             } else {
-                DynamicView(child, data)
+                DynamicView(effectiveChild, data)
             }
         }
 
@@ -302,6 +313,23 @@ class DynamicContainerComponent {
         }
 
         // ── Helpers ──
+
+        /**
+         * When a child has weight, the static tool applies weight directly on the
+         * component modifier, which also forces the component to fill the weighted
+         * axis. In Dynamic mode weight is on a wrapper Box, so we need to ensure the
+         * child fills the available space by injecting matchParent on the weighted axis.
+         */
+        private fun injectFillSize(json: JsonObject, fillHeight: Boolean, fillWidth: Boolean): JsonObject {
+            val copy = json.deepCopy()
+            if (fillHeight && !copy.has("height")) {
+                copy.addProperty("height", "matchParent")
+            }
+            if (fillWidth && !copy.has("width")) {
+                copy.addProperty("width", "matchParent")
+            }
+            return copy
+        }
 
         fun getChildren(json: JsonObject): List<JsonObject> {
             val childElement = json.get("child") ?: json.get("children") ?: return emptyList()
