@@ -218,14 +218,13 @@ object ResourceCache {
         // Check if it's a data binding expression - don't resolve those
         if (text.contains("@{")) return text
 
-        // Try to resolve from strings.json cache
+        // Load strings.json for key mapping (unprefixed → prefixed)
         loadStringsIfNeeded(context)
-        val cached = stringsCache?.get(text)
-        // If cached value differs from key, it's a real translation
-        if (cached != null && cached != text) return cached
 
-        // Fallback: try Android native string resources
-        // First try with prefixed key (e.g. "edit_profile" → R.string.mypage_edit_profile)
+        // Always prefer Android native string resources (R.string.*) over strings.json values,
+        // because strings.json may contain English defaults while R.string has proper localization.
+
+        // First try with prefixed key (e.g. "detail_button" → R.string.candidate_card_detail_button)
         val prefixedKey = keyToPrefixedKey?.get(text)
         if (prefixedKey != null) {
             try {
@@ -243,6 +242,10 @@ object ResourceCache {
                 return context.getString(resId)
             }
         } catch (_: Exception) { }
+
+        // Last resort: use strings.json cached value if available
+        val cached = stringsCache?.get(text)
+        if (cached != null && cached != text) return cached
 
         return text
     }
