@@ -205,13 +205,25 @@ object ResourceCache {
      */
     fun resolveString(text: String?, context: Context): String {
         if (text.isNullOrEmpty()) return ""
-        
+
         // Check if it's a data binding expression - don't resolve those
         if (text.contains("@{")) return text
-        
-        // Try to resolve as a string resource
+
+        // Try to resolve from strings.json cache
         loadStringsIfNeeded(context)
-        return stringsCache?.get(text) ?: text
+        stringsCache?.get(text)?.let { return it }
+
+        // Fallback: try Android native string resources (R.string.xxx)
+        try {
+            val resId = context.resources.getIdentifier(text, "string", context.packageName)
+            if (resId != 0) {
+                return context.getString(resId)
+            }
+        } catch (_: Exception) {
+            // Ignore
+        }
+
+        return text
     }
     
     /**
