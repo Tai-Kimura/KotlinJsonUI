@@ -188,6 +188,9 @@ class DynamicCollectionComponent {
                 }
             }
 
+            // Reverse layout
+            val reverseLayout = json.get("reverseLayout")?.asBoolean == true
+
             // Parse scrollTo binding
             val scrollToFlow = resolveScrollToFlow(json, data)
             val scrollAnchor = json.get("scrollAnchor")?.asString ?: "bottom"
@@ -235,6 +238,7 @@ class DynamicCollectionComponent {
                     rows = GridCells.Fixed(gridColumns),
                     modifier = modifier,
                     state = gridState,
+                    reverseLayout = reverseLayout,
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(lineSpacing),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)
@@ -260,6 +264,7 @@ class DynamicCollectionComponent {
                     columns = GridCells.Fixed(gridColumns),
                     modifier = modifier,
                     state = gridState,
+                    reverseLayout = reverseLayout,
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(lineSpacing),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)

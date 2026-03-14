@@ -79,6 +79,11 @@ fun DynamicView(
         return
     }
 
+    // Apply data section defaults from child elements
+    // data sections define defaultValues that should be used when the property
+    // is not already present in the data map (e.g., visibility defaults to "gone")
+    val effectiveData = applyDataSectionDefaults(styledJson, data)
+
     // Validate JSON has required type field
     val type = try {
         styledJson.get("type")?.asString
@@ -98,9 +103,9 @@ fun DynamicView(
 
     // Check for visibility / hidden attributes (with data binding support)
     val visibility = styledJson.get("visibility")?.asString?.let {
-        processDataBinding(it, data, context)
+        processDataBinding(it, effectiveData, context)
     }
-    val hidden = resolveHidden(styledJson, data)
+    val hidden = resolveHidden(styledJson, effectiveData)
 
     // Short-circuit: hidden = true → don't render at all
     if (hidden == true) return
@@ -108,43 +113,43 @@ fun DynamicView(
     // Render the appropriate component based on type
     val renderComponent: @Composable () -> Unit = {
         when (type.lowercase()) {
-            "text", "label" -> DynamicTextComponent.create(styledJson, data)
-            "textfield" -> DynamicTextFieldComponent.create(styledJson, data)
-            "button" -> DynamicButtonComponent.create(styledJson, data)
-            "image" -> DynamicImageComponent.create(styledJson, data)
-            "networkimage" -> DynamicNetworkImageComponent.create(styledJson, data)
-            "circleimage" -> DynamicCircleImageComponent.create(styledJson, data)
-            "switch" -> DynamicSwitchComponent.create(styledJson, data)
+            "text", "label" -> DynamicTextComponent.create(styledJson, effectiveData)
+            "textfield" -> DynamicTextFieldComponent.create(styledJson, effectiveData)
+            "button" -> DynamicButtonComponent.create(styledJson, effectiveData)
+            "image" -> DynamicImageComponent.create(styledJson, effectiveData)
+            "networkimage" -> DynamicNetworkImageComponent.create(styledJson, effectiveData)
+            "circleimage" -> DynamicCircleImageComponent.create(styledJson, effectiveData)
+            "switch" -> DynamicSwitchComponent.create(styledJson, effectiveData)
             // CheckBox is primary, Check is alias for backward compatibility
-            "checkbox", "check" -> DynamicCheckBoxComponent.create(styledJson, data)
-            "radio" -> DynamicRadioComponent.create(styledJson, data)
-            "slider" -> DynamicSliderComponent.create(styledJson, data)
-            "progress", "progressbar" -> DynamicProgressComponent.create(styledJson, data)
-            "indicator" -> DynamicIndicatorComponent.create(styledJson, data)
-            "selectbox", "spinner" -> DynamicSelectBoxComponent.create(styledJson, data)
-            "segment", "tablayout" -> DynamicSegmentComponent.create(styledJson, data)
-            "toggle" -> DynamicToggleComponent.create(styledJson, data)
-            "scrollview", "scroll" -> DynamicScrollViewComponent.create(styledJson, data)
-            "hstack", "row" -> DynamicHStackComponent.create(styledJson, data)
-            "vstack", "column" -> DynamicVStackComponent.create(styledJson, data)
-            "zstack", "box" -> DynamicZStackComponent.create(styledJson, data)
-            "container", "view" -> DynamicContainerComponent.create(styledJson, data)
-            "safeareaview" -> DynamicSafeAreaViewComponent.create(styledJson, data)
-            "constraintlayout" -> DynamicConstraintLayoutComponent.create(styledJson, data)
-            "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> DynamicCollectionComponent.create(styledJson, data)
-            "table", "listview" -> DynamicTableComponent.create(styledJson, data)
-            "webview" -> DynamicWebViewComponent.create(styledJson, data)
-            "web" -> DynamicWebComponent.create(styledJson, data)
-            "tabview" -> DynamicTabViewComponent.create(styledJson, data)
-            "gradientview" -> DynamicGradientViewComponent.create(styledJson, data)
-            "circleview" -> DynamicCircleViewComponent.create(styledJson, data)
-            "blurview" -> DynamicBlurViewComponent.create(styledJson, data)
-            "iconlabel" -> DynamicIconLabelComponent.create(styledJson, data)
-            "textview" -> DynamicTextViewComponent.create(styledJson, data)
-            "triangle" -> DynamicTriangleComponent.create(styledJson, data)
+            "checkbox", "check" -> DynamicCheckBoxComponent.create(styledJson, effectiveData)
+            "radio" -> DynamicRadioComponent.create(styledJson, effectiveData)
+            "slider" -> DynamicSliderComponent.create(styledJson, effectiveData)
+            "progress", "progressbar" -> DynamicProgressComponent.create(styledJson, effectiveData)
+            "indicator" -> DynamicIndicatorComponent.create(styledJson, effectiveData)
+            "selectbox", "spinner" -> DynamicSelectBoxComponent.create(styledJson, effectiveData)
+            "segment", "tablayout" -> DynamicSegmentComponent.create(styledJson, effectiveData)
+            "toggle" -> DynamicToggleComponent.create(styledJson, effectiveData)
+            "scrollview", "scroll" -> DynamicScrollViewComponent.create(styledJson, effectiveData)
+            "hstack", "row" -> DynamicHStackComponent.create(styledJson, effectiveData)
+            "vstack", "column" -> DynamicVStackComponent.create(styledJson, effectiveData)
+            "zstack", "box" -> DynamicZStackComponent.create(styledJson, effectiveData)
+            "container", "view" -> DynamicContainerComponent.create(styledJson, effectiveData)
+            "safeareaview" -> DynamicSafeAreaViewComponent.create(styledJson, effectiveData)
+            "constraintlayout" -> DynamicConstraintLayoutComponent.create(styledJson, effectiveData)
+            "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> DynamicCollectionComponent.create(styledJson, effectiveData)
+            "table", "listview" -> DynamicTableComponent.create(styledJson, effectiveData)
+            "webview" -> DynamicWebViewComponent.create(styledJson, effectiveData)
+            "web" -> DynamicWebComponent.create(styledJson, effectiveData)
+            "tabview" -> DynamicTabViewComponent.create(styledJson, effectiveData)
+            "gradientview" -> DynamicGradientViewComponent.create(styledJson, effectiveData)
+            "circleview" -> DynamicCircleViewComponent.create(styledJson, effectiveData)
+            "blurview" -> DynamicBlurViewComponent.create(styledJson, effectiveData)
+            "iconlabel" -> DynamicIconLabelComponent.create(styledJson, effectiveData)
+            "textview" -> DynamicTextViewComponent.create(styledJson, effectiveData)
+            "triangle" -> DynamicTriangleComponent.create(styledJson, effectiveData)
             else -> {
                 // First, try custom component handler
-                val handled = Configuration.customComponentHandler?.invoke(type, styledJson, data) ?: false
+                val handled = Configuration.customComponentHandler?.invoke(type, styledJson, effectiveData) ?: false
 
                 if (!handled) {
                     // Unknown component type
@@ -157,7 +162,7 @@ fun DynamicView(
                         ErrorComponent("Unknown component type: $type")
                     } else if (Configuration.fallbackComponent != null) {
                         // Use custom fallback component if configured
-                        Configuration.fallbackComponent?.invoke(styledJson, data)
+                        Configuration.fallbackComponent?.invoke(styledJson, effectiveData)
                     }
                 }
             }
@@ -198,6 +203,54 @@ private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
         }
     }
     return null
+}
+
+/**
+ * Apply default values from data section in child elements.
+ * Scans child/children for a data-only element (has "data" but no "type")
+ * and extracts defaultValues as fallback for missing properties in the data map.
+ * This ensures visibility defaults like "gone" are applied when the ViewModel
+ * doesn't explicitly provide the property.
+ */
+private fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): Map<String, Any> {
+    val children = json.get("child") ?: json.get("children") ?: return data
+    if (!children.isJsonArray) return data
+
+    val dataSection = children.asJsonArray.firstOrNull { element ->
+        element.isJsonObject && element.asJsonObject.has("data") && !element.asJsonObject.has("type")
+    }?.asJsonObject?.get("data")?.asJsonArray ?: return data
+
+    val defaults = mutableMapOf<String, Any>()
+    dataSection.forEach { element ->
+        if (element.isJsonObject) {
+            val obj = element.asJsonObject
+            val name = obj.get("name")?.asString ?: return@forEach
+            // Only apply default if not already in data
+            if (data.containsKey(name)) return@forEach
+            val defaultValue = obj.get("defaultValue") ?: return@forEach
+            when {
+                defaultValue.isJsonPrimitive -> {
+                    val p = defaultValue.asJsonPrimitive
+                    when {
+                        p.isBoolean -> defaults[name] = p.asBoolean
+                        p.isNumber -> defaults[name] = p.asNumber
+                        p.isString -> {
+                            val s = p.asString
+                            // Skip complex default values (e.g., "CollectionDataSource()")
+                            if (!s.contains("(") && !s.contains(")")) {
+                                defaults[name] = s
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (defaults.isEmpty()) return data
+
+    // Merge: existing data overrides defaults
+    return defaults.apply { putAll(data) }
 }
 
 /**
