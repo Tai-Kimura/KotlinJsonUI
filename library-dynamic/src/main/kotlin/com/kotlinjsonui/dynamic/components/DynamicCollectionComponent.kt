@@ -255,7 +255,8 @@ class DynamicCollectionComponent {
                         isHorizontal = true,
                         gridColumns = gridColumns,
                         defaultColumns = defaultColumns,
-                        gravityAlignment = gravityAlignment
+                        gravityAlignment = gravityAlignment,
+                        reverseLayout = reverseLayout
                     )
                 }
             } else {
@@ -281,7 +282,8 @@ class DynamicCollectionComponent {
                         isHorizontal = false,
                         gridColumns = gridColumns,
                         defaultColumns = defaultColumns,
-                        gravityAlignment = gravityAlignment
+                        gravityAlignment = gravityAlignment,
+                        reverseLayout = reverseLayout
                     )
                 }
             }
@@ -406,13 +408,21 @@ class DynamicCollectionComponent {
             isHorizontal: Boolean,
             gridColumns: Int,
             defaultColumns: Int,
-            gravityAlignment: Alignment
+            gravityAlignment: Alignment,
+            reverseLayout: Boolean = false
         ) {
 
             when {
                 // If we have sections and data source
                 sections != null && collectionDataSource != null -> {
-                    sections.forEach { sectionJson ->
+                    // When reverseLayout is true, reverse section order so that
+                    // JSON definition order matches iOS display (iOS cannot reverse)
+                    val orderedSections = if (reverseLayout) {
+                        sections.reversed()
+                    } else {
+                        sections.toList()
+                    }
+                    orderedSections.forEach { sectionJson ->
                         val sectionObj = sectionJson.asJsonObject
                         val cellViewName = sectionObj.get("cell")?.asString
                         val headerViewName = sectionObj.get("header")?.asString
