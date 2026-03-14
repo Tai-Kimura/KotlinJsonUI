@@ -39,11 +39,25 @@ class DynamicScrollViewComponent {
                 modifier = modifier.imePadding()
             }
 
+            // scrollEnabled - controls whether user can scroll
+            val scrollEnabled = run {
+                val raw = json.get("scrollEnabled")?.asString
+                if (raw != null && raw.contains("@{")) {
+                    val propName = raw.removePrefix("@{").removeSuffix("}")
+                    (data[propName] as? Boolean) ?: true
+                } else {
+                    json.get("scrollEnabled")?.asBoolean ?: true
+                }
+            }
+
             // Get children
             val children = DynamicContainerComponent.getChildren(json)
 
             if (isHorizontal) {
-                LazyRow(modifier = modifier) {
+                LazyRow(
+                    modifier = modifier,
+                    userScrollEnabled = scrollEnabled
+                ) {
                     item {
                         children.forEach { child ->
                             DynamicView(child, data)
@@ -51,7 +65,10 @@ class DynamicScrollViewComponent {
                     }
                 }
             } else {
-                LazyColumn(modifier = modifier) {
+                LazyColumn(
+                    modifier = modifier,
+                    userScrollEnabled = scrollEnabled
+                ) {
                     item {
                         children.forEach { child ->
                             DynamicView(child, data)

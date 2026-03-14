@@ -191,6 +191,17 @@ class DynamicCollectionComponent {
             // Reverse layout
             val reverseLayout = json.get("reverseLayout")?.asBoolean == true
 
+            // scrollEnabled - controls whether user can scroll
+            val scrollEnabled = run {
+                val raw = json.get("scrollEnabled")?.asString
+                if (raw != null && raw.contains("@{")) {
+                    val propName = raw.removePrefix("@{").removeSuffix("}")
+                    (data[propName] as? Boolean) ?: true
+                } else {
+                    json.get("scrollEnabled")?.asBoolean ?: true
+                }
+            }
+
             // Parse scrollTo binding
             val scrollToFlow = resolveScrollToFlow(json, data)
             val scrollAnchor = json.get("scrollAnchor")?.asString ?: "bottom"
@@ -239,6 +250,7 @@ class DynamicCollectionComponent {
                     modifier = modifier,
                     state = gridState,
                     reverseLayout = reverseLayout,
+                    userScrollEnabled = scrollEnabled,
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(lineSpacing),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)
@@ -266,6 +278,7 @@ class DynamicCollectionComponent {
                     modifier = modifier,
                     state = gridState,
                     reverseLayout = reverseLayout,
+                    userScrollEnabled = scrollEnabled,
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(lineSpacing),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)
