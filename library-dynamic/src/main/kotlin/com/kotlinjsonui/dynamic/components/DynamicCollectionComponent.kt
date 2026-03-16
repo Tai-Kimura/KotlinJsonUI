@@ -227,6 +227,25 @@ class DynamicCollectionComponent {
                 return
             }
 
+            // wrapContent height on vertical Collection → use Column instead of LazyVerticalGrid
+            // to avoid crash when nested inside another Lazy container (infinite height constraint).
+            val heightStr = json.get("height")?.asString
+            if (!isHorizontal && heightStr == "wrapContent") {
+                renderNonLazy(
+                    sections = sections,
+                    collectionDataSource = collectionDataSource,
+                    cellTemplate = cellTemplate,
+                    cellIdProperty = cellIdProperty,
+                    data = data,
+                    modifier = modifier,
+                    lineSpacing = lineSpacing,
+                    contentPadding = contentPadding,
+                    cellHeight = cellHeight,
+                    gravityAlignment = gravityAlignment
+                )
+                return
+            }
+
             // LazyGrid state for programmatic scrolling
             val gridState = rememberLazyGridState()
 
@@ -401,6 +420,83 @@ class DynamicCollectionComponent {
                                 val cellData = data.toMutableMap().apply {
                                     put("index", index)
                                 }
+                                DynamicView(json = cellTemplate, data = cellData)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Non-lazy Column-based collection for wrapContent height.
+         * Avoids crash from nesting LazyVerticalGrid inside another Lazy container.
+         */
+        @Composable
+        private fun renderNonLazy(
+            sections: JsonArray?,
+            collectionDataSource: CollectionDataSource?,
+            cellTemplate: JsonObject?,
+            cellIdProperty: String?,
+            data: Map<String, Any>,
+            modifier: Modifier,
+            lineSpacing: androidx.compose.ui.unit.Dp,
+            contentPadding: PaddingValues,
+            cellHeight: androidx.compose.ui.unit.Dp?,
+            gravityAlignment: Alignment
+        ) {
+            Column(
+                modifier = modifier.then(Modifier.padding(contentPadding)),
+                verticalArrangement = Arrangement.spacedBy(lineSpacing)
+            ) {
+                when {
+                    sections != null && collectionDataSource != null -> {
+                        sections.forEachIndexed { sectionIndex, sectionElement ->
+                            val sectionObj = sectionElement.asJsonObject
+                            val cellViewName = sectionObj.get("cell")?.asString
+
+                            // Header
+                            val headerViewName = sectionObj.get("header")?.asString
+                            if (headerViewName != null) {
+                                collectionDataSource.sections.getOrNull(sectionIndex)?.header?.let { headerData ->
+                                    renderCellView(headerViewName, headerData.data, 0, data)
+                                }
+                            }
+
+                            // Cells
+                            collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
+                                section.cells?.let { cellData ->
+                                    cellData.data.forEachIndexed { cellIndex, item ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                            contentAlignment = gravityAlignment
+                                        ) {
+                                            renderCellView(cellViewName, item, cellIndex, data)
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Footer
+                            val footerViewName = sectionObj.get("footer")?.asString
+                            if (footerViewName != null) {
+                                collectionDataSource.sections.getOrNull(sectionIndex)?.footer?.let { footerData ->
+                                    renderCellView(footerViewName, footerData.data, 0, data)
+                                }
+                            }
+                        }
+                    }
+                    cellTemplate != null -> {
+                        repeat(10) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                contentAlignment = gravityAlignment
+                            ) {
+                                val cellData = data.toMutableMap().apply { put("index", index) }
                                 DynamicView(json = cellTemplate, data = cellData)
                             }
                         }
