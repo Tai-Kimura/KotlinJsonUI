@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -202,6 +203,7 @@ class DynamicTextViewComponent {
         /**
          * Build size modifier for TextView.
          * Default: fillMaxWidth + 120dp height (matching textview_component.rb).
+         * When flexible=true, uses heightIn(min, max) for auto-expanding height.
          */
         private fun buildTextViewSizeModifier(json: JsonObject): Modifier {
             var modifier: Modifier = Modifier
@@ -218,6 +220,22 @@ class DynamicTextViewComponent {
                     }
                 }
                 else -> modifier.fillMaxWidth()
+            }
+
+            // flexible: auto-expand height between minHeight and maxHeight
+            val isFlexible = json.get("flexible")?.let {
+                if (it.isJsonPrimitive && it.asJsonPrimitive.isBoolean) it.asBoolean else false
+            } ?: false
+
+            if (isFlexible) {
+                val minH = json.get("minHeight")?.asFloat ?: 40f
+                val maxH = json.get("maxHeight")?.asFloat
+                modifier = if (maxH != null) {
+                    modifier.heightIn(min = minH.dp, max = maxH.dp)
+                } else {
+                    modifier.heightIn(min = minH.dp)
+                }
+                return modifier
             }
 
             // Height (default 120dp)
