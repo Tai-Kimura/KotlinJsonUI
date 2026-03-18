@@ -24,7 +24,7 @@ import com.kotlinjsonui.data.CollectionDataSource
 import com.kotlinjsonui.data.CollectionDataSection
 import com.kotlinjsonui.data.IdentifiedCellItem
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.snapshotFlow
+import androidx.compose.runtime.snapshotFlow
 
 /**
  * Dynamic Collection Component Converter
