@@ -3,6 +3,8 @@ package com.kotlinjsonui.dynamic.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import com.kotlinjsonui.data.CollectionDataSource
 import com.kotlinjsonui.data.CollectionDataSection
 import com.kotlinjsonui.data.IdentifiedCellItem
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.snapshotFlow
 
 /**
  * Dynamic Collection Component Converter
@@ -53,6 +56,8 @@ import kotlinx.coroutines.flow.SharedFlow
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
  * - background: Background color
+ * - paging: Boolean for paging mode (horizontal only)
+ * - onPageChanged: @{callback} binding for page change callback
  */
 class DynamicCollectionComponent {
     companion object {
@@ -227,7 +232,7 @@ class DynamicCollectionComponent {
                 return
             }
 
-            // wrapContent height on vertical Collection → use Column instead of LazyVerticalGrid
+            // wrapContent height on vertical Collection -> use Column instead of LazyVerticalGrid
             // to avoid crash when nested inside another Lazy container (infinite height constraint).
             val heightStr = json.get("height")?.asString
             if (!isHorizontal && heightStr == "wrapContent") {
@@ -240,6 +245,27 @@ class DynamicCollectionComponent {
                     modifier = modifier,
                     lineSpacing = lineSpacing,
                     contentPadding = contentPadding,
+                    cellHeight = cellHeight,
+                    gravityAlignment = gravityAlignment
+                )
+                return
+            }
+
+            // Paging mode for horizontal collections
+            val isPaging = json.get("paging")?.asBoolean == true
+            if (isHorizontal && isPaging) {
+                renderPagingHorizontal(
+                    json = json,
+                    sections = sections,
+                    collectionDataSource = collectionDataSource,
+                    cellClassName = cellClassName,
+                    cellTemplate = cellTemplate,
+                    cellIdProperty = cellIdProperty,
+                    data = data,
+                    modifier = modifier,
+                    contentPadding = contentPadding,
+                    pageSpacing = columnSpacing,
+                    cellWidth = cellWidth,
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment
                 )
@@ -331,6 +357,119 @@ class DynamicCollectionComponent {
             if (!scrollToBinding.startsWith("@{") || !scrollToBinding.endsWith("}")) return null
             val propName = scrollToBinding.substring(2, scrollToBinding.length - 1)
             return data[propName] as? SharedFlow<Int>
+        }
+
+        /**
+         * Render paging horizontal collection using HorizontalPager.
+         * Each page displays one cell from the data source, with snap-to-page behavior.
+         *
+         * Supports:
+         * - onPageChanged: @{callback} binding for page change notification
+         * - pageSpacing: spacing between pages (from columnSpacing/itemSpacing)
+         * - contentPadding: padding around the pager
+         */
+        @Suppress("UNCHECKED_CAST")
+        @Composable
+        private fun renderPagingHorizontal(
+            json: JsonObject,
+            sections: JsonArray?,
+            collectionDataSource: CollectionDataSource?,
+            cellClassName: String?,
+            cellTemplate: JsonObject?,
+            cellIdProperty: String?,
+            data: Map<String, Any>,
+            modifier: Modifier,
+            contentPadding: PaddingValues,
+            pageSpacing: androidx.compose.ui.unit.Dp,
+            cellWidth: androidx.compose.ui.unit.Dp?,
+            cellHeight: androidx.compose.ui.unit.Dp?,
+            gravityAlignment: Alignment
+        ) {
+            // Calculate page count from data source
+            val pageCount = when {
+                sections != null && collectionDataSource != null -> {
+                    // Sum all cell counts across all sections
+                    collectionDataSource.sections.sumOf { section ->
+                        section.cells?.data?.size ?: 0
+                    }
+                }
+                cellTemplate != null -> 10 // default for template mode
+                else -> 0
+            }
+
+            if (pageCount == 0) return
+
+            val pagerState = rememberPagerState { pageCount }
+
+            // Resolve onPageChanged callback from binding
+            val onPageChangedBinding = json.get("onPageChanged")?.asString
+            val onPageChanged: ((Int) -> Unit)? = if (onPageChangedBinding != null) {
+                val pattern = "@\\{([^}]+)\\}".toRegex()
+                val propName = pattern.find(onPageChangedBinding)?.groupValues?.get(1)
+                if (propName != null) {
+                    data[propName] as? Function1<Int, Unit>
+                } else null
+            } else null
+
+            // Detect page changes and invoke callback
+            if (onPageChanged != null) {
+                LaunchedEffect(pagerState) {
+                    snapshotFlow { pagerState.currentPage }.collect { page ->
+                        onPageChanged(page)
+                    }
+                }
+            }
+
+            // Build a flat list of (cellViewName, itemData, cellIndex) for all sections
+            data class PageItem(val cellViewName: String?, val itemData: Any?, val cellIndex: Int)
+
+            val pageItems: List<PageItem> = when {
+                sections != null && collectionDataSource != null -> {
+                    val items = mutableListOf<PageItem>()
+                    sections.forEachIndexed { sectionIndex, sectionElement ->
+                        val sectionObj = sectionElement.asJsonObject
+                        val cellViewName = sectionObj.get("cell")?.asString
+
+                        collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
+                            section.cells?.let { cellData ->
+                                cellData.data.forEachIndexed { cellIndex, item ->
+                                    items.add(PageItem(cellViewName ?: cellClassName, item, cellIndex))
+                                }
+                            }
+                        }
+                    }
+                    items
+                }
+                else -> emptyList()
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = modifier,
+                contentPadding = contentPadding,
+                pageSpacing = pageSpacing
+            ) { pageIndex ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                        .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                    contentAlignment = gravityAlignment
+                ) {
+                    when {
+                        pageItems.isNotEmpty() -> {
+                            val pageItem = pageItems[pageIndex]
+                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data)
+                        }
+                        cellTemplate != null -> {
+                            val cellData = data.toMutableMap().apply {
+                                put("index", pageIndex)
+                            }
+                            DynamicView(json = cellTemplate, data = cellData)
+                        }
+                    }
+                }
+            }
         }
 
         /**
