@@ -60,6 +60,8 @@ fun DateSelectBox(
     textColor: Color = Color.Black,
     hintColor: Color = Color(0xFF999999),
     cornerRadius: Int = 8,
+    fontSize: Int = 16,
+    fontWeight: FontWeight = FontWeight.Normal,
     sheetBackgroundColor: Color = Configuration.DatePicker.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor
 ) {
@@ -182,7 +184,8 @@ fun DateSelectBox(
             Text(
                 text = if (displayText.isNotEmpty()) displayText else (placeholder ?: ""),
                 color = if (displayText.isNotEmpty()) textColor else hintColor,
-                fontSize = 16.sp,
+                fontSize = fontSize.sp,
+                fontWeight = fontWeight,
                 modifier = Modifier.weight(1f)
             )
             Icon(

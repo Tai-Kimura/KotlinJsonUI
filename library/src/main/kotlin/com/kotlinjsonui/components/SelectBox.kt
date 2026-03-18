@@ -53,6 +53,8 @@ fun SelectBox(
     textColor: Color = Color.Black,
     hintColor: Color = Color(0xFF999999),
     cornerRadius: Int = 8,
+    fontSize: Int = 16,
+    fontWeight: FontWeight = FontWeight.Normal,
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
     cancelButtonBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
@@ -91,7 +93,8 @@ fun SelectBox(
             Text(
                 text = if (value.isNotEmpty()) value else (placeholder ?: ""),
                 color = if (value.isNotEmpty()) textColor else hintColor,
-                fontSize = 16.sp,
+                fontSize = fontSize.sp,
+                fontWeight = fontWeight,
                 modifier = Modifier.weight(1f)
             )
             Icon(
