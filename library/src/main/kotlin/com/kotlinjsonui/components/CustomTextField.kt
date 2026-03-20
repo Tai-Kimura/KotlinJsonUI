@@ -150,19 +150,23 @@ fun CustomTextField(
                         disabledIndicatorColor = Color.Transparent
                     ),
                     container = {
-                        TextFieldDefaults.ContainerBox(
-                            enabled = enabled,
-                            isError = isError,
-                            interactionSource = interactionSource,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = if (isFocused) focusedBackground else unfocusedBackground,
-                                unfocusedContainerColor = unfocusedBackground,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            ),
-                            shape = effectiveShape
-                        )
+                        // Only draw container if background is not transparent
+                        val bg = if (isFocused) focusedBackground else unfocusedBackground
+                        if (bg != Color.Transparent) {
+                            TextFieldDefaults.ContainerBox(
+                                enabled = enabled,
+                                isError = isError,
+                                interactionSource = interactionSource,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = if (isFocused) focusedBackground else unfocusedBackground,
+                                    unfocusedContainerColor = unfocusedBackground,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent
+                                ),
+                                shape = effectiveShape
+                            )
+                        }
                     }
                 )
             }
