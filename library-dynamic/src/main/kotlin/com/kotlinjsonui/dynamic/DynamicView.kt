@@ -172,9 +172,10 @@ fun DynamicView(
     // Apply visibility wrapper if visibility attribute is present
     if (!visibility.isNullOrEmpty()) {
         VisibilityWrapper(
-            visibility = visibility,
-            content = renderComponent
-        )
+            visibility = visibility
+        ) {
+            renderComponent()
+        }
     } else {
         renderComponent()
     }
