@@ -68,10 +68,10 @@ class DynamicTextComponent {
             val fontColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
 
             // Font weight – handle both 'font' and 'fontWeight' attributes
-            val fontWeight = resolveFontWeight(json)
+            val fontWeight = resolveFontWeight(json, data)
 
             // Font family – custom font from 'font' attribute (if not a weight name)
-            val fontFamily = resolveFontFamily(json, context)
+            val fontFamily = resolveFontFamily(json, context, data)
 
             // Text decoration
             val textDecoration = resolveTextDecoration(json)
@@ -204,23 +204,26 @@ class DynamicTextComponent {
             "black" to FontWeight.Black
         )
 
-        private fun resolveFontWeight(json: JsonObject): FontWeight? {
-            // 'font' attribute: if it matches a weight name, use as weight
-            json.get("font")?.asString?.let { font ->
+        private fun resolveFontWeight(json: JsonObject, data: Map<String, Any> = emptyMap()): FontWeight? {
+            // 'font' attribute: check binding first, then static value
+            val fontValue = resolveStringWithBinding(json, "font", data)
+            fontValue?.let { font ->
                 val lower = font.lowercase()
                 if (WEIGHT_NAMES.containsKey(lower)) {
                     return WEIGHT_NAMES[lower]
                 }
             }
             // 'fontWeight' attribute
-            json.get("fontWeight")?.asString?.let { fw ->
+            val fontWeightValue = resolveStringWithBinding(json, "fontWeight", data)
+            fontWeightValue?.let { fw ->
                 return WEIGHT_NAMES[fw.lowercase()] ?: FontWeight.Normal
             }
             return null
         }
 
-        private fun resolveFontFamily(json: JsonObject, context: Context): FontFamily? {
-            json.get("font")?.asString?.let { font ->
+        private fun resolveFontFamily(json: JsonObject, context: Context, data: Map<String, Any> = emptyMap()): FontFamily? {
+            val fontValue = resolveStringWithBinding(json, "font", data)
+            fontValue?.let { font ->
                 val lower = font.lowercase()
                 if (!WEIGHT_NAMES.containsKey(lower)) {
                     // Custom font family – try to resolve via resource
@@ -234,6 +237,19 @@ class DynamicTextComponent {
                 }
             }
             return null
+        }
+
+        /**
+         * Resolve a string attribute from JSON with binding support.
+         * If the value is @{prop}, looks up the data map for String value.
+         */
+        private fun resolveStringWithBinding(json: JsonObject, key: String, data: Map<String, Any>): String? {
+            val value = json.get(key)?.asString ?: return null
+            if (value.startsWith("@{") && value.endsWith("}")) {
+                val prop = value.drop(2).dropLast(1)
+                return data[prop] as? String
+            }
+            return value
         }
 
         private fun resolveTextDecoration(json: JsonObject): TextDecoration? {
@@ -322,11 +338,11 @@ class DynamicTextComponent {
                 style = style.copy(color = it)
             }
 
-            resolveFontWeight(json)?.let {
+            resolveFontWeight(json, data)?.let {
                 style = style.copy(fontWeight = it)
             }
 
-            resolveFontFamily(json, context)?.let {
+            resolveFontFamily(json, context, data)?.let {
                 style = style.copy(fontFamily = it)
             }
 
