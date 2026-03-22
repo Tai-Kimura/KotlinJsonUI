@@ -55,6 +55,7 @@ fun SelectBox(
     cornerRadius: Int = 8,
     fontSize: Int = 16,
     fontWeight: FontWeight = FontWeight.Normal,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
     cancelButtonBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
@@ -87,7 +88,7 @@ fun SelectBox(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
