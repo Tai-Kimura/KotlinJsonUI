@@ -69,6 +69,14 @@ class DynamicCollectionComponent {
             val context = LocalContext.current
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
+            // Resolve onItemAppear callback
+            @Suppress("UNCHECKED_CAST")
+            val onItemAppear: ((Int) -> Unit)? = run {
+                val raw = json.get("onItemAppear")?.asString ?: return@run null
+                val propName = ModifierBuilder.extractBindingProperty(raw) ?: return@run null
+                data[propName] as? Function1<Int, Unit>
+            }
+
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
             // Support both 'layout' and 'orientation' attributes for horizontal/vertical
@@ -227,7 +235,8 @@ class DynamicCollectionComponent {
                     flowAlignment = flowAlignment,
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
-                    gravityAlignment = gravityAlignment
+                    gravityAlignment = gravityAlignment,
+                    onItemAppear = onItemAppear
                 )
                 return
             }
@@ -246,7 +255,8 @@ class DynamicCollectionComponent {
                     lineSpacing = lineSpacing,
                     contentPadding = contentPadding,
                     cellHeight = cellHeight,
-                    gravityAlignment = gravityAlignment
+                    gravityAlignment = gravityAlignment,
+                    onItemAppear = onItemAppear
                 )
                 return
             }
@@ -267,7 +277,8 @@ class DynamicCollectionComponent {
                     pageSpacing = columnSpacing,
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
-                    gravityAlignment = gravityAlignment
+                    gravityAlignment = gravityAlignment,
+                    onItemAppear = onItemAppear
                 )
                 return
             }
@@ -313,7 +324,8 @@ class DynamicCollectionComponent {
                         gridColumns = gridColumns,
                         defaultColumns = defaultColumns,
                         gravityAlignment = gravityAlignment,
-                        reverseLayout = reverseLayout
+                        reverseLayout = reverseLayout,
+                        onItemAppear = onItemAppear
                     )
                 }
             } else {
@@ -341,7 +353,8 @@ class DynamicCollectionComponent {
                         gridColumns = gridColumns,
                         defaultColumns = defaultColumns,
                         gravityAlignment = gravityAlignment,
-                        reverseLayout = reverseLayout
+                        reverseLayout = reverseLayout,
+                        onItemAppear = onItemAppear
                     )
                 }
             }
@@ -383,7 +396,8 @@ class DynamicCollectionComponent {
             pageSpacing: androidx.compose.ui.unit.Dp,
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
-            gravityAlignment: Alignment
+            gravityAlignment: Alignment,
+            onItemAppear: ((Int) -> Unit)? = null
         ) {
             // Calculate page count from data source
             val pageCount = when {
@@ -459,7 +473,7 @@ class DynamicCollectionComponent {
                     when {
                         pageItems.isNotEmpty() -> {
                             val pageItem = pageItems[pageIndex]
-                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data)
+                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data, onItemAppear)
                         }
                         cellTemplate != null -> {
                             val cellData = data.toMutableMap().apply {
@@ -491,7 +505,8 @@ class DynamicCollectionComponent {
             flowAlignment: String,
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
-            gravityAlignment: Alignment
+            gravityAlignment: Alignment,
+            onItemAppear: ((Int) -> Unit)? = null
         ) {
 
             val arrangement = when (flowAlignment) {
@@ -536,7 +551,7 @@ class DynamicCollectionComponent {
                                                     ),
                                                 contentAlignment = gravityAlignment
                                             ) {
-                                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data)
+                                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear)
                                             }
                                         }
                                     }
@@ -582,7 +597,8 @@ class DynamicCollectionComponent {
             lineSpacing: androidx.compose.ui.unit.Dp,
             contentPadding: PaddingValues,
             cellHeight: androidx.compose.ui.unit.Dp?,
-            gravityAlignment: Alignment
+            gravityAlignment: Alignment,
+            onItemAppear: ((Int) -> Unit)? = null
         ) {
             Column(
                 modifier = modifier.then(Modifier.padding(contentPadding)),
@@ -612,7 +628,7 @@ class DynamicCollectionComponent {
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName, item, cellIndex, data)
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear)
                                         }
                                     }
                                 }
@@ -657,7 +673,8 @@ class DynamicCollectionComponent {
             gridColumns: Int,
             defaultColumns: Int,
             gravityAlignment: Alignment,
-            reverseLayout: Boolean = false
+            reverseLayout: Boolean = false,
+            onItemAppear: ((Int) -> Unit)? = null
         ) {
 
             when {
@@ -721,7 +738,7 @@ class DynamicCollectionComponent {
                                                 .animateItem(),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data)
+                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear)
                                         }
                                     }
                                 } else {
@@ -740,7 +757,7 @@ class DynamicCollectionComponent {
                                                 ),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data)
+                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear)
                                         }
                                     }
                                 }
@@ -831,8 +848,15 @@ class DynamicCollectionComponent {
             cellClassName: String?,
             item: Any?,
             index: Int,
-            data: Map<String, Any>
+            data: Map<String, Any>,
+            onItemAppear: ((Int) -> Unit)? = null
         ) {
+            // Call onItemAppear callback when this cell appears
+            if (onItemAppear != null) {
+                LaunchedEffect(index) {
+                    onItemAppear(index)
+                }
+            }
 
             if (cellClassName == null) {
                 // Default cell
