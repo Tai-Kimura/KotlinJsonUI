@@ -2,6 +2,8 @@ package com.kotlinjsonui.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 
 /**
@@ -50,6 +52,33 @@ object Configuration {
         var linkColor = Color(0xFF0000EE)  // Default blue color for links
     }
     
+    // Global font defaults (all mutable for app customization)
+    object Font {
+        /** Default font family (null uses system default) */
+        var family: FontFamily? = null
+
+        /** Default font weight */
+        var weight: FontWeight = FontWeight.Normal
+
+        /** Default font size in sp */
+        var size: Int = 14
+
+        /**
+         * Custom font provider function.
+         * Receives font name string from JSON, returns FontFamily or null.
+         * Use this to map font names to custom FontFamily instances.
+         */
+        var fontProvider: ((String) -> FontFamily?)? = null
+
+        /** Resolve a font name to FontFamily using fontProvider, then family fallback */
+        fun resolve(name: String?): FontFamily? {
+            if (name != null) {
+                fontProvider?.invoke(name)?.let { return it }
+            }
+            return family
+        }
+    }
+
     // Global size defaults
     object Sizes {
         const val fontSize = 14
