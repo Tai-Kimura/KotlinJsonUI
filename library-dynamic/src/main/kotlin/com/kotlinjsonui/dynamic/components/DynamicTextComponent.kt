@@ -222,6 +222,19 @@ class DynamicTextComponent {
         }
 
         private fun resolveFontFamily(json: JsonObject, context: Context, data: Map<String, Any> = emptyMap()): FontFamily? {
+            // fontFamily attribute takes priority over font attribute for family resolution
+            val fontFamilyValue = resolveStringWithBinding(json, "fontFamily", data)
+            fontFamilyValue?.let { family ->
+                val fontResName = family.replace("-", "_").replace(" ", "_").lowercase()
+                val resId = context.resources.getIdentifier(
+                    fontResName, "font", context.packageName
+                )
+                if (resId != 0) {
+                    return FontFamily(Font(resId))
+                }
+            }
+
+            // Fall back to font attribute (custom font family if not a weight name)
             val fontValue = resolveStringWithBinding(json, "font", data)
             fontValue?.let { font ->
                 val lower = font.lowercase()
