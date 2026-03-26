@@ -117,6 +117,8 @@ class DynamicNetworkImageComponent {
             }
 
             // ── AsyncImage ──
+            // Use errorResId if specified, otherwise fall back to placeholder
+            val effectiveErrorResId = errorResId ?: placeholderResId
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(imageUrl)
@@ -125,7 +127,8 @@ class DynamicNetworkImageComponent {
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 placeholder = placeholderResId?.let { painterResource(it) },
-                error = errorResId?.let { painterResource(it) },
+                error = effectiveErrorResId?.let { painterResource(it) },
+                fallback = effectiveErrorResId?.let { painterResource(it) },
                 modifier = modifier
             )
         }
