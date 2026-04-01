@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.graphics.toArgb
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -23,6 +24,7 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  *
  * Supported JSON attributes:
  * - url: String URL or @{binding} for web page
+ * - background: String color for WebView background (matches SwiftJsonUI)
  * - javaScriptEnabled: Boolean (default: true)
  * - userAgent: String custom user agent
  * - allowZoom: Boolean to enable builtInZoomControls
@@ -52,6 +54,9 @@ class DynamicWebComponent {
             val javaScriptEnabled = ResourceResolver.resolveBoolean(json, "javaScriptEnabled", data, true)
             val userAgent = ResourceResolver.resolveString(json, "userAgent", data)
             val allowZoom = ResourceResolver.resolveBoolean(json, "allowZoom", data, false)
+
+            // Background color (applied to native WebView)
+            val bgColor = ResourceResolver.resolveColor(json, "background", data, context)
 
             // Build modifier: testTag → margins → size → alpha → clickable → padding
             val defaultFillMax = !json.has("width") && !json.has("height")
@@ -93,6 +98,9 @@ class DynamicWebComponent {
                         if (javaScriptEnabled) {
                             webChromeClient = WebChromeClient()
                         }
+
+                        // Apply background color to native WebView
+                        bgColor?.let { setBackgroundColor(it.toArgb()) }
 
                         if (currentUrl.isNotEmpty()) {
                             loadUrl(currentUrl)
