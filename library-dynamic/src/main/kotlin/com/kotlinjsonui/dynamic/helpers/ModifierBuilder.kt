@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -343,14 +344,14 @@ object ModifierBuilder {
 
         return when {
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isString -> {
-                modifier.dropShadow(shape = shape, blur = 4.dp)
+                modifier.dropShadow(shape = shape, shadow = Shadow(radius = 4.dp))
             }
             shadowElement.isJsonObject -> {
                 val radius = shadowElement.asJsonObject.get("radius")?.asFloat ?: 4f
-                modifier.dropShadow(shape = shape, blur = radius.dp)
+                modifier.dropShadow(shape = shape, shadow = Shadow(radius = radius.dp))
             }
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isNumber -> {
-                modifier.dropShadow(shape = shape, blur = shadowElement.asFloat.dp)
+                modifier.dropShadow(shape = shape, shadow = Shadow(radius = shadowElement.asFloat.dp))
             }
             else -> modifier
         }
