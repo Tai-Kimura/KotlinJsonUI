@@ -9,10 +9,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.R
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -152,9 +151,9 @@ fun DateSelectBox(
     }
     
     // Choose icon based on mode
-    val icon = when (datePickerMode) {
-        "time" -> Icons.Default.Schedule
-        else -> Icons.Default.DateRange
+    val iconRes = when (datePickerMode) {
+        "time" -> R.drawable.ic_schedule
+        else -> R.drawable.ic_date_range
     }
     
     // Custom SelectBox field
@@ -189,7 +188,7 @@ fun DateSelectBox(
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = icon,
+                painter = painterResource(iconRes),
                 contentDescription = if (datePickerMode == "time") "Time" else "Calendar",
                 tint = textColor
             )

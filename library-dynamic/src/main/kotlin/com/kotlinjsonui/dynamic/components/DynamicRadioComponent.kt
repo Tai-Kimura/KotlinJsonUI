@@ -2,15 +2,13 @@ package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.dynamic.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ColorParser
@@ -195,12 +193,12 @@ class DynamicRadioComponent {
                     }
                     // Custom icons
                     icon != null || selectedIcon != null -> {
-                        val iconVector = mapIconName(icon ?: "star")
-                        val selectedIconVector = mapIconName(selectedIcon ?: "star.fill")
+                        val iconResId = mapIconResId(icon ?: "star")
+                        val selectedIconResId = mapIconResId(selectedIcon ?: "star.fill")
 
                         IconButton(onClick = onSelect) {
                             Icon(
-                                imageVector = if (isSelected) selectedIconVector else iconVector,
+                                painter = painterResource(if (isSelected) selectedIconResId else iconResId),
                                 contentDescription = text,
                                 tint = if (isSelected) {
                                     ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
@@ -340,17 +338,17 @@ class DynamicRadioComponent {
             return ModifierBuilder.extractBindingProperty(value)
         }
 
-        private fun mapIconName(iconName: String): ImageVector {
+        private fun mapIconResId(iconName: String): Int {
             return when (iconName) {
-                "circle" -> Icons.Outlined.PanoramaFishEye
-                "checkmark.circle.fill" -> Icons.Filled.CheckCircle
-                "star" -> Icons.Outlined.Star
-                "star.fill" -> Icons.Filled.Star
-                "heart" -> Icons.Outlined.FavoriteBorder
-                "heart.fill" -> Icons.Filled.Favorite
-                "square" -> Icons.Outlined.CheckBoxOutlineBlank
-                "checkmark.square.fill" -> Icons.Default.CheckBox
-                else -> Icons.Outlined.Star
+                "circle" -> R.drawable.ic_panorama_fish_eye
+                "checkmark.circle.fill" -> R.drawable.ic_check_circle_filled
+                "star" -> R.drawable.ic_star_outlined
+                "star.fill" -> R.drawable.ic_star_filled
+                "heart" -> R.drawable.ic_favorite_border
+                "heart.fill" -> R.drawable.ic_favorite_filled
+                "square" -> R.drawable.ic_check_box_outline_blank
+                "checkmark.square.fill" -> R.drawable.ic_check_box_filled
+                else -> R.drawable.ic_star_outlined
             }
         }
     }

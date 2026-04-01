@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +51,7 @@ class DynamicTextViewComponent {
             // Parse text value with data binding
             val rawText = json.get("text")?.asString ?: ""
             val initialText = ResourceResolver.resolveTextValue(rawText, data, context)
-            var currentText by remember(initialText) { mutableStateOf(initialText) }
+            val textFieldState = rememberTextFieldState(initialText = initialText)
 
             // Parse placeholder with resource resolution
             val rawPlaceholder = json.get("hint")?.asString
@@ -91,31 +93,34 @@ class DynamicTextViewComponent {
             // Container inset → contentPadding
             val contentPadding = buildContainerInset(json)
 
-            // Value change handler
+            // TextFieldState sync with data binding
             val viewId = json.get("id")?.asString ?: "textview"
-            val onValueChange: (String) -> Unit = { newValue ->
-                currentText = newValue
 
-                // Update data binding
-                if (rawText.contains("@{")) {
-                    val variable = extractBindingVariable(rawText)
-                    variable?.let { varName ->
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
-                            } catch (_: Exception) {}
+            LaunchedEffect(initialText) {
+                if (textFieldState.text.toString() != initialText) {
+                    textFieldState.edit { replace(0, length, initialText) }
+                }
+            }
+
+            LaunchedEffect(textFieldState.text) {
+                val newValue = textFieldState.text.toString()
+                if (newValue != initialText) {
+                    if (rawText.contains("@{")) {
+                        val variable = extractBindingVariable(rawText)
+                        variable?.let { varName ->
+                            val updateData = data["updateData"]
+                            if (updateData is Function<*>) {
+                                try {
+                                    @Suppress("UNCHECKED_CAST")
+                                    (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
+                                } catch (_: Exception) {}
+                            }
                         }
                     }
-                }
-
-                // Call onTextChange handler
-                val onTextChangeHandler = json.get("onTextChange")?.asString
-                if (onTextChangeHandler != null) {
-                    ModifierBuilder.resolveEventHandler(
-                        onTextChangeHandler, data, viewId, newValue
-                    )
+                    val onTextChangeHandler = json.get("onTextChange")?.asString
+                    if (onTextChangeHandler != null) {
+                        ModifierBuilder.resolveEventHandler(onTextChangeHandler, data, viewId, newValue)
+                    }
                 }
             }
 
@@ -139,8 +144,7 @@ class DynamicTextViewComponent {
                 textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json)
 
                 CustomTextFieldWithMargins(
-                    value = currentText,
-                    onValueChange = onValueChange,
+                    state = textFieldState,
                     boxModifier = boxModifier,
                     textFieldModifier = textFieldModifier,
                     placeholder = placeholder,
@@ -164,8 +168,7 @@ class DynamicTextViewComponent {
                 modifier = ModifierBuilder.applyPadding(modifier, json)
 
                 CustomTextField(
-                    value = currentText,
-                    onValueChange = onValueChange,
+                    state = textFieldState,
                     modifier = modifier,
                     placeholder = placeholder,
                     shape = shape,

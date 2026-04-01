@@ -1,11 +1,8 @@
 package com.kotlinjsonui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.*
@@ -21,10 +18,8 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_displaysInitialValue() {
         composeTestRule.setContent {
-            CustomTextField(
-                value = "Initial Value",
-                onValueChange = {}
-            )
+            val state = rememberTextFieldState(initialText = "Initial Value")
+            CustomTextField(state = state)
         }
 
         composeTestRule.onNodeWithText("Initial Value").assertIsDisplayed()
@@ -33,9 +28,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_displaysPlaceholder() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "")
             CustomTextField(
-                value = "",
-                onValueChange = {},
+                state = state,
                 placeholder = { Text("Enter text here") }
             )
         }
@@ -46,10 +41,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_updatesValue() {
         composeTestRule.setContent {
-            var text by remember { mutableStateOf("") }
+            val state = rememberTextFieldState(initialText = "")
             CustomTextField(
-                value = text,
-                onValueChange = { text = it },
+                state = state,
                 placeholder = { Text("Placeholder") }
             )
         }
@@ -61,9 +55,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_outlinedStyle() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "Outlined")
             CustomTextField(
-                value = "Outlined",
-                onValueChange = {},
+                state = state,
                 isOutlined = true
             )
         }
@@ -72,25 +66,11 @@ class CustomTextFieldTest {
     }
 
     @Test
-    fun customTextField_secureField() {
-        composeTestRule.setContent {
-            CustomTextField(
-                value = "password",
-                onValueChange = {},
-                isSecure = true
-            )
-        }
-
-        // Secure field should exist (password input)
-        composeTestRule.onNode(hasSetTextAction()).assertExists()
-    }
-
-    @Test
     fun customTextField_withError() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "Error Value")
             CustomTextField(
-                value = "Error Value",
-                onValueChange = {},
+                state = state,
                 isError = true
             )
         }
@@ -101,9 +81,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_singleLine() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "Single Line")
             CustomTextField(
-                value = "Single Line",
-                onValueChange = {},
+                state = state,
                 singleLine = true
             )
         }
@@ -114,9 +94,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_multiLine() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "Multi Line")
             CustomTextField(
-                value = "Multi Line",
-                onValueChange = {},
+                state = state,
                 singleLine = false,
                 maxLines = 5
             )
@@ -128,9 +108,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_withCustomBackgroundColor() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "Custom Background")
             CustomTextField(
-                value = "Custom Background",
-                onValueChange = {},
+                state = state,
                 backgroundColor = Color.LightGray
             )
         }
@@ -141,9 +121,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextField_withModifier() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "With Modifier")
             CustomTextField(
-                value = "With Modifier",
-                onValueChange = {},
+                state = state,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -154,9 +134,9 @@ class CustomTextFieldTest {
     @Test
     fun customTextFieldWithMargins_displaysCorrectly() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "With Margins")
             CustomTextFieldWithMargins(
-                value = "With Margins",
-                onValueChange = {},
+                state = state,
                 placeholder = { Text("Placeholder") }
             )
         }
@@ -167,13 +147,26 @@ class CustomTextFieldTest {
     @Test
     fun customTextFieldWithMargins_outlinedStyle() {
         composeTestRule.setContent {
+            val state = rememberTextFieldState(initialText = "Outlined Margins")
             CustomTextFieldWithMargins(
-                value = "Outlined Margins",
-                onValueChange = {},
+                state = state,
                 isOutlined = true
             )
         }
 
         composeTestRule.onNodeWithText("Outlined Margins").assertIsDisplayed()
+    }
+
+    @Test
+    fun rememberSyncedTextFieldState_syncsExternalToState() {
+        composeTestRule.setContent {
+            val state = rememberSyncedTextFieldState(
+                externalValue = "Synced Value",
+                onValueChange = {}
+            )
+            CustomTextField(state = state)
+        }
+
+        composeTestRule.onNodeWithText("Synced Value").assertIsDisplayed()
     }
 }

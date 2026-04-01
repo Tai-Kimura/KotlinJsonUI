@@ -14,7 +14,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
@@ -335,7 +335,7 @@ object ModifierBuilder {
         return modifier
     }
 
-    /** build_shadow: shadow attribute → elevation */
+    /** build_shadow: shadow attribute → dropShadow */
     fun applyShadow(modifier: Modifier, json: JsonObject): Modifier {
         val shadowElement = json.get("shadow") ?: return modifier
         val cornerRadius = json.get("cornerRadius")?.asFloat
@@ -343,14 +343,14 @@ object ModifierBuilder {
 
         return when {
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isString -> {
-                modifier.shadow(4.dp, shape = shape)
+                modifier.dropShadow(shape = shape, blur = 4.dp)
             }
             shadowElement.isJsonObject -> {
                 val radius = shadowElement.asJsonObject.get("radius")?.asFloat ?: 4f
-                modifier.shadow(radius.dp, shape = shape)
+                modifier.dropShadow(shape = shape, blur = radius.dp)
             }
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isNumber -> {
-                modifier.shadow(shadowElement.asFloat.dp, shape = shape)
+                modifier.dropShadow(shape = shape, blur = shadowElement.asFloat.dp)
             }
             else -> modifier
         }

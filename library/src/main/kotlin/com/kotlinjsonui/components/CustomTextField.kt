@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -19,18 +21,16 @@ import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.core.Configuration
 
 /**
- * Custom TextField component that handles default colors from Configuration
- * and supports custom content padding using BasicTextField with DecorationBox
+ * Custom TextField component using TextFieldState API (Compose BOM 2026.03.00+).
+ * Supports custom content padding, decoration, and Configuration defaults.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    state: TextFieldState,
     modifier: Modifier = Modifier,
     placeholder: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     textStyle: TextStyle = LocalTextStyle.current,
@@ -40,7 +40,6 @@ fun CustomTextField(
     highlightBackgroundColor: Color? = null,
     borderColor: Color? = null,
     isOutlined: Boolean = false,
-    isSecure: Boolean = false,
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     onFocus: (() -> Unit)? = null,
@@ -81,29 +80,30 @@ fun CustomTextField(
     // Default content padding if not specified
     val effectiveContentPadding = contentPadding ?: TextFieldDefaults.contentPaddingWithoutLabel()
     val effectiveShape = shape ?: RoundedCornerShape(Configuration.TextField.defaultCornerRadius.dp)
+    val effectiveTextStyle = textStyle.copy(color = textStyle.color.takeIf { it != Color.Unspecified } ?: Color.Black)
 
-    // Use BasicTextField with DecorationBox for custom content padding support
+    // Use BasicTextField with TextFieldState
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        state = state,
         modifier = focusModifier,
         enabled = enabled,
-        visualTransformation = visualTransformation,
+        textStyle = effectiveTextStyle,
         keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        textStyle = textStyle.copy(color = textStyle.color.takeIf { it != Color.Unspecified } ?: Color.Black),
-        singleLine = singleLine,
-        maxLines = maxLines,
+        lineLimits = if (singleLine) {
+            androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine
+        } else {
+            androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines)
+        },
         cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
         interactionSource = interactionSource,
-        decorationBox = { innerTextField ->
+        decorator = { innerTextField ->
             if (isOutlined) {
                 OutlinedTextFieldDefaults.DecorationBox(
-                    value = value,
+                    value = state.text.toString(),
                     innerTextField = innerTextField,
                     enabled = enabled,
                     singleLine = singleLine,
-                    visualTransformation = visualTransformation,
+                    visualTransformation = VisualTransformation.None,
                     interactionSource = interactionSource,
                     isError = isError,
                     placeholder = placeholder,
@@ -111,8 +111,8 @@ fun CustomTextField(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
                         unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                        focusedTextColor = textStyle.color,
-                        unfocusedTextColor = textStyle.color,
+                        focusedTextColor = effectiveTextStyle.color,
+                        unfocusedTextColor = effectiveTextStyle.color,
                         focusedContainerColor = backgroundColor ?: Color.Transparent,
                         unfocusedContainerColor = backgroundColor ?: Color.Transparent
                     ),
@@ -133,11 +133,11 @@ fun CustomTextField(
                 )
             } else {
                 TextFieldDefaults.DecorationBox(
-                    value = value,
+                    value = state.text.toString(),
                     innerTextField = innerTextField,
                     enabled = enabled,
                     singleLine = singleLine,
-                    visualTransformation = visualTransformation,
+                    visualTransformation = VisualTransformation.None,
                     interactionSource = interactionSource,
                     isError = isError,
                     placeholder = placeholder,
@@ -150,7 +150,6 @@ fun CustomTextField(
                         disabledIndicatorColor = Color.Transparent
                     ),
                     container = {
-                        // Only draw container if background is not transparent
                         val bg = if (isFocused) focusedBackground else unfocusedBackground
                         if (bg != Color.Transparent) {
                             TextFieldDefaults.ContainerBox(
@@ -179,13 +178,11 @@ fun CustomTextField(
  */
 @Composable
 fun CustomTextFieldWithMargins(
-    value: String,
-    onValueChange: (String) -> Unit,
+    state: TextFieldState,
     boxModifier: Modifier = Modifier,
     textFieldModifier: Modifier = Modifier,
     placeholder: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     textStyle: TextStyle = LocalTextStyle.current,
@@ -195,7 +192,6 @@ fun CustomTextFieldWithMargins(
     highlightBackgroundColor: Color? = null,
     borderColor: Color? = null,
     isOutlined: Boolean = false,
-    isSecure: Boolean = false,
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     onFocus: (() -> Unit)? = null,
@@ -206,12 +202,10 @@ fun CustomTextFieldWithMargins(
 ) {
     Box(modifier = boxModifier) {
         CustomTextField(
-            value = value,
-            onValueChange = onValueChange,
+            state = state,
             modifier = textFieldModifier,
             placeholder = placeholder,
             isError = isError,
-            visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             textStyle = textStyle,
@@ -221,7 +215,6 @@ fun CustomTextFieldWithMargins(
             highlightBackgroundColor = highlightBackgroundColor,
             borderColor = borderColor,
             isOutlined = isOutlined,
-            isSecure = isSecure,
             singleLine = singleLine,
             maxLines = maxLines,
             onFocus = onFocus,
@@ -231,4 +224,33 @@ fun CustomTextFieldWithMargins(
             enabled = enabled
         )
     }
+}
+
+/**
+ * Helper: Create a TextFieldState that syncs bidirectionally with an external value.
+ * Use this when bridging TextFieldState with value/onValueChange patterns (e.g., ViewModel data binding).
+ */
+@Composable
+fun rememberSyncedTextFieldState(
+    externalValue: String,
+    onValueChange: (String) -> Unit
+): TextFieldState {
+    val state = rememberTextFieldState(initialText = externalValue)
+
+    // Sync external → state (e.g. ViewModel clears text)
+    LaunchedEffect(externalValue) {
+        if (state.text.toString() != externalValue) {
+            state.edit { replace(0, length, externalValue) }
+        }
+    }
+
+    // Sync state → external (user typing)
+    LaunchedEffect(state.text) {
+        val current = state.text.toString()
+        if (current != externalValue) {
+            onValueChange(current)
+        }
+    }
+
+    return state
 }

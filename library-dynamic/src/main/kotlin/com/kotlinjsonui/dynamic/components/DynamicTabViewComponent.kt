@@ -3,10 +3,9 @@ package com.kotlinjsonui.dynamic.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.dynamic.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -326,45 +325,45 @@ class DynamicTabViewComponent {
                         contentDescription = contentDescription
                     )
                 } else {
-                    // Fallback to Material icon
+                    // Fallback to bundled icon resource
                     Icon(
-                        imageVector = getIconVector(iconName, isSelected),
+                        painter = painterResource(getIconResId(iconName, isSelected)),
                         contentDescription = contentDescription
                     )
                 }
             } else {
-                // Use Material Icons (system)
+                // Use bundled icon resources
                 Icon(
-                    imageVector = getIconVector(iconName, isSelected),
+                    painter = painterResource(getIconResId(iconName, isSelected)),
                     contentDescription = contentDescription
                 )
             }
         }
 
-        private fun getIconVector(iconName: String, filled: Boolean): ImageVector {
-            // Map SF Symbol / common names to Material Icons
+        private fun getIconResId(iconName: String, filled: Boolean): Int {
+            // Map SF Symbol / common names to drawable resources
             val iconMap = mapOf(
-                "house" to (Icons.Filled.Home to Icons.Outlined.Home),
-                "house.fill" to (Icons.Filled.Home to Icons.Outlined.Home),
-                "person" to (Icons.Filled.Person to Icons.Outlined.Person),
-                "person.fill" to (Icons.Filled.Person to Icons.Outlined.Person),
-                "gearshape" to (Icons.Filled.Settings to Icons.Outlined.Settings),
-                "gearshape.fill" to (Icons.Filled.Settings to Icons.Outlined.Settings),
-                "gear" to (Icons.Filled.Settings to Icons.Outlined.Settings),
-                "magnifyingglass" to (Icons.Filled.Search to Icons.Outlined.Search),
-                "heart" to (Icons.Filled.Favorite to Icons.Outlined.FavoriteBorder),
-                "heart.fill" to (Icons.Filled.Favorite to Icons.Outlined.FavoriteBorder),
-                "star" to (Icons.Filled.Star to Icons.Outlined.Star),
-                "star.fill" to (Icons.Filled.Star to Icons.Outlined.Star),
-                "bell" to (Icons.Filled.Notifications to Icons.Outlined.Notifications),
-                "bell.fill" to (Icons.Filled.Notifications to Icons.Outlined.Notifications),
-                "cart" to (Icons.Filled.ShoppingCart to Icons.Outlined.ShoppingCart),
-                "cart.fill" to (Icons.Filled.ShoppingCart to Icons.Outlined.ShoppingCart),
-                "list.bullet" to (Icons.Filled.List to Icons.Outlined.List),
-                "circle" to (Icons.Filled.Circle to Icons.Outlined.Circle)
+                "house" to (R.drawable.ic_home_filled to R.drawable.ic_home_outlined),
+                "house.fill" to (R.drawable.ic_home_filled to R.drawable.ic_home_outlined),
+                "person" to (R.drawable.ic_person_filled to R.drawable.ic_person_outlined),
+                "person.fill" to (R.drawable.ic_person_filled to R.drawable.ic_person_outlined),
+                "gearshape" to (R.drawable.ic_settings_filled to R.drawable.ic_settings_outlined),
+                "gearshape.fill" to (R.drawable.ic_settings_filled to R.drawable.ic_settings_outlined),
+                "gear" to (R.drawable.ic_settings_filled to R.drawable.ic_settings_outlined),
+                "magnifyingglass" to (R.drawable.ic_search_filled to R.drawable.ic_search_outlined),
+                "heart" to (R.drawable.ic_favorite_filled to R.drawable.ic_favorite_border),
+                "heart.fill" to (R.drawable.ic_favorite_filled to R.drawable.ic_favorite_border),
+                "star" to (R.drawable.ic_star_filled to R.drawable.ic_star_outlined),
+                "star.fill" to (R.drawable.ic_star_filled to R.drawable.ic_star_outlined),
+                "bell" to (R.drawable.ic_notifications_filled to R.drawable.ic_notifications_outlined),
+                "bell.fill" to (R.drawable.ic_notifications_filled to R.drawable.ic_notifications_outlined),
+                "cart" to (R.drawable.ic_shopping_cart_filled to R.drawable.ic_shopping_cart_outlined),
+                "cart.fill" to (R.drawable.ic_shopping_cart_filled to R.drawable.ic_shopping_cart_outlined),
+                "list.bullet" to (R.drawable.ic_list_filled to R.drawable.ic_list_outlined),
+                "circle" to (R.drawable.ic_circle_filled to R.drawable.ic_circle_outlined)
             )
 
-            val icons = iconMap[iconName] ?: (Icons.Filled.Circle to Icons.Outlined.Circle)
+            val icons = iconMap[iconName] ?: (R.drawable.ic_circle_filled to R.drawable.ic_circle_outlined)
             return if (filled) icons.first else icons.second
         }
     }

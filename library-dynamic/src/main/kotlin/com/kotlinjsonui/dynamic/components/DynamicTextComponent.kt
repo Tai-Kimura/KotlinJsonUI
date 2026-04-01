@@ -2,6 +2,7 @@ package com.kotlinjsonui.dynamic.components
 
 import android.content.Context
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextAutoSize
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -79,10 +80,13 @@ class DynamicTextComponent {
             // Text alignment
             val textAlign = resolveTextAlign(json)
 
+            // Auto size (text shrinking)
+            val useAutoSize = json.get("autoShrink")?.asBoolean == true ||
+                    json.get("minimumScaleFactor") != null
+
             // Max lines
             val maxLines = when {
-                json.get("autoShrink")?.asBoolean == true -> 1
-                json.get("minimumScaleFactor") != null -> 1
+                useAutoSize -> 1
                 json.get("lines")?.asInt == 0 -> Int.MAX_VALUE
                 json.get("lines")?.asInt != null -> json.get("lines").asInt
                 else -> Int.MAX_VALUE
@@ -90,8 +94,7 @@ class DynamicTextComponent {
 
             // Overflow
             val overflow = when {
-                json.get("autoShrink")?.asBoolean == true -> TextOverflow.Ellipsis
-                json.get("minimumScaleFactor") != null -> TextOverflow.Ellipsis
+                useAutoSize -> TextOverflow.Ellipsis
                 json.get("lines")?.asInt != null && json.get("lines").asInt > 0 -> TextOverflow.Ellipsis
                 else -> when (json.get("lineBreakMode")?.asString?.lowercase()) {
                     "clip" -> TextOverflow.Clip
@@ -119,6 +122,9 @@ class DynamicTextComponent {
                 textDecoration = textDecoration,
                 maxLines = maxLines,
                 overflow = overflow,
+                autoSize = if (useAutoSize) TextAutoSize.StepBased(
+                    minFontSize = ((fontSize ?: 14f) * (json.get("minimumScaleFactor")?.asFloat ?: 0.5f)).sp
+                ) else TextAutoSize.None,
                 style = style,
                 modifier = modifier
             )

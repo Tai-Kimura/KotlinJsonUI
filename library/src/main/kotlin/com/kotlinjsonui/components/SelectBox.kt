@@ -11,10 +11,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
+import androidx.compose.ui.res.painterResource
+import com.kotlinjsonui.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -99,7 +98,7 @@ fun SelectBox(
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                painter = painterResource(R.drawable.ic_arrow_drop_down),
                 contentDescription = "Dropdown",
                 tint = textColor
             )
@@ -186,7 +185,7 @@ fun SelectBox(
                                 if (option == value) {
                                     Spacer(modifier = Modifier.weight(1f))
                                     Icon(
-                                        imageVector = Icons.Default.Check,
+                                        painter = painterResource(R.drawable.ic_check),
                                         contentDescription = "Selected",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
@@ -283,7 +282,7 @@ fun <T> SelectBox(
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = Icons.Default.ArrowDropDown,
+                painter = painterResource(R.drawable.ic_arrow_drop_down),
                 contentDescription = "Dropdown",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -367,7 +366,7 @@ fun <T> SelectBox(
                                 if (option.value == value) {
                                     Spacer(modifier = Modifier.weight(1f))
                                     Icon(
-                                        imageVector = Icons.Default.Check,
+                                        painter = painterResource(R.drawable.ic_check),
                                         contentDescription = "Selected",
                                         tint = MaterialTheme.colorScheme.primary
                                     )

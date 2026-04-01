@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,8 +25,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +58,6 @@ class DynamicTextFieldComponent {
             // Parse text value with data binding
             val rawText = json.get("text")?.asString ?: ""
             val initialText = ResourceResolver.resolveTextValue(rawText, data, context)
-            var textValue by remember(initialText) { mutableStateOf(initialText) }
 
             // Parse placeholder with resource resolution
             val rawPlaceholder = json.get("hint")?.asString
@@ -82,31 +81,39 @@ class DynamicTextFieldComponent {
             val maxLines = json.get("maxLines")?.asInt ?: 1
             val singleLine = maxLines == 1
 
-            // onValueChange handler with data binding update
+            // TextFieldState with data binding sync
             val viewId = json.get("id")?.asString ?: "textfield"
-            val onValueChange: (String) -> Unit = { newValue ->
-                textValue = newValue
+            val textFieldState = rememberTextFieldState(initialText = initialText)
 
-                // Update data binding if text is bound
-                if (rawText.contains("@{")) {
-                    val variable = extractBindingVariable(rawText)
-                    variable?.let { varName ->
-                        val updateData = data["updateData"]
-                        if (updateData is Function<*>) {
-                            try {
-                                @Suppress("UNCHECKED_CAST")
-                                (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
-                            } catch (_: Exception) {}
+            // Sync external → state (e.g. ViewModel clears text)
+            LaunchedEffect(initialText) {
+                if (textFieldState.text.toString() != initialText) {
+                    textFieldState.edit { replace(0, length, initialText) }
+                }
+            }
+
+            // Sync state → external (user typing)
+            LaunchedEffect(textFieldState.text) {
+                val newValue = textFieldState.text.toString()
+                if (newValue != initialText) {
+                    // Update data binding
+                    if (rawText.contains("@{")) {
+                        val variable = extractBindingVariable(rawText)
+                        variable?.let { varName ->
+                            val updateData = data["updateData"]
+                            if (updateData is Function<*>) {
+                                try {
+                                    @Suppress("UNCHECKED_CAST")
+                                    (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
+                                } catch (_: Exception) {}
+                            }
                         }
                     }
-                }
-
-                // Call onTextChange handler if specified
-                val onTextChangeHandler = json.get("onTextChange")?.asString
-                if (onTextChangeHandler != null) {
-                    ModifierBuilder.resolveEventHandler(
-                        onTextChangeHandler, data, viewId, newValue
-                    )
+                    // Call onTextChange handler
+                    val onTextChangeHandler = json.get("onTextChange")?.asString
+                    if (onTextChangeHandler != null) {
+                        ModifierBuilder.resolveEventHandler(onTextChangeHandler, data, viewId, newValue)
+                    }
                 }
             }
 
@@ -162,13 +169,6 @@ class DynamicTextFieldComponent {
             val textStyleParts = mutableListOf<String>()
             val textStyle = buildTextStyle(json, textColor, fontSize, data)
 
-            // Visual transformation
-            val visualTransformation = if (isSecure) {
-                PasswordVisualTransformation()
-            } else {
-                VisualTransformation.None
-            }
-
             // Keyboard options
             val keyboardOptions = buildKeyboardOptions(json, nextFocusId)
 
@@ -195,11 +195,41 @@ class DynamicTextFieldComponent {
             val onBlurHandler = json.get("onBlur")?.asString
                 ?: json.get("onEndEditing")?.asString
 
-            // Check if we need margins wrapper
-            val hasMargins = hasMarginAttributes(json)
+            // Build common modifier
+            var modifier: Modifier = Modifier
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
+            modifier = ModifierBuilder.applySize(modifier, json)
+            if (isHidden) {
+                modifier = modifier.alpha(0f)
+            } else {
+                modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            }
+            if (fieldId != null) {
+                modifier = modifier
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        val wasFocused = hasFocus
+                        hasFocus = focusState.isFocused
+                        if (focusState.isFocused && !wasFocused) {
+                            onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                        }
+                        if (!focusState.isFocused && wasFocused) {
+                            onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                        }
+                    }
+            }
 
-            if (hasMargins) {
-                // Box modifier with margins
+            if (isSecure) {
+                SecureTextField(
+                    state = textFieldState,
+                    modifier = modifier,
+                    enabled = isEnabled,
+                    textStyle = textStyle,
+                    placeholder = placeholder,
+                    shape = shape ?: RoundedCornerShape(4.dp)
+                )
+            } else if (hasMarginAttributes(json)) {
                 var boxModifier: Modifier = Modifier
                 boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
@@ -209,7 +239,6 @@ class DynamicTextFieldComponent {
                     boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
                 }
 
-                // TextField modifier (size only)
                 var textFieldModifier: Modifier = Modifier
                 textFieldModifier = ModifierBuilder.applySize(textFieldModifier, json)
                 if (fieldId != null) {
@@ -228,12 +257,10 @@ class DynamicTextFieldComponent {
                 }
 
                 CustomTextFieldWithMargins(
-                    value = textValue,
-                    onValueChange = onValueChange,
+                    state = textFieldState,
                     boxModifier = boxModifier,
                     textFieldModifier = textFieldModifier,
                     placeholder = placeholder,
-                    visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
                     keyboardActions = keyboardActions,
                     textStyle = textStyle,
@@ -243,44 +270,15 @@ class DynamicTextFieldComponent {
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
-                    isSecure = isSecure,
                     singleLine = singleLine,
                     maxLines = maxLines,
                     enabled = isEnabled
                 )
             } else {
-                // Regular modifier
-                var modifier: Modifier = Modifier
-                modifier = ModifierBuilder.applyTestTag(modifier, json)
-                modifier = ModifierBuilder.applyMargins(modifier, json, data)
-                modifier = ModifierBuilder.applySize(modifier, json)
-                if (isHidden) {
-                    modifier = modifier.alpha(0f)
-                } else {
-                    modifier = ModifierBuilder.applyAlpha(modifier, json, data)
-                }
-
-                if (fieldId != null) {
-                    modifier = modifier
-                        .focusRequester(focusRequester)
-                        .onFocusChanged { focusState ->
-                            val wasFocused = hasFocus
-                            hasFocus = focusState.isFocused
-                            if (focusState.isFocused && !wasFocused) {
-                                onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
-                            }
-                            if (!focusState.isFocused && wasFocused) {
-                                onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
-                            }
-                        }
-                }
-
                 CustomTextField(
-                    value = textValue,
-                    onValueChange = onValueChange,
+                    state = textFieldState,
                     modifier = modifier,
                     placeholder = placeholder,
-                    visualTransformation = visualTransformation,
                     keyboardOptions = keyboardOptions,
                     keyboardActions = keyboardActions,
                     textStyle = textStyle,
@@ -290,7 +288,6 @@ class DynamicTextFieldComponent {
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
-                    isSecure = isSecure,
                     singleLine = singleLine,
                     maxLines = maxLines,
                     enabled = isEnabled
