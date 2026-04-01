@@ -6,7 +6,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.SecureTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -220,16 +219,7 @@ class DynamicTextFieldComponent {
                     }
             }
 
-            if (isSecure) {
-                SecureTextField(
-                    state = textFieldState,
-                    modifier = modifier,
-                    enabled = isEnabled,
-                    textStyle = textStyle,
-                    placeholder = placeholder,
-                    shape = shape ?: RoundedCornerShape(4.dp)
-                )
-            } else if (hasMarginAttributes(json)) {
+            if (hasMarginAttributes(json)) {
                 var boxModifier: Modifier = Modifier
                 boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
@@ -270,6 +260,7 @@ class DynamicTextFieldComponent {
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
+                    isSecure = isSecure,
                     singleLine = singleLine,
                     maxLines = maxLines,
                     enabled = isEnabled
@@ -288,6 +279,7 @@ class DynamicTextFieldComponent {
                     highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
+                    isSecure = isSecure,
                     singleLine = singleLine,
                     maxLines = maxLines,
                     enabled = isEnabled

@@ -4,6 +4,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,6 +41,7 @@ fun CustomTextField(
     highlightBackgroundColor: Color? = null,
     borderColor: Color? = null,
     isOutlined: Boolean = false,
+    isSecure: Boolean = false,
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     onFocus: (() -> Unit)? = null,
@@ -82,21 +84,8 @@ fun CustomTextField(
     val effectiveShape = shape ?: RoundedCornerShape(Configuration.TextField.defaultCornerRadius.dp)
     val effectiveTextStyle = textStyle.copy(color = textStyle.color.takeIf { it != Color.Unspecified } ?: Color.Black)
 
-    // Use BasicTextField with TextFieldState
-    BasicTextField(
-        state = state,
-        modifier = focusModifier,
-        enabled = enabled,
-        textStyle = effectiveTextStyle,
-        keyboardOptions = keyboardOptions,
-        lineLimits = if (singleLine) {
-            androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine
-        } else {
-            androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines)
-        },
-        cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
-        interactionSource = interactionSource,
-        decorator = { innerTextField ->
+    // Shared decorator for both normal and secure text fields
+    val textFieldDecorator: @Composable (innerTextField: @Composable () -> Unit) -> Unit = { innerTextField ->
             if (isOutlined) {
                 OutlinedTextFieldDefaults.DecorationBox(
                     value = state.text.toString(),
@@ -169,8 +158,37 @@ fun CustomTextField(
                     }
                 )
             }
-        }
-    )
+    }
+
+    // Use BasicSecureTextField for password fields, BasicTextField for normal
+    if (isSecure) {
+        BasicSecureTextField(
+            state = state,
+            modifier = focusModifier,
+            enabled = enabled,
+            textStyle = effectiveTextStyle,
+            keyboardOptions = keyboardOptions,
+            cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
+            interactionSource = interactionSource,
+            decorator = textFieldDecorator
+        )
+    } else {
+        BasicTextField(
+            state = state,
+            modifier = focusModifier,
+            enabled = enabled,
+            textStyle = effectiveTextStyle,
+            keyboardOptions = keyboardOptions,
+            lineLimits = if (singleLine) {
+                androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine
+            } else {
+                androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines)
+            },
+            cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
+            interactionSource = interactionSource,
+            decorator = textFieldDecorator
+        )
+    }
 }
 
 /**
@@ -192,6 +210,7 @@ fun CustomTextFieldWithMargins(
     highlightBackgroundColor: Color? = null,
     borderColor: Color? = null,
     isOutlined: Boolean = false,
+    isSecure: Boolean = false,
     singleLine: Boolean = true,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     onFocus: (() -> Unit)? = null,
@@ -215,6 +234,7 @@ fun CustomTextFieldWithMargins(
             highlightBackgroundColor = highlightBackgroundColor,
             borderColor = borderColor,
             isOutlined = isOutlined,
+            isSecure = isSecure,
             singleLine = singleLine,
             maxLines = maxLines,
             onFocus = onFocus,
