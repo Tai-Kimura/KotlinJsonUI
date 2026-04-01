@@ -84,83 +84,83 @@ fun CustomTextField(
     val effectiveShape = shape ?: RoundedCornerShape(Configuration.TextField.defaultCornerRadius.dp)
     val effectiveTextStyle = textStyle.copy(color = textStyle.color.takeIf { it != Color.Unspecified } ?: Color.Black)
 
-    // Shared decorator for both normal and secure text fields
-    val textFieldDecorator: @Composable (innerTextField: @Composable () -> Unit) -> Unit = { innerTextField ->
-            if (isOutlined) {
-                OutlinedTextFieldDefaults.DecorationBox(
-                    value = state.text.toString(),
-                    innerTextField = innerTextField,
-                    enabled = enabled,
-                    singleLine = singleLine,
-                    visualTransformation = VisualTransformation.None,
-                    interactionSource = interactionSource,
-                    isError = isError,
-                    placeholder = placeholder,
-                    contentPadding = effectiveContentPadding,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                        unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                        focusedTextColor = effectiveTextStyle.color,
-                        unfocusedTextColor = effectiveTextStyle.color,
-                        focusedContainerColor = backgroundColor ?: Color.Transparent,
-                        unfocusedContainerColor = backgroundColor ?: Color.Transparent
-                    ),
-                    container = {
-                        OutlinedTextFieldDefaults.ContainerBox(
+    // Shared decoration logic extracted to a composable
+    @Composable
+    fun DecorationContent(innerTextField: @Composable () -> Unit) {
+        if (isOutlined) {
+            OutlinedTextFieldDefaults.DecorationBox(
+                value = state.text.toString(),
+                innerTextField = innerTextField,
+                enabled = enabled,
+                singleLine = singleLine,
+                visualTransformation = VisualTransformation.None,
+                interactionSource = interactionSource,
+                isError = isError,
+                placeholder = placeholder,
+                contentPadding = effectiveContentPadding,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                    unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                    focusedTextColor = effectiveTextStyle.color,
+                    unfocusedTextColor = effectiveTextStyle.color,
+                    focusedContainerColor = backgroundColor ?: Color.Transparent,
+                    unfocusedContainerColor = backgroundColor ?: Color.Transparent
+                ),
+                container = {
+                    OutlinedTextFieldDefaults.ContainerBox(
+                        enabled = enabled,
+                        isError = isError,
+                        interactionSource = interactionSource,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                            unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                            focusedContainerColor = backgroundColor ?: Color.Transparent,
+                            unfocusedContainerColor = backgroundColor ?: Color.Transparent
+                        ),
+                        shape = effectiveShape
+                    )
+                }
+            )
+        } else {
+            TextFieldDefaults.DecorationBox(
+                value = state.text.toString(),
+                innerTextField = innerTextField,
+                enabled = enabled,
+                singleLine = singleLine,
+                visualTransformation = VisualTransformation.None,
+                interactionSource = interactionSource,
+                isError = isError,
+                placeholder = placeholder,
+                contentPadding = effectiveContentPadding,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = focusedBackground,
+                    unfocusedContainerColor = unfocusedBackground,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent
+                ),
+                container = {
+                    val bg = if (isFocused) focusedBackground else unfocusedBackground
+                    if (bg != Color.Transparent) {
+                        TextFieldDefaults.ContainerBox(
                             enabled = enabled,
                             isError = isError,
                             interactionSource = interactionSource,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                                unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                                focusedContainerColor = backgroundColor ?: Color.Transparent,
-                                unfocusedContainerColor = backgroundColor ?: Color.Transparent
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = if (isFocused) focusedBackground else unfocusedBackground,
+                                unfocusedContainerColor = unfocusedBackground,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent
                             ),
                             shape = effectiveShape
                         )
                     }
-                )
-            } else {
-                TextFieldDefaults.DecorationBox(
-                    value = state.text.toString(),
-                    innerTextField = innerTextField,
-                    enabled = enabled,
-                    singleLine = singleLine,
-                    visualTransformation = VisualTransformation.None,
-                    interactionSource = interactionSource,
-                    isError = isError,
-                    placeholder = placeholder,
-                    contentPadding = effectiveContentPadding,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = focusedBackground,
-                        unfocusedContainerColor = unfocusedBackground,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    container = {
-                        val bg = if (isFocused) focusedBackground else unfocusedBackground
-                        if (bg != Color.Transparent) {
-                            TextFieldDefaults.ContainerBox(
-                                enabled = enabled,
-                                isError = isError,
-                                interactionSource = interactionSource,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = if (isFocused) focusedBackground else unfocusedBackground,
-                                    unfocusedContainerColor = unfocusedBackground,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                ),
-                                shape = effectiveShape
-                            )
-                        }
-                    }
-                )
-            }
+                }
+            )
+        }
     }
 
-    // Use BasicSecureTextField for password fields, BasicTextField for normal
     if (isSecure) {
         BasicSecureTextField(
             state = state,
@@ -170,7 +170,7 @@ fun CustomTextField(
             keyboardOptions = keyboardOptions,
             cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
             interactionSource = interactionSource,
-            decorator = textFieldDecorator
+            decorator = { innerTextField -> DecorationContent(innerTextField) }
         )
     } else {
         BasicTextField(
@@ -186,7 +186,7 @@ fun CustomTextField(
             },
             cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
             interactionSource = interactionSource,
-            decorator = textFieldDecorator
+            decorator = { innerTextField -> DecorationContent(innerTextField) }
         )
     }
 }
