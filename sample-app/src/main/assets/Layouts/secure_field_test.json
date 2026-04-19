@@ -1,0 +1,169 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Button",
+      "style": "dynamic_toggle",
+      "fontColor": "white",
+      "cornerRadius": 8
+    },
+    {
+      "type": "Label",
+      "id": "title_label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "black"
+    },
+    {
+      "type": "Label",
+      "text": "Regular TextField (not secure)",
+      "fontSize": 14,
+      "fontColor": "medium_gray_4",
+      "topMargin": 30
+    },
+    {
+      "type": "TextField",
+      "id": "regular_field",
+      "width": "matchParent",
+      "height": 50,
+      "topMargin": 10,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "hint": "Enter regular text",
+      "text": "@{regularText}",
+      "background": "white",
+      "cornerRadius": 8,
+      "borderColor": "pale_gray_4",
+      "borderWidth": 1,
+      "fontColor": "black",
+      "fontSize": 16,
+      "secure": false
+    },
+    {
+      "type": "Label",
+      "text": "Secure TextField (password)",
+      "fontSize": 14,
+      "fontColor": "medium_gray_4",
+      "topMargin": 20
+    },
+    {
+      "type": "TextField",
+      "id": "password_field",
+      "width": "matchParent",
+      "height": 50,
+      "topMargin": 10,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "hint": "Enter password",
+      "text": "@{password}",
+      "background": "white",
+      "cornerRadius": 8,
+      "borderColor": "pale_gray_4",
+      "borderWidth": 1,
+      "fontColor": "black",
+      "fontSize": 16,
+      "secure": true
+    },
+    {
+      "type": "Label",
+      "text": "Confirm Password (also secure)",
+      "fontSize": 14,
+      "fontColor": "medium_gray_4",
+      "topMargin": 20
+    },
+    {
+      "type": "TextField",
+      "id": "confirm_password_field",
+      "width": "matchParent",
+      "height": 50,
+      "topMargin": 10,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "hint": "Confirm password",
+      "text": "@{confirmPassword}",
+      "background": "white",
+      "cornerRadius": 8,
+      "borderColor": "pale_gray_4",
+      "borderWidth": 1,
+      "fontColor": "black",
+      "fontSize": 16,
+      "secure": true
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "topMargin": 30,
+      "leftMargin": 20,
+      "rightMargin": 20,
+      "padding": 15,
+      "background": "pale_gray",
+      "cornerRadius": 8,
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Label",
+          "text": "Values entered:",
+          "fontSize": 14,
+          "fontColor": "dark_gray",
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "Regular: @{regularText}",
+          "fontSize": 12,
+          "fontColor": "medium_gray_4",
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "Password: [hidden]",
+          "fontSize": 12,
+          "fontColor": "medium_gray_4",
+          "topMargin": 5
+        },
+        {
+          "type": "Label",
+          "text": "Confirm: [hidden]",
+          "fontSize": 12,
+          "fontColor": "medium_gray_4",
+          "topMargin": 5
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "confirmPassword",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "password",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "regularText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Secure Field Test"
+    }
+  ]
+}

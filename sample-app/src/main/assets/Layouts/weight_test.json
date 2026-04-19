@@ -1,0 +1,179 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Button",
+      "style": "dynamic_toggle",
+      "fontColor": "white",
+      "cornerRadius": 8
+    },
+    {
+      "type": "Label",
+      "id": "title_label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "black"
+    },
+    {
+      "type": "Label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "Horizontal Weight Distribution (1:2:1)",
+      "fontSize": 16,
+      "fontColor": "dark_gray"
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 60,
+      "orientation": "horizontal",
+      "topMargin": 10,
+      "child": [
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "wrapContent",
+          "weight": 1,
+          "text": "Weight: 1",
+          "background": "pale_pink",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "weight": 2,
+          "text": "Weight: 2",
+          "background": "pale_yellow",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "weight": 1,
+          "text": "Weight: 1",
+          "background": "pale_cyan",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        }
+      ]
+    },
+    {
+      "type": "Label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 30,
+      "text": "Vertical Weight Distribution (1:3:2)",
+      "fontSize": 16,
+      "fontColor": "dark_gray"
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 300,
+      "orientation": "vertical",
+      "topMargin": 10,
+      "child": [
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 0,
+          "weight": 1,
+          "text": "Weight: 1",
+          "background": "white_2",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 0,
+          "weight": 3,
+          "text": "Weight: 3",
+          "background": "white_3",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "matchParent",
+          "height": 0,
+          "weight": 2,
+          "text": "Weight: 2",
+          "background": "white_4",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        }
+      ]
+    },
+    {
+      "type": "Label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 30,
+      "text": "widthWeight Test",
+      "fontSize": 16,
+      "fontColor": "dark_gray"
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 60,
+      "orientation": "horizontal",
+      "topMargin": 10,
+      "child": [
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "widthWeight": 1,
+          "text": "widthWeight: 1",
+          "background": "white_5",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": 0,
+          "height": "matchParent",
+          "widthWeight": 1,
+          "text": "widthWeight: 1",
+          "background": "white_6",
+          "textAlign": "center",
+          "fontSize": 14,
+          "fontColor": "black"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Weight Test"
+    }
+  ]
+}

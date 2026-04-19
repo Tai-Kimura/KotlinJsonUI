@@ -1,0 +1,535 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "Fixed(80) + Weight(1) + Weight(2) + Fixed(60)",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 60,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": 80,
+              "height": "matchParent",
+              "text": "Fixed: 80",
+              "background": "pale_pink",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "Weight: 1",
+              "background": "pale_yellow",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 2,
+              "text": "Weight: 2",
+              "background": "pale_cyan",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 60,
+              "height": "matchParent",
+              "text": "Fixed: 60",
+              "background": "white_2",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Complex nested weights with fixed",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "View",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 0,
+                  "weight": 1,
+                  "text": "1-1",
+                  "background": "white_5",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                },
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 0,
+                  "weight": 2,
+                  "text": "1-2",
+                  "background": "pale_red_3",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "width": 50,
+              "height": "matchParent",
+              "text": "Fix\n50",
+              "background": "pale_gray",
+              "textAlign": "center",
+              "fontSize": 12,
+              "fontColor": "black"
+            },
+            {
+              "type": "View",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 2,
+              "orientation": "vertical",
+              "child": [
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 30,
+                  "text": "Fixed 30",
+                  "background": "white_6",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                },
+                {
+                  "type": "Label",
+                  "width": "matchParent",
+                  "height": 0,
+                  "weight": 1,
+                  "text": "Weight 1",
+                  "background": "pale_green_3",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Multiple fixed sizes with weights",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 60,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": 40,
+              "height": "matchParent",
+              "text": "40",
+              "background": "pale_pink",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "W:1",
+              "background": "pale_yellow",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 60,
+              "height": "matchParent",
+              "text": "60",
+              "background": "pale_pink",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "W:1",
+              "background": "pale_yellow",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 80,
+              "height": "matchParent",
+              "text": "80",
+              "background": "pale_pink",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Zero weights test",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 60,
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 0,
+              "text": "W:0",
+              "background": "light_red_6",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 1,
+              "text": "W:1",
+              "background": "light_green_2",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 100,
+              "height": "matchParent",
+              "text": "Fixed:100",
+              "background": "light_blue_3",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": 0,
+              "height": "matchParent",
+              "weight": 3,
+              "text": "W:3",
+              "background": "pale",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Vertical: Fixed + Weight combinations",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 200,
+          "orientation": "vertical",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 30,
+              "text": "Fixed: 30",
+              "background": "white_5",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "Weight: 1",
+              "background": "white_6",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 40,
+              "text": "Fixed: 40",
+              "background": "white_7",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 2,
+              "text": "Weight: 2",
+              "background": "white_8",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 50,
+              "text": "Fixed: 50",
+              "background": "white_9",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Vertical: Nested horizontal weights",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 150,
+          "orientation": "vertical",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 25,
+              "text": "Header: Fixed 25",
+              "background": "medium_gray_4",
+              "fontColor": "white",
+              "textAlign": "center",
+              "fontSize": 12
+            },
+            {
+              "type": "View",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "orientation": "horizontal",
+              "child": [
+                {
+                  "type": "Label",
+                  "width": 0,
+                  "height": "matchParent",
+                  "weight": 1,
+                  "text": "Col 1",
+                  "background": "pale_pink",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                },
+                {
+                  "type": "Label",
+                  "width": 60,
+                  "height": "matchParent",
+                  "text": "Fix:60",
+                  "background": "pale_gray_3",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                },
+                {
+                  "type": "Label",
+                  "width": 0,
+                  "height": "matchParent",
+                  "weight": 2,
+                  "text": "Col 2",
+                  "background": "pale_yellow",
+                  "textAlign": "center",
+                  "fontSize": 12,
+                  "fontColor": "black"
+                }
+              ]
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 25,
+              "text": "Footer: Fixed 25",
+              "background": "medium_gray_4",
+              "fontColor": "white",
+              "textAlign": "center",
+              "fontSize": 12
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Vertical: Multiple weights only",
+          "fontSize": 16,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "orientation": "vertical",
+          "topMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "W:1",
+              "background": "pale_red",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "W:1",
+              "background": "pale_green",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 2,
+              "text": "W:2",
+              "background": "pale_blue_3",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "matchParent",
+              "height": 0,
+              "weight": 1,
+              "text": "W:1",
+              "background": "white_18",
+              "textAlign": "center",
+              "fontSize": 14,
+              "fontColor": "black"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Weight + Fixed Size Test"
+    }
+  ]
+}

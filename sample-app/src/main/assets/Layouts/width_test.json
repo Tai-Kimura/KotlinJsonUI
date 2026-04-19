@@ -1,0 +1,95 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "Button",
+      "style": "dynamic_toggle",
+      "fontColor": "white",
+      "cornerRadius": 8
+    },
+    {
+      "type": "Label",
+      "text": "Width Test",
+      "fontSize": 24,
+      "fontColor": "black",
+      "topMargin": 20
+    },
+    {
+      "type": "Label",
+      "text": "matchParent width",
+      "width": "matchParent",
+      "height": 50,
+      "background": "light_red",
+      "fontColor": "white",
+      "textAlign": "center",
+      "topMargin": 20
+    },
+    {
+      "type": "Label",
+      "text": "Fixed width 200",
+      "width": 200,
+      "height": 50,
+      "background": "light_lime",
+      "fontColor": "white",
+      "textAlign": "center",
+      "topMargin": 10
+    },
+    {
+      "type": "Label",
+      "text": "wrapContent width",
+      "width": "wrapContent",
+      "height": 50,
+      "background": "light_cyan",
+      "fontColor": "white",
+      "textAlign": "center",
+      "topMargin": 10
+    },
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": 100,
+      "orientation": "horizontal",
+      "background": "pale_gray",
+      "topMargin": 20,
+      "child": [
+        {
+          "type": "Label",
+          "text": "Weight 1",
+          "weight": 1,
+          "height": "matchParent",
+          "background": "light_yellow",
+          "fontColor": "white",
+          "textAlign": "center"
+        },
+        {
+          "type": "Label",
+          "text": "Weight 2 (wrap)",
+          "weight": 2,
+          "height": "wrapContent",
+          "background": "pale_pink_2",
+          "fontColor": "black",
+          "textAlign": "center"
+        },
+        {
+          "type": "Label",
+          "text": "Weight 1",
+          "weight": 1,
+          "height": "matchParent",
+          "background": "pale_gray_6",
+          "fontColor": "black",
+          "textAlign": "center"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    }
+  ]
+}

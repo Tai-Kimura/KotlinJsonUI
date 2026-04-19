@@ -1,0 +1,417 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "padding": 20,
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black",
+          "centerHorizontal": true,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Corner Combinations",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "pale_gray",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Top-Left",
+              "alignTop": true,
+              "alignLeft": true,
+              "background": "pale_pink",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "pale_gray_2",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Top-Right",
+              "alignTop": true,
+              "alignRight": true,
+              "background": "pale_yellow",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "pale_gray_3",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Bottom-Left",
+              "alignBottom": true,
+              "alignLeft": true,
+              "background": "pale_cyan",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Bottom-Right",
+              "alignBottom": true,
+              "alignRight": true,
+              "background": "white_2",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Edge + Center Combinations",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_2",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Top-Center",
+              "alignTop": true,
+              "centerHorizontal": true,
+              "background": "white_3",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_3",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Bottom-Center",
+              "alignBottom": true,
+              "centerHorizontal": true,
+              "background": "white_4",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_4",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Left-Center",
+              "alignLeft": true,
+              "centerVertical": true,
+              "background": "pale_red",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_5",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Right-Center",
+              "alignRight": true,
+              "centerVertical": true,
+              "background": "pale_green",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Multiple Elements Test",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 150,
+          "background": "light_gray_6",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "TL",
+              "alignTop": true,
+              "alignLeft": true,
+              "background": "white_5",
+              "fontSize": 12,
+              "padding": 5,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "TR",
+              "alignTop": true,
+              "alignRight": true,
+              "background": "white_6",
+              "fontSize": 12,
+              "padding": 5,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "BL",
+              "alignBottom": true,
+              "alignLeft": true,
+              "background": "white_7",
+              "fontSize": 12,
+              "padding": 5,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "BR",
+              "alignBottom": true,
+              "alignRight": true,
+              "background": "white_8",
+              "fontSize": 12,
+              "padding": 5,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "Center",
+              "centerInParent": true,
+              "background": "white_9",
+              "fontSize": 12,
+              "padding": 5,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "HStack Mixed Alignment",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "background": "light_gray_7",
+          "orientation": "horizontal",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Left-Top",
+              "alignLeft": true,
+              "alignTop": true,
+              "background": "pale_red_2",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "Center",
+              "centerHorizontal": true,
+              "centerVertical": true,
+              "background": "pale_green_2",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "Right-Bottom",
+              "alignRight": true,
+              "alignBottom": true,
+              "background": "pale_blue",
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "VStack Mixed Alignment",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 200,
+          "background": "medium_gray",
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "text": "Top-Left",
+              "alignTop": true,
+              "alignLeft": true,
+              "background": "pale_red_3",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "Center",
+              "centerVertical": true,
+              "centerHorizontal": true,
+              "background": "pale_green_3",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "text": "Bottom-Right",
+              "alignBottom": true,
+              "alignRight": true,
+              "background": "pale_blue_2",
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Edge Cases",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "medium_gray_2",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "Only horizontal center",
+              "centerHorizontal": true,
+              "background": "white_10",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "medium_gray_3",
+          "child": [
+            {
+              "type": "Label",
+              "text": "Only vertical center",
+              "centerVertical": true,
+              "background": "white_11",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Alignment Combinations Test"
+    }
+  ]
+}

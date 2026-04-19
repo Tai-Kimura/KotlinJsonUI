@@ -1,0 +1,7 @@
+{
+  "type": "Label",
+  "fontSize": 24,
+  "fontWeight": "bold",
+  "fontColor": "#000000",
+  "bottomMargin": 16
+}

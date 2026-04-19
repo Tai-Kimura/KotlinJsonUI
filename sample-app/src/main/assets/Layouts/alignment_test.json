@@ -1,0 +1,303 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "padding": 20,
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black",
+          "centerHorizontal": true,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Parent Alignment - Single Properties",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "pale_gray",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "alignTop",
+              "alignTop": true,
+              "background": "pale_pink",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "pale_gray_2",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "alignBottom",
+              "alignBottom": true,
+              "background": "pale_yellow",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "pale_gray_3",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "alignLeft",
+              "alignLeft": true,
+              "background": "pale_cyan",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "alignRight",
+              "alignRight": true,
+              "background": "white_2",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_2",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "centerHorizontal",
+              "centerHorizontal": true,
+              "background": "white_3",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_3",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "centerVertical",
+              "centerVertical": true,
+              "background": "white_4",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 120,
+          "background": "light_gray_4",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "text": "centerInParent",
+              "centerInParent": true,
+              "background": "pale_red",
+              "fontSize": 14,
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "HStack Alignment Tests",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "background": "light_gray_5",
+          "orientation": "horizontal",
+          "bottomMargin": 10,
+          "child": [
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "Top",
+              "alignTop": true,
+              "background": "white_5",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "Default",
+              "background": "pale_gray",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "Bottom",
+              "alignBottom": true,
+              "background": "white_7",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "Center",
+              "centerVertical": true,
+              "background": "white_6",
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "VStack Alignment Tests",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 20,
+          "bottomMargin": 10
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 200,
+          "background": "light_gray_6",
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "alignLeft",
+              "alignLeft": true,
+              "background": "white_5",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "Default",
+              "background": "pale_gray",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "alignRight",
+              "alignRight": true,
+              "background": "white_7",
+              "padding": 8,
+              "fontColor": "black"
+            },
+            {
+              "type": "Label",
+              "width": "wrapContent",
+              "height": "wrapContent",
+              "text": "centerHorizontal",
+              "centerHorizontal": true,
+              "background": "white_6",
+              "padding": 8,
+              "fontColor": "black"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Single Alignment Test"
+    }
+  ]
+}

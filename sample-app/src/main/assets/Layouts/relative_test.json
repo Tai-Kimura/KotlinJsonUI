@@ -1,0 +1,647 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "orientation": "vertical",
+  "paddings": [
+    20,
+    20,
+    20,
+    20
+  ],
+  "child": {
+    "type": "View",
+    "width": "matchParent",
+    "height": "wrapContent",
+    "orientation": "vertical",
+    "child": [
+      {
+        "data": [
+          {
+            "name": "dynamicModeStatus",
+            "class": "String",
+            "defaultValue": "OFF"
+          },
+          {
+            "name": "title",
+            "class": "String",
+            "defaultValue": "RelativePosition Test - Margins & Padding"
+          }
+        ]
+      },
+      {
+        "type": "Button",
+        "style": "dynamic_toggle",
+        "fontColor": "white",
+        "cornerRadius": 8
+      },
+      {
+        "type": "Label",
+        "id": "main_title",
+        "width": "wrapContent",
+        "height": "wrapContent",
+        "text": "@{title}",
+        "fontSize": 24,
+        "fontColor": "black",
+        "font": "bold",
+        "bottomMargin": 20
+      },
+      {
+        "type": "Label",
+        "text": "1. Parent Constraints with Margin + Padding",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 200,
+        "background": "pale_gray",
+        "paddings": [
+          20,
+          30,
+          20,
+          30
+        ],
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "parent_top_left",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Top+Left\ntopMargin:10\nleftMargin:15",
+            "background": "light_red",
+            "fontColor": "white",
+            "padding": 8,
+            "topMargin": 10,
+            "leftMargin": 15,
+            "alignTop": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "parent_top_right",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Top+Right\ntopMargin:15\nrightMargin:20",
+            "background": "light_lime",
+            "fontColor": "white",
+            "padding": 8,
+            "topMargin": 15,
+            "rightMargin": 20,
+            "alignTop": true,
+            "alignRight": true
+          },
+          {
+            "type": "Label",
+            "id": "parent_bottom_left",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Bottom+Left\nbottomMargin:5\nleftMargin:10",
+            "background": "light_cyan",
+            "fontColor": "white",
+            "padding": 8,
+            "bottomMargin": 5,
+            "leftMargin": 10,
+            "alignBottom": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "parent_bottom_right",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Bottom+Right\nbottomMargin:20\nrightMargin:25",
+            "background": "light_yellow",
+            "fontColor": "white",
+            "padding": 8,
+            "bottomMargin": 20,
+            "rightMargin": 25,
+            "alignBottom": true,
+            "alignRight": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "2. Edge Alignment (Self Margin Only, Ignore Anchor Margin)",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "white_24",
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "anchor_with_margin",
+            "width": 120,
+            "height": 60,
+            "text": "Anchor\nmargins:[20,25,20,25]",
+            "background": "light_red",
+            "textAlign": "center",
+            "fontColor": "white",
+            "margins": [
+              20,
+              25,
+              20,
+              25
+            ],
+            "centerInParent": true
+          },
+          {
+            "type": "Label",
+            "id": "align_top_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignTop\ntopMargin:10",
+            "background": "light_lime",
+            "padding": 5,
+            "topMargin": 10,
+            "alignTopView": "anchor_with_margin",
+            "alignLeft": true,
+            "leftMargin": 10,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "align_bottom_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignBottom\nbottomMargin:10",
+            "background": "light_cyan",
+            "padding": 5,
+            "bottomMargin": 10,
+            "alignBottomView": "anchor_with_margin",
+            "alignRight": true,
+            "rightMargin": 10,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "align_left_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignLeft\nleftMargin:15",
+            "background": "light_yellow",
+            "padding": 5,
+            "topMargin": 10,
+            "leftMargin": 15,
+            "alignLeftView": "anchor_with_margin",
+            "alignTop": true,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "align_right_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "alignRight\nrightMargin:15",
+            "background": "pale_pink_2",
+            "padding": 5,
+            "bottomMargin": 10,
+            "rightMargin": 15,
+            "alignRightView": "anchor_with_margin",
+            "alignBottom": true,
+            "fontColor": "black"
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "3. Relative Position (Both Margins Applied)",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 300,
+        "background": "pale_gray_2",
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "center_anchor",
+            "width": 100,
+            "height": 50,
+            "text": "Center\nmargins:[15,15,15,15]",
+            "background": "light_red",
+            "textAlign": "center",
+            "fontColor": "white",
+            "margins": [
+              15,
+              15,
+              15,
+              15
+            ],
+            "centerInParent": true
+          },
+          {
+            "type": "Label",
+            "id": "above_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Above\nbottomMargin:10",
+            "background": "light_lime",
+            "padding": 5,
+            "bottomMargin": 10,
+            "alignTopOfView": "center_anchor",
+            "centerHorizontal": true,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "below_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Below\ntopMargin:10",
+            "background": "light_cyan",
+            "padding": 5,
+            "topMargin": 10,
+            "alignBottomOfView": "center_anchor",
+            "centerHorizontal": true,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "left_of_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "LeftOf\nrightMargin:10",
+            "background": "light_yellow",
+            "padding": 5,
+            "rightMargin": 10,
+            "alignLeftOfView": "center_anchor",
+            "centerVertical": true,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "right_of_test",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "RightOf\nleftMargin:10",
+            "background": "pale_pink_2",
+            "padding": 5,
+            "leftMargin": 10,
+            "alignRightOfView": "center_anchor",
+            "centerVertical": true,
+            "fontColor": "black"
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "4. Fixed Size with Both-Side Constraints (Centering)",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 200,
+        "background": "pale_gray",
+        "bottomMargin": 20,
+        "paddings": [
+          10,
+          10,
+          10,
+          10
+        ],
+        "child": [
+          {
+            "type": "Label",
+            "id": "fixed_width_center",
+            "width": 100,
+            "height": "wrapContent",
+            "text": "Fixed Width\nLeft+Right\nmargins:[10,10,10,10]",
+            "background": "light_blue_2",
+            "fontColor": "white",
+            "textAlign": "center",
+            "padding": 10,
+            "margins": [
+              10,
+              10,
+              10,
+              10
+            ],
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true
+          },
+          {
+            "type": "Label",
+            "id": "fixed_height_center",
+            "width": "wrapContent",
+            "height": 50,
+            "text": "Fixed Height\nTop+Bottom",
+            "background": "medium_blue_5",
+            "fontColor": "white",
+            "textAlign": "center",
+            "padding": 10,
+            "topMargin": 10,
+            "bottomMargin": 10,
+            "leftMargin": 10,
+            "alignTop": true,
+            "alignBottom": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "fixed_both_center",
+            "width": 80,
+            "height": 40,
+            "text": "Fixed Both",
+            "background": "light_red_3",
+            "fontColor": "white",
+            "textAlign": "center",
+            "margins": [
+              15,
+              15,
+              15,
+              15
+            ],
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true,
+            "alignBottom": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "5. Dynamic Size (Stretch Between Constraints)",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "pale_gray_3",
+        "bottomMargin": 20,
+        "paddings": [
+          20,
+          30,
+          20,
+          30
+        ],
+        "child": [
+          {
+            "type": "Label",
+            "id": "stretch_horizontal",
+            "height": "wrapContent",
+            "text": "Stretch Horizontal\nleftMargin:10, rightMargin:15",
+            "background": "medium_lime",
+            "fontColor": "white",
+            "textAlign": "center",
+            "padding": 10,
+            "leftMargin": 10,
+            "rightMargin": 15,
+            "topMargin": 10,
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true
+          },
+          {
+            "type": "Label",
+            "id": "stretch_vertical",
+            "width": "wrapContent",
+            "text": "Stretch\nVertical\ntop:10\nbottom:15",
+            "background": "medium_lime_2",
+            "fontColor": "white",
+            "textAlign": "center",
+            "padding": 10,
+            "topMargin": 10,
+            "bottomMargin": 15,
+            "leftMargin": 10,
+            "alignTop": true,
+            "alignBottom": true,
+            "alignLeft": true
+          },
+          {
+            "type": "Label",
+            "id": "stretch_both",
+            "text": "Stretch Both Directions\nmargins:[15,20,15,20]",
+            "background": "medium_gray_5",
+            "fontColor": "white",
+            "textAlign": "center",
+            "padding": 10,
+            "margins": [
+              15,
+              20,
+              15,
+              20
+            ],
+            "alignLeft": true,
+            "alignRight": true,
+            "alignTop": true,
+            "alignBottom": true
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "6. Complex Chaining with Different Margins",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "white_24",
+        "bottomMargin": 20,
+        "child": [
+          {
+            "type": "Label",
+            "id": "chain_start",
+            "width": 60,
+            "height": 40,
+            "text": "Start\nleft:10\nright:5",
+            "background": "light_red",
+            "fontColor": "white",
+            "textAlign": "center",
+            "fontSize": 10,
+            "leftMargin": 10,
+            "rightMargin": 5,
+            "alignLeft": true,
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "chain_middle",
+            "width": 60,
+            "height": 40,
+            "text": "Middle\nleft:15\nright:20",
+            "background": "light_lime",
+            "fontColor": "white",
+            "textAlign": "center",
+            "fontSize": 10,
+            "leftMargin": 15,
+            "rightMargin": 20,
+            "alignRightOfView": "chain_start",
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "chain_end",
+            "width": 60,
+            "height": 40,
+            "text": "End\nleft:10\nright:10",
+            "background": "light_cyan",
+            "fontColor": "white",
+            "textAlign": "center",
+            "fontSize": 10,
+            "leftMargin": 10,
+            "rightMargin": 10,
+            "alignRightOfView": "chain_middle",
+            "centerVertical": true
+          },
+          {
+            "type": "Label",
+            "id": "chain_above",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Above Middle\nbottom:5",
+            "background": "pale_pink_2",
+            "padding": 5,
+            "bottomMargin": 5,
+            "topMargin": 10,
+            "alignTopOfView": "chain_middle",
+            "alignLeftView": "chain_middle",
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "chain_below",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Below Start\ntop:8",
+            "background": "light_red_4",
+            "padding": 5,
+            "topMargin": 8,
+            "bottomMargin": 10,
+            "alignBottomOfView": "chain_start",
+            "alignRightView": "chain_start",
+            "fontColor": "black"
+          }
+        ]
+      },
+      {
+        "type": "Label",
+        "text": "7. Mixed Anchor References",
+        "fontSize": 18,
+        "fontColor": "dark_gray",
+        "font": "bold",
+        "bottomMargin": 10
+      },
+      {
+        "type": "View",
+        "width": "matchParent",
+        "height": 250,
+        "background": "pale_gray_2",
+        "bottomMargin": 20,
+        "paddings": [
+          15,
+          15,
+          15,
+          15
+        ],
+        "child": [
+          {
+            "type": "Label",
+            "id": "ref1",
+            "width": 60,
+            "height": 30,
+            "text": "Ref1",
+            "background": "light_red",
+            "textAlign": "center",
+            "fontColor": "white",
+            "alignLeft": true,
+            "alignTop": true,
+            "leftMargin": 20,
+            "topMargin": 20,
+            "rightMargin": 10,
+            "bottomMargin": 10
+          },
+          {
+            "type": "Label",
+            "id": "ref2",
+            "width": 60,
+            "height": 30,
+            "text": "Ref2",
+            "background": "light_lime",
+            "textAlign": "center",
+            "fontColor": "white",
+            "alignRight": true,
+            "alignTop": true,
+            "rightMargin": 20,
+            "topMargin": 20,
+            "leftMargin": 10,
+            "bottomMargin": 10
+          },
+          {
+            "type": "Label",
+            "id": "between_refs",
+            "height": "wrapContent",
+            "text": "Between (stretch)",
+            "background": "light_orange_2",
+            "padding": 5,
+            "leftMargin": 5,
+            "rightMargin": 5,
+            "alignLeftOfView": "ref2",
+            "alignRightOfView": "ref1",
+            "centerVertical": true,
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "aligned_both",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "AlignBoth",
+            "background": "medium_green_3",
+            "padding": 5,
+            "topMargin": 10,
+            "rightMargin": 10,
+            "alignTopView": "ref1",
+            "alignRightView": "ref2",
+            "fontColor": "black"
+          },
+          {
+            "type": "Label",
+            "id": "complex_chain",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Below Ref1",
+            "background": "light_red_5",
+            "fontColor": "white",
+            "padding": 5,
+            "topMargin": 10,
+            "alignBottomOfView": "ref1",
+            "alignLeftView": "ref1"
+          }
+        ]
+      }
+    ]
+  }
+}

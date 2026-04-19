@@ -1,0 +1,245 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "Visibility: visible (default)",
+          "visibility": "visible",
+          "background": "pale_yellow",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "This label is invisible (takes space)",
+          "visibility": "invisible",
+          "background": "pale_pink",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "After invisible label",
+          "background": "pale_cyan",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "This label is gone (no space)",
+          "visibility": "gone",
+          "background": "white_2",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "After gone label (no gap)",
+          "background": "white_3",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Opacity Tests",
+          "fontSize": 18,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "Opacity: 1.0 (fully visible)",
+          "opacity": 1.0,
+          "background": "white_5",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "Opacity: 0.7",
+          "opacity": 0.7,
+          "background": "white_6",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "Opacity: 0.5",
+          "opacity": 0.5,
+          "background": "white_7",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "Opacity: 0.3",
+          "opacity": 0.3,
+          "background": "white_8",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "Opacity: 0.1",
+          "opacity": 0.1,
+          "background": "white_3",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Alpha Test (same as opacity)",
+          "fontSize": 18,
+          "fontColor": "dark_gray"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "Alpha: 0.6",
+          "alpha": 0.6,
+          "background": "white_4",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "text": "Dynamic Visibility Tests",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "Button",
+          "text": "Toggle Visibility",
+          "onClick": "toggleVisibility",
+          "topMargin": 10,
+          "background": "medium_blue",
+          "textColor": "white",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "This text uses dynamic visibility",
+          "visibility": "@{textVisibility}",
+          "background": "white_5",
+          "fontSize": 16,
+          "fontColor": "black",
+          "padding": 10
+        },
+        {
+          "type": "Button",
+          "text": "Toggle Hidden",
+          "onClick": "toggleHidden",
+          "topMargin": 20,
+          "background": "medium_green",
+          "textColor": "white",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "text": "This text uses dynamic hidden attribute",
+          "hidden": "@{isHidden}",
+          "background": "white_6",
+          "fontSize": 16,
+          "fontColor": "black",
+          "padding": 10
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Visibility & Opacity Test"
+    },
+    {
+      "name": "textVisibility",
+      "class": "String",
+      "defaultValue": "visible"
+    },
+    {
+      "name": "isHidden",
+      "class": "Boolean",
+      "defaultValue": false
+    }
+  ]
+}

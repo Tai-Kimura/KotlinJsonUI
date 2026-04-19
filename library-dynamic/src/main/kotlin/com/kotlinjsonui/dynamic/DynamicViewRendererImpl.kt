@@ -1,0 +1,189 @@
+package com.kotlinjsonui.dynamic
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.util.Log
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.InputStreamReader
+
+/**
+ * Implementation of DynamicViewRenderer
+ * This class is only compiled in DEBUG builds
+ */
+class DynamicViewRendererImpl {
+    companion object {
+        private const val TAG = "DynamicViewRenderer"
+    }
+    
+    @Composable
+    fun render(
+        layoutName: String,
+        data: Map<String, Any>,
+        modifier: Modifier,
+        onError: ((String) -> Unit)?,
+        onLoading: @Composable () -> Unit,
+        content: @Composable (String) -> Unit
+    ) {
+        val context = LocalContext.current
+        
+        // Initialize ResourceCache with context
+        ResourceCache.init(context)
+        
+        var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
+        var error by remember { mutableStateOf<String?>(null) }
+        var isLoading by remember { mutableStateOf(true) }
+        var styleUpdateCounter by remember { mutableStateOf(0) }
+
+        // Observe HotLoader updates for this layout
+        val hotLoader = com.kotlinjsonui.dynamic.hotloader.HotLoader.getInstance(context)
+        val lastUpdate by hotLoader.lastUpdate.collectAsState()
+
+        // Set up listener for style updates
+        DisposableEffect(layoutName) {
+            val listener = object : com.kotlinjsonui.dynamic.hotloader.HotLoader.HotLoaderListener {
+                override fun onConnected() {}
+                override fun onDisconnected() {}
+                override fun onLayoutUpdated(name: String, content: String) {}
+                override fun onLayoutAdded(name: String) {}
+                override fun onLayoutRemoved(name: String) {}
+                override fun onError(err: Throwable) {}
+                override fun onStyleUpdated(styleName: String, content: String) {
+                    // Clear style cache so new styles are loaded from HotLoader cache
+                    DynamicStyleLoader.clearCache()
+                    // Increment counter to trigger recomposition
+                    styleUpdateCounter++
+                    Log.d(TAG, "Style updated: $styleName, cache cleared, triggering recomposition (counter=$styleUpdateCounter)")
+                }
+            }
+            hotLoader.addListener(listener)
+            onDispose {
+                hotLoader.removeListener(listener)
+            }
+        }
+
+        LaunchedEffect(layoutName, lastUpdate, styleUpdateCounter) {
+            isLoading = true
+            error = null
+
+            // Initialize IncludeExpander with context for include expansion
+            IncludeExpander.init(context)
+            DynamicLayoutLoader.init(context)
+
+            try {
+                withContext(Dispatchers.IO) {
+                    // First try to load from HotLoader cache
+                    val cachedLayout = hotLoader.getCachedLayout(layoutName)
+                    if (cachedLayout != null) {
+                        Log.d(TAG, "Loading layout from HotLoader cache: $layoutName")
+                        val rawJson = JsonParser.parseString(cachedLayout).asJsonObject
+                        // Process includes to expand them inline with ID prefixes
+                        jsonObject = IncludeExpander.processIncludes(rawJson)
+                        Log.d(TAG, "Successfully loaded and expanded layout from cache")
+                        return@withContext
+                    }
+
+                    // Use DynamicLayoutLoader which handles include expansion
+                    val loadedJson = DynamicLayoutLoader.loadLayout(layoutName)
+                    if (loadedJson != null) {
+                        Log.d(TAG, "Successfully loaded layout via DynamicLayoutLoader: $layoutName")
+                        jsonObject = loadedJson
+                        return@withContext
+                    }
+
+                    // Fallback: try to load from assets/Layouts/ directory (capital L)
+                    val fileName = if (layoutName.endsWith(".json")) {
+                        "Layouts/$layoutName"
+                    } else {
+                        "Layouts/$layoutName.json"
+                    }
+
+                    Log.d(TAG, "Attempting to load layout from assets: $fileName")
+
+                    try {
+                        context.assets.open(fileName).use { inputStream ->
+                            InputStreamReader(inputStream).use { reader ->
+                                val rawJson = JsonParser.parseReader(reader).asJsonObject
+                                // Process includes to expand them inline with ID prefixes
+                                jsonObject = IncludeExpander.processIncludes(rawJson)
+                                Log.d(TAG, "Successfully loaded and expanded layout from: $fileName")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.d(TAG, "Failed to load from $fileName, trying alternate paths: ${e.message}")
+
+                        // Try with lowercase layouts/ directory
+                        val lowercaseFileName = if (layoutName.endsWith(".json")) {
+                            "layouts/$layoutName"
+                        } else {
+                            "layouts/$layoutName.json"
+                        }
+
+                        try {
+                            context.assets.open(lowercaseFileName).use { inputStream ->
+                                InputStreamReader(inputStream).use { reader ->
+                                    val rawJson = JsonParser.parseReader(reader).asJsonObject
+                                    // Process includes to expand them inline with ID prefixes
+                                    jsonObject = IncludeExpander.processIncludes(rawJson)
+                                    Log.d(TAG, "Successfully loaded and expanded layout from: $lowercaseFileName")
+                                }
+                            }
+                        } catch (e2: Exception) {
+                            Log.d(TAG, "Failed to load from $lowercaseFileName, trying without prefix: ${e2.message}")
+
+                            // Try without any prefix
+                            val alternateFileName = if (layoutName.endsWith(".json")) {
+                                layoutName
+                            } else {
+                                "$layoutName.json"
+                            }
+
+                            context.assets.open(alternateFileName).use { inputStream ->
+                                InputStreamReader(inputStream).use { reader ->
+                                    val rawJson = JsonParser.parseReader(reader).asJsonObject
+                                    // Process includes to expand them inline with ID prefixes
+                                    jsonObject = IncludeExpander.processIncludes(rawJson)
+                                    Log.d(TAG, "Successfully loaded and expanded layout from: $alternateFileName")
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                error = "Failed to load layout '$layoutName': ${e.message}"
+                Log.e(TAG, error, e)
+                onError?.invoke(error!!)
+            } finally {
+                isLoading = false
+            }
+        }
+        
+        Box(modifier = modifier) {
+            when {
+                isLoading -> {
+                    onLoading()
+                }
+                error != null -> {
+                    Text(
+                        text = error!!,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                jsonObject != null -> {
+                    DynamicView(
+                        json = jsonObject!!,
+                        data = data
+                    )
+                }
+            }
+        }
+    }
+}

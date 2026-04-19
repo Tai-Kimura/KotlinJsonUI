@@ -1,0 +1,26 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Label",
+      "id": "title_label",
+      "width": "wrapContent",
+      "height": "wrapContent",
+      "topMargin": 20,
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "black"
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Included1"
+    }
+  ]
+}

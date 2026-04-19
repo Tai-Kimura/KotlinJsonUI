@@ -1,0 +1,387 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "text": "Text Binding",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "TextField",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "hint": "Enter text",
+          "text": "@{textValue}",
+          "background": "white",
+          "padding": 10,
+          "cornerRadius": 8,
+          "borderColor": "pale_gray_4",
+          "borderWidth": 1
+        },
+        {
+          "type": "Label",
+          "text": "You typed: @{textValue}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Counter Binding",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "orientation": "horizontal",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "child": [
+            {
+              "type": "Button",
+              "width": 0,
+              "weight": 1,
+              "height": 44,
+              "text": "Decrease",
+              "onclick": "decreaseCounter",
+              "background": "medium_red",
+              "fontColor": "white",
+              "cornerRadius": 8,
+              "rightMargin": 5
+            },
+            {
+              "type": "Label",
+              "width": 100,
+              "height": 44,
+              "text": "@{counter}",
+              "fontSize": 20,
+              "fontColor": "black",
+              "textAlign": "center",
+              "background": "pale_gray",
+              "cornerRadius": 8,
+              "leftMargin": 5,
+              "rightMargin": 5
+            },
+            {
+              "type": "Button",
+              "width": 0,
+              "weight": 1,
+              "height": 44,
+              "text": "Increase",
+              "onclick": "increaseCounter",
+              "background": "medium_green",
+              "fontColor": "white",
+              "cornerRadius": 8,
+              "leftMargin": 5
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Toggle Binding",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Switch",
+          "id": "toggle_switch",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "checked": "@{toggleValue}",
+          "onclick": "toggleChanged"
+        },
+        {
+          "type": "Label",
+          "text": "Toggle is: @{toggleValue}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "background": "medium_green",
+          "cornerRadius": 8,
+          "child": [
+            {
+              "type": "Label",
+              "text": "ON/OFF",
+              "fontSize": 16,
+              "fontColor": "white",
+              "centerInParent": true
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Slider Binding",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Slider",
+          "id": "value_slider",
+          "width": "matchParent",
+          "height": 40,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "value": "@{sliderValue}",
+          "minimumValue": 0,
+          "maximumValue": 100,
+          "onValueChange": "sliderChanged"
+        },
+        {
+          "type": "Label",
+          "text": "Slider value: @{sliderValue}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 20,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "background": "pale_gray",
+          "cornerRadius": 10,
+          "child": [
+            {
+              "type": "View",
+              "width": 100,
+              "height": "matchParent",
+              "background": "medium_blue",
+              "cornerRadius": 10
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "SelectBox Binding",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "SelectBox",
+          "id": "option_select",
+          "width": "matchParent",
+          "height": 44,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedOption}",
+          "items": [
+            "Option 1",
+            "Option 2",
+            "Option 3",
+            "Option 4",
+            "Option 5",
+            "Option 6",
+            "Option 7",
+            "Option 8",
+            "Option 9",
+            "Option 10",
+            "Option 11",
+            "Option 12",
+            "Option 13",
+            "Option 14",
+            "Option 15",
+            "Option 16",
+            "Option 17",
+            "Option 18",
+            "Option 19",
+            "Option 20",
+            "Option 21",
+            "Option 22",
+            "Option 23",
+            "Option 24",
+            "Option 25",
+            "Option 26",
+            "Option 27",
+            "Option 28",
+            "Option 29",
+            "Option 30"
+          ],
+          "background": "white",
+          "cornerRadius": 8,
+          "borderColor": "pale_gray_4",
+          "borderWidth": 1,
+          "fontColor": "black",
+          "hintColor": "light_gray_8",
+          "hint": "選択してください"
+        },
+        {
+          "type": "Label",
+          "text": "Selected: @{selectedOption}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "topMargin": 10,
+          "leftMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Date Picker (Wheels Style)",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 30
+        },
+        {
+          "type": "SelectBox",
+          "selectItemType": "Date",
+          "selectedItem": "@{selectedDate}",
+          "datePickerStyle": "wheels",
+          "dateFormat": "yyyy年MM月dd日",
+          "minimumDate": "2020-01-01",
+          "maximumDate": "2030-12-31",
+          "hint": "日付を選択",
+          "background": "white",
+          "cornerRadius": 8,
+          "borderColor": "pale_gray_4",
+          "borderWidth": 1,
+          "fontColor": "black",
+          "hintColor": "light_gray_8",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "height": 44
+        },
+        {
+          "type": "Label",
+          "text": "Date Picker (Compact Style)",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "fontWeight": "bold",
+          "topMargin": 30
+        },
+        {
+          "type": "SelectBox",
+          "selectItemType": "Date",
+          "selectedItem": "@{selectedDate2}",
+          "datePickerStyle": "compact",
+          "dateFormat": "MM/dd/yyyy",
+          "hint": "Select date",
+          "background": "white",
+          "cornerRadius": 8,
+          "borderColor": "pale_gray_4",
+          "borderWidth": 1,
+          "fontColor": "black",
+          "hintColor": "light_gray_8",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "height": 44
+        },
+        {
+          "type": "Label",
+          "text": "@{selectedDate}",
+          "fontSize": 14,
+          "fontColor": "medium_gray_4",
+          "topMargin": 10,
+          "leftMargin": 20,
+          "bottomMargin": 30
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "counter",
+      "class": "Int",
+      "defaultValue": "0"
+    },
+    {
+      "name": "selectedOption",
+      "class": "String",
+      "defaultValue": "Option 1"
+    },
+    {
+      "name": "sliderValue",
+      "class": "Double",
+      "defaultValue": "50.0"
+    },
+    {
+      "name": "textValue",
+      "class": "String",
+      "defaultValue": "Type something here"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Data Binding Test"
+    },
+    {
+      "name": "toggleValue",
+      "class": "Bool",
+      "defaultValue": "false"
+    },
+    {
+      "name": "selectedDate",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedDate2",
+      "class": "String",
+      "defaultValue": "2024-01-15"
+    }
+  ]
+}

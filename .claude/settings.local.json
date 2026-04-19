@@ -1,0 +1,83 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/tools/sjui_tools/lib/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/tools/sjui_tools/lib/**)",
+      "Read(/Users/like-a-rolling_stone/resource/SwiftJsonUI/test_app/**)",
+      "Bash(kjui build:*)",
+      "Bash(ruby kjui_tools/bin/kjui build --mode compose)",
+      "Bash(ruby:*)",
+      "Bash(cat:*)",
+      "Bash(git checkout:*)",
+      "Bash(timeout 10 ruby:*)",
+      "Bash(timeout:*)",
+      "Bash(LOG_LEVEL=DEBUG timeout 10 ruby ../kjui_tools/bin/kjui build --mode compose)",
+      "Bash(export LOG_LEVEL=DEBUG)",
+      "Bash(grep:*)",
+      "Bash(./gradlew:*)",
+      "Bash(sed:*)",
+      "Bash(xmllint:*)",
+      "Bash(aapt2 compile:*)",
+      "Read(/Users/like-a-rolling_stone/resource/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(git reset:*)",
+      "Bash(git tag:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb logcat:*)",
+      "Bash(adb shell:*)",
+      "WebFetch(domain:jitpack.io)",
+      "Bash(gpg:*)",
+      "Bash(brew install:*)",
+      "Bash(brew link:*)",
+      "Bash(/usr/local/Cellar/gnupg/2.4.8/bin/gpg --version)",
+      "Bash(openssl rand:*)",
+      "Bash(/usr/local/Cellar/gnupg/2.4.8/bin/gpg --list-secret-keys --keyid-format=long)",
+      "Bash(/usr/local/Cellar/gnupg/2.4.8/bin/gpg --keyserver keyserver.ubuntu.com --send-keys 3D61B3CC30CCA051)",
+      "WebFetch(domain:central.sonatype.com)",
+      "WebFetch(domain:central.sonatype.org)",
+      "Bash(git show-ref:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "/Users/like-a-rolling_stone/resource",
+      "/Users/like-a-rolling_stone",
+      "/private/tmp/test_kjui_install/kjui_tools/bin"
+    ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude Codeが許可を求めています\" with title \"Claude Code\" subtitle \"確認待ち\" sound name \"Glass\"'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"タスクが完了しました\" with title \"Claude Code\" subtitle \"処理終了\" sound name \"Hero\"'"
+          }
+        ]
+      }
+    ]
+  }
+}

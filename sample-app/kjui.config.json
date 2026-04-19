@@ -1,0 +1,28 @@
+{
+  "mode": "compose",
+  "project_name": "sample-app",
+  "source_directory": "src/main",
+  "layouts_directory": "assets/Layouts",
+  "styles_directory": "assets/Styles",
+  "data_directory": "kotlin/com/example/kotlinjsonui/sample/data",
+  "viewmodel_directory": "kotlin/com/example/kotlinjsonui/sample/viewmodels",
+  "view_directory": "kotlin/com/example/kotlinjsonui/sample/views",
+  "extension_directory": "kotlin/com/example/kotlinjsonui/sample/extensions",
+  "adapter_directory": "kotlin/com/example/kotlinjsonui/sample/adapters",
+  "resource_manager_directory": "kotlin/com/example/kotlinjsonui/sample/generated",
+  "package_name": "com.example.kotlinjsonui.sample",
+  "string_files": [
+    "res/values/strings.xml",
+    "res/values-ja/strings.xml"
+  ],
+  "use_network": true,
+  "hotloader": {
+    "ip": "192.168.3.32",
+    "port": 8081,
+    "watch_directories": [
+      "assets/Layouts",
+      "assets/Styles"
+    ],
+    "enabled": true
+  }
+}
