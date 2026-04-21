@@ -86,6 +86,13 @@ class DynamicCollectionComponent {
             val isHorizontal = layout == "horizontal"
             val isFlow = layout == "flow"
 
+            // lazy:false → emit Row/Column + forEachIndexed, no LazyColumn/
+            // LazyVerticalGrid and no verticalScroll/horizontalScroll. Intended
+            // for Collections nested inside an already-scrollable parent.
+            // FlowRow is already non-lazy; paging uses HorizontalPager and
+            // ignores lazy:false.
+            val lazy = json.get("lazy")?.asBoolean ?: true
+
             // Legacy: Extract cellClasses, headerClasses, footerClasses
             val cellClasses = extractStringArray(json.get("cellClasses")?.asJsonArray)
             val headerClasses = extractStringArray(json.get("headerClasses")?.asJsonArray)
@@ -248,10 +255,30 @@ class DynamicCollectionComponent {
                 return
             }
 
-            // wrapContent height on vertical Collection -> use Column instead of LazyVerticalGrid
-            // to avoid crash when nested inside another Lazy container (infinite height constraint).
+            // lazy:false takes priority over wrapContent — render using Row
+            // (horizontal) or Column (vertical) with no Lazy container.
+            // wrapContent height on vertical Collection → same Column path to
+            // avoid crash when nested inside another Lazy container (infinite
+            // height constraint).
             val heightStr = json.get("height")?.asString
-            if (!isHorizontal && heightStr == "wrapContent") {
+            if (!lazy && isHorizontal) {
+                renderNonLazyRow(
+                    sections = sections,
+                    collectionDataSource = collectionDataSource,
+                    cellTemplate = cellTemplate,
+                    cellIdProperty = cellIdProperty,
+                    data = data,
+                    modifier = modifier,
+                    columnSpacing = columnSpacing,
+                    contentPadding = contentPadding,
+                    cellWidth = cellWidth,
+                    cellHeight = cellHeight,
+                    gravityAlignment = gravityAlignment,
+                    onItemAppear = onItemAppear
+                )
+                return
+            }
+            if ((!lazy && !isHorizontal) || (!isHorizontal && heightStr == "wrapContent")) {
                 renderNonLazy(
                     sections = sections,
                     collectionDataSource = collectionDataSource,
@@ -653,6 +680,68 @@ class DynamicCollectionComponent {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                contentAlignment = gravityAlignment
+                            ) {
+                                val cellData = data.toMutableMap().apply { put("index", index) }
+                                DynamicView(json = cellTemplate, data = cellData)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Horizontal non-lazy renderer: Row + forEachIndexed, no LazyRow,
+         * no horizontalScroll. Expects an already-scrollable parent.
+         */
+        @Composable
+        private fun renderNonLazyRow(
+            sections: JsonArray?,
+            collectionDataSource: CollectionDataSource?,
+            cellTemplate: JsonObject?,
+            cellIdProperty: String?,
+            data: Map<String, Any>,
+            modifier: Modifier,
+            columnSpacing: androidx.compose.ui.unit.Dp,
+            contentPadding: PaddingValues,
+            cellWidth: androidx.compose.ui.unit.Dp?,
+            cellHeight: androidx.compose.ui.unit.Dp?,
+            gravityAlignment: Alignment,
+            onItemAppear: ((Int) -> Unit)? = null
+        ) {
+            Row(
+                modifier = modifier.then(Modifier.padding(contentPadding)),
+                horizontalArrangement = Arrangement.spacedBy(columnSpacing)
+            ) {
+                when {
+                    sections != null && collectionDataSource != null -> {
+                        sections.forEachIndexed { sectionIndex, sectionElement ->
+                            val sectionObj = sectionElement.asJsonObject
+                            val cellViewName = sectionObj.get("cell")?.asString
+
+                            collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
+                                section.cells?.let { cellData ->
+                                    cellData.data.forEachIndexed { cellIndex, item ->
+                                        Box(
+                                            modifier = Modifier
+                                                .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                            contentAlignment = gravityAlignment
+                                        ) {
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    cellTemplate != null -> {
+                        repeat(10) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
                                     .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                 contentAlignment = gravityAlignment
                             ) {
