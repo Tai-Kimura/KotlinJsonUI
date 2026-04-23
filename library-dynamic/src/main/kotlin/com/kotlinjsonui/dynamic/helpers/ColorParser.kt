@@ -8,11 +8,14 @@ import com.kotlinjsonui.dynamic.ResourceCache
 
 /**
  * Parses colors from JSON with binding and resource support.
- * Resolution order matches resource_resolver.rb process_color:
- *   1. Configuration.colorParser (custom parser)
+ * Resolution order:
+ *   1. Configuration.colorParser (custom parser — full JSON context)
  *   2. Binding: @{prop} → data map (Color or String)
- *   3. Resource: name → ResourceCache (colors.json / R.color.xxx)
- *   4. Hex: #RRGGBB / #AARRGGBB / RRGGBB
+ *   3. Configuration.themedColorParser(currentThemeMode, key) — theme-aware
+ *      hook, runs before the static ResourceCache so generated ColorManager
+ *      can own color resolution per active mode (new in 2.3.0)
+ *   4. Resource: name → ResourceCache (colors.json / R.color.xxx)
+ *   5. Hex: #RRGGBB / #AARRGGBB / RRGGBB
  */
 object ColorParser {
 
@@ -76,10 +79,16 @@ object ColorParser {
 
     /**
      * Parse a color string value.
-     * Resolution: ResourceCache → hex parsing.
+     * Resolution: themedColorParser → ResourceCache → hex parsing.
      */
     fun parseColorString(colorString: String?, context: Context? = cachedContext): Color? {
         if (colorString == null) return null
+
+        // Theme-aware provider (new in 2.3.0). Apps wire the generated
+        // ColorManager here so layout color keys follow the current mode.
+        Configuration.themedColorParser?.let { parser ->
+            parser(Configuration.currentThemeMode, colorString)?.let { return it }
+        }
 
         // Try resource resolution via ResourceCache
         context?.let { ctx ->
