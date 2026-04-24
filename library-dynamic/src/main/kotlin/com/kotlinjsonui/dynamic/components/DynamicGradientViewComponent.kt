@@ -51,8 +51,14 @@ class DynamicGradientViewComponent {
 
             val context = LocalContext.current
 
-            // Parse gradient colors from 'colors' or 'items' array
-            val colorsElement = json.get("colors") ?: json.get("items")
+            // `gradient` object wraps { colors, locations, startPoint, endPoint }.
+            // When present, each nested field takes precedence over the top-level
+            // equivalent (which stays valid as the simpler legacy shape).
+            val gradientObject = json.get("gradient")?.takeIf { it.isJsonObject }?.asJsonObject
+            val effective = gradientObject ?: json
+
+            // Parse gradient colors from 'colors' or 'items' array.
+            val colorsElement = effective.get("colors") ?: effective.get("items")
             val colors = when {
                 colorsElement?.isJsonArray == true -> {
                     parseColors(colorsElement.asJsonArray, data, context)
@@ -70,8 +76,14 @@ class DynamicGradientViewComponent {
                 else -> DEFAULT_COLORS
             }
 
-            // Determine gradient brush based on orientation or startPoint/endPoint
-            val gradientBrush = resolveGradientBrush(json, colors)
+            // Optional color stop positions 0..1.
+            val locations = effective.get("locations")?.takeIf { it.isJsonArray }
+                ?.asJsonArray
+                ?.mapNotNull { it.takeIf { el -> el.isJsonPrimitive && el.asJsonPrimitive.isNumber }?.asFloat }
+                ?.takeIf { it.size == colors.size }
+
+            // Determine gradient brush based on gradientDirection/orientation/startPoint.
+            val gradientBrush = resolveGradientBrush(effective, colors, locations)
 
             // Build modifier: testTag → margins → size → alpha → clickable → padding
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -132,50 +144,66 @@ class DynamicGradientViewComponent {
         }
 
         /**
-         * Determine gradient Brush based on 'orientation' or 'startPoint'/'endPoint'.
-         * Defaults to vertical gradient.
+         * Determine gradient Brush from `gradientDirection` / `orientation` /
+         * `startPoint`/`endPoint`. When `locations` provides color stops, a
+         * linearGradient is built with explicit colorStops.
          */
-        private fun resolveGradientBrush(json: JsonObject, colors: List<Color>): Brush {
-            // Orientation-based
-            if (json.has("orientation")) {
-                return when (json.get("orientation").asString) {
-                    "horizontal" -> Brush.horizontalGradient(colors)
-                    "vertical" -> Brush.verticalGradient(colors)
-                    "diagonal" -> Brush.linearGradient(
-                        colors = colors,
-                        start = Offset(0f, 0f),
-                        end = Offset.Infinite
-                    )
-                    else -> Brush.linearGradient(
-                        colors = colors,
-                        start = Offset(0f, 0f),
-                        end = Offset.Infinite
-                    )
-                }
+        private fun resolveGradientBrush(
+            json: JsonObject,
+            colors: List<Color>,
+            locations: List<Float>?
+        ): Brush {
+            val (start, end) = resolveGradientEndpoints(json)
+
+            // Explicit color stops via `locations` → always a linearGradient.
+            if (locations != null) {
+                val stops = colors.zip(locations).map { (c, l) -> l to c }.toTypedArray()
+                return Brush.linearGradient(colorStops = stops, start = start, end = end)
             }
 
-            // startPoint/endPoint-based
-            if (json.has("startPoint") && json.has("endPoint")) {
-                val startPoint = json.get("startPoint").asString
-                val endPoint = json.get("endPoint").asString
-                return when {
-                    startPoint in VERTICAL_POINTS && endPoint in VERTICAL_POINTS ->
-                        Brush.verticalGradient(colors)
-                    startPoint in HORIZONTAL_POINTS && endPoint in HORIZONTAL_POINTS ->
-                        Brush.horizontalGradient(colors)
-                    else -> Brush.linearGradient(
-                        colors = colors,
-                        start = Offset(0f, 0f),
-                        end = Offset.Infinite
-                    )
-                }
+            // Direction-hinted convenience brushes, only when endpoints degenerate
+            // to pure vertical / horizontal.
+            val direction = json.get("gradientDirection")?.asString
+                ?: json.get("orientation")?.asString
+            when (direction) {
+                "horizontal", "leftToRight" -> return Brush.horizontalGradient(colors)
+                "vertical", "topToBottom" -> return Brush.verticalGradient(colors)
+                "rightToLeft" -> return Brush.horizontalGradient(colors, startX = Float.POSITIVE_INFINITY, endX = 0f)
+                "bottomToTop" -> return Brush.verticalGradient(colors, startY = Float.POSITIVE_INFINITY, endY = 0f)
             }
 
-            // Default to vertical
-            return Brush.verticalGradient(colors)
+            return Brush.linearGradient(colors = colors, start = start, end = end)
         }
 
-        private val VERTICAL_POINTS = setOf("top", "bottom")
-        private val HORIZONTAL_POINTS = setOf("left", "leading", "right", "trailing")
+        private fun resolveGradientEndpoints(json: JsonObject): Pair<Offset, Offset> {
+            val startName = json.get("startPoint")?.asString
+            val endName = json.get("endPoint")?.asString
+            if (startName != null && endName != null) {
+                return namedOffset(startName) to namedOffset(endName)
+            }
+            // Fall back to top-left → bottom-right linear.
+            return Offset(0f, 0f) to Offset.Infinite
+        }
+
+        /**
+         * Map named gradient anchor points to Compose Offsets.
+         * SwiftUI-ish names (`topLeading`, `bottomTrailing`) and plain
+         * directional names (`top`, `bottom`, `left`, `right`) are accepted.
+         */
+        private fun namedOffset(name: String): Offset {
+            val inf = Float.POSITIVE_INFINITY
+            return when (name) {
+                "top" -> Offset(inf / 2, 0f)
+                "bottom" -> Offset(inf / 2, inf)
+                "left", "leading" -> Offset(0f, inf / 2)
+                "right", "trailing" -> Offset(inf, inf / 2)
+                "topLeading", "topLeft" -> Offset(0f, 0f)
+                "topTrailing", "topRight" -> Offset(inf, 0f)
+                "bottomLeading", "bottomLeft" -> Offset(0f, inf)
+                "bottomTrailing", "bottomRight" -> Offset(inf, inf)
+                "center" -> Offset(inf / 2, inf / 2)
+                else -> Offset(0f, 0f)
+            }
+        }
     }
 }

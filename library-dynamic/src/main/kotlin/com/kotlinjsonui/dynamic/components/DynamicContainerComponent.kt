@@ -248,7 +248,7 @@ class DynamicContainerComponent {
         private fun parseVerticalArrangement(json: JsonObject): Arrangement.Vertical {
             val spacing = json.get("spacing")?.asFloat
             val distribution = json.get("distribution")?.asString
-            val gravity = json.get("gravity")?.asString
+            val flags = ModifierBuilder.resolvedAlignFlags(json)
 
             return when {
                 spacing != null -> Arrangement.spacedBy(spacing.dp)
@@ -256,18 +256,19 @@ class DynamicContainerComponent {
                 distribution == "fill" -> Arrangement.SpaceBetween
                 distribution == "equalSpacing" -> Arrangement.SpaceAround
                 distribution == "equalCentering" -> Arrangement.SpaceEvenly
-                gravity == "top" -> Arrangement.Top
-                gravity == "bottom" -> Arrangement.Bottom
-                gravity == "centerVertical" || gravity == "center" -> Arrangement.Center
+                flags.alignTop -> Arrangement.Top
+                flags.alignBottom -> Arrangement.Bottom
+                flags.centerV || flags.centerInParent -> Arrangement.Center
                 else -> Arrangement.Top
             }
         }
 
         private fun parseColumnHorizontalAlignment(json: JsonObject): Alignment.Horizontal {
-            return when (json.get("gravity")?.asString) {
-                "left" -> Alignment.Start
-                "right" -> Alignment.End
-                "centerHorizontal", "center" -> Alignment.CenterHorizontally
+            val flags = ModifierBuilder.resolvedAlignFlags(json)
+            return when {
+                flags.alignLeft -> Alignment.Start
+                flags.alignRight -> Alignment.End
+                flags.centerH || flags.centerInParent -> Alignment.CenterHorizontally
                 else -> Alignment.Start
             }
         }
@@ -275,7 +276,7 @@ class DynamicContainerComponent {
         private fun parseHorizontalArrangement(json: JsonObject): Arrangement.Horizontal {
             val spacing = json.get("spacing")?.asFloat
             val distribution = json.get("distribution")?.asString
-            val gravity = json.get("gravity")?.asString
+            val flags = ModifierBuilder.resolvedAlignFlags(json)
 
             return when {
                 spacing != null -> Arrangement.spacedBy(spacing.dp)
@@ -283,31 +284,45 @@ class DynamicContainerComponent {
                 distribution == "fill" -> Arrangement.SpaceBetween
                 distribution == "equalSpacing" -> Arrangement.SpaceAround
                 distribution == "equalCentering" -> Arrangement.SpaceEvenly
-                gravity == "left" -> Arrangement.Start
-                gravity == "right" -> Arrangement.End
-                gravity == "centerHorizontal" || gravity == "center" -> Arrangement.Center
+                flags.alignLeft -> Arrangement.Start
+                flags.alignRight -> Arrangement.End
+                flags.centerH || flags.centerInParent -> Arrangement.Center
                 else -> Arrangement.Start
             }
         }
 
         private fun parseRowVerticalAlignment(json: JsonObject): Alignment.Vertical {
-            return when (json.get("gravity")?.asString) {
-                "top" -> Alignment.Top
-                "bottom" -> Alignment.Bottom
-                "centerVertical", "center" -> Alignment.CenterVertically
+            val flags = ModifierBuilder.resolvedAlignFlags(json)
+            return when {
+                flags.alignTop -> Alignment.Top
+                flags.alignBottom -> Alignment.Bottom
+                flags.centerV || flags.centerInParent -> Alignment.CenterVertically
                 else -> Alignment.Top
             }
         }
 
         private fun parseBoxContentAlignment(json: JsonObject): Alignment {
-            return when (json.get("gravity")?.asString) {
-                "center" -> Alignment.Center
-                "centerHorizontal" -> Alignment.TopCenter
-                "centerVertical" -> Alignment.CenterStart
-                "top" -> Alignment.TopCenter
-                "bottom" -> Alignment.BottomCenter
-                "left" -> Alignment.CenterStart
-                "right" -> Alignment.CenterEnd
+            val flags = ModifierBuilder.resolvedAlignFlags(json)
+            val vBoth = flags.alignTop && flags.alignBottom
+            val hBoth = flags.alignLeft && flags.alignRight
+            return when {
+                flags.centerInParent -> Alignment.Center
+                vBoth && hBoth -> Alignment.Center
+                flags.alignTop && flags.alignLeft -> Alignment.TopStart
+                flags.alignTop && flags.alignRight -> Alignment.TopEnd
+                flags.alignBottom && flags.alignLeft -> Alignment.BottomStart
+                flags.alignBottom && flags.alignRight -> Alignment.BottomEnd
+                flags.alignTop && flags.centerH -> Alignment.TopCenter
+                flags.alignBottom && flags.centerH -> Alignment.BottomCenter
+                flags.alignLeft && flags.centerV -> Alignment.CenterStart
+                flags.alignRight && flags.centerV -> Alignment.CenterEnd
+                flags.centerH && flags.centerV -> Alignment.Center
+                flags.alignTop -> Alignment.TopCenter
+                flags.alignBottom -> Alignment.BottomCenter
+                flags.alignLeft -> Alignment.CenterStart
+                flags.alignRight -> Alignment.CenterEnd
+                flags.centerH -> Alignment.TopCenter
+                flags.centerV -> Alignment.CenterStart
                 else -> Alignment.TopStart
             }
         }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -53,9 +54,11 @@ class DynamicBlurViewComponent {
                 modifier = modifier.clip(RoundedCornerShape(radius.dp))
             }
 
-            // Apply background color with opacity
+            // Apply background color with opacity. `effectStyle` (iOS Blur) falls
+            // back to a tinted translucent overlay when no explicit color is set.
             val bgColor = ColorParser.parseColorWithBinding(json, "background", data, context)
                 ?: ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
+                ?: effectStyleColor(json.get("effectStyle")?.asString)
             if (bgColor != null) {
                 val opacity = ResourceResolver.resolveFloat(json, "opacity", data)
                     ?: ResourceResolver.resolveFloat(json, "alpha", data)
@@ -77,6 +80,18 @@ class DynamicBlurViewComponent {
                     DynamicView(child, data)
                 }
             }
+        }
+
+        /**
+         * Emulate iOS UIBlurEffect.Style names as translucent overlays on Compose.
+         * Tool emits `effectStyle: "Light" | "Dark" | "ExtraLight"` from the shared
+         * Blur attribute catalog.
+         */
+        private fun effectStyleColor(style: String?): Color? = when (style?.lowercase()) {
+            "light" -> Color.White.copy(alpha = 0.4f)
+            "dark" -> Color.Black.copy(alpha = 0.4f)
+            "extralight" -> Color.White.copy(alpha = 0.6f)
+            else -> null
         }
     }
 }

@@ -145,38 +145,11 @@ class DynamicCollectionComponent {
                 defaultColumns
             }
 
-            // Parse content padding
-            // Support contentPadding (array or number), insetHorizontal, insetVertical
-            val contentPadding = when {
-                json.has("contentPadding") -> {
-                    val padding = json.get("contentPadding")
-                    when {
-                        padding.isJsonArray -> {
-                            val array = padding.asJsonArray
-                            if (array.size() == 4) {
-                                PaddingValues(
-                                    top = array[0].asFloat.dp,
-                                    end = array[1].asFloat.dp,
-                                    bottom = array[2].asFloat.dp,
-                                    start = array[3].asFloat.dp
-                                )
-                            } else {
-                                PaddingValues(0.dp)
-                            }
-                        }
-                        padding.isJsonPrimitive && padding.asJsonPrimitive.isNumber -> {
-                            PaddingValues(padding.asFloat.dp)
-                        }
-                        else -> PaddingValues(0.dp)
-                    }
-                }
-                json.has("insetHorizontal") || json.has("insetVertical") -> {
-                    val hInset = json.get("insetHorizontal")?.asFloat ?: 0f
-                    val vInset = json.get("insetVertical")?.asFloat ?: 0f
-                    PaddingValues(horizontal = hInset.dp, vertical = vInset.dp)
-                }
-                else -> PaddingValues(0.dp)
-            }
+            // Parse content padding. Tool writes one of:
+            //   - contentPadding: number | [t, r, b, l]
+            //   - insets / contentInsets: number | array | "t|r|b|l" pipe-separated string
+            //   - insetHorizontal / insetVertical: separate axes
+            val contentPadding = parseCollectionPadding(json)
 
             // Parse spacing
             // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
@@ -1016,6 +989,62 @@ class DynamicCollectionComponent {
                         modifier = Modifier.padding(8.dp)
                     )
                 }
+            }
+        }
+
+        /**
+         * Resolve Collection content padding from any of the tool-emitted
+         * attributes: `contentPadding`, `insets`, `contentInsets`,
+         * `insetHorizontal`/`insetVertical`. Accepted value forms:
+         *   - number:              uniform dp
+         *   - array of 4 numbers:  [top, end, bottom, start]
+         *   - string "t|r|b|l":    pipe-separated; whitespace and commas also work
+         */
+        private fun parseCollectionPadding(json: JsonObject): PaddingValues {
+            listOf("contentPadding", "insets", "contentInsets").forEach { key ->
+                val element = json.get(key) ?: return@forEach
+                when {
+                    element.isJsonPrimitive && element.asJsonPrimitive.isNumber ->
+                        return PaddingValues(element.asFloat.dp)
+                    element.isJsonPrimitive && element.asJsonPrimitive.isString ->
+                        parsePipeSeparatedPadding(element.asString)?.let { return it }
+                    element.isJsonArray -> {
+                        val array = element.asJsonArray
+                        if (array.size() == 4) {
+                            return PaddingValues(
+                                top = array[0].asFloat.dp,
+                                end = array[1].asFloat.dp,
+                                bottom = array[2].asFloat.dp,
+                                start = array[3].asFloat.dp
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (json.has("insetHorizontal") || json.has("insetVertical")) {
+                val hInset = json.get("insetHorizontal")?.asFloat ?: 0f
+                val vInset = json.get("insetVertical")?.asFloat ?: 0f
+                return PaddingValues(horizontal = hInset.dp, vertical = vInset.dp)
+            }
+
+            return PaddingValues(0.dp)
+        }
+
+        private fun parsePipeSeparatedPadding(raw: String): PaddingValues? {
+            val nums = raw.split(Regex("[|\\s,]+"))
+                .filter { it.isNotEmpty() }
+                .mapNotNull { it.toFloatOrNull() }
+            return when (nums.size) {
+                1 -> PaddingValues(nums[0].dp)
+                2 -> PaddingValues(vertical = nums[0].dp, horizontal = nums[1].dp)
+                4 -> PaddingValues(
+                    top = nums[0].dp,
+                    end = nums[1].dp,
+                    bottom = nums[2].dp,
+                    start = nums[3].dp
+                )
+                else -> null
             }
         }
 

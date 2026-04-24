@@ -516,59 +516,128 @@ object ModifierBuilder {
     }
 
     /**
+     * Normalized alignment flags derived from `gravity` plus individual
+     * `alignTop`/`centerHorizontal`/etc. booleans. The tool's emitter may
+     * write either form, so the runtime must honor both.
+     */
+    internal data class AlignFlags(
+        val alignTop: Boolean = false,
+        val alignBottom: Boolean = false,
+        val alignLeft: Boolean = false,
+        val alignRight: Boolean = false,
+        val centerH: Boolean = false,
+        val centerV: Boolean = false,
+        val centerInParent: Boolean = false
+    )
+
+    /**
+     * Parse the optional `gravity` attribute into [AlignFlags].
+     *
+     * Accepted forms:
+     *   - String: "top", "top|left", "top left" (pipe, whitespace or comma)
+     *   - JsonArray: ["top", "left"]
+     *
+     * Enum values follow `attribute_definitions.json`:
+     * top, bottom, centerVertical, left, right, centerHorizontal, center.
+     * `start`/`end` are also accepted as RTL-aware aliases for left/right.
+     */
+    internal fun parseGravity(json: JsonObject): AlignFlags? {
+        val element = json.get("gravity") ?: return null
+        val tokens: List<String> = when {
+            element.isJsonArray ->
+                element.asJsonArray.mapNotNull { if (it.isJsonPrimitive) it.asString else null }
+            element.isJsonPrimitive ->
+                element.asString.split(Regex("[|\\s,]+")).filter { it.isNotEmpty() }
+            else -> return null
+        }
+        if (tokens.isEmpty()) return null
+
+        var alignTop = false
+        var alignBottom = false
+        var alignLeft = false
+        var alignRight = false
+        var centerH = false
+        var centerV = false
+        var centerInParent = false
+
+        tokens.forEach { token ->
+            when (token) {
+                "top" -> alignTop = true
+                "bottom" -> alignBottom = true
+                "left", "start" -> alignLeft = true
+                "right", "end" -> alignRight = true
+                "centerVertical" -> centerV = true
+                "centerHorizontal" -> centerH = true
+                "center" -> centerInParent = true
+            }
+        }
+        return AlignFlags(alignTop, alignBottom, alignLeft, alignRight, centerH, centerV, centerInParent)
+    }
+
+    /**
+     * Merge `gravity` with individual align/center booleans. Either source
+     * setting a flag switches it on; the two are additive.
+     */
+    internal fun resolvedAlignFlags(json: JsonObject): AlignFlags {
+        val fromGravity = parseGravity(json) ?: AlignFlags()
+        return AlignFlags(
+            alignTop = fromGravity.alignTop || json.get("alignTop")?.asBoolean == true,
+            alignBottom = fromGravity.alignBottom || json.get("alignBottom")?.asBoolean == true,
+            alignLeft = fromGravity.alignLeft || json.get("alignLeft")?.asBoolean == true,
+            alignRight = fromGravity.alignRight || json.get("alignRight")?.asBoolean == true,
+            centerH = fromGravity.centerH || json.get("centerHorizontal")?.asBoolean == true,
+            centerV = fromGravity.centerV || json.get("centerVertical")?.asBoolean == true,
+            centerInParent = fromGravity.centerInParent || json.get("centerInParent")?.asBoolean == true
+        )
+    }
+
+    /**
      * Get alignment for child element based on parent type.
      * Returns Alignment value appropriate for the parent type.
      */
     fun getChildAlignment(json: JsonObject, parentType: String): Any? {
+        val flags = resolvedAlignFlags(json)
         return when (parentType) {
             "Row", "HStack" -> when {
-                json.get("alignTop")?.asBoolean == true -> Alignment.Top
-                json.get("alignBottom")?.asBoolean == true -> Alignment.Bottom
-                json.get("centerVertical")?.asBoolean == true -> Alignment.CenterVertically
+                flags.alignTop -> Alignment.Top
+                flags.alignBottom -> Alignment.Bottom
+                flags.centerV || flags.centerInParent -> Alignment.CenterVertically
                 else -> null
             }
             "Column", "VStack" -> when {
-                json.get("alignLeft")?.asBoolean == true -> Alignment.Start
-                json.get("alignRight")?.asBoolean == true -> Alignment.End
-                json.get("centerHorizontal")?.asBoolean == true -> Alignment.CenterHorizontally
+                flags.alignLeft -> Alignment.Start
+                flags.alignRight -> Alignment.End
+                flags.centerH || flags.centerInParent -> Alignment.CenterHorizontally
                 else -> null
             }
             "Box", "ZStack" -> {
-                val alignTop = json.get("alignTop")?.asBoolean == true
-                val alignBottom = json.get("alignBottom")?.asBoolean == true
-                val alignLeft = json.get("alignLeft")?.asBoolean == true
-                val alignRight = json.get("alignRight")?.asBoolean == true
-                val centerH = json.get("centerHorizontal")?.asBoolean == true
-                val centerV = json.get("centerVertical")?.asBoolean == true
-                val centerInParent = json.get("centerInParent")?.asBoolean == true
-
-                val hBoth = alignLeft && alignRight
-                val vBoth = alignTop && alignBottom
+                val hBoth = flags.alignLeft && flags.alignRight
+                val vBoth = flags.alignTop && flags.alignBottom
 
                 when {
-                    centerInParent -> Alignment.Center
+                    flags.centerInParent -> Alignment.Center
                     hBoth && vBoth -> Alignment.Center
-                    hBoth && alignTop -> BiasAlignment(0f, -1f)
-                    hBoth && alignBottom -> BiasAlignment(0f, 1f)
+                    hBoth && flags.alignTop -> BiasAlignment(0f, -1f)
+                    hBoth && flags.alignBottom -> BiasAlignment(0f, 1f)
                     hBoth -> BiasAlignment(0f, 0f)
-                    vBoth && alignLeft -> Alignment.CenterStart
-                    vBoth && alignRight -> Alignment.CenterEnd
+                    vBoth && flags.alignLeft -> Alignment.CenterStart
+                    vBoth && flags.alignRight -> Alignment.CenterEnd
                     vBoth -> BiasAlignment(0f, 0f)
-                    alignTop && alignLeft -> Alignment.TopStart
-                    alignTop && alignRight -> Alignment.TopEnd
-                    alignTop && centerH -> BiasAlignment(0f, -1f)
-                    alignBottom && alignLeft -> Alignment.BottomStart
-                    alignBottom && alignRight -> Alignment.BottomEnd
-                    alignBottom && centerH -> BiasAlignment(0f, 1f)
-                    alignLeft && centerV -> Alignment.CenterStart
-                    alignRight && centerV -> Alignment.CenterEnd
-                    centerH && centerV -> Alignment.Center
-                    alignTop -> BiasAlignment(-1f, -1f)
-                    alignBottom -> BiasAlignment(-1f, 1f)
-                    alignLeft -> BiasAlignment(-1f, -1f)
-                    alignRight -> BiasAlignment(1f, -1f)
-                    centerH -> BiasAlignment(0f, -1f)
-                    centerV -> BiasAlignment(-1f, 0f)
+                    flags.alignTop && flags.alignLeft -> Alignment.TopStart
+                    flags.alignTop && flags.alignRight -> Alignment.TopEnd
+                    flags.alignTop && flags.centerH -> BiasAlignment(0f, -1f)
+                    flags.alignBottom && flags.alignLeft -> Alignment.BottomStart
+                    flags.alignBottom && flags.alignRight -> Alignment.BottomEnd
+                    flags.alignBottom && flags.centerH -> BiasAlignment(0f, 1f)
+                    flags.alignLeft && flags.centerV -> Alignment.CenterStart
+                    flags.alignRight && flags.centerV -> Alignment.CenterEnd
+                    flags.centerH && flags.centerV -> Alignment.Center
+                    flags.alignTop -> BiasAlignment(-1f, -1f)
+                    flags.alignBottom -> BiasAlignment(-1f, 1f)
+                    flags.alignLeft -> BiasAlignment(-1f, -1f)
+                    flags.alignRight -> BiasAlignment(1f, -1f)
+                    flags.centerH -> BiasAlignment(0f, -1f)
+                    flags.centerV -> BiasAlignment(-1f, 0f)
                     else -> null
                 }
             }
@@ -646,28 +715,29 @@ object ModifierBuilder {
             constraints += "end.linkTo($it.end)"
         }
 
-        // Parent constraints
-        if (json.get("alignTop")?.asBoolean == true) {
+        // Parent constraints (honors `gravity` in addition to individual flags)
+        val flags = resolvedAlignFlags(json)
+        if (flags.alignTop) {
             constraints += "top.linkTo(parent.top${marginSuffix(topMargin)})"
         }
-        if (json.get("alignBottom")?.asBoolean == true) {
+        if (flags.alignBottom) {
             constraints += "bottom.linkTo(parent.bottom${marginSuffix(bottomMargin)})"
         }
-        if (json.get("alignLeft")?.asBoolean == true) {
+        if (flags.alignLeft) {
             constraints += "start.linkTo(parent.start${marginSuffix(startMargin)})"
         }
-        if (json.get("alignRight")?.asBoolean == true) {
+        if (flags.alignRight) {
             constraints += "end.linkTo(parent.end${marginSuffix(endMargin)})"
         }
-        if (json.get("centerHorizontal")?.asBoolean == true) {
+        if (flags.centerH) {
             constraints += "start.linkTo(parent.start)"
             constraints += "end.linkTo(parent.end)"
         }
-        if (json.get("centerVertical")?.asBoolean == true) {
+        if (flags.centerV) {
             constraints += "top.linkTo(parent.top)"
             constraints += "bottom.linkTo(parent.bottom)"
         }
-        if (json.get("centerInParent")?.asBoolean == true) {
+        if (flags.centerInParent) {
             constraints += "top.linkTo(parent.top)"
             constraints += "bottom.linkTo(parent.bottom)"
             constraints += "start.linkTo(parent.start)"

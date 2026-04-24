@@ -1,6 +1,8 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
@@ -90,15 +95,25 @@ class DynamicButtonComponent {
                 ?: backgroundColor.copy(alpha = 0.5f)
             val disabledTextColor = ColorParser.parseColorWithBinding(json, "disabledFontColor", data, context)
                 ?: textColor.copy(alpha = 0.5f)
+            // `highlightBackground` is the pressed-state container color (tool-emitted
+            // per the backfill catalog). `hilightColor` is a legacy typo alias kept
+            // for compatibility until backfill lands the `aliases` declaration.
+            val pressedBgColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "hilightBackground", data, context)
 
             // Shape
             val cornerRadius = json.get("cornerRadius")?.asFloat
                 ?: Configuration.Button.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
 
+            // Pressed-state container swap via interactionSource (only when highlightBackground is set).
+            val interactionSource = remember { MutableInteractionSource() }
+            val isPressed by interactionSource.collectIsPressedAsState()
+            val containerColor = if (pressedBgColor != null && isPressed) pressedBgColor else backgroundColor
+
             // Button colors
             val colors = ButtonDefaults.buttonColors(
-                containerColor = backgroundColor,
+                containerColor = containerColor,
                 contentColor = textColor,
                 disabledContainerColor = disabledBgColor,
                 disabledContentColor = disabledTextColor
@@ -115,6 +130,23 @@ class DynamicButtonComponent {
             // Elevation
             val elevation = resolveElevation(json)
 
+            // Optional leading/trailing icon
+            val imageResId = json.get("image")?.asString?.let {
+                ResourceResolver.resolveDrawable(it, data, context).takeIf { id -> id != 0 }
+            }
+            val imagePosition = json.get("imagePosition")?.asString?.lowercase() ?: "leading"
+            val iconSize = json.get("iconSize")?.asFloat ?: 18f
+
+            // Text alignment (Button-level). Compose default is center; tool allows override.
+            val textAlign = json.get("textAlign")?.asString?.let { align ->
+                when (align.lowercase()) {
+                    "left", "start" -> TextAlign.Start
+                    "right", "end" -> TextAlign.End
+                    "center" -> TextAlign.Center
+                    else -> null
+                }
+            }
+
             // Modifier: only testTag, margins, size, weight, alpha (not padding – handled by contentPadding)
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
@@ -130,7 +162,8 @@ class DynamicButtonComponent {
                 colors = colors,
                 elevation = elevation,
                 border = border,
-                contentPadding = contentPadding
+                contentPadding = contentPadding,
+                interactionSource = interactionSource
             ) {
                 if (isLoading) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -143,14 +176,43 @@ class DynamicButtonComponent {
                         Text(
                             text = json.get("loadingText")?.asString ?: text,
                             fontSize = fontSize.sp,
-                            fontWeight = fontWeight
+                            fontWeight = fontWeight,
+                            textAlign = textAlign
                         )
+                    }
+                } else if (imageResId != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (imagePosition == "leading") {
+                            Icon(
+                                painter = painterResource(id = imageResId),
+                                contentDescription = null,
+                                modifier = Modifier.size(iconSize.dp),
+                                tint = textColor
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(
+                            text = text,
+                            fontSize = fontSize.sp,
+                            fontWeight = fontWeight,
+                            textAlign = textAlign
+                        )
+                        if (imagePosition == "trailing") {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                painter = painterResource(id = imageResId),
+                                contentDescription = null,
+                                modifier = Modifier.size(iconSize.dp),
+                                tint = textColor
+                            )
+                        }
                     }
                 } else {
                     Text(
                         text = text,
                         fontSize = fontSize.sp,
-                        fontWeight = fontWeight
+                        fontWeight = fontWeight,
+                        textAlign = textAlign
                     )
                 }
             }

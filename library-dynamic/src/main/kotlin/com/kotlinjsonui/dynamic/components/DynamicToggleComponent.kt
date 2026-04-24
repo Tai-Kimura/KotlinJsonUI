@@ -1,10 +1,17 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -113,11 +120,79 @@ class DynamicToggleComponent {
                 SwitchDefaults.colors()
             }
 
-            Switch(
-                checked = checkedState,
-                onCheckedChange = onCheckedChange,
-                modifier = modifier,
-                colors = colors
+            val labelAttrs = json.get("labelAttributes")?.takeIf { it.isJsonObject }?.asJsonObject
+            if (labelAttrs == null) {
+                Switch(
+                    checked = checkedState,
+                    onCheckedChange = onCheckedChange,
+                    modifier = modifier,
+                    colors = colors
+                )
+            } else {
+                // Leading label by default matches common iOS Toggle usage.
+                val labelPosition = json.get("labelPosition")?.asString
+                    ?: "leading"
+
+                Row(
+                    modifier = modifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (labelPosition == "leading") {
+                        ToggleLabel(labelAttrs, data, context)
+                    }
+                    Switch(
+                        checked = checkedState,
+                        onCheckedChange = onCheckedChange,
+                        colors = colors
+                    )
+                    if (labelPosition == "trailing") {
+                        ToggleLabel(labelAttrs, data, context)
+                    }
+                }
+            }
+        }
+
+        /**
+         * Render the Toggle label text using `labelAttributes` object.
+         * Reads: text, fontSize, fontColor, fontWeight.
+         * Tool emits this shape from sjui_tools / kjui_tools `labelAttributes`.
+         */
+        @Composable
+        private fun ToggleLabel(
+            labelAttrs: JsonObject,
+            data: Map<String, Any>,
+            context: android.content.Context
+        ) {
+            val textValue = labelAttrs.get("text")?.asString?.let { raw ->
+                if (ModifierBuilder.isBinding(raw)) {
+                    val key = ModifierBuilder.extractBindingProperty(raw)
+                    (key?.let { data[it] } ?: raw).toString()
+                } else {
+                    raw
+                }
+            } ?: return
+
+            val fontSize = labelAttrs.get("fontSize")?.asFloat
+            val color = ColorParser.parseColorWithBinding(labelAttrs, "fontColor", data, context)
+            val weight = labelAttrs.get("fontWeight")?.asString?.let { w ->
+                when (w.lowercase()) {
+                    "bold" -> FontWeight.Bold
+                    "semibold", "semi-bold" -> FontWeight.SemiBold
+                    "medium" -> FontWeight.Medium
+                    "light" -> FontWeight.Light
+                    "thin" -> FontWeight.Thin
+                    "black" -> FontWeight.Black
+                    "normal", "regular" -> FontWeight.Normal
+                    else -> w.toIntOrNull()?.let { FontWeight(it) }
+                }
+            }
+
+            Text(
+                text = textValue,
+                fontSize = fontSize?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+                color = color ?: androidx.compose.ui.graphics.Color.Unspecified,
+                fontWeight = weight
             )
         }
     }
