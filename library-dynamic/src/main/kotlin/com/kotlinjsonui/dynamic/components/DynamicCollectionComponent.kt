@@ -748,19 +748,24 @@ class DynamicCollectionComponent {
                 // If we have sections and data source
                 sections != null && collectionDataSource != null -> {
                     // When reverseLayout is true, reverse section order so that
-                    // JSON definition order matches iOS display (iOS cannot reverse)
+                    // JSON definition order matches iOS display (iOS cannot reverse).
+                    // Pair each section with its original index before any reversal —
+                    // JsonArray.indexOf uses structural equality, so sections with
+                    // identical JSON (e.g. two sections that share the same cell
+                    // template) would collapse to the same index and produce
+                    // duplicate LazyGrid keys.
+                    val indexedSections = sections.toList().mapIndexed { idx, section -> idx to section }
                     val orderedSections = if (reverseLayout) {
-                        sections.reversed()
+                        indexedSections.reversed()
                     } else {
-                        sections.toList()
+                        indexedSections
                     }
-                    orderedSections.forEach { sectionJson ->
+                    orderedSections.forEach { (sectionIndex, sectionJson) ->
                         val sectionObj = sectionJson.asJsonObject
                         val cellViewName = sectionObj.get("cell")?.asString
                         val headerViewName = sectionObj.get("header")?.asString
                         val footerViewName = sectionObj.get("footer")?.asString
                         val sectionColumns = sectionObj.get("columns")?.asInt ?: defaultColumns
-                        val sectionIndex = sections.indexOf(sectionJson)
 
                         // Calculate span for items in this section
                         val itemSpan = gridColumns / sectionColumns
