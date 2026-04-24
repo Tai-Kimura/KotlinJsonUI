@@ -3,8 +3,10 @@ package com.kotlinjsonui.dynamic
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import java.io.InputStreamReader
+import java.util.Locale
 
 /**
  * ResourceCache manages cached resources for dynamic UI rendering.
@@ -112,34 +114,37 @@ object ResourceCache {
             val jsonObject = gson.fromJson(jsonString, JsonObject::class.java)
             val flattenedStrings = mutableMapOf<String, String>()
             val reverseKeyMap = mutableMapOf<String, String>()
+            val preferredLang = Locale.getDefault().language
 
-            // Flatten the nested structure
-            // Format: { "file1": { "key1": "value1" }, "file2": { "key2": "value2" } }
-            // Becomes: { "file1_key1": "value1", "file2_key2": "value2" }
+            // Flatten the nested structure. Two value shapes are supported:
+            //   1. Legacy: { "file1": { "key1": "value1" } }
+            //   2. i18n:   { "file1": { "key1": { "en": "Foo", "ja": "フー" } } }
+            //
+            // In (2), values are resolved against the device locale (with "en"
+            // as fallback) for cache population. For both shapes the
+            // unprefixed→prefixed map is always populated so R.string lookup
+            // (`<fileName>_<key>`) can bypass a missing strings.json value.
             for ((fileName, fileObject) in jsonObject.entrySet()) {
-                if (fileObject.isJsonObject) {
-                    val fileJsonObject = fileObject.asJsonObject
-                    for ((key, value) in fileJsonObject.entrySet()) {
-                        if (value.isJsonPrimitive) {
-                            // Create flattened key: filename_key
-                            val flatKey = "${fileName}_${key}"
-                            flattenedStrings[flatKey] = value.asString
+                if (!fileObject.isJsonObject) continue
+                val fileJsonObject = fileObject.asJsonObject
+                for ((key, value) in fileJsonObject.entrySet()) {
+                    val flatKey = "${fileName}_${key}"
+                    // Unprefixed → prefixed mapping always recorded, regardless
+                    // of whether a cached value can be extracted. This is the
+                    // critical input for resolveString's R.string lookup path.
+                    reverseKeyMap[key] = flatKey
 
-                            // Also store without prefix for backward compatibility
-                            if (!flattenedStrings.containsKey(key)) {
-                                flattenedStrings[key] = value.asString
-                            }
-
-                            // Build reverse map: unprefixed → prefixed
-                            reverseKeyMap[key] = flatKey
-                        }
+                    val resolved = extractLocalizedValue(value, preferredLang) ?: continue
+                    flattenedStrings[flatKey] = resolved
+                    if (!flattenedStrings.containsKey(key)) {
+                        flattenedStrings[key] = resolved
                     }
                 }
             }
 
             stringsCache = flattenedStrings
             keyToPrefixedKey = reverseKeyMap
-            Log.d(TAG, "Loaded ${flattenedStrings.size} strings")
+            Log.d(TAG, "Loaded ${flattenedStrings.size} strings (${reverseKeyMap.size} key mappings)")
             
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load strings.json", e)
@@ -171,19 +176,35 @@ object ResourceCache {
                 }
             }
             
-            // Parse the JSON
+            // Parse the JSON. Two schemas are supported:
+            //   Legacy flat:  { "gold": "#FFC364", "deep_gray": "#221C10", ... }
+            //   Themed:       { "modes": ["light", "dark"],
+            //                   "fallback_mode": "light",
+            //                   "systemModeMapping": { "light": "light", ... },
+            //                   "light": { "gold": "#FFC364", ... },
+            //                   "dark":  { "gold": "#FFC364", ... } }
+            //
+            // The themed schema is what `jui build` writes for multi-theme
+            // projects, and the tool-generated ColorManager already owns the
+            // active palette. ResourceCache only needs to populate a usable
+            // fallback so `resolveColor` works when the app hasn't wired
+            // `Configuration.themedColorParser`.
             val gson = Gson()
             val jsonObject = gson.fromJson(jsonString, JsonObject::class.java)
             val colors = mutableMapOf<String, String>()
-            
-            // Extract color mappings
-            // Format: { "color_name": "#HEXVALUE", ... }
-            for ((key, value) in jsonObject.entrySet()) {
-                if (value.isJsonPrimitive) {
-                    colors[key] = value.asString
+
+            val activePalette = resolveActivePalette(jsonObject)
+            if (activePalette != null) {
+                for ((key, value) in activePalette.entrySet()) {
+                    if (value.isJsonPrimitive) colors[key] = value.asString
+                }
+            } else {
+                // Legacy flat schema: entries are all primitives.
+                for ((key, value) in jsonObject.entrySet()) {
+                    if (value.isJsonPrimitive) colors[key] = value.asString
                 }
             }
-            
+
             colorsCache = colors
             Log.d(TAG, "Loaded ${colors.size} colors")
             
@@ -192,6 +213,49 @@ object ResourceCache {
         }
     }
     
+    /**
+     * Extract a concrete String from a strings.json entry that may be either
+     * a primitive or a `{en, ja, ...}` language map. Returns null when no
+     * candidate can be produced (e.g. nested object with non-string leaves).
+     */
+    private fun extractLocalizedValue(element: JsonElement, preferredLang: String): String? {
+        if (element.isJsonPrimitive) return element.asString
+        if (!element.isJsonObject) return null
+        val obj = element.asJsonObject
+        obj.get(preferredLang)?.takeIf { it.isJsonPrimitive }?.let { return it.asString }
+        obj.get("en")?.takeIf { it.isJsonPrimitive }?.let { return it.asString }
+        for (entry in obj.entrySet()) {
+            val v = entry.value
+            if (v.isJsonPrimitive) return v.asString
+        }
+        return null
+    }
+
+    /**
+     * Determine the active palette inside a themed colors.json. Honors
+     * `fallback_mode` first (the tool writes it as the deterministic default)
+     * and falls back to the first mode in the `modes` array. Returns null
+     * when the JSON doesn't look themed, so callers fall back to legacy flat
+     * parsing.
+     */
+    private fun resolveActivePalette(root: JsonObject): JsonObject? {
+        val modesArray = root.get("modes")
+        val fallbackMode = root.get("fallback_mode")
+        if (modesArray?.isJsonArray != true && fallbackMode?.isJsonPrimitive != true) {
+            return null
+        }
+
+        val candidate: String? = when {
+            fallbackMode?.isJsonPrimitive == true -> fallbackMode.asString
+            modesArray?.isJsonArray == true && modesArray.asJsonArray.size() > 0 ->
+                modesArray.asJsonArray[0].takeIf { it.isJsonPrimitive }?.asString
+            else -> null
+        }
+        val mode = candidate ?: return null
+        val palette = root.get(mode) ?: return null
+        return if (palette.isJsonObject) palette.asJsonObject else null
+    }
+
     /**
      * Clear the cache (useful for testing or when resources are updated)
      */
