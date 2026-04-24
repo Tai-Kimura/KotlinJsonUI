@@ -14,6 +14,12 @@ import androidx.compose.ui.unit.Dp
 /**
  * Extension function to draw dashed or dotted borders
  *
+ * NOTE: Lives in the main `kotlinjsonui` module (not `kotlinjsonui-dynamic`) so that
+ * generated static Compose views can reference it in Release builds where the dynamic
+ * module is `debugImplementation`-only. The `com.kotlinjsonui.dynamic.helpers` package
+ * name is preserved for source compatibility with existing generated code and
+ * hand-written consumers.
+ *
  * @param width The border width
  * @param color The border color
  * @param shape The shape of the border (used to determine corner radius)
