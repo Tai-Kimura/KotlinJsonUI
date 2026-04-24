@@ -139,7 +139,7 @@ class DynamicContainerComponent {
         // ── Child rendering with scope-aware weight/alignment/visibility ──
 
         @Composable
-        private fun ColumnScope.renderChildInColumn(
+        internal fun ColumnScope.renderChildInColumn(
             child: JsonObject,
             data: Map<String, Any>,
             context: Context
@@ -174,7 +174,7 @@ class DynamicContainerComponent {
         }
 
         @Composable
-        private fun RowScope.renderChildInRow(
+        internal fun RowScope.renderChildInRow(
             child: JsonObject,
             data: Map<String, Any>,
             context: Context
@@ -208,7 +208,7 @@ class DynamicContainerComponent {
         }
 
         @Composable
-        private fun BoxScope.renderChildInBox(
+        internal fun BoxScope.renderChildInBox(
             child: JsonObject,
             data: Map<String, Any>,
             context: Context

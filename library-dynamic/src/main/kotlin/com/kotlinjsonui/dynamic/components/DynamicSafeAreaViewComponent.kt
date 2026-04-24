@@ -14,9 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.DynamicView
-import com.kotlinjsonui.dynamic.DynamicViews
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
+import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInBox
+import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInColumn
+import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInRow
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import androidx.compose.ui.platform.LocalContext
@@ -150,49 +151,30 @@ class DynamicSafeAreaViewComponent {
                 }
             }
 
+            // Route children through the scope-aware renderers used by
+            // DynamicContainerComponent so weight/alignment/visibility are
+            // applied in the correct scope. Plain DynamicView(s) calls do
+            // not apply weight, which causes children like ScrollView with
+            // weight:1 to lose their slot and push later siblings off-screen.
             when (orientation) {
                 "horizontal" -> {
                     Row(modifier = modifier) {
-                        if (childList.size == 1) {
-                            DynamicView(
-                                json = childList[0],
-                                data = data
-                            )
-                        } else if (childList.isNotEmpty()) {
-                            DynamicViews(
-                                components = childList,
-                                data = data
-                            )
+                        childList.forEach { child ->
+                            renderChildInRow(child, data, context)
                         }
                     }
                 }
                 "vertical" -> {
                     Column(modifier = modifier) {
-                        if (childList.size == 1) {
-                            DynamicView(
-                                json = childList[0],
-                                data = data
-                            )
-                        } else if (childList.isNotEmpty()) {
-                            DynamicViews(
-                                components = childList,
-                                data = data
-                            )
+                        childList.forEach { child ->
+                            renderChildInColumn(child, data, context)
                         }
                     }
                 }
                 else -> { // No orientation = Box (ZStack equivalent)
                     Box(modifier = modifier) {
-                        if (childList.size == 1) {
-                            DynamicView(
-                                json = childList[0],
-                                data = data
-                            )
-                        } else if (childList.isNotEmpty()) {
-                            DynamicViews(
-                                components = childList,
-                                data = data
-                            )
+                        childList.forEach { child ->
+                            renderChildInBox(child, data, context)
                         }
                     }
                 }
