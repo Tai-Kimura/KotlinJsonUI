@@ -12,21 +12,30 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
 /**
- * HotLoader client for real-time UI updates during development
- * Only active in DEBUG builds
+ * HotLoader client for the jui-tools centralized hotload server.
+ *
+ * Wire protocol v2 (KotlinJsonUI 2.4.0):
+ *   client → server: { "type": "hello", "platform": "android" }
+ *   server → client: { "type": "welcome", ... }
+ *   server → client: { "type": "hello_ack", "platform": "android" }
+ *   server → client: { "type": "layout_changed", "layout": "home/home_header", ... }
+ *   server → client: { "type": "style_changed", "style": "card", ... }
+ *
+ * Config loaded from assets/hotloader.json (schema: server.{host,port,wsPath},
+ * client.{ip,fallbackToLocalhost}). See `jui hotload listen`.
  */
 class HotLoader private constructor(context: Context) {
-    // Use WeakReference to avoid memory leaks
     private val contextRef = WeakReference(context)
-    
+
     companion object {
         private const val TAG = "KjuiHotLoader"
-        private const val RECONNECT_DELAY = 5000L // 5 seconds
+        private const val RECONNECT_DELAY = 5000L
         private const val CONFIG_FILE = "hotloader.json"
-        
+        private const val PLATFORM = "android"
+
         @Volatile
         private var instance: HotLoader? = null
-        
+
         fun getInstance(context: Context): HotLoader {
             return instance ?: synchronized(this) {
                 instance ?: HotLoader(context.applicationContext).also {
@@ -34,145 +43,133 @@ class HotLoader private constructor(context: Context) {
                 }
             }
         }
-        
-        /**
-         * Clear the singleton instance to allow garbage collection
-         */
+
         fun clearInstance() {
             instance?.stop()
             instance = null
         }
     }
-    
-    // Configuration
+
     data class Config(
-        val ip: String = "10.0.2.2", // Android emulator localhost
+        val ip: String = "10.0.2.2",
         val port: Int = 8081,
-        val enabled: Boolean = false
+        val wsPath: String = "/ws",
+        val enabled: Boolean = true
     ) {
-        val websocketUrl: String get() = "ws://$ip:$port"
+        val websocketUrl: String get() = "ws://$ip:$port$wsPath"
         val httpUrl: String get() = "http://$ip:$port"
     }
-    
-    // State
+
     private val _isConnected = MutableStateFlow(false)
     val isConnected: StateFlow<Boolean> = _isConnected
-    
+
     private val _lastUpdate = MutableStateFlow<LayoutUpdate?>(null)
     val lastUpdate: StateFlow<LayoutUpdate?> = _lastUpdate
-    
-    // Networking
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
         .build()
-    
+
     private var webSocket: WebSocket? = null
     private var config: Config = loadConfig()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    
-    // Callbacks
+
     private val listeners = mutableListOf<HotLoaderListener>()
-    
+
     init {
         if (config.enabled) {
             connect()
         }
     }
-    
+
     fun start() {
         config = loadConfig()
         if (config.enabled && webSocket == null) {
             connect()
         }
     }
-    
+
     fun stop() {
         disconnect()
     }
-    
+
     fun addListener(listener: HotLoaderListener) {
         listeners.add(listener)
     }
-    
+
     fun removeListener(listener: HotLoaderListener) {
         listeners.remove(listener)
     }
-    
+
     private fun loadConfig(): Config {
+        val ctx = contextRef.get() ?: return Config()
         return try {
-            val ctx = contextRef.get() ?: return Config()
-            // Try to load from assets
             val configJson = ctx.assets.open(CONFIG_FILE).bufferedReader().use { it.readText() }
-            val json = JSONObject(configJson)
-            
-            Config(
-                ip = json.optString("ip", "10.0.2.2"),
-                port = json.optInt("port", 8081),
-                enabled = json.optBoolean("enabled", false)
-            )
+            parseConfig(configJson)
         } catch (e: Exception) {
-            Log.w(TAG, "Could not load config from assets, using defaults", e)
-            
-            // Try to load from local.properties
-            try {
-                val ctx = contextRef.get() ?: return Config()
-                val localProps = File(ctx.filesDir.parentFile?.parentFile, "local.properties")
-                if (localProps.exists()) {
-                    val props = localProps.readLines()
-                    val ip = props.find { it.startsWith("hotloader.ip=") }?.substringAfter("=")
-                    val port = props.find { it.startsWith("hotloader.port=") }?.substringAfter("=")?.toIntOrNull()
-                    
-                    if (ip != null) {
-                        return Config(
-                            ip = ip,
-                            port = port ?: 8081,
-                            enabled = true
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not load config from local.properties", e)
-            }
-            
-            // Default config
+            Log.w(TAG, "Could not load $CONFIG_FILE from assets, using defaults", e)
             Config()
         }
     }
-    
+
+    private fun parseConfig(configJson: String): Config {
+        val json = JSONObject(configJson)
+        val server = json.optJSONObject("server") ?: JSONObject()
+        val clientSection = json.optJSONObject("client") ?: JSONObject()
+
+        val port = server.optInt("port", 8081)
+        val wsPath = server.optString("wsPath", "/ws")
+
+        val configuredIp = clientSection.optString("ip", "")
+        val fallbackToLocalhost = clientSection.optBoolean("fallbackToLocalhost", true)
+
+        val ip = when {
+            configuredIp.isNotBlank() -> configuredIp
+            fallbackToLocalhost -> "10.0.2.2" // Android emulator loopback
+            else -> server.optString("host", "10.0.2.2").ifBlank { "10.0.2.2" }
+        }
+
+        return Config(
+            ip = ip,
+            port = port,
+            wsPath = wsPath,
+            enabled = true
+        )
+    }
+
     private fun connect() {
         Log.d(TAG, "Connecting to ${config.websocketUrl}")
-        
+
         val request = Request.Builder()
             .url(config.websocketUrl)
             .build()
-        
+
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 Log.i(TAG, "Connected to HotLoader server")
                 _isConnected.value = true
-                
+                sendHello(webSocket)
                 listeners.forEach { it.onConnected() }
             }
-            
+
             override fun onMessage(webSocket: WebSocket, text: String) {
                 Log.d(TAG, "Received message: $text")
                 handleMessage(text)
             }
-            
+
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 Log.i(TAG, "WebSocket closing: $reason")
                 webSocket.close(1000, null)
             }
-            
+
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 Log.i(TAG, "WebSocket closed: $reason")
                 _isConnected.value = false
                 this@HotLoader.webSocket = null
-                
+
                 listeners.forEach { it.onDisconnected() }
-                
-                // Attempt reconnection after delay
+
                 scope.launch {
                     delay(RECONNECT_DELAY)
                     if (config.enabled) {
@@ -180,15 +177,14 @@ class HotLoader private constructor(context: Context) {
                     }
                 }
             }
-            
+
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 Log.e(TAG, "WebSocket failure", t)
                 _isConnected.value = false
                 this@HotLoader.webSocket = null
-                
+
                 listeners.forEach { it.onError(t) }
-                
-                // Attempt reconnection after delay
+
                 scope.launch {
                     delay(RECONNECT_DELAY)
                     if (config.enabled) {
@@ -198,204 +194,98 @@ class HotLoader private constructor(context: Context) {
             }
         })
     }
-    
+
+    private fun sendHello(socket: WebSocket) {
+        val hello = JSONObject()
+        hello.put("type", "hello")
+        hello.put("platform", PLATFORM)
+        socket.send(hello.toString())
+    }
+
     private fun disconnect() {
         webSocket?.close(1000, "User requested disconnect")
         webSocket = null
         _isConnected.value = false
     }
-    
+
     private fun handleMessage(message: String) {
         try {
             val json = JSONObject(message)
-            val type = json.optString("type")
-
-            when (type) {
-                "connected" -> {
-                    Log.i(TAG, "Server confirmed connection")
-                }
-                "file_changed" -> {
-                    val path = json.optString("path")
-                    val fileName = json.optString("fileName")
-
-                    Log.i(TAG, "File changed: $path")
-
-                    // Extract layout path from full path (e.g., "app/src/main/assets/Layouts/home/home_header.json")
-                    val layoutPath = extractLayoutPath(path)
-                    val stylePath = extractStylePath(path)
-
-                    when {
-                        layoutPath != null -> {
-                            // Download the updated layout with subdirectory path
-                            downloadLayout(layoutPath)
-                        }
-                        stylePath != null -> {
-                            // Download the updated style
-                            downloadStyle(stylePath)
-                        }
+            when (json.optString("type")) {
+                "welcome" -> Log.i(TAG, "Server welcome: v${json.optString("serverVersion")}")
+                "hello_ack" -> Log.i(TAG, "Server ack platform ${json.optString("platform")}")
+                "layout_changed" -> {
+                    val layout = json.optString("layout")
+                    if (layout.isNotBlank()) {
+                        Log.i(TAG, "Layout changed: $layout")
+                        downloadLayout(layout)
                     }
                 }
-                "file_added" -> {
-                    val path = json.optString("path")
-                    val layoutPath = extractLayoutPath(path)
-
-                    Log.i(TAG, "File added: $path")
-                    if (layoutPath != null) {
-                        listeners.forEach { it.onLayoutAdded(layoutPath) }
+                "style_changed" -> {
+                    val styleName = json.optString("style")
+                    Log.i(TAG, "Style changed: $styleName — clearing cache")
+                    scope.launch(Dispatchers.Main) {
+                        com.kotlinjsonui.dynamic.DynamicStyleLoader.clearCache()
+                        listeners.forEach { it.onStyleUpdated(styleName, "") }
                     }
                 }
-                "file_removed" -> {
-                    val path = json.optString("path")
-                    val layoutPath = extractLayoutPath(path)
-
-                    Log.i(TAG, "File removed: $path")
-                    if (layoutPath != null) {
-                        listeners.forEach { it.onLayoutRemoved(layoutPath) }
-                    }
-                }
+                "error" -> Log.w(TAG, "Server error: ${json.optString("reason")}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling message", e)
         }
     }
 
-    /**
-     * Extract layout path from full file path
-     * e.g., "app/src/main/assets/Layouts/home/home_header.json" -> "home/home_header"
-     */
-    private fun extractLayoutPath(path: String): String? {
-        val layoutsIndex = path.indexOf("Layouts/")
-        if (layoutsIndex == -1) return null
-
-        val relativePath = path.substring(layoutsIndex + "Layouts/".length)
-        return relativePath.removeSuffix(".json")
-    }
-
-    /**
-     * Extract style path from full file path
-     * e.g., "app/src/main/assets/Styles/common.json" -> "common"
-     */
-    private fun extractStylePath(path: String): String? {
-        val stylesIndex = path.indexOf("Styles/")
-        if (stylesIndex == -1) return null
-
-        val relativePath = path.substring(stylesIndex + "Styles/".length)
-        return relativePath.removeSuffix(".json")
-    }
-    
     private fun downloadLayout(layoutName: String) {
         scope.launch {
             try {
-                val url = "${config.httpUrl}/layout/$layoutName"
-                val request = Request.Builder()
-                    .url(url)
-                    .build()
-                
+                val url = "${config.httpUrl}/$PLATFORM/layout/$layoutName"
+                val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
                     val layoutJson = response.body?.string()
                     if (layoutJson != null) {
                         val update = LayoutUpdate(layoutName, layoutJson, System.currentTimeMillis())
                         _lastUpdate.value = update
-                        
-                        // Save to cache
                         saveLayoutToCache(layoutName, layoutJson)
-                        
-                        // Notify listeners
                         withContext(Dispatchers.Main) {
                             listeners.forEach { it.onLayoutUpdated(layoutName, layoutJson) }
                         }
                     }
                 } else {
-                    Log.e(TAG, "Failed to download layout: ${response.code}")
+                    Log.e(TAG, "Failed to download layout $layoutName: HTTP ${response.code}")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error downloading layout", e)
+                Log.e(TAG, "Error downloading layout $layoutName", e)
             }
         }
     }
-    
-    private fun downloadStyle(styleName: String) {
-        scope.launch {
-            try {
-                val url = "${config.httpUrl}/style/$styleName"
-                val request = Request.Builder()
-                    .url(url)
-                    .build()
-                
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    val styleJson = response.body?.string()
-                    if (styleJson != null) {
-                        // Save to cache
-                        saveStyleToCache(styleName, styleJson)
-                        
-                        // Clear the style cache in DynamicStyleLoader
-                        withContext(Dispatchers.Main) {
-                            com.kotlinjsonui.dynamic.DynamicStyleLoader.clearCache()
-                            
-                            // Notify listeners about style update
-                            listeners.forEach { it.onStyleUpdated(styleName, styleJson) }
-                        }
-                    }
-                } else {
-                    Log.e(TAG, "Failed to download style: ${response.code}")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error downloading style", e)
-            }
-        }
-    }
-    
+
     private fun saveLayoutToCache(layoutName: String, content: String) {
         try {
             val ctx = contextRef.get() ?: return
             val cacheDir = File(ctx.cacheDir, "hotloader_layouts")
-
-            // Handle subdirectory paths (e.g., "home/home_header")
             val file = File(cacheDir, "$layoutName.json")
             file.parentFile?.mkdirs()
-
             file.writeText(content)
-
             Log.d(TAG, "Saved layout to cache: ${file.absolutePath}")
         } catch (e: Exception) {
             Log.e(TAG, "Error saving layout to cache", e)
         }
     }
-    
-    private fun saveStyleToCache(styleName: String, content: String) {
-        try {
-            val ctx = contextRef.get() ?: return
-            val cacheDir = File(ctx.cacheDir, "hotloader_styles")
-            cacheDir.mkdirs()
-            
-            val file = File(cacheDir, "$styleName.json")
-            file.writeText(content)
-            
-            Log.d(TAG, "Saved style to cache: ${file.absolutePath}")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error saving style to cache", e)
-        }
-    }
-    
+
     fun getCachedLayout(layoutName: String): String? {
         return try {
             val ctx = contextRef.get() ?: return null
             val cacheDir = File(ctx.cacheDir, "hotloader_layouts")
             val file = File(cacheDir, "$layoutName.json")
-            
-            if (file.exists()) {
-                file.readText()
-            } else {
-                null
-            }
+            if (file.exists()) file.readText() else null
         } catch (e: Exception) {
             Log.e(TAG, "Error reading cached layout", e)
             null
         }
     }
-    
+
     fun clearCache() {
         try {
             val ctx = contextRef.get() ?: return
@@ -406,15 +296,13 @@ class HotLoader private constructor(context: Context) {
             Log.e(TAG, "Error clearing cache", e)
         }
     }
-    
-    // Data classes
+
     data class LayoutUpdate(
         val layoutName: String,
         val content: String,
         val timestamp: Long
     )
-    
-    // Listener interface
+
     interface HotLoaderListener {
         fun onConnected()
         fun onDisconnected()
