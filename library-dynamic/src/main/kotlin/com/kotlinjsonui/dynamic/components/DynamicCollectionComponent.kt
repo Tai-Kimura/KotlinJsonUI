@@ -1,10 +1,13 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +22,7 @@ import com.google.gson.JsonArray
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.components.CollectionStackMode
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.data.CollectionDataSource
 import com.kotlinjsonui.data.CollectionDataSection
@@ -86,12 +90,31 @@ class DynamicCollectionComponent {
             val isHorizontal = layout == "horizontal"
             val isFlow = layout == "flow"
 
-            // lazy:false → emit Row/Column + forEachIndexed, no LazyColumn/
-            // LazyVerticalGrid and no verticalScroll/horizontalScroll. Intended
-            // for Collections nested inside an already-scrollable parent.
-            // FlowRow is already non-lazy; paging uses HorizontalPager and
-            // ignores lazy:false.
-            val lazy = json.get("lazy")?.asBoolean ?: true
+            // `lazy` accepts boolean (legacy) or one of "lazy"/"eager"/"none".
+            //   LAZY  -> existing LazyVerticalGrid / LazyHorizontalGrid path (default).
+            //   EAGER -> renderNonLazy/renderNonLazyRow + verticalScroll/horizontalScroll
+            //            so heavy cells don't suffer LazyVStack-style virtualization
+            //            re-evaluation hiccups.
+            //   NONE  -> renderNonLazy/renderNonLazyRow with no scroll modifier.
+            // Bindings resolve at runtime via the data map; the wrapper composable
+            // re-applies the same closure regardless of value, preserving identity.
+            val collectionMode = run {
+                val raw = json.get("lazy")
+                val resolved: Any? = when {
+                    raw == null -> null
+                    raw.isJsonNull -> null
+                    raw.isJsonPrimitive && raw.asJsonPrimitive.isBoolean -> raw.asBoolean
+                    raw.isJsonPrimitive && raw.asJsonPrimitive.isString -> {
+                        val s = raw.asString
+                        if (s.startsWith("@{") && s.endsWith("}")) {
+                            data[s.removePrefix("@{").removeSuffix("}")]
+                        } else s
+                    }
+                    else -> null
+                }
+                CollectionStackMode.fromJson(resolved)
+            }
+            val lazy = collectionMode == CollectionStackMode.LAZY
 
             // Legacy: Extract cellClasses, headerClasses, footerClasses
             val cellClasses = extractStringArray(json.get("cellClasses")?.asJsonArray)
@@ -228,20 +251,26 @@ class DynamicCollectionComponent {
                 return
             }
 
-            // lazy:false takes priority over wrapContent — render using Row
-            // (horizontal) or Column (vertical) with no Lazy container.
-            // wrapContent height on vertical Collection → same Column path to
-            // avoid crash when nested inside another Lazy container (infinite
-            // height constraint).
+            // For EAGER / NONE / wrapContent paths, route through the Row/Column
+            // renderers. EAGER additionally applies verticalScroll/horizontalScroll
+            // so the collection scrolls without virtualization. NONE skips the
+            // scroll modifier entirely (parent must provide scroll). wrapContent
+            // forces NONE-style rendering to avoid Compose's nested-Lazy crash.
             val heightStr = json.get("height")?.asString
+            val widthStr = json.get("width")?.asString
             if (!lazy && isHorizontal) {
+                val rowModifier = if (collectionMode == CollectionStackMode.EAGER && widthStr != "wrapContent") {
+                    modifier.horizontalScroll(rememberScrollState())
+                } else {
+                    modifier
+                }
                 renderNonLazyRow(
                     sections = sections,
                     collectionDataSource = collectionDataSource,
                     cellTemplate = cellTemplate,
                     cellIdProperty = cellIdProperty,
                     data = data,
-                    modifier = modifier,
+                    modifier = rowModifier,
                     columnSpacing = columnSpacing,
                     contentPadding = contentPadding,
                     cellWidth = cellWidth,
@@ -252,13 +281,18 @@ class DynamicCollectionComponent {
                 return
             }
             if ((!lazy && !isHorizontal) || (!isHorizontal && heightStr == "wrapContent")) {
+                val columnModifier = if (collectionMode == CollectionStackMode.EAGER && heightStr != "wrapContent") {
+                    modifier.verticalScroll(rememberScrollState())
+                } else {
+                    modifier
+                }
                 renderNonLazy(
                     sections = sections,
                     collectionDataSource = collectionDataSource,
                     cellTemplate = cellTemplate,
                     cellIdProperty = cellIdProperty,
                     data = data,
-                    modifier = modifier,
+                    modifier = columnModifier,
                     lineSpacing = lineSpacing,
                     contentPadding = contentPadding,
                     cellHeight = cellHeight,
