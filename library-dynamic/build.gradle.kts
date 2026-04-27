@@ -75,7 +75,7 @@ signing {
 
 // Configure vanniktech plugin for Central Portal
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
     coordinates("io.github.tai-kimura", "kotlinjsonui-dynamic", project.findProperty("version") as String)
