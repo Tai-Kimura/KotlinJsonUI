@@ -5,6 +5,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 import java.util.UUID
@@ -76,20 +77,20 @@ object Configuration {
         themeChangeCallbacks[id] = callback
         return { themeChangeCallbacks.remove(id) }
     }
-    
+
     /**
      * Whether to show error components in debug mode
      * When true, components that fail to render will show an error message
      * When false, errors are silently logged
      */
     var showErrorsInDebug: Boolean = true
-    
+
     /**
      * Custom fallback component to render when an unknown component type is encountered
      * The function receives the JsonObject and data map
      */
     var fallbackComponent: (@Composable (JsonObject, Map<String, Any>) -> Unit)? = null
-    
+
     /**
      * Custom component handler to render app-specific custom components
      * The function receives the component type, JsonObject and data map
@@ -109,7 +110,7 @@ object Configuration {
         var shadow = Color.Black.copy(alpha = 0.1f)
         var linkColor = Color(0xFF0000EE)  // Default blue color for links
     }
-    
+
     // Global font defaults (all mutable for app customization)
     object Font {
         /** Default font family (null uses system default) */
@@ -123,18 +124,51 @@ object Configuration {
 
         /**
          * Custom font provider function.
-         * Receives font name string from JSON, returns FontFamily or null.
-         * Use this to map font names to custom FontFamily instances.
+         *
+         * Receives a [FontSpec] (family-name string, weight, size, italic flag) and
+         * returns a [ResolvedFont] whose fields are passed directly to Compose
+         * `Text(...)` parameters. Return `null` to fall through to the library's
+         * built-in [defaultResolved] fallback.
+         *
+         * NOTE: This is a breaking change from KotlinJsonUI 2.6.x where the
+         * provider was `((String) -> FontFamily?)?`. The new signature gives the
+         * provider full visibility of weight/size/italic so apps can map e.g.
+         * `(family = "Inter", weight = Bold)` to a single resource like
+         * `R.font.inter_bold`.
          */
-        var fontProvider: ((String) -> FontFamily?)? = null
+        var fontProvider: ((FontSpec) -> ResolvedFont?)? = null
 
-        /** Resolve a font name to FontFamily using fontProvider, then family fallback */
-        fun resolve(name: String?): FontFamily? {
-            if (name != null) {
-                fontProvider?.invoke(name)?.let { return it }
-            }
-            return family
+        /**
+         * Resolve a [FontSpec] to a concrete [ResolvedFont].
+         *
+         * Order:
+         * 1. Delegate to [fontProvider] if set; if it returns non-null, use that.
+         * 2. Otherwise build a [ResolvedFont] from the spec via [defaultResolved].
+         */
+        fun resolve(spec: FontSpec): ResolvedFont {
+            fontProvider?.invoke(spec)?.let { return it }
+            return defaultResolved(spec)
         }
+
+        /**
+         * Library-internal fallback when no [fontProvider] is registered (or it
+         * returned `null`).
+         *
+         * - `family`: there is no string-to-`FontFamily` lookup at this level, so
+         *   `spec.family` is intentionally **dropped**. Apps that want named
+         *   families resolved must register a [fontProvider]. The global
+         *   [Configuration.Font.family] is *not* substituted here either, since
+         *   that would silently override `null` requests.
+         * - `weight` / `size`: passed through unchanged.
+         * - `style`: derived from `spec.italic` (`Italic` if true, `Normal` if
+         *   false).
+         */
+        fun defaultResolved(spec: FontSpec): ResolvedFont = ResolvedFont(
+            family = null,
+            weight = spec.weight,
+            size = spec.size,
+            style = if (spec.italic) FontStyle.Italic else FontStyle.Normal
+        )
     }
 
     // Global size defaults
@@ -145,12 +179,12 @@ object Configuration {
         const val spacing = 8
         const val shadowElevation = 4f
     }
-    
+
     // Global animation defaults
     object Animation {
         const val duration = 300
     }
-    
+
     // TextField specific defaults (mutable for app customization)
     object TextField {
         var defaultBackgroundColor = Colors.background
@@ -162,7 +196,7 @@ object Configuration {
         const val defaultFontSize = Sizes.fontSize
         const val defaultCornerRadius = Sizes.cornerRadius
     }
-    
+
     // Button specific defaults
     object Button {
         val defaultBackgroundColor = Colors.primary
@@ -173,14 +207,14 @@ object Configuration {
         const val defaultFontSize = Sizes.fontSize
         const val defaultCornerRadius = Sizes.cornerRadius
     }
-    
+
     // Switch specific defaults
     object Switch {
         val defaultOnColor = Colors.secondary
         val defaultOffColor = Colors.disabled
         val defaultThumbColor = Color.White
     }
-    
+
     // SelectBox specific defaults
     object SelectBox {
         val defaultBackgroundColor = Colors.background
@@ -191,7 +225,7 @@ object Configuration {
         val defaultSheetTextColor = Colors.text  // 黒
         const val defaultHeight = 44
         const val defaultCornerRadius = Sizes.cornerRadius
-        
+
         // Sheet button styles
         object SheetButton {
             val defaultCancelButtonTextColor = Colors.primary
@@ -199,14 +233,14 @@ object Configuration {
             const val defaultFontWeight = 700  // Bold
         }
     }
-    
+
     // Slider specific defaults
     object Slider {
         val defaultActiveColor = Colors.primary
         val defaultInactiveColor = Colors.disabled
         val defaultThumbColor = Color.White
     }
-    
+
     // DatePicker specific defaults
     object DatePicker {
         val defaultBackgroundColor = Colors.background
@@ -216,7 +250,7 @@ object Configuration {
         val defaultSheetBackgroundColor = Colors.background  // 白
         val defaultSheetTextColor = Colors.text  // 黒
         const val defaultHeight = 44
-        
+
         // Sheet button styles
         object SheetButton {
             val defaultButtonBackgroundColor = Colors.primary
@@ -227,7 +261,7 @@ object Configuration {
             const val defaultFontWeight = 700  // Bold
         }
     }
-    
+
     // Segment (TabLayout) specific defaults
     object Segment {
         var defaultBackgroundColor = Color.White
