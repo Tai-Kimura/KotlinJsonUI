@@ -1,0 +1,62 @@
+{
+  "type": "View",
+  "background": "white_21",
+  "padding": 15,
+  "cornerRadius": 10,
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Label",
+      "text": "Included View 2",
+      "fontSize": 18,
+      "fontColor": "medium_red_6",
+      "marginBottom": 10
+    },
+    {
+      "type": "View",
+      "background": "white",
+      "padding": 10,
+      "cornerRadius": 5,
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Label",
+          "text": "Title: @{viewTitle}",
+          "fontSize": 14,
+          "fontColor": "dark_gray",
+          "marginBottom": 5
+        },
+        {
+          "type": "Label",
+          "text": "Status: @{viewStatus}",
+          "fontSize": 14,
+          "fontColor": "dark_gray",
+          "marginBottom": 5
+        },
+        {
+          "type": "Label",
+          "text": "Count: @{viewCount}",
+          "fontSize": 14,
+          "fontColor": "dark_gray"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "viewCount",
+      "class": "Int",
+      "defaultValue": "0"
+    },
+    {
+      "name": "viewStatus",
+      "class": "String",
+      "defaultValue": "Default Status"
+    },
+    {
+      "name": "viewTitle",
+      "class": "String",
+      "defaultValue": "Default Title"
+    }
+  ]
+}

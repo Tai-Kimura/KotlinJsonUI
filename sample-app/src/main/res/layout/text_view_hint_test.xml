@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated from text_view_hint_test.json with Data Binding -->
+<!-- DO NOT EDIT MANUALLY - Use 'kjui generate' to update -->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="data"
+            type="com.example.kotlinjsonui.sample.data.TextViewHintTestData"/>
+        <variable
+            name="viewModel"
+            type="com.example.kotlinjsonui.sample.viewmodels.TextViewHintTestViewModel"/>
+    </data>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/white"
+        android:padding="20dp">
+        <com.kotlinjsonui.views.KjuiButton
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:textColor="@color/white"
+            android:text="@{data.dynamicModeStatus}"
+            android:onClick="toggleDynamicMode"
+            android:background="@drawable/ripple_d5af3557"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:padding="8dp"/>
+        <com.kotlinjsonui.views.KjuiTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/test_menu_textview_hint_test"
+            android:textSize="24sp"
+            android:textColor="@color/black"
+            android:layout_marginBottom="20dp"/>
+        <com.kotlinjsonui.views.KjuiTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text_view_hint_test_simple_textview_with_hint"
+            android:textSize="14sp"
+            android:textColor="@color/medium_gray_4"
+            android:layout_marginBottom="8dp"/>
+        <com.kotlinjsonui.views.KjuiEditText
+            android:id="@+id/simpleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:text="@{data.simpleText}"
+            android:hint="@string/text_view_hint_test_this_is_a_simple_hint"
+            app:hintColor="@color/dark_red"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:background="@drawable/shape_798c091e"
+            android:layout_marginBottom="20dp"/>
+        <com.kotlinjsonui.views.KjuiTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/text_view_hint_test_flexible_textview_with_multilin"
+            android:textSize="14sp"
+            android:textColor="@color/medium_gray_4"
+            android:layout_marginBottom="8dp"/>
+        <com.kotlinjsonui.views.KjuiEditText
+            android:id="@+id/flexibleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@{data.flexibleText}"
+            android:hint="@string/text_view_hint_test_multiline_hint_line_2_of_hint_l"
+            app:hintColor="@color/dark_blue"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:background="@drawable/shape_798c091e"
+            android:layout_marginBottom="20dp"/>
+    </LinearLayout>
+</layout>

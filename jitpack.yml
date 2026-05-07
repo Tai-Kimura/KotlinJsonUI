@@ -1,0 +1,10 @@
+jdk:
+  - openjdk17
+
+# JitPack builds release variant by default
+# To build debug variant, uncomment the following:
+# buildCommand:
+#   - ./gradlew :library:assembleDebug :library:publishDebugPublicationToMavenLocal
+
+install:
+  - ./gradlew :library:assembleRelease :library:publishReleasePublicationToMavenLocal -Dorg.gradle.daemon=false

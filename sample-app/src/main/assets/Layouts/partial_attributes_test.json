@@ -1,0 +1,147 @@
+{
+  "type": "SafeAreaView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": {
+    "type": "ScrollView",
+    "width": "matchParent",
+    "height": "matchParent",
+    "child": {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "padding": 16,
+      "child": [
+        {
+          "type": "Label",
+          "text": "PartialAttributes Test",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "This is a normal label without any partial attributes.",
+          "fontSize": 16,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "This text has partial styling applied to different parts of the text.",
+          "fontSize": 16,
+          "bottomMargin": 20,
+          "partialAttributes": [
+            {
+              "range": [
+                14,
+                21
+              ],
+              "fontColor": "dark_red",
+              "fontWeight": "bold"
+            },
+            {
+              "range": [
+                22,
+                29
+              ],
+              "fontColor": "dark_green_2",
+              "underline": true
+            },
+            {
+              "range": [
+                50,
+                55
+              ],
+              "fontColor": "dark_blue",
+              "fontSize": 20,
+              "background": "light_2"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Click here to navigate or here for another action.",
+          "fontSize": 16,
+          "bottomMargin": 20,
+          "partialAttributes": [
+            {
+              "range": [
+                6,
+                10
+              ],
+              "fontColor": "dark_blue",
+              "underline": true,
+              "onclick": "navigateToPage1"
+            },
+            {
+              "range": [
+                27,
+                31
+              ],
+              "fontColor": "dark_blue",
+              "underline": true,
+              "onclick": "navigateToPage2"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "Mixed styles: bold, italic, underline, strikethrough",
+          "fontSize": 16,
+          "partialAttributes": [
+            {
+              "range": [
+                14,
+                18
+              ],
+              "fontWeight": "bold"
+            },
+            {
+              "range": [
+                20,
+                26
+              ],
+              "fontColor": "light"
+            },
+            {
+              "range": [
+                28,
+                37
+              ],
+              "underline": true
+            },
+            {
+              "range": [
+                39,
+                53
+              ],
+              "strikethrough": true,
+              "fontColor": "light_gray_8"
+            }
+          ]
+        },
+        {
+          "type": "Label",
+          "text": "今日は天気がいいですね。明日も晴れるといいです。",
+          "fontSize": 16,
+          "bottomMargin": 20,
+          "partialAttributes": [
+            {
+              "range": "天気",
+              "fontColor": "dark_red",
+              "fontWeight": "bold",
+              "fontSize": 20
+            },
+            {
+              "range": "晴れる",
+              "fontColor": "dark_blue",
+              "underline": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

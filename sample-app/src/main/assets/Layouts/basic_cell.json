@@ -1,0 +1,34 @@
+{
+  "type": "View",
+  "padding": 12,
+  "background": "white",
+  "cornerRadius": 8,
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 16,
+      "fontColor": "dark_gray"
+    },
+    {
+      "type": "Label",
+      "text": "@{subtitle}",
+      "fontSize": 12,
+      "fontColor": "medium_gray_4",
+      "topMargin": 4
+    }
+  ],
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Basic Item"
+    },
+    {
+      "name": "subtitle",
+      "class": "String",
+      "defaultValue": "Description"
+    }
+  ]
+}

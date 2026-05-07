@@ -1,0 +1,107 @@
+package com.example.kotlinjsonui.sample.views.image_cell
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.kotlinjsonui.sample.data.ImageCellData
+import com.example.kotlinjsonui.sample.viewmodels.ImageCellViewModel
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.Box
+import com.kotlinjsonui.core.DynamicModeManager
+import com.kotlinjsonui.components.SafeDynamicView
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
+import com.example.kotlinjsonui.sample.R
+import androidx.compose.ui.text.TextStyle
+
+@Composable
+fun ImageCellGeneratedView(
+    data: ImageCellData,
+    viewModel: ImageCellViewModel,
+    modifier: Modifier = Modifier
+) {
+    // Generated Compose code from image_cell.json
+    // This will be updated when you run 'kjui build'
+    // >>> GENERATED_CODE_START
+    // Check if Dynamic Mode is active
+    if (DynamicModeManager.isActive()) {
+        // Dynamic Mode - use SafeDynamicView for real-time updates
+        SafeDynamicView(
+            layoutName = "image_cell",
+            data = data.toMap(),
+            fallback = {
+                // Show error or loading state when dynamic view is not available
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Dynamic view not available",
+                        color = Color.Gray
+                    )
+                }
+            },
+            onError = { error ->
+                // Log error or show error UI
+                android.util.Log.e("DynamicView", "Error loading image_cell: \$error")
+            },
+            onLoading = {
+                // Show loading indicator
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        ) { jsonContent ->
+            // Parse and render the dynamic JSON content
+            // This will be handled by the DynamicView implementation
+        }
+    } else {
+        // Static Mode - use generated code
+        Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(colorResource(R.color.white))
+            .padding(8.dp)
+    ) {
+        AsyncImage(
+            model = data.imageUrl,
+            contentDescription = "Image",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+        )
+        Text(
+            text = "${data.title}",
+            fontSize = 14.sp,
+            color = colorResource(R.color.dark_gray),
+            fontWeight = FontWeight.SemiBold,
+            style = TextStyle(lineHeight = 14.sp),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Text(
+            text = "${data.price}",
+            fontSize = 12.sp,
+            color = colorResource(R.color.medium_blue),
+            style = TextStyle(lineHeight = 12.sp),
+            modifier = Modifier.padding(top = 4.dp)
+        )
+    }    }
+    // >>> GENERATED_CODE_END
+}

@@ -1,0 +1,175 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "All margins: [20, 20, 20, 20]",
+          "margins": [
+            20,
+            20,
+            20,
+            20
+          ],
+          "background": "white_5",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Left margin: 40",
+          "leftMargin": 40,
+          "topMargin": 10,
+          "background": "white_6",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Right margin: 40",
+          "rightMargin": 40,
+          "topMargin": 10,
+          "background": "white_7",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Top margin: 30",
+          "topMargin": 30,
+          "background": "white_8",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Bottom margin: 30",
+          "bottomMargin": 30,
+          "background": "white_9",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Label with padding: 20",
+          "padding": 20,
+          "topMargin": 10,
+          "background": "white_22",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "text": "Label with leftPadding: 30, rightPadding: 30",
+          "leftPadding": 30,
+          "rightPadding": 30,
+          "topMargin": 10,
+          "background": "pale_red",
+          "fontSize": 16,
+          "fontColor": "black"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "leftPadding": 20,
+          "rightPadding": 20,
+          "topMargin": 20,
+          "background": "pale_gray_5",
+          "child": {
+            "type": "Label",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "Parent has leftPadding: 20, rightPadding: 20",
+            "fontSize": 14,
+            "fontColor": "black"
+          }
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "topMargin": 20,
+          "background": "pale_gray_4",
+          "child": {
+            "type": "Label",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "MaxWidth: 200",
+            "maxWidth": 200,
+            "background": "pale_red",
+            "fontSize": 14,
+            "fontColor": "black"
+          }
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": 100,
+          "topMargin": 20,
+          "background": "light_gray_10",
+          "child": {
+            "type": "Label",
+            "width": "wrapContent",
+            "height": "wrapContent",
+            "text": "MinWidth: 150",
+            "minWidth": 150,
+            "background": "pale_green",
+            "fontSize": 14,
+            "fontColor": "black"
+          }
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Margins & Padding Test"
+    }
+  ]
+}

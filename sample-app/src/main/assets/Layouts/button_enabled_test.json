@@ -1,0 +1,89 @@
+{
+  "type": "View",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "orientation": "vertical",
+  "padding": 20,
+  "child": [
+    {
+      "type": "Button",
+      "style": "dynamic_toggle",
+      "fontColor": "white",
+      "cornerRadius": 8
+    },
+    {
+      "type": "Label",
+      "text": "@{title}",
+      "fontSize": 24,
+      "fontColor": "black",
+      "marginBottom": 20
+    },
+    {
+      "type": "Label",
+      "text": "Button enabled state: @{isButtonEnabled}",
+      "fontSize": 16,
+      "fontColor": "medium_gray_4",
+      "marginBottom": 10
+    },
+    {
+      "type": "Button",
+      "text": "Test Button (controlled by data)",
+      "enabled": "@{isButtonEnabled}",
+      "onclick": "testAction",
+      "background": "medium_green_2",
+      "fontColor": "white",
+      "padding": 10,
+      "cornerRadius": 5,
+      "marginBottom": 20
+    },
+    {
+      "type": "Button",
+      "text": "Toggle Enabled State",
+      "onclick": "toggleEnabled",
+      "background": "medium_blue_2",
+      "fontColor": "white",
+      "padding": 10,
+      "cornerRadius": 5,
+      "marginBottom": 10
+    },
+    {
+      "type": "Button",
+      "text": "Always Disabled Button",
+      "enabled": false,
+      "onclick": "neverCalled",
+      "background": "medium_red_2",
+      "fontColor": "white",
+      "padding": 10,
+      "cornerRadius": 5,
+      "marginBottom": 10
+    },
+    {
+      "type": "Button",
+      "text": "Always Enabled Button",
+      "enabled": true,
+      "onclick": "alwaysCalled",
+      "background": "medium_purple",
+      "fontColor": "white",
+      "padding": 10,
+      "cornerRadius": 5
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "isButtonEnabled",
+      "class": "Bool",
+      "defaultValue": true
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Button Enabled Test"
+    }
+  ]
+}

@@ -1,0 +1,1222 @@
+{
+  "timestamp": "2025-08-29 11:33:12",
+  "statistics": {
+    "total_files": 53,
+    "successful_parses": 53,
+    "failed_parses": 0,
+    "total_components": 851,
+    "unique_component_types": [
+      "ScrollView",
+      "View",
+      "Button",
+      "Label",
+      "TextField",
+      "Switch",
+      "Slider",
+      "SelectBox",
+      "Collection",
+      "Text",
+      "Toggle",
+      "Checkbox",
+      "Progress",
+      "Segment",
+      "Radio",
+      "Indicator",
+      "CircleImage",
+      "GradientView",
+      "BlurView",
+      "WebView",
+      "TabView",
+      "Image",
+      "NetworkImage",
+      "SafeAreaView",
+      "SampleCard",
+      "StatusBadge",
+      "TextView",
+      "Web",
+      "Scroll",
+      "UserAvatar"
+    ],
+    "unique_attributes": [
+      "type",
+      "width",
+      "height",
+      "background",
+      "child",
+      "data",
+      "orientation",
+      "padding",
+      "style",
+      "fontColor",
+      "cornerRadius",
+      "id",
+      "text",
+      "fontSize",
+      "centerHorizontal",
+      "bottomMargin",
+      "fontWeight",
+      "alignTop",
+      "alignLeft",
+      "alignRight",
+      "alignBottom",
+      "topMargin",
+      "centerVertical",
+      "centerInParent",
+      "font",
+      "leftMargin",
+      "rightMargin",
+      "hint",
+      "borderColor",
+      "borderWidth",
+      "weight",
+      "onclick",
+      "textAlign",
+      "checked",
+      "value",
+      "minimumValue",
+      "maximumValue",
+      "onValueChange",
+      "selectedItem",
+      "items",
+      "hintColor",
+      "selectItemType",
+      "datePickerStyle",
+      "dateFormat",
+      "minimumDate",
+      "maximumDate",
+      "marginBottom",
+      "enabled",
+      "sections",
+      "layout",
+      "columns",
+      "margin",
+      "isOn",
+      "progress",
+      "minValue",
+      "maxValue",
+      "selectedIndex",
+      "selectedValue",
+      "indicatorStyle",
+      "url",
+      "children",
+      "colors",
+      "startPoint",
+      "endPoint",
+      "zIndex",
+      "blurRadius",
+      "selectedTabIndex",
+      "tabs",
+      "itemSpacing",
+      "srcName",
+      "defaultImage",
+      "contentMode",
+      "src",
+      "title",
+      "subtitle",
+      "count",
+      "onClick",
+      "status",
+      "color",
+      "marginTop",
+      "datePickerMode",
+      "dateStringFormat",
+      "minuteInterval",
+      "startDate",
+      "endDate",
+      "disabledBackground",
+      "disabledFontColor",
+      "touchDisabledState",
+      "alpha",
+      "keyboardAvoidance",
+      "placeholder",
+      "keyboardType",
+      "flexible",
+      "minHeight",
+      "maxHeight",
+      "hideOnFocused",
+      "hintAttributes",
+      "alignCenterVerticalView",
+      "alignCenterHorizontalView",
+      "idealWidth",
+      "idealHeight",
+      "clipToBounds",
+      "direction",
+      "distribution",
+      "edgeInset",
+      "tapBackground",
+      "hilightColor",
+      "borderStyle",
+      "onFocus",
+      "onBlur",
+      "onBeginEditing",
+      "onEndEditing",
+      "group",
+      "icon",
+      "selectedIcon",
+      "normalColor",
+      "selectedColor",
+      "tintColor",
+      "prompt",
+      "defaultIndex",
+      "cancelButtonBackgroundColor",
+      "cancelButtonTextColor",
+      "scalesPageToFit",
+      "javascriptEnabled",
+      "marginRight",
+      "include",
+      "shared_data",
+      "secure",
+      "lineBreakMode",
+      "lines",
+      "margins",
+      "leftPadding",
+      "rightPadding",
+      "maxWidth",
+      "minWidth",
+      "partialAttributes",
+      "paddings",
+      "alignTopView",
+      "alignBottomView",
+      "alignLeftView",
+      "alignRightView",
+      "alignTopOfView",
+      "alignBottomOfView",
+      "alignLeftOfView",
+      "alignRightOfView",
+      "showsVerticalScrollIndicator",
+      "scrollEnabled",
+      "showsHorizontalScrollIndicator",
+      "tint",
+      "linkable",
+      "underline",
+      "lineSpacing",
+      "containerInset",
+      "input",
+      "returnKeyType",
+      "onTextChange",
+      "accessoryBackground",
+      "accessoryTextColor",
+      "doneText",
+      "name",
+      "avatarUrl",
+      "size",
+      "isOnline",
+      "visibility",
+      "opacity",
+      "textColor",
+      "hidden",
+      "widthWeight"
+    ]
+  },
+  "parse_errors": [],
+  "unhandled_keys": {
+    "binding_test.json": [
+      {
+        "message": "Attribute 'value' with value '\"@{sliderValue}\"' not handled for type 'Slider'",
+        "location": "root[0][12]"
+      },
+      {
+        "message": "Attribute 'minimumValue' with value '0' not handled for type 'Slider'",
+        "location": "root[0][12]"
+      },
+      {
+        "message": "Attribute 'maximumValue' with value '100' not handled for type 'Slider'",
+        "location": "root[0][12]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"sliderChanged\"' not handled for type 'Slider'",
+        "location": "root[0][12]"
+      },
+      {
+        "message": "Attribute 'datePickerStyle' with value '\"wheels\"' not handled for type 'SelectBox'",
+        "location": "root[0][19]"
+      },
+      {
+        "message": "Attribute 'datePickerStyle' with value '\"compact\"' not handled for type 'SelectBox'",
+        "location": "root[0][21]"
+      }
+    ],
+    "collection_test.json": [
+      {
+        "message": "Attribute 'sections' with value '[{\"header\"=>\"SectionHeader\", \"cell\"=>\"BasicCell\", \"footer\"=>\"SectionFooter\", \"columns\"=>2}]' not handled for type 'Collection'",
+        "location": "root[0][0][2]"
+      },
+      {
+        "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
+        "location": "root[0][0][2]"
+      },
+      {
+        "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
+        "location": "root[0][0][4]"
+      },
+      {
+        "message": "Attribute 'columns' with value '2' not handled for type 'Collection'",
+        "location": "root[0][0][4]"
+      },
+      {
+        "message": "Attribute 'sections' with value '[{\"header\"=>\"GridHeader\", \"cell\"=>\"ImageCell\", \"footer\"=>\"GridFooter\", \"columns\"=>3}]' not handled for type 'Collection'",
+        "location": "root[0][0][4]"
+      },
+      {
+        "message": "Attribute 'sections' with value '[{\"header\"=>\"HorizontalHeader\", \"cell\"=>\"HorizontalCard\", \"columns\"=>1}]' not handled for type 'Collection'",
+        "location": "root[0][0][6]"
+      },
+      {
+        "message": "Attribute 'layout' with value '\"horizontal\"' not handled for type 'Collection'",
+        "location": "root[0][0][6]"
+      },
+      {
+        "message": "Attribute 'sections' with value '[{\"header\"=>\"CategoryHeader\", \"cell\"=>\"ProductCell\", \"footer\"=>\"CategoryFooter\", \"columns\"=>2}]' not handled for type 'Collection'",
+        "location": "root[0][0][8]"
+      },
+      {
+        "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
+        "location": "root[0][0][8]"
+      },
+      {
+        "message": "Attribute 'sections' with value '[{\"header\"=>\"CategoryHeader\", \"cell\"=>\"ProductCell\", \"footer\"=>\"CategoryFooter\", \"columns\"=>3}, {\"header\"=>\"FeaturedHeader\", \"cell\"=>\"FeatureCell\", \"columns\"=>2}, {\"header\"=>\"GridHeader\", \"cell\"=>\"ImageCell\", \"footer\"=>\"GridFooter\", \"columns\"=>4}]' not handled for type 'Collection'",
+        "location": "root[0][0][10]"
+      },
+      {
+        "message": "Attribute 'layout' with value '\"vertical\"' not handled for type 'Collection'",
+        "location": "root[0][0][10]"
+      }
+    ],
+    "components_test.json": [
+      {
+        "message": "Attribute 'isOn' with value '\"@{toggle1IsOn}\"' not handled for type 'Toggle'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'isOn' with value '\"@{checkbox1IsOn}\"' not handled for type 'Checkbox'",
+        "location": "root[0][4]"
+      },
+      {
+        "message": "Attribute 'value' with value '\"@{slider1Value}\"' not handled for type 'Slider'",
+        "location": "root[0][7]"
+      },
+      {
+        "message": "Attribute 'selectedIndex' with value '\"@{selectedSegment1}\"' not handled for type 'Segment'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'selectedValue' with value '\"@{selectedRadio1}\"' not handled for type 'Radio'",
+        "location": "root[0][10]"
+      },
+      {
+        "message": "Attribute 'indicatorStyle' with value '\"circular\"' not handled for type 'Indicator'",
+        "location": "root[0][12]"
+      },
+      {
+        "message": "Attribute 'url' with value '\"person.circle.fill\"' not handled for type 'CircleImage'",
+        "location": "root[0][14]"
+      },
+      {
+        "message": "Attribute 'indicatorStyle' with value '\"light\"' not handled for type 'BlurView'",
+        "location": "root[0][18]"
+      }
+    ],
+    "converter_test.json": [
+      {
+        "message": "Attribute 'colors' with value '[\"#FF0000\", \"#00FF00\", \"#0000FF\"]' not handled for type 'GradientView'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'startPoint' with value '{\"x\"=>0, \"y\"=>0}' not handled for type 'GradientView'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'endPoint' with value '{\"x\"=>1, \"y\"=>1}' not handled for type 'GradientView'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'zIndex' with value 'true' not handled for type 'View'",
+        "location": "root[0][5]"
+      },
+      {
+        "message": "Attribute 'blurRadius' with value '20' not handled for type 'BlurView'",
+        "location": "root[0][5][1]"
+      },
+      {
+        "message": "Attribute 'url' with value '\"https://www.example.com\"' not handled for type 'WebView'",
+        "location": "root[0][7]"
+      },
+      {
+        "message": "Attribute 'selectedTabIndex' with value '0' not handled for type 'TabView'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'tabs' with value '[{\"title\"=>\"Tab 1\", \"child\"=>[{\"type\"=>\"Label\", \"text\"=>\"Content of Tab 1\", \"fontSize\"=>14, \"centerInParent\"=>true, \"fontColor\"=>\"#000000\"}]}, {\"title\"=>\"Tab 2\", \"child\"=>[{\"type\"=>\"Label\", \"text\"=>\"Content of Tab 2\", \"fontSize\"=>14, \"centerInParent\"=>true, \"fontColor\"=>\"#000000\"}]}]' not handled for type 'TabView'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'itemSpacing' with value '15' not handled for type 'Collection'",
+        "location": "root[0][11]"
+      },
+      {
+        "message": "Attribute 'sections' with value '[{\"cell\"=>\"ConverterTestCell\", \"columns\"=>3}]' not handled for type 'Collection'",
+        "location": "root[0][11]"
+      },
+      {
+        "message": "Attribute 'srcName' with value '\"star.fill\"' not handled for type 'Image'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'defaultImage' with value '\"exclamationmark.triangle\"' not handled for type 'Image'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'contentMode' with value '\"scaleAspectFit\"' not handled for type 'Image'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'defaultImage' with value '\"photo\"' not handled for type 'NetworkImage'",
+        "location": "root[0][15]"
+      },
+      {
+        "message": "Attribute 'contentMode' with value '\"scaleAspectFill\"' not handled for type 'NetworkImage'",
+        "location": "root[0][15]"
+      }
+    ],
+    "custom_component_test.json": [
+      {
+        "message": "Attribute 'subtitle' with value '\"This is a static subtitle\"' not handled for type 'SampleCard'",
+        "location": "root[0][0][2]"
+      },
+      {
+        "message": "Attribute 'subtitle' with value '\"@{cardSubtitle}\"' not handled for type 'SampleCard'",
+        "location": "root[0][0][4]"
+      },
+      {
+        "message": "Attribute 'subtitle' with value '\"First custom card\"' not handled for type 'SampleCard'",
+        "location": "root[0][0][6][0]"
+      },
+      {
+        "message": "Attribute 'subtitle' with value '\"Second custom card\"' not handled for type 'SampleCard'",
+        "location": "root[0][0][6][1]"
+      },
+      {
+        "message": "Attribute 'subtitle' with value '\"Third custom card\"' not handled for type 'SampleCard'",
+        "location": "root[0][0][6][2]"
+      },
+      {
+        "message": "Attribute 'status' with value '\"Active\"' not handled for type 'StatusBadge'",
+        "location": "root[0][0][8][0]"
+      },
+      {
+        "message": "Attribute 'status' with value '\"@{currentStatus}\"' not handled for type 'StatusBadge'",
+        "location": "root[0][0][8][1]"
+      },
+      {
+        "message": "Attribute 'status' with value '\"Error\"' not handled for type 'StatusBadge'",
+        "location": "root[0][0][8][2]"
+      }
+    ],
+    "date_picker_test.json": [
+      {
+        "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
+        "location": "root[0][6]"
+      },
+      {
+        "message": "Attribute 'dateStringFormat' with value '\"HH:mm\"' not handled for type 'SelectBox'",
+        "location": "root[0][8]"
+      },
+      {
+        "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd HH:mm\"' not handled for type 'SelectBox'",
+        "location": "root[0][10]"
+      },
+      {
+        "message": "Attribute 'minuteInterval' with value '15' not handled for type 'SelectBox'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'dateStringFormat' with value '\"HH:mm\"' not handled for type 'SelectBox'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'datePickerStyle' with value '\"graphical\"' not handled for type 'SelectBox'",
+        "location": "root[0][15]"
+      },
+      {
+        "message": "Attribute 'dateStringFormat' with value '\"yyyy-MM-dd\"' not handled for type 'SelectBox'",
+        "location": "root[0][15]"
+      },
+      {
+        "message": "Attribute 'startDate' with value '\"@{startDate}\"' not handled for type 'SelectBox'",
+        "location": "root[0][16]"
+      },
+      {
+        "message": "Attribute 'endDate' with value '\"@{endDate}\"' not handled for type 'SelectBox'",
+        "location": "root[0][16]"
+      }
+    ],
+    "disabled_test.json": [
+      {
+        "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'Button'",
+        "location": "root[0][5]"
+      },
+      {
+        "message": "Attribute 'touchDisabledState' with value 'true' not handled for type 'Button'",
+        "location": "root[0][7]"
+      },
+      {
+        "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'TextField'",
+        "location": "root[0][11]"
+      },
+      {
+        "message": "Attribute 'disabledFontColor' with value '\"#888888\"' not handled for type 'Button'",
+        "location": "root[0][14]"
+      }
+    ],
+    "form_test.json": [
+      {
+        "message": "Attribute 'keyboardAvoidance' with value 'true' not handled for type 'ScrollView'",
+        "location": "root"
+      },
+      {
+        "message": "Attribute 'keyboardType' with value '\"email\"' not handled for type 'TextField'",
+        "location": "root[0][8]"
+      },
+      {
+        "message": "Attribute 'keyboardType' with value '\"phone\"' not handled for type 'TextField'",
+        "location": "root[0][10]"
+      },
+      {
+        "message": "Attribute 'keyboardType' with value '\"number\"' not handled for type 'TextField'",
+        "location": "root[0][17]"
+      },
+      {
+        "message": "Attribute 'flexible' with value 'true' not handled for type 'TextView'",
+        "location": "root[0][27]"
+      },
+      {
+        "message": "Attribute 'minHeight' with value '80' not handled for type 'TextView'",
+        "location": "root[0][27]"
+      },
+      {
+        "message": "Attribute 'maxHeight' with value '200' not handled for type 'TextView'",
+        "location": "root[0][27]"
+      },
+      {
+        "message": "Attribute 'hideOnFocused' with value 'false' not handled for type 'TextView'",
+        "location": "root[0][29]"
+      },
+      {
+        "message": "Attribute 'flexible' with value 'true' not handled for type 'TextView'",
+        "location": "root[0][31]"
+      },
+      {
+        "message": "Attribute 'minHeight' with value '60' not handled for type 'TextView'",
+        "location": "root[0][31]"
+      },
+      {
+        "message": "Attribute 'maxHeight' with value '300' not handled for type 'TextView'",
+        "location": "root[0][31]"
+      },
+      {
+        "message": "Attribute 'hintAttributes' with value '{\"fontColor\"=>\"#BBBBBB\", \"fontSize\"=>14, \"fontStyle\"=>\"italic\"}' not handled for type 'TextView'",
+        "location": "root[0][31]"
+      },
+      {
+        "message": "Attribute 'isOn' with value '\"@{agreeToTerms}\"' not handled for type 'Toggle'",
+        "location": "root[0][32][0]"
+      }
+    ],
+    "image_cell.json": [
+      {
+        "message": "Attribute 'contentMode' with value '\"scaleAspectFill\"' not handled for type 'NetworkImage'",
+        "location": "root[0]"
+      }
+    ],
+    "implemented_attributes_test.json": [
+      {
+        "message": "Attribute 'keyboardAvoidance' with value 'true' not handled for type 'ScrollView'",
+        "location": "root[child]"
+      },
+      {
+        "message": "Attribute 'alignCenterVerticalView' with value '\"target1\"' not handled for type 'Label'",
+        "location": "root[child][child][2][1]"
+      },
+      {
+        "message": "Attribute 'alignCenterHorizontalView' with value '\"target1\"' not handled for type 'Label'",
+        "location": "root[child][child][2][2]"
+      },
+      {
+        "message": "Attribute 'idealWidth' with value '200' not handled for type 'View'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'idealHeight' with value '100' not handled for type 'View'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'clipToBounds' with value 'true' not handled for type 'View'",
+        "location": "root[child][child][6]"
+      },
+      {
+        "message": "Attribute 'direction' with value '\"rightToLeft\"' not handled for type 'View'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'distribution' with value '\"fillEqually\"' not handled for type 'View'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'edgeInset' with value '20' not handled for type 'Label'",
+        "location": "root[child][child][10]"
+      },
+      {
+        "message": "Attribute 'hilightColor' with value '\"#ff0000\"' not handled for type 'Button'",
+        "location": "root[child][child][13]"
+      },
+      {
+        "message": "Attribute 'disabledFontColor' with value '\"#999999\"' not handled for type 'Button'",
+        "location": "root[child][child][14]"
+      },
+      {
+        "message": "Attribute 'onFocus' with value '\"handleFocus\"' not handled for type 'TextField'",
+        "location": "root[child][child][16]"
+      },
+      {
+        "message": "Attribute 'onBlur' with value '\"handleBlur\"' not handled for type 'TextField'",
+        "location": "root[child][child][16]"
+      },
+      {
+        "message": "Attribute 'onBeginEditing' with value '\"handleBeginEditing\"' not handled for type 'TextField'",
+        "location": "root[child][child][16]"
+      },
+      {
+        "message": "Attribute 'onEndEditing' with value '\"handleEndEditing\"' not handled for type 'TextField'",
+        "location": "root[child][child][16]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"radioGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][18][0]"
+      },
+      {
+        "message": "Attribute 'icon' with value '\"circle\"' not handled for type 'Radio'",
+        "location": "root[child][child][18][0]"
+      },
+      {
+        "message": "Attribute 'selectedIcon' with value '\"checkmark.circle.fill\"' not handled for type 'Radio'",
+        "location": "root[child][child][18][0]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"radioGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][18][1]"
+      },
+      {
+        "message": "Attribute 'icon' with value '\"circle\"' not handled for type 'Radio'",
+        "location": "root[child][child][18][1]"
+      },
+      {
+        "message": "Attribute 'selectedIcon' with value '\"checkmark.circle.fill\"' not handled for type 'Radio'",
+        "location": "root[child][child][18][1]"
+      },
+      {
+        "message": "Attribute 'selectedIndex' with value '\"@{selectedSegment}\"' not handled for type 'Segment'",
+        "location": "root[child][child][20]"
+      },
+      {
+        "message": "Attribute 'normalColor' with value '\"#000000\"' not handled for type 'Segment'",
+        "location": "root[child][child][20]"
+      },
+      {
+        "message": "Attribute 'selectedColor' with value '\"#0000ff\"' not handled for type 'Segment'",
+        "location": "root[child][child][20]"
+      },
+      {
+        "message": "Attribute 'tintColor' with value '\"#0000ff\"' not handled for type 'Segment'",
+        "location": "root[child][child][20]"
+      },
+      {
+        "message": "Attribute 'defaultIndex' with value '0' not handled for type 'SelectBox'",
+        "location": "root[child][child][22]"
+      },
+      {
+        "message": "Attribute 'cancelButtonBackgroundColor' with value '\"#FFE5E5\"' not handled for type 'SelectBox'",
+        "location": "root[child][child][22]"
+      },
+      {
+        "message": "Attribute 'cancelButtonTextColor' with value '\"#FF0000\"' not handled for type 'SelectBox'",
+        "location": "root[child][child][22]"
+      },
+      {
+        "message": "Attribute 'url' with value '\"https://www.example.com\"' not handled for type 'Web'",
+        "location": "root[child][child][24]"
+      },
+      {
+        "message": "Attribute 'scalesPageToFit' with value 'true' not handled for type 'Web'",
+        "location": "root[child][child][24]"
+      },
+      {
+        "message": "Attribute 'javascriptEnabled' with value 'true' not handled for type 'Web'",
+        "location": "root[child][child][24]"
+      }
+    ],
+    "keyboard_avoidance_test.json": [
+      {
+        "message": "Attribute 'keyboardAvoidance' with value 'true' not handled for type 'ScrollView'",
+        "location": "root"
+      },
+      {
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
+        "location": "root[0][5]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
+        "location": "root[0][7]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
+        "location": "root[0][11]"
+      }
+    ],
+    "line_break_test.json": [
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Word\"' not handled for type 'Label'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Char\"' not handled for type 'Label'",
+        "location": "root[0][5]"
+      },
+      {
+        "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
+        "location": "root[0][5]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Clip\"' not handled for type 'Label'",
+        "location": "root[0][7]"
+      },
+      {
+        "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
+        "location": "root[0][7]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Head\"' not handled for type 'Label'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Middle\"' not handled for type 'Label'",
+        "location": "root[0][11]"
+      },
+      {
+        "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
+        "location": "root[0][11]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Tail\"' not handled for type 'Label'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'lines' with value '2' not handled for type 'Label'",
+        "location": "root[0][13]"
+      },
+      {
+        "message": "Attribute 'lines' with value '1' not handled for type 'Label'",
+        "location": "root[0][16]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Tail\"' not handled for type 'Label'",
+        "location": "root[0][16]"
+      },
+      {
+        "message": "Attribute 'lines' with value '3' not handled for type 'Label'",
+        "location": "root[0][18]"
+      },
+      {
+        "message": "Attribute 'lineBreakMode' with value '\"Tail\"' not handled for type 'Label'",
+        "location": "root[0][18]"
+      },
+      {
+        "message": "Attribute 'lines' with value '0' not handled for type 'Label'",
+        "location": "root[0][20]"
+      }
+    ],
+    "margins_test.json": [
+      {
+        "message": "Attribute 'margins' with value '[20, 20, 20, 20]' not handled for type 'Label'",
+        "location": "root[0][2]"
+      },
+      {
+        "message": "Attribute 'maxWidth' with value '200' not handled for type 'Label'",
+        "location": "root[0][10][child]"
+      },
+      {
+        "message": "Attribute 'minWidth' with value '150' not handled for type 'Label'",
+        "location": "root[0][11][child]"
+      }
+    ],
+    "partial_attributes_test.json": [
+      {
+        "message": "Attribute 'partialAttributes' with value '[{\"range\"=>[14, 21], \"fontColor\"=>\"#FF0000\", \"fontWeight\"=>\"bold\"}, {\"range\"=>[22, 29], \"fontColor\"=>\"#00FF00\", \"underline\"=>true}, {\"range\"=>[50, 55], \"fontColor\"=>\"#0000FF\", \"fontSize\"=>20, \"background\"=>\"#FFFF00\"}]' not handled for type 'Label'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'partialAttributes' with value '[{\"range\"=>[6, 10], \"fontColor\"=>\"#0000FF\", \"underline\"=>true, \"onclick\"=>\"navigateToPage1\"}, {\"range\"=>[27, 31], \"fontColor\"=>\"#0000FF\", \"underline\"=>true, \"onclick\"=>\"navigateToPage2\"}]' not handled for type 'Label'",
+        "location": "root[child][child][3]"
+      },
+      {
+        "message": "Attribute 'partialAttributes' with value '[{\"range\"=>[14, 18], \"fontWeight\"=>\"bold\"}, {\"range\"=>[20, 26], \"fontColor\"=>\"#FF00FF\"}, {\"range\"=>[28, 37], \"underline\"=>true}, {\"range\"=>[39, 53], \"strikethrough\"=>true, \"fontColor\"=>\"#999999\"}]' not handled for type 'Label'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'partialAttributes' with value '[{\"range\"=>\"天気\", \"fontColor\"=>\"#FF0000\", \"fontWeight\"=>\"bold\", \"fontSize\"=>20}, {\"range\"=>\"晴れる\", \"fontColor\"=>\"#0000FF\", \"underline\"=>true}]' not handled for type 'Label'",
+        "location": "root[child][child][5]"
+      }
+    ],
+    "radio_icons_test.json": [
+      {
+        "message": "Attribute 'group' with value '\"defaultGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"defaultGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][3]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"defaultGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"customGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][6]"
+      },
+      {
+        "message": "Attribute 'icon' with value '\"star\"' not handled for type 'Radio'",
+        "location": "root[child][child][6]"
+      },
+      {
+        "message": "Attribute 'selectedIcon' with value '\"star.fill\"' not handled for type 'Radio'",
+        "location": "root[child][child][6]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"customGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][7]"
+      },
+      {
+        "message": "Attribute 'icon' with value '\"heart\"' not handled for type 'Radio'",
+        "location": "root[child][child][7]"
+      },
+      {
+        "message": "Attribute 'selectedIcon' with value '\"heart.fill\"' not handled for type 'Radio'",
+        "location": "root[child][child][7]"
+      },
+      {
+        "message": "Attribute 'group' with value '\"customGroup\"' not handled for type 'Radio'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'icon' with value '\"square\"' not handled for type 'Radio'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'selectedIcon' with value '\"checkmark.square.fill\"' not handled for type 'Radio'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'selectedValue' with value '\"@{selectedColor}\"' not handled for type 'Radio'",
+        "location": "root[child][child][10]"
+      }
+    ],
+    "relative_test.json": [
+      {
+        "message": "Attribute 'margins' with value '[20, 25, 20, 25]' not handled for type 'Label'",
+        "location": "root[child][6][0]"
+      },
+      {
+        "message": "Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'",
+        "location": "root[child][8][0]"
+      },
+      {
+        "message": "Attribute 'margins' with value '[10, 10, 10, 10]' not handled for type 'Label'",
+        "location": "root[child][10][0]"
+      },
+      {
+        "message": "Attribute 'margins' with value '[15, 15, 15, 15]' not handled for type 'Label'",
+        "location": "root[child][10][2]"
+      },
+      {
+        "message": "Attribute 'margins' with value '[15, 20, 15, 20]' not handled for type 'Label'",
+        "location": "root[child][12][2]"
+      }
+    ],
+    "scroll_test.json": [
+      {
+        "message": "Attribute 'showsVerticalScrollIndicator' with value 'false' not handled for type 'ScrollView'",
+        "location": "root[1]"
+      },
+      {
+        "message": "Attribute 'scrollEnabled' with value 'false' not handled for type 'ScrollView'",
+        "location": "root[2]"
+      },
+      {
+        "message": "Attribute 'showsHorizontalScrollIndicator' with value 'false' not handled for type 'ScrollView'",
+        "location": "root[3]"
+      }
+    ],
+    "secure_field_test.json": [
+      {
+        "message": "Attribute 'secure' with value 'false' not handled for type 'TextField'",
+        "location": "root[3]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
+        "location": "root[5]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
+        "location": "root[7]"
+      }
+    ],
+    "segment_test.json": [
+      {
+        "message": "Attribute 'selectedIndex' with value '\"@{selectedBasic}\"' not handled for type 'Segment'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'selectedIndex' with value '\"@{selectedColor}\"' not handled for type 'Segment'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'normalColor' with value '\"#666666\"' not handled for type 'Segment'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'selectedColor' with value '\"#FF0000\"' not handled for type 'Segment'",
+        "location": "root[child][child][4]"
+      },
+      {
+        "message": "Attribute 'selectedIndex' with value '\"@{selectedEvent}\"' not handled for type 'Segment'",
+        "location": "root[child][child][6]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"handleSegmentChange\"' not handled for type 'Segment'",
+        "location": "root[child][child][6]"
+      },
+      {
+        "message": "Attribute 'selectedIndex' with value '\"@{selectedDisabled}\"' not handled for type 'Segment'",
+        "location": "root[child][child][9]"
+      }
+    ],
+    "switch_events_test.json": [
+      {
+        "message": "Attribute 'isOn' with value '\"@{notificationEnabled}\"' not handled for type 'Switch'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"handleNotificationChange\"' not handled for type 'Switch'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'isOn' with value '\"@{darkModeEnabled}\"' not handled for type 'Switch'",
+        "location": "root[child][child][5]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"handleDarkModeChange\"' not handled for type 'Switch'",
+        "location": "root[child][child][5]"
+      },
+      {
+        "message": "Attribute 'isOn' with value '\"@{wifiEnabled}\"' not handled for type 'Switch'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'tintColor' with value '\"#4CAF50\"' not handled for type 'Switch'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"handleWifiChange\"' not handled for type 'Switch'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'isOn' with value '\"@{bluetoothEnabled}\"' not handled for type 'Switch'",
+        "location": "root[child][child][9]"
+      },
+      {
+        "message": "Attribute 'tintColor' with value '\"#2196F3\"' not handled for type 'Switch'",
+        "location": "root[child][child][9]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"handleBluetoothChange\"' not handled for type 'Switch'",
+        "location": "root[child][child][9]"
+      },
+      {
+        "message": "Attribute 'isOn' with value '\"@{locationEnabled}\"' not handled for type 'Switch'",
+        "location": "root[child][child][10]"
+      },
+      {
+        "message": "Attribute 'tintColor' with value '\"#FF9800\"' not handled for type 'Switch'",
+        "location": "root[child][child][10]"
+      },
+      {
+        "message": "Attribute 'onValueChange' with value '\"handleLocationChange\"' not handled for type 'Switch'",
+        "location": "root[child][child][10]"
+      }
+    ],
+    "text_decoration_test.json": [
+      {
+        "message": "Attribute 'linkable' with value 'true' not handled for type 'Label'",
+        "location": "root[0][1]"
+      },
+      {
+        "message": "Attribute 'linkable' with value 'true' not handled for type 'Label'",
+        "location": "root[0][2]"
+      },
+      {
+        "message": "Attribute 'linkable' with value 'true' not handled for type 'Label'",
+        "location": "root[0][3]"
+      },
+      {
+        "message": "Attribute 'edgeInset' with value '10' not handled for type 'Label'",
+        "location": "root[0][4]"
+      },
+      {
+        "message": "Attribute 'linkable' with value 'true' not handled for type 'Label'",
+        "location": "root[0][4]"
+      },
+      {
+        "message": "Attribute 'linkable' with value 'false' not handled for type 'Label'",
+        "location": "root[0][5]"
+      }
+    ],
+    "text_styling_test.json": [
+      {
+        "message": "Attribute 'underline' with value 'true' not handled for type 'Label'",
+        "location": "root[0][9]"
+      },
+      {
+        "message": "Attribute 'lineSpacing' with value '5' not handled for type 'Label'",
+        "location": "root[0][15]"
+      },
+      {
+        "message": "Attribute 'lineSpacing' with value '10' not handled for type 'Label'",
+        "location": "root[0][16]"
+      }
+    ],
+    "text_view_hint_test.json": [
+      {
+        "message": "Attribute 'containerInset' with value '12' not handled for type 'TextView'",
+        "location": "root[3]"
+      },
+      {
+        "message": "Attribute 'flexible' with value 'true' not handled for type 'TextView'",
+        "location": "root[5]"
+      },
+      {
+        "message": "Attribute 'minHeight' with value '80' not handled for type 'TextView'",
+        "location": "root[5]"
+      },
+      {
+        "message": "Attribute 'maxHeight' with value '200' not handled for type 'TextView'",
+        "location": "root[5]"
+      },
+      {
+        "message": "Attribute 'containerInset' with value '12' not handled for type 'TextView'",
+        "location": "root[5]"
+      }
+    ],
+    "textfield_events_test.json": [
+      {
+        "message": "Attribute 'input' with value '\"email\"' not handled for type 'TextField'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'onTextChange' with value '\"handleEmailChange\"' not handled for type 'TextField'",
+        "location": "root[child][child][2]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
+        "location": "root[child][child][5]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
+        "location": "root[child][child][5]"
+      },
+      {
+        "message": "Attribute 'onTextChange' with value '\"handlePasswordChange\"' not handled for type 'TextField'",
+        "location": "root[child][child][5]"
+      },
+      {
+        "message": "Attribute 'accessoryBackground' with value '\"#007AFF\"' not handled for type 'TextField'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'accessoryTextColor' with value '\"#FFFFFF\"' not handled for type 'TextField'",
+        "location": "root[child][child][8]"
+      },
+      {
+        "message": "Attribute 'doneText' with value '\"Finish\"' not handled for type 'TextField'",
+        "location": "root[child][child][8]"
+      }
+    ],
+    "textfield_test.json": [
+      {
+        "message": "Attribute 'input' with value '\"email\"' not handled for type 'TextField'",
+        "location": "root[1]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"next\"' not handled for type 'TextField'",
+        "location": "root[1]"
+      },
+      {
+        "message": "Attribute 'secure' with value 'true' not handled for type 'TextField'",
+        "location": "root[2]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
+        "location": "root[2]"
+      },
+      {
+        "message": "Attribute 'input' with value '\"phone\"' not handled for type 'TextField'",
+        "location": "root[3]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"next\"' not handled for type 'TextField'",
+        "location": "root[3]"
+      },
+      {
+        "message": "Attribute 'input' with value '\"number\"' not handled for type 'TextField'",
+        "location": "root[4]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"done\"' not handled for type 'TextField'",
+        "location": "root[4]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"search\"' not handled for type 'TextField'",
+        "location": "root[5]"
+      },
+      {
+        "message": "Attribute 'input' with value '\"url\"' not handled for type 'TextField'",
+        "location": "root[6]"
+      },
+      {
+        "message": "Attribute 'returnKeyType' with value '\"go\"' not handled for type 'TextField'",
+        "location": "root[6]"
+      }
+    ],
+    "user_profile_test.json": [
+      {
+        "message": "Attribute 'subtitle' with value '\"Manage your account\"' not handled for type 'SampleCard'",
+        "location": "root[0][0]"
+      },
+      {
+        "message": "Attribute 'name' with value '\"@{userName}\"' not handled for type 'UserAvatar'",
+        "location": "root[0][0][0][0][0]"
+      },
+      {
+        "message": "Attribute 'avatarUrl' with value '\"@{userAvatar}\"' not handled for type 'UserAvatar'",
+        "location": "root[0][0][0][0][0]"
+      },
+      {
+        "message": "Attribute 'size' with value '64' not handled for type 'UserAvatar'",
+        "location": "root[0][0][0][0][0]"
+      },
+      {
+        "message": "Attribute 'isOnline' with value '\"@{isOnline}\"' not handled for type 'UserAvatar'",
+        "location": "root[0][0][0][0][0]"
+      },
+      {
+        "message": "Attribute 'status' with value '\"@{userStatus}\"' not handled for type 'StatusBadge'",
+        "location": "root[0][0][0][2]"
+      },
+      {
+        "message": "Attribute 'name' with value '\"Alice Johnson\"' not handled for type 'UserAvatar'",
+        "location": "root[0][2][0]"
+      },
+      {
+        "message": "Attribute 'size' with value '48' not handled for type 'UserAvatar'",
+        "location": "root[0][2][0]"
+      },
+      {
+        "message": "Attribute 'isOnline' with value 'true' not handled for type 'UserAvatar'",
+        "location": "root[0][2][0]"
+      },
+      {
+        "message": "Attribute 'name' with value '\"Bob Smith\"' not handled for type 'UserAvatar'",
+        "location": "root[0][2][1]"
+      },
+      {
+        "message": "Attribute 'avatarUrl' with value '\"https://i.pravatar.cc/150?img=3\"' not handled for type 'UserAvatar'",
+        "location": "root[0][2][1]"
+      },
+      {
+        "message": "Attribute 'size' with value '48' not handled for type 'UserAvatar'",
+        "location": "root[0][2][1]"
+      },
+      {
+        "message": "Attribute 'isOnline' with value 'false' not handled for type 'UserAvatar'",
+        "location": "root[0][2][1]"
+      },
+      {
+        "message": "Attribute 'name' with value '\"Carol Williams\"' not handled for type 'UserAvatar'",
+        "location": "root[0][2][2]"
+      },
+      {
+        "message": "Attribute 'avatarUrl' with value '\"https://i.pravatar.cc/150?img=5\"' not handled for type 'UserAvatar'",
+        "location": "root[0][2][2]"
+      },
+      {
+        "message": "Attribute 'size' with value '48' not handled for type 'UserAvatar'",
+        "location": "root[0][2][2]"
+      },
+      {
+        "message": "Attribute 'isOnline' with value 'true' not handled for type 'UserAvatar'",
+        "location": "root[0][2][2]"
+      },
+      {
+        "message": "Attribute 'name' with value '\"David Brown\"' not handled for type 'UserAvatar'",
+        "location": "root[0][2][3]"
+      },
+      {
+        "message": "Attribute 'size' with value '48' not handled for type 'UserAvatar'",
+        "location": "root[0][2][3]"
+      },
+      {
+        "message": "Attribute 'isOnline' with value 'false' not handled for type 'UserAvatar'",
+        "location": "root[0][2][3]"
+      }
+    ],
+    "visibility_test.json": [
+      {
+        "message": "Attribute 'hidden' with value '\"@{isHidden}\"' not handled for type 'Label'",
+        "location": "root[0][19]"
+      }
+    ],
+    "weight_test.json": [
+      {
+        "message": "Attribute 'widthWeight' with value '1' not handled for type 'Label'",
+        "location": "root[7][0]"
+      },
+      {
+        "message": "Attribute 'widthWeight' with value '1' not handled for type 'Label'",
+        "location": "root[7][1]"
+      }
+    ]
+  }
+}

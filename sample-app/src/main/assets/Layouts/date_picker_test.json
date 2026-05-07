@@ -1,0 +1,276 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "child": [
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "fontColor": "white",
+          "cornerRadius": 8
+        },
+        {
+          "type": "Label",
+          "id": "title_label",
+          "width": "wrapContent",
+          "height": "wrapContent",
+          "topMargin": 20,
+          "text": "@{title}",
+          "fontSize": 24,
+          "fontColor": "black"
+        },
+        {
+          "type": "Label",
+          "text": "Basic DatePicker",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 20,
+          "font": "bold"
+        },
+        {
+          "type": "SelectBox",
+          "id": "basic_date_picker",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedDate}",
+          "selectItemType": "Date",
+          "datePickerMode": "date",
+          "dateStringFormat": "yyyy-MM-dd"
+        },
+        {
+          "type": "Label",
+          "text": "DatePicker with Min/Max Dates",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "Min: 2025-01-01, Max: 2025-12-31",
+          "fontSize": 12,
+          "fontColor": "medium_gray_4",
+          "topMargin": 5
+        },
+        {
+          "type": "SelectBox",
+          "id": "limited_date_picker",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedDate2}",
+          "minimumDate": "2025-01-01",
+          "maximumDate": "2025-12-31",
+          "selectItemType": "Date",
+          "datePickerMode": "date",
+          "dateStringFormat": "yyyy-MM-dd"
+        },
+        {
+          "type": "Label",
+          "text": "Time Picker",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "SelectBox",
+          "id": "time_picker",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedTime}",
+          "selectItemType": "Date",
+          "datePickerMode": "time",
+          "dateStringFormat": "HH:mm"
+        },
+        {
+          "type": "Label",
+          "text": "DateTime Picker",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "SelectBox",
+          "id": "datetime_picker",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedDateTime}",
+          "selectItemType": "Date",
+          "datePickerMode": "dateAndTime",
+          "dateStringFormat": "yyyy-MM-dd HH:mm"
+        },
+        {
+          "type": "Label",
+          "text": "DatePicker with Minute Interval",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "Label",
+          "text": "15 minute intervals",
+          "fontSize": 12,
+          "fontColor": "medium_gray_4",
+          "topMargin": 5
+        },
+        {
+          "type": "SelectBox",
+          "id": "interval_picker",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedTimeInterval}",
+          "selectItemType": "Date",
+          "datePickerMode": "time",
+          "minuteInterval": 15,
+          "dateStringFormat": "HH:mm"
+        },
+        {
+          "type": "Label",
+          "text": "Calendar Style DatePicker",
+          "fontSize": 18,
+          "fontColor": "dark_gray",
+          "topMargin": 30,
+          "font": "bold"
+        },
+        {
+          "type": "SelectBox",
+          "id": "calendar_picker",
+          "width": "matchParent",
+          "height": 300,
+          "topMargin": 10,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "selectedItem": "@{selectedCalendarDate}",
+          "selectItemType": "Date",
+          "datePickerMode": "date",
+          "datePickerStyle": "graphical",
+          "dateStringFormat": "yyyy-MM-dd"
+        },
+        {
+          "type": "SelectBox",
+          "id": "date_range_select",
+          "width": "matchParent",
+          "height": 50,
+          "topMargin": 30,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "hint": "Select Date Range",
+          "selectItemType": "Date",
+          "startDate": "@{startDate}",
+          "endDate": "@{endDate}"
+        },
+        {
+          "type": "View",
+          "width": "matchParent",
+          "height": "wrapContent",
+          "topMargin": 30,
+          "leftMargin": 20,
+          "rightMargin": 20,
+          "padding": 15,
+          "background": "pale_gray",
+          "cornerRadius": 8,
+          "orientation": "vertical",
+          "child": [
+            {
+              "type": "Label",
+              "text": "Selected Values:",
+              "fontSize": 14,
+              "fontColor": "dark_gray",
+              "font": "bold"
+            },
+            {
+              "type": "Label",
+              "text": "Date: @{selectedDate}",
+              "fontSize": 12,
+              "fontColor": "medium_gray_4",
+              "topMargin": 5
+            },
+            {
+              "type": "Label",
+              "text": "Range: @{startDate} to @{endDate}",
+              "fontSize": 12,
+              "fontColor": "medium_gray_4",
+              "topMargin": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "OFF"
+    },
+    {
+      "name": "endDate",
+      "class": "String",
+      "defaultValue": "2025-12-31"
+    },
+    {
+      "name": "selectedDate",
+      "class": "String",
+      "defaultValue": "2025-08-11"
+    },
+    {
+      "name": "selectedDate2",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedTime",
+      "class": "String",
+      "defaultValue": "14:30"
+    },
+    {
+      "name": "selectedDateTime",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedTimeInterval",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedCalendarDate",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "startDate",
+      "class": "String",
+      "defaultValue": "2025-01-01"
+    },
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Date Picker Test"
+    }
+  ]
+}

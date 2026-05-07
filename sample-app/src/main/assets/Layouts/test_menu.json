@@ -1,0 +1,429 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white_23",
+  "child": [
+    {
+      "type": "View",
+      "width": "matchParent",
+      "height": "wrapContent",
+      "orientation": "vertical",
+      "padding": 20,
+      "background": "white_23",
+      "child": [
+        {
+          "type": "Label",
+          "style": "title_label",
+          "text": "KotlinJsonUI Feature Tests",
+          "fontSize": 28,
+          "textAlign": "center",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Button",
+          "style": "dynamic_toggle",
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Layout & Positioning",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Margins & Padding Test",
+          "onclick": "navigateToMarginsTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Alignment Test",
+          "onclick": "navigateToAlignmentTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "style": "primary_button",
+          "text": "Alignment Combo Test",
+          "onclick": "navigateToAlignmentComboTest",
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Weight Distribution Test",
+          "onclick": "navigateToWeightTest",
+          "background": "medium_blue",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Weight + Fixed Size Test",
+          "onclick": "navigateToWeightTestWithFixed",
+          "background": "medium_blue",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Width Test",
+          "onclick": "navigateToWidthTest",
+          "background": "medium_blue",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Relative Positioning Test",
+          "onclick": "navigateToRelativeTest",
+          "background": "medium_blue",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Style & Appearance",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Visibility & Opacity Test",
+          "onclick": "navigateToVisibilityTest",
+          "background": "medium_green",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Disabled States Test",
+          "onclick": "navigateToDisabledTest",
+          "background": "medium_green",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Text Features",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Text Styling Test",
+          "onclick": "navigateToTextStylingTest",
+          "background": "medium_red_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Text Decoration Test",
+          "onclick": "navigateToTextDecorationTest",
+          "background": "medium_red_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Line Break & Spacing Test",
+          "onclick": "navigateToLineBreakTest",
+          "background": "medium_red_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Partial Attributes Test",
+          "onclick": "navigateToPartialAttributesTest",
+          "background": "medium_red_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Input Components",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "TextField Test",
+          "onclick": "navigateToTextFieldTest",
+          "background": "light_purple",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "TextField Events Test",
+          "onclick": "navigateToTextFieldEventsTest",
+          "background": "light_purple",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Secure Field Test",
+          "onclick": "navigateToSecureFieldTest",
+          "background": "light_purple",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "TextView Hint Test",
+          "onclick": "navigateToTextViewHintTest",
+          "background": "light_purple",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Date Picker Test",
+          "onclick": "navigateToDatePickerTest",
+          "background": "light_purple",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "UI Components",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Components Test",
+          "onclick": "navigateToComponentsTest",
+          "background": "medium_blue_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Button Test",
+          "onclick": "navigateToButtonTest",
+          "background": "medium_blue_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Button Enabled Test",
+          "onclick": "navigateToButtonEnabledTest",
+          "background": "medium_blue_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Switch Events Test",
+          "onclick": "navigateToSwitchEventsTest",
+          "background": "medium_blue_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Radio Custom Icons Test",
+          "onclick": "navigateToRadioIconsTest",
+          "background": "medium_blue_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Segment Control Test",
+          "onclick": "navigateToSegmentTest",
+          "background": "medium_blue_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Advanced Features",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Binding Properties Test",
+          "onclick": "navigateToBindingTest",
+          "background": "medium_red",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Converter Components Test",
+          "onclick": "navigateToConverterTest",
+          "background": "medium_red",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Custom Component Test",
+          "onclick": "navigateToCustomComponentTest",
+          "background": "medium_red",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "User Profile Test",
+          "onclick": "navigateToUserProfileTest",
+          "background": "medium_red",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Include Component Test",
+          "onclick": "navigateToIncludeTest",
+          "background": "medium_red",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "Forms & Scrolling",
+          "fontSize": 20,
+          "fontColor": "medium_gray_4",
+          "fontWeight": "bold",
+          "bottomMargin": 10
+        },
+        {
+          "type": "Button",
+          "text": "Form Test",
+          "onclick": "navigateToFormTest",
+          "background": "light_cyan_2",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Collection Test",
+          "onclick": "navigateToCollectionTest",
+          "background": "light_cyan_2",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Keyboard Avoidance Test",
+          "onclick": "navigateToKeyboardAvoidanceTest",
+          "background": "light_cyan_2",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 8
+        },
+        {
+          "type": "Button",
+          "text": "Scroll Test",
+          "onclick": "navigateToScrollTest",
+          "background": "light_cyan_2",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        },
+        {
+          "type": "Label",
+          "text": "🔥 Complete Test Suite",
+          "fontSize": 20,
+          "fontColor": "dark_red",
+          "fontWeight": "bold",
+          "bottomMargin": 15
+        },
+        {
+          "type": "Button",
+          "text": "🔥 All Implemented Attributes Test",
+          "onclick": "navigateToImplementedAttributesTest",
+          "background": "dark_green_3",
+          "fontColor": "white",
+          "padding": 12,
+          "cornerRadius": 8,
+          "bottomMargin": 20
+        }
+      ]
+    }
+  ],
+  "data": {
+    "dynamicModeStatus": "OFF"
+  }
+}

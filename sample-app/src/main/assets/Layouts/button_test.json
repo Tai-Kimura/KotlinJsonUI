@@ -1,0 +1,103 @@
+{
+  "type": "ScrollView",
+  "width": "matchParent",
+  "height": "matchParent",
+  "background": "white",
+  "child": {
+    "type": "View",
+    "orientation": "vertical",
+    "padding": 20,
+    "child": [
+      {
+        "type": "Label",
+        "text": "Button Height Test",
+        "fontSize": 20,
+        "fontWeight": "bold",
+        "fontColor": "black",
+        "bottomMargin": 20
+      },
+      {
+        "type": "Label",
+        "text": "Height 55, Padding [12, 20]",
+        "fontSize": 14,
+        "fontColor": "medium_gray_4",
+        "bottomMargin": 5
+      },
+      {
+        "type": "Button",
+        "text": "Test Button 1",
+        "height": 55,
+        "padding": [
+          12,
+          20
+        ],
+        "background": "medium_blue",
+        "fontColor": "white",
+        "cornerRadius": 8,
+        "bottomMargin": 20
+      },
+      {
+        "type": "Label",
+        "text": "Height 55, No Padding",
+        "fontSize": 14,
+        "fontColor": "medium_gray_4",
+        "bottomMargin": 5
+      },
+      {
+        "type": "Button",
+        "text": "Test Button 2",
+        "height": 55,
+        "background": "medium_green",
+        "fontColor": "white",
+        "cornerRadius": 8,
+        "bottomMargin": 20
+      },
+      {
+        "type": "Label",
+        "text": "No Height, Padding [12, 20]",
+        "fontSize": 14,
+        "fontColor": "medium_gray_4",
+        "bottomMargin": 5
+      },
+      {
+        "type": "Button",
+        "text": "Test Button 3",
+        "padding": [
+          12,
+          20
+        ],
+        "background": "medium_red_3",
+        "fontColor": "white",
+        "cornerRadius": 8,
+        "bottomMargin": 20
+      },
+      {
+        "type": "Label",
+        "text": "With bottomMargin 8, Height 55, Padding [12, 20]",
+        "fontSize": 14,
+        "fontColor": "medium_gray_4",
+        "bottomMargin": 5
+      },
+      {
+        "type": "Button",
+        "text": "Like primary_button style",
+        "height": 55,
+        "padding": [
+          12,
+          20
+        ],
+        "bottomMargin": 8,
+        "background": "medium_blue",
+        "fontColor": "white",
+        "cornerRadius": 8
+      }
+    ]
+  },
+  "data": [
+    {
+      "name": "title",
+      "class": "String",
+      "defaultValue": "Button Test"
+    }
+  ]
+}
