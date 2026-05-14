@@ -50,6 +50,8 @@ dependencies {
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+    // Required by EmbedContainer for LocalViewModelStoreOwner + viewModel() helper
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
     // Other dependencies
     implementation("androidx.core:core-ktx:1.17.0")
