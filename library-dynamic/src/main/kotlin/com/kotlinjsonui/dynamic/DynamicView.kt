@@ -147,6 +147,7 @@ fun DynamicView(
             "webview" -> DynamicWebViewComponent.create(responsiveJson, effectiveData)
             "web" -> DynamicWebComponent.create(responsiveJson, effectiveData)
             "tabview" -> DynamicTabViewComponent.create(responsiveJson, effectiveData)
+            "embed" -> DynamicEmbedComponent.create(responsiveJson, effectiveData)
             "gradientview" -> DynamicGradientViewComponent.create(responsiveJson, effectiveData)
             "circleview" -> DynamicCircleViewComponent.create(responsiveJson, effectiveData)
             "blurview" -> DynamicBlurViewComponent.create(responsiveJson, effectiveData)
