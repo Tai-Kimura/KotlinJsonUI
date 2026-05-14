@@ -149,6 +149,42 @@ fun SelectBox(
                         .heightIn(max = 400.dp) // Maximum height before scrolling
                         .testTag("kjui_x7q_optionList")
                 ) {
+                    // When a placeholder is supplied, expose it as the first
+                    // selectable row. Picking it clears the current value
+                    // ("" → unselected state) so the button face reverts to
+                    // the placeholder text.
+                    val placeholderRow = placeholder?.takeIf { it.isNotEmpty() }
+                    if (placeholderRow != null) {
+                        item {
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("kjui_x7q_option_placeholder")
+                                    .clickable {
+                                        onValueChange("")
+                                        scope.launch {
+                                            sheetState.hide()
+                                            showBottomSheet = false
+                                        }
+                                    },
+                                color = sheetBackgroundColor
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = placeholderRow,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = sheetTextColor.copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
+                            Divider(modifier = Modifier.padding(horizontal = 20.dp))
+                        }
+                    }
                     itemsIndexed(options) { index, option ->
                         Surface(
                             modifier = Modifier

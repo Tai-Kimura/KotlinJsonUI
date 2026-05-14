@@ -86,9 +86,16 @@ class DynamicSelectBoxComponent {
                 else -> true
             }
 
-            // Parse placeholder
-            val placeholder = json.get("hint")?.asString
-                ?: json.get("placeholder")?.asString
+            // Parse placeholder — spec canonical `prompt` (primary) plus the
+            // `hint` / `placeholder` aliases. Routed through ResourceResolver
+            // so a snake_case key like "select_box_prompt" resolves to the
+            // Android string resource at runtime (matches codegen behavior).
+            val placeholder = when {
+                json.has("prompt") -> ResourceResolver.resolveText(json, "prompt", data, context)
+                json.has("hint") -> ResourceResolver.resolveText(json, "hint", data, context)
+                json.has("placeholder") -> ResourceResolver.resolveText(json, "placeholder", data, context)
+                else -> null
+            }
 
             // Parse colors
             val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
@@ -197,9 +204,16 @@ class DynamicSelectBoxComponent {
                 else -> true
             }
 
-            // Parse placeholder
-            val placeholder = json.get("hint")?.asString
-                ?: json.get("placeholder")?.asString
+            // Parse placeholder — spec canonical `prompt` (primary) plus the
+            // `hint` / `placeholder` aliases. Routed through ResourceResolver
+            // so a snake_case key like "select_box_prompt" resolves to the
+            // Android string resource at runtime (matches codegen behavior).
+            val placeholder = when {
+                json.has("prompt") -> ResourceResolver.resolveText(json, "prompt", data, context)
+                json.has("hint") -> ResourceResolver.resolveText(json, "hint", data, context)
+                json.has("placeholder") -> ResourceResolver.resolveText(json, "placeholder", data, context)
+                else -> null
+            }
 
             // Parse colors
             val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
