@@ -13,6 +13,7 @@ import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.embed.EmbedContainer
 import com.kotlinjsonui.dynamic.embed.EmbedNavigationMode
+import com.kotlinjsonui.dynamic.embed.EmbeddedEvent
 
 /**
  * Dynamic Embed Component Converter
@@ -55,10 +56,13 @@ class DynamicEmbedComponent {
                 else -> EmbedNavigationMode.Delegate
             }
             val resolvedParams = resolveParams(json.get("params"), data)
+            val eventBridge = buildEventBridge(json.get("events"), data)
 
             EmbedContainer(
                 embedId = embedId,
-                navigationMode = navigationMode
+                params = resolvedParams,
+                navigationMode = navigationMode,
+                eventBridge = eventBridge
             ) { _ ->
                 // Tier 1: compiled screen via custom component handler
                 val viewJson = JsonObject().apply {
@@ -76,6 +80,40 @@ class DynamicEmbedComponent {
                         DynamicView(layoutJson, resolvedParams)
                     } else {
                         ErrorBox("Embed: layout not found for screen `$screenName`")
+                    }
+                }
+            }
+        }
+
+        /**
+         * Build an event bridge from the JSON `events: { onEventName: "parentHandlerName" }`
+         * map. Each emitted Named event looks up the handler in the parent
+         * data dict (parent VM exposes handlers as functions keyed by name).
+         */
+        private fun buildEventBridge(
+            element: com.google.gson.JsonElement?,
+            parentData: Map<String, Any>
+        ): ((EmbeddedEvent) -> Unit)? {
+            if (element == null || !element.isJsonObject) return null
+            val obj = element.asJsonObject
+            if (obj.size() == 0) return null
+            val eventMap = mutableMapOf<String, String>()
+            for ((key, value) in obj.entrySet()) {
+                if (value.isJsonPrimitive && value.asJsonPrimitive.isString) {
+                    eventMap[key] = value.asString
+                }
+            }
+            if (eventMap.isEmpty()) return null
+            return { event ->
+                if (event is EmbeddedEvent.Named) {
+                    val handlerName = eventMap[event.name]
+                    if (handlerName != null) {
+                        @Suppress("UNCHECKED_CAST")
+                        when (val handler = parentData[handlerName]) {
+                            is Function1<*, *> -> (handler as (Map<String, Any>) -> Unit).invoke(event.payload)
+                            is Function0<*> -> (handler as () -> Unit).invoke()
+                            else -> {} // unresolved — silently ignore
+                        }
                     }
                 }
             }
