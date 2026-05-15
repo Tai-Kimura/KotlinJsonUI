@@ -138,6 +138,10 @@ dependencies {
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.3")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
+    // Required by EmbedContainer for LocalViewModelStoreOwner. The container
+    // is referenced by every codegen-emitted <Screen>GeneratedView.kt, so it
+    // must compile in release builds (library-dynamic is debug-only).
+    api("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")

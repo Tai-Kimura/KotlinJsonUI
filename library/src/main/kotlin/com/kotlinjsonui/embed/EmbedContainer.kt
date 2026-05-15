@@ -1,4 +1,4 @@
-package com.kotlinjsonui.dynamic.embed
+package com.kotlinjsonui.embed
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -17,7 +17,12 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
  * isolated [ViewModelStoreOwner] keyed by [embedId] — this is what makes
  * multiple embeds of the same screen yield distinct VM instances.
  *
- * v1 contracts (per jsonui-cli/docs/plans/2026-05-11-embed-feature.md §16):
+ * Lives in the main `library` module (NOT `library-dynamic`) because the
+ * static codegen path emits `EmbedContainer(...)` calls into every consumer
+ * `<Screen>GeneratedView.kt`, which has to compile in release builds where
+ * `library-dynamic` is not on the classpath.
+ *
+ * v1 contracts:
  * - [params] is a flat Map<String, Any>. VMs that implement
  *   [InitParamsReceiver] receive them on first composition AND on every
  *   change. Other VMs silently ignore.

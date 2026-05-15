@@ -11,9 +11,9 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
-import com.kotlinjsonui.dynamic.embed.EmbedContainer
-import com.kotlinjsonui.dynamic.embed.EmbedNavigationMode
-import com.kotlinjsonui.dynamic.embed.EmbeddedEvent
+import com.kotlinjsonui.embed.EmbedContainer
+import com.kotlinjsonui.embed.EmbedNavigationMode
+import com.kotlinjsonui.embed.EmbeddedEvent
 
 /**
  * Dynamic Embed Component Converter

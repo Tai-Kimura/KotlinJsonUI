@@ -1,4 +1,4 @@
-package com.kotlinjsonui.dynamic.embed
+package com.kotlinjsonui.embed
 
 import org.junit.Assert.*
 import org.junit.Test
