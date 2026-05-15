@@ -81,6 +81,30 @@ mavenPublishing {
     publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
+    // AGP 8.x + the bundled Dokka can't parse `PermittedSubclasses` (Java 17
+    // sealed-class bytecode attribute) on a transitive dependency. After
+    // EmbedContainer moved to `:library`, the `:library-dynamic`
+    // javaDocReleaseGeneration task chokes resolving the cross-module
+    // `EmbeddedEvent` sealed class. Switch the javadoc artifact to an empty
+    // jar (Maven Central just requires existence) so publishing skips the
+    // failing Dokka step.
+    configure(
+        com.vanniktech.maven.publish.AndroidSingleVariantLibrary(
+            variant = "release",
+            sourcesJar = true,
+            publishJavadocJar = false
+        )
+    )
+    // Provide an empty javadoc.jar so Sonatype Central accepts the bundle.
+    val emptyJavadocJar = tasks.register<Jar>("emptyJavadocJar") {
+        archiveClassifier.set("javadoc")
+    }
+    afterEvaluate {
+        publishing.publications.withType<MavenPublication>().configureEach {
+            artifact(emptyJavadocJar)
+        }
+    }
+
     coordinates("io.github.tai-kimura", "kotlinjsonui-dynamic", project.findProperty("version") as String)
 
     pom {
