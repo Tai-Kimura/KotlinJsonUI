@@ -7,7 +7,6 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
@@ -15,9 +14,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.ToggleAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Toggle Component Converter
@@ -29,6 +31,11 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  * This is a distinct component from DynamicSwitchComponent with its own
  * attribute handling (data/isOn for state, onclick/onClick for handler,
  * tintColor for both thumb+track, backgroundColor for unchecked track).
+ *
+ * Attribute access goes through the generated [ToggleAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline.
  *
  * Supported JSON attributes:
  * - data: @{variable} for checked state binding (primary)
@@ -43,6 +50,11 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  */
 class DynamicToggleComponent {
     companion object {
+        /** Toggle-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "isOn", "enabled", "tintColor", "labelAttributes", "labelPosition"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
@@ -50,8 +62,19 @@ class DynamicToggleComponent {
             parentType: String? = null
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                ToggleAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Toggle", json,
+                declared = ToggleAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Parse checked state: 'data' attribute (@{var}) or 'isOn' (boolean)
+            // Parse checked state: 'data' attribute (@{var}) or 'isOn' (boolean).
+            // 'data' is a structural key the legacy Toggle reuses as a binding
+            // string — kept as a raw node read.
             val dataAttr = json.get("data")?.asString
             val bindingVariable = if (dataAttr != null) {
                 ModifierBuilder.extractBindingProperty("@{$dataAttr}")
@@ -61,7 +84,7 @@ class DynamicToggleComponent {
 
             val checked = when {
                 bindingVariable != null -> (data[bindingVariable] as? Boolean) ?: false
-                json.has("isOn") -> ResourceResolver.resolveBoolean(json, "isOn", data, default = false)
+                a.isOn != null -> TypedAttrs.boolean(a.isOn, data) ?: false
                 else -> false
             }
 
@@ -97,24 +120,29 @@ class DynamicToggleComponent {
                 }
 
                 // Call onclick/onClick handler
-                val handler = json.get("onclick")?.asString ?: json.get("onClick")?.asString
+                val handler = a.common.onclick as? String
+                    ?: TypedAttrs.raw(a.common.onClick) as? String
                 if (handler != null) {
-                    val viewId = json.get("id")?.asString ?: "toggle"
+                    val viewId = a.common.id ?: "toggle"
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
             }
 
-            // Enabled state (supports @{binding}) — Toggle is a canonical alias
-            // of Switch and must honor the same attribute
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+            // Enabled state (supports @{binding}; Toggle declares its own row) —
+            // Toggle is a canonical alias of Switch and must honor the same attribute
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build modifier: testTag, margins, alpha, padding, alignment, weight
             val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
 
             // Colors: tintColor -> checkedThumbColor + checkedTrackColor (0.5f alpha)
             //         backgroundColor -> uncheckedTrackColor
-            val tintColor = ColorParser.parseColorWithBinding(json, "tintColor", data, context)
-            val bgColor = ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
+            val tintColor = ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+            // 'backgroundColor' is an undeclared legacy runtime extra
+            val bgColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.undeclared(json, "backgroundColor")?.asString, data, context
+            )
 
             val colors = if (tintColor != null || bgColor != null) {
                 SwitchDefaults.colors(
@@ -127,7 +155,7 @@ class DynamicToggleComponent {
                 SwitchDefaults.colors()
             }
 
-            val labelAttrs = json.get("labelAttributes")?.takeIf { it.isJsonObject }?.asJsonObject
+            val labelAttrs = a.labelAttributes
             if (labelAttrs == null) {
                 Switch(
                     checked = checkedState,
@@ -138,7 +166,7 @@ class DynamicToggleComponent {
                 )
             } else {
                 // Leading label by default matches common iOS Toggle usage.
-                val labelPosition = json.get("labelPosition")?.asString
+                val labelPosition = TypedAttrs.enumString(a.labelPosition) { it.json }
                     ?: "leading"
 
                 Row(
@@ -173,11 +201,11 @@ class DynamicToggleComponent {
          */
         @Composable
         private fun ToggleLabel(
-            labelAttrs: JsonObject,
+            labelAttrs: Map<String, Any?>,
             data: Map<String, Any>,
             context: android.content.Context
         ) {
-            val textValue = labelAttrs.get("text")?.asString?.let { raw ->
+            val textValue = (labelAttrs["text"] as? String)?.let { raw ->
                 if (ModifierBuilder.isBinding(raw)) {
                     val key = ModifierBuilder.extractBindingProperty(raw)
                     (key?.let { data[it] } ?: raw).toString()
@@ -186,9 +214,11 @@ class DynamicToggleComponent {
                 }
             } ?: return
 
-            val fontSize = labelAttrs.get("fontSize")?.asFloat
-            val color = ColorParser.parseColorWithBinding(labelAttrs, "fontColor", data, context)
-            val weight = labelAttrs.get("fontWeight")?.asString?.let { w ->
+            val fontSize = (labelAttrs["fontSize"] as? Number)?.toFloat()
+            val color = (labelAttrs["fontColor"] as? String)?.let {
+                ColorParser.parseColorStringWithBinding(it, data, context)
+            }
+            val weight = (labelAttrs["fontWeight"] as? String)?.let { w ->
                 when (w.lowercase()) {
                     "bold" -> FontWeight.Bold
                     "semibold", "semi-bold" -> FontWeight.SemiBold
