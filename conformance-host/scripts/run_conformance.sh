@@ -22,6 +22,17 @@ SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
 ADB="$SDK/platform-tools/adb"
 [[ -x "$ADB" ]] || ADB="$(command -v adb)" || { echo "error: adb not found" >&2; exit 1; }
 
+# Every adb-shell call runs under a timeout. A wedged emulator (intermittent on
+# hosted CI runners — the "[EmulatorConsole]: Failed to start" symptom) otherwise
+# blocks adb forever, and the crash-resume loop below never gets to retry because
+# the first call never returns. On timeout the call exits 124; the script fails
+# fast so the workflow can retry with a FRESH emulator (a frozen emulator cannot
+# self-recover).
+ADB_SH_TIMEOUT="${ADB_SH_TIMEOUT:-120}"
+adbsh() { timeout "$ADB_SH_TIMEOUT" "$ADB" shell "$@"; }
+# Emulator liveness probe; non-zero (incl. 124 = timeout) means wedged.
+adb_alive() { timeout 60 "$ADB" shell true >/dev/null 2>&1; }
+
 APP_PKG="com.kotlinjsonui.conformance"
 TEST_PKG="$APP_PKG.test"
 DEVICE_OUT="/sdcard/Android/data/$APP_PKG/files/conformance"
@@ -54,21 +65,27 @@ fi
 # 2. Build + install both APKs
 (cd "$ROOT_DIR" && ./gradlew :conformance-host:installDebug :conformance-host:installDebugAndroidTest)
 
+# 2b. Emulator health gate — fail fast (don't hang) if it wedged after install.
+if ! adb_alive; then
+  echo "error: emulator unresponsive after install (adb probe timed out) — wedged" >&2
+  exit 1
+fi
+
 # 3. Stable test environment
-"$ADB" shell settings put global window_animation_scale 0
-"$ADB" shell settings put global transition_animation_scale 0
-"$ADB" shell settings put global animator_duration_scale 0
+adbsh settings put global window_animation_scale 0
+adbsh settings put global transition_animation_scale 0
+adbsh settings put global animator_duration_scale 0
 # Freeze the status bar (clock/battery/wifi) via SystemUI demo mode so
 # full-screen screenshots don't carry live-clock noise between runs.
-"$ADB" shell settings put global sysui_demo_allowed 1
-"$ADB" shell am broadcast -a com.android.systemui.demo -e command enter >/dev/null
-"$ADB" shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200 >/dev/null
-"$ADB" shell am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false >/dev/null
-"$ADB" shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 >/dev/null
+adbsh settings put global sysui_demo_allowed 1
+adbsh am broadcast -a com.android.systemui.demo -e command enter >/dev/null
+adbsh am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200 >/dev/null
+adbsh am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false >/dev/null
+adbsh am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 >/dev/null
 
 if [[ "$FRESH" == "1" ]]; then
   echo "Wiping on-device conformance output..."
-  "$ADB" shell rm -rf "$DEVICE_OUT" || true
+  adbsh rm -rf "$DEVICE_OUT" || true
 fi
 
 # 4. Run instrumentation; restart after process crashes until the final
@@ -76,13 +93,23 @@ fi
 #    "running" markers turn crashed fixtures into error outcomes).
 attempt=1
 while true; do
+  # Distinguish a wedged emulator from a crashed test process: a crash leaves
+  # the emulator responsive (crash-resume retries below), but a wedge cannot be
+  # recovered in-place — bail fast so the workflow retries with a fresh emulator
+  # instead of the whole job hanging.
+  if ! adb_alive; then
+    echo "error: emulator unresponsive before attempt $attempt — wedged" >&2
+    exit 1
+  fi
   echo "--- instrumentation attempt $attempt/$MAX_ATTEMPTS (filter=$FILTER) ---"
-  "$ADB" shell am instrument -w \
+  # ~11-min green suite; a 22-min timeout catches a mid-run wedge / hung fixture
+  # without truncating a healthy-but-slow run. On timeout (124) the loop re-probes.
+  timeout 1320 "$ADB" shell am instrument -w \
     -e conformanceFilter "$FILTER" \
     -e class "$APP_PKG.ConformanceSuiteTest" \
     "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" || true
 
-  if "$ADB" shell "[ -f $DEVICE_OUT/android.results.json ]"; then
+  if adbsh "[ -f $DEVICE_OUT/android.results.json ]"; then
     echo "android.results.json produced on device."
     break
   fi
