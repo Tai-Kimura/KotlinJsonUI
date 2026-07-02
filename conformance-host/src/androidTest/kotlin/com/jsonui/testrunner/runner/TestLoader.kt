@@ -243,8 +243,8 @@ class TestLoader {
      * Substitute @{varName} placeholders in a string
      */
     private fun substituteArgsInString(string: String?, args: Map<String, Any>): String? {
-        // KJUI-CONFORMANCE PATCH: Kotlin 2.x drops the smart cast on the
-        // lambda-captured `var result`, so bind a non-null local explicitly.
+        // Kotlin 2.x drops the smart cast on the lambda-captured `var result`,
+        // so bind a non-null local explicitly (compiles under K1 and K2).
         val input: String = string ?: return null
 
         var result: String = input

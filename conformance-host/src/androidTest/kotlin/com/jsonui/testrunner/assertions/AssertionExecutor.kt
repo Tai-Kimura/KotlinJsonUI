@@ -74,6 +74,24 @@ class AssertionExecutor(
     }
 
     private fun assertText(step: TestStep, timeout: Long) {
+        // KJUI-CONFORMANCE PATCH: retry the read until the timeout instead of a
+        // single sample. State-driven UIs (Compose input -> handler -> state ->
+        // recompose) update bound text asynchronously; the web driver's expect()
+        // auto-retries, this driver read once and raced the recomposition.
+        // Upstream bug: docs/bugs testrunner-android-asserttext-single-sample-race.
+        val deadline = System.currentTimeMillis() + timeout
+        while (true) {
+            try {
+                assertTextOnce(step, timeout)
+                return
+            } catch (e: AssertionError) {
+                if (System.currentTimeMillis() >= deadline) throw e
+                Thread.sleep(100)
+            }
+        }
+    }
+
+    private fun assertTextOnce(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("text requires 'id'")
         val element = waitForElement(id, timeout)
 
@@ -84,8 +102,9 @@ class AssertionExecutor(
         } else {
             element.text ?: ""
         }
-        // KJUI-CONFORMANCE PATCH: Compose controls (Button, CheckBox row, ...)
-        // expose their label on child text nodes, not on the tagged container,
+
+        // Compose controls (Button, labeled CheckBox/Radio rows, ...) expose
+        // their label on child text nodes, not on the testTag'd container,
         // while iOS (XCUITest label) and web (textContent) include descendant
         // text. Mirror that: aggregate descendant text when the node has none.
         if (actualText.isEmpty()) {

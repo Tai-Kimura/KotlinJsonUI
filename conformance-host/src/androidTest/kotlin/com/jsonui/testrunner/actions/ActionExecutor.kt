@@ -1,9 +1,11 @@
 package com.jsonui.testrunner.actions
 
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import com.jsonui.testrunner.models.TestStep
+import java.io.File
 
 /**
  * Executes test actions using UI Automator
@@ -14,10 +16,12 @@ class ActionExecutor(
     private val defaultTimeout: Long = 5000L
 ) {
 
-    // KJUI-CONFORMANCE PATCH: upstream executeScreenshot is an empty placeholder,
-    // so `screenshot` steps silently do nothing. Allow the embedding harness to
-    // plug in a handler that actually captures and stores the artifact.
-    // Upstream bug filed in jsonui-cli/docs/bugs (android driver screenshot no-op).
+    /**
+     * Pluggable sink for the `screenshot` action. When set, the embedding
+     * harness receives the screenshot name and owns capture + storage.
+     * When null, the default implementation saves a PNG via
+     * UiDevice.takeScreenshot into the instrumented app's filesDir.
+     */
     var screenshotHandler: ((name: String) -> Unit)? = null
 
     /**
@@ -208,9 +212,16 @@ class ActionExecutor(
 
     private fun executeScreenshot(step: TestStep) {
         val name = step.name ?: "screenshot_${System.currentTimeMillis()}"
-        // KJUI-CONFORMANCE PATCH: delegate to the embedding harness when set
-        // (upstream leaves this method as a placeholder no-op).
-        screenshotHandler?.invoke(name)
+
+        val handler = screenshotHandler
+        if (handler != null) {
+            handler(name)
+            return
+        }
+
+        // Default: save a PNG like the iOS / web drivers do
+        val dir = InstrumentationRegistry.getInstrumentation().targetContext.filesDir
+        device.takeScreenshot(File(dir, "$name.png"))
     }
 
     private fun executeAlertTap(step: TestStep, timeout: Long) {
@@ -303,8 +314,9 @@ class ActionExecutor(
                 optionElement.click()
             }
             step.label != null || step.value != null -> {
-                // Fallback: select by text (label or value)
-                // KJUI-CONFORMANCE PATCH: non-null under Kotlin 2.x strict smart casts
+                // Fallback: select by text (label or value).
+                // Explicit non-null binding: Kotlin 2.x no longer smart-casts
+                // `step.label ?: step.value` to String here.
                 val text: String = step.label ?: step.value
                     ?: throw IllegalArgumentException("selectOption requires 'label' or 'value'")
                 val startTime = System.currentTimeMillis()
