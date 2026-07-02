@@ -501,6 +501,41 @@ object ModifierBuilder {
         }
     }
 
+    /**
+     * Parse `paddings`/`padding` into [PaddingValues] for composables that
+     * take content padding as a parameter instead of a modifier (SelectBox:
+     * selectbox_component.rb emits `contentPadding = PaddingValues(...)` and
+     * never a `.padding()` modifier there — a modifier padding would inset
+     * the component's self-drawn border/background instead of its content).
+     *
+     * The 4-element order follows the static emit for contentPadding:
+     * [top, start, bottom, end]. Returns null when neither key is present.
+     */
+    fun parseContentPadding(json: JsonObject): PaddingValues? {
+        val element = json.get("paddings") ?: json.get("padding") ?: return null
+        if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
+            return PaddingValues(element.asFloat.dp)
+        }
+        if (element.isJsonArray) {
+            val arr = element.asJsonArray
+            return when (arr.size()) {
+                1 -> PaddingValues(arr[0].asFloat.dp)
+                2 -> PaddingValues(
+                    vertical = arr[0].asFloat.dp,
+                    horizontal = arr[1].asFloat.dp
+                )
+                4 -> PaddingValues(
+                    top = arr[0].asFloat.dp,
+                    start = arr[1].asFloat.dp,
+                    bottom = arr[2].asFloat.dp,
+                    end = arr[3].asFloat.dp
+                )
+                else -> null
+            }
+        }
+        return null
+    }
+
     /** build_alignment: parent_type (Row/Column/Box) dependent alignment */
     fun applyAlignment(
         modifier: Modifier,

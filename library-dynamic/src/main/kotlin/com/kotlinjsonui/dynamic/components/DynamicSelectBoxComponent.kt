@@ -1,8 +1,11 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
@@ -37,7 +40,11 @@ import androidx.compose.ui.platform.LocalContext
  * - font: Font weight string (bold, semibold, medium, light, thin)
  * - cancelButtonBackgroundColor/cancelButtonTextColor: Cancel button colors
  * - onValueChange: @{handler} for change callback
- * - Modifiers: testTag, margins, size, alpha, clickable, padding, alignment, weight
+ * - Modifiers: testTag, margins, size, alpha, clickable (alignment/weight are
+ *   applied by the parent container). background/borderColor/cornerRadius are
+ *   drawn by the composable itself and paddings/padding map to its
+ *   contentPadding parameter, so none of them re-apply on the modifier
+ *   (matching selectbox_component.rb — otherwise the border is drawn twice)
  *
  * Attribute access goes through the generated [SelectBoxAttributes]
  * extraction (typed, L1-marker-aware) via the [TypedAttrs] bridge; the
@@ -177,10 +184,15 @@ class DynamicSelectBoxComponent {
                 }
             }
 
-            // Build modifier (default fill width)
-            val modifier = ModifierBuilder.buildModifier(
-                json, data, context = context, defaultFillMaxWidth = true
-            )
+            // Build modifier (default fill width). SelectBox draws its own
+            // background/border/corner shape from the composable parameters,
+            // so the modifier chain must not re-apply them.
+            val modifier = buildSelfDrawnModifier(json, data)
+
+            // paddings/padding become contentPadding (never a .padding()
+            // modifier, which would inset the self-drawn border instead of
+            // the content). Fallback mirrors the composable default.
+            val contentPadding = ModifierBuilder.parseContentPadding(json)
 
             SelectBox(
                 value = selectedValue,
@@ -194,6 +206,7 @@ class DynamicSelectBoxComponent {
                 textColor = textColor,
                 hintColor = hintColor,
                 cornerRadius = cornerRadius,
+                contentPadding = contentPadding ?: PaddingValues(horizontal = 16.dp),
                 cancelButtonBackgroundColor = cancelButtonBackgroundColor ?: backgroundColor,
                 cancelButtonTextColor = cancelButtonTextColor ?: textColor
             )
@@ -291,10 +304,10 @@ class DynamicSelectBoxComponent {
                 }
             }
 
-            // Build modifier (default fill width for date pickers)
-            val modifier = ModifierBuilder.buildModifier(
-                json, data, context = context, defaultFillMaxWidth = true
-            )
+            // Build modifier (default fill width for date pickers).
+            // DateSelectBox also draws its own background/border/corner
+            // shape, so the modifier chain must not re-apply them.
+            val modifier = buildSelfDrawnModifier(json, data)
 
             DateSelectBox(
                 value = selectedDate,
@@ -317,6 +330,31 @@ class DynamicSelectBoxComponent {
         }
 
         // ── Helpers ──
+
+        /**
+         * Modifier chain for a component that draws its own decoration.
+         * Mirrors the static selectbox_component.rb chain — testTag,
+         * margins, size, alpha, clickable — and deliberately omits:
+         *
+         * - shadow / background (clip + border + background color): the
+         *   composable renders border/background/corner shape from its own
+         *   parameters; re-applying them on the modifier draws the frame
+         *   twice (outer modifier frame + inner self-drawn frame),
+         * - padding: content padding is a composable parameter
+         *   (see [ModifierBuilder.parseContentPadding]).
+         */
+        internal fun buildSelfDrawnModifier(
+            json: JsonObject,
+            data: Map<String, Any>
+        ): Modifier {
+            var modifier: Modifier = Modifier
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
+            modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true)
+            modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            modifier = ModifierBuilder.applyClickable(modifier, json, data)
+            return modifier
+        }
 
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<String> {
             // 'items' accepts a @{binding} string in addition to the declared
