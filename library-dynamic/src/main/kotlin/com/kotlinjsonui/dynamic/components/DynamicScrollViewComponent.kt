@@ -8,7 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.ScrollViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * ScrollView component → LazyColumn / LazyRow.
@@ -18,20 +22,38 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  *   1. horizontalScroll attribute
  *   2. orientation attribute
  *   3. First child View's orientation
+ *
+ * Attribute access goes through the generated [ScrollViewAttributes]
+ * extraction via the [TypedAttrs] bridge; the node itself is only passed
+ * wholesale to the shared ModifierBuilder pipeline.
  */
 class DynamicScrollViewComponent {
     companion object {
+        /** ScrollView-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "keyboardAvoidance", "scrollEnabled", "orientation"
+        )
+
         @Composable
         fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                ScrollViewAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "ScrollView", json,
+                declared = ScrollViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             // Determine scroll direction
-            val isHorizontal = determineScrollDirection(json)
+            val isHorizontal = determineScrollDirection(json, a)
 
             // Keyboard avoidance (default true)
-            val keyboardAvoidance = json.get("keyboardAvoidance")?.asBoolean != false
+            val keyboardAvoidance = a.keyboardAvoidance != false
 
             // Build modifier
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -40,15 +62,7 @@ class DynamicScrollViewComponent {
             }
 
             // scrollEnabled - controls whether user can scroll
-            val scrollEnabled = run {
-                val raw = json.get("scrollEnabled")?.asString
-                if (raw != null && raw.contains("@{")) {
-                    val propName = raw.removePrefix("@{").removeSuffix("}")
-                    (data[propName] as? Boolean) ?: true
-                } else {
-                    json.get("scrollEnabled")?.asBoolean ?: true
-                }
-            }
+            val scrollEnabled = TypedAttrs.boolean(a.scrollEnabled, data) ?: true
 
             // Get children
             val children = DynamicContainerComponent.getChildren(json)
@@ -78,15 +92,16 @@ class DynamicScrollViewComponent {
             }
         }
 
-        private fun determineScrollDirection(json: JsonObject): Boolean {
-            // 1. horizontalScroll attribute (highest priority)
-            if (json.has("horizontalScroll")) {
-                return json.get("horizontalScroll").asBoolean
+        private fun determineScrollDirection(json: JsonObject, a: ScrollViewAttributes): Boolean {
+            // 1. horizontalScroll attribute (highest priority;
+            //    undeclared legacy runtime extra)
+            TypedAttrs.undeclared(json, "horizontalScroll")?.let {
+                return it.asBoolean
             }
 
             // 2. orientation attribute
-            if (json.has("orientation")) {
-                return json.get("orientation").asString == "horizontal"
+            if (a.orientation != null) {
+                return TypedAttrs.enumString(a.orientation) { it.json } == "horizontal"
             }
 
             // 3. First child View's orientation
