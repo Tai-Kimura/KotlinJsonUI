@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -220,6 +222,10 @@ fun DateSelectBox(
                     .wrapContentHeight()
                     .navigationBarsPadding()  // Proper padding for navigation bar
                     .padding(bottom = 16.dp)
+                    // The sheet is its own window: re-enable testTag -> resource-id
+                    // mapping so UI-test drivers (UIAutomator) can find the
+                    // kjui_x7q_* elements inside it.
+                    .semantics { testTagsAsResourceId = true }
             ) {
                 when (datePickerMode) {
                     "time" -> {

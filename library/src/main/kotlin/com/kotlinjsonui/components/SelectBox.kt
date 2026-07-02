@@ -129,6 +129,10 @@ fun SelectBox(
                     .fillMaxWidth()
                     .navigationBarsPadding()  // Proper padding for navigation bar
                     .padding(bottom = 16.dp)
+                    // The sheet is its own window: re-enable testTag -> resource-id
+                    // mapping so UI-test drivers (UIAutomator) can find the
+                    // kjui_x7q_* elements inside it.
+                    .semantics { testTagsAsResourceId = true }
             ) {
                 // Title or header (optional)
                 Text(
@@ -349,6 +353,10 @@ fun <T> SelectBox(
                     .fillMaxWidth()
                     .navigationBarsPadding()  // Proper padding for navigation bar
                     .padding(bottom = 16.dp)
+                    // The sheet is its own window: re-enable testTag -> resource-id
+                    // mapping so UI-test drivers (UIAutomator) can find the
+                    // kjui_x7q_* elements inside it.
+                    .semantics { testTagsAsResourceId = true }
             ) {
                 // Title or header (optional)
                 Text(
