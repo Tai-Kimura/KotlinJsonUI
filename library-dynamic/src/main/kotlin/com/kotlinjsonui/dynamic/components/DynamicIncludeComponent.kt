@@ -9,7 +9,14 @@ import com.kotlinjsonui.dynamic.processDataBinding
 /**
  * Dynamic Include Component
  * Handles inclusion of other layout files
- * 
+ *
+ * STRUCTURAL component (include expansion): it reads only the structural
+ * keys `include`, `data` and `shared_data` (all listed in
+ * UnappliedAttributes.STRUCTURAL_KEYS) and applies no renderable
+ * attributes of its own, so there is deliberately NO typed attribute
+ * parse here — structural keys stay on the raw gson node per the
+ * TypedAttrs contract.
+ *
  * Supported JSON attributes:
  * - include: String name of the layout file to include (without .json extension)
  * - data: Object with data to pass to the included layout (creates new variables in child scope)
