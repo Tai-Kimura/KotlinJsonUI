@@ -6,9 +6,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.Segment
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.SegmentAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
-import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -26,19 +29,40 @@ import androidx.compose.ui.platform.LocalContext
  * - indicatorColor: Color for tab indicator
  * - onValueChange: @{handler} for selection change callback (receives index)
  * - Modifiers: testTag, margins, size, alpha, padding, weight
+ *
+ * Attribute access goes through the generated [SegmentAttributes]
+ * extraction (typed, L1-marker-aware) via the [TypedAttrs] bridge; the
+ * node itself is only passed wholesale to the shared ModifierBuilder
+ * pipeline and to the raw items lookup.
  */
 class DynamicSegmentComponent {
     companion object {
+        /** Segment-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "selectedIndex", "bind", "items", "enabled",
+            "normalColor", "selectedColor", "tintColor",
+            "onValueChange"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                SegmentAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Segment", json,
+                declared = SegmentAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Parse binding variable for selected index
-            val bindingVariable = extractBindingVariable(json, "selectedIndex")
-                ?: extractBindingVariable(json, "bind")
+            val bindingVariable = TypedAttrs.binding(a.selectedIndex)
+                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
 
             // Get selected index
             val currentIndex = when {
@@ -49,17 +73,7 @@ class DynamicSegmentComponent {
                         else -> 0
                     }
                 }
-                json.has("selectedIndex") -> {
-                    val element = json.get("selectedIndex")
-                    when {
-                        element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> element.asInt
-                        element.isJsonPrimitive && element.asJsonPrimitive.isString &&
-                                !ModifierBuilder.isBinding(element.asString) ->
-                            element.asString.toIntOrNull() ?: 0
-                        else -> 0
-                    }
-                }
-                else -> 0
+                else -> TypedAttrs.int(a.selectedIndex, data) ?: 0
             }
 
             var selectedIndex by remember(currentIndex, bindingVariable, data) {
@@ -81,13 +95,18 @@ class DynamicSegmentComponent {
             val segments = parseSegments(json, data)
 
             // Parse enabled state (supports @{binding})
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, true)
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
-            // Parse colors
+            // Parse colors ('backgroundColor', 'selectedSegmentTintColor' and
+            // 'indicatorColor' are undeclared legacy runtime extras on Segment)
             val backgroundColor = ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
-            val normalColor = ColorParser.parseColorWithBinding(json, "normalColor", data, context)
-            val selectedColor = ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+            val normalColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.normalColor), data, context
+            )
+            val selectedColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.selectedColor), data, context
+            )
+                ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
                 ?: ColorParser.parseColorWithBinding(json, "selectedSegmentTintColor", data, context)
             val indicatorColor = ColorParser.parseColorWithBinding(json, "indicatorColor", data, context)
 
@@ -95,7 +114,7 @@ class DynamicSegmentComponent {
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
             // Handle tab click with binding update + event handler
-            val viewId = json.get("id")?.asString ?: "segment"
+            val viewId = a.common.id ?: "segment"
 
             // Create the Segment using the existing component
             Segment(
@@ -122,7 +141,7 @@ class DynamicSegmentComponent {
                             }
 
                             // Call onValueChange handler if specified
-                            val handler = json.get("onValueChange")?.asString
+                            val handler = TypedAttrs.raw(a.onValueChange) as? String
                             if (handler != null && ModifierBuilder.isBinding(handler)) {
                                 ModifierBuilder.resolveEventHandler(handler, data, viewId, index)
                             }
@@ -145,7 +164,13 @@ class DynamicSegmentComponent {
         // ── Helpers ──
 
         private fun parseSegments(json: JsonObject, data: Map<String, Any>): List<String> {
-            val segmentsElement = json.get("items") ?: json.get("segments")
+            // 'items' accepts a @{binding} string in addition to the declared
+            // array shape, and array elements are stringified through gson —
+            // wider than the generated List<Any?> coercion, so read raw (see
+            // TypedAttrs.rawKey); 'segments' is an undeclared legacy runtime
+            // extra spelling.
+            val segmentsElement = TypedAttrs.rawKey(json, "items")
+                ?: TypedAttrs.undeclared(json, "segments")
 
             return when {
                 segmentsElement == null -> emptyList()
@@ -171,11 +196,6 @@ class DynamicSegmentComponent {
                 }
                 else -> emptyList()
             }
-        }
-
-        private fun extractBindingVariable(json: JsonObject, key: String): String? {
-            val value = json.get(key)?.asString ?: return null
-            return ModifierBuilder.extractBindingProperty(value)
         }
     }
 }
