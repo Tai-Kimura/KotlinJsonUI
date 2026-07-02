@@ -35,6 +35,13 @@ android {
         compose = true
     }
 
+    testOptions {
+        // Plain-JVM unit tests exercise parse/bridge logic that emits
+        // debug warnings through android.util.Log — return defaults
+        // instead of throwing "not mocked".
+        unitTests.isReturnDefaultValues = true
+    }
+
     // Publishing variants are handled by vanniktech plugin
 }
 
