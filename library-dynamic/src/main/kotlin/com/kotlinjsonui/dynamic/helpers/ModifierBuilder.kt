@@ -575,8 +575,14 @@ object ModifierBuilder {
     }
 
     /**
-     * Merge `gravity` with individual align/center booleans. Either source
-     * setting a flag switches it on; the two are additive.
+     * INNER content-alignment flags: merge `gravity` with the individual
+     * align/center booleans. Either source setting a flag switches it on;
+     * the two are additive.
+     *
+     * Only valid for a container's OWN content alignment (Arrangement /
+     * contentAlignment in DynamicContainerComponent): `gravity` positions
+     * the node's children, never the node itself. For the node's placement
+     * inside its parent use [outerAlignFlags].
      */
     internal fun resolvedAlignFlags(json: JsonObject): AlignFlags {
         val fromGravity = parseGravity(json) ?: AlignFlags()
@@ -592,11 +598,34 @@ object ModifierBuilder {
     }
 
     /**
+     * OUTER placement flags: only the individual align/center booleans.
+     *
+     * Canonical semantics (matches build_alignment /
+     * build_relative_positioning in the static modifier_builder.rb):
+     * `alignTop`/`alignBottom`/`alignLeft`/`alignRight`/`center*` place the
+     * node inside its parent, while `gravity` places the node's own children
+     * and must NOT contribute here — otherwise a child like
+     * `{ gravity: "center", alignBottom: true, alignRight: true }` gets
+     * centered in the parent instead of bottom-end aligned.
+     */
+    internal fun outerAlignFlags(json: JsonObject): AlignFlags = AlignFlags(
+        alignTop = json.get("alignTop")?.asBoolean == true,
+        alignBottom = json.get("alignBottom")?.asBoolean == true,
+        alignLeft = json.get("alignLeft")?.asBoolean == true,
+        alignRight = json.get("alignRight")?.asBoolean == true,
+        centerH = json.get("centerHorizontal")?.asBoolean == true,
+        centerV = json.get("centerVertical")?.asBoolean == true,
+        centerInParent = json.get("centerInParent")?.asBoolean == true
+    )
+
+    /**
      * Get alignment for child element based on parent type.
      * Returns Alignment value appropriate for the parent type.
+     * Reads the OUTER placement booleans only — the child's `gravity` is
+     * consumed by the child's own container path, not by its parent.
      */
     fun getChildAlignment(json: JsonObject, parentType: String): Any? {
-        val flags = resolvedAlignFlags(json)
+        val flags = outerAlignFlags(json)
         return when (parentType) {
             "Row", "HStack" -> when {
                 flags.alignTop -> Alignment.Top
@@ -715,8 +744,10 @@ object ModifierBuilder {
             constraints += "end.linkTo($it.end)"
         }
 
-        // Parent constraints (honors `gravity` in addition to individual flags)
-        val flags = resolvedAlignFlags(json)
+        // Parent constraints (individual align booleans only — `gravity` is
+        // inner content alignment and never links the node to its parent,
+        // matching build_relative_positioning in the static tool)
+        val flags = outerAlignFlags(json)
         if (flags.alignTop) {
             constraints += "top.linkTo(parent.top${marginSuffix(topMargin)})"
         }
