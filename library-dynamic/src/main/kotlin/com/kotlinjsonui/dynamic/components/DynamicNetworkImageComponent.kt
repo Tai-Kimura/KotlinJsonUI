@@ -10,9 +10,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic NetworkImage Component Converter
@@ -37,29 +41,54 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  * - onClick/onclick: String event handler name
  * - id: String for testTag
  * - onAppear/onDisappear: Lifecycle event handlers
+ *
+ * Attribute access goes through the generated [NetworkImageAttributes]
+ * extraction via the [TypedAttrs] bridge; the node itself is only passed
+ * wholesale to the shared ModifierBuilder helpers.
  */
 class DynamicNetworkImageComponent {
     companion object {
+        /** NetworkImage-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "url", "src", "contentMode", "hint", "placeholder", "errorImage"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                NetworkImageAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "NetworkImage", json,
+                declared = NetworkImageAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // ── URL resolution: source > url > src, with @{binding} support ──
-            val rawUrl = json.get("source")?.asString
-                ?: json.get("url")?.asString
-                ?: json.get("src")?.asString
+            // ('source' is an undeclared legacy runtime extra on NetworkImage)
+            val rawUrl = TypedAttrs.undeclared(json, "source")?.asString
+                ?: TypedAttrs.rawString(a.url)
+                ?: TypedAttrs.rawString(a.src)
                 ?: ""
             val imageUrl = processDataBinding(rawUrl, data)
 
             // ── Content description ──
-            val contentDescription = ResourceResolver.resolveText(json, "contentDescription", data, context)
-                .ifEmpty { "Image" }
+            // ('contentDescription' is an undeclared legacy runtime extra)
+            val contentDescription = (
+                TypedAttrs.undeclared(json, "contentDescription")?.asString
+                    ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                    ?: ""
+                ).ifEmpty { "Image" }
 
-            // ── Content scale (case-insensitive) ──
-            val contentScale = when (json.get("contentMode")?.asString?.lowercase()) {
+            // ── Content scale (case-insensitive; static-only legacy read) ──
+            val contentScale = when (
+                TypedAttrs.staticEnumString(a.contentMode) { it.json }?.lowercase()
+            ) {
                 "aspectfit" -> ContentScale.Fit
                 "aspectfill" -> ContentScale.Crop
                 "fill", "scaletofill" -> ContentScale.FillBounds
@@ -68,8 +97,7 @@ class DynamicNetworkImageComponent {
             }
 
             // ── Placeholder: hint > placeholder, strip .png/.jpg extension ──
-            val placeholderName = json.get("hint")?.asString
-                ?: json.get("placeholder")?.asString
+            val placeholderName = a.hint ?: a.placeholder
             val placeholderResId = placeholderName?.let { name ->
                 val cleanName = name
                     .removeSuffix(".png")
@@ -80,7 +108,7 @@ class DynamicNetworkImageComponent {
             }?.takeIf { it != 0 }
 
             // ── Error image: errorImage, strip extension ──
-            val errorImageName = json.get("errorImage")?.asString
+            val errorImageName = a.errorImage
             val errorResId = errorImageName?.let { name ->
                 val cleanName = name
                     .removeSuffix(".png")
@@ -93,7 +121,8 @@ class DynamicNetworkImageComponent {
             // ── Build modifier ──
             // Standard order: testTag → margins → size → alpha → shadow → background(clip+border+bg) → clickable → padding
             // Special handling: "size" attribute overrides width/height with square .size(N.dp)
-            val sizeValue = json.get("size")?.asFloat
+            // ('size' is an undeclared legacy runtime extra)
+            val sizeValue = TypedAttrs.undeclared(json, "size")?.asFloat
             val modifier = if (sizeValue != null) {
                 // Build modifier but skip applySize — we apply square size manually
                 var m: Modifier = Modifier
