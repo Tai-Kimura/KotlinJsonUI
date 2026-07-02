@@ -11,7 +11,9 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
+import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -21,9 +23,12 @@ import androidx.compose.ui.platform.LocalContext
  *
  * Supported JSON attributes:
  * - selectedIndex/bind: Integer or @{variable} for selected tab index
- * - items/segments: Array of segment titles or @{variable} for dynamic segments
+ * - items/segments: Array of segment titles or @{variable} for dynamic segments.
+ *   Literal array items are resolved through string resources / bindings
+ *   (ResourceResolver), matching the static codegen's process_text.
  * - enabled: Boolean or @{variable} to enable/disable
- * - backgroundColor: Color for container (containerColor)
+ * - backgroundColor: Color for container (containerColor); defaults to
+ *   Color.Transparent when unspecified (matching the static codegen)
  * - normalColor: Color for unselected text (contentColor)
  * - selectedColor/tintColor/selectedSegmentTintColor: Color for selected text (selectedContentColor)
  * - indicatorColor: Color for tab indicator
@@ -91,15 +96,15 @@ class DynamicSegmentComponent {
                 }
             }
 
-            // Parse segments
-            val segments = parseSegments(json, data)
+            // Parse segments (literal items resolve through string resources)
+            val segments = parseSegments(json, data, context)
 
             // Parse enabled state (supports @{binding})
             val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Parse colors ('backgroundColor', 'selectedSegmentTintColor' and
             // 'indicatorColor' are undeclared legacy runtime extras on Segment)
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
+            val containerColor = resolveContainerColor(json, data, context)
             val normalColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.normalColor), data, context
             )
@@ -121,7 +126,7 @@ class DynamicSegmentComponent {
                 selectedTabIndex = selectedIndex,
                 modifier = modifier,
                 enabled = isEnabled,
-                containerColor = backgroundColor,
+                containerColor = containerColor,
                 contentColor = normalColor,
                 selectedContentColor = selectedColor,
                 indicatorColor = indicatorColor
@@ -163,7 +168,25 @@ class DynamicSegmentComponent {
 
         // ── Helpers ──
 
-        private fun parseSegments(json: JsonObject, data: Map<String, Any>): List<String> {
+        /**
+         * Container background: parsed `backgroundColor`, defaulting to
+         * [Color.Transparent] when unspecified. The static codegen emits
+         * `containerColor = Color.Transparent` for the no-background case
+         * (segment_component.rb); passing null instead would fall through
+         * to the Material3 TabRow surface default (an opaque band).
+         */
+        internal fun resolveContainerColor(
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: Context?
+        ): Color = ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
+            ?: Color.Transparent
+
+        internal fun parseSegments(
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: Context?
+        ): List<String> {
             // 'items' accepts a @{binding} string in addition to the declared
             // array shape, and array elements are stringified through gson —
             // wider than the generated List<Any?> coercion, so read raw (see
@@ -175,9 +198,13 @@ class DynamicSegmentComponent {
             return when {
                 segmentsElement == null -> emptyList()
                 segmentsElement.isJsonArray -> {
+                    // Literal titles resolve like the static codegen's
+                    // process_text: string resource keys → localized values,
+                    // @{binding} expressions → data map values.
                     segmentsElement.asJsonArray.mapNotNull { element ->
                         when {
-                            element.isJsonPrimitive -> element.asString
+                            element.isJsonPrimitive ->
+                                ResourceResolver.resolveTextValue(element.asString, data, context)
                             else -> null
                         }
                     }
