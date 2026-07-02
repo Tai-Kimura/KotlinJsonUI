@@ -1,5 +1,10 @@
 package com.kotlinjsonui.embed
 
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.MutableCreationExtras
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -123,6 +128,81 @@ class EmbedContainerTest {
             lastParams = params
             callCount++
         }
+    }
+
+    // ── EmbedViewModelStoreOwner Hilt factory bridge (regression: kjui-embed-vm-store-owner-not-hilt-aware) ──
+    //
+    // `hiltViewModel(viewModelStoreOwner = ...)` only engages
+    // HiltViewModelFactory when the owner implements
+    // HasDefaultViewModelProviderFactory. Without that, @HiltViewModel VMs
+    // fall through to NewInstanceFactory and crash on a missing no-arg ctor.
+    // The owner forwards the PARENT's default factory + creation extras so
+    // both Hilt projects (parent factory = HiltViewModelFactory) and
+    // non-Hilt projects (parent factory = AndroidViewModelFactory) work
+    // through the same code path.
+
+    @Test
+    fun embedViewModelStoreOwner_implementsHasDefaultViewModelProviderFactory() {
+        // Documents the contract: hiltViewModel() only wraps in HiltViewModelFactory
+        // when the owner IS-A HasDefaultViewModelProviderFactory. A future refactor
+        // dropping the interface would break this cast at runtime AND the lower
+        // test that reads defaultViewModelProviderFactory at compile time.
+        val owner: Any = EmbedViewModelStoreOwner(parentFactory = null, parentExtras = CreationExtras.Empty)
+        assertTrue(
+            "EmbedViewModelStoreOwner must implement HasDefaultViewModelProviderFactory",
+            owner is HasDefaultViewModelProviderFactory
+        )
+    }
+
+    @Test
+    fun embedViewModelStoreOwner_forwardsParentFactory() {
+        val parentFactory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                @Suppress("UNCHECKED_CAST")
+                return Object() as T
+            }
+        }
+        val owner = EmbedViewModelStoreOwner(parentFactory, CreationExtras.Empty)
+        assertSame(
+            "The parent's default factory must pass through unchanged so " +
+                "hiltViewModel() can wrap it in HiltViewModelFactory",
+            parentFactory,
+            owner.defaultViewModelProviderFactory
+        )
+    }
+
+    @Test
+    fun embedViewModelStoreOwner_fallsBackToNewInstanceFactoryWhenParentHasNoDefault() {
+        // Parent owners that don't implement HasDefaultViewModelProviderFactory
+        // pass `null` for parentFactory. The embed owner must still satisfy
+        // the HasDefaultViewModelProviderFactory contract (non-null factory).
+        val owner = EmbedViewModelStoreOwner(parentFactory = null, parentExtras = CreationExtras.Empty)
+        assertTrue(
+            "Fallback factory must be a NewInstanceFactory so non-Hilt callers still work",
+            owner.defaultViewModelProviderFactory is ViewModelProvider.NewInstanceFactory
+        )
+    }
+
+    @Test
+    fun embedViewModelStoreOwner_forwardsParentCreationExtras() {
+        val key = object : CreationExtras.Key<String> {}
+        val extras = MutableCreationExtras().apply { set(key, "from-parent") }
+        val owner = EmbedViewModelStoreOwner(parentFactory = null, parentExtras = extras)
+        assertEquals(
+            "Parent creation extras must propagate so SavedStateHandle, ActivityRetainedComponent, etc. are reachable",
+            "from-parent",
+            owner.defaultViewModelCreationExtras[key]
+        )
+    }
+
+    @Test
+    fun embedViewModelStoreOwner_givesEachInstanceItsOwnViewModelStore() {
+        // Per-embed VM isolation must NOT regress: distinct EmbedViewModelStoreOwner
+        // instances need distinct stores, otherwise two Embeds of the same screen
+        // in the same parent share VM state.
+        val a = EmbedViewModelStoreOwner(parentFactory = null, parentExtras = CreationExtras.Empty)
+        val b = EmbedViewModelStoreOwner(parentFactory = null, parentExtras = CreationExtras.Empty)
+        assertNotSame(a.viewModelStore, b.viewModelStore)
     }
 
     @Test

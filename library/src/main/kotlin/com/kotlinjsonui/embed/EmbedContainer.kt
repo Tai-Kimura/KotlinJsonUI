@@ -1,5 +1,6 @@
 package com.kotlinjsonui.embed
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -7,8 +8,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 
 /**
@@ -51,11 +55,30 @@ fun EmbedContainer(
     modifier: Modifier = Modifier,
     content: @Composable (EmbedScope) -> Unit
 ) {
+    // Inherit the parent's default ViewModelProvider.Factory and extras so
+    // `hiltViewModel(viewModelStoreOwner = embedScope.viewModelStoreOwner)`
+    // engages HiltViewModelFactory for @HiltViewModel-annotated VMs.
+    // `hiltViewModel()` only wraps the factory in HiltViewModelFactory when
+    // `viewModelStoreOwner is HasDefaultViewModelProviderFactory`; without
+    // that, Hilt VMs fall through to NewInstanceFactory and crash on a
+    // missing no-arg ctor. The parent activity (ComponentActivity) already
+    // implements HasDefaultViewModelProviderFactory; we forward its factory
+    // through unchanged. Non-Hilt projects route through whatever default
+    // their host already provides.
+    val parentOwner = LocalViewModelStoreOwner.current
+    val parentFactory: ViewModelProvider.Factory? =
+        (parentOwner as? HasDefaultViewModelProviderFactory)?.defaultViewModelProviderFactory
+    val parentExtras: CreationExtras =
+        (parentOwner as? HasDefaultViewModelProviderFactory)?.defaultViewModelCreationExtras
+            ?: CreationExtras.Empty
+
     // CRITICAL: a fresh ViewModelStoreOwner per embed slot.
     // Without this, multiple embeds of the same screen in the same parent
     // would share the same VM instance (Compose's `viewModel()` resolves by
     // class within the ambient LocalViewModelStoreOwner).
-    val owner = remember(embedId) { EmbedViewModelStoreOwner() }
+    val owner = remember(embedId, parentFactory) {
+        EmbedViewModelStoreOwner(parentFactory, parentExtras)
+    }
     DisposableEffect(embedId) {
         onDispose { owner.viewModelStore.clear() }
     }
@@ -81,7 +104,16 @@ fun EmbedContainer(
         LocalViewModelStoreOwner provides owner,
         LocalEmbeddedScreenContext provides context
     ) {
-        content(scope)
+        // Apply the caller-supplied [modifier] to a Box wrapper so the value
+        // actually reaches a Layout. Scope-bound modifiers (Row/Column
+        // `.weight(n)`, Box `.align(...)`, etc.) are CREATED at the call site
+        // inside the parent's scope but only take effect when attached to a
+        // Layout node — without the Box, the modifier was silently dropped
+        // and `Row { EmbedContainer(modifier = Modifier.weight(1f)) }`
+        // emit-from-codegen had no layout effect.
+        Box(modifier = modifier) {
+            content(scope)
+        }
     }
 }
 
@@ -102,10 +134,34 @@ class EmbedScope(
     val viewModelStoreOwner: ViewModelStoreOwner
 )
 
-/** Minimal [ViewModelStoreOwner] backed by a fresh [ViewModelStore]. */
-private class EmbedViewModelStoreOwner : ViewModelStoreOwner {
+/**
+ * Minimal [ViewModelStoreOwner] backed by a fresh [ViewModelStore].
+ *
+ * Also implements [HasDefaultViewModelProviderFactory] so that
+ * `hiltViewModel(viewModelStoreOwner = ...)` can wrap the host's default
+ * factory in a `HiltViewModelFactory` (it consults `is
+ * HasDefaultViewModelProviderFactory` to decide). The factory comes from
+ * the embed's parent (typically the ComponentActivity), so:
+ * - In Hilt projects, the parent's factory is `HiltViewModelFactory` —
+ *   forwarding it lets `@HiltViewModel` VMs resolve their `@Inject` ctor.
+ * - In non-Hilt projects, the parent's factory is the plain
+ *   AndroidViewModelFactory and `hiltViewModel()` falls back to the
+ *   delegate, preserving the original behavior.
+ *
+ * The fresh [ViewModelStore] keeps embed-local VMs scoped to this slot
+ * (so multiple Embeds of the same screen get distinct VM instances).
+ */
+internal class EmbedViewModelStoreOwner(
+    parentFactory: ViewModelProvider.Factory?,
+    parentExtras: CreationExtras
+) : ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
     private val store = ViewModelStore()
     override val viewModelStore: ViewModelStore get() = store
+
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory =
+        parentFactory ?: ViewModelProvider.NewInstanceFactory()
+
+    override val defaultViewModelCreationExtras: CreationExtras = parentExtras
 }
 
 // MARK: - EmbeddedEvent
