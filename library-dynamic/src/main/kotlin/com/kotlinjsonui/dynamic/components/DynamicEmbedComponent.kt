@@ -6,11 +6,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.EmbedAttributes
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.embed.EmbedContainer
 import com.kotlinjsonui.embed.EmbedNavigationMode
 import com.kotlinjsonui.embed.EmbeddedEvent
@@ -28,6 +32,14 @@ import com.kotlinjsonui.embed.EmbeddedEvent
  *      `params` are passed, so the embedded layout's data section defaults
  *      take effect.
  *
+ * Attribute access goes through the generated [EmbedAttributes] extraction
+ * (typed, alias-aware, L1-marker-aware) via the [TypedAttrs] bridge.
+ * Exception: `params` is read raw (see [TypedAttrs.rawKey] call) because
+ * the legacy resolver depends on gson JsonPrimitive number identity —
+ * `asNumber` keeps the authored "5" vs "5.0" spelling when the value is
+ * handed to the embedded screen's data map, which the typed Double-based
+ * map would collapse.
+ *
  * Supported JSON attributes (matching attribute_definitions.json):
  * - `screen` (required): Name of the screen to embed.
  * - `params` (optional): Map of init params; `@{...}` values resolved
@@ -44,19 +56,35 @@ class DynamicEmbedComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            val screenName = json.get("screen")?.asString.orEmpty()
+            val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                EmbedAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Embed", json,
+                declared = EmbedAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
+
+            val screenName = a.screen.orEmpty()
             if (screenName.isEmpty()) {
                 ErrorBox("Embed: missing required `screen` attribute")
                 return
             }
 
-            val embedId = json.get("id")?.asString ?: "embed"
-            val navigationMode = when (json.get("navigationMode")?.asString) {
+            val embedId = a.common.id ?: "embed"
+            // "isolated" is not a declared enum value (v1 declares only
+            // "delegate") — it reaches us through the AttrEnum unknown
+            // pass-through, matching the legacy raw-string comparison.
+            val navigationMode = when (TypedAttrs.enumString(a.navigationMode) { it.json }) {
                 "isolated" -> EmbedNavigationMode.Isolated
                 else -> EmbedNavigationMode.Delegate
             }
-            val resolvedParams = resolveParams(json.get("params"), data)
-            val eventBridge = buildEventBridge(json.get("events"), data)
+            // Declared key read raw: legacy number handling relies on gson
+            // JsonElement types (asNumber) — see class KDoc.
+            val resolvedParams = resolveParams(TypedAttrs.rawKey(json, "params"), data)
+            val eventBridge = buildEventBridge(a.events, data)
 
             EmbedContainer(
                 embedId = embedId,
@@ -85,23 +113,26 @@ class DynamicEmbedComponent {
             }
         }
 
+        /** Embed-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "screen", "params", "navigationMode", "events"
+        )
+
         /**
-         * Build an event bridge from the JSON `events: { onEventName: "parentHandlerName" }`
-         * map. Each emitted Named event looks up the handler in the parent
-         * data dict (parent VM exposes handlers as functions keyed by name).
+         * Build an event bridge from the typed `events: { onEventName:
+         * "parentHandlerName" }` map. Each emitted Named event looks up the
+         * handler in the parent data dict (parent VM exposes handlers as
+         * functions keyed by name). Non-string values are skipped, matching
+         * the legacy primitive-string filter.
          */
         private fun buildEventBridge(
-            element: com.google.gson.JsonElement?,
+            events: Map<String, Any?>?,
             parentData: Map<String, Any>
         ): ((EmbeddedEvent) -> Unit)? {
-            if (element == null || !element.isJsonObject) return null
-            val obj = element.asJsonObject
-            if (obj.size() == 0) return null
+            if (events == null || events.isEmpty()) return null
             val eventMap = mutableMapOf<String, String>()
-            for ((key, value) in obj.entrySet()) {
-                if (value.isJsonPrimitive && value.asJsonPrimitive.isString) {
-                    eventMap[key] = value.asString
-                }
+            for ((key, value) in events) {
+                (value as? String)?.let { eventMap[key] = it }
             }
             if (eventMap.isEmpty()) return null
             return { event ->
