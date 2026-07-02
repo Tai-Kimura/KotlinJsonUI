@@ -131,6 +131,19 @@ class ConformanceSuiteTest {
                 "filtered out (assertable-only run)"
             )
         }
+        // Any other filter value is a comma-separated list of manifest
+        // sections (the `<component>/` prefix of fixture ids), e.g.
+        // `-e conformanceFilter Label,common` — used for per-component
+        // verification runs during typed-attribute rollouts.
+        if (filter != "all" && filter != "assertable") {
+            val sections = filter.split(',').map { it.trim() }.filter { it.isNotEmpty() }
+            if (sections.none { fixture.id.startsWith("$it/") }) {
+                return FixtureResult(
+                    fixture.id, "skipped",
+                    "filtered out (section run: $filter)"
+                )
+            }
+        }
         return null
     }
 
