@@ -6,14 +6,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.ProgressAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Progress Component Converter
  * Converts JSON to ProgressBar/CircularProgressIndicator composable at runtime.
  * Reference: progress_component.rb in kjui_tools.
+ *
+ * Attribute access goes through the generated [ProgressAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline. 'value' is an undeclared legacy runtime
+ * extra on Progress, and 'style' rides on the structural style key.
  *
  * Supported JSON attributes:
  * - value/bind: Float or @{variable} for progress value (0.0 to 1.0)
@@ -27,6 +37,11 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  */
 class DynamicProgressComponent {
     companion object {
+        /** Progress-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "bind", "progressTintColor", "trackTintColor"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
@@ -34,13 +49,25 @@ class DynamicProgressComponent {
             parentType: String? = null
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                ProgressAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Progress", json,
+                declared = ProgressAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Determine if this is determinate (has value/bind) or indeterminate
-            val hasValue = json.has("value") || json.has("bind")
+            // Determine if this is determinate (has value/bind) or indeterminate.
+            // 'value' is an undeclared legacy runtime extra on Progress.
+            val hasValueAttr = TypedAttrs.undeclared(json, "value") != null
+            val hasValue = hasValueAttr || a.common.bind != null
 
             // Parse binding variable from value or bind
-            val bindingVariable = extractBindingVariable(json, "bind")
-                ?: extractBindingVariable(json, "value")
+            // ('value' is an undeclared legacy runtime extra)
+            val bindingVariable = extractBindingVariable(a.common.bind as? String)
+                ?: extractBindingVariable(TypedAttrs.undeclared(json, "value")?.asString)
 
             // Resolve progress value (coerced to 0..1)
             val progressValue = when {
@@ -51,7 +78,8 @@ class DynamicProgressComponent {
                         else -> 0f
                     }
                 }
-                json.has("value") -> {
+                hasValueAttr -> {
+                    // undeclared legacy runtime extra
                     ResourceResolver.resolveFloat(json, "value", data, 0f) ?: 0f
                 }
                 else -> 0f
@@ -73,12 +101,18 @@ class DynamicProgressComponent {
                 }
             }
 
-            // Parse style (only used for indeterminate)
+            // Parse style (only used for indeterminate) — the legacy
+            // indicator-style spelling rides on the structural 'style'
+            // key (style file name), so it stays a raw node read.
             val style = json.get("style")?.asString ?: "linear"
 
             // Parse colors (supports @{binding})
-            val progressColor = ColorParser.parseColorWithBinding(json, "progressTintColor", data, context)
-            val trackColor = ColorParser.parseColorWithBinding(json, "trackTintColor", data, context)
+            val progressColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.progressTintColor), data, context
+            )
+            val trackColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.trackTintColor), data, context
+            )
 
             // Build modifier: testTag -> margins -> size -> alpha -> clickable -> padding -> weight
             val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
@@ -115,8 +149,8 @@ class DynamicProgressComponent {
             }
         }
 
-        private fun extractBindingVariable(json: JsonObject, key: String): String? {
-            val value = json.get(key)?.asString ?: return null
+        private fun extractBindingVariable(value: String?): String? {
+            if (value == null) return null
             return ModifierBuilder.extractBindingProperty(value)
         }
     }
