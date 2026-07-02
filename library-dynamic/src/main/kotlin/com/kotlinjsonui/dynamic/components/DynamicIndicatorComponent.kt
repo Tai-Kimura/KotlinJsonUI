@@ -9,9 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.IndicatorAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Indicator Component Converter
@@ -31,6 +35,11 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  */
 class DynamicIndicatorComponent {
     companion object {
+        /** Indicator-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "color"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
@@ -38,14 +47,26 @@ class DynamicIndicatorComponent {
             parentType: String? = null
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                IndicatorAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Indicator", json,
+                declared = IndicatorAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Parse animating state (supports @{binding})
+            // Parse animating state (supports @{binding}; undeclared legacy
+            // runtime extra)
             val isAnimating = ResourceResolver.resolveBoolean(json, "animating", data, default = true)
 
             // Only show indicator if animating is true
             if (!isAnimating) return
 
-            // Parse style
+            // Parse style — the structural 'style' key doubles as the legacy
+            // indicator style spelling ("linear" | "small" | "medium" |
+            // "large"); structural keys stay raw.
             val style = json.get("style")?.asString ?: "medium"
 
             // Build base modifier with testTag first
@@ -57,7 +78,8 @@ class DynamicIndicatorComponent {
                 "large" -> modifier = modifier.size(48.dp)
                 "small" -> modifier = modifier.size(16.dp)
                 else -> {
-                    // Check for custom size attribute
+                    // Check for custom size attribute (undeclared legacy
+                    // runtime extra)
                     ResourceResolver.resolveFloat(json, "size", data)?.let { customSize ->
                         modifier = modifier.size(customSize.dp)
                     }
@@ -76,10 +98,14 @@ class DynamicIndicatorComponent {
             // Weight is applied via parentType-aware buildModifier; handled by caller or RowScope/ColumnScope
 
             // Parse colors (supports @{binding})
-            val color = ColorParser.parseColorWithBinding(json, "color", data, context)
+            val color = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.color), data, context
+            )
+            // trackColor (undeclared legacy runtime extra)
             val trackColor = ColorParser.parseColorWithBinding(json, "trackColor", data, context)
 
-            // Parse stroke width for circular indicator
+            // Parse stroke width for circular indicator (undeclared legacy
+            // runtime extra)
             val strokeWidth = ResourceResolver.resolveFloat(json, "strokeWidth", data)?.dp
 
             // Lifecycle effects
