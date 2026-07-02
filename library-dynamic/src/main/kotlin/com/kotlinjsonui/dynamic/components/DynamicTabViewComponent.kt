@@ -14,13 +14,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
 import com.kotlinjsonui.dynamic.SafeAreaConfig
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.TabViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic TabView Component Converter
@@ -39,39 +42,52 @@ import com.kotlinjsonui.dynamic.helpers.ColorParser
  * - tabBarBackground: String hex color for tab bar background
  * - showLabels: Boolean whether to show tab labels (default: true)
  * - onTabChange: @{callback} for tab change event
+ *
+ * Attribute access goes through the generated [TabViewAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; `tabs` and the per-tab nested keys (title/icon/view/badge)
+ * stay raw (structural).
  */
 class DynamicTabViewComponent {
     companion object {
+        /** TabView-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "tabs", "selectedIndex", "onValueChange", "onTabChange",
+            "showLabels", "tintColor", "unselectedColor", "tabBarBackground"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            // Parse tabs array
-            val tabsArray = json.get("tabs")?.asJsonArray ?: return
-            val canonicalOnly = LocalLayoutCanonicalized.current
-
-            // Selected index: canonical 'selectedIndex' with the
-            // 'selectedTabIndex' alias fallback (skipped for L1-normalized
-            // layouts).
-            val selectedIndexElement = json.get("selectedIndex")
-                ?: (if (canonicalOnly) null else json.get("selectedTabIndex"))
-
-            // Parse binding variable for selected index
-            val bindingVariable = selectedIndexElement?.asString?.let { value ->
-                if (value.contains("@{")) {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(value)?.groupValues?.get(1)
-                } else null
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                TabViewAttributes.parse(m, canonicalOnly)
             }
+            UnappliedAttributes.check(
+                "TabView", json,
+                declared = TabViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
 
-            // Tab-change callback: canonical 'onValueChange' first, then the
-            // 'onTabChange' / 'onPageChanged' alias spellings (skipped for
-            // L1-normalized layouts).
-            val onTabChangeRaw = json.get("onValueChange")?.asString
-                ?: (if (canonicalOnly) null
-                    else json.get("onTabChange")?.asString
-                        ?: json.get("onPageChanged")?.asString)
+            // tabs is structural-ish: an array of nested tab objects whose
+            // per-tab keys (title/icon/view/badge, badge as a raw
+            // JsonElement) are read below — keep the gson array via the
+            // documented raw escape hatch.
+            val tabsArray = TypedAttrs.rawKey(json, "tabs")?.asJsonArray ?: return
+
+            // Selected index: canonical 'selectedIndex'; the
+            // 'selectedTabIndex' alias is resolved by the generated parser
+            // (and skipped for L1-normalized layouts). Accepts an integer
+            // or a "@{binding}" string.
+            val bindingVariable = TypedAttrs.binding(a.selectedIndex)
+
+            // Tab-change callback: canonical 'onValueChange'; the
+            // 'onTabChange' / 'onPageChanged' alias spellings are resolved
+            // by the generated parser (and skipped for L1-normalized
+            // layouts).
+            val onTabChangeRaw = TypedAttrs.rawString(a.onValueChange)
             val onTabChangeProperty = onTabChangeRaw?.let { value ->
                 if (value.contains("@{")) {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
@@ -93,13 +109,7 @@ class DynamicTabViewComponent {
                         else -> 0
                     }
                 }
-                selectedIndexElement?.isJsonPrimitive == true -> {
-                    when {
-                        selectedIndexElement.asJsonPrimitive.isNumber -> selectedIndexElement.asInt
-                        else -> 0
-                    }
-                }
-                else -> 0
+                else -> TypedAttrs.static(a.selectedIndex)?.toInt() ?: 0
             }
 
             // State for selected tab
@@ -129,13 +139,19 @@ class DynamicTabViewComponent {
             }
 
             // Parse colors - handle both static values and bindings
-            val tintColor = ColorParser.parseColorWithBinding(json, "tintColor", data)
-            val unselectedColor = ColorParser.parseColorWithBinding(json, "unselectedColor", data)
-            val tabBarBackground = ColorParser.parseColorWithBinding(json, "tabBarBackground", data)
-            val showLabels = json.get("showLabels")?.asBoolean ?: true
+            val tintColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.tintColor), data
+            )
+            val unselectedColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.unselectedColor), data
+            )
+            val tabBarBackground = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.tabBarBackground), data
+            )
+            val showLabels = a.showLabels ?: true
 
             // Get TabView id for test automation
-            val tabViewId = json.get("id")?.asString
+            val tabViewId = a.common.id
 
             // Build tab items data
             val tabItems = tabsArray.mapIndexed { index, item ->
