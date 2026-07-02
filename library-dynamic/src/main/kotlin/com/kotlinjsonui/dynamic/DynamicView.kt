@@ -120,7 +120,9 @@ fun DynamicView(
     val renderComponent: @Composable () -> Unit = {
         when (type.lowercase()) {
             "text", "label" -> DynamicTextComponent.create(responsiveJson, effectiveData)
-            "textfield" -> DynamicTextFieldComponent.create(responsiveJson, effectiveData)
+            // EditText (Android) and Input (web) are canonical aliases of TextField
+            // in attribute_definitions.json
+            "textfield", "edittext", "input" -> DynamicTextFieldComponent.create(responsiveJson, effectiveData)
             "button" -> DynamicButtonComponent.create(responsiveJson, effectiveData)
             "image" -> DynamicImageComponent.create(responsiveJson, effectiveData)
             "networkimage" -> DynamicNetworkImageComponent.create(responsiveJson, effectiveData)
@@ -150,7 +152,8 @@ fun DynamicView(
             "embed" -> DynamicEmbedComponent.create(responsiveJson, effectiveData)
             "gradientview" -> DynamicGradientViewComponent.create(responsiveJson, effectiveData)
             "circleview" -> DynamicCircleViewComponent.create(responsiveJson, effectiveData)
-            "blurview" -> DynamicBlurViewComponent.create(responsiveJson, effectiveData)
+            // "Blur" is the canonical section name in attribute_definitions.json
+            "blurview", "blur" -> DynamicBlurViewComponent.create(responsiveJson, effectiveData)
             "iconlabel" -> DynamicIconLabelComponent.create(responsiveJson, effectiveData)
             "textview" -> DynamicTextViewComponent.create(responsiveJson, effectiveData)
             "triangle" -> DynamicTriangleComponent.create(responsiveJson, effectiveData)
