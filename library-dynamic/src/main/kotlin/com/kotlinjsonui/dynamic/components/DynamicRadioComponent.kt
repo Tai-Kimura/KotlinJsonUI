@@ -11,9 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.RadioAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -25,6 +28,14 @@ import androidx.compose.ui.platform.LocalContext
  * 1. Radio group with items array (highest priority)
  * 2. Individual radio item (has group or text without items/options)
  * 3. Radio group with options (static array or @{binding})
+ *
+ * Attribute access goes through the generated [RadioAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline. Several legacy runtime extras (items,
+ * options, selectedValue, onValueChange, selectedColor, unselectedColor,
+ * textColor) are not declared for Radio and stay on
+ * [TypedAttrs.undeclared].
  *
  * Supported JSON attributes:
  * - bind: @{variable} for selected value binding
@@ -41,29 +52,53 @@ import androidx.compose.ui.platform.LocalContext
  */
 class DynamicRadioComponent {
     companion object {
+        /** Radio-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "group", "text", "icon", "selectedIcon", "fontColor", "tintColor"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                RadioAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Radio", json,
+                declared = RadioAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
+
             when {
-                // Handle radio group with items (highest priority)
-                json.has("items") -> createRadioGroupWithItems(json, data)
-                // Handle individual radio item
-                json.has("group") || (json.has("text") && !json.has("options")) -> createRadioItem(json, data)
+                // Handle radio group with items (highest priority) —
+                // 'items' is an undeclared legacy runtime extra on Radio
+                TypedAttrs.undeclared(json, "items") != null ->
+                    createRadioGroupWithItems(json, a, data)
+                // Handle individual radio item —
+                // 'options' is an undeclared legacy runtime extra
+                a.group != null ||
+                    (a.text != null && TypedAttrs.undeclared(json, "options") == null) ->
+                    createRadioItem(json, a, data)
                 // Handle radio group with options
-                else -> createRadioGroup(json, data)
+                else -> createRadioGroup(json, a, data)
             }
         }
 
         // ── Radio group with options (static array or @{binding}) ──
 
         @Composable
-        private fun createRadioGroup(json: JsonObject, data: Map<String, Any>) {
+        private fun createRadioGroup(
+            json: JsonObject,
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ) {
             val context = LocalContext.current
 
-            // Parse binding variable
-            val bindingVariable = extractBindingVariable(json, "bind")
+            // Parse binding variable ('bind' is a common declared row)
+            val bindingVariable = extractBindingVariable(a.common.bind as? String)
 
             // Get selected value from data
             val currentSelected = if (bindingVariable != null) {
@@ -83,9 +118,15 @@ class DynamicRadioComponent {
             // Parse options: static array or @{binding}
             val options = parseOptions(json, data)
 
-            // Parse colors (supports @{binding})
-            val selectedColor = ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
-            val unselectedColor = ColorParser.parseColorWithBinding(json, "unselectedColor", data, context)
+            // Parse colors (supports @{binding}) — 'selectedColor' /
+            // 'unselectedColor' are undeclared legacy runtime extras
+            // (the declared spellings are checkedColor/uncheckedColor)
+            val selectedColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.undeclared(json, "selectedColor")?.asString, data, context
+            )
+            val unselectedColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.undeclared(json, "unselectedColor")?.asString, data, context
+            )
 
             val colors = if (selectedColor != null || unselectedColor != null) {
                 RadioButtonDefaults.colors(
@@ -97,7 +138,7 @@ class DynamicRadioComponent {
             }
 
             // Handle value change
-            val viewId = json.get("id")?.asString ?: "radio"
+            val viewId = a.common.id ?: "radio"
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 
@@ -109,7 +150,8 @@ class DynamicRadioComponent {
                 }
 
                 // Call onValueChange handler if specified
-                val handler = json.get("onValueChange")?.asString
+                // (undeclared legacy runtime extra on Radio)
+                val handler = TypedAttrs.undeclared(json, "onValueChange")?.asString
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
@@ -141,11 +183,15 @@ class DynamicRadioComponent {
         // ── Individual radio item (group/text mode) ──
 
         @Composable
-        private fun createRadioItem(json: JsonObject, data: Map<String, Any>) {
+        private fun createRadioItem(
+            json: JsonObject,
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ) {
             val context = LocalContext.current
-            val group = json.get("group")?.asString ?: "default"
-            val id = json.get("id")?.asString ?: "radio_${System.currentTimeMillis()}"
-            val text = json.get("text")?.asString ?: ""
+            val group = a.group ?: "default"
+            val id = a.common.id ?: "radio_${System.currentTimeMillis()}"
+            val text = TypedAttrs.rawString(a.text) ?: ""
 
             // Variable name for selected state based on group
             val selectedVar = if (group.lowercase() != "default") {
@@ -164,8 +210,8 @@ class DynamicRadioComponent {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = modifier
             ) {
-                val icon = json.get("icon")?.asString
-                val selectedIcon = json.get("selectedIcon")?.asString
+                val icon = a.icon
+                val selectedIcon = a.selectedIcon
 
                 // Update function for selection
                 val onSelect: () -> Unit = {
@@ -201,8 +247,14 @@ class DynamicRadioComponent {
                                 painter = painterResource(if (isSelected) selectedIconResId else iconResId),
                                 contentDescription = text,
                                 tint = if (isSelected) {
-                                    ColorParser.parseColorWithBinding(json, "selectedColor", data, context)
-                                        ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+                                    // 'selectedColor' is an undeclared legacy runtime extra
+                                    ColorParser.parseColorStringWithBinding(
+                                        TypedAttrs.undeclared(json, "selectedColor")?.asString,
+                                        data, context
+                                    )
+                                        ?: ColorParser.parseColorStringWithBinding(
+                                            TypedAttrs.rawString(a.common.tintColor), data, context
+                                        )
                                         ?: MaterialTheme.colorScheme.primary
                                 } else {
                                     Color.Gray
@@ -222,9 +274,14 @@ class DynamicRadioComponent {
                 // Add label text
                 if (text.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
+                    // 'textColor' is an undeclared legacy runtime extra
                     val textColor =
-                        ColorParser.parseColorWithBinding(json, "fontColor", data, context)
-                            ?: ColorParser.parseColorWithBinding(json, "textColor", data, context)
+                        ColorParser.parseColorStringWithBinding(
+                            TypedAttrs.rawString(a.fontColor), data, context
+                        )
+                            ?: ColorParser.parseColorStringWithBinding(
+                                TypedAttrs.undeclared(json, "textColor")?.asString, data, context
+                            )
                             ?: Color.Black
                     Text(text = text, color = textColor)
                 }
@@ -234,12 +291,21 @@ class DynamicRadioComponent {
         // ── Radio group with items array ──
 
         @Composable
-        private fun createRadioGroupWithItems(json: JsonObject, data: Map<String, Any>) {
+        private fun createRadioGroupWithItems(
+            json: JsonObject,
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ) {
             val context = LocalContext.current
-            val items = json.get("items")?.asJsonArray?.map { it.asString } ?: emptyList()
+            // 'items' is an undeclared legacy runtime extra on Radio
+            val items = TypedAttrs.undeclared(json, "items")
+                ?.asJsonArray?.map { it.asString } ?: emptyList()
 
             // Parse selected value binding from selectedValue attribute
-            val bindingVariable = extractBindingVariable(json, "selectedValue")
+            // (undeclared legacy runtime extra)
+            val bindingVariable = extractBindingVariable(
+                TypedAttrs.undeclared(json, "selectedValue")?.asString
+            )
 
             val currentSelected = if (bindingVariable != null) {
                 (data[bindingVariable] as? String) ?: ""
@@ -268,14 +334,18 @@ class DynamicRadioComponent {
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
-            // Parse text color
-            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "textColor", data, context)
+            // Parse text color ('textColor' is an undeclared legacy runtime extra)
+            val textColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.fontColor), data, context
+            )
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "textColor")?.asString, data, context
+                )
                 ?: Color.Black
 
             Column(modifier = modifier) {
                 // Add label if present
-                json.get("text")?.asString?.let { label ->
+                TypedAttrs.rawString(a.text)?.let { label ->
                     Text(text = label, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -302,7 +372,8 @@ class DynamicRadioComponent {
         // ── Helpers ──
 
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<Pair<String, String>> {
-            val optionsElement = json.get("options") ?: return emptyList()
+            // 'options' is an undeclared legacy runtime extra on Radio
+            val optionsElement = TypedAttrs.undeclared(json, "options") ?: return emptyList()
 
             return when {
                 optionsElement.isJsonArray -> {
@@ -333,8 +404,8 @@ class DynamicRadioComponent {
             }
         }
 
-        private fun extractBindingVariable(json: JsonObject, key: String): String? {
-            val value = json.get(key)?.asString ?: return null
+        private fun extractBindingVariable(value: String?): String? {
+            if (value == null) return null
             return ModifierBuilder.extractBindingProperty(value)
         }
 
