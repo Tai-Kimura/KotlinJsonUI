@@ -5,6 +5,10 @@ import com.google.gson.JsonObject
 
 /**
  * ZStack/Box component – delegates to DynamicContainerComponent with no orientation (Box).
+ *
+ * Typed attribute parsing (ViewAttributes) and the UnappliedAttributes
+ * check both happen inside DynamicContainerComponent; the "ZStack"
+ * component-type label is passed through so warnings name this node type.
  */
 class DynamicZStackComponent {
     companion object {
@@ -14,7 +18,7 @@ class DynamicZStackComponent {
             val modified = json.deepCopy().apply {
                 remove("orientation")
             }
-            DynamicContainerComponent.create(modified, data)
+            DynamicContainerComponent.create(modified, data, componentType = "ZStack")
         }
     }
 }
