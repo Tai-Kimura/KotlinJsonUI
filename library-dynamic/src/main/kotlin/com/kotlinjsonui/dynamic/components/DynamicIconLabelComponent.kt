@@ -17,9 +17,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.IconLabelAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic IconLabel Component Converter
@@ -58,12 +62,26 @@ class DynamicIconLabelComponent {
             "black" to FontWeight.Black
         )
 
+        /** IconLabel-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "text", "fontSize", "fontColor", "iconPosition", "tintColor"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                IconLabelAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "IconLabel", json,
+                declared = IconLabelAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Build container modifier
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -73,38 +91,50 @@ class DynamicIconLabelComponent {
                 ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
-            // Parse icon resource
-            val rawIcon = json.get("icon")?.asString
-                ?: json.get("src")?.asString
+            // Parse icon resource ('icon'/'src' are undeclared legacy runtime
+            // extras — the declared rows are icon_on/icon_off, which this
+            // component does not consume)
+            val rawIcon = TypedAttrs.undeclared(json, "icon")?.asString
+                ?: TypedAttrs.undeclared(json, "src")?.asString
                 ?: ""
             val iconResId = ResourceResolver.resolveDrawable(rawIcon, data, context)
 
-            // Parse text
-            val text = ResourceResolver.resolveText(json, "text", data, context)
+            // Parse text with binding + string resource support
+            val text = TypedAttrs.rawString(a.text)
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                ?: ""
 
-            // Parse icon attributes
-            val iconSize = json.get("iconSize")?.asFloat ?: 24f
+            // Parse icon attributes ('iconSize'/'iconColor' are undeclared
+            // legacy runtime extras; 'tintColor' is the declared common row)
+            val iconSize = TypedAttrs.undeclared(json, "iconSize")?.asFloat ?: 24f
             val iconTintColor = ColorParser.parseColorWithBinding(json, "iconColor", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.common.tintColor), data, context
+                )
 
-            // Parse text attributes
-            val fontSize = json.get("fontSize")?.asFloat ?: 14f
-            val fontColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+            // Parse text attributes ('fontWeight' is an undeclared legacy
+            // runtime extra — 'font' is the declared row, not consumed here)
+            val fontSize = a.fontSize?.toFloat() ?: 14f
+            val fontColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
                 ?: Color.Unspecified
-            val fontWeight = json.get("fontWeight")?.asString?.let { fw ->
+            val fontWeight = TypedAttrs.undeclared(json, "fontWeight")?.asString?.let { fw ->
                 WEIGHT_NAMES[fw.lowercase()]
             }
 
-            // Parse layout attributes
-            val iconPosition = json.get("iconPosition")?.asString ?: "left"
-            val spacing = json.get("spacing")?.asFloat ?: 8f
+            // Parse layout attributes (iconPosition feeds the existing
+            // lowercase switch; 'spacing' is an undeclared legacy runtime
+            // extra — 'iconMargin' is the declared row, not consumed here)
+            val iconPosition = TypedAttrs.enumString(a.iconPosition) { it.json }
+                ?.lowercase() ?: "left"
+            val spacing = TypedAttrs.undeclared(json, "spacing")?.asFloat ?: 8f
 
-            // Build icon composable content
+            // Build icon composable content ('contentDescription' is an
+            // undeclared legacy runtime extra)
             val iconContent: @Composable () -> Unit = {
                 if (iconResId != 0) {
                     Image(
                         painter = painterResource(id = iconResId),
-                        contentDescription = json.get("contentDescription")?.asString ?: "",
+                        contentDescription = TypedAttrs.undeclared(json, "contentDescription")?.asString ?: "",
                         modifier = Modifier.size(iconSize.dp),
                         colorFilter = iconTintColor?.let { ColorFilter.tint(it) }
                     )
