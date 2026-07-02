@@ -315,12 +315,12 @@ class DynamicTextFieldComponent {
         }
 
         private fun hasMarginAttributes(json: JsonObject): Boolean {
-            return json.has("margins") || json.has("topMargin") || json.has("bottomMargin") ||
-                    json.has("leftMargin") || json.has("rightMargin") ||
-                    json.has("startMargin") || json.has("endMargin") ||
-                    json.has("marginTop") || json.has("marginBottom") ||
-                    json.has("marginLeft") || json.has("marginRight") ||
-                    json.has("marginStart") || json.has("marginEnd")
+            return TypedAttrs.rawKey(json, "margins") != null || TypedAttrs.rawKey(json, "topMargin") != null || TypedAttrs.rawKey(json, "bottomMargin") != null ||
+                    TypedAttrs.rawKey(json, "leftMargin") != null || TypedAttrs.rawKey(json, "rightMargin") != null ||
+                    TypedAttrs.rawKey(json, "startMargin") != null || TypedAttrs.rawKey(json, "endMargin") != null ||
+                    TypedAttrs.rawKey(json, "marginTop") != null || TypedAttrs.rawKey(json, "marginBottom") != null ||
+                    TypedAttrs.rawKey(json, "marginLeft") != null || TypedAttrs.rawKey(json, "marginRight") != null ||
+                    TypedAttrs.rawKey(json, "marginStart") != null || TypedAttrs.rawKey(json, "marginEnd") != null
         }
 
         private fun resolveIsOutlined(json: JsonObject, a: TextFieldAttributes): Boolean {
