@@ -9,6 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,6 +34,7 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  * - data: @{variable} for checked state binding (primary)
  * - isOn: Boolean for checked state (fallback)
  * - onclick/onClick: Event handler
+ * - enabled: Boolean or @{variable} to enable/disable
  * - tintColor: Hex color for checkedThumbColor + checkedTrackColor (with 0.5f alpha)
  * - backgroundColor: Hex color for uncheckedTrackColor
  * - padding/paddings/margins: Layout modifiers
@@ -101,6 +104,10 @@ class DynamicToggleComponent {
                 }
             }
 
+            // Enabled state (supports @{binding}) — Toggle is a canonical alias
+            // of Switch and must honor the same attribute
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+
             // Build modifier: testTag, margins, alpha, padding, alignment, weight
             val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
 
@@ -126,6 +133,7 @@ class DynamicToggleComponent {
                     checked = checkedState,
                     onCheckedChange = onCheckedChange,
                     modifier = modifier,
+                    enabled = isEnabled,
                     colors = colors
                 )
             } else {
@@ -134,7 +142,11 @@ class DynamicToggleComponent {
                     ?: "leading"
 
                 Row(
-                    modifier = modifier,
+                    // The Row carries the component's id, so mirror the disabled
+                    // state in its semantics for accessibility / UI tests.
+                    modifier = modifier.let {
+                        if (!isEnabled) it.semantics { disabled() } else it
+                    },
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -144,6 +156,7 @@ class DynamicToggleComponent {
                     Switch(
                         checked = checkedState,
                         onCheckedChange = onCheckedChange,
+                        enabled = isEnabled,
                         colors = colors
                     )
                     if (labelPosition == "trailing") {

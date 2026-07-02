@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -144,13 +146,19 @@ class DynamicCheckBoxComponent {
                 }
             }
 
+            // Enabled state (supports @{binding})
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+
             // Build onCheckedChange handler
             val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
-            // Build modifier for Row container: testTag, margins, alpha, padding
+            // Build modifier for Row container: testTag, margins, alpha, padding.
+            // The Row carries the component's id, so mirror the disabled state
+            // in its semantics for accessibility / UI tests.
             val rowModifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+                .let { if (!isEnabled) it.semantics { disabled() } else it }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -159,7 +167,8 @@ class DynamicCheckBoxComponent {
                 // Checkbox
                 Checkbox(
                     checked = checkedState,
-                    onCheckedChange = onCheckedChange
+                    onCheckedChange = onCheckedChange,
+                    enabled = isEnabled
                 )
 
                 // Spacer with configurable spacing
@@ -218,6 +227,9 @@ class DynamicCheckBoxComponent {
                 }
             }
 
+            // Enabled state (supports @{binding})
+            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+
             // Build onCheckedChange handler
             val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
                 checkedState = newValue
@@ -235,7 +247,8 @@ class DynamicCheckBoxComponent {
             IconToggleButton(
                 checked = checkedState,
                 onCheckedChange = onCheckedChange,
-                modifier = modifier
+                modifier = modifier,
+                enabled = isEnabled
             ) {
                 // Icon tint color
                 val tintColor = json.get("fontColor")?.asString?.let {
