@@ -14,8 +14,12 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.GradientViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic GradientView Component Converter
@@ -50,15 +54,31 @@ class DynamicGradientViewComponent {
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                GradientViewAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "GradientView", json,
+                declared = GradientViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // `gradient` object wraps { colors, locations, startPoint, endPoint }.
             // When present, each nested field takes precedence over the top-level
             // equivalent (which stays valid as the simpler legacy shape).
-            val gradientObject = json.get("gradient")?.takeIf { it.isJsonObject }?.asJsonObject
+            // `gradient` is declared as a color array, but the legacy reader
+            // accepts this object wrapper — wider than the declared type, so
+            // read raw (see TypedAttrs.rawKey).
+            val gradientObject = TypedAttrs.rawKey(json, "gradient")
+                ?.takeIf { it.isJsonObject }?.asJsonObject
             val effective = gradientObject ?: json
 
-            // Parse gradient colors from 'colors' or 'items' array.
-            val colorsElement = effective.get("colors") ?: effective.get("items")
+            // Parse gradient colors from 'colors' or 'items' array
+            // (undeclared legacy runtime extras at node level; plain object
+            // fields inside the gradient wrapper).
+            val colorsElement = TypedAttrs.undeclared(effective, "colors")
+                ?: TypedAttrs.undeclared(effective, "items")
             val colors = when {
                 colorsElement?.isJsonArray == true -> {
                     parseColors(colorsElement.asJsonArray, data, context)
@@ -76,8 +96,10 @@ class DynamicGradientViewComponent {
                 else -> DEFAULT_COLORS
             }
 
-            // Optional color stop positions 0..1.
-            val locations = effective.get("locations")?.takeIf { it.isJsonArray }
+            // Optional color stop positions 0..1. `locations` is declared,
+            // but the read must also serve the nested gradient wrapper and
+            // inspects element shapes raw (see TypedAttrs.rawKey).
+            val locations = TypedAttrs.rawKey(effective, "locations")?.takeIf { it.isJsonArray }
                 ?.asJsonArray
                 ?.mapNotNull { it.takeIf { el -> el.isJsonPrimitive && el.asJsonPrimitive.isNumber }?.asFloat }
                 ?.takeIf { it.size == colors.size }
@@ -92,7 +114,7 @@ class DynamicGradientViewComponent {
             modifier = modifier.background(gradientBrush)
 
             // Apply corner radius clip
-            json.get("cornerRadius")?.asFloat?.let { radius ->
+            TypedAttrs.float(a.common.cornerRadius, data)?.let { radius ->
                 modifier = modifier.clip(RoundedCornerShape(radius.dp))
             }
 
@@ -104,6 +126,11 @@ class DynamicGradientViewComponent {
                 }
             }
         }
+
+        /** GradientView-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "gradient", "gradientDirection", "locations"
+        )
 
         private val DEFAULT_COLORS = listOf(Color.Black, Color.White)
 
@@ -149,11 +176,11 @@ class DynamicGradientViewComponent {
          * linearGradient is built with explicit colorStops.
          */
         private fun resolveGradientBrush(
-            json: JsonObject,
+            effective: JsonObject,
             colors: List<Color>,
             locations: List<Float>?
         ): Brush {
-            val (start, end) = resolveGradientEndpoints(json)
+            val (start, end) = resolveGradientEndpoints(effective)
 
             // Explicit color stops via `locations` → always a linearGradient.
             if (locations != null) {
@@ -163,8 +190,13 @@ class DynamicGradientViewComponent {
 
             // Direction-hinted convenience brushes, only when endpoints degenerate
             // to pure vertical / horizontal.
-            val direction = json.get("gradientDirection")?.asString
-                ?: json.get("orientation")?.asString
+            // `gradientDirection` is declared, but the legacy reader matches
+            // spellings ("leftToRight", exact case, ...) wider than the
+            // declared enum and must also serve the nested gradient wrapper
+            // — read raw (see TypedAttrs.rawKey). 'orientation' is an
+            // undeclared legacy runtime extra.
+            val direction = TypedAttrs.rawKey(effective, "gradientDirection")?.asString
+                ?: TypedAttrs.undeclared(effective, "orientation")?.asString
             when (direction) {
                 "horizontal", "leftToRight" -> return Brush.horizontalGradient(colors)
                 "vertical", "topToBottom" -> return Brush.verticalGradient(colors)
@@ -175,9 +207,11 @@ class DynamicGradientViewComponent {
             return Brush.linearGradient(colors = colors, start = start, end = end)
         }
 
-        private fun resolveGradientEndpoints(json: JsonObject): Pair<Offset, Offset> {
-            val startName = json.get("startPoint")?.asString
-            val endName = json.get("endPoint")?.asString
+        private fun resolveGradientEndpoints(effective: JsonObject): Pair<Offset, Offset> {
+            // 'startPoint'/'endPoint' are undeclared legacy runtime extras at
+            // node level; plain object fields inside the gradient wrapper.
+            val startName = TypedAttrs.undeclared(effective, "startPoint")?.asString
+            val endName = TypedAttrs.undeclared(effective, "endPoint")?.asString
             if (startName != null && endName != null) {
                 return namedOffset(startName) to namedOffset(endName)
             }
