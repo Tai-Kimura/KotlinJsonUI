@@ -13,10 +13,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CircleViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.dashedBorder
 import com.kotlinjsonui.dynamic.helpers.dottedBorder
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic CircleView Component Converter
@@ -36,15 +40,29 @@ import com.kotlinjsonui.dynamic.helpers.dottedBorder
  */
 class DynamicCircleViewComponent {
     companion object {
+        /** CircleView-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "child", "children"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                CircleViewAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "CircleView", json,
+                declared = CircleViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Parse size (default 20dp)
-            val size = json.get("size")?.asFloat ?: 20f
+            // Parse size (default 20dp; undeclared legacy runtime extra)
+            val size = TypedAttrs.undeclared(json, "size")?.asFloat ?: 20f
 
             // Build modifier in the specified order:
             // testTag → margins → size → clip(CircleShape) → border → background(color, CircleShape) → alpha → clickable → padding
@@ -63,10 +81,12 @@ class DynamicCircleViewComponent {
             modifier = modifier.clip(CircleShape)
 
             // 5. border(CircleShape)
-            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-            val borderWidth = json.get("borderWidth")?.asFloat
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            )
+            val borderWidth = TypedAttrs.float(a.common.borderWidth, data)
             if (borderColor != null && borderWidth != null && borderWidth > 0) {
-                val borderStyle = json.get("borderStyle")?.asString ?: "solid"
+                val borderStyle = TypedAttrs.enumString(a.common.borderStyle) { it.json } ?: "solid"
                 modifier = when (borderStyle) {
                     "dashed" -> modifier.dashedBorder(borderWidth.dp, borderColor, CircleShape)
                     "dotted" -> modifier.dottedBorder(borderWidth.dp, borderColor, CircleShape)
@@ -74,9 +94,12 @@ class DynamicCircleViewComponent {
                 }
             }
 
-            // 6. background color with CircleShape
+            // 6. background color with CircleShape ('color' is an undeclared
+            // legacy runtime extra on CircleView; 'background' is declared)
             val fillColor = ColorParser.parseColorWithBinding(json, "color", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.common.background), data, context
+                )
             if (fillColor != null) {
                 modifier = modifier.background(fillColor, CircleShape)
             }
