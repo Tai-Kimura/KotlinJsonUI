@@ -4,10 +4,13 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
 import com.google.gson.JsonObject
-import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.SliderAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 import kotlin.math.roundToInt
 
@@ -18,8 +21,8 @@ import kotlin.math.roundToInt
  *
  * Supported JSON attributes:
  * - value/bind: Float or @{variable} for current value
- * - minimumValue/min: Float minimum value (default 0)
- * - maximumValue/max: Float maximum value (default 100)
+ * - minimum/minimumValue/min: Float minimum value (default 0)
+ * - maximum/maximumValue/max: Float maximum value (default 100)
  * - step: Float step size for discrete slider (steps = ((max-min)/step) - 1)
  * - onValueChange: @{handler} for change callback (updates binding + calls handler)
  * - enabled: Boolean or @{variable} to enable/disable
@@ -27,35 +30,50 @@ import kotlin.math.roundToInt
  * - minimumTrackTintColor: Color for active track
  * - maximumTrackTintColor: Color for inactive track
  * - Modifiers: testTag, margins, size, alpha, clickable, padding, weight
+ *
+ * Attribute access goes through the generated [SliderAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge: the `minimumValue`/`minValue` (`maximumValue`/`maxValue`) alias
+ * spellings resolve into [SliderAttributes.minimum]/[SliderAttributes.maximum]
+ * natively, and `onValueChanged` into [SliderAttributes.onValueChange].
  */
 class DynamicSliderComponent {
     companion object {
+        /** Slider-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "value", "bind", "enabled",
+            "minimum", "minValue", "maximum", "maxValue",
+            "step", "onValueChange"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
-            val canonicalOnly = LocalLayoutCanonicalized.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                SliderAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Slider", json,
+                declared = SliderAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Parse binding variable from value or bind
-            val bindingVariable = extractBindingVariable(json, "value")
-                ?: extractBindingVariable(json, "bind")
+            val bindingVariable = TypedAttrs.binding(a.value)
+                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
 
-            // Parse min/max: canonical minimum/maximum first, then the
-            // minimumValue/minValue (maximumValue/maxValue) alias spellings
-            // (skipped for L1-normalized layouts); min/max are undeclared
-            // legacy spellings, always honored last.
-            val minValue = ResourceResolver.resolveFloat(json, "minimum", data)
-                ?: (if (canonicalOnly) null
-                    else ResourceResolver.resolveFloat(json, "minimumValue", data)
-                        ?: ResourceResolver.resolveFloat(json, "minValue", data))
+            // Parse min/max: the typed fields carry canonical minimum/maximum
+            // plus the minimumValue/minValue (maximumValue/maxValue) alias
+            // spellings (skipped for L1-normalized layouts); 'min'/'max' are
+            // undeclared legacy spellings, always honored last.
+            val minValue = TypedAttrs.float(a.minimum, data)
                 ?: ResourceResolver.resolveFloat(json, "min", data)
                 ?: 0f
-            val maxValue = ResourceResolver.resolveFloat(json, "maximum", data)
-                ?: (if (canonicalOnly) null
-                    else ResourceResolver.resolveFloat(json, "maximumValue", data)
-                        ?: ResourceResolver.resolveFloat(json, "maxValue", data))
+            val maxValue = TypedAttrs.float(a.maximum, data)
                 ?: ResourceResolver.resolveFloat(json, "max", data)
                 ?: 100f
 
@@ -68,10 +86,7 @@ class DynamicSliderComponent {
                         else -> minValue
                     }
                 }
-                json.has("value") -> {
-                    ResourceResolver.resolveFloat(json, "value", data, minValue) ?: minValue
-                }
-                else -> minValue
+                else -> TypedAttrs.float(a.value, data) ?: minValue
             }.coerceIn(minValue, maxValue)
 
             // State for slider value
@@ -91,10 +106,10 @@ class DynamicSliderComponent {
             }
 
             // Parse enabled state (supports @{binding})
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, true)
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Calculate steps if specified
-            val steps = json.get("step")?.asFloat?.let { step ->
+            val steps = a.step?.toFloat()?.let { step ->
                 if (step > 0) {
                     val calculated = ((maxValue - minValue) / step).roundToInt() - 1
                     if (calculated > 0) calculated else 0
@@ -102,7 +117,7 @@ class DynamicSliderComponent {
             } ?: 0
 
             // Handle value change: update binding + call onValueChange handler
-            val viewId = json.get("id")?.asString ?: "slider"
+            val viewId = a.common.id ?: "slider"
             val onValueChange: (Float) -> Unit = { newValue ->
                 sliderValue = newValue
 
@@ -113,16 +128,18 @@ class DynamicSliderComponent {
                         ?.invoke(mapOf(bindingVariable to newValue.toDouble()))
                 }
 
-                // Call onValueChange handler if specified ('onValueChanged'
-                // is its alias, skipped for L1-normalized layouts)
-                val handler = json.get("onValueChange")?.asString
-                    ?: (if (canonicalOnly) null else json.get("onValueChanged")?.asString)
+                // Call onValueChange handler if specified (the 'onValueChanged'
+                // alias resolves through the typed parse, which already skips
+                // it for L1-normalized layouts)
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
             }
 
-            // Parse colors (supports @{binding})
+            // Parse colors (supports @{binding}) — 'thumbTintColor',
+            // 'minimumTrackTintColor' and 'maximumTrackTintColor' are
+            // undeclared legacy runtime extras on Slider
             val thumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
             val activeTrackColor = ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
             val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
@@ -152,11 +169,6 @@ class DynamicSliderComponent {
                 enabled = isEnabled,
                 colors = colors
             )
-        }
-
-        private fun extractBindingVariable(json: JsonObject, key: String): String? {
-            val value = json.get(key)?.asString ?: return null
-            return ModifierBuilder.extractBindingProperty(value)
         }
     }
 }
