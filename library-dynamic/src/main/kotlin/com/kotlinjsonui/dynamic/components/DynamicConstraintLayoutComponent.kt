@@ -15,8 +15,11 @@ import androidx.constraintlayout.compose.Dimension
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.ViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -37,15 +40,42 @@ import androidx.compose.ui.platform.LocalContext
  * - centerHorizontal/centerVertical/centerInParent: Center in parent
  * - topMargin/bottomMargin/leftMargin/rightMargin: Margins for positioning
  * - margins: Array [top, right, bottom, left] for margins
+ *
+ * ConstraintLayout has no own attribute section: it parses/checks through
+ * the shared `View` section ([ViewAttributes]). Every json.get read below
+ * targets CHILD nodes (per-child constraint / dimension keys) or the
+ * structural child/children arrays — those stay raw by design; the node
+ * itself is only passed wholesale to the shared ModifierBuilder pipeline.
  */
 class DynamicConstraintLayoutComponent {
     companion object {
+        /**
+         * ConstraintLayout-specific attributes this component applies (see
+         * UnappliedAttributes): none beyond the common set — the constraint
+         * keys (alignXxxView, margins, width/height) are read from CHILD
+         * nodes, and child/children are structural.
+         */
+        private val APPLIED: Set<String> = emptySet()
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            // Typed parse for parity with the other converted components
+            // (surfaces AttrWarnings for malformed own-node values); the
+            // result is not consumed because all own-node reads here are
+            // structural.
+            rememberTypedAttrs(json) { m, canonicalOnly ->
+                ViewAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "ConstraintLayout", json,
+                declared = ViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Apply lifecycle effects first
             ModifierBuilder.ApplyLifecycleEffects(json, data)
@@ -129,7 +159,7 @@ class DynamicConstraintLayoutComponent {
             }
         }
 
-        private fun hasRelativePositioning(json: JsonObject): Boolean {
+        private fun hasRelativePositioning(childNode: JsonObject): Boolean {
             val relativeAttrs = listOf(
                 "alignTopOfView", "alignBottomOfView", "alignLeftOfView", "alignRightOfView",
                 "alignTopView", "alignBottomView", "alignLeftView", "alignRightView",
@@ -138,24 +168,24 @@ class DynamicConstraintLayoutComponent {
                 "centerHorizontal", "centerVertical", "centerInParent"
             )
 
-            return relativeAttrs.any { json.has(it) }
+            return relativeAttrs.any { childNode.has(it) }
         }
 
         private fun applyRelativePositioning(
-            json: JsonObject,
+            childNode: JsonObject,
             setScope: ConstraintSetScope,
             scope: ConstrainScope,
             refs: Map<String, androidx.constraintlayout.compose.ConstrainedLayoutReference>
         ) {
             with(scope) {
                 // Extract margins
-                var topMargin = json.get("topMargin")?.asInt ?: 0
-                var bottomMargin = json.get("bottomMargin")?.asInt ?: 0
-                var leftMargin = json.get("leftMargin")?.asInt ?: 0
-                var rightMargin = json.get("rightMargin")?.asInt ?: 0
+                var topMargin = childNode.get("topMargin")?.asInt ?: 0
+                var bottomMargin = childNode.get("bottomMargin")?.asInt ?: 0
+                var leftMargin = childNode.get("leftMargin")?.asInt ?: 0
+                var rightMargin = childNode.get("rightMargin")?.asInt ?: 0
 
                 // Handle margins array
-                json.get("margins")?.asJsonArray?.let { margins ->
+                childNode.get("margins")?.asJsonArray?.let { margins ->
                     if (margins.size() == 4) {
                         val arrayTopMargin = margins[0].asInt
                         val arrayRightMargin = margins[1].asInt
@@ -163,73 +193,73 @@ class DynamicConstraintLayoutComponent {
                         val arrayLeftMargin = margins[3].asInt
 
                         // Use array values if individual margins not specified
-                        if (!json.has("topMargin")) topMargin = arrayTopMargin
-                        if (!json.has("bottomMargin")) bottomMargin = arrayBottomMargin
-                        if (!json.has("leftMargin")) leftMargin = arrayLeftMargin
-                        if (!json.has("rightMargin")) rightMargin = arrayRightMargin
+                        if (!childNode.has("topMargin")) topMargin = arrayTopMargin
+                        if (!childNode.has("bottomMargin")) bottomMargin = arrayBottomMargin
+                        if (!childNode.has("leftMargin")) leftMargin = arrayLeftMargin
+                        if (!childNode.has("rightMargin")) rightMargin = arrayRightMargin
                     }
                 }
 
                 // Position relative to other views
-                json.get("alignTopOfView")?.asString?.let { targetId ->
+                childNode.get("alignTopOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         bottom.linkTo(targetRef.top, margin = bottomMargin.dp)
                     }
                 }
 
-                json.get("alignBottomOfView")?.asString?.let { targetId ->
+                childNode.get("alignBottomOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         top.linkTo(targetRef.bottom, margin = topMargin.dp)
                     }
                 }
 
-                json.get("alignLeftOfView")?.asString?.let { targetId ->
+                childNode.get("alignLeftOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         end.linkTo(targetRef.start, margin = rightMargin.dp)
                     }
                 }
 
-                json.get("alignRightOfView")?.asString?.let { targetId ->
+                childNode.get("alignRightOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         start.linkTo(targetRef.end, margin = leftMargin.dp)
                     }
                 }
 
                 // Align edges with other views
-                json.get("alignTopView")?.asString?.let { targetId ->
+                childNode.get("alignTopView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         // For edge alignment, negative margin moves in expected direction
                         top.linkTo(targetRef.top, margin = if (topMargin > 0) (-topMargin).dp else 0.dp)
                     }
                 }
 
-                json.get("alignBottomView")?.asString?.let { targetId ->
+                childNode.get("alignBottomView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         bottom.linkTo(targetRef.bottom, margin = if (bottomMargin > 0) (-bottomMargin).dp else 0.dp)
                     }
                 }
 
-                json.get("alignLeftView")?.asString?.let { targetId ->
+                childNode.get("alignLeftView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         start.linkTo(targetRef.start, margin = if (leftMargin > 0) (-leftMargin).dp else 0.dp)
                     }
                 }
 
-                json.get("alignRightView")?.asString?.let { targetId ->
+                childNode.get("alignRightView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         end.linkTo(targetRef.end, margin = if (rightMargin > 0) (-rightMargin).dp else 0.dp)
                     }
                 }
 
                 // Center with other views
-                json.get("alignCenterVerticalView")?.asString?.let { targetId ->
+                childNode.get("alignCenterVerticalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         top.linkTo(targetRef.top)
                         bottom.linkTo(targetRef.bottom)
                     }
                 }
 
-                json.get("alignCenterHorizontalView")?.asString?.let { targetId ->
+                childNode.get("alignCenterHorizontalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         start.linkTo(targetRef.start)
                         end.linkTo(targetRef.end)
@@ -237,33 +267,33 @@ class DynamicConstraintLayoutComponent {
                 }
 
                 // Parent constraints
-                if (json.get("alignTop")?.asBoolean == true) {
+                if (childNode.get("alignTop")?.asBoolean == true) {
                     top.linkTo(parent.top, margin = topMargin.dp)
                 }
 
-                if (json.get("alignBottom")?.asBoolean == true) {
+                if (childNode.get("alignBottom")?.asBoolean == true) {
                     bottom.linkTo(parent.bottom, margin = bottomMargin.dp)
                 }
 
-                if (json.get("alignLeft")?.asBoolean == true) {
+                if (childNode.get("alignLeft")?.asBoolean == true) {
                     start.linkTo(parent.start, margin = leftMargin.dp)
                 }
 
-                if (json.get("alignRight")?.asBoolean == true) {
+                if (childNode.get("alignRight")?.asBoolean == true) {
                     end.linkTo(parent.end, margin = rightMargin.dp)
                 }
 
-                if (json.get("centerHorizontal")?.asBoolean == true) {
+                if (childNode.get("centerHorizontal")?.asBoolean == true) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
 
-                if (json.get("centerVertical")?.asBoolean == true) {
+                if (childNode.get("centerVertical")?.asBoolean == true) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                 }
 
-                if (json.get("centerInParent")?.asBoolean == true) {
+                if (childNode.get("centerInParent")?.asBoolean == true) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
@@ -273,12 +303,12 @@ class DynamicConstraintLayoutComponent {
         }
 
         private fun applyDimensionConstraints(
-            json: JsonObject,
+            childNode: JsonObject,
             scope: ConstrainScope
         ) {
             with(scope) {
                 // Width constraint
-                json.get("width")?.let { widthElement ->
+                childNode.get("width")?.let { widthElement ->
                     when {
                         widthElement.isJsonPrimitive -> {
                             val primitive = widthElement.asJsonPrimitive
@@ -301,7 +331,7 @@ class DynamicConstraintLayoutComponent {
                 }
 
                 // Height constraint
-                json.get("height")?.let { heightElement ->
+                childNode.get("height")?.let { heightElement ->
                     when {
                         heightElement.isJsonPrimitive -> {
                             val primitive = heightElement.asJsonPrimitive
