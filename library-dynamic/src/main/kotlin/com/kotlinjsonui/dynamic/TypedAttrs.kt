@@ -284,7 +284,7 @@ object UnappliedAttributes {
         "height", "heightWeight",
         "leftMargin", "leftPadding", "margins",
         "maxHeight", "maxWidth", "minHeight", "minWidth",
-        "onAppear", "onClick", "onDisappear", "onclick",
+        "onAppear", "onClick", "onDisappear", "onLongPress", "onclick",
         "opacity", "padding", "paddingBottom", "paddingEnd",
         "paddingHorizontal", "paddingLeft", "paddingRight",
         "paddingStart", "paddingTop", "paddingVertical", "paddings",

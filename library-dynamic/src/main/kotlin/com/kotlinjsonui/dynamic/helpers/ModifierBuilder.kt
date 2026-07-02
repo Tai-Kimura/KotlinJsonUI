@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -18,6 +20,10 @@ import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
@@ -394,16 +400,72 @@ object ModifierBuilder {
         return result
     }
 
-    /** build_clickable: onClick/onclick → .clickable { handler } */
+    /** build_clickable: onClick/onclick → .clickable { handler }, onLongPress → long-press gesture */
     fun applyClickable(
         modifier: Modifier,
         json: JsonObject,
         data: Map<String, Any>
     ): Modifier {
-        val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString ?: return modifier
+        // onLongPress first: the outer pointerInput sees the gesture before the
+        // inner .clickable, fires after the long-press timeout and consumes the
+        // remaining events, so a long press never also triggers onClick.
+        val result = applyLongPressable(modifier, json, data)
+        val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString ?: return result
         val viewId = json.get("id")?.asString
-        return modifier.clickable {
+        return result.clickable {
             resolveEventHandler(handler, data, viewId)
+        }
+    }
+
+    /**
+     * onLongPress (common attribute, platform swift/kotlin) → long-press
+     * gesture. Kept separate from [applyClickable] so components with a
+     * native onClick parameter (e.g. Button) can add long-press support
+     * without a second click handler.
+     *
+     * Detection watches the Initial pointer pass: inner click handlers
+     * (Button's own `.clickable`, later modifiers in this chain) consume the
+     * down event in the Main pass, which would starve a `detectTapGestures`
+     * based detector. Watching Initial sees every gesture; when the press
+     * outlives the long-press timeout the handler fires and the remaining
+     * events are consumed so the inner onClick does not also fire.
+     *
+     * `data` participates in the pointerInput keys: when the handler map is
+     * replaced (state-driven hosts rebuild it per recomposition) the gesture
+     * coroutine restarts and captures the fresh closures.
+     */
+    fun applyLongPressable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        val handler = json.get("onLongPress")?.asString ?: return modifier
+        val viewId = json.get("id")?.asString
+        return modifier.pointerInput(handler, data) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                val longPressed = try {
+                    withTimeout(viewConfiguration.longPressTimeoutMillis) {
+                        var event: PointerEvent
+                        do {
+                            event = awaitPointerEvent(PointerEventPass.Initial)
+                        } while (event.changes.any { it.pressed })
+                    }
+                    false
+                } catch (_: PointerEventTimeoutCancellationException) {
+                    true
+                }
+                if (longPressed) {
+                    resolveEventHandler(handler, data, viewId)
+                    // Swallow the rest of the gesture (including the up) so
+                    // inner click handlers treat it as cancelled.
+                    var event: PointerEvent
+                    do {
+                        event = awaitPointerEvent(PointerEventPass.Initial)
+                        event.changes.forEach { it.consume() }
+                    } while (event.changes.any { it.pressed })
+                }
+            }
         }
     }
 

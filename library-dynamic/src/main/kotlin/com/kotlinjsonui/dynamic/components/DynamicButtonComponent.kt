@@ -184,6 +184,10 @@ class DynamicButtonComponent {
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            // onLongPress: Button's native onClick handles taps; the outer
+            // long-press gesture fires the handler and consumes the events so
+            // a long press never also triggers onClick.
+            modifier = ModifierBuilder.applyLongPressable(modifier, json, data)
 
             Button(
                 onClick = onClick,
