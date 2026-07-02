@@ -60,7 +60,7 @@ class DynamicSelectBoxComponent {
             "fontColor", "hintColor", "fontSize", "font",
             "datePickerMode", "datePickerStyle", "dateStringFormat",
             "minuteInterval", "minimumDate", "maximumDate",
-            "onValueChange"
+            "onValueChange", "onValueChanged"
         )
 
         @Composable
@@ -178,7 +178,9 @@ class DynamicSelectBoxComponent {
                 }
 
                 // Call onValueChange handler if specified
+                // (onValueChanged is the declared alias spelling)
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
+                    ?: TypedAttrs.raw(a.onValueChanged) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
@@ -298,7 +300,9 @@ class DynamicSelectBoxComponent {
                 }
 
                 // Call onValueChange handler if specified
+                // (onValueChanged is the declared alias spelling)
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
+                    ?: TypedAttrs.raw(a.onValueChanged) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }

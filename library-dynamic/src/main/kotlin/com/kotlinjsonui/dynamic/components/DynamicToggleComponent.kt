@@ -52,7 +52,8 @@ class DynamicToggleComponent {
     companion object {
         /** Toggle-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "isOn", "enabled", "tintColor", "labelAttributes", "labelPosition"
+            "isOn", "enabled", "tintColor", "labelAttributes", "labelPosition",
+            "onValueChange", "onToggle"
         )
 
         @Composable
@@ -119,8 +120,11 @@ class DynamicToggleComponent {
                     }
                 }
 
-                // Call onclick/onClick handler
-                val handler = a.common.onclick as? String
+                // Call onValueChange/onToggle handler (declared change callbacks,
+                // like Switch), falling back to legacy onclick/onClick
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
+                    ?: TypedAttrs.raw(a.onToggle) as? String
+                    ?: a.common.onclick as? String
                     ?: TypedAttrs.raw(a.common.onClick) as? String
                 if (handler != null) {
                     val viewId = a.common.id ?: "toggle"

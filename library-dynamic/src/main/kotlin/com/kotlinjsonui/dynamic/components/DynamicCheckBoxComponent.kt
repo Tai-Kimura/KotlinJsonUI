@@ -3,6 +3,7 @@ package com.kotlinjsonui.dynamic.components
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
@@ -14,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -187,15 +189,28 @@ class DynamicCheckBoxComponent {
 
             // Build modifier for Row container: testTag, margins, alpha, padding.
             // The Row carries the component's id, so mirror the disabled state
-            // in its semantics for accessibility / UI tests.
+            // in its semantics for accessibility / UI tests. The whole labeled
+            // row is toggleable (standard labeled-checkbox pattern): a tap
+            // anywhere on the row — including the label, which is where the
+            // row's center lands for UI-test drivers — toggles the value.
             val rowModifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+                .toggleable(
+                    value = checkedState,
+                    enabled = isEnabled,
+                    role = Role.Checkbox,
+                    onValueChange = onCheckedChange
+                )
                 .let { if (!isEnabled) it.semantics { disabled() } else it }
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = rowModifier
             ) {
-                // Checkbox
+                // Checkbox keeps its own handler (and with it the Material
+                // minimumInteractiveComponentSize wrapper, so labeled-checkbox
+                // visuals stay identical to static codegen). A tap on the box
+                // is consumed here; taps elsewhere on the row hit the row-level
+                // toggleable. No double-fire: inner consumption wins.
                 Checkbox(
                     checked = checkedState,
                     onCheckedChange = onCheckedChange,
