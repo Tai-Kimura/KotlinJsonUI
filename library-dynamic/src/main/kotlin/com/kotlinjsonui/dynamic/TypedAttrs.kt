@@ -163,6 +163,23 @@ object TypedAttrs {
     }
 
     /**
+     * [enumString] over a binding-capable enum attribute with data-map
+     * resolution: a static value yields its declared spelling (or the
+     * unknown pass-through), a binding resolves to the bound String —
+     * matches the legacy `resolveString(json, key, data)` + lowercase
+     * matching pattern.
+     */
+    fun <T> enumStringResolved(
+        v: AttrValue<AttrEnum<T>>?,
+        data: Map<String, Any>,
+        json: (T) -> String
+    ): String? = when (v) {
+        null -> null
+        is AttrValue.Binding -> data[v.expression] as? String
+        is AttrValue.Value -> enumString(v.value, json)
+    }
+
+    /**
      * [enumString] over a binding-capable enum attribute, static values
      * only (a binding yields null — matches legacy static-only reads).
      */

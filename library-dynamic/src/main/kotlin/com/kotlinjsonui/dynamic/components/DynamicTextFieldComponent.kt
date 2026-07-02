@@ -32,7 +32,11 @@ import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.FocusManager
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.TextFieldAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
@@ -53,35 +57,47 @@ class DynamicTextFieldComponent {
         @Composable
         fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
+            // EditText / Input type spellings are canonical aliases of
+            // TextField at runtime (see DynamicView), so this component
+            // always parses with TextFieldAttributes.
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                TextFieldAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "TextField", json,
+                declared = TextFieldAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Parse text value with data binding
-            val rawText = json.get("text")?.asString ?: ""
+            val rawText = TypedAttrs.rawString(a.text) ?: ""
             val initialText = ResourceResolver.resolveTextValue(rawText, data, context)
 
-            // Parse placeholder with resource resolution
-            val rawPlaceholder = json.get("hint")?.asString
-                ?: json.get("placeholder")?.asString ?: ""
+            // Parse placeholder with resource resolution ('placeholder' is a
+            // standalone declared row alongside 'hint')
+            val rawPlaceholder = a.hint ?: a.placeholder ?: ""
             val placeholderText = ResourceResolver.resolveTextValue(rawPlaceholder, data, context)
 
             // Detect hidden TextField (fontColor: "transparent")
-            val isHidden = json.get("fontColor")?.asString?.lowercase() == "transparent"
+            val isHidden = TypedAttrs.static(a.fontColor)?.lowercase() == "transparent"
 
             // Parse secure field
-            val isSecure = json.get("secure")?.asBoolean == true ||
-                    json.get("input")?.asString?.lowercase() == "password" ||
-                    json.get("contentType")?.asString?.lowercase()?.let {
+            val isSecure = TypedAttrs.static(a.secure) == true ||
+                    TypedAttrs.enumString(a.input) { it.json }?.lowercase() == "password" ||
+                    TypedAttrs.static(a.contentType)?.lowercase()?.let {
                         it == "password" || it == "newpassword"
                     } ?: false
 
             // Parse enabled state
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
-            // Parse max lines
-            val maxLines = json.get("maxLines")?.asInt ?: 1
+            // Parse max lines ('maxLines' is an undeclared legacy runtime extra)
+            val maxLines = TypedAttrs.undeclared(json, "maxLines")?.asInt ?: 1
             val singleLine = maxLines == 1
 
             // TextFieldState with data binding sync
-            val viewId = json.get("id")?.asString ?: "textfield"
+            val viewId = a.common.id ?: "textfield"
             val textFieldState = rememberTextFieldState(initialText = initialText)
 
             // Sync external → state (e.g. ViewModel clears text)
@@ -109,17 +125,18 @@ class DynamicTextFieldComponent {
                         }
                     }
                     // Call onTextChange handler
-                    val onTextChangeHandler = json.get("onTextChange")?.asString
+                    val onTextChangeHandler = a.onTextChange
                     if (onTextChangeHandler != null) {
                         ModifierBuilder.resolveEventHandler(onTextChangeHandler, data, viewId, newValue)
                     }
                 }
             }
 
-            // Focus management
-            val fieldId = json.get("fieldId")?.asString
-            val nextFocusId = json.get("nextFocusId")?.asString
-            val onSubmitHandler = json.get("onSubmit")?.asString
+            // Focus management ('fieldId'/'nextFocusId' are undeclared
+            // legacy runtime extras; 'nextFocus' is the declared spelling)
+            val fieldId = TypedAttrs.undeclared(json, "fieldId")?.asString
+            val nextFocusId = TypedAttrs.undeclared(json, "nextFocusId")?.asString
+            val onSubmitHandler = a.onSubmit
 
             val focusRequester = remember { FocusRequester() }
             val composeFocusManager = LocalFocusManager.current
@@ -138,41 +155,45 @@ class DynamicTextFieldComponent {
             }
 
             // Colors (supports @{binding})
-            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
-                ?: Configuration.TextField.defaultTextColor
-            val placeholderColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
-                ?: Configuration.TextField.defaultPlaceholderColor
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
-                ?: Configuration.TextField.defaultBackgroundColor
-            val highlightBackgroundColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
-                ?: Configuration.TextField.defaultHighlightBackgroundColor
-            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-                ?: Configuration.TextField.defaultBorderColor
+            val textColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.fontColor), data, context
+            ) ?: Configuration.TextField.defaultTextColor
+            val placeholderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.hintColor), data, context
+            ) ?: Configuration.TextField.defaultPlaceholderColor
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            ) ?: Configuration.TextField.defaultBackgroundColor
+            val highlightBackgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.highlightBackground), data, context
+            ) ?: Configuration.TextField.defaultHighlightBackgroundColor
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            ) ?: Configuration.TextField.defaultBorderColor
 
             // Font size
-            val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
-            val hintFontSize = json.get("hintFontSize")?.asInt
+            val fontSize = TypedAttrs.int(a.fontSize, data) ?: Configuration.TextField.defaultFontSize
+            val hintFontSize = a.hintFontSize?.toInt()
 
             // Shape
-            val cornerRadius = json.get("cornerRadius")?.asFloat
+            val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)
                 ?: Configuration.TextField.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
 
             // Outlined mode
-            val isOutlined = resolveIsOutlined(json)
+            val isOutlined = resolveIsOutlined(json, a)
 
             // Content padding
-            val contentPadding = buildContentPadding(json)
+            val contentPadding = buildContentPadding(json, a)
 
             // Text style
-            val textStyleParts = mutableListOf<String>()
-            val textStyle = buildTextStyle(json, textColor, fontSize, data)
+            val textStyle = buildTextStyle(a, textColor, fontSize)
 
             // Keyboard options
-            val keyboardOptions = buildKeyboardOptions(json, nextFocusId)
+            val keyboardOptions = buildKeyboardOptions(a, nextFocusId)
 
             // Keyboard actions
-            val keyboardActions = buildKeyboardActions(json, data, nextFocusId, onSubmitHandler, viewId)
+            val keyboardActions = buildKeyboardActions(data, nextFocusId, onSubmitHandler, viewId)
 
             // Placeholder composable
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
@@ -181,7 +202,7 @@ class DynamicTextFieldComponent {
                         text = placeholderText,
                         color = placeholderColor,
                         fontSize = (hintFontSize ?: fontSize).sp,
-                        fontWeight = if (json.get("hintFont")?.asString == "bold") {
+                        fontWeight = if (a.hintFont == "bold") {
                             androidx.compose.ui.text.font.FontWeight.Bold
                         } else null
                     )
@@ -189,10 +210,8 @@ class DynamicTextFieldComponent {
             } else null
 
             // Focus event handlers
-            val onFocusHandler = json.get("onFocus")?.asString
-                ?: json.get("onBeginEditing")?.asString
-            val onBlurHandler = json.get("onBlur")?.asString
-                ?: json.get("onEndEditing")?.asString
+            val onFocusHandler = a.onFocus ?: a.onBeginEditing
+            val onBlurHandler = a.onBlur ?: a.onEndEditing
 
             // Build common modifier
             var modifier: Modifier = Modifier
@@ -304,22 +323,23 @@ class DynamicTextFieldComponent {
                     json.has("marginStart") || json.has("marginEnd")
         }
 
-        private fun resolveIsOutlined(json: JsonObject): Boolean {
-            // borderStyle: none → not outlined
-            val borderStyle = json.get("borderStyle")?.asString?.lowercase()
+        private fun resolveIsOutlined(json: JsonObject, a: TextFieldAttributes): Boolean {
+            // borderStyle: none → not outlined (TextField declares its own
+            // enum; undeclared spellings pass through like the legacy reader)
+            val borderStyle = TypedAttrs.enumString(a.borderStyle) { it.json }?.lowercase()
             if (borderStyle == "none") return false
             if (borderStyle in listOf("line", "bezel", "roundedrect")) return true
 
-            return json.get("outlined")?.asBoolean == true ||
-                    json.get("borderColor") != null ||
-                    json.get("borderWidth") != null
+            // 'outlined' is an undeclared legacy runtime extra
+            return TypedAttrs.undeclared(json, "outlined")?.asBoolean == true ||
+                    a.common.borderColor != null ||
+                    a.common.borderWidth != null
         }
 
         private fun buildTextStyle(
-            json: JsonObject,
+            a: TextFieldAttributes,
             textColor: androidx.compose.ui.graphics.Color,
-            fontSize: Int,
-            data: Map<String, Any>
+            fontSize: Int
         ): TextStyle {
             var style = TextStyle(
                 fontSize = fontSize.sp,
@@ -327,7 +347,7 @@ class DynamicTextFieldComponent {
             )
 
             // Text alignment
-            json.get("textAlign")?.asString?.let { align ->
+            TypedAttrs.enumString(a.textAlign) { it.json }?.let { align ->
                 style = when (align.lowercase()) {
                     "center" -> style.copy(textAlign = TextAlign.Center)
                     "right" -> style.copy(textAlign = TextAlign.End)
@@ -339,13 +359,14 @@ class DynamicTextFieldComponent {
             return style
         }
 
-        private fun buildKeyboardOptions(json: JsonObject, nextFocusId: String?): KeyboardOptions {
+        private fun buildKeyboardOptions(a: TextFieldAttributes, nextFocusId: String?): KeyboardOptions {
             // Keyboard type from contentType (priority) or input
-            val keyboardType = resolveKeyboardType(json)
+            val keyboardType = resolveKeyboardType(a)
 
             // IME action
+            val returnKey = TypedAttrs.enumString(a.returnKeyType) { it.json }
             val imeAction = when {
-                json.get("returnKeyType") != null -> when (json.get("returnKeyType").asString) {
+                returnKey != null -> when (returnKey) {
                     "Done" -> ImeAction.Done
                     "Next" -> ImeAction.Next
                     "Search" -> ImeAction.Search
@@ -358,7 +379,7 @@ class DynamicTextFieldComponent {
             }
 
             // Auto-capitalization
-            val capitalization = json.get("autocapitalizationType")?.asString?.let { type ->
+            val capitalization = a.autocapitalizationType?.let { type ->
                 when (type.lowercase()) {
                     "none" -> KeyboardCapitalization.None
                     "words" -> KeyboardCapitalization.Words
@@ -369,7 +390,7 @@ class DynamicTextFieldComponent {
             } ?: KeyboardCapitalization.None
 
             // Auto-correction
-            val autoCorrect = json.get("autocorrectionType")?.asString?.let { type ->
+            val autoCorrect = a.autocorrectionType?.let { type ->
                 when (type.lowercase()) {
                     "no", "false", "off" -> false
                     else -> true
@@ -384,9 +405,9 @@ class DynamicTextFieldComponent {
             )
         }
 
-        private fun resolveKeyboardType(json: JsonObject): KeyboardType {
+        private fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
             // contentType takes priority
-            json.get("contentType")?.asString?.let { type ->
+            TypedAttrs.static(a.contentType)?.let { type ->
                 return when (type.lowercase()) {
                     "emailaddress", "email" -> KeyboardType.Email
                     "password", "newpassword" -> KeyboardType.Password
@@ -397,7 +418,7 @@ class DynamicTextFieldComponent {
                 }
             }
             // Fallback to input
-            json.get("input")?.asString?.let { input ->
+            TypedAttrs.enumString(a.input) { it.json }?.let { input ->
                 return when (input.lowercase()) {
                     "email" -> KeyboardType.Email
                     "password" -> KeyboardType.Password
@@ -411,7 +432,6 @@ class DynamicTextFieldComponent {
         }
 
         private fun buildKeyboardActions(
-            json: JsonObject,
             data: Map<String, Any>,
             nextFocusId: String?,
             onSubmitHandler: String?,
@@ -447,9 +467,20 @@ class DynamicTextFieldComponent {
             )
         }
 
-        private fun buildContentPadding(json: JsonObject): PaddingValues? {
+        /** TextField-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "text", "hint", "placeholder", "fontColor", "hintColor",
+            "hintFont", "hintFontSize", "secure", "input", "contentType",
+            "enabled", "onTextChange", "onSubmit", "onFocus",
+            "onBeginEditing", "onBlur", "onEndEditing", "nextFocus",
+            "fontSize", "textAlign", "borderStyle", "returnKeyType",
+            "autocapitalizationType", "autocorrectionType",
+            "highlightBackground", "fieldPadding", "textPaddingLeft"
+        )
+
+        private fun buildContentPadding(json: JsonObject, a: TextFieldAttributes): PaddingValues? {
             // paddings (array or single number)
-            json.get("paddings")?.let { element ->
+            TypedAttrs.rawKey(json, "paddings")?.let { element ->
                 if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
                     return PaddingValues(element.asFloat.dp)
                 }
@@ -473,13 +504,13 @@ class DynamicTextFieldComponent {
             }
 
             // fieldPadding (legacy)
-            json.get("fieldPadding")?.asFloat?.let {
-                return PaddingValues(it.dp)
+            a.fieldPadding?.let {
+                return PaddingValues(it.toFloat().dp)
             }
 
             // textPaddingLeft
-            json.get("textPaddingLeft")?.asFloat?.let { startPadding ->
-                return PaddingValues(start = startPadding.dp)
+            a.textPaddingLeft?.let { startPadding ->
+                return PaddingValues(start = startPadding.toFloat().dp)
             }
 
             return null
