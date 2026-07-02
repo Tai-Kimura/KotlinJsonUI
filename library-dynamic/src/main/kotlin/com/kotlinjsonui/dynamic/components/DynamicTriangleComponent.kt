@@ -9,12 +9,20 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CommonAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Triangle Component Converter
  * Converts JSON to Triangle shape composable at runtime using Canvas.
+ *
+ * Triangle has no definitions section in attribute_definitions.json, so
+ * only the shared [CommonAttributes] extraction applies; every
+ * Triangle-specific key goes through [TypedAttrs.undeclared].
  *
  * Supported JSON attributes:
  * - size: Number for both width and height (square bounding box)
@@ -29,25 +37,50 @@ import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
  */
 class DynamicTriangleComponent {
     companion object {
+        /**
+         * Triangle has no component-specific declared rows; everything it
+         * applies (width/height/background + modifier pipeline) is already
+         * covered by COMMON_APPLIED.
+         */
+        private val APPLIED: Set<String> = emptySet()
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                CommonAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Triangle", json,
+                declared = CommonAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Parse size: "size" for square, or individual width/height
-            val sizeValue = json.get("size")?.asFloat
-            val triangleWidth = sizeValue ?: json.get("width")?.asFloat ?: 20f
-            val triangleHeight = sizeValue ?: json.get("height")?.asFloat ?: 20f
+            // Parse size: "size" for square, or individual width/height.
+            // 'size' is an undeclared legacy runtime extra (Triangle has no
+            // definitions section); width/height are declared dimension
+            // unions (number | keyword string) — this component consumes
+            // only the numeric shape, so read raw (see TypedAttrs.rawKey)
+            val sizeValue = TypedAttrs.undeclared(json, "size")?.asFloat
+            val triangleWidth = sizeValue ?: TypedAttrs.rawKey(json, "width")?.asFloat ?: 20f
+            val triangleHeight = sizeValue ?: TypedAttrs.rawKey(json, "height")?.asFloat ?: 20f
 
-            // Parse color
+            // Parse color — 'color' is an undeclared legacy runtime extra
+            // (Triangle has no definitions section); 'background' is the
+            // declared common row
             val fillColor = ColorParser.parseColorWithBinding(json, "color", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "background", data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.background), data, context
+                )
                 ?: Color.Black
 
-            // Parse direction
-            val direction = json.get("direction")?.asString ?: "up"
+            // Parse direction — undeclared legacy runtime extra (Triangle
+            // has no definitions section)
+            val direction = TypedAttrs.undeclared(json, "direction")?.asString ?: "up"
 
             // Build modifier in the specified order:
             // testTag → margins → size → alpha → clickable → padding
