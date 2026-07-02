@@ -12,10 +12,6 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -27,9 +23,13 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.TextViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * TextView component → CustomTextField (multiline) / CustomTextFieldWithMargins.
@@ -47,54 +47,70 @@ class DynamicTextViewComponent {
         @Composable
         fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                TextViewAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "TextView", json,
+                declared = TextViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Parse text value with data binding
-            val rawText = json.get("text")?.asString ?: ""
+            val rawText = TypedAttrs.rawString(a.text) ?: ""
             val initialText = ResourceResolver.resolveTextValue(rawText, data, context)
             val textFieldState = rememberTextFieldState(initialText = initialText)
 
-            // Parse placeholder with resource resolution
-            val rawPlaceholder = json.get("hint")?.asString
-                ?: json.get("placeholder")?.asString ?: ""
+            // Parse placeholder with resource resolution ('placeholder' is a
+            // standalone declared row alongside 'hint')
+            val rawPlaceholder = a.hint ?: a.placeholder ?: ""
             val placeholderText = ResourceResolver.resolveTextValue(rawPlaceholder, data, context)
 
             // Enabled state (supports @{binding})
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Text style (supports @{binding})
-            val fontSize = json.get("fontSize")?.asInt ?: Configuration.TextField.defaultFontSize
-            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
-                ?: Configuration.TextField.defaultTextColor
+            val fontSize = TypedAttrs.int(a.fontSize, data) ?: Configuration.TextField.defaultFontSize
+            val textColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.fontColor), data, context
+            ) ?: Configuration.TextField.defaultTextColor
 
-            // Background colors (supports @{binding})
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
-                ?: Configuration.TextField.defaultBackgroundColor
-            val highlightBackgroundColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
-                ?: Configuration.TextField.defaultHighlightBackgroundColor
+            // Background colors (supports @{binding}); 'highlightBackground'
+            // is a declared common attribute for TextView (no Button-style
+            // tapBackground rewrite applies here)
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            ) ?: Configuration.TextField.defaultBackgroundColor
+            val highlightBackgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.highlightBackground), data, context
+            ) ?: Configuration.TextField.defaultHighlightBackgroundColor
 
             // Border color (supports @{binding})
-            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-                ?: Configuration.TextField.defaultBorderColor
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            ) ?: Configuration.TextField.defaultBorderColor
 
             // Shape
-            val cornerRadius = json.get("cornerRadius")?.asFloat
+            val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)
                 ?: Configuration.TextField.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
 
             // isOutlined (default true for TextView)
             val isOutlined = true
 
-            // Max lines (default unlimited for TextView)
-            val maxLines = json.get("maxLines")?.asInt ?: Int.MAX_VALUE
+            // Max lines ('maxLines' is an undeclared legacy runtime extra;
+            // default unlimited for TextView)
+            val maxLines = TypedAttrs.undeclared(json, "maxLines")?.asInt ?: Int.MAX_VALUE
 
             // Keyboard options
-            val keyboardOptions = buildKeyboardOptions(json)
+            val keyboardOptions = buildKeyboardOptions(a)
 
             // Container inset → contentPadding
-            val contentPadding = buildContainerInset(json)
+            val contentPadding = buildContainerInset(a.containerInset)
 
             // TextFieldState sync with data binding
-            val viewId = json.get("id")?.asString ?: "textview"
+            val viewId = a.common.id ?: "textview"
 
             LaunchedEffect(initialText) {
                 if (textFieldState.text.toString() != initialText) {
@@ -117,7 +133,7 @@ class DynamicTextViewComponent {
                             }
                         }
                     }
-                    val onTextChangeHandler = json.get("onTextChange")?.asString
+                    val onTextChangeHandler = a.onTextChange
                     if (onTextChangeHandler != null) {
                         ModifierBuilder.resolveEventHandler(onTextChangeHandler, data, viewId, newValue)
                     }
@@ -126,7 +142,7 @@ class DynamicTextViewComponent {
 
             // Placeholder
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
-                buildPlaceholder(json, placeholderText, fontSize)
+                buildPlaceholder(a, placeholderText, fontSize)
             } else null
 
             // Check margins
@@ -139,7 +155,7 @@ class DynamicTextViewComponent {
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
 
                 // TextField modifier with size (default fillMaxWidth + 120dp height)
-                var textFieldModifier = buildTextViewSizeModifier(json)
+                var textFieldModifier = buildTextViewSizeModifier(json, a)
                 textFieldModifier = ModifierBuilder.applyAlpha(textFieldModifier, json, data)
                 textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json)
 
@@ -162,7 +178,7 @@ class DynamicTextViewComponent {
                 )
             } else {
                 // Regular modifier with size (default fillMaxWidth + 120dp height)
-                var modifier = buildTextViewSizeModifier(json)
+                var modifier = buildTextViewSizeModifier(json, a)
                 modifier = ModifierBuilder.applyTestTag(modifier, json)
                 modifier = ModifierBuilder.applyAlpha(modifier, json, data)
                 modifier = ModifierBuilder.applyPadding(modifier, json)
@@ -188,6 +204,14 @@ class DynamicTextViewComponent {
 
         // ── Helpers ──
 
+        /** TextView-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "text", "hint", "placeholder", "enabled", "fontSize", "fontColor",
+            "highlightBackground", "containerInset", "keyboardType", "input",
+            "returnKeyType", "onTextChange", "hintLineHeightMultiple",
+            "hintFontSize", "flexible"
+        )
+
         private fun extractBindingVariable(text: String): String? {
             val pattern = "@\\{([^}]+)\\}".toRegex()
             val match = pattern.find(text) ?: return null
@@ -195,12 +219,12 @@ class DynamicTextViewComponent {
         }
 
         private fun hasMarginAttributes(json: JsonObject): Boolean {
-            return json.has("margins") || json.has("topMargin") || json.has("bottomMargin") ||
-                    json.has("leftMargin") || json.has("rightMargin") ||
-                    json.has("startMargin") || json.has("endMargin") ||
-                    json.has("marginTop") || json.has("marginBottom") ||
-                    json.has("marginLeft") || json.has("marginRight") ||
-                    json.has("marginStart") || json.has("marginEnd")
+            return TypedAttrs.rawKey(json, "margins") != null || TypedAttrs.rawKey(json, "topMargin") != null || TypedAttrs.rawKey(json, "bottomMargin") != null ||
+                    TypedAttrs.rawKey(json, "leftMargin") != null || TypedAttrs.rawKey(json, "rightMargin") != null ||
+                    TypedAttrs.rawKey(json, "startMargin") != null || TypedAttrs.rawKey(json, "endMargin") != null ||
+                    TypedAttrs.rawKey(json, "marginTop") != null || TypedAttrs.rawKey(json, "marginBottom") != null ||
+                    TypedAttrs.rawKey(json, "marginLeft") != null || TypedAttrs.rawKey(json, "marginRight") != null ||
+                    TypedAttrs.rawKey(json, "marginStart") != null || TypedAttrs.rawKey(json, "marginEnd") != null
         }
 
         /**
@@ -208,11 +232,13 @@ class DynamicTextViewComponent {
          * Default: fillMaxWidth + 120dp height (matching textview_component.rb).
          * When flexible=true, uses heightIn(min, max) for auto-expanding height.
          */
-        private fun buildTextViewSizeModifier(json: JsonObject): Modifier {
+        private fun buildTextViewSizeModifier(json: JsonObject, a: TextViewAttributes): Modifier {
             var modifier: Modifier = Modifier
 
-            // Width (default fillMaxWidth)
-            val widthElement = json.get("width")
+            // Width (default fillMaxWidth) — declared as a dimension union
+            // (number | keyword string), wider than the string shape this
+            // component inspects, so read raw (see TypedAttrs.rawKey)
+            val widthElement = TypedAttrs.rawKey(json, "width")
             modifier = when {
                 widthElement == null -> modifier.fillMaxWidth()
                 widthElement.isJsonPrimitive && widthElement.asJsonPrimitive.isString -> {
@@ -226,13 +252,12 @@ class DynamicTextViewComponent {
             }
 
             // flexible: auto-expand height between minHeight and maxHeight
-            val isFlexible = json.get("flexible")?.let {
-                if (it.isJsonPrimitive && it.asJsonPrimitive.isBoolean) it.asBoolean else false
-            } ?: false
+            // (legacy only honored the literal boolean form)
+            val isFlexible = a.flexible ?: false
 
             if (isFlexible) {
-                val minH = json.get("minHeight")?.asFloat ?: 40f
-                val maxH = json.get("maxHeight")?.asFloat
+                val minH = TypedAttrs.static(a.common.minHeight)?.toFloat() ?: 40f
+                val maxH = TypedAttrs.static(a.common.maxHeight)?.toFloat()
                 modifier = if (maxH != null) {
                     modifier.heightIn(min = minH.dp, max = maxH.dp)
                 } else {
@@ -241,8 +266,10 @@ class DynamicTextViewComponent {
                 return modifier
             }
 
-            // Height (default 120dp)
-            val heightElement = json.get("height")
+            // Height (default 120dp) — declared as a dimension union
+            // (number | keyword string), wider than the declared type, so
+            // read raw (see TypedAttrs.rawKey)
+            val heightElement = TypedAttrs.rawKey(json, "height")
             modifier = when {
                 heightElement == null -> modifier.height(120.dp)
                 heightElement.isJsonPrimitive && heightElement.asJsonPrimitive.isString -> {
@@ -267,14 +294,14 @@ class DynamicTextViewComponent {
 
         @Composable
         private fun buildPlaceholder(
-            json: JsonObject,
+            a: TextViewAttributes,
             text: String,
             baseFontSize: Int
         ): @Composable () -> Unit {
-            val hintLineHeightMultiple = json.get("hintLineHeightMultiple")?.asFloat
+            val hintLineHeightMultiple = a.hintLineHeightMultiple?.toFloat()
 
             return if (hintLineHeightMultiple != null) {
-                val hintFontSize = json.get("hintFontSize")?.asFloat ?: baseFontSize.toFloat()
+                val hintFontSize = a.hintFontSize?.toFloat() ?: baseFontSize.toFloat()
                 val lineHeight = hintFontSize * hintLineHeightMultiple
                 {
                     Text(
@@ -287,8 +314,8 @@ class DynamicTextViewComponent {
             }
         }
 
-        private fun buildKeyboardOptions(json: JsonObject): KeyboardOptions {
-            val keyboardType = json.get("keyboardType")?.asString?.let { type ->
+        private fun buildKeyboardOptions(a: TextViewAttributes): KeyboardOptions {
+            val keyboardType = a.keyboardType?.let { type ->
                 when (type.lowercase()) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number
@@ -297,7 +324,7 @@ class DynamicTextViewComponent {
                     "url" -> KeyboardType.Uri
                     else -> KeyboardType.Text
                 }
-            } ?: json.get("input")?.asString?.let { input ->
+            } ?: TypedAttrs.enumString(a.input) { it.json }?.let { input ->
                 when (input.lowercase()) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number
@@ -308,7 +335,7 @@ class DynamicTextViewComponent {
                 }
             } ?: KeyboardType.Text
 
-            val imeAction = when (json.get("returnKeyType")?.asString) {
+            val imeAction = when (TypedAttrs.enumString(a.returnKeyType) { it.json }) {
                 "Done" -> ImeAction.Done
                 "Next" -> ImeAction.Next
                 else -> ImeAction.Default
@@ -317,28 +344,25 @@ class DynamicTextViewComponent {
             return KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction)
         }
 
-        private fun buildContainerInset(json: JsonObject): PaddingValues? {
-            val inset = json.get("containerInset") ?: return null
+        private fun buildContainerInset(inset: Any?): PaddingValues? {
             return when {
-                inset.isJsonArray -> {
-                    val arr = inset.asJsonArray
-                    when (arr.size()) {
+                inset is List<*> && inset.all { it is Number } -> {
+                    val arr = inset.map { (it as Number).toFloat() }
+                    when (arr.size) {
                         4 -> PaddingValues(
-                            top = arr[0].asFloat.dp,
-                            end = arr[1].asFloat.dp,
-                            bottom = arr[2].asFloat.dp,
-                            start = arr[3].asFloat.dp
+                            top = arr[0].dp,
+                            end = arr[1].dp,
+                            bottom = arr[2].dp,
+                            start = arr[3].dp
                         )
                         2 -> PaddingValues(
-                            vertical = arr[0].asFloat.dp,
-                            horizontal = arr[1].asFloat.dp
+                            vertical = arr[0].dp,
+                            horizontal = arr[1].dp
                         )
                         else -> null
                     }
                 }
-                inset.isJsonPrimitive && inset.asJsonPrimitive.isNumber -> {
-                    PaddingValues(inset.asFloat.dp)
-                }
+                inset is Number -> PaddingValues(inset.toFloat().dp)
                 else -> null
             }
         }
