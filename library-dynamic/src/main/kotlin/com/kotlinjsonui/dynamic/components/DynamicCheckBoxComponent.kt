@@ -20,9 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CheckBoxAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic CheckBox Component Converter
@@ -31,9 +35,15 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  * Reference: checkbox_component.rb in kjui_tools.
  *
  * CheckBox is the primary component name. Check is supported as an alias
- * for backward compatibility.
+ * for backward compatibility (both spellings parse with the generated
+ * [CheckBoxAttributes] — the Check section is a stub alias).
  *
  * State binding priority: isOn > checked > bind
+ *
+ * Attribute access goes through the generated [CheckBoxAttributes]
+ * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
+ * bridge; the node itself is only passed wholesale to the shared
+ * ModifierBuilder pipeline.
  *
  * Supported JSON attributes:
  * - isOn/checked: Boolean or @{variable} for checked state
@@ -51,19 +61,36 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  */
 class DynamicCheckBoxComponent {
     companion object {
+        /** CheckBox-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "isOn", "checked", "bind", "enabled", "onValueChange",
+            "label", "text", "icon", "selectedIcon",
+            "spacing", "fontSize", "fontColor", "font", "uncheckedColor"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap(),
             parentType: String? = null
         ) {
-            val hasLabel = json.has("label") || json.has("text")
-            val hasCustomIcon = json.has("icon") || json.has("selectedIcon")
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                CheckBoxAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "CheckBox", json,
+                declared = CheckBoxAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
+
+            val hasLabel = a.label != null || a.text != null
+            val hasCustomIcon = a.icon != null || a.selectedIcon != null
 
             when {
-                hasCustomIcon -> createIconCheckbox(json, data, parentType)
-                hasLabel -> createWithLabel(json, data, parentType)
-                else -> createCheckboxOnly(json, data, parentType)
+                hasCustomIcon -> createIconCheckbox(json, a, data, parentType)
+                hasLabel -> createWithLabel(json, a, data, parentType)
+                else -> createCheckboxOnly(json, a, data, parentType)
             }
         }
 
@@ -72,16 +99,17 @@ class DynamicCheckBoxComponent {
         @Composable
         private fun createCheckboxOnly(
             json: JsonObject,
+            a: CheckBoxAttributes,
             data: Map<String, Any>,
             parentType: String?
         ) {
             val context = LocalContext.current
 
             // Parse binding variable (priority: isOn > checked > bind)
-            val bindingVariable = resolveBindingVariable(json)
+            val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state
-            val checked = resolveCheckedState(json, data, bindingVariable)
+            val checked = resolveCheckedState(a, data, bindingVariable)
 
             // State for the checkbox
             var checkedState by remember(checked, bindingVariable, data) {
@@ -95,11 +123,12 @@ class DynamicCheckBoxComponent {
                 }
             }
 
-            // Enabled state (supports @{binding})
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+            // Enabled state (supports @{binding}; CheckBox declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
@@ -107,7 +136,7 @@ class DynamicCheckBoxComponent {
             val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
 
             // Colors: checkColor -> checkedColor, uncheckedColor -> uncheckedColor
-            val colors = buildCheckboxColors(json, data, context)
+            val colors = buildCheckboxColors(json, a, data, context)
 
             Checkbox(
                 checked = checkedState,
@@ -123,16 +152,17 @@ class DynamicCheckBoxComponent {
         @Composable
         private fun createWithLabel(
             json: JsonObject,
+            a: CheckBoxAttributes,
             data: Map<String, Any>,
             parentType: String?
         ) {
             val context = LocalContext.current
 
             // Parse binding variable (priority: isOn > checked > bind)
-            val bindingVariable = resolveBindingVariable(json)
+            val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state
-            val checked = resolveCheckedState(json, data, bindingVariable)
+            val checked = resolveCheckedState(a, data, bindingVariable)
 
             // State for the checkbox
             var checkedState by remember(checked, bindingVariable, data) {
@@ -146,11 +176,12 @@ class DynamicCheckBoxComponent {
                 }
             }
 
-            // Enabled state (supports @{binding})
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+            // Enabled state (supports @{binding}; CheckBox declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
@@ -172,16 +203,18 @@ class DynamicCheckBoxComponent {
                 )
 
                 // Spacer with configurable spacing
-                val spacing = json.get("spacing")?.asFloat?.dp ?: 8.dp
+                val spacing = TypedAttrs.float(a.spacing, data)?.dp ?: 8.dp
                 Spacer(modifier = Modifier.width(spacing))
 
-                // Label text with font attributes
-                val labelText = json.get("label")?.asString ?: json.get("text")?.asString ?: ""
-                val fontSize = json.get("fontSize")?.asFloat
-                val fontColor = json.get("fontColor")?.asString?.let {
-                    ColorParser.parseColorStringWithBinding(it, data, context)
-                }
-                val fontWeightValue = when (json.get("font")?.asString?.lowercase()) {
+                // Label text with font attributes (raw representation —
+                // the legacy reader did not resolve bindings here)
+                val labelText = TypedAttrs.rawString(a.label)
+                    ?: TypedAttrs.rawString(a.text) ?: ""
+                val fontSize = TypedAttrs.float(a.fontSize, data)
+                val fontColor = ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.fontColor), data, context
+                )
+                val fontWeightValue = when (TypedAttrs.rawString(a.font)?.lowercase()) {
                     "bold" -> FontWeight.Bold
                     else -> null
                 }
@@ -204,16 +237,17 @@ class DynamicCheckBoxComponent {
         @Composable
         private fun createIconCheckbox(
             json: JsonObject,
+            a: CheckBoxAttributes,
             data: Map<String, Any>,
             parentType: String?
         ) {
             val context = LocalContext.current
 
             // Parse binding variable (priority: isOn > checked > bind)
-            val bindingVariable = resolveBindingVariable(json)
+            val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state
-            val checked = resolveCheckedState(json, data, bindingVariable)
+            val checked = resolveCheckedState(a, data, bindingVariable)
 
             // State for the checkbox
             var checkedState by remember(checked, bindingVariable, data) {
@@ -227,17 +261,18 @@ class DynamicCheckBoxComponent {
                 }
             }
 
-            // Enabled state (supports @{binding})
-            val isEnabled = ResourceResolver.resolveBoolean(json, "enabled", data, default = true)
+            // Enabled state (supports @{binding}; CheckBox declares its own row)
+            val isEnabled = TypedAttrs.boolean(a.enabled, data)
+                ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(json, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
             // Resolve icon drawable resources
-            val iconName = json.get("icon")?.asString ?: "check_box_outline_blank"
-            val selectedIconName = json.get("selectedIcon")?.asString ?: "check_box"
+            val iconName = a.icon ?: "check_box_outline_blank"
+            val selectedIconName = a.selectedIcon ?: "check_box"
             val iconRes = ResourceResolver.resolveDrawable(iconName, data, context)
             val selectedIconRes = ResourceResolver.resolveDrawable(selectedIconName, data, context)
 
@@ -251,9 +286,9 @@ class DynamicCheckBoxComponent {
                 enabled = isEnabled
             ) {
                 // Icon tint color
-                val tintColor = json.get("fontColor")?.asString?.let {
-                    ColorParser.parseColorStringWithBinding(it, data, context)
-                }
+                val tintColor = ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.fontColor), data, context
+                )
 
                 val activeRes = if (checkedState) selectedIconRes else iconRes
                 if (activeRes != 0) {
@@ -275,11 +310,18 @@ class DynamicCheckBoxComponent {
         @Composable
         private fun buildCheckboxColors(
             json: JsonObject,
+            a: CheckBoxAttributes,
             data: Map<String, Any>,
             context: android.content.Context
         ): androidx.compose.material3.CheckboxColors {
-            val checkedColor = ColorParser.parseColorWithBinding(json, "checkColor", data, context)
-            val uncheckedColor = ColorParser.parseColorWithBinding(json, "uncheckedColor", data, context)
+            // 'checkColor' is an undeclared legacy runtime extra
+            // (the declared spelling is 'checkedColor')
+            val checkedColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.undeclared(json, "checkColor")?.asString, data, context
+            )
+            val uncheckedColor = ColorParser.parseColorStringWithBinding(
+                a.uncheckedColor, data, context
+            )
 
             return when {
                 checkedColor != null && uncheckedColor != null ->
@@ -299,15 +341,13 @@ class DynamicCheckBoxComponent {
          * Resolve the binding variable name from JSON attributes.
          * Priority: isOn > checked > bind
          */
-        private fun resolveBindingVariable(json: JsonObject): String? {
+        private fun resolveBindingVariable(a: CheckBoxAttributes): String? {
             // Check isOn, checked in priority order
-            val stateAttr = json.get("isOn") ?: json.get("checked")
-            if (stateAttr != null && stateAttr.isJsonPrimitive && stateAttr.asJsonPrimitive.isString) {
-                ModifierBuilder.extractBindingProperty(stateAttr.asString)?.let { return it }
-            }
+            val stateAttr = a.isOn ?: a.checked
+            TypedAttrs.binding(stateAttr)?.let { return it }
 
             // Fall back to bind
-            json.get("bind")?.asString?.let { bind ->
+            (TypedAttrs.raw(a.bind) as? String)?.let { bind ->
                 ModifierBuilder.extractBindingProperty(bind)?.let { return it }
             }
 
@@ -318,7 +358,7 @@ class DynamicCheckBoxComponent {
          * Resolve the current checked state from JSON and data.
          */
         private fun resolveCheckedState(
-            json: JsonObject,
+            a: CheckBoxAttributes,
             data: Map<String, Any>,
             bindingVariable: String?
         ): Boolean {
@@ -327,16 +367,8 @@ class DynamicCheckBoxComponent {
             }
 
             // Direct value from isOn/checked
-            val stateAttr = json.get("isOn") ?: json.get("checked")
-            if (stateAttr != null && stateAttr.isJsonPrimitive) {
-                val p = stateAttr.asJsonPrimitive
-                if (p.isBoolean) return p.asBoolean
-                if (p.isString && !p.asString.contains("@{")) {
-                    return p.asString.toBoolean()
-                }
-            }
-
-            return false
+            val stateAttr = a.isOn ?: a.checked
+            return TypedAttrs.static(stateAttr) ?: false
         }
 
         /**
@@ -344,7 +376,7 @@ class DynamicCheckBoxComponent {
          * Updates bound variable via data["updateData"] and calls onValueChange handler.
          */
         private fun buildOnCheckedChange(
-            json: JsonObject,
+            a: CheckBoxAttributes,
             data: Map<String, Any>,
             bindingVariable: String?,
             updateState: (Boolean) -> Unit
@@ -367,9 +399,9 @@ class DynamicCheckBoxComponent {
             }
 
             // Call onValueChange handler (binding format only)
-            val handler = json.get("onValueChange")?.asString
+            val handler = TypedAttrs.raw(a.onValueChange) as? String
             if (handler != null && ModifierBuilder.isBinding(handler)) {
-                val viewId = json.get("id")?.asString ?: "checkbox"
+                val viewId = a.common.id ?: "checkbox"
                 ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
             }
         }
