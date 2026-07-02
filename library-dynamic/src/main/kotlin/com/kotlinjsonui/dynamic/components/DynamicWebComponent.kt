@@ -14,13 +14,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.toArgb
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.WebAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Web Component Converter
  * Converts JSON to WebView composable at runtime.
  * Merges web_component.rb + webview_component.rb into a single component.
+ *
+ * Attribute access goes through the generated [WebAttributes] extraction
+ * (typed, alias-aware, L1-marker-aware) via the [TypedAttrs] bridge; the
+ * node itself is only passed wholesale to the shared ModifierBuilder
+ * pipeline. `DynamicWebViewComponent` delegates here and only changes the
+ * [UnappliedAttributes] label to "WebView".
  *
  * Supported JSON attributes:
  * - url: String URL or @{binding} for web page
@@ -40,26 +51,44 @@ class DynamicWebComponent {
         @Composable
         fun create(
             json: JsonObject,
-            data: Map<String, Any> = emptyMap()
+            data: Map<String, Any> = emptyMap(),
+            componentType: String = "Web"
         ) {
             // Apply lifecycle effects first
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                WebAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                componentType, json,
+                declared = WebAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Parse URL with binding support
-            val url = ResourceResolver.resolveText(json, "url", data, context)
+            // Parse URL with binding + resource support
+            val url = TypedAttrs.rawString(a.url)
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                ?: ""
 
-            // Parse WebView settings
+            // Parse WebView settings ('javaScriptEnabled', 'userAgent' and
+            // 'allowZoom' are undeclared legacy runtime extras — kept on the
+            // binding-aware json readers)
             val javaScriptEnabled = ResourceResolver.resolveBoolean(json, "javaScriptEnabled", data, true)
             val userAgent = ResourceResolver.resolveString(json, "userAgent", data)
             val allowZoom = ResourceResolver.resolveBoolean(json, "allowZoom", data, false)
 
-            // Background color (applied to native WebView)
-            val bgColor = ResourceResolver.resolveColor(json, "background", data, context)
+            // Background color (applied to native WebView; supports @{binding})
+            val bgColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            )
 
             // Build modifier: testTag → margins → size → alpha → clickable → padding
-            val defaultFillMax = !json.has("width") && !json.has("height")
+            // (presence check, not a value read — width/height are applied
+            // wholesale by ModifierBuilder; absence of both enables fillMaxSize)
+            val defaultFillMax = TypedAttrs.rawKey(json, "width") == null && TypedAttrs.rawKey(json, "height") == null
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
             // Default to fillMaxSize if no width/height specified
@@ -68,7 +97,7 @@ class DynamicWebComponent {
             }
 
             // Apply corner radius clip
-            json.get("cornerRadius")?.asFloat?.let { radius ->
+            TypedAttrs.float(a.common.cornerRadius, data)?.let { radius ->
                 modifier = modifier.clip(RoundedCornerShape(radius.dp))
             }
 
@@ -116,5 +145,10 @@ class DynamicWebComponent {
                 modifier = modifier
             )
         }
+
+        /** Web-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "url"
+        )
     }
 }
