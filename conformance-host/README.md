@@ -12,6 +12,13 @@ fixture's screen test with the embedded jsonui-test-runner Android driver
   at a time. Fixture selection via the `fixtureId` intent extra, or (from the
   instrumentation suite, which shares the app process) via `FixtureHost.show()`.
   Bundles the `conformance_sample` drawable required by image fixtures.
+  `ConformanceStateProvider.kt` is the generic `class: interactive` state
+  provider (INTERACTIVE_HOST_CONTRACT.md): initial values come from the
+  fixture layout's `data` section via the production
+  `DynamicView.applyDataSectionDefaults` path; manifest `state.handlers`
+  become `() -> Unit` closures that set one var to a literal through
+  `DataBindingContext.updateValue`; two-way write-back is the standard
+  `updateData` sink. Zero per-fixture host code.
 - `src/main/assets/conformance/` — fixtures + manifest, **synced, gitignored**.
 - `src/androidTest/kotlin/com/kotlinjsonui/conformance/` — the suite:
   manifest-driven iteration, RESULTS_SCHEMA output, crash-resume via
@@ -42,8 +49,9 @@ CONFORMANCE_DIR=/path/to/conformance ./conformance-host/scripts/collect_results.
 ```
 
 `run_conformance.sh --filter assertable` limits execution to assertable +
-alias fixtures; everything else is still reported (as `skipped` with a
-detail) — the results file always contains one entry per manifest fixture.
+alias fixtures; `--filter interactive` to `class: interactive` fixtures;
+everything else is still reported (as `skipped` with a detail) — the
+results file always contains one entry per manifest fixture.
 
 Equivalent Gradle-only invocation (no crash-resume loop):
 
@@ -85,6 +93,18 @@ configuration. Re-sync from a checkout with:
 JSONUI_TEST_RUNNER_PATH=/path/to/jsonui-test-runner ./conformance-host/scripts/sync_driver.sh
 ```
 
-Local patches are marked `// KJUI-CONFORMANCE PATCH` (currently: pluggable
-`screenshotHandler` — upstream's `screenshot` action is a no-op placeholder).
-Re-syncing overwrites them; re-apply from git history or upstream them first.
+The vendored copy is a snapshot of upstream
+`jsonui-test-runner-android@7c00459` (the former `KJUI-CONFORMANCE PATCH`
+set — pluggable `screenshotHandler`, K2 smart-cast fixes, descendant-text
+`assertText` — was upstreamed). One local patch is currently carried,
+marked `// KJUI-CONFORMANCE PATCH`:
+
+- `AssertionExecutor.assertText` retries until the step timeout instead of
+  a single sample (racy against Compose async state updates; upstream bug
+  `testrunner-android-asserttext-single-sample-race`).
+
+Screenshot capture: upstream now also offers `TestRunnerConfig.screenshotDir`,
+but this harness drives `ActionExecutor` directly (not `JsonUITestRunner`)
+and keeps the `screenshotHandler` wiring — it needs the per-fixture artifact
+path bookkeeping (`lastScreenshot`) and a hard failure when capture fails,
+which the config-dir default (silent best-effort save) does not provide.

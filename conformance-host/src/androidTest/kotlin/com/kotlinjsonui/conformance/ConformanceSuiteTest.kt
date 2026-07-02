@@ -131,11 +131,17 @@ class ConformanceSuiteTest {
                 "filtered out (assertable-only run)"
             )
         }
+        if (filter == "interactive" && fixture.clazz != "interactive") {
+            return FixtureResult(
+                fixture.id, "skipped",
+                "filtered out (interactive-only run)"
+            )
+        }
         // Any other filter value is a comma-separated list of manifest
         // sections (the `<component>/` prefix of fixture ids), e.g.
         // `-e conformanceFilter Label,common` — used for per-component
         // verification runs during typed-attribute rollouts.
-        if (filter != "all" && filter != "assertable") {
+        if (filter != "all" && filter != "assertable" && filter != "interactive") {
             val sections = filter.split(',').map { it.trim() }.filter { it.isNotEmpty() }
             if (sections.none { fixture.id.startsWith("$it/") }) {
                 return FixtureResult(
@@ -168,13 +174,14 @@ class ConformanceSuiteTest {
         // semantics tree (guards against asserting on the previous fixture's
         // tree — all fixtures share the "root"/"target" ids).
         //
-        // Assertable fixtures get a fresh Activity: after an in-place content
-        // swap, non-interactive Compose text nodes are reported to the
-        // accessibility tree with visible=false (UIAutomator then cannot find
-        // them by resource-id), while a fresh window exposes them correctly.
+        // Assertable AND interactive fixtures get a fresh Activity: after an
+        // in-place content swap, non-interactive Compose text nodes are
+        // reported to the accessibility tree with visible=false (UIAutomator
+        // then cannot find them by resource-id / reads stale trees), while a
+        // fresh window exposes them correctly. Both classes assert on text.
         // Visual fixtures only need waitFor(root) + screenshot, so they keep
         // the much faster in-process swap.
-        if (fixture.clazz == "assertable" || scenario == null) {
+        if (fixture.clazz == "assertable" || fixture.clazz == "interactive" || scenario == null) {
             scenario?.close()
             val intent = Intent(targetContext, FixtureHostActivity::class.java)
                 .putExtra(FixtureHostActivity.EXTRA_FIXTURE_ID, fixture.id)
@@ -192,6 +199,16 @@ class ConformanceSuiteTest {
                 "fixture did not render within ${readyTimeout}ms" +
                     if (renderErrors.isNotEmpty()) " — render errors: ${brief(renderErrors)}" else ""
             )
+        }
+
+        // Visual fixtures: the semantics tree being ready (readyTag) does not
+        // guarantee the *rendered frame* has settled after an in-place content
+        // swap — calibration runs caught a stale drop shadow from the previous
+        // fixture and a flexible-TextView height mid-settle in screenshots.
+        // Give the compositor a beat before capturing.
+        if (fixture.clazz == "visual") {
+            device.waitForIdle(defaultTimeoutMs)
+            Thread.sleep(150)
         }
 
         val status = try {

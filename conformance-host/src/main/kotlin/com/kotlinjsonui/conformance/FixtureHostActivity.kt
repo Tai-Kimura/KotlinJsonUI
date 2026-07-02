@@ -51,10 +51,6 @@ object FixtureHost {
      */
     fun readyTag(fixtureId: String): String =
         "conformance_ready_" + fixtureId.replace('/', '-')
-
-    /** Asset path of a fixture layout, derived from the fixture id. */
-    fun layoutAssetPath(fixtureId: String): String =
-        "conformance/fixtures/$fixtureId.layout.json"
 }
 
 /**
@@ -95,7 +91,7 @@ private fun FixtureScreen(fixtureId: String) {
     val context = LocalContext.current
     val layoutJson: JsonObject? = remember(fixtureId) {
         try {
-            context.assets.open(FixtureHost.layoutAssetPath(fixtureId))
+            context.assets.open(ConformanceStateRegistry.layoutAssetPath(context, fixtureId))
                 .bufferedReader()
                 .use { it.readText() }
                 .let { JsonParser.parseString(it).asJsonObject }
@@ -119,7 +115,10 @@ private fun FixtureScreen(fixtureId: String) {
         layoutJson?.let { json ->
             DynamicView(
                 json = json,
-                data = emptyMap(),
+                // Generic conformanceState provider (INTERACTIVE_HOST_CONTRACT.md):
+                // manifest-declared handler closures + two-way write-back state.
+                // Empty for non-interactive fixtures apart from `updateData`.
+                data = rememberConformanceData(fixtureId),
                 onError = { e ->
                     FixtureHost.renderErrors.add(e.message ?: e.javaClass.simpleName)
                 }

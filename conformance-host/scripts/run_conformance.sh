@@ -58,6 +58,13 @@ fi
 "$ADB" shell settings put global window_animation_scale 0
 "$ADB" shell settings put global transition_animation_scale 0
 "$ADB" shell settings put global animator_duration_scale 0
+# Freeze the status bar (clock/battery/wifi) via SystemUI demo mode so
+# full-screen screenshots don't carry live-clock noise between runs.
+"$ADB" shell settings put global sysui_demo_allowed 1
+"$ADB" shell am broadcast -a com.android.systemui.demo -e command enter >/dev/null
+"$ADB" shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200 >/dev/null
+"$ADB" shell am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false >/dev/null
+"$ADB" shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 >/dev/null
 
 if [[ "$FRESH" == "1" ]]; then
   echo "Wiping on-device conformance output..."
