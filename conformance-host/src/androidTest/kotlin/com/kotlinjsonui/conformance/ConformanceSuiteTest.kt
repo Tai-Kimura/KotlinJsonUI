@@ -1,5 +1,6 @@
 package com.kotlinjsonui.conformance
 
+import android.content.Intent
 import android.util.Log
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -57,6 +58,9 @@ class ConformanceSuiteTest {
     /** screenshot path (relative to conformance/) captured by the current fixture */
     private var lastScreenshot: String? = null
 
+    /** current host Activity scenario (relaunched for assertable fixtures) */
+    private var scenario: ActivityScenario<FixtureHostActivity>? = null
+
     @Test
     fun runConformanceSuite() {
         val manifestBytes = targetContext.assets.open("conformance/manifest.json")
@@ -72,9 +76,7 @@ class ConformanceSuiteTest {
         val outcomes = store.loadCompleted().toMutableMap()
         log("Resuming with ${outcomes.size}/${manifest.fixtures.size} outcomes already recorded")
 
-        val scenario = ActivityScenario.launch(FixtureHostActivity::class.java)
         try {
-            device.waitForIdle(defaultTimeoutMs)
             var firstFixture = true
 
             for (fixture in manifest.fixtures) {
@@ -96,7 +98,8 @@ class ConformanceSuiteTest {
                     if (result.detail.isNotEmpty()) " (${result.detail})" else "")
             }
         } finally {
-            scenario.close()
+            scenario?.close()
+            scenario = null
         }
 
         val resultsFile = store.writeFinalResults(
@@ -151,7 +154,22 @@ class ConformanceSuiteTest {
         // Render the fixture and wait until its unique wrapper tag is in the
         // semantics tree (guards against asserting on the previous fixture's
         // tree — all fixtures share the "root"/"target" ids).
-        FixtureHost.show(fixture.id)
+        //
+        // Assertable fixtures get a fresh Activity: after an in-place content
+        // swap, non-interactive Compose text nodes are reported to the
+        // accessibility tree with visible=false (UIAutomator then cannot find
+        // them by resource-id), while a fresh window exposes them correctly.
+        // Visual fixtures only need waitFor(root) + screenshot, so they keep
+        // the much faster in-process swap.
+        if (fixture.clazz == "assertable" || scenario == null) {
+            scenario?.close()
+            val intent = Intent(targetContext, FixtureHostActivity::class.java)
+                .putExtra(FixtureHostActivity.EXTRA_FIXTURE_ID, fixture.id)
+            scenario = ActivityScenario.launch(intent)
+            device.waitForIdle(defaultTimeoutMs)
+        } else {
+            FixtureHost.show(fixture.id)
+        }
         val readyTimeout = if (firstFixture) 15000L else 8000L
         if (!waitForResourceId(FixtureHost.readyTag(fixture.id), readyTimeout)) {
             val renderErrors = FixtureHost.renderErrors.joinToString("; ")

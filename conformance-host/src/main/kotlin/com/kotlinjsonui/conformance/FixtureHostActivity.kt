@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -107,6 +108,11 @@ private fun FixtureScreen(fixtureId: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            // Keep fixture content out of the system-bar regions: with
+            // edge-to-edge (targetSdk 35+) a node rendered behind the status
+            // bar is reported visible=false to the instrumentation's
+            // accessibility tree and becomes unfindable by resource-id.
+            .systemBarsPadding()
             .testTag(FixtureHost.readyTag(fixtureId))
             .semantics { testTagsAsResourceId = true }
     ) {
