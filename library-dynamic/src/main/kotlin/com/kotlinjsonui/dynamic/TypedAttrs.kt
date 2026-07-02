@@ -172,6 +172,27 @@ object TypedAttrs {
             is AttrValue.Binding -> null
             is AttrValue.Value -> enumString(v.value, json)
         }
+
+    // ------------------------------------------------------------------
+    // Documented raw escape hatches (grep-gate friendly: components use
+    // these named entry points instead of json.get("attr")).
+
+    /**
+     * Raw read of a DECLARED key whose accepted value space is wider
+     * than its declared type (e.g. `padding`/`paddings` edge-inset
+     * arrays, `shadow` objects) — the generated coercion would drop the
+     * extra shapes. Mirrors the rjui bridge RAW_LOOKUP_KEYS.
+     */
+    fun rawKey(json: JsonObject, key: String): JsonElement? = json.get(key)
+
+    /**
+     * Raw read of a key NOT declared in attribute_definitions.json
+     * (legacy runtime extras such as `isLoading`, `async`,
+     * `imagePosition`). Every call site is a definitions-backfill
+     * candidate — keeping them on this single entry point makes them
+     * mechanically greppable.
+     */
+    fun undeclared(json: JsonObject, key: String): JsonElement? = json.get(key)
 }
 
 /**

@@ -30,8 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
-import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.ButtonAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import kotlinx.coroutines.CoroutineScope
@@ -52,33 +55,43 @@ class DynamicButtonComponent {
         @Composable
         fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                ButtonAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Button", json,
+                declared = ButtonAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Resolve button text with binding + resource support
-            val text = ResourceResolver.resolveText(json, "text", data, context)
+            val text = (TypedAttrs.rawString(a.text)
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: "")
                 .ifEmpty { "Button" }
 
-            // Loading state
+            // Loading state (undeclared legacy runtime extra)
             var isLoading by remember {
-                mutableStateOf(json.get("isLoading")?.asBoolean ?: false)
+                mutableStateOf(TypedAttrs.undeclared(json, "isLoading")?.asBoolean ?: false)
             }
 
-            // Enabled state (supports @{binding})
+            // Enabled state (supports @{binding}; 'disabled' is undeclared legacy)
             val isEnabled = when {
                 isLoading -> false
-                else -> ResourceResolver.resolveBoolean(json, "enabled", data, default = true) &&
+                else -> (TypedAttrs.boolean(a.common.enabled, data) ?: true) &&
                         !ResourceResolver.resolveBoolean(json, "disabled", data, default = false)
             }
 
             // Click handler
-            val viewId = json.get("id")?.asString ?: "button"
-            val onClick: () -> Unit = buildClickHandler(json, data, viewId, isLoading) { loading ->
+            val viewId = a.common.id ?: "button"
+            val onClick: () -> Unit = buildClickHandler(json, a, data, viewId, isLoading) { loading ->
                 isLoading = loading
             }
 
             // Text style
-            val fontSize = json.get("fontSize")?.asFloat
+            val fontSize = a.fontSize?.toFloat()
                 ?: Configuration.Button.defaultFontSize.toFloat()
-            val fontWeight = when (json.get("fontWeight")?.asString?.lowercase()) {
+            val fontWeight = when ((TypedAttrs.static(a.fontWeight) as? String)?.lowercase()) {
                 "bold" -> FontWeight.Bold
                 "semibold" -> FontWeight.SemiBold
                 "medium" -> FontWeight.Medium
@@ -88,26 +101,32 @@ class DynamicButtonComponent {
             }
 
             // Colors (supports @{binding})
-            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
-                ?: Configuration.Button.defaultTextColor
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
-                ?: Configuration.Button.defaultBackgroundColor
-            val disabledBgColor = ColorParser.parseColorWithBinding(json, "disabledBackground", data, context)
-                ?: backgroundColor.copy(alpha = 0.5f)
-            val disabledTextColor = ColorParser.parseColorWithBinding(json, "disabledFontColor", data, context)
-                ?: textColor.copy(alpha = 0.5f)
-            // Pressed-state container color: canonical 'tapBackground' first,
-            // then its 'highlightBackground' alias (skipped for L1-normalized
-            // layouts); 'hilightBackground' is an undeclared legacy typo
+            val textColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.fontColor), data, context
+            ) ?: Configuration.Button.defaultTextColor
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            ) ?: Configuration.Button.defaultBackgroundColor
+            val disabledBgColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.disabledBackground), data, context
+            ) ?: backgroundColor.copy(alpha = 0.5f)
+            val disabledTextColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.disabledFontColor), data, context
+            ) ?: textColor.copy(alpha = 0.5f)
+            // Pressed-state container color: canonical 'tapBackground'
+            // first, then 'highlightBackground' (standalone declared row;
+            // the L1 normalizer rewrites it to tapBackground on Button
+            // nodes, so normalized input only ever carries the canonical
+            // spelling); 'hilightBackground' is an undeclared legacy typo
             // spelling, always honored last.
-            val canonicalOnly = LocalLayoutCanonicalized.current
-            val pressedBgColor = ColorParser.parseColorWithBinding(json, "tapBackground", data, context)
-                ?: (if (canonicalOnly) null
-                    else ColorParser.parseColorWithBinding(json, "highlightBackground", data, context))
-                ?: ColorParser.parseColorWithBinding(json, "hilightBackground", data, context)
+            val pressedBgColor = ColorParser.parseColorStringWithBinding(
+                a.tapBackground ?: a.highlightBackground, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
+                TypedAttrs.undeclared(json, "hilightBackground")?.asString, data, context
+            )
 
             // Shape
-            val cornerRadius = json.get("cornerRadius")?.asFloat
+            val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)
                 ?: Configuration.Button.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
 
@@ -125,25 +144,31 @@ class DynamicButtonComponent {
             )
 
             // Border
-            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-            val borderWidth = json.get("borderWidth")?.asFloat ?: 1f
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            )
+            val borderWidth = TypedAttrs.float(a.common.borderWidth, data) ?: 1f
             val border = borderColor?.let { BorderStroke(borderWidth.dp, it) }
 
-            // Content padding
+            // Content padding (padding/paddings accept edge-inset arrays —
+            // wider than the declared type, so read raw; see TypedAttrs.rawKey)
             val contentPadding = buildContentPadding(json)
 
             // Elevation
-            val elevation = resolveElevation(json)
+            val elevation = resolveElevation(a.common.shadow)
 
-            // Optional leading/trailing icon
-            val imageResId = json.get("image")?.asString?.let {
+            // Optional leading/trailing icon ('imagePosition'/'iconSize' are
+            // undeclared legacy runtime extras)
+            val imageResId = a.image?.let {
                 ResourceResolver.resolveDrawable(it, data, context).takeIf { id -> id != 0 }
             }
-            val imagePosition = json.get("imagePosition")?.asString?.lowercase() ?: "leading"
-            val iconSize = json.get("iconSize")?.asFloat ?: 18f
+            val imagePosition = TypedAttrs.undeclared(json, "imagePosition")?.asString?.lowercase() ?: "leading"
+            val iconSize = TypedAttrs.undeclared(json, "iconSize")?.asFloat ?: 18f
 
             // Text alignment (Button-level). Compose default is center; tool allows override.
-            val textAlign = json.get("textAlign")?.asString?.let { align ->
+            // The legacy reader also honored the undeclared "start"/"end"
+            // spellings — preserved through the enum unknown-passthrough.
+            val textAlign = TypedAttrs.enumString(a.textAlign) { it.json }?.let { align ->
                 when (align.lowercase()) {
                     "left", "start" -> TextAlign.Start
                     "right", "end" -> TextAlign.End
@@ -179,7 +204,7 @@ class DynamicButtonComponent {
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = json.get("loadingText")?.asString ?: text,
+                            text = TypedAttrs.undeclared(json, "loadingText")?.asString ?: text,
                             fontSize = fontSize.sp,
                             fontWeight = fontWeight,
                             textAlign = textAlign
@@ -227,17 +252,18 @@ class DynamicButtonComponent {
 
         private fun buildClickHandler(
             json: JsonObject,
+            a: ButtonAttributes,
             data: Map<String, Any>,
             viewId: String,
             isLoading: Boolean,
             setLoading: (Boolean) -> Unit
         ): () -> Unit = {
             if (!isLoading) {
-                val methodName = resolveClickMethodName(json)
+                val methodName = resolveClickMethodName(a)
                 methodName?.let { name ->
                     val handler = data[name]
                     if (handler is Function<*>) {
-                        val isAsync = json.get("async")?.asBoolean ?: false
+                        val isAsync = TypedAttrs.undeclared(json, "async")?.asBoolean ?: false
                         if (isAsync) {
                             setLoading(true)
                             CoroutineScope(Dispatchers.Main).launch {
@@ -257,7 +283,8 @@ class DynamicButtonComponent {
                             }
                         } else {
                             ModifierBuilder.resolveEventHandler(
-                                json.get("onclick")?.asString ?: json.get("onClick")?.asString,
+                                a.common.onclick as? String
+                                    ?: TypedAttrs.raw(a.common.onClick) as? String,
                                 data, viewId
                             )
                         }
@@ -271,11 +298,11 @@ class DynamicButtonComponent {
          * onclick → selector format (string only)
          * onClick → binding format only (@{functionName})
          */
-        private fun resolveClickMethodName(json: JsonObject): String? {
-            json.get("onclick")?.asString?.let { value ->
+        private fun resolveClickMethodName(a: ButtonAttributes): String? {
+            (a.common.onclick as? String)?.let { value ->
                 if (!value.contains("@{")) return value
             }
-            json.get("onClick")?.asString?.let { value ->
+            (TypedAttrs.raw(a.common.onClick) as? String)?.let { value ->
                 return ModifierBuilder.extractBindingProperty(value)
             }
             return null
@@ -285,7 +312,7 @@ class DynamicButtonComponent {
 
         private fun buildContentPadding(json: JsonObject): PaddingValues {
             // paddings (array or single number)
-            json.get("paddings")?.let { element ->
+            TypedAttrs.rawKey(json, "paddings")?.let { element ->
                 if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
                     return PaddingValues(element.asFloat.dp)
                 }
@@ -295,7 +322,7 @@ class DynamicButtonComponent {
             }
 
             // padding (single value or array)
-            json.get("padding")?.let { element ->
+            TypedAttrs.rawKey(json, "padding")?.let { element ->
                 if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
                     return PaddingValues(element.asFloat.dp)
                 }
@@ -304,17 +331,18 @@ class DynamicButtonComponent {
                 }
             }
 
-            // Individual padding values
-            val paddingTop = json.get("paddingTop")?.asFloat
-                ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingBottom = json.get("paddingBottom")?.asFloat
-                ?: json.get("paddingVertical")?.asFloat ?: 0f
-            val paddingStart = json.get("paddingStart")?.asFloat
-                ?: json.get("paddingLeft")?.asFloat
-                ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-            val paddingEnd = json.get("paddingEnd")?.asFloat
-                ?: json.get("paddingRight")?.asFloat
-                ?: json.get("paddingHorizontal")?.asFloat ?: 0f
+            // Individual padding values ('paddingVertical'/'paddingHorizontal'
+            // are undeclared legacy spellings)
+            val paddingTop = TypedAttrs.rawKey(json, "paddingTop")?.asFloat
+                ?: TypedAttrs.undeclared(json, "paddingVertical")?.asFloat ?: 0f
+            val paddingBottom = TypedAttrs.rawKey(json, "paddingBottom")?.asFloat
+                ?: TypedAttrs.undeclared(json, "paddingVertical")?.asFloat ?: 0f
+            val paddingStart = TypedAttrs.rawKey(json, "paddingStart")?.asFloat
+                ?: TypedAttrs.rawKey(json, "paddingLeft")?.asFloat
+                ?: TypedAttrs.undeclared(json, "paddingHorizontal")?.asFloat ?: 0f
+            val paddingEnd = TypedAttrs.rawKey(json, "paddingEnd")?.asFloat
+                ?: TypedAttrs.rawKey(json, "paddingRight")?.asFloat
+                ?: TypedAttrs.undeclared(json, "paddingHorizontal")?.asFloat ?: 0f
 
             return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
                 PaddingValues(
@@ -354,15 +382,19 @@ class DynamicButtonComponent {
         // ── Elevation ──
 
         @Composable
-        private fun resolveElevation(json: JsonObject): androidx.compose.material3.ButtonElevation? {
-            val shadow = json.get("shadow") ?: return null
-            return when {
-                shadow.isJsonPrimitive && shadow.asJsonPrimitive.isBoolean && shadow.asBoolean ->
-                    ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
-                shadow.isJsonPrimitive && shadow.asJsonPrimitive.isNumber ->
-                    ButtonDefaults.buttonElevation(defaultElevation = shadow.asFloat.dp)
+        private fun resolveElevation(shadow: Any?): androidx.compose.material3.ButtonElevation? {
+            return when (shadow) {
+                true -> ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                is Number -> ButtonDefaults.buttonElevation(defaultElevation = shadow.toFloat().dp)
                 else -> null
             }
         }
+
+        /** Button-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "text", "enabled", "fontSize", "fontWeight", "fontColor",
+            "disabledFontColor", "tapBackground", "highlightBackground",
+            "image", "textAlign", "disabledBackground"
+        )
     }
 }
