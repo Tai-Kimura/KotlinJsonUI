@@ -18,3 +18,4 @@ rootProject.name = "KotlinJsonUI"
 include(":library")
 include(":library-dynamic")
 include(":sample-app")
+include(":conformance-host")

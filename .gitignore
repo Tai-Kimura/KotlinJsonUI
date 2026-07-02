@@ -107,3 +107,6 @@ gradle.properties.kotlinjsonui.claude/
 
 # Per-environment settings (paths, IPs) — keep local
 .claude/settings.local.json
+
+# Conformance fixtures are synced at run time from $CONFORMANCE_DIR (never committed)
+conformance-host/src/main/assets/conformance/
