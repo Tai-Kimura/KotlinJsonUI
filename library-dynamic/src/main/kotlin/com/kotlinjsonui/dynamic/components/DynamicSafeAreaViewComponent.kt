@@ -15,11 +15,15 @@ import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInBox
 import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInColumn
 import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInRow
+import com.kotlinjsonui.dynamic.generated.SafeAreaViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -40,15 +44,33 @@ import androidx.compose.ui.platform.LocalContext
  * SafeAreaView needs special modifier ordering: background must go BEFORE
  * systemBarsPadding so it extends to screen edges. Therefore we build
  * the modifier chain manually instead of using the composite buildModifier.
+ *
+ * Attribute access goes through the generated [SafeAreaViewAttributes]
+ * extraction via the [TypedAttrs] bridge; the node itself is only passed
+ * wholesale to the shared ModifierBuilder helpers.
  */
 class DynamicSafeAreaViewComponent {
     companion object {
+        /** SafeAreaView-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "safeAreaInsetPositions", "orientation"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                SafeAreaViewAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "SafeAreaView", json,
+                declared = SafeAreaViewAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
             // Get parent SafeAreaConfig (e.g., from TabView)
             val safeAreaConfig = LocalSafeAreaConfig.current
@@ -57,12 +79,12 @@ class DynamicSafeAreaViewComponent {
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             // Parse edges to apply safe area padding
-            // Support both "edges" and "safeAreaInsetPositions" (alias for cross-platform compatibility)
-            val edgesArray = json.get("edges")?.asJsonArray
-                ?: json.get("safeAreaInsetPositions")?.asJsonArray
-            val requestedEdges = edgesArray?.let { arr ->
-                arr.map { it.asString }
-            } ?: listOf("all")
+            // 'edges' is an undeclared legacy runtime extra (canonical
+            // spelling is safeAreaInsetPositions); legacy priority order kept
+            val edgesExtra = TypedAttrs.undeclared(json, "edges")?.asJsonArray
+            val requestedEdges = edgesExtra?.map { it.asString }
+                ?: a.safeAreaInsetPositions?.mapNotNull { it as? String }
+                ?: listOf("all")
 
             // Filter edges based on parent SafeAreaConfig
             val edges = requestedEdges.toMutableList().apply {
@@ -83,13 +105,16 @@ class DynamicSafeAreaViewComponent {
             }.distinct()
 
             // Check if keyboard padding should be applied
-            val ignoreKeyboard = json.get("ignoreKeyboard")?.asBoolean ?: false
+            // ('ignoreKeyboard' is an undeclared legacy runtime extra)
+            val ignoreKeyboard = TypedAttrs.undeclared(json, "ignoreKeyboard")?.asBoolean ?: false
 
             // Parse orientation for child layout (null means Box/ZStack)
-            val orientation = json.get("orientation")?.asString
+            val orientation = TypedAttrs.enumString(a.orientation) { it.json }
 
             // Parse background color (supports @{binding})
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            )
 
             // Build modifier manually: special ordering required for SafeAreaView
             // background must go BEFORE systemBarsPadding so it extends to screen edges
