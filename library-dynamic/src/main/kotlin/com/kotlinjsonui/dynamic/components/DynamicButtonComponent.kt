@@ -113,12 +113,13 @@ class DynamicButtonComponent {
             val disabledTextColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.disabledFontColor), data, context
             ) ?: textColor.copy(alpha = 0.5f)
-            // Pressed-state container color: canonical 'tapBackground'
-            // first, then 'highlightBackground' (standalone declared row;
-            // the L1 normalizer rewrites it to tapBackground on Button
-            // nodes, so normalized input only ever carries the canonical
-            // spelling); 'hilightBackground' is an undeclared legacy typo
-            // spelling, always honored last.
+            // Pressed-state container color: 'tapBackground' (tap state)
+            // and 'highlightBackground' (highlighted state) are two
+            // DISTINCT declared attributes; Compose has no separate
+            // highlighted state, so both map to the pressed container
+            // here, tapBackground winning when both are set.
+            // 'hilightBackground' is an undeclared legacy typo spelling,
+            // always honored last.
             val pressedBgColor = ColorParser.parseColorStringWithBinding(
                 a.tapBackground ?: a.highlightBackground, data, context
             ) ?: ColorParser.parseColorStringWithBinding(

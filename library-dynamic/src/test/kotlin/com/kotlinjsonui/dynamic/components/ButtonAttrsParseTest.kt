@@ -41,23 +41,24 @@ class ButtonAttrsParseTest {
     }
 
     @Test
-    fun `pressed background resolves the alias on L0 and skips it on L1`() {
-        // L0: the tapBackground row falls back to its highlightBackground
-        // alias spelling (which also fills its own standalone row).
-        val alias = parse("""{"type":"Button","highlightBackground":"#000000"}""")
-        assertEquals("#000000", alias.tapBackground)
-        assertEquals("#000000", alias.highlightBackground)
+    fun `highlightBackground and tapBackground are distinct attributes`() {
+        // highlightBackground (highlighted state) is NOT an alias of
+        // tapBackground (tap state) — the definitions treat them as two
+        // standalone rows, so neither spelling fills the other.
+        val highlighted = parse("""{"type":"Button","highlightBackground":"#000000"}""")
+        assertNull(highlighted.tapBackground)
+        assertEquals("#000000", highlighted.highlightBackground)
 
-        // L1 (canonicalOnly): the alias fallback is skipped — normalized
-        // input only ever carries the canonical tapBackground spelling.
         val canonicalOnly = parse(
             """{"type":"Button","highlightBackground":"#000000"}""",
             canonicalOnly = true
         )
         assertNull(canonicalOnly.tapBackground)
+        assertEquals("#000000", canonicalOnly.highlightBackground)
 
         val canonical = parse("""{"type":"Button","tapBackground":"#FFFFFF"}""")
         assertEquals("#FFFFFF", canonical.tapBackground)
+        assertNull(canonical.highlightBackground)
     }
 
     @Test
