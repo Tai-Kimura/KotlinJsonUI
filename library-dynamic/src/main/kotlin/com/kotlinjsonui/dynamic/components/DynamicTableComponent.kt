@@ -16,7 +16,11 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Table Component Converter
@@ -44,17 +48,28 @@ class DynamicTableComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                CollectionAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Table", json,
+                declared = CollectionAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
-            // Parse data binding for items
+            // Parse data binding for items ('bind' first, then 'items')
+            val bindRaw = a.common.bind as? String
+            val itemsRaw = TypedAttrs.raw(a.items) as? String
             val itemsBinding = when {
-                json.get("bind")?.asString?.contains("@{") == true -> {
+                bindRaw?.contains("@{") == true -> {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("bind").asString)?.groupValues?.get(1)
+                    pattern.find(bindRaw)?.groupValues?.get(1)
                 }
-                json.get("items")?.asString?.contains("@{") == true -> {
+                itemsRaw?.contains("@{") == true -> {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("items").asString)?.groupValues?.get(1)
+                    pattern.find(itemsRaw)?.groupValues?.get(1)
                 }
                 else -> null
             }
@@ -71,15 +86,19 @@ class DynamicTableComponent {
                 else -> emptyList<Any>()
             }
             
-            // Parse table configuration
-            val rowHeight = json.get("rowHeight")?.asFloat?.dp ?: 60.dp
-            val rowSpacing = (json.get("rowSpacing") ?: json.get("spacing"))?.asFloat?.dp ?: 0.dp
-            val separatorStyle = json.get("separatorStyle")?.asString ?: "single"
-            
-            // Parse content padding
+            // Parse table configuration ('rowHeight' / 'rowSpacing' / 'spacing' /
+            // 'separatorStyle' are undeclared legacy runtime extras)
+            val rowHeight = TypedAttrs.undeclared(json, "rowHeight")?.asFloat?.dp ?: 60.dp
+            val rowSpacing = (TypedAttrs.undeclared(json, "rowSpacing")
+                ?: TypedAttrs.undeclared(json, "spacing"))?.asFloat?.dp ?: 0.dp
+            val separatorStyle = TypedAttrs.undeclared(json, "separatorStyle")?.asString ?: "single"
+
+            // Parse content padding ('contentPadding' is an undeclared legacy
+            // runtime extra; number | 4-element array shape union)
+            val contentPaddingElement = TypedAttrs.undeclared(json, "contentPadding")
             val contentPadding = when {
-                json.has("contentPadding") -> {
-                    val padding = json.get("contentPadding")
+                contentPaddingElement != null -> {
+                    val padding = contentPaddingElement
                     when {
                         padding.isJsonArray -> {
                             val array = padding.asJsonArray
@@ -103,8 +122,8 @@ class DynamicTableComponent {
                 else -> PaddingValues(0.dp)
             }
             
-            // Parse separator inset
-            val separatorInset = json.get("separatorInset")?.asJsonObject
+            // Parse separator inset ('separatorInset' is an undeclared legacy runtime extra)
+            val separatorInset = TypedAttrs.undeclared(json, "separatorInset")?.asJsonObject
             val separatorStartPadding = when {
                 separatorInset != null -> {
                     (separatorInset.get("left") ?: separatorInset.get("start"))?.asFloat?.dp ?: 0.dp
@@ -242,5 +261,10 @@ class DynamicTableComponent {
                 }
             }
         }
+
+        /** Table-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "bind", "items"
+        )
     }
 }
