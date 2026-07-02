@@ -5,6 +5,10 @@ import com.google.gson.JsonObject
 
 /**
  * HStack/Row component – delegates to DynamicContainerComponent with orientation=horizontal.
+ *
+ * Typed attribute parsing (ViewAttributes) and the UnappliedAttributes
+ * check both happen inside DynamicContainerComponent; the "HStack"
+ * component-type label is passed through so warnings name this node type.
  */
 class DynamicHStackComponent {
     companion object {
@@ -13,7 +17,7 @@ class DynamicHStackComponent {
             val modified = json.deepCopy().apply {
                 addProperty("orientation", "horizontal")
             }
-            DynamicContainerComponent.create(modified, data)
+            DynamicContainerComponent.create(modified, data, componentType = "HStack")
         }
     }
 }
