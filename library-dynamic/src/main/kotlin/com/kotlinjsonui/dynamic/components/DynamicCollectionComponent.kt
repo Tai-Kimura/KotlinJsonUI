@@ -22,7 +22,11 @@ import com.google.gson.JsonArray
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
-import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CollectionAttributes
+import com.kotlinjsonui.dynamic.generated.DimensionValue
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.components.CollectionStackMode
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.data.CollectionDataSource
@@ -72,12 +76,22 @@ class DynamicCollectionComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                CollectionAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Collection", json,
+                declared = CollectionAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
-            // Resolve onItemAppear callback
+            // Resolve onItemAppear callback (function-valued callback type,
+            // skipped by the definitions codegen — undeclared legacy runtime extra)
             @Suppress("UNCHECKED_CAST")
             val onItemAppear: ((Int) -> Unit)? = run {
-                val raw = json.get("onItemAppear")?.asString ?: return@run null
+                val raw = TypedAttrs.undeclared(json, "onItemAppear")?.asString ?: return@run null
                 val propName = ModifierBuilder.extractBindingProperty(raw) ?: return@run null
                 data[propName] as? Function1<Int, Unit>
             }
@@ -85,8 +99,8 @@ class DynamicCollectionComponent {
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
             // Support both 'layout' and 'orientation' attributes for horizontal/vertical
-            val layout = json.get("layout")?.asString
-                ?: json.get("orientation")?.asString
+            val layout = TypedAttrs.enumString(a.layout) { it.json }
+                ?: TypedAttrs.enumString(a.orientation) { it.json }
                 ?: "vertical"
             val isHorizontal = layout == "horizontal"
             val isFlow = layout == "flow"
@@ -99,8 +113,10 @@ class DynamicCollectionComponent {
             //   NONE  -> renderNonLazy/renderNonLazyRow with no scroll modifier.
             // Bindings resolve at runtime via the data map; the wrapper composable
             // re-applies the same closure regardless of value, preserving identity.
+            // 'lazy' additionally accepts a legacy boolean form — wider than
+            // the declared enum type, so read raw (see TypedAttrs.rawKey).
             val collectionMode = run {
-                val raw = json.get("lazy")
+                val raw = TypedAttrs.rawKey(json, "lazy")
                 val resolved: Any? = when {
                     raw == null -> null
                     raw.isJsonNull -> null
@@ -118,25 +134,26 @@ class DynamicCollectionComponent {
             val lazy = collectionMode == CollectionStackMode.LAZY
 
             // Legacy: Extract cellClasses, headerClasses, footerClasses
-            val cellClasses = extractStringArray(json.get("cellClasses")?.asJsonArray)
-            val headerClasses = extractStringArray(json.get("headerClasses")?.asJsonArray)
-            val footerClasses = extractStringArray(json.get("footerClasses")?.asJsonArray)
+            val cellClasses = extractStringList(a.cellClasses)
+            val headerClasses = extractStringList(a.headerClasses)
+            val footerClasses = extractStringList(a.footerClasses)
 
             // Get first cell class name for primary cell type
             val cellClassName = cellClasses.firstOrNull()
 
             // Parse cellIdProperty for data-based identity
-            val cellIdProperty = json.get("cellIdProperty")?.asString
-            val autoChangeTrackingId = json.get("autoChangeTrackingId")?.asBoolean ?: false
+            val cellIdProperty = a.cellIdProperty
+            val autoChangeTrackingId = a.autoChangeTrackingId ?: false
             if (autoChangeTrackingId && cellIdProperty.isNullOrEmpty()) {
-                logAutoTrackingMisconfiguration(json.get("id")?.asString)
+                logAutoTrackingMisconfiguration(a.common.id)
             }
 
             // Parse data binding for items
+            val itemsRaw = TypedAttrs.raw(a.items) as? String
             val itemsBinding = when {
-                json.get("items")?.asString?.contains("@{") == true -> {
+                itemsRaw?.contains("@{") == true -> {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(json.get("items").asString)?.groupValues?.get(1)
+                    pattern.find(itemsRaw)?.groupValues?.get(1)
                 }
                 else -> null
             }
@@ -150,7 +167,7 @@ class DynamicCollectionComponent {
             } else null
 
             // Parse grid configuration with default columns
-            val defaultColumns = json.get("columns")?.asInt ?: 1
+            val defaultColumns = TypedAttrs.int(a.columns, data) ?: 1
 
             // Calculate actual grid columns based on sections
             val gridColumns = if (sections != null) {
@@ -173,29 +190,33 @@ class DynamicCollectionComponent {
             //   - contentPadding: number | [t, r, b, l]
             //   - insets / contentInsets: number | array | "t|r|b|l" pipe-separated string
             //   - insetHorizontal / insetVertical: separate axes
-            val contentPadding = parseCollectionPadding(json)
+            val contentPadding = parseCollectionPadding(a, json)
 
             // Parse spacing
             // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
             // columnSpacing: horizontal spacing between columns (minimumInteritemSpacing in iOS)
-            // itemSpacing/spacing: uniform spacing (fallback)
-            val defaultSpacing = json.get("itemSpacing")?.asFloat ?: json.get("spacing")?.asFloat ?: 0f
-            val lineSpacing = (json.get("lineSpacing")?.asFloat ?: defaultSpacing).dp
-            val columnSpacing = (json.get("columnSpacing")?.asFloat ?: defaultSpacing).dp
+            // itemSpacing/spacing: uniform spacing (fallback; 'spacing' is an
+            // undeclared legacy runtime extra)
+            val defaultSpacing = a.itemSpacing?.toFloat()
+                ?: TypedAttrs.undeclared(json, "spacing")?.asFloat
+                ?: 0f
+            val lineSpacing = (a.lineSpacing?.toFloat() ?: defaultSpacing).dp
+            val columnSpacing = (a.columnSpacing?.toFloat() ?: defaultSpacing).dp
 
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
-            // Get cell height/width if specified
-            val cellHeight = json.get("cellHeight")?.asFloat?.dp
-            val cellWidth = json.get("cellWidth")?.asFloat?.dp
+            // Get cell height/width if specified ('cellHeight'/'cellWidth' are
+            // undeclared legacy runtime extras)
+            val cellHeight = TypedAttrs.undeclared(json, "cellHeight")?.asFloat?.dp
+            val cellWidth = TypedAttrs.undeclared(json, "cellWidth")?.asFloat?.dp
 
             // Get cell template (fallback if no cellClasses)
             val cellTemplate = json.get("cell")?.asJsonObject
 
             // Parse gravity for item alignment
             // Box.contentAlignment uses Alignment (compound), not Alignment.Vertical/Horizontal
-            val gravity = json.get("gravity")?.asString?.lowercase()
+            val gravity = (a.common.gravity as? String)?.lowercase()
             val gravityAlignment = if (isHorizontal) {
                 // Horizontal scroll: vertical alignment (TopStart, CenterStart, BottomStart)
                 when (gravity) {
@@ -213,26 +234,19 @@ class DynamicCollectionComponent {
             }
 
             // Reverse layout
-            val reverseLayout = json.get("reverseLayout")?.asBoolean == true
+            val reverseLayout = a.reverseLayout == true
 
-            // scrollEnabled - controls whether user can scroll
-            val scrollEnabled = run {
-                val raw = json.get("scrollEnabled")?.asString
-                if (raw != null && raw.contains("@{")) {
-                    val propName = raw.removePrefix("@{").removeSuffix("}")
-                    (data[propName] as? Boolean) ?: true
-                } else {
-                    json.get("scrollEnabled")?.asBoolean ?: true
-                }
-            }
+            // scrollEnabled - controls whether user can scroll (supports @{binding})
+            val scrollEnabled = TypedAttrs.boolean(a.scrollEnabled, data) ?: true
 
             // Parse scrollTo binding
-            val scrollToFlow = resolveScrollToFlow(json, data)
-            val scrollAnchor = json.get("scrollAnchor")?.asString ?: "bottom"
+            val scrollToFlow = resolveScrollToFlow(a, data)
+            val scrollAnchor = TypedAttrs.enumString(a.scrollAnchor) { it.json } ?: "bottom"
 
             // FlowLayout mode
             if (isFlow) {
-                val flowAlignment = json.get("flowAlignment")?.asString ?: "leading"
+                // 'flowAlignment' is an undeclared legacy runtime extra
+                val flowAlignment = TypedAttrs.undeclared(json, "flowAlignment")?.asString ?: "leading"
                 renderFlowLayout(
                     sections = sections,
                     collectionDataSource = collectionDataSource,
@@ -257,10 +271,10 @@ class DynamicCollectionComponent {
             // so the collection scrolls without virtualization. NONE skips the
             // scroll modifier entirely (parent must provide scroll). wrapContent
             // forces NONE-style rendering to avoid Compose's nested-Lazy crash.
-            val heightStr = json.get("height")?.asString
-            val widthStr = json.get("width")?.asString
+            val heightIsWrapContent = TypedAttrs.static(a.common.height) == DimensionValue.WrapContent
+            val widthIsWrapContent = TypedAttrs.static(a.common.width) == DimensionValue.WrapContent
             if (!lazy && isHorizontal) {
-                val rowModifier = if (collectionMode == CollectionStackMode.EAGER && widthStr != "wrapContent") {
+                val rowModifier = if (collectionMode == CollectionStackMode.EAGER && !widthIsWrapContent) {
                     modifier.horizontalScroll(rememberScrollState())
                 } else {
                     modifier
@@ -281,8 +295,8 @@ class DynamicCollectionComponent {
                 )
                 return
             }
-            if ((!lazy && !isHorizontal) || (!isHorizontal && heightStr == "wrapContent")) {
-                val columnModifier = if (collectionMode == CollectionStackMode.EAGER && heightStr != "wrapContent") {
+            if ((!lazy && !isHorizontal) || (!isHorizontal && heightIsWrapContent)) {
+                val columnModifier = if (collectionMode == CollectionStackMode.EAGER && !heightIsWrapContent) {
                     modifier.verticalScroll(rememberScrollState())
                 } else {
                     modifier
@@ -304,10 +318,10 @@ class DynamicCollectionComponent {
             }
 
             // Paging mode for horizontal collections
-            val isPaging = json.get("paging")?.asBoolean == true
+            val isPaging = a.paging == true
             if (isHorizontal && isPaging) {
                 renderPagingHorizontal(
-                    json = json,
+                    a = a,
                     sections = sections,
                     collectionDataSource = collectionDataSource,
                     cellClassName = cellClassName,
@@ -407,8 +421,8 @@ class DynamicCollectionComponent {
          * Expects @{variable} pointing to a SharedFlow<Int> in data map.
          */
         @Suppress("UNCHECKED_CAST")
-        private fun resolveScrollToFlow(json: JsonObject, data: Map<String, Any>): SharedFlow<Int>? {
-            val scrollToBinding = json.get("scrollTo")?.asString ?: return null
+        private fun resolveScrollToFlow(a: CollectionAttributes, data: Map<String, Any>): SharedFlow<Int>? {
+            val scrollToBinding = TypedAttrs.raw(a.scrollTo) as? String ?: return null
             if (!scrollToBinding.startsWith("@{") || !scrollToBinding.endsWith("}")) return null
             val propName = scrollToBinding.substring(2, scrollToBinding.length - 1)
             return data[propName] as? SharedFlow<Int>
@@ -426,7 +440,7 @@ class DynamicCollectionComponent {
         @Suppress("UNCHECKED_CAST")
         @Composable
         private fun renderPagingHorizontal(
-            json: JsonObject,
+            a: CollectionAttributes,
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
             cellClassName: String?,
@@ -458,14 +472,10 @@ class DynamicCollectionComponent {
             val pagerState = rememberPagerState { pageCount }
 
             // Resolve the page-change callback from binding: canonical
-            // 'onValueChange' first, then the 'onValueChanged' /
-            // 'onPageChanged' alias spellings (skipped for L1-normalized
-            // layouts).
-            val canonicalOnly = LocalLayoutCanonicalized.current
-            val onPageChangedBinding = json.get("onValueChange")?.asString
-                ?: (if (canonicalOnly) null
-                    else json.get("onValueChanged")?.asString
-                        ?: json.get("onPageChanged")?.asString)
+            // 'onValueChange' with the 'onValueChanged' / 'onPageChanged'
+            // alias spellings resolved by the generated parse (aliases are
+            // skipped for L1-normalized layouts via canonicalOnly).
+            val onPageChangedBinding = TypedAttrs.raw(a.onValueChange) as? String
             val onPageChanged: ((Int) -> Unit)? = if (onPageChangedBinding != null) {
                 val pattern = "@\\{([^}]+)\\}".toRegex()
                 val propName = pattern.find(onPageChangedBinding)?.groupValues?.get(1)
@@ -946,18 +956,9 @@ class DynamicCollectionComponent {
             return numbers.reduce { acc, n -> lcm(acc, n) }
         }
 
-        private fun extractStringArray(jsonArray: JsonArray?): List<String> {
-            if (jsonArray == null) return emptyList()
-
-            return jsonArray.mapNotNull { element ->
-                when {
-                    element.isJsonPrimitive && element.asJsonPrimitive.isString -> {
-                        element.asString
-                    }
-                    else -> null
-                }
-            }
-        }
+        /** Typed replacement for the legacy JsonArray string extraction. */
+        private fun extractStringList(values: List<Any?>?): List<String> =
+            values.orEmpty().filterIsInstance<String>()
 
         @Composable
         private fun renderCellView(
@@ -1047,9 +1048,17 @@ class DynamicCollectionComponent {
          *   - array of 4 numbers:  [top, end, bottom, start]
          *   - string "t|r|b|l":    pipe-separated; whitespace and commas also work
          */
-        private fun parseCollectionPadding(json: JsonObject): PaddingValues {
-            listOf("contentPadding", "insets", "contentInsets").forEach { key ->
-                val element = json.get(key) ?: return@forEach
+        private fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject): PaddingValues {
+            // 'contentPadding' is an undeclared legacy runtime extra; 'insets' /
+            // 'contentInsets' are declared shape unions (number | array |
+            // pipe-separated string) — wider than a single typed value, so
+            // read raw (see TypedAttrs.rawKey).
+            listOf(
+                TypedAttrs.undeclared(json, "contentPadding"),
+                TypedAttrs.rawKey(json, "insets"),
+                TypedAttrs.rawKey(json, "contentInsets")
+            ).forEach { element ->
+                if (element == null) return@forEach
                 when {
                     element.isJsonPrimitive && element.asJsonPrimitive.isNumber ->
                         return PaddingValues(element.asFloat.dp)
@@ -1069,9 +1078,9 @@ class DynamicCollectionComponent {
                 }
             }
 
-            if (json.has("insetHorizontal") || json.has("insetVertical")) {
-                val hInset = json.get("insetHorizontal")?.asFloat ?: 0f
-                val vInset = json.get("insetVertical")?.asFloat ?: 0f
+            if (a.insetHorizontal != null || a.insetVertical != null) {
+                val hInset = a.insetHorizontal?.toFloat() ?: 0f
+                val vInset = a.insetVertical?.toFloat() ?: 0f
                 return PaddingValues(horizontal = hInset.dp, vertical = vInset.dp)
             }
 
@@ -1094,6 +1103,16 @@ class DynamicCollectionComponent {
                 else -> null
             }
         }
+
+        /** Collection-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "autoChangeTrackingId", "cellClasses", "cellIdProperty",
+            "columnSpacing", "columns", "contentInsets", "footerClasses",
+            "headerClasses", "insetHorizontal", "insetVertical", "insets",
+            "itemSpacing", "items", "layout", "lazy", "lineSpacing",
+            "onValueChange", "orientation", "paging", "reverseLayout",
+            "scrollAnchor", "scrollEnabled", "scrollTo"
+        )
 
         private val loggedMisconfiguredCollections = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
