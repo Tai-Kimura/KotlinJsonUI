@@ -12,9 +12,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.BlurAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic BlurView Component Converter
@@ -33,6 +37,11 @@ import com.kotlinjsonui.dynamic.helpers.ResourceResolver
  */
 class DynamicBlurViewComponent {
     companion object {
+        /** Blur-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "effectStyle"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
@@ -42,26 +51,40 @@ class DynamicBlurViewComponent {
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             val context = LocalContext.current
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                BlurAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "Blur", json,
+                declared = BlurAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = context
+            )
 
-            // Parse blur radius (default 10)
+            // Parse blur radius (default 10; undeclared legacy runtime extra)
             val blurRadius = ResourceResolver.resolveFloat(json, "blurRadius", data, 10f) ?: 10f
 
             // Build modifier: testTag → margins → size → alpha → clickable → padding
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
             // Apply corner radius clip
-            json.get("cornerRadius")?.asFloat?.let { radius ->
+            TypedAttrs.float(a.common.cornerRadius, data)?.let { radius ->
                 modifier = modifier.clip(RoundedCornerShape(radius.dp))
             }
 
             // Apply background color with opacity. `effectStyle` (iOS Blur) falls
             // back to a tinted translucent overlay when no explicit color is set.
-            val bgColor = ColorParser.parseColorWithBinding(json, "background", data, context)
+            // ('backgroundColor' is an undeclared legacy runtime extra)
+            val bgColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            )
                 ?: ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
-                ?: effectStyleColor(json.get("effectStyle")?.asString)
+                ?: effectStyleColor(TypedAttrs.enumString(a.effectStyle) { it.json })
             if (bgColor != null) {
-                val opacity = ResourceResolver.resolveFloat(json, "opacity", data)
-                    ?: ResourceResolver.resolveFloat(json, "alpha", data)
+                // opacity and alpha are both declared rows with identical
+                // semantics; legacy read order (opacity first) kept.
+                val opacity = TypedAttrs.float(a.common.opacity, data)
+                    ?: TypedAttrs.float(a.common.alpha, data)
                 val finalColor = if (opacity != null) {
                     bgColor.copy(alpha = opacity.coerceIn(0f, 1f))
                 } else {
