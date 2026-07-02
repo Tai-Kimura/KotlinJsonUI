@@ -239,22 +239,34 @@ private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
 }
 
 /**
- * Apply default values from data section in child elements.
- * Scans child/children for a data-only element (has "data" but no "type")
- * and extracts defaultValues as fallback for missing properties in the data map.
- * This ensures visibility defaults like "gone" are applied when the ViewModel
+ * Apply default values from the layout's data section.
+ * Two declaration shapes are supported (both produced by jui tooling):
+ * - a root-level "data" array on the node itself (canonical layout shape,
+ *   what `jui` codegen and the conformance fixture generator emit), and
+ * - a data-only child element (has "data" but no "type") inside
+ *   child/children (legacy dynamic-mode shape).
+ * Extracted defaultValues are fallbacks for properties missing from the
+ * data map — e.g. visibility defaults like "gone" apply when the ViewModel
  * doesn't explicitly provide the property.
  */
 private fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): Map<String, Any> {
-    val children = json.get("child") ?: json.get("children") ?: return data
-    if (!children.isJsonArray) return data
+    val sections = mutableListOf<com.google.gson.JsonArray>()
 
-    val dataSection = children.asJsonArray.firstOrNull { element ->
-        element.isJsonObject && element.asJsonObject.has("data") && !element.asJsonObject.has("type")
-    }?.asJsonObject?.get("data")?.asJsonArray ?: return data
+    // Root-level data section (canonical shape)
+    json.get("data")?.takeIf { it.isJsonArray }?.let { sections.add(it.asJsonArray) }
+
+    // Data-only child element (legacy shape)
+    val children = json.get("child") ?: json.get("children")
+    if (children != null && children.isJsonArray) {
+        children.asJsonArray.firstOrNull { element ->
+            element.isJsonObject && element.asJsonObject.has("data") && !element.asJsonObject.has("type")
+        }?.asJsonObject?.get("data")?.takeIf { it.isJsonArray }?.let { sections.add(it.asJsonArray) }
+    }
+
+    if (sections.isEmpty()) return data
 
     val defaults = mutableMapOf<String, Any>()
-    dataSection.forEach { element ->
+    sections.flatten().forEach { element ->
         if (element.isJsonObject) {
             val obj = element.asJsonObject
             val name = obj.get("name")?.asString ?: return@forEach
