@@ -508,8 +508,9 @@ object ModifierBuilder {
      * never a `.padding()` modifier there — a modifier padding would inset
      * the component's self-drawn border/background instead of its content).
      *
-     * The 4-element order follows the static emit for contentPadding:
-     * [top, start, bottom, end]. Returns null when neither key is present.
+     * The 4-element order is the JSON convention [top, right, bottom, left]
+     * (same as the padding modifier): right -> end, left -> start.
+     * Returns null when neither key is present.
      */
     fun parseContentPadding(json: JsonObject): PaddingValues? {
         val element = json.get("paddings") ?: json.get("padding") ?: return null
@@ -526,9 +527,9 @@ object ModifierBuilder {
                 )
                 4 -> PaddingValues(
                     top = arr[0].asFloat.dp,
-                    start = arr[1].asFloat.dp,
+                    end = arr[1].asFloat.dp,
                     bottom = arr[2].asFloat.dp,
-                    end = arr[3].asFloat.dp
+                    start = arr[3].asFloat.dp
                 )
                 else -> null
             }

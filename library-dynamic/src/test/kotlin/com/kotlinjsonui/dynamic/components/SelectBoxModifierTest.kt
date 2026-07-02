@@ -77,13 +77,24 @@ class SelectBoxModifierTest {
         assertTrue("margins stay on the modifier: $names", names.any { it.contains("Padding") })
     }
 
-    // ── contentPadding parsing (static emit: [top, start, bottom, end]) ──
+    // ── contentPadding parsing (JSON convention: [top, right, bottom, left]) ──
 
     @Test
     fun `paddings array of four maps to contentPadding`() {
         assertEquals(
             PaddingValues(top = 0.dp, start = 16.dp, bottom = 0.dp, end = 16.dp),
             ModifierBuilder.parseContentPadding(styledNode)
+        )
+    }
+
+    @Test
+    fun `asymmetric four-element paddings follow top-right-bottom-left order`() {
+        // [top, right, bottom, left] — right -> end, left -> start (LTR),
+        // matching the general padding modifier convention.
+        val node = json("""{"type":"SelectBox","paddings":[1, 2, 3, 4]}""")
+        assertEquals(
+            PaddingValues(top = 1.dp, end = 2.dp, bottom = 3.dp, start = 4.dp),
+            ModifierBuilder.parseContentPadding(node)
         )
     }
 
