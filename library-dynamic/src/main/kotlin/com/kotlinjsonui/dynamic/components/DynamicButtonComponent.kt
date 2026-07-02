@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -95,10 +96,14 @@ class DynamicButtonComponent {
                 ?: backgroundColor.copy(alpha = 0.5f)
             val disabledTextColor = ColorParser.parseColorWithBinding(json, "disabledFontColor", data, context)
                 ?: textColor.copy(alpha = 0.5f)
-            // `highlightBackground` is the pressed-state container color (tool-emitted
-            // per the backfill catalog). `hilightColor` is a legacy typo alias kept
-            // for compatibility until backfill lands the `aliases` declaration.
-            val pressedBgColor = ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+            // Pressed-state container color: canonical 'tapBackground' first,
+            // then its 'highlightBackground' alias (skipped for L1-normalized
+            // layouts); 'hilightBackground' is an undeclared legacy typo
+            // spelling, always honored last.
+            val canonicalOnly = LocalLayoutCanonicalized.current
+            val pressedBgColor = ColorParser.parseColorWithBinding(json, "tapBackground", data, context)
+                ?: (if (canonicalOnly) null
+                    else ColorParser.parseColorWithBinding(json, "highlightBackground", data, context))
                 ?: ColorParser.parseColorWithBinding(json, "hilightBackground", data, context)
 
             // Shape

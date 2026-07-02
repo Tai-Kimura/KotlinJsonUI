@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -46,6 +47,27 @@ import androidx.compose.runtime.collectAsState
  */
 @Composable
 fun DynamicView(
+    json: JsonObject,
+    data: Map<String, Any> = emptyMap(),
+    onError: ((Exception) -> Unit)? = null
+) {
+    // `$jui` normalization marker (root-level build metadata written by
+    // `jui build` when layout normalization is enabled). It is never a
+    // renderable attribute: detect it, publish the canonicalized state to
+    // the subtree via LocalLayoutCanonicalized so components can skip
+    // alias-spelling fallbacks, and otherwise ignore the key silently.
+    if (json.has(Normalization.MARKER_KEY)) {
+        val canonicalized = Normalization.isCanonicalized(json)
+        CompositionLocalProvider(LocalLayoutCanonicalized provides canonicalized) {
+            DynamicViewContent(json, data, onError)
+        }
+    } else {
+        DynamicViewContent(json, data, onError)
+    }
+}
+
+@Composable
+private fun DynamicViewContent(
     json: JsonObject,
     data: Map<String, Any> = emptyMap(),
     onError: ((Exception) -> Unit)? = null

@@ -22,6 +22,7 @@ import com.google.gson.JsonArray
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
 import com.kotlinjsonui.components.CollectionStackMode
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.data.CollectionDataSource
@@ -456,8 +457,15 @@ class DynamicCollectionComponent {
 
             val pagerState = rememberPagerState { pageCount }
 
-            // Resolve onPageChanged callback from binding
-            val onPageChangedBinding = json.get("onPageChanged")?.asString
+            // Resolve the page-change callback from binding: canonical
+            // 'onValueChange' first, then the 'onValueChanged' /
+            // 'onPageChanged' alias spellings (skipped for L1-normalized
+            // layouts).
+            val canonicalOnly = LocalLayoutCanonicalized.current
+            val onPageChangedBinding = json.get("onValueChange")?.asString
+                ?: (if (canonicalOnly) null
+                    else json.get("onValueChanged")?.asString
+                        ?: json.get("onPageChanged")?.asString)
             val onPageChanged: ((Int) -> Unit)? = if (onPageChangedBinding != null) {
                 val pattern = "@\\{([^}]+)\\}".toRegex()
                 val propName = pattern.find(onPageChangedBinding)?.groupValues?.get(1)

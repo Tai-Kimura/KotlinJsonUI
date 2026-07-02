@@ -4,6 +4,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -35,16 +36,26 @@ class DynamicSliderComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            val canonicalOnly = LocalLayoutCanonicalized.current
 
             // Parse binding variable from value or bind
             val bindingVariable = extractBindingVariable(json, "value")
                 ?: extractBindingVariable(json, "bind")
 
-            // Parse min/max values (support both naming conventions)
-            val minValue = ResourceResolver.resolveFloat(json, "minimumValue", data)
+            // Parse min/max: canonical minimum/maximum first, then the
+            // minimumValue/minValue (maximumValue/maxValue) alias spellings
+            // (skipped for L1-normalized layouts); min/max are undeclared
+            // legacy spellings, always honored last.
+            val minValue = ResourceResolver.resolveFloat(json, "minimum", data)
+                ?: (if (canonicalOnly) null
+                    else ResourceResolver.resolveFloat(json, "minimumValue", data)
+                        ?: ResourceResolver.resolveFloat(json, "minValue", data))
                 ?: ResourceResolver.resolveFloat(json, "min", data)
                 ?: 0f
-            val maxValue = ResourceResolver.resolveFloat(json, "maximumValue", data)
+            val maxValue = ResourceResolver.resolveFloat(json, "maximum", data)
+                ?: (if (canonicalOnly) null
+                    else ResourceResolver.resolveFloat(json, "maximumValue", data)
+                        ?: ResourceResolver.resolveFloat(json, "maxValue", data))
                 ?: ResourceResolver.resolveFloat(json, "max", data)
                 ?: 100f
 
@@ -102,8 +113,10 @@ class DynamicSliderComponent {
                         ?.invoke(mapOf(bindingVariable to newValue.toDouble()))
                 }
 
-                // Call onValueChange handler if specified
+                // Call onValueChange handler if specified ('onValueChanged'
+                // is its alias, skipped for L1-normalized layouts)
                 val handler = json.get("onValueChange")?.asString
+                    ?: (if (canonicalOnly) null else json.get("onValueChanged")?.asString)
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }

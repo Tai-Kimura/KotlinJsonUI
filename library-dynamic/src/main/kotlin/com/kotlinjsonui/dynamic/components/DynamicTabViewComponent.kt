@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.LocalLayoutCanonicalized
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
@@ -48,17 +49,30 @@ class DynamicTabViewComponent {
         ) {
             // Parse tabs array
             val tabsArray = json.get("tabs")?.asJsonArray ?: return
+            val canonicalOnly = LocalLayoutCanonicalized.current
+
+            // Selected index: canonical 'selectedIndex' with the
+            // 'selectedTabIndex' alias fallback (skipped for L1-normalized
+            // layouts).
+            val selectedIndexElement = json.get("selectedIndex")
+                ?: (if (canonicalOnly) null else json.get("selectedTabIndex"))
 
             // Parse binding variable for selected index
-            val bindingVariable = json.get("selectedIndex")?.asString?.let { value ->
+            val bindingVariable = selectedIndexElement?.asString?.let { value ->
                 if (value.contains("@{")) {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
                     pattern.find(value)?.groupValues?.get(1)
                 } else null
             }
 
-            // Parse onTabChange callback
-            val onTabChangeProperty = json.get("onTabChange")?.asString?.let { value ->
+            // Tab-change callback: canonical 'onValueChange' first, then the
+            // 'onTabChange' / 'onPageChanged' alias spellings (skipped for
+            // L1-normalized layouts).
+            val onTabChangeRaw = json.get("onValueChange")?.asString
+                ?: (if (canonicalOnly) null
+                    else json.get("onTabChange")?.asString
+                        ?: json.get("onPageChanged")?.asString)
+            val onTabChangeProperty = onTabChangeRaw?.let { value ->
                 if (value.contains("@{")) {
                     val pattern = "@\\{([^}]+)\\}".toRegex()
                     pattern.find(value)?.groupValues?.get(1)
@@ -79,10 +93,9 @@ class DynamicTabViewComponent {
                         else -> 0
                     }
                 }
-                json.get("selectedIndex")?.isJsonPrimitive == true -> {
-                    val indexElement = json.get("selectedIndex")
+                selectedIndexElement?.isJsonPrimitive == true -> {
                     when {
-                        indexElement.asJsonPrimitive.isNumber -> indexElement.asInt
+                        selectedIndexElement.asJsonPrimitive.isNumber -> selectedIndexElement.asInt
                         else -> 0
                     }
                 }
