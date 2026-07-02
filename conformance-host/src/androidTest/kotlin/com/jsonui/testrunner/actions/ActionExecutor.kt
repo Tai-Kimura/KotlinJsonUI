@@ -304,7 +304,9 @@ class ActionExecutor(
             }
             step.label != null || step.value != null -> {
                 // Fallback: select by text (label or value)
-                val text = step.label ?: step.value
+                // KJUI-CONFORMANCE PATCH: non-null under Kotlin 2.x strict smart casts
+                val text: String = step.label ?: step.value
+                    ?: throw IllegalArgumentException("selectOption requires 'label' or 'value'")
                 val startTime = System.currentTimeMillis()
                 var found = false
 
