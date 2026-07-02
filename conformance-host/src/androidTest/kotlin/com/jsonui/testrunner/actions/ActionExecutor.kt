@@ -14,6 +14,12 @@ class ActionExecutor(
     private val defaultTimeout: Long = 5000L
 ) {
 
+    // KJUI-CONFORMANCE PATCH: upstream executeScreenshot is an empty placeholder,
+    // so `screenshot` steps silently do nothing. Allow the embedding harness to
+    // plug in a handler that actually captures and stores the artifact.
+    // Upstream bug filed in jsonui-cli/docs/bugs (android driver screenshot no-op).
+    var screenshotHandler: ((name: String) -> Unit)? = null
+
     /**
      * Execute an action step
      */
@@ -202,8 +208,9 @@ class ActionExecutor(
 
     private fun executeScreenshot(step: TestStep) {
         val name = step.name ?: "screenshot_${System.currentTimeMillis()}"
-        // Screenshot will be handled by the test runner
-        // This is a placeholder - actual implementation depends on test framework setup
+        // KJUI-CONFORMANCE PATCH: delegate to the embedding harness when set
+        // (upstream leaves this method as a placeholder no-op).
+        screenshotHandler?.invoke(name)
     }
 
     private fun executeAlertTap(step: TestStep, timeout: Long) {
