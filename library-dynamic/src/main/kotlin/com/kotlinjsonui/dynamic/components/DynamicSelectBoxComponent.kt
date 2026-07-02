@@ -6,9 +6,13 @@ import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.DateSelectBox
+import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -34,32 +38,62 @@ import androidx.compose.ui.platform.LocalContext
  * - cancelButtonBackgroundColor/cancelButtonTextColor: Cancel button colors
  * - onValueChange: @{handler} for change callback
  * - Modifiers: testTag, margins, size, alpha, clickable, padding, alignment, weight
+ *
+ * Attribute access goes through the generated [SelectBoxAttributes]
+ * extraction (typed, L1-marker-aware) via the [TypedAttrs] bridge; the
+ * node itself is only passed wholesale to the shared ModifierBuilder
+ * pipeline and to the raw items/options lookup.
  */
 class DynamicSelectBoxComponent {
     companion object {
+        /** SelectBox-specific attributes this component applies (see UnappliedAttributes). */
+        private val APPLIED: Set<String> = setOf(
+            "selectItemType", "selectedItem", "selectedDate", "bind",
+            "items", "enabled", "prompt", "hint", "placeholder",
+            "fontColor", "hintColor", "fontSize", "font",
+            "datePickerMode", "datePickerStyle", "dateStringFormat",
+            "minuteInterval", "minimumDate", "maximumDate",
+            "onValueChange"
+        )
+
         @Composable
         fun create(
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            val isDatePicker = json.get("selectItemType")?.asString == "Date"
+            val a = rememberTypedAttrs(json) { m, canonicalOnly ->
+                SelectBoxAttributes.parse(m, canonicalOnly)
+            }
+            UnappliedAttributes.check(
+                "SelectBox", json,
+                declared = SelectBoxAttributes.declaredAttributes,
+                applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
+                context = LocalContext.current
+            )
+
+            val isDatePicker =
+                TypedAttrs.enumString(a.selectItemType) { it.json } == "Date"
 
             if (isDatePicker) {
-                createDatePicker(json, data)
+                createDatePicker(json, a, data)
             } else {
-                createDropdown(json, data)
+                createDropdown(json, a, data)
             }
         }
 
         // ── Dropdown SelectBox ──
 
         @Composable
-        private fun createDropdown(json: JsonObject, data: Map<String, Any>) {
+        private fun createDropdown(
+            json: JsonObject,
+            a: SelectBoxAttributes,
+            data: Map<String, Any>
+        ) {
             val context = LocalContext.current
 
             // Parse binding variable: selectedItem > bind
-            val bindingVariable = extractBindingVariable(json, "selectedItem")
-                ?: extractBindingVariable(json, "bind")
+            val bindingVariable = TypedAttrs.binding(a.selectedItem)
+                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
 
             // Get current selected value
             val currentValue = if (bindingVariable != null) {
@@ -79,11 +113,10 @@ class DynamicSelectBoxComponent {
             // Parse options
             val options = parseOptions(json, data)
 
-            // Parse enabled state
+            // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
             val isEnabled = when {
-                json.get("disabled")?.asBoolean == true -> false
-                json.has("enabled") -> ResourceResolver.resolveBoolean(json, "enabled", data, true)
-                else -> true
+                TypedAttrs.undeclared(json, "disabled")?.asBoolean == true -> false
+                else -> TypedAttrs.boolean(a.common.enabled, data) ?: true
             }
 
             // Parse placeholder — spec canonical `prompt` (primary) plus the
@@ -91,28 +124,33 @@ class DynamicSelectBoxComponent {
             // so a snake_case key like "select_box_prompt" resolves to the
             // Android string resource at runtime (matches codegen behavior).
             val placeholder = when {
-                json.has("prompt") -> ResourceResolver.resolveText(json, "prompt", data, context)
-                json.has("hint") -> ResourceResolver.resolveText(json, "hint", data, context)
-                json.has("placeholder") -> ResourceResolver.resolveText(json, "placeholder", data, context)
+                a.prompt != null -> ResourceResolver.resolveTextValue(a.prompt, data, context)
+                a.hint != null -> ResourceResolver.resolveTextValue(a.hint, data, context)
+                a.placeholder != null -> ResourceResolver.resolveTextValue(a.placeholder, data, context)
                 else -> null
             }
 
             // Parse colors
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
-                ?: Color.White
-            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-                ?: Color(0xFFCCCCCC)
-            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            ) ?: Color.White
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            ) ?: Color(0xFFCCCCCC)
+            val textColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
                 ?: Color.Black
-            val hintColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
-                ?: Color(0xFF999999)
+            val hintColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.hintColor), data, context
+            ) ?: Color(0xFF999999)
 
-            val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
+            val cornerRadius = TypedAttrs.int(a.common.cornerRadius, data) ?: 8
 
             // Font styling
-            val fontSize = json.get("fontSize")?.asFloat
-            val fontWeight = parseFontWeight(json.get("font")?.asString)
+            val fontSize = a.fontSize?.toFloat()
+            val fontWeight = parseFontWeight(a.font)
 
+            // 'cancelButtonBackgroundColor'/'cancelButtonTextColor' are
+            // undeclared legacy runtime extras on SelectBox
             val cancelButtonBackgroundColor = ColorParser.parseColorWithBinding(
                 json, "cancelButtonBackgroundColor", data, context
             )
@@ -121,7 +159,7 @@ class DynamicSelectBoxComponent {
             )
 
             // Handle value change
-            val viewId = json.get("id")?.asString ?: "selectbox"
+            val viewId = a.common.id ?: "selectbox"
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 
@@ -133,7 +171,7 @@ class DynamicSelectBoxComponent {
                 }
 
                 // Call onValueChange handler if specified
-                val handler = json.get("onValueChange")?.asString
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
@@ -164,13 +202,17 @@ class DynamicSelectBoxComponent {
         // ── Date Picker SelectBox ──
 
         @Composable
-        private fun createDatePicker(json: JsonObject, data: Map<String, Any>) {
+        private fun createDatePicker(
+            json: JsonObject,
+            a: SelectBoxAttributes,
+            data: Map<String, Any>
+        ) {
             val context = LocalContext.current
 
             // Parse binding variable: selectedDate > selectedItem > bind
-            val bindingVariable = extractBindingVariable(json, "selectedDate")
-                ?: extractBindingVariable(json, "selectedItem")
-                ?: extractBindingVariable(json, "bind")
+            val bindingVariable = TypedAttrs.binding(a.selectedDate)
+                ?: TypedAttrs.binding(a.selectedItem)
+                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
 
             // Get current value
             val currentValue = if (bindingVariable != null) {
@@ -187,21 +229,21 @@ class DynamicSelectBoxComponent {
                 }
             }
 
-            // Parse date picker attributes
-            val datePickerMode = json.get("datePickerMode")?.asString ?: "date"
-            val datePickerStyle = json.get("datePickerStyle")?.asString ?: "compact"
-            val dateFormat = json.get("dateFormat")?.asString
-                ?: json.get("dateStringFormat")?.asString
+            // Parse date picker attributes ('dateFormat' is an undeclared
+            // legacy spelling of the declared 'dateStringFormat')
+            val datePickerMode = TypedAttrs.enumString(a.datePickerMode) { it.json } ?: "date"
+            val datePickerStyle = TypedAttrs.enumString(a.datePickerStyle) { it.json } ?: "compact"
+            val dateFormat = TypedAttrs.undeclared(json, "dateFormat")?.asString
+                ?: a.dateStringFormat
                 ?: "yyyy-MM-dd"
-            val minuteInterval = json.get("minuteInterval")?.asInt ?: 1
-            val minimumDate = json.get("minimumDate")?.asString
-            val maximumDate = json.get("maximumDate")?.asString
+            val minuteInterval = a.minuteInterval?.toInt() ?: 1
+            val minimumDate = TypedAttrs.rawString(a.minimumDate)
+            val maximumDate = TypedAttrs.rawString(a.maximumDate)
 
-            // Parse enabled state
+            // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
             val isEnabled = when {
-                json.get("disabled")?.asBoolean == true -> false
-                json.has("enabled") -> ResourceResolver.resolveBoolean(json, "enabled", data, true)
-                else -> true
+                TypedAttrs.undeclared(json, "disabled")?.asBoolean == true -> false
+                else -> TypedAttrs.boolean(a.common.enabled, data) ?: true
             }
 
             // Parse placeholder — spec canonical `prompt` (primary) plus the
@@ -209,26 +251,29 @@ class DynamicSelectBoxComponent {
             // so a snake_case key like "select_box_prompt" resolves to the
             // Android string resource at runtime (matches codegen behavior).
             val placeholder = when {
-                json.has("prompt") -> ResourceResolver.resolveText(json, "prompt", data, context)
-                json.has("hint") -> ResourceResolver.resolveText(json, "hint", data, context)
-                json.has("placeholder") -> ResourceResolver.resolveText(json, "placeholder", data, context)
+                a.prompt != null -> ResourceResolver.resolveTextValue(a.prompt, data, context)
+                a.hint != null -> ResourceResolver.resolveTextValue(a.hint, data, context)
+                a.placeholder != null -> ResourceResolver.resolveTextValue(a.placeholder, data, context)
                 else -> null
             }
 
             // Parse colors
-            val backgroundColor = ColorParser.parseColorWithBinding(json, "background", data, context)
-                ?: Color.White
-            val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-                ?: Color(0xFFCCCCCC)
-            val textColor = ColorParser.parseColorWithBinding(json, "fontColor", data, context)
+            val backgroundColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.background), data, context
+            ) ?: Color.White
+            val borderColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.borderColor), data, context
+            ) ?: Color(0xFFCCCCCC)
+            val textColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
                 ?: Color.Black
-            val hintColor = ColorParser.parseColorWithBinding(json, "hintColor", data, context)
-                ?: Color(0xFF999999)
+            val hintColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.hintColor), data, context
+            ) ?: Color(0xFF999999)
 
-            val cornerRadius = json.get("cornerRadius")?.asInt ?: 8
+            val cornerRadius = TypedAttrs.int(a.common.cornerRadius, data) ?: 8
 
             // Handle value change
-            val viewId = json.get("id")?.asString ?: "selectbox"
+            val viewId = a.common.id ?: "selectbox"
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedDate = newValue
 
@@ -240,7 +285,7 @@ class DynamicSelectBoxComponent {
                 }
 
                 // Call onValueChange handler if specified
-                val handler = json.get("onValueChange")?.asString
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
@@ -274,7 +319,13 @@ class DynamicSelectBoxComponent {
         // ── Helpers ──
 
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<String> {
-            val optionsElement = json.get("items") ?: json.get("options")
+            // 'items' accepts a @{binding} string in addition to the declared
+            // array shape, and primitive elements are stringified through
+            // gson — wider than the generated List<Any?> coercion, so read
+            // raw (see TypedAttrs.rawKey); 'options' is an undeclared legacy
+            // runtime extra spelling.
+            val optionsElement = TypedAttrs.rawKey(json, "items")
+                ?: TypedAttrs.undeclared(json, "options")
 
             return when {
                 optionsElement == null -> emptyList()
@@ -315,11 +366,6 @@ class DynamicSelectBoxComponent {
                 "thin" -> FontWeight.Thin
                 else -> FontWeight.Normal
             }
-        }
-
-        private fun extractBindingVariable(json: JsonObject, key: String): String? {
-            val value = json.get(key)?.asString ?: return null
-            return ModifierBuilder.extractBindingProperty(value)
         }
     }
 }
