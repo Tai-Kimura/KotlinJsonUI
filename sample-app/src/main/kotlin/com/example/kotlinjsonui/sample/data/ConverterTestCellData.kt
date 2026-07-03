@@ -14,6 +14,7 @@ data class ConverterTestCellData(
 ) {
     companion object {
         // Update properties from map
+        @Suppress("UNCHECKED_CAST")
         fun fromMap(map: Map<String, Any>): ConverterTestCellData {
             return ConverterTestCellData(
                 item = map["item"] as? Map<String, Any> ?: emptyMap()

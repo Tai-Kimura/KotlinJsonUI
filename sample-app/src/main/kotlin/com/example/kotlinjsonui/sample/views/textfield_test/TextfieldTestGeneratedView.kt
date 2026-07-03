@@ -135,7 +135,7 @@ private fun Section1(
     val textFieldState_email_field = rememberTextFieldState(initialText = data.email)
     LaunchedEffect(data.email) { if (textFieldState_email_field.text.toString() != data.email) textFieldState_email_field.edit { replace(0, length, data.email) } }
     LaunchedEffect(textFieldState_email_field.text) { val newValue = textFieldState_email_field.text.toString(); if (newValue != data.email) viewModel.updateData(mapOf("email" to newValue)) }
-    val resolved_textfield15 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield16 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -151,13 +151,13 @@ private fun Section1(
                         color = Configuration.TextField.defaultPlaceholderColor
                     ) },
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield15.family, fontWeight = resolved_textfield15.weight, fontSize = (resolved_textfield15.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield15.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
+        textStyle = TextStyle(fontFamily = resolved_textfield16.family, fontWeight = resolved_textfield16.weight, fontSize = (resolved_textfield16.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield16.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Default)
     )
     val textFieldState_password_field = rememberTextFieldState(initialText = data.password)
     LaunchedEffect(data.password) { if (textFieldState_password_field.text.toString() != data.password) textFieldState_password_field.edit { replace(0, length, data.password) } }
     LaunchedEffect(textFieldState_password_field.text) { val newValue = textFieldState_password_field.text.toString(); if (newValue != data.password) viewModel.updateData(mapOf("password" to newValue)) }
-    val resolved_textfield16 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield17 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -174,13 +174,13 @@ private fun Section1(
                     ) },
         isOutlined = true,
         isSecure = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield16.family, fontWeight = resolved_textfield16.weight, fontSize = (resolved_textfield16.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield16.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
+        textStyle = TextStyle(fontFamily = resolved_textfield17.family, fontWeight = resolved_textfield17.weight, fontSize = (resolved_textfield17.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield17.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
     )
     val textFieldState_phone_field = rememberTextFieldState(initialText = data.phone)
     LaunchedEffect(data.phone) { if (textFieldState_phone_field.text.toString() != data.phone) textFieldState_phone_field.edit { replace(0, length, data.phone) } }
     LaunchedEffect(textFieldState_phone_field.text) { val newValue = textFieldState_phone_field.text.toString(); if (newValue != data.phone) viewModel.updateData(mapOf("phone" to newValue)) }
-    val resolved_textfield17 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield18 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -196,13 +196,13 @@ private fun Section1(
                         color = Configuration.TextField.defaultPlaceholderColor
                     ) },
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield17.family, fontWeight = resolved_textfield17.weight, fontSize = (resolved_textfield17.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield17.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
+        textStyle = TextStyle(fontFamily = resolved_textfield18.family, fontWeight = resolved_textfield18.weight, fontSize = (resolved_textfield18.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield18.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Default)
     )
     val textFieldState_number_field = rememberTextFieldState(initialText = data.number)
     LaunchedEffect(data.number) { if (textFieldState_number_field.text.toString() != data.number) textFieldState_number_field.edit { replace(0, length, data.number) } }
     LaunchedEffect(textFieldState_number_field.text) { val newValue = textFieldState_number_field.text.toString(); if (newValue != data.number) viewModel.updateData(mapOf("number" to newValue)) }
-    val resolved_textfield18 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield19 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -218,13 +218,13 @@ private fun Section1(
                         color = Configuration.TextField.defaultPlaceholderColor
                     ) },
         backgroundColor = colorResource(R.color.white_17),
-        textStyle = TextStyle(fontFamily = resolved_textfield18.family, fontWeight = resolved_textfield18.weight, fontSize = (resolved_textfield18.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield18.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
+        textStyle = TextStyle(fontFamily = resolved_textfield19.family, fontWeight = resolved_textfield19.weight, fontSize = (resolved_textfield19.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield19.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Default)
     )
     val textFieldState_search_field = rememberTextFieldState(initialText = data.search)
     LaunchedEffect(data.search) { if (textFieldState_search_field.text.toString() != data.search) textFieldState_search_field.edit { replace(0, length, data.search) } }
     LaunchedEffect(textFieldState_search_field.text) { val newValue = textFieldState_search_field.text.toString(); if (newValue != data.search) viewModel.updateData(mapOf("search" to newValue)) }
-    val resolved_textfield19 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield20 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -240,13 +240,13 @@ private fun Section1(
                         color = Configuration.TextField.defaultPlaceholderColor
                     ) },
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield19.family, fontWeight = resolved_textfield19.weight, fontSize = (resolved_textfield19.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield19.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
+        textStyle = TextStyle(fontFamily = resolved_textfield20.family, fontWeight = resolved_textfield20.weight, fontSize = (resolved_textfield20.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield20.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
     )
     val textFieldState_url_field = rememberTextFieldState(initialText = data.url)
     LaunchedEffect(data.url) { if (textFieldState_url_field.text.toString() != data.url) textFieldState_url_field.edit { replace(0, length, data.url) } }
     LaunchedEffect(textFieldState_url_field.text) { val newValue = textFieldState_url_field.text.toString(); if (newValue != data.url) viewModel.updateData(mapOf("url" to newValue)) }
-    val resolved_textfield20 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield21 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -262,7 +262,7 @@ private fun Section1(
                         color = Configuration.TextField.defaultPlaceholderColor
                     ) },
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield20.family, fontWeight = resolved_textfield20.weight, fontSize = (resolved_textfield20.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield20.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
+        textStyle = TextStyle(fontFamily = resolved_textfield21.family, fontWeight = resolved_textfield21.weight, fontSize = (resolved_textfield21.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield21.style ?: FontStyle.Normal), color = Color(android.graphics.Color.parseColor("#000000"))),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Default)
     )
 }

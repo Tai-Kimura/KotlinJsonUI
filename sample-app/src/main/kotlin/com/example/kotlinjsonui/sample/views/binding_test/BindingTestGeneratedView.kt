@@ -109,11 +109,11 @@ fun BindingTestGeneratedView(
             Section0(data, viewModel)
             Section1(data, viewModel)
             Section2(data, viewModel)
-            val textFieldState_field = rememberTextFieldState(initialText = data.textValue)
-            LaunchedEffect(data.textValue) { if (textFieldState_field.text.toString() != data.textValue) textFieldState_field.edit { replace(0, length, data.textValue) } }
-            LaunchedEffect(textFieldState_field.text) { val newValue = textFieldState_field.text.toString(); if (newValue != data.textValue) viewModel.updateData(mapOf("textValue" to newValue)) }
+            val textFieldState_field15 = rememberTextFieldState(initialText = data.textValue)
+            LaunchedEffect(data.textValue) { if (textFieldState_field15.text.toString() != data.textValue) textFieldState_field15.edit { replace(0, length, data.textValue) } }
+            LaunchedEffect(textFieldState_field15.text) { val newValue = textFieldState_field15.text.toString(); if (newValue != data.textValue) viewModel.updateData(mapOf("textValue" to newValue)) }
             CustomTextFieldWithMargins(
-                state = textFieldState_field,
+                state = textFieldState_field15,
                 boxModifier = Modifier
                     .padding(top = 10.dp)
                     .padding(start = 20.dp)

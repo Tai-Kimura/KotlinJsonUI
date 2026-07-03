@@ -203,7 +203,7 @@ private fun Section3(
     val textFieldState_textfield1 = rememberTextFieldState(initialText = data.textField1)
     LaunchedEffect(data.textField1) { if (textFieldState_textfield1.text.toString() != data.textField1) textFieldState_textfield1.edit { replace(0, length, data.textField1) } }
     LaunchedEffect(textFieldState_textfield1.text) { val newValue = textFieldState_textfield1.text.toString(); if (newValue != data.textField1) viewModel.updateData(mapOf("textField1" to newValue)) }
-    val resolved_textfield21 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield22 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -226,7 +226,7 @@ private fun Section3(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray_4),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield21.family, fontWeight = resolved_textfield21.weight, fontSize = (resolved_textfield21.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield21.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = resolved_textfield22.family, fontWeight = resolved_textfield22.weight, fontSize = (resolved_textfield22.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield22.style ?: FontStyle.Normal), color = colorResource(R.color.black))
     )
     val resolved_text441 = Configuration.Font.resolve(FontSpec(
         family = null,
@@ -247,7 +247,7 @@ private fun Section3(
     val textFieldState_textfield2 = rememberTextFieldState(initialText = data.textField2)
     LaunchedEffect(data.textField2) { if (textFieldState_textfield2.text.toString() != data.textField2) textFieldState_textfield2.edit { replace(0, length, data.textField2) } }
     LaunchedEffect(textFieldState_textfield2.text) { val newValue = textFieldState_textfield2.text.toString(); if (newValue != data.textField2) viewModel.updateData(mapOf("textField2" to newValue)) }
-    val resolved_textfield22 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield23 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -270,7 +270,7 @@ private fun Section3(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray_4),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield22.family, fontWeight = resolved_textfield22.weight, fontSize = (resolved_textfield22.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield22.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = resolved_textfield23.family, fontWeight = resolved_textfield23.weight, fontSize = (resolved_textfield23.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield23.style ?: FontStyle.Normal), color = colorResource(R.color.black))
     )
     val resolved_text442 = Configuration.Font.resolve(FontSpec(
         family = null,
@@ -291,7 +291,7 @@ private fun Section3(
     val textFieldState_textfield3 = rememberTextFieldState(initialText = data.textField3)
     LaunchedEffect(data.textField3) { if (textFieldState_textfield3.text.toString() != data.textField3) textFieldState_textfield3.edit { replace(0, length, data.textField3) } }
     LaunchedEffect(textFieldState_textfield3.text) { val newValue = textFieldState_textfield3.text.toString(); if (newValue != data.textField3) viewModel.updateData(mapOf("textField3" to newValue)) }
-    val resolved_textfield23 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield24 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -314,7 +314,7 @@ private fun Section3(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray_4),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield23.family, fontWeight = resolved_textfield23.weight, fontSize = (resolved_textfield23.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield23.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = resolved_textfield24.family, fontWeight = resolved_textfield24.weight, fontSize = (resolved_textfield24.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield24.style ?: FontStyle.Normal), color = colorResource(R.color.black))
     )
     val resolved_text443 = Configuration.Font.resolve(FontSpec(
         family = null,
@@ -335,7 +335,7 @@ private fun Section3(
     val textFieldState_textfield4 = rememberTextFieldState(initialText = data.textField4)
     LaunchedEffect(data.textField4) { if (textFieldState_textfield4.text.toString() != data.textField4) textFieldState_textfield4.edit { replace(0, length, data.textField4) } }
     LaunchedEffect(textFieldState_textfield4.text) { val newValue = textFieldState_textfield4.text.toString(); if (newValue != data.textField4) viewModel.updateData(mapOf("textField4" to newValue)) }
-    val resolved_textfield24 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield25 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -358,7 +358,7 @@ private fun Section3(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray_4),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield24.family, fontWeight = resolved_textfield24.weight, fontSize = (resolved_textfield24.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield24.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = resolved_textfield25.family, fontWeight = resolved_textfield25.weight, fontSize = (resolved_textfield25.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield25.style ?: FontStyle.Normal), color = colorResource(R.color.black))
     )
     val resolved_text444 = Configuration.Font.resolve(FontSpec(
         family = null,
@@ -379,7 +379,7 @@ private fun Section3(
     val textFieldState_textfield5 = rememberTextFieldState(initialText = data.textField5)
     LaunchedEffect(data.textField5) { if (textFieldState_textfield5.text.toString() != data.textField5) textFieldState_textfield5.edit { replace(0, length, data.textField5) } }
     LaunchedEffect(textFieldState_textfield5.text) { val newValue = textFieldState_textfield5.text.toString(); if (newValue != data.textField5) viewModel.updateData(mapOf("textField5" to newValue)) }
-    val resolved_textfield25 = Configuration.Font.resolve(FontSpec(
+    val resolved_textfield26 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -402,7 +402,7 @@ private fun Section3(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray_4),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield25.family, fontWeight = resolved_textfield25.weight, fontSize = (resolved_textfield25.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield25.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = resolved_textfield26.family, fontWeight = resolved_textfield26.weight, fontSize = (resolved_textfield26.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield26.style ?: FontStyle.Normal), color = colorResource(R.color.black))
     )
     val resolved_text445 = Configuration.Font.resolve(FontSpec(
         family = null,

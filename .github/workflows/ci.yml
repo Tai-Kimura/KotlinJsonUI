@@ -28,6 +28,7 @@ jobs:
       - name: Compile (release, all warnings)
         run: |
           ./gradlew :library:compileReleaseKotlin :library-dynamic:compileReleaseKotlin \
+            :sample-app:compileDevDebugKotlin \
             --warning-mode all --rerun-tasks 2>&1 | tee compile.log
       - name: Warning gate (zero tolerated)
         # 2.9.3 removed every deprecation warning and the follow-up brush-up
@@ -41,11 +42,6 @@ jobs:
           echo "warning gate: OK"
       - name: Unit tests
         run: ./gradlew :library:testReleaseUnitTest :library-dynamic:testReleaseUnitTest
-      - name: Compile sample-app (regen showcase)
-        # Keeps the regenerated sample-app compiling against the libraries.
-        # Not part of the warning gate: its one remaining warning lives in a
-        # generated file (kjui_tools follow-up).
-        run: ./gradlew :sample-app:compileDevDebugKotlin
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
