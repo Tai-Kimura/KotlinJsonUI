@@ -104,9 +104,14 @@ while true; do
     exit 1
   fi
   echo "--- instrumentation attempt $attempt/$MAX_ATTEMPTS (filter=$FILTER) ---"
-  # ~11-min green suite; a 15-min timeout catches a mid-run wedge / hung fixture
-  # without truncating a healthy-but-slow run. On timeout (124) the loop re-probes.
-  timeout 900 "$ADB" shell am instrument -w \
+  # Suite duration (full 643-fixture set incl. interactive + screenshots):
+  # ~4 min on a local arm64 emulator, but 5-7x slower on hosted-CI swiftshader
+  # (~25-30 min observed). The per-attempt timeout is NOT the suite budget —
+  # progress.jsonl makes each attempt RESUME where the last one stopped, so the
+  # loop accumulates progress across attempts. 20 min per attempt still catches
+  # a hung fixture / mid-run wedge without starving the resume loop.
+  # On timeout (124) the loop re-probes liveness and resumes.
+  timeout 1200 "$ADB" shell am instrument -w \
     -e conformanceFilter "$FILTER" \
     -e class "$APP_PKG.ConformanceSuiteTest" \
     "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" || true
