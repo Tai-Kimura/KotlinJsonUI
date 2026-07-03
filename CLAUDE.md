@@ -18,6 +18,22 @@ This project is creating an Android library (KotlinJsonUI) that is the Android/K
 - Provide Material Design components
 - Enable distribution via Maven/JitPack
 
+## Platform Mode Policy (decided 2026-07-03)
+
+**XML (Android Views) mode is maintenance-frozen. Jetpack Compose is the only
+forward path.**
+
+- New attributes, components, and modernization work target Compose only
+  (static codegen + dynamic mode). The Views runtime and the kjui_tools XML
+  codegen path stay as-is: they keep compiling but receive no new features.
+- Bug reports against the XML path are closed as frozen unless they break
+  the build.
+- The XML path is a removal candidate for the next major release (3.0).
+- Rationale: the Android platform itself is Compose-first (Material3,
+  adaptive layout APIs), hotloader/dynamic mode here is Compose-only in
+  practice, and there is no remaining reason to pick Views for a new
+  JsonUI project.
+
 ## Key Implementation Requirements
 
 ### Core Features to Implement
@@ -28,7 +44,8 @@ This project is creating an Android library (KotlinJsonUI) that is the Android/K
 5. **Layout Engine**: Support ConstraintLayout, RelativeLayout, and LinearLayout
 6. **Event Handling**: onclick (method call) vs onClick (closure execution)
 7. **Code Generation Tools (kjui_tools)**:
-   - XML: Generate Android XML layouts and ViewBinding
+   - XML: Generate Android XML layouts and ViewBinding (maintenance-frozen —
+     see Platform Mode Policy)
    - Compose: Generate @Composable functions and ViewModels
 
 ### Component Library (27+ components)
