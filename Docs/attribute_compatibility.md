@@ -1,407 +1,757 @@
-# KotlinJsonUI 属性互換性ドキュメント
-
-このドキュメントは、Android XML、Kotlin Compose Static (kjui build)、Kotlin Compose Dynamic の3つのレンダリングモード間での
-JSON属性名の違いを記録します。
-
-## 属性定義の場所
-
-### Android XML (library)
-各コンポーネントクラス内で処理。
-`library/src/main/kotlin/com/kotlinjsonui/`
-
-| パッケージ | 対応コンポーネント |
-|----------|-------------------|
-| `components/` | 再利用可能なUIコンポーネント |
-| `views/` | カスタムAndroidビュー |
-| `binding/` | データバインディングアダプター |
-| `core/` | 設定、初期化 |
-
-### Kotlin Compose Static (kjui build)
-Rubyコンバーターで `@component['属性名']` を使用して処理。
-`kjui_tools/lib/compose/views/`
-
-| ファイル | 対応コンポーネント |
-|----------|-------------------|
-| `base_view_converter.rb` | 共通属性 |
-| `text_converter.rb` | Text, Label |
-| `textfield_converter.rb` | TextField |
-| `textview_converter.rb` | TextView |
-| `button_converter.rb` | Button |
-| `image_converter.rb` | Image |
-| `network_image_converter.rb` | NetworkImage |
-| `switch_converter.rb` | Switch |
-| `slider_converter.rb` | Slider |
-| `selectbox_converter.rb` | SelectBox, Spinner |
-| `progress_converter.rb` | Progress |
-| `radio_converter.rb` | Radio |
-| `checkbox_converter.rb` | Checkbox |
-| `segment_converter.rb` | Segment, TabLayout |
-| `collection_converter.rb` | Collection, RecyclerView |
-| `table_converter.rb` | Table, ListView |
-| `scrollview_converter.rb` | ScrollView |
-| `view_converter.rb` | View, Container |
-
-### Kotlin Compose Dynamic
-各`Dynamic*Component.kt`ファイルで `json.get("属性名")` を使用して処理。
-`library-dynamic/src/main/kotlin/com/kotlinjsonui/dynamic/components/`
-
-| ファイル | 対応コンポーネント |
-|----------|-------------------|
-| `DynamicTextComponent.kt` | Text, Label |
-| `DynamicTextFieldComponent.kt` | TextField |
-| `DynamicTextViewComponent.kt` | TextView |
-| `DynamicButtonComponent.kt` | Button |
-| `DynamicImageComponent.kt` | Image |
-| `DynamicNetworkImageComponent.kt` | NetworkImage |
-| `DynamicCircleImageComponent.kt` | CircleImage |
-| `DynamicSwitchComponent.kt` | Switch |
-| `DynamicCheckBoxComponent.kt` | Checkbox |
-| `DynamicRadioComponent.kt` | Radio |
-| `DynamicSliderComponent.kt` | Slider |
-| `DynamicSelectBoxComponent.kt` | SelectBox, Spinner |
-| `DynamicProgressComponent.kt` | Progress |
-| `DynamicIndicatorComponent.kt` | Indicator |
-| `DynamicSegmentComponent.kt` | Segment, TabLayout |
-| `DynamicCollectionComponent.kt` | Collection, RecyclerView, LazyGrid |
-| `DynamicTableComponent.kt` | Table, ListView |
-| `DynamicScrollViewComponent.kt` | ScrollView |
-| `DynamicContainerComponent.kt` | View, Container |
-| `DynamicConstraintLayoutComponent.kt` | ConstraintLayout |
-| `DynamicGradientViewComponent.kt` | GradientView |
-| `DynamicWebComponent.kt` | Web |
-| `DynamicTabViewComponent.kt` | TabView |
-
----
-
-## 属性名の不一致一覧
-
-### 1. イベントハンドラー系
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 推奨統一名 |
-|------|-------------|----------------|-----------------|------------|
-| タップイベント | `onclick` | `onclick` | `onclick` | `onclick` |
-| ロングタップ | `onLongClick` | ❌ 未実装 | ❌ 未実装 | `onLongPress` |
-| スイッチ値変更 | `onValueChange` | `onValueChange` | `onValueChange` | `onValueChange` |
-| セグメント変更 | `onSelect` | `onSelect` | `onSelect` | `onSelect` |
-| テキスト変更 | `onTextChange` | `onTextChange` | `onTextChange` | `onTextChange` |
-| 表示時 | ❌ 未実装 | ❌ 未実装 | ❌ 未実装 | `onAppear` |
-| 非表示時 | ❌ 未実装 | ❌ 未実装 | ❌ 未実装 | `onDisappear` |
-
-### 2. パディング系 ✅ 統一完了
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 複合パディング | `paddings` (配列) | `paddings` | `paddings` | ✅ 統一済み |
-| 上パディング | `paddingTop` | `paddingTop` | `paddingTop` | ✅ 統一済み |
-| 下パディング | `paddingBottom` | `paddingBottom` | `paddingBottom` | ✅ 統一済み |
-| 左パディング | `paddingLeft` / `paddingStart` | `paddingLeft` | `paddingStart` | ✅ 統一済み |
-| 右パディング | `paddingRight` / `paddingEnd` | `paddingRight` | `paddingEnd` | ✅ 統一済み |
-| 単一パディング | `padding` | `padding` | `padding` | ✅ 統一済み |
-
-### 3. マージン系 ✅ 統一完了
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 複合マージン | `margins` (配列) | `margins` | `margins` | ✅ 統一済み |
-| 上マージン | `topMargin` | `topMargin` | `topMargin` | ✅ 統一済み |
-| 下マージン | `bottomMargin` | `bottomMargin` | `bottomMargin` | ✅ 統一済み |
-| 左マージン | `leftMargin` / `startMargin` | `leftMargin` | `startMargin` | ✅ 統一済み |
-| 右マージン | `rightMargin` / `endMargin` | `rightMargin` | `endMargin` | ✅ 統一済み |
-
-### 4. サイズ/フレーム系
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 幅 | `width` | `width` | `width` | 統一済み |
-| 高さ | `height` | `height` | `height` | 統一済み |
-| 最小幅 | `minWidth` | `minWidth` | `minWidth` | ✅ 統一済み |
-| 最大幅 | `maxWidth` | `maxWidth` | `maxWidth` | ✅ 統一済み |
-| 最小高さ | `minHeight` | `minHeight` | `minHeight` | ✅ 統一済み |
-| 最大高さ | `maxHeight` | `maxHeight` | `maxHeight` | ✅ 統一済み |
-| ウェイト | `weight` | `weight` | `weight` | ✅ 統一済み |
-| アスペクト幅 | `aspectWidth` | `aspectWidth` | ❌ 未実装 | |
-| アスペクト高さ | `aspectHeight` | `aspectHeight` | ❌ 未実装 | |
-| matchParent | `width: "matchParent"` | `width: "matchParent"` | `width: "matchParent"` | ✅ fillMaxWidth() |
-| wrapContent | `width: "wrapContent"` | `width: "wrapContent"` | `width: "wrapContent"` | ✅ wrapContentWidth() |
-
-### 5. 相対レイアウト系 (ConstraintLayout)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 下に配置 | `alignTopOfView` | `alignTopOfView` | `alignTopOfView` | ✅ 統一済み |
-| 上に配置 | `alignBottomOfView` | `alignBottomOfView` | `alignBottomOfView` | ✅ 統一済み |
-| 右に配置 | `alignLeftOfView` | `alignLeftOfView` | `alignLeftOfView` | ✅ 統一済み |
-| 左に配置 | `alignRightOfView` | `alignRightOfView` | `alignRightOfView` | ✅ 統一済み |
-| 上端揃え | `alignTopView` | `alignTopView` | `alignTopView` | ✅ 統一済み |
-| 下端揃え | `alignBottomView` | `alignBottomView` | `alignBottomView` | ✅ 統一済み |
-| 左端揃え | `alignLeftView` | `alignLeftView` | `alignLeftView` | ✅ 統一済み |
-| 右端揃え | `alignRightView` | `alignRightView` | `alignRightView` | ✅ 統一済み |
-| 垂直中央揃え | `alignCenterVerticalView` | `alignCenterVerticalView` | `alignCenterVerticalView` | ✅ 統一済み |
-| 水平中央揃え | `alignCenterHorizontalView` | `alignCenterHorizontalView` | `alignCenterHorizontalView` | ✅ 統一済み |
-
-### 6. テキスト系 (DynamicTextComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| テキスト | `text` | `text` | `text` | ✅ 統一済み |
-| 行数制限 | `lines` | `lines` | `lines` | ✅ 統一済み (maxLines) |
-| テキスト配置 | `textAlign` | `textAlign` | `textAlign` | ✅ 統一済み |
-| フォント | `font` | `font` | `font` | ✅ 統一済み ("bold") |
-| フォントウェイト | `fontWeight` | `fontWeight` | `fontWeight` | ✅ 統一済み |
-| フォントサイズ | `fontSize` | `fontSize` | `fontSize` | ✅ 統一済み |
-| フォント色 | `fontColor` | `fontColor` | `fontColor` | ✅ 統一済み |
-| 下線 | `underline` | `underline` | `underline` | ✅ 統一済み |
-| 取り消し線 | `strikethrough` | `strikethrough` | `strikethrough` | ✅ 統一済み |
-| 改行モード | `lineBreakMode` | `lineBreakMode` | `lineBreakMode` | ✅ 統一済み (clip/tail/word) |
-| リンク有効 | `linkable` | `linkable` | `linkable` | ✅ 統一済み |
-| 内部余白 | `edgeInset` | `edgeInset` | `edgeInset` | ✅ 統一済み |
-| 行高さ | `lineHeight` | `lineHeight` | `lineHeight` | ✅ 統一済み |
-| 文字間隔 | `letterSpacing` | `letterSpacing` | `letterSpacing` | ✅ 統一済み |
-| 部分属性 | `partialAttributes` | `partialAttributes` | `partialAttributes` | ✅ 統一済み |
-| 水平中央 | `centerHorizontal` | `centerHorizontal` | `centerHorizontal` | ✅ 統一済み |
-
-### 7. 画像系 (DynamicImageComponent.kt, DynamicNetworkImageComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 画像ソース | `src` | `src` | `src` | ✅ 統一済み |
-| コンテンツモード | `contentMode` | `contentMode` | `contentMode` | ✅ 統一済み |
-| デフォルト画像 | `defaultImage` | `placeholder` | `defaultImage` / `placeholder` | 両方サポート |
-| エラー画像 | `errorImage` | `errorImage` | `errorImage` | ✅ 統一済み |
-| コンテンツ説明 | `contentDescription` | `contentDescription` | `contentDescription` | ✅ 統一済み |
-| サイズ | `size` | `size` | `size` | ✅ 統一済み (正方形) |
-| ティント | `tint` | `tint` | `tint` | ✅ 統一済み |
-
-**contentMode 値:**
-- `aspectFill` → `ContentScale.Crop`
-- `aspectFit` → `ContentScale.Fit`
-- `center` → `ContentScale.None`
-- `fill` → `ContentScale.FillBounds`
-- `inside` → `ContentScale.Inside`
-
-### 8. 入力フィールド系 (DynamicTextFieldComponent.kt, DynamicTextViewComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| ヒント | `hint` / `placeholder` | `hint` / `placeholder` | `hint` / `placeholder` | ✅ 両方サポート |
-| ヒント色 | `hintColor` | `hintColor` | `hintColor` | ✅ 統一済み |
-| ヒントフォントサイズ | `hintFontSize` | `hintFontSize` | `hintFontSize` | ✅ 統一済み |
-| セキュア入力 | `secure` | `secure` | `secure` | ✅ 統一済み (パスワード) |
-| キーボードタイプ | `keyboardType` | `keyboardType` | `keyboardType` | ✅ 統一済み |
-| IMEアクション | `imeAction` | `imeAction` | `imeAction` | ✅ 統一済み |
-| 最大行数 | `maxLines` | `maxLines` | `maxLines` | ✅ 統一済み |
-| 無効状態 | `disabled` | `disabled` | `disabled` | ✅ 統一済み |
-| アウトライン | `outlined` | `outlined` | `outlined` | ✅ 統一済み |
-| ハイライト背景 | `highlightBackground` | `highlightBackground` | `highlightBackground` | ✅ 統一済み |
-
-**keyboardType 値:**
-- `text` → `KeyboardType.Text`
-- `number` / `numeric` → `KeyboardType.Number`
-- `phone` → `KeyboardType.Phone`
-- `email` → `KeyboardType.Email`
-- `password` → `KeyboardType.Password`
-- `decimal` → `KeyboardType.Decimal`
-- `uri` / `url` → `KeyboardType.Uri`
-
-**imeAction 値:**
-- `done` → `ImeAction.Done`
-- `go` → `ImeAction.Go`
-- `next` → `ImeAction.Next`
-- `previous` → `ImeAction.Previous`
-- `search` → `ImeAction.Search`
-- `send` → `ImeAction.Send`
-
-### 9. セレクトボックス/日付ピッカー系 (DynamicSelectBoxComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 選択タイプ | `selectItemType` | `selectItemType` | `selectItemType` | ✅ 統一済み ("Date") |
-| 日付モード | `datePickerMode` | `datePickerMode` | `datePickerMode` | ✅ 統一済み |
-| 日付スタイル | `datePickerStyle` | `datePickerStyle` | `datePickerStyle` | ✅ 統一済み |
-| 日付フォーマット | `dateFormat` / `dateStringFormat` | `dateStringFormat` | `dateFormat` / `dateStringFormat` | ✅ 両方サポート |
-| 最小日付 | `minimumDate` | `minimumDate` | `minimumDate` | ✅ 統一済み |
-| 最大日付 | `maximumDate` | `maximumDate` | `maximumDate` | ✅ 統一済み |
-| 分間隔 | `minuteInterval` | `minuteInterval` | `minuteInterval` | ✅ 統一済み |
-| オプション | `items` / `options` | `items` / `options` | `items` / `options` | ✅ 両方サポート |
-| 選択値 | `selectedItem` / `bind` | `selectedItem` / `bind` | `selectedItem` / `bind` | ✅ 両方サポート |
-| キャンセルボタン背景 | `cancelButtonBackgroundColor` | ❌ 未実装 | `cancelButtonBackgroundColor` | |
-| キャンセルボタンテキスト | `cancelButtonTextColor` | ❌ 未実装 | `cancelButtonTextColor` | |
-
-### 10. セグメント系 (DynamicSegmentComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| セグメント | `segments` / `items` | `segments` / `items` | `segments` / `items` | ✅ 統一済み |
-| 選択インデックス | `selectedIndex` | `selectedIndex` | `selectedIndex` | ✅ 統一済み |
-| 選択イベント | `onSelect` | `onSelect` | `onSelect` | ✅ 統一済み |
-
-### 11. スイッチ系 (DynamicSwitchComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| オン状態 | `isOn` | `isOn` | `isOn` | ✅ 統一済み |
-| バインド | `bind` | `bind` | `bind` | ✅ 統一済み |
-| 値変更イベント | `onValueChange` | `onValueChange` | `onValueChange` | ✅ 統一済み |
-| 有効状態 | `enabled` | `enabled` | `enabled` | ✅ 統一済み |
-| オン時トラック色 | `onTintColor` | `onTintColor` | `onTintColor` | ✅ 統一済み |
-| サム色 | `thumbTintColor` | `thumbTintColor` | `thumbTintColor` | ✅ 統一済み |
-
-### 12. チェック/ラジオ系 (DynamicCheckBoxComponent.kt, DynamicRadioComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| ラベル | `label` / `text` | `label` / `text` | `label` / `text` | ✅ 両方サポート |
-| チェック状態 | `isChecked` | `isChecked` | `isChecked` | ✅ 統一済み |
-| バインド | `bind` | `bind` | `bind` | ✅ 統一済み |
-| グループ | `group` | `group` | `group` | ✅ 統一済み |
-| チェック色 | `checkColor` | `checkColor` | `checkColor` | ✅ 統一済み |
-| オプション | `options` | `options` | `options` | ✅ 統一済み (Radio) |
-
-### 13. スライダー系 (DynamicSliderComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 値 | `value` / `bind` | `value` / `bind` | `value` / `bind` | ✅ 両方サポート |
-| 最小値 | `min` / `minimumValue` | `min` | `min` / `minimumValue` | ✅ 統一済み |
-| 最大値 | `max` / `maximumValue` | `max` | `max` / `maximumValue` | ✅ 統一済み |
-| ステップ | `step` | `step` | `step` | ✅ 統一済み |
-| 値変更イベント | `onValueChange` | `onValueChange` | `onValueChange` | ✅ 統一済み |
-
-### 14. コレクション/テーブル系 (DynamicCollectionComponent.kt, DynamicTableComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| セクション | `sections` | `sections` | `sections` | ✅ 統一済み |
-| セルクラス | `cellClasses` | `cellClasses` | `cellClasses` | ✅ 統一済み |
-| ヘッダークラス | `headerClasses` | `headerClasses` | `headerClasses` | ✅ 統一済み |
-| フッタークラス | `footerClasses` | `footerClasses` | `footerClasses` | ✅ 統一済み |
-| アイテム | `items` | `items` | `items` | ✅ 統一済み |
-| 列数 | `columns` | `columns` | `columns` | ✅ 統一済み |
-| レイアウト | `layout` | `layout` | `layout` | ✅ 統一済み |
-| コンテンツパディング | `contentPadding` | `contentPadding` | `contentPadding` | ✅ 統一済み |
-| アイテム間隔 | `itemSpacing` / `spacing` | `itemSpacing` | `itemSpacing` / `spacing` | ✅ 両方サポート |
-| セル高さ | `cellHeight` | `cellHeight` | `cellHeight` | ✅ 統一済み |
-| セル幅 | `cellWidth` | `cellWidth` | `cellWidth` | ✅ 統一済み |
-
-### 15. スクロール系 (DynamicScrollViewComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| スクロール有効 | `scrollEnabled` | `scrollEnabled` | `scrollEnabled` | ✅ 統一済み |
-| 横スクロール | `horizontalScroll` | `horizontalScroll` | `horizontalScroll` | ✅ 統一済み |
-| 方向 | `orientation` | `orientation` | `orientation` | ✅ 統一済み |
-
-### 16. ビジュアル系共通
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 背景色 | `background` | `background` | `background` | ✅ 統一済み |
-| 透明度 | `alpha` | `alpha` | `alpha` | ✅ 統一済み |
-| 角丸 | `cornerRadius` | `cornerRadius` | `cornerRadius` | ✅ 統一済み |
-| 枠線幅 | `borderWidth` | `borderWidth` | `borderWidth` | ✅ 統一済み |
-| 枠線色 | `borderColor` | `borderColor` | `borderColor` | ✅ 統一済み |
-| 影 | `shadow` | `shadow` | `shadow` | ✅ 統一済み (Boolean/Number) |
-| 非表示 | `hidden` | `hidden` | `hidden` | ✅ 統一済み |
-| 可視性 | `visibility` | `visibility` | `visibility` | ✅ 統一済み |
-
-### 17. View/Container系 (DynamicContainerComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| 方向 | `orientation` | `orientation` | `orientation` | ✅ 統一済み |
-| 子要素 | `child` / `children` | `child` / `children` | `child` / `children` | ✅ 両方サポート |
-| 配置 | `gravity` | `gravity` | `gravity` | ✅ 統一済み |
-| 間隔 | `spacing` | `spacing` | `spacing` | ✅ 統一済み |
-| 配分 | `distribution` | `distribution` | `distribution` | ✅ 統一済み |
-| 方向逆転 | `direction` | `direction` | `direction` | ✅ 統一済み (bottomToTop/rightToLeft) |
-
-### 18. ボタン系 (DynamicButtonComponent.kt)
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| テキスト | `text` | `text` | `text` | ✅ 統一済み |
-| 有効状態 | `enabled` / `disabled` | `enabled` / `disabled` | `enabled` / `disabled` | ✅ 両方サポート |
-| 非同期 | `async` | `async` | `async` | ✅ 統一済み |
-| ローディング | `isLoading` | `isLoading` | `isLoading` | ✅ 統一済み |
-| ローディングテキスト | `loadingText` | `loadingText` | `loadingText` | ✅ 統一済み |
-| フォントウェイト | `fontWeight` | `fontWeight` | `fontWeight` | ✅ 統一済み |
-
-### 19. その他共通
-
-| 機能 | Android XML | Compose Static | Compose Dynamic | 備考 |
-|------|-------------|----------------|-----------------|------|
-| ID | `id` | `id` | `id` | ✅ 統一済み |
-| タイプ | `type` | `type` | `type` | ✅ 統一済み |
-| インクルード | `include` | `include` | `include` | ✅ 統一済み |
-| 変数 | `variables` | `variables` | `variables` | ✅ 統一済み |
-
----
-
-## データバインディング
-
-### バインディング構文
-
-```json
-{
-  "text": "@{userName}",
-  "text": "@{userName ?? デフォルト値}"
-}
-```
-
-- `@{variable}` - 単純なバインディング
-- `@{variable ?? default}` - デフォルト値付きバインディング
-
-### 双方向バインディング
-
-```json
-{
-  "type": "TextField",
-  "text": "@{inputText}",
-  "onTextChange": "handleTextChange"
-}
-```
-
-```json
-{
-  "type": "Switch",
-  "bind": "@{isEnabled}",
-  "onValueChange": "handleValueChange"
-}
-```
-
----
-
-## SwiftJsonUIとの互換性
-
-KotlinJsonUIはSwiftJsonUIと同じJSON仕様に従います。以下の属性は両プラットフォームで共通です：
-
-### 完全互換属性
-- `type`, `id`, `child`/`children`
-- `width`, `height`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`
-- `padding`, `paddings`, `paddingTop/Bottom/Left/Right`
-- `margins`, `topMargin/bottomMargin/leftMargin/rightMargin`
-- `background`, `cornerRadius`, `borderWidth`, `borderColor`, `shadow`
-- `alpha`, `hidden`, `visibility`
-- `text`, `fontSize`, `fontColor`, `fontWeight`, `textAlign`
-- `onclick`, `onTextChange`, `onValueChange`
-- `src`, `contentMode`
-- `hint`, `placeholder`, `secure`
-- `items`, `sections`, `cellClasses`
-- 相対レイアウト属性 (`alignTopOfView`, etc.)
-
-### プラットフォーム固有属性
-| 属性 | iOS (SwiftJsonUI) | Android (KotlinJsonUI) | 備考 |
-|------|-------------------|------------------------|------|
-| `returnKeyType` | submitLabel | imeAction | 機能は同等 |
-| `keyboardType` | input | keyboardType | 機能は同等 |
-| `startMargin`/`endMargin` | ❌ | ✅ | Android RTL対応 |
-| `paddingStart`/`paddingEnd` | ❌ | ✅ | Android RTL対応 |
-
----
-
-## 更新履歴
-
-- 2024年9月 - 初版作成
-  - SwiftJsonUI仕様に合わせて属性名を統一
-  - ConstraintLayout相対レイアウト属性を追加
-  - すべての主要コンポーネントを実装
+<!-- @generated by `jui conformance compat-doc` — DO NOT EDIT.
+     Regenerate:
+       jui conformance compat-doc --platform android -o <this file>
+     Sources: shared/core/attribute_definitions.json (canonical names,
+     aliases, types, deprecations) + conformance manifest/results
+     (android dynamic host measurements). -->
+
+# JsonUI Attribute Compatibility
+
+Canonical attribute names, their aliases, and per-attribute conformance
+coverage measured on the **android** dynamic host. The single source
+of truth for attribute semantics is `shared/core/attribute_definitions.json`;
+mode-specific implementation notes formerly maintained by hand in this
+document are superseded by that file plus the conformance suite.
+
+## Blur
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `effectStyle` |  | string |  | ✅ 3 pass |
+
+## Button
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `buttonType` |  | string |  | ⏭ 3 skipped |
+| `config` |  | object |  | — |
+| `disabledFontColor` |  | string \| binding |  | ✅ 1 pass |
+| `font` |  | string |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number |  | ✅ 1 pass |
+| `fontWeight` |  | string \| number \| binding |  | ✅ 1 pass |
+| `highlightBackground` |  | string |  | ✅ 1 pass |
+| `highlightColor` | `hilightColor` | string \| binding |  | ✅ 2 pass |
+| `hilightColor` |  | string |  | ✅ 1 pass |
+| `image` |  | string |  | ✅ 1 pass |
+| `tapBackground` |  | string |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `textAlign` |  | string |  | ✅ 3 pass |
+
+## Check
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `bind` |  | binding |  | — |
+| `checked` |  | boolean \| binding |  | ✅ 1 pass |
+| `checkedColor` |  | color |  | ✅ 1 pass |
+| `enabled` |  | boolean \| binding |  | ✅ 2 pass |
+| `font` |  | string \| binding |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number \| binding |  | ✅ 1 pass |
+| `icon` |  | string |  | ✅ 1 pass |
+| `iconColor` |  | color |  | ✅ 1 pass |
+| `iconSize` |  | number |  | ✅ 1 pass |
+| `isOn` |  | boolean \| binding |  | ✅ 1 pass |
+| `label` |  | string \| binding |  | ✅ 1 pass |
+| `onSrc` |  | string |  | ✅ 1 pass |
+| `onValueChange` |  | binding |  | — |
+| `selectedIcon` |  | string |  | ✅ 1 pass |
+| `spacing` |  | number \| binding |  | ✅ 1 pass |
+| `src` |  | string |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `uncheckedColor` |  | color |  | ✅ 1 pass |
+
+## CheckBox
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `bind` |  | binding |  | — |
+| `checked` |  | boolean \| binding |  | ✅ 1 pass |
+| `checkedColor` |  | color |  | ✅ 1 pass |
+| `enabled` |  | boolean \| binding |  | ✅ 2 pass |
+| `font` |  | string \| binding |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number \| binding |  | ✅ 1 pass |
+| `icon` |  | string |  | ✅ 1 pass |
+| `iconColor` |  | color |  | ✅ 1 pass |
+| `iconSize` |  | number |  | ✅ 1 pass |
+| `isOn` |  | boolean \| binding |  | ✅ 1 pass |
+| `label` |  | string \| binding |  | ✅ 1 pass |
+| `onSrc` |  | string |  | ✅ 1 pass |
+| `onValueChange` |  | binding |  | — |
+| `selectedIcon` |  | string |  | ✅ 1 pass |
+| `spacing` |  | number \| binding |  | ✅ 1 pass |
+| `src` |  | string |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `uncheckedColor` |  | color |  | ✅ 1 pass |
+| `value` |  | any |  | ✅ 1 pass |
+
+## CircleView
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `child` |  | array |  | — |
+| `children` |  | array |  | — |
+
+## Collection
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `autoChangeTrackingId` |  | boolean |  | — |
+| `cellClasses` |  | array |  | — |
+| `cellIdProperty` |  | string |  | — |
+| `columnCount` |  | number |  | ⏭ 1 skipped |
+| `columnSpacing` |  | number |  | ✅ 1 pass |
+| `columns` |  | number \| binding |  | ✅ 1 pass |
+| `containerInset` |  | array |  | ⏭ 1 skipped |
+| `contentInsetAdjustmentBehavior` |  | string |  | — |
+| `contentInsets` |  | array \| string |  | ⏭ 1 skipped |
+| `currentPage` |  | binding |  | — |
+| `defaultScrollAnchor` |  | string |  | ✅ 3 pass |
+| `footerClasses` |  | array |  | — |
+| `headerClasses` |  | array |  | — |
+| `horizontalScroll` |  | boolean |  | ✅ 1 pass |
+| `insetHorizontal` |  | number |  | ✅ 1 pass |
+| `insetVertical` |  | number |  | ✅ 1 pass |
+| `insets` |  | array \| string |  | ✅ 1 pass |
+| `itemSpacing` |  | number |  | ✅ 1 pass |
+| `itemWeight` |  | number |  | ⏭ 1 skipped |
+| `items` |  | array \| binding |  | — |
+| `keyboardAvoidance` |  | boolean |  | — |
+| `layout` |  | string |  | ✅ 6 pass |
+| `lazy` |  | string \| binding |  | ✅ 3 pass |
+| `lineSpacing` |  | number |  | ✅ 1 pass |
+| `onItemAppear` |  | callback |  | — |
+| `onPageChanged` |  | callback |  | — |
+| `onValueChange` | `onValueChanged`, `onPageChanged` | string \| binding |  | — |
+| `orientation` |  | string |  | ✅ 2 pass |
+| `paging` |  | boolean |  | — |
+| `reverseLayout` |  | boolean |  | ✅ 1 pass |
+| `scrollAnchor` |  | string |  | ✅ 3 pass |
+| `scrollAnimated` |  | boolean |  | — |
+| `scrollEnabled` |  | boolean \| binding |  | — |
+| `scrollTo` |  | binding |  | — |
+| `sectionSticky` |  | boolean |  | ✅ 1 pass |
+| `sections` |  | array |  | — |
+| `setTargetAsDataSource` |  | boolean |  | — |
+| `setTargetAsDelegate` |  | boolean |  | — |
+| `showsHorizontalScrollIndicator` |  | boolean |  | ✅ 1 pass |
+| `showsVerticalScrollIndicator` |  | boolean |  | ✅ 1 pass |
+
+## EditText
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `hint` |  | string |  | ✅ 1 pass |
+| `hintColor` |  | string \| binding |  | ✅ 1 pass |
+| `inputType` |  | string |  | ✅ 1 pass |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+
+## Embed
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `events` |  | object |  | — |
+| `navigationMode` |  | string |  | — |
+| `params` |  | object \| binding |  | — |
+| `screen` |  | string |  | — |
+
+## GradientView
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `gradient` |  | array |  | ✅ 1 pass |
+| `gradientDirection` |  | string |  | ✅ 3 pass |
+| `locations` |  | array |  | ✅ 1 pass |
+
+## IconLabel
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `font` |  | string |  | ✅ 1 pass |
+| `fontColor` |  | string |  | ✅ 1 pass |
+| `fontSize` |  | number |  | ✅ 1 pass |
+| `iconMargin` |  | number |  | ✅ 1 pass |
+| `iconPosition` |  | string |  | ✅ 4 pass |
+| `icon_off` |  | string |  | ✅ 1 pass |
+| `icon_on` |  | string |  | ✅ 1 pass |
+| `selected` |  | boolean \| binding |  | ⏭ 1 skipped |
+| `selectedFontColor` |  | string |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `textShadow` |  | string |  | ✅ 1 pass |
+
+## Image
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `alt` |  | string |  | ⏭ 1 skipped |
+| `canTap` |  | boolean |  | — |
+| `contentMode` |  | string \| binding |  | ✅ 15 pass |
+| `errorImage` |  | string |  | ✅ 1 pass |
+| `highlightSrc` |  | string \| binding |  | ⏭ 1 skipped |
+| `highlightSrcName` |  | string \| binding |  | ⏭ 1 skipped |
+| `loading` |  | string |  | ⏭ 2 skipped |
+| `loadingImage` |  | string |  | ✅ 1 pass |
+| `maxZoom` |  | number |  | — |
+| `minZoom` |  | number |  | — |
+| `renderingMode` |  | string |  | ✅ 2 pass |
+| `src` |  | string \| binding |  | ✅ 1 pass |
+| `srcName` |  | string \| binding |  | ✅ 1 pass |
+| `systemIcon` |  | boolean |  | ⏭ 1 skipped |
+
+## Indicator
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `color` |  | string \| binding |  | ⏭ 1 skipped |
+| `hidesWhenStopped` |  | boolean |  | ⏭ 1 skipped |
+| `indicatorStyle` |  | string |  | ⏭ 2 skipped |
+
+## Input
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `hint` |  | string |  | ✅ 1 pass |
+| `hintColor` |  | string \| binding |  | ✅ 1 pass |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+
+## Label
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `autoShrink` |  | boolean |  | ✅ 1 pass |
+| `edgeInset` |  | array \| string | yes | ✅ 1 pass |
+| `font` |  | string \| binding |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontFamily` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number \| binding |  | ✅ 1 pass |
+| `fontWeight` |  | string \| number |  | ✅ 1 pass |
+| `highlightAttributes` |  | object |  | — |
+| `highlightColor` |  | string \| binding |  | ✅ 1 pass |
+| `hint` |  | string |  | ✅ 1 pass |
+| `hintAttributes` |  | object |  | — |
+| `hintColor` |  | string \| binding |  | ✅ 1 pass |
+| `lineBreakMode` |  | string |  | ✅ 6 pass |
+| `lineHeight` |  | number |  | ⏭ 1 skipped |
+| `lineHeightMultiple` |  | number \| binding |  | ✅ 1 pass |
+| `lineSpacing` |  | number \| binding |  | ✅ 1 pass |
+| `lines` |  | number \| binding |  | ✅ 1 pass |
+| `linkable` |  | boolean \| binding |  | ✅ 1 pass |
+| `minimumScaleFactor` |  | number \| binding |  | ✅ 1 pass |
+| `partialAttributes` |  | array |  | — |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `selected` |  | boolean \| binding |  | ⏭ 1 skipped |
+| `strikethrough` |  | boolean \| object |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `textAlign` |  | string \| binding |  | ✅ 6 pass |
+| `textShadow` |  | string \| object |  | ✅ 1 pass |
+| `textTransform` |  | string |  | ⏭ 4 skipped |
+| `underline` |  | boolean \| object \| array |  | ✅ 1 pass |
+
+## NetworkImage
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `alt` |  | string |  | ⏭ 1 skipped |
+| `cachePolicy` |  | string |  | — |
+| `contentMode` |  | string \| binding |  | ✅ 10 pass |
+| `defaultImage` |  | string |  | ✅ 1 pass |
+| `errorImage` |  | string |  | ✅ 1 pass |
+| `headers` |  | object |  | — |
+| `hint` |  | string |  | ✅ 1 pass |
+| `loading` |  | string |  | ⏭ 2 skipped |
+| `loadingImage` |  | string |  | ✅ 1 pass |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `src` |  | string \| binding |  | — |
+| `timeout` |  | number |  | — |
+| `url` |  | string \| binding |  | — |
+
+## Progress
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `color` |  | color |  | ⏭ 1 skipped |
+| `hidesWhenStopped` |  | boolean |  | ⏭ 1 skipped |
+| `indicatorStyle` |  | string |  | ⏭ 2 skipped |
+| `progress` |  | number \| binding |  | ✅ 1 pass |
+| `progressImage` |  | string |  | ⏭ 1 skipped |
+| `progressTintColor` |  | string \| binding |  | ✅ 1 pass |
+| `progressViewStyle` |  | string |  | ⏭ 1 skipped |
+| `tintColor` |  | string |  | ✅ 1 pass |
+| `trackImage` |  | string |  | ⏭ 1 skipped |
+| `trackTintColor` |  | string \| binding |  | ✅ 1 pass |
+
+## Radio
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `checked` |  | boolean \| binding |  | ✅ 1 pass |
+| `checkedColor` |  | color |  | ✅ 1 pass |
+| `font` |  | string \| binding |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number \| binding |  | ✅ 1 pass |
+| `group` |  | string |  | ✅ 1 pass |
+| `icon` |  | string |  | ✅ 1 pass |
+| `iconColor` |  | color |  | ✅ 1 pass |
+| `iconSize` |  | number |  | ✅ 1 pass |
+| `label` |  | string \| binding |  | ✅ 1 pass |
+| `selectedIcon` |  | string |  | ✅ 1 pass |
+| `selected_icon` |  | string |  | ✅ 1 pass |
+| `spacing` |  | number \| binding |  | ✅ 1 pass |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `uncheckedColor` |  | color |  | ✅ 1 pass |
+| `value` |  | any |  | ✅ 1 pass |
+
+## SafeAreaView
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `child` |  | array |  | — |
+| `children` |  | array |  | — |
+| `orientation` |  | string |  | ✅ 2 pass |
+| `safeAreaInsetPositions` |  | array |  | — |
+
+## ScrollView
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `bounces` |  | boolean |  | — |
+| `child` |  | array |  | — |
+| `children` |  | array |  | — |
+| `contentInsetAdjustmentBehavior` |  | string |  | — |
+| `contentOffset` |  | array |  | ⏭ 1 skipped |
+| `contentSize` |  | array |  | ⏭ 1 skipped |
+| `decelerationRate` |  | string |  | — |
+| `indicatorStyle` |  | string |  | ⏭ 1 skipped |
+| `keyboardAvoidance` |  | boolean |  | — |
+| `keyboardDismissMode` |  | string |  | — |
+| `maxZoom` |  | number \| binding |  | — |
+| `minZoom` |  | number \| binding |  | — |
+| `orientation` |  | string |  | ✅ 2 pass |
+| `paging` |  | boolean |  | — |
+| `scrollBehavior` |  | string |  | ⏭ 2 skipped |
+| `scrollEnabled` |  | boolean \| binding |  | — |
+| `scrollMode` |  | string |  | ✅ 2 pass |
+| `scrollsToTop` |  | boolean |  | — |
+| `showsHorizontalScrollIndicator` |  | boolean |  | ✅ 1 pass |
+| `showsVerticalScrollIndicator` |  | boolean |  | ✅ 1 pass |
+
+## Segment
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `apportionsSegmentWidthsByContent` |  | boolean |  | ⏭ 1 skipped |
+| `items` |  | array |  | ✅ 1 pass |
+| `momentary` |  | boolean |  | — |
+| `normalColor` |  | string \| binding |  | ⏭ 1 skipped |
+| `onValueChange` |  | binding |  | — |
+| `selectedColor` |  | string \| binding |  | ⏭ 1 skipped |
+| `selectedIndex` |  | number \| binding |  | ✅ 1 pass |
+| `tintColor` |  | string |  | ✅ 1 pass |
+| `valueChange` |  | string |  | — |
+
+## SelectBox
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `canBack` |  | boolean |  | — |
+| `caretAttributes` |  | object |  | — |
+| `colorScheme` |  | string |  | ⏭ 2 skipped |
+| `datePickerMode` |  | string |  | ✅ 5 pass |
+| `datePickerStyle` |  | string |  | ✅ 6 pass |
+| `dateStringFormat` |  | string |  | ✅ 1 pass |
+| `dividerAttributes` |  | object |  | — |
+| `font` |  | string |  | ✅ 1 pass |
+| `fontColor` |  | string |  | ✅ 1 pass |
+| `fontSize` |  | number |  | ✅ 1 pass |
+| `hint` |  | string |  | ✅ 1 pass |
+| `hintColor` |  | string \| binding |  | ✅ 1 pass |
+| `inView` |  | string |  | ⏭ 1 skipped |
+| `includePromptWhenDataBinding` |  | boolean |  | — |
+| `items` |  | array \| binding |  | ✅ 1 pass |
+| `labelAttributes` |  | object |  | — |
+| `maximumDate` |  | string \| binding |  | ✅ 1 pass |
+| `minimumDate` |  | string \| binding |  | ✅ 1 pass |
+| `minuteInterval` |  | number |  | ✅ 12 pass |
+| `multiple` |  | boolean |  | ⏭ 1 skipped |
+| `onValueChange` |  | binding |  | — |
+| `onValueChanged` |  | binding |  | — |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `prompt` |  | string |  | ✅ 1 pass |
+| `referenceView` |  | string |  | ⏭ 1 skipped |
+| `selectItemType` |  | string |  | ✅ 2 pass |
+| `selectedDate` |  | string \| binding |  | — |
+| `selectedIndex` |  | number \| binding |  | ✅ 1 pass |
+| `selectedItem` |  | string \| binding |  | ⏭ 1 skipped |
+| `selectedValue` |  | string \| binding |  | ✅ 1 pass |
+| `size` |  | number |  | ⏭ 1 skipped |
+| `text` |  | string \| binding |  | ⏭ 1 skipped |
+
+## Slider
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `maxValue` |  | number \| binding |  | ✅ 1 pass |
+| `maximum` | `maximumValue`, `maxValue` | number \| binding |  | ✅ 3 pass |
+| `maximumValueImage` |  | string |  | ⏭ 1 skipped |
+| `minValue` |  | number \| binding |  | ✅ 1 pass |
+| `minimum` | `minimumValue`, `minValue` | number \| binding |  | ✅ 3 pass |
+| `minimumValueImage` |  | string |  | ⏭ 1 skipped |
+| `onValueChange` | `onValueChanged` | binding |  | — |
+| `progressTintColor` |  | string | yes | ✅ 1 pass |
+| `step` |  | number |  | ⏭ 1 skipped |
+| `tintColor` |  | string |  | ✅ 1 pass |
+| `trackTintColor` |  | string | yes | ✅ 1 pass |
+| `value` |  | number \| binding |  | ✅ 1 pass |
+
+## Switch
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `bind` |  | binding |  | — |
+| `checked` |  | boolean \| binding |  | ✅ 1 pass |
+| `enabled` |  | boolean \| binding |  | ✅ 2 pass |
+| `isOn` |  | boolean \| binding |  | ✅ 1 pass |
+| `labelAttributes` |  | object |  | — |
+| `labelPosition` |  | string |  | ✅ 2 pass |
+| `offTintColor` |  | string \| binding |  | ⏭ 1 skipped |
+| `onTintColor` |  | string |  | ✅ 1 pass |
+| `onToggle` |  | binding |  | — |
+| `onValueChange` |  | binding |  | — |
+| `thumbTintColor` |  | string \| binding |  | ✅ 1 pass |
+| `tint` |  | string \| binding |  | ✅ 1 pass |
+| `tintColor` |  | string |  | ✅ 1 pass |
+| `trackTintColor` |  | string | yes | ✅ 1 pass |
+| `value` |  | boolean \| binding |  | ✅ 1 pass |
+
+## TabView
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `onTabChange` |  | binding |  | — |
+| `onValueChange` | `onTabChange`, `onPageChanged` | string \| binding |  | — |
+| `selectedIndex` | `selectedTabIndex` | number \| binding |  | ✅ 2 pass |
+| `showLabels` |  | boolean |  | ✅ 1 pass |
+| `tabBarBackground` |  | string \| binding |  | ✅ 1 pass |
+| `tabs` |  | array |  | ✅ 1 pass |
+| `tintColor` |  | string \| binding |  | ✅ 1 pass |
+| `unselectedColor` |  | string \| binding |  | ✅ 1 pass |
+
+## TextField
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `accessoryBackground` |  | string |  | ⏭ 1 skipped |
+| `accessoryCornerRadius` |  | number |  | ⏭ 1 skipped |
+| `accessoryTextColor` |  | string |  | ⏭ 1 skipped |
+| `applyLiquidGlass` |  | boolean |  | ⏭ 1 skipped |
+| `autocapitalizationType` |  | string |  | ✅ 1 pass |
+| `autocorrectionType` |  | string |  | ✅ 1 pass |
+| `borderStyle` |  | string |  | ✅ 7 pass |
+| `caretAttributes` |  | object | yes | — |
+| `clearButtonMode` |  | string |  | ⏭ 1 skipped |
+| `contentType` |  | string \| binding |  | ✅ 1 pass |
+| `disabledBackground` |  | string |  | ⏭ 1 skipped |
+| `doneText` |  | string |  | ⏭ 1 skipped |
+| `fieldPadding` |  | number |  | ⏭ 1 skipped |
+| `font` |  | string \| binding |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontFamily` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number \| binding |  | ✅ 1 pass |
+| `glassEffectStyle` |  | string |  | ⏭ 1 skipped |
+| `hasContainer` |  | boolean | yes | ⏭ 1 skipped |
+| `hideOnFocused` |  | boolean |  | — |
+| `hint` |  | string |  | ✅ 1 pass |
+| `hintAttributes` |  | object |  | — |
+| `hintColor` |  | string \| binding | yes | ✅ 1 pass |
+| `hintFont` |  | string | yes | ✅ 1 pass |
+| `hintFontSize` |  | number | yes | ✅ 1 pass |
+| `input` |  | string |  | ✅ 9 pass |
+| `keyboardAppearance` |  | string | yes | ✅ 1 pass |
+| `leftView` |  | object |  | — |
+| `leftViewMode` |  | string |  | ⏭ 1 skipped |
+| `maxLength` |  | number |  | ✅ 1 pass |
+| `nextFocus` |  | string |  | — |
+| `onBeginEditing` |  | string |  | — |
+| `onBlur` |  | string |  | — |
+| `onChangeSelection` |  | string |  | — |
+| `onDeleteBackward` |  | string |  | — |
+| `onEndEditing` |  | string |  | — |
+| `onFocus` |  | string |  | — |
+| `onShouldBeginEditing` |  | string |  | — |
+| `onShouldChangeCharacters` |  | string |  | — |
+| `onShouldClear` |  | string |  | — |
+| `onShouldEndEditing` |  | string |  | — |
+| `onShouldReturn` |  | string |  | — |
+| `onSubmit` |  | string |  | — |
+| `onTextChange` |  | string |  | — |
+| `pattern` |  | string |  | ⏭ 1 skipped |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `placeholderColor` |  | string | yes | ✅ 1 pass |
+| `required` |  | boolean |  | ⏭ 1 skipped |
+| `returnKeyType` |  | string |  | ✅ 11 pass |
+| `rightView` |  | object |  | — |
+| `rightViewMode` |  | string |  | ⏭ 1 skipped |
+| `secure` |  | boolean \| binding |  | ⏭ 1 skipped |
+| `spellCheckingType` |  | string | yes | ⏭ 1 skipped |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `textAlign` |  | string |  | ✅ 6 pass |
+| `textPaddingLeft` |  | number |  | ✅ 1 pass |
+| `textPaddingRight` |  | number |  | ⏭ 1 skipped |
+| `textVerticalAlign` |  | string |  | ⏭ 1 skipped |
+| `tintColor` |  | string |  | ✅ 1 pass |
+
+## TextView
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `allowsEditingTextAttributes` |  | boolean |  | — |
+| `cols` |  | number |  | ⏭ 1 skipped |
+| `containerInset` |  | number \| array |  | ✅ 1 pass |
+| `dataDetectorTypes` |  | string |  | — |
+| `disabledBackground` |  | string |  | ⏭ 1 skipped |
+| `edgeInset` |  | string | yes | ✅ 1 pass |
+| `editable` |  | boolean |  | ✅ 1 pass |
+| `flexible` |  | boolean |  | ✅ 1 pass |
+| `font` |  | string \| binding |  | ✅ 1 pass |
+| `fontColor` |  | string \| binding |  | ✅ 1 pass |
+| `fontFamily` |  | string \| binding |  | ✅ 1 pass |
+| `fontSize` |  | number \| binding |  | ✅ 1 pass |
+| `hideOnFocused` |  | boolean |  | — |
+| `hint` |  | string |  | ✅ 1 pass |
+| `hintAttributes` |  | object |  | — |
+| `hintColor` |  | string \| binding |  | ✅ 1 pass |
+| `hintFont` |  | string |  | ✅ 1 pass |
+| `hintFontSize` |  | number |  | ✅ 1 pass |
+| `hintLineHeightMultiple` |  | number |  | ✅ 1 pass |
+| `input` |  | string |  | ✅ 9 pass |
+| `keyboardType` |  | string |  | ✅ 1 pass |
+| `lineBreakMode` |  | string |  | ✅ 1 pass |
+| `maxLength` |  | number |  | ⏭ 1 skipped |
+| `onBeginEditing` |  | string |  | — |
+| `onChangeSelection` |  | string |  | — |
+| `onEndEditing` |  | string |  | — |
+| `onShouldBeginEditing` |  | string |  | — |
+| `onShouldChangeText` |  | string |  | — |
+| `onShouldEndEditing` |  | string |  | — |
+| `onTextChange` |  | string |  | — |
+| `pattern` |  | string |  | ⏭ 1 skipped |
+| `placeholder` |  | string |  | ✅ 1 pass |
+| `required` |  | boolean |  | ⏭ 1 skipped |
+| `resize` |  | string |  | ⏭ 4 skipped |
+| `returnKeyType` |  | string |  | ✅ 11 pass |
+| `rows` |  | number |  | ⏭ 1 skipped |
+| `scrollEnabled` |  | boolean |  | — |
+| `selectable` |  | boolean |  | ⏭ 1 skipped |
+| `text` |  | string \| binding |  | ✅ 1 pass |
+| `textAlign` |  | string |  | ✅ 6 pass |
+
+## Toggle
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `bind` |  | binding |  | — |
+| `checked` |  | boolean \| binding |  | ✅ 1 pass |
+| `enabled` |  | boolean \| binding |  | ✅ 2 pass |
+| `isOn` |  | boolean \| binding |  | ✅ 1 pass |
+| `labelAttributes` |  | object |  | — |
+| `labelPosition` |  | string |  | ✅ 2 pass |
+| `offTintColor` |  | string \| binding |  | ⏭ 1 skipped |
+| `onTintColor` |  | string |  | ✅ 1 pass |
+| `onToggle` |  | binding |  | — |
+| `onValueChange` |  | binding |  | — |
+| `thumbTintColor` |  | string \| binding |  | ✅ 1 pass |
+| `tint` |  | string \| binding |  | ✅ 1 pass |
+| `tintColor` |  | string |  | ✅ 1 pass |
+| `trackTintColor` |  | string | yes | ✅ 1 pass |
+| `value` |  | boolean \| binding |  | ✅ 1 pass |
+
+## View
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `_comment` |  | string |  | — |
+| `alignment` |  | string |  | ✅ 1 pass |
+| `child` |  | array |  | — |
+| `children` |  | array |  | — |
+| `direction` |  | string |  | ✅ 5 pass |
+| `distribution` |  | string |  | ✅ 4 pass |
+| `draggable` |  | boolean |  | ⏭ 1 skipped |
+| `flexWrap` |  | string |  | ⏭ 3 skipped |
+| `gradient` |  | array |  | ⏭ 1 skipped |
+| `gradientDirection` |  | string |  | ⏭ 1 skipped |
+| `highlighted` |  | boolean |  | ✅ 1 pass |
+| `locations` |  | array |  | ⏭ 1 skipped |
+| `onDragEnter` |  | binding |  | — |
+| `onDragLeave` |  | binding |  | — |
+| `onDragOver` |  | binding |  | — |
+| `onDragStart` |  | binding |  | — |
+| `onDrop` |  | binding |  | — |
+| `orientation` |  | string |  | ✅ 2 pass |
+| `safeAreaInsetPositions` |  | array |  | — |
+| `spacing` |  | number \| binding |  | ✅ 1 pass |
+
+## Web
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `allow` |  | string |  | ⏭ 1 skipped |
+| `allowsBackForwardNavigationGestures` |  | boolean |  | — |
+| `allowsLinkPreview` |  | boolean |  | — |
+| `html` |  | string |  | ✅ 1 pass |
+| `sandbox` |  | string |  | ⏭ 1 skipped |
+| `url` |  | string \| binding |  | — |
+
+## common
+
+| attribute | aliases | type | deprecated | conformance |
+|---|---|---|---|---|
+| `$jui` |  | object |  | — |
+| `alignBottom` |  | boolean \| binding |  | ✅ 1 pass |
+| `alignBottomOfView` |  | string |  | ✅ 1 pass |
+| `alignBottomView` |  | string |  | ✅ 1 pass |
+| `alignCenterHorizontalView` |  | string |  | ✅ 1 pass |
+| `alignCenterVerticalView` |  | string |  | ✅ 1 pass |
+| `alignLeft` |  | boolean \| binding |  | ✅ 1 pass |
+| `alignLeftOfView` |  | string |  | ✅ 1 pass |
+| `alignLeftView` |  | string |  | ✅ 1 pass |
+| `alignRight` |  | boolean \| binding |  | ✅ 1 pass |
+| `alignRightOfView` |  | string |  | ✅ 1 pass |
+| `alignRightView` |  | string |  | ✅ 1 pass |
+| `alignTop` |  | boolean \| binding |  | ✅ 1 pass |
+| `alignTopOfView` |  | string |  | ✅ 1 pass |
+| `alignTopView` |  | string |  | ✅ 1 pass |
+| `alignment` |  | string |  | ✅ 9 pass |
+| `alpha` |  | number \| binding |  | ✅ 1 pass |
+| `aspectHeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `aspectWidth` |  | number \| binding |  | ⏭ 1 skipped |
+| `background` |  | string \| binding |  | ✅ 1 pass |
+| `bind` |  | string \| object |  | — |
+| `binding` |  | string \| object |  | — |
+| `bindingScript` |  | string |  | — |
+| `binding_group` |  | string \| array |  | — |
+| `binding_id` |  | string |  | — |
+| `borderColor` |  | string \| binding |  | ✅ 1 pass |
+| `borderStyle` |  | string |  | ✅ 3 pass |
+| `borderWidth` |  | number \| binding |  | ✅ 1 pass |
+| `bottomMargin` |  | number \| binding |  | ✅ 1 pass |
+| `bottomPadding` |  | number \| binding |  | ✅ 1 pass |
+| `canTap` |  | boolean \| binding |  | — |
+| `centerHorizontal` |  | boolean \| binding |  | ✅ 1 pass |
+| `centerInParent` |  | boolean \| binding |  | ✅ 1 pass |
+| `centerVertical` |  | boolean \| binding |  | ✅ 1 pass |
+| `className` |  | string |  | — |
+| `clipToBounds` |  | boolean \| binding |  | ✅ 1 pass |
+| `compressHorizontal` |  | string |  | ⏭ 1 skipped |
+| `compressVertical` |  | string |  | ⏭ 1 skipped |
+| `confirmationDialog` |  | object |  | — |
+| `cornerRadius` |  | number \| binding |  | ✅ 1 pass |
+| `data` |  | array |  | — |
+| `defaultBackground` |  | string \| binding |  | ⏭ 1 skipped |
+| `disabledBackground` |  | string \| binding |  | ✅ 1 pass |
+| `distribution` |  | string |  | ✅ 4 pass |
+| `effectStyle` |  | string |  | ⏭ 1 skipped |
+| `enabled` |  | boolean \| binding |  | ✅ 2 pass |
+| `endMargin` |  | number \| binding |  | ✅ 1 pass |
+| `events` |  | object |  | — |
+| `frame` |  | object |  | — |
+| `generatedBy` |  | string |  | — |
+| `gravity` |  | string \| array |  | ✅ 7 pass |
+| `height` |  | number \| {'enum': ['matchParent', 'wrapContent']} \| binding |  | ✅ 3 pass |
+| `heightRaw` |  | string |  | — |
+| `heightWeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `hidden` |  | boolean \| binding |  | ✅ 2 pass |
+| `highlightBackground` |  | string \| binding |  | ✅ 1 pass |
+| `hugHorizontal` |  | string |  | ⏭ 1 skipped |
+| `hugVertical` |  | string |  | ⏭ 1 skipped |
+| `id` |  | string |  | — |
+| `idealHeight` |  | number |  | ⏭ 1 skipped |
+| `idealWidth` |  | number |  | ⏭ 1 skipped |
+| `include` |  | string |  | — |
+| `indexAbove` |  | string |  | ✅ 1 pass |
+| `indexBelow` |  | string |  | ✅ 1 pass |
+| `innerPadding` |  | number \| binding |  | ⏭ 1 skipped |
+| `keyBottomView` |  | string |  | — |
+| `keyLeftView` |  | string |  | — |
+| `keyRightView` |  | string |  | — |
+| `keyTopView` |  | string |  | — |
+| `leftMargin` |  | number \| binding |  | ✅ 1 pass |
+| `leftPadding` |  | number \| binding |  | ✅ 1 pass |
+| `margins` |  | number \| array |  | ✅ 1 pass |
+| `maxBottomMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `maxBottomPadding` |  | number |  | ⏭ 1 skipped |
+| `maxEndMargin` |  | number |  | ⏭ 1 skipped |
+| `maxHeight` |  | number \| binding |  | ✅ 1 pass |
+| `maxHeightWeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `maxLeftMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `maxLeftPadding` |  | number |  | ⏭ 1 skipped |
+| `maxRightMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `maxRightPadding` |  | number |  | ⏭ 1 skipped |
+| `maxStartMargin` |  | number |  | ⏭ 1 skipped |
+| `maxTopMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `maxTopPadding` |  | number |  | ⏭ 1 skipped |
+| `maxWidth` |  | number \| binding |  | ✅ 1 pass |
+| `maxWidthWeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `minBottomMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `minBottomPadding` |  | number |  | ⏭ 1 skipped |
+| `minEndMargin` |  | number |  | ⏭ 1 skipped |
+| `minHeight` |  | number \| binding |  | ✅ 1 pass |
+| `minHeightWeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `minLeftMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `minLeftPadding` |  | number |  | ⏭ 1 skipped |
+| `minRightMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `minRightPadding` |  | number |  | ⏭ 1 skipped |
+| `minStartMargin` |  | number |  | ⏭ 1 skipped |
+| `minTopMargin` |  | number \| binding |  | ⏭ 1 skipped |
+| `minTopPadding` |  | number |  | ⏭ 1 skipped |
+| `minWidth` |  | number \| binding |  | ✅ 1 pass |
+| `minWidthWeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `onAppear` |  | string |  | — |
+| `onClick` |  | binding |  | — |
+| `onDisappear` |  | string |  | — |
+| `onLongPress` |  | binding |  | — |
+| `onPan` |  | binding |  | — |
+| `onPinch` |  | binding |  | — |
+| `onclick` |  | string \| array |  | — |
+| `opacity` | `alpha` | number \| binding |  | ✅ 2 pass |
+| `padding` |  | number \| binding |  | ✅ 1 pass |
+| `paddingBottom` |  | number \| binding |  | ✅ 1 pass |
+| `paddingEnd` |  | number \| binding |  | ✅ 1 pass |
+| `paddingLeft` |  | number \| binding |  | ✅ 1 pass |
+| `paddingRight` |  | number \| binding |  | ✅ 1 pass |
+| `paddingStart` |  | number \| binding |  | ✅ 1 pass |
+| `paddingTop` |  | number \| binding |  | ✅ 1 pass |
+| `paddings` |  | number \| array |  | ✅ 1 pass |
+| `partial` |  | boolean |  | — |
+| `propertyName` |  | string |  | — |
+| `rect` |  | array |  | — |
+| `responsive` |  | object |  | — |
+| `rightMargin` |  | number \| binding |  | ✅ 1 pass |
+| `rightPadding` |  | number \| binding |  | ✅ 1 pass |
+| `scripts` |  | array |  | — |
+| `shadow` |  | string \| object |  | ✅ 1 pass |
+| `shared_data` |  | object |  | — |
+| `startMargin` |  | number \| binding |  | ✅ 1 pass |
+| `style` |  | string |  | — |
+| `tag` |  | number \| binding |  | — |
+| `tapBackground` |  | string \| binding |  | ✅ 1 pass |
+| `testId` |  | string |  | — |
+| `tintColor` |  | string \| binding |  | ✅ 1 pass |
+| `toView` |  | string |  | ⏭ 1 skipped |
+| `topMargin` |  | number \| binding |  | ✅ 1 pass |
+| `topPadding` |  | number \| binding |  | ✅ 1 pass |
+| `touchDisabledState` |  | string |  | — |
+| `touchEnabledViewIds` |  | array |  | — |
+| `type` |  | string |  | — |
+| `userInteractionEnabled` |  | boolean \| binding |  | — |
+| `variables` |  | object |  | — |
+| `visibility` |  | string \| binding |  | ✅ 3 pass |
+| `weight` |  | number \| string \| binding |  | ✅ 1 pass |
+| `width` |  | number \| {'enum': ['matchParent', 'wrapContent']} \| binding |  | ✅ 3 pass |
+| `widthRaw` |  | string |  | — |
+| `widthWeight` |  | number \| binding |  | ⏭ 1 skipped |
+| `wrapContent` |  | boolean |  | ⏭ 1 skipped |
+
