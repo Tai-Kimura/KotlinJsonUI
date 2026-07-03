@@ -5,11 +5,6 @@ name: ci
 # suites. The Compose-dynamic conformance suite (emulator) lives in the
 # jsonui-cli repo's conformance-mobile workflow, not here.
 #
-# NOTE: :sample-app is NOT compiled here yet — it currently does not build
-# (generated with an old kjui_tools generation; VM contract drifted). Enable
-# a :sample-app:compileDevDebugKotlin step once the sample-app regen
-# migration lands.
-
 on:
   push:
     branches: [main]
@@ -46,6 +41,11 @@ jobs:
           echo "warning gate: OK"
       - name: Unit tests
         run: ./gradlew :library:testReleaseUnitTest :library-dynamic:testReleaseUnitTest
+      - name: Compile sample-app (regen showcase)
+        # Keeps the regenerated sample-app compiling against the libraries.
+        # Not part of the warning gate: its one remaining warning lives in a
+        # generated file (kjui_tools follow-up).
+        run: ./gradlew :sample-app:compileDevDebugKotlin
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
