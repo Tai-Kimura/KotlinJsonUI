@@ -56,14 +56,16 @@ fi
 
 # 1. Sync fixtures when a suite dir is provided
 if [[ -n "${CONFORMANCE_DIR:-}" ]]; then
-  (cd "$ROOT_DIR" && ./gradlew -q :conformance-host:syncConformanceFixtures)
+  (cd "$ROOT_DIR" && timeout 300 ./gradlew -q :conformance-host:syncConformanceFixtures)
 elif [[ ! -f "$MODULE_DIR/src/main/assets/conformance/manifest.json" ]]; then
   echo "error: no synced fixtures and CONFORMANCE_DIR unset" >&2
   exit 1
 fi
 
-# 2. Build + install both APKs
-(cd "$ROOT_DIR" && ./gradlew :conformance-host:installDebug :conformance-host:installDebugAndroidTest)
+# 2. Build + install both APKs. Timeout-bounded: a healthy install is ~3-4 min,
+# so 8 min fast-fails a gradle/emulator wedge in this phase (the boot succeeded
+# but the device wedged) instead of riding the step timeout.
+(cd "$ROOT_DIR" && timeout 480 ./gradlew :conformance-host:installDebug :conformance-host:installDebugAndroidTest)
 
 # 2b. Emulator health gate — fail fast (don't hang) if it wedged after install.
 if ! adb_alive; then
@@ -102,9 +104,9 @@ while true; do
     exit 1
   fi
   echo "--- instrumentation attempt $attempt/$MAX_ATTEMPTS (filter=$FILTER) ---"
-  # ~11-min green suite; a 22-min timeout catches a mid-run wedge / hung fixture
+  # ~11-min green suite; a 15-min timeout catches a mid-run wedge / hung fixture
   # without truncating a healthy-but-slow run. On timeout (124) the loop re-probes.
-  timeout 1320 "$ADB" shell am instrument -w \
+  timeout 900 "$ADB" shell am instrument -w \
     -e conformanceFilter "$FILTER" \
     -e class "$APP_PKG.ConformanceSuiteTest" \
     "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" || true
