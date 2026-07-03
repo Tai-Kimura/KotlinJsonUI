@@ -31,7 +31,16 @@ ADB="$SDK/platform-tools/adb"
 ADB_SH_TIMEOUT="${ADB_SH_TIMEOUT:-120}"
 adbsh() { timeout "$ADB_SH_TIMEOUT" "$ADB" shell "$@"; }
 # Emulator liveness probe; non-zero (incl. 124 = timeout) means wedged.
-adb_alive() { timeout 60 "$ADB" shell true >/dev/null 2>&1; }
+# `adb shell true` alone is NOT enough: a GL-wedged emulator (frozen emugl /
+# "Failed to find ColorBuffer") keeps answering trivial shell commands while
+# rendering is dead — observed on hosted CI as every instrumentation attempt
+# burning its full timeout with zero fixture progress, sailing straight past
+# the old probe. screencap exercises the GPU readback path and hangs (-> 124)
+# when emugl is wedged, so the script can bail for a fresh-emulator retry.
+adb_alive() {
+  timeout 60 "$ADB" shell true >/dev/null 2>&1 || return 1
+  timeout 90 "$ADB" shell screencap -p /dev/null >/dev/null 2>&1
+}
 
 APP_PKG="com.kotlinjsonui.conformance"
 TEST_PKG="$APP_PKG.test"
@@ -115,6 +124,12 @@ while true; do
     -e conformanceFilter "$FILTER" \
     -e class "$APP_PKG.ConformanceSuiteTest" \
     "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" || true
+
+  # Fixture-progress marker: lets a post-mortem tell "slow but advancing"
+  # (count grows across attempts — budget problem) from "wedged" (count
+  # frozen — emulator problem) without pulling device logs.
+  progress_count=$(adbsh "wc -l < $DEVICE_OUT/progress.jsonl" 2>/dev/null | tr -d '[:space:]' || true)
+  echo "progress.jsonl outcomes after attempt $attempt: ${progress_count:-0}"
 
   if adbsh "[ -f $DEVICE_OUT/android.results.json ]"; then
     echo "android.results.json produced on device."
