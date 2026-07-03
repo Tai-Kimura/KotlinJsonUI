@@ -388,7 +388,9 @@ fun DynamicView(
                 }
             }
 
-            // Set up listener for updates
+            // Set up listener for updates. The listener params shadow this
+            // composable's `layoutName`, so capture it first.
+            val watchedLayoutName = layoutName
             val listener = object : HotLoader.HotLoaderListener {
                 override fun onConnected() {
                     Log.d("DynamicView", "HotLoader connected")
@@ -398,11 +400,11 @@ fun DynamicView(
                     Log.d("DynamicView", "HotLoader disconnected")
                 }
 
-                override fun onLayoutUpdated(name: String, content: String) {
-                    if (name == layoutName || name == "$layoutName.json") {
+                override fun onLayoutUpdated(layoutName: String, content: String) {
+                    if (layoutName == watchedLayoutName || layoutName == "$watchedLayoutName.json") {
                         try {
                             jsonObject = JsonParser.parseString(content).asJsonObject
-                            Log.d("DynamicView", "Layout updated: $name")
+                            Log.d("DynamicView", "Layout updated: $layoutName")
                         } catch (e: Exception) {
                             onError?.invoke(e)
                         }
@@ -416,11 +418,11 @@ fun DynamicView(
                     Log.d("DynamicView", "Style updated: $styleName, triggering recomposition")
                 }
 
-                override fun onLayoutAdded(name: String) {
+                override fun onLayoutAdded(layoutName: String) {
                     // New layout added
                 }
 
-                override fun onLayoutRemoved(name: String) {
+                override fun onLayoutRemoved(layoutName: String) {
                     // Layout removed
                 }
 

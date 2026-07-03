@@ -52,10 +52,10 @@ class DynamicViewRendererImpl {
             val listener = object : com.kotlinjsonui.dynamic.hotloader.HotLoader.HotLoaderListener {
                 override fun onConnected() {}
                 override fun onDisconnected() {}
-                override fun onLayoutUpdated(name: String, content: String) {}
-                override fun onLayoutAdded(name: String) {}
-                override fun onLayoutRemoved(name: String) {}
-                override fun onError(err: Throwable) {}
+                override fun onLayoutUpdated(layoutName: String, content: String) {}
+                override fun onLayoutAdded(layoutName: String) {}
+                override fun onLayoutRemoved(layoutName: String) {}
+                override fun onError(error: Throwable) {}
                 override fun onStyleUpdated(styleName: String, content: String) {
                     // Clear style cache so new styles are loaded from HotLoader cache
                     DynamicStyleLoader.clearCache()

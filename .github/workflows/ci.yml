@@ -34,15 +34,16 @@ jobs:
         run: |
           ./gradlew :library:compileReleaseKotlin :library-dynamic:compileReleaseKotlin \
             --warning-mode all --rerun-tasks 2>&1 | tee compile.log
-      - name: Deprecation-warning gate (zero tolerated)
-        # 2.9.3 removed every deprecation warning from both published modules.
-        # Fail if any Kotlin warning mentioning deprecation comes back.
+      - name: Warning gate (zero tolerated)
+        # 2.9.3 removed every deprecation warning and the follow-up brush-up
+        # removed the remaining named-parameter / unchecked-cast warnings.
+        # Fail if ANY Kotlin compiler warning comes back.
         run: |
-          if grep -E "^w: .*[Dd]eprecat" compile.log; then
-            echo "::error::deprecation warnings reintroduced (see above)"
+          if grep -E "^w: " compile.log; then
+            echo "::error::compiler warnings reintroduced (see above)"
             exit 1
           fi
-          echo "deprecation gate: OK"
+          echo "warning gate: OK"
       - name: Unit tests
         run: ./gradlew :library:testReleaseUnitTest :library-dynamic:testReleaseUnitTest
       - name: Upload test reports

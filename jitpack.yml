@@ -1,10 +1,9 @@
 jdk:
   - openjdk17
 
-# JitPack builds release variant by default
-# To build debug variant, uncomment the following:
-# buildCommand:
-#   - ./gradlew :library:assembleDebug :library:publishDebugPublicationToMavenLocal
-
+# Maven Central is the canonical distribution channel (both modules are
+# published there at the same version); JitPack is best-effort.
+# publishToMavenLocal covers every publication of BOTH published modules
+# without depending on publication names.
 install:
-  - ./gradlew :library:assembleRelease :library:publishReleasePublicationToMavenLocal -Dorg.gradle.daemon=false
+  - ./gradlew :library:publishToMavenLocal :library-dynamic:publishToMavenLocal -Dorg.gradle.daemon=false

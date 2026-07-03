@@ -940,6 +940,9 @@ object ModifierBuilder {
     // ── Lifecycle Effects ────────────────────────────────────────────
 
     /** build_lifecycle_effects: onAppear → LaunchedEffect, onDisappear → DisposableEffect */
+    // Handlers arrive as Any in the data map; erasure makes the () -> Unit
+    // cast uncheckable, and a wrong-typed value degrades to a no-op via `as?`.
+    @Suppress("UNCHECKED_CAST")
     @Composable
     fun ApplyLifecycleEffects(json: JsonObject, data: Map<String, Any>) {
         json.get("onAppear")?.asString?.let { handler ->
