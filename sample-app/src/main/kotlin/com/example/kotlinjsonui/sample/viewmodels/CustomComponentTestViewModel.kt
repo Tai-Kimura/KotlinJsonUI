@@ -32,4 +32,22 @@ class CustomComponentTestViewModel(application: Application) : AndroidViewModel(
             dynamicModeStatus = if (_data.value.dynamicModeStatus == "ON") "OFF" else "ON"
         )
     }
+    
+    fun incrementCount() {
+        _data.value = _data.value.copy(itemCount = _data.value.itemCount + 1)
+    }
+    
+    fun decrementCount() {
+        _data.value = _data.value.copy(itemCount = _data.value.itemCount - 1)
+    }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            toggleDynamicMode = { toggleDynamicMode() },
+            incrementCount = { incrementCount() },
+            decrementCount = { decrementCount() }
+        )
+    }
 }

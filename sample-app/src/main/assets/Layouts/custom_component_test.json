@@ -116,7 +116,7 @@
                             8,
                             16
                           ],
-                          "onClick": "incrementCount"
+                          "onClick": "@{incrementCount}"
                         },
                         {
                           "type": "Button",
@@ -128,7 +128,7 @@
                             8,
                             16
                           ],
-                          "onClick": "decrementCount"
+                          "onClick": "@{decrementCount}"
                         }
                       ]
                     }
@@ -249,7 +249,7 @@
             {
               "type": "Button",
               "text": "Toggle Dynamic Mode",
-              "onClick": "toggleDynamicMode",
+              "onClick": "@{toggleDynamicMode}",
               "background": "medium_blue_3",
               "fontColor": "white",
               "cornerRadius": 8,
@@ -308,6 +308,18 @@
       "name": "dynamicModeStatus",
       "class": "String",
       "defaultValue": "'OFF'"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "incrementCount",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "decrementCount",
+      "class": "(() -> Void)?"
     }
   ]
 }

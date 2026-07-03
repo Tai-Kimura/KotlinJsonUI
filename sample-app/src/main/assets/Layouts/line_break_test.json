@@ -249,6 +249,10 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Line Break Mode Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

@@ -20,7 +20,7 @@ class Included2ViewModel(application: Application) : AndroidViewModel(applicatio
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        val currentDataMap = _data.value.toMap().toMutableMap()
         currentDataMap.putAll(updates)
         _data.value = Included2Data.fromMap(currentDataMap)
     }

@@ -492,6 +492,18 @@
       "name": "zipCode",
       "class": "String",
       "defaultValue": ""
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "submitForm",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "clearForm",
+      "class": "(() -> Void)?"
     }
   ]
 }

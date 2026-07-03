@@ -29,6 +29,22 @@
           "name": "selectedSegment",
           "class": "Int",
           "defaultValue": 0
+        },
+        {
+          "name": "handleFocus",
+          "class": "(() -> Void)?"
+        },
+        {
+          "name": "handleBlur",
+          "class": "(() -> Void)?"
+        },
+        {
+          "name": "handleBeginEditing",
+          "class": "(() -> Void)?"
+        },
+        {
+          "name": "handleEndEditing",
+          "class": "(() -> Void)?"
         }
       ],
       "child": [

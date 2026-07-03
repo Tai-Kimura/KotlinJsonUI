@@ -215,6 +215,14 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Keyboard Avoidance Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "submitForm",
+      "class": "(() -> Void)?"
     }
   ]
 }

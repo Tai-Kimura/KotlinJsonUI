@@ -298,6 +298,10 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Single Alignment Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

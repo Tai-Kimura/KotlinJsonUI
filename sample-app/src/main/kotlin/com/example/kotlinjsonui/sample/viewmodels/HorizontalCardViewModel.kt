@@ -2,23 +2,23 @@ package com.example.kotlinjsonui.sample.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.HorizontalCardData
 
 class HorizontalCardViewModel(application: Application) : AndroidViewModel(application) {
+    // JSON file reference for hot reload
+    val jsonFileName = "horizontal_card"
+
     // Cell data - managed by parent Collection
-    var data by mutableStateOf(HorizontalCardData())
-        private set
-    
-    // This is a cell view model
-    // Data is typically provided by the parent Collection component
-    
-    fun updateData(newData: HorizontalCardData) {
-        data = newData
+    private val _data = MutableStateFlow(HorizontalCardData())
+    val data: StateFlow<HorizontalCardData> = _data.asStateFlow()
+
+    // Data is provided by the parent Collection component as a map
+    fun updateData(updates: Map<String, Any>) {
+        val merged = _data.value.toMap()
+        merged.putAll(updates)
+        _data.value = HorizontalCardData.fromMap(merged)
     }
-    
 }

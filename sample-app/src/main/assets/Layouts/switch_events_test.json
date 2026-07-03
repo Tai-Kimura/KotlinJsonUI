@@ -30,7 +30,7 @@
           "id": "notificationSwitch",
           "text": "Enable Notifications",
           "isOn": "@{notificationEnabled}",
-          "onValueChange": "handleNotificationChange",
+          "onValueChange": "@{handleNotificationChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -58,7 +58,7 @@
           "text": "Dark Mode",
           "isOn": "@{darkModeEnabled}",
           "tint": "light_red",
-          "onValueChange": "handleDarkModeChange",
+          "onValueChange": "@{handleDarkModeChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -85,7 +85,7 @@
           "text": "Wi-Fi",
           "isOn": "@{wifiEnabled}",
           "tintColor": "medium_green_2",
-          "onValueChange": "handleWifiChange",
+          "onValueChange": "@{handleWifiChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -96,7 +96,7 @@
           "text": "Bluetooth",
           "isOn": "@{bluetoothEnabled}",
           "tintColor": "medium_blue_2",
-          "onValueChange": "handleBluetoothChange",
+          "onValueChange": "@{handleBluetoothChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -107,7 +107,7 @@
           "text": "Location Services",
           "isOn": "@{locationEnabled}",
           "tintColor": "medium_red_5",
-          "onValueChange": "handleLocationChange",
+          "onValueChange": "@{handleLocationChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -164,6 +164,26 @@
       "name": "connectionStatus",
       "class": "String",
       "defaultValue": "Active: Wi-Fi, Location"
+    },
+    {
+      "name": "handleNotificationChange",
+      "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "handleDarkModeChange",
+      "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "handleWifiChange",
+      "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "handleBluetoothChange",
+      "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "handleLocationChange",
+      "class": "((Event) -> Void)?"
     }
   ]
 }

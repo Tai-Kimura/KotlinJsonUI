@@ -79,7 +79,7 @@
             "Extra Large"
           ],
           "selectedIndex": "@{selectedEvent}",
-          "onValueChange": "handleSegmentChange",
+          "onValueChange": "@{handleSegmentChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -143,6 +143,10 @@
       "name": "selectedSize",
       "class": "String",
       "defaultValue": "Medium"
+    },
+    {
+      "name": "handleSegmentChange",
+      "class": "((Event) -> Void)?"
     }
   ]
 }

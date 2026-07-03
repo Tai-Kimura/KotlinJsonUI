@@ -112,7 +112,8 @@
           "cornerRadius": 8,
           "borderColor": "pale_gray_4",
           "borderWidth": 1,
-          "enabled": true
+          "enabled": true,
+          "id": "disabled_test_field1"
         },
         {
           "type": "Label",
@@ -138,7 +139,8 @@
           "borderWidth": 1,
           "enabled": false,
           "fontColor": "medium_gray_4",
-          "disabledFontColor": "#999999"
+          "disabledFontColor": "#999999",
+          "id": "disabled_test_field2"
         },
         {
           "type": "Label",
@@ -208,6 +210,30 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Disabled State Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "onEnabledButtonTap",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "onDisabledButtonTap",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "onTouchDisabledTap",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "toggleEnableState",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "onDynamicButtonTap",
+      "class": "(() -> Void)?"
     }
   ]
 }

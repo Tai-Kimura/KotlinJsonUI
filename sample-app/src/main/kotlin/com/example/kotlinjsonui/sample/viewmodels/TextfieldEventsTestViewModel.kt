@@ -56,4 +56,13 @@ class TextfieldEventsTestViewModel(application: Application) : AndroidViewModel(
         )
         _data.value = newData
     }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            handleEmailChange = { _, value -> handleEmailChange(value) },
+            handlePasswordChange = { _, value -> handlePasswordChange(value) }
+        )
+    }
 }

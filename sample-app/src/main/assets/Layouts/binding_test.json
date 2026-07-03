@@ -177,7 +177,7 @@
           "value": "@{sliderValue}",
           "minimumValue": 0,
           "maximumValue": 100,
-          "onValueChange": "sliderChanged"
+          "onValueChange": "@{sliderChanged}"
         },
         {
           "type": "Label",
@@ -382,6 +382,22 @@
       "name": "selectedDate2",
       "class": "String",
       "defaultValue": "2024-01-15"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "decreaseCounter",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "increaseCounter",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "sliderChanged",
+      "class": "((Event) -> Void)?"
     }
   ]
 }

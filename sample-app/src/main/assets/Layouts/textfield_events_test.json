@@ -33,7 +33,7 @@
           "input": "email",
           "returnKeyType": "done",
           "borderStyle": "roundedRect",
-          "onTextChange": "handleEmailChange",
+          "onTextChange": "@{handleEmailChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -63,7 +63,7 @@
           "secure": true,
           "returnKeyType": "done",
           "borderStyle": "roundedRect",
-          "onTextChange": "handlePasswordChange",
+          "onTextChange": "@{handlePasswordChange}",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10
@@ -124,6 +124,14 @@
       "name": "notes",
       "class": "String",
       "defaultValue": ""
+    },
+    {
+      "name": "handleEmailChange",
+      "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "handlePasswordChange",
+      "class": "((Event) -> Void)?"
     }
   ]
 }

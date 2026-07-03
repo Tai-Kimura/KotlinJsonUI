@@ -90,6 +90,10 @@
       "name": "dynamicModeStatus",
       "class": "String",
       "defaultValue": "OFF"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

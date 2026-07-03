@@ -42,4 +42,13 @@ class PartialAttributesTestViewModel(application: Application) : AndroidViewMode
         // In a real app, you would update the data fields based on the updates map
         _data.value = _data.value.copy() // Trigger recomposition
     }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            navigateToPage1 = { navigateToPage1() },
+            navigateToPage2 = { navigateToPage2() }
+        )
+    }
 }

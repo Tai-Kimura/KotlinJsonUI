@@ -186,7 +186,7 @@
           "itemSpacing": 15,
           "sections": [
             {
-              "cell": "ConverterTestCell",
+              "cell": "converter_test_cell",
               "columns": 3
             }
           ],
@@ -204,7 +204,7 @@
           "width": 100,
           "height": 100,
           "topMargin": 10,
-          "srcName": "star.fill",
+          "srcName": "placeholder",
           "defaultImage": "exclamationmark.triangle",
           "contentMode": "scaleAspectFit"
         },
@@ -243,6 +243,10 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Converter Components Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

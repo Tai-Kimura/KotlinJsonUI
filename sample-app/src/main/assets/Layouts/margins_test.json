@@ -170,6 +170,10 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Margins & Padding Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

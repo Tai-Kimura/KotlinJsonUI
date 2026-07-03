@@ -102,4 +102,16 @@ class SwitchEventsTestViewModel(application: Application) : AndroidViewModel(app
         )
         _data.value = newData
     }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            handleNotificationChange = { _, value -> handleNotificationChange(value) },
+            handleDarkModeChange = { _, value -> handleDarkModeChange(value) },
+            handleWifiChange = { _, value -> handleWifiChange(value) },
+            handleBluetoothChange = { _, value -> handleBluetoothChange(value) },
+            handleLocationChange = { _, value -> handleLocationChange(value) }
+        )
+    }
 }

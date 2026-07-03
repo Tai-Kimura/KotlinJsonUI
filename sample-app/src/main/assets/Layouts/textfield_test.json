@@ -20,7 +20,8 @@
       "input": "email",
       "returnKeyType": "next",
       "borderStyle": "roundedRect",
-      "marginBottom": 15
+      "marginBottom": 15,
+      "id": "email_field"
     },
     {
       "type": "TextField",
@@ -30,7 +31,8 @@
       "secure": true,
       "returnKeyType": "done",
       "borderStyle": "roundedRect",
-      "marginBottom": 15
+      "marginBottom": 15,
+      "id": "password_field"
     },
     {
       "type": "TextField",
@@ -40,7 +42,8 @@
       "input": "phone",
       "returnKeyType": "next",
       "borderStyle": "roundedRect",
-      "marginBottom": 15
+      "marginBottom": 15,
+      "id": "phone_field"
     },
     {
       "type": "TextField",
@@ -52,7 +55,8 @@
       "borderStyle": "plain",
       "padding": 10,
       "background": "white_17",
-      "marginBottom": 15
+      "marginBottom": 15,
+      "id": "number_field"
     },
     {
       "type": "TextField",
@@ -61,7 +65,8 @@
       "fontSize": 16,
       "returnKeyType": "search",
       "borderStyle": "roundedRect",
-      "marginBottom": 15
+      "marginBottom": 15,
+      "id": "search_field"
     },
     {
       "type": "TextField",
@@ -71,7 +76,8 @@
       "input": "url",
       "returnKeyType": "go",
       "borderStyle": "roundedRect",
-      "marginBottom": 15
+      "marginBottom": 15,
+      "id": "url_field"
     },
     {
       "type": "Label",

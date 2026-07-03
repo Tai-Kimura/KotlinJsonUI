@@ -143,5 +143,15 @@
         }
       ]
     }
-  }
+  },
+  "data": [
+    {
+      "name": "navigateToPage1",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToPage2",
+      "class": "(() -> Void)?"
+    }
+  ]
 }

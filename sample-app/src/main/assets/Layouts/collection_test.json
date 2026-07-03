@@ -30,9 +30,9 @@
               "type": "Collection",
               "sections": [
                 {
-                  "header": "SectionHeader",
-                  "cell": "BasicCell",
-                  "footer": "SectionFooter",
+                  "header": "section_header",
+                  "cell": "basic_cell",
+                  "footer": "section_footer",
                   "columns": 2
                 }
               ],
@@ -55,9 +55,9 @@
               "columns": 2,
               "sections": [
                 {
-                  "header": "GridHeader",
-                  "cell": "ImageCell",
-                  "footer": "GridFooter",
+                  "header": "grid_header",
+                  "cell": "image_cell",
+                  "footer": "grid_footer",
                   "columns": 3
                 }
               ],
@@ -77,8 +77,8 @@
               "type": "Collection",
               "sections": [
                 {
-                  "header": "HorizontalHeader",
-                  "cell": "HorizontalCard",
+                  "header": "horizontal_header",
+                  "cell": "horizontal_card",
                   "columns": 1
                 }
               ],
@@ -99,9 +99,9 @@
               "type": "Collection",
               "sections": [
                 {
-                  "header": "CategoryHeader",
-                  "cell": "ProductCell",
-                  "footer": "CategoryFooter",
+                  "header": "category_header",
+                  "cell": "product_cell",
+                  "footer": "category_footer",
                   "columns": 2
                 }
               ],
@@ -122,20 +122,20 @@
               "type": "Collection",
               "sections": [
                 {
-                  "header": "CategoryHeader",
-                  "cell": "ProductCell",
-                  "footer": "CategoryFooter",
+                  "header": "category_header",
+                  "cell": "product_cell",
+                  "footer": "category_footer",
                   "columns": 3
                 },
                 {
-                  "header": "FeaturedHeader",
-                  "cell": "FeatureCell",
+                  "header": "featured_header",
+                  "cell": "feature_cell",
                   "columns": 2
                 },
                 {
-                  "header": "GridHeader",
-                  "cell": "ImageCell",
-                  "footer": "GridFooter",
+                  "header": "grid_header",
+                  "cell": "image_cell",
+                  "footer": "grid_footer",
                   "columns": 4
                 }
               ],
@@ -190,6 +190,10 @@
       "name": "multiSectionItems",
       "class": "CollectionDataSource",
       "defaultValue": "CollectionDataSource()"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

@@ -151,6 +151,13 @@ dependencies {
     
     // Image loading with Coil
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Coil 3 for generated NetworkImage/CircleImage code (kjui codegen emits coil3.compose.AsyncImage)
+    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+
+    // Material icons (generated Radio custom icons / TabView icons use Icons.Filled/Outlined.*)
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
     
     // Testing
     testImplementation("junit:junit:4.13.2")

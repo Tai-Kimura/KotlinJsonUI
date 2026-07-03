@@ -30,8 +30,16 @@ class RelativeTestViewModel(application: Application) : AndroidViewModel(applica
 
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        val currentDataMap = _data.value.toMap().toMutableMap()
         currentDataMap.putAll(updates)
         _data.value = RelativeTestData.fromMap(currentDataMap)
+    }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            toggleDynamicMode = { toggleDynamicMode() }
+        )
     }
 }

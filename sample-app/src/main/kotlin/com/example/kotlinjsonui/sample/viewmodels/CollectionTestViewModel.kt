@@ -143,15 +143,15 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
             sections = listOf(
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "SectionHeader",
+                        viewName = "section_header",
                         data = mapOf("title" to "Section 1 Header")
                     ),
                     cells = CollectionDataSection.CellData(
-                        viewName = "BasicCell",
+                        viewName = "basic_cell",
                         data = basicItems
                     ),
                     footer = CollectionDataSection.HeaderFooterData(
-                        viewName = "SectionFooter",
+                        viewName = "section_footer",
                         data = mapOf("text" to "End of Section 1")
                     )
                 )
@@ -163,15 +163,15 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
             sections = listOf(
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "GridHeader",
+                        viewName = "grid_header",
                         data = mapOf("title" to "Image Gallery")
                     ),
                     cells = CollectionDataSection.CellData(
-                        viewName = "ImageCell",
+                        viewName = "image_cell",
                         data = imageItems
                     ),
                     footer = CollectionDataSection.HeaderFooterData(
-                        viewName = "GridFooter",
+                        viewName = "grid_footer",
                         data = mapOf("title" to "Total: ${imageItems.size} items")
                     )
                 )
@@ -183,11 +183,11 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
             sections = listOf(
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "HorizontalHeader",
+                        viewName = "horizontal_header",
                         data = mapOf("title" to "Horizontal Scroll")
                     ),
                     cells = CollectionDataSection.CellData(
-                        viewName = "HorizontalCard",
+                        viewName = "horizontal_card",
                         data = horizontalCards
                     )
                 )
@@ -199,7 +199,7 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
             sections = listOf(
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "CategoryHeader",
+                        viewName = "category_header",
                         data = mapOf("title" to "Electronics")
                     ),
                     cells = CollectionDataSection.CellData(
@@ -207,7 +207,7 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
                         data = productItems
                     ),
                     footer = CollectionDataSection.HeaderFooterData(
-                        viewName = "CategoryFooter",
+                        viewName = "category_footer",
                         data = mapOf("title" to "More in Electronics →")
                     )
                 )
@@ -220,7 +220,7 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
                 // Section 1: Products (3 columns)
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "CategoryHeader",
+                        viewName = "category_header",
                         data = mapOf("title" to "Popular Products")
                     ),
                     cells = CollectionDataSection.CellData(
@@ -228,33 +228,33 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
                         data = productItems
                     ),
                     footer = CollectionDataSection.HeaderFooterData(
-                        viewName = "CategoryFooter",
+                        viewName = "category_footer",
                         data = mapOf("title" to "View all products")
                     )
                 ),
                 // Section 2: Feature cells (2 columns)
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "FeaturedHeader",
+                        viewName = "featured_header",
                         data = mapOf("title" to "Featured")
                     ),
                     cells = CollectionDataSection.CellData(
-                        viewName = "FeatureCell",
+                        viewName = "feature_cell",
                         data = featureItems
                     )
                 ),
                 // Section 3: Image gallery (4 columns)
                 CollectionDataSection(
                     header = CollectionDataSection.HeaderFooterData(
-                        viewName = "GridHeader",
+                        viewName = "grid_header",
                         data = mapOf("title" to "Gallery")
                     ),
                     cells = CollectionDataSection.CellData(
-                        viewName = "ImageCell",
+                        viewName = "image_cell",
                         data = imageItems.take(8) // Show 8 items in grid
                     ),
                     footer = CollectionDataSection.HeaderFooterData(
-                        viewName = "GridFooter",
+                        viewName = "grid_footer",
                         data = mapOf("title" to "End of gallery")
                     )
                 )
@@ -268,6 +268,14 @@ class CollectionTestViewModel(application: Application) : AndroidViewModel(appli
             horizontalItems = horizontalItems,
             sectionedItems = sectionedItems,
             multiSectionItems = multiSectionItems
+        )
+    }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            toggleDynamicMode = { toggleDynamicMode() }
         )
     }
 }

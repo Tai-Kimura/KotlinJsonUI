@@ -52,7 +52,38 @@
     "selected_selectedoption": "Selected: @{selectedOption}",
     "date_picker_wheels_style": "Date Picker (Wheels Style)",
     "date_picker_compact_style": "Date Picker (Compact Style)",
-    "select_date": "Select date"
+    "select_date": "Select date",
+    "option_1": "Option 1",
+    "option_2": "Option 2",
+    "option_3": "Option 3",
+    "option_4": "Option 4",
+    "option_5": "Option 5",
+    "option_6": "Option 6",
+    "option_7": "Option 7",
+    "option_8": "Option 8",
+    "option_9": "Option 9",
+    "option_10": "Option 10",
+    "option_11": "Option 11",
+    "option_12": "Option 12",
+    "option_13": "Option 13",
+    "option_14": "Option 14",
+    "option_15": "Option 15",
+    "option_16": "Option 16",
+    "option_17": "Option 17",
+    "option_18": "Option 18",
+    "option_19": "Option 19",
+    "option_20": "Option 20",
+    "option_21": "Option 21",
+    "option_22": "Option 22",
+    "option_23": "Option 23",
+    "option_24": "Option 24",
+    "option_25": "Option 25",
+    "option_26": "Option 26",
+    "option_27": "Option 27",
+    "option_28": "Option 28",
+    "option_29": "Option 29",
+    "option_30": "Option 30",
+    "": "日付を選択"
   },
   "button_enabled_test": {
     "button_enabled_state_isbuttonen": "Button enabled state: @{isButtonEnabled}",
@@ -70,7 +101,8 @@
     "no_height_padding_12_20": "No Height, Padding [12, 20]",
     "test_button_3": "Test Button 3",
     "with_bottommargin_8_height_55_p": "With bottomMargin 8, Height 55, Padding [12, 20]",
-    "like_primarybutton_style": "Like primary_button style"
+    "like_primarybutton_style": "Like primary_button style",
+    "like_primary_button_style": "Like primary_button style"
   },
   "collection_test": {
     "collectionview_test": "CollectionView Test",
@@ -97,7 +129,15 @@
     "gradient_view": "Gradient View",
     "gradient_background": "Gradient Background",
     "blur_view": "Blur View",
-    "blurred_background": "Blurred Background"
+    "blurred_background": "Blurred Background",
+    "list": "List",
+    "grid": "Grid",
+    "map": "Map",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "ff6b6b": "#FF6B6B",
+    "4ecdc4": "#4ECDC4"
   },
   "converter_test": {
     "gradientview_test": "GradientView Test",
@@ -220,7 +260,13 @@
     "10_selectbox_attributes": "10. SelectBox Attributes",
     "choose_an_option": "Choose an option",
     "11_web_component": "11. Web Component",
-    "implemented_attributes_test_2": "Implemented Attributes Test"
+    "implemented_attributes_test_2": "Implemented Attributes Test",
+    "first": "First",
+    "second": "Second",
+    "third": "Third",
+    "option_a": "Option A",
+    "option_b": "Option B",
+    "option_c": "Option C"
   },
   "include_test": {
     "control_panel": "Control Panel",
@@ -236,7 +282,9 @@
     "2_include_with_data_static_valu": "2. Include with data (static values):",
     "3_include_with_data_using_refer": "3. Include with data (using @{} references):",
     "4_include_with_shareddata_and_d": "4. Include with shared_data and data override:",
-    "5_another_included1_with_refere": "5. Another included_1 with @{} references:"
+    "5_another_included1_with_refere": "5. Another included_1 with @{} references:",
+    "4_include_with_shared_data_and_": "4. Include with shared_data and data override:",
+    "5_another_included_1_with_refer": "5. Another included_1 with @{} references:"
   },
   "included2": {
     "included_view_2": "Included View 2",
@@ -288,7 +336,8 @@
     "this_is_a_normal_label_without_": "This is a normal label without any partial attributes.",
     "this_text_has_partial_styling_a": "This text has partial styling applied to different parts of the text.",
     "click_here_to_navigate_or_here_": "Click here to navigate or here for another action.",
-    "mixed_styles_bold_italic_underl": "Mixed styles: bold, italic, underline, strikethrough"
+    "mixed_styles_bold_italic_underl": "Mixed styles: bold, italic, underline, strikethrough",
+    "": "晴れる"
   },
   "radio_icons_test": {
     "radio_custom_icons_test": "Radio Custom Icons Test",
@@ -302,7 +351,11 @@
     "square_option": "Square Option",
     "radio_with_items": "Radio with Items",
     "select_color": "Select Color:",
-    "selected_selectedcolor": "Selected: @{selectedColor}"
+    "selected_selectedcolor": "Selected: @{selectedColor}",
+    "red": "Red",
+    "green": "Green",
+    "blue": "Blue",
+    "yellow": "Yellow"
   },
   "relative_test": {
     "1_parent_constraints_with_margi": "1. Parent Constraints with Margin + Padding",
@@ -381,7 +434,20 @@
     "segment_with_custom_colors": "Segment with Custom Colors",
     "segment_with_onchange_event": "Segment with onChange Event",
     "selected_selectedsize": "Selected: @{selectedSize}",
-    "disabled_segment": "Disabled Segment"
+    "disabled_segment": "Disabled Segment",
+    "option_1": "Option 1",
+    "option_2": "Option 2",
+    "option_3": "Option 3",
+    "red": "Red",
+    "green": "Green",
+    "blue": "Blue",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "extra_large": "Extra Large",
+    "disabled_1": "Disabled 1",
+    "disabled_2": "Disabled 2",
+    "disabled_3": "Disabled 3"
   },
   "simple_test": {
     "simple_test": "Simple Test",

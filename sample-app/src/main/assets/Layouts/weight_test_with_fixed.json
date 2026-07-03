@@ -530,6 +530,10 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Weight + Fixed Size Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

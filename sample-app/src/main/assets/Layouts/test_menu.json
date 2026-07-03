@@ -423,7 +423,151 @@
       ]
     }
   ],
-  "data": {
-    "dynamicModeStatus": "OFF"
-  }
+  "data": [
+    {
+      "name": "dynamicModeStatus",
+      "class": "String",
+      "defaultValue": "Dynamic Mode: OFF"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToAlignmentComboTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToAlignmentTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToBindingTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToButtonEnabledTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToButtonTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToCollectionTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToComponentsTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToConverterTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToCustomComponentTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToDatePickerTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToDisabledTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToFormTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToImplementedAttributesTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToIncludeTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToKeyboardAvoidanceTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToLineBreakTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToMarginsTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToPartialAttributesTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToRadioIconsTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToRelativeTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToScrollTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToSecureFieldTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToSegmentTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToSwitchEventsTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToTextDecorationTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToTextFieldEventsTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToTextFieldTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToTextStylingTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToTextViewHintTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToUserProfileTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToVisibilityTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToWeightTest",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToWeightTestWithFixed",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "navigateToWidthTest",
+      "class": "(() -> Void)?"
+    }
+  ]
 }

@@ -197,6 +197,10 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Text Styling Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

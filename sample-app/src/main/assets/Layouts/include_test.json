@@ -286,6 +286,30 @@
       "name": "userName",
       "class": "String",
       "defaultValue": "Test User"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "incrementCount",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "decrementCount",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "resetCount",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "changeUserName",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "toggleStatus",
+      "class": "(() -> Void)?"
     }
   ]
 }

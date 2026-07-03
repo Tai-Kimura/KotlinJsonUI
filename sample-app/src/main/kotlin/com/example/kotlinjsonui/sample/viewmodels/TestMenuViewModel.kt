@@ -209,8 +209,50 @@ class TestMenuViewModel(application: Application) : AndroidViewModel(application
     
     // Add more action handlers as needed
     fun updateData(updates: Map<String, Any>) {
-        val currentDataMap = _data.value.toMap(this).toMutableMap()
+        val currentDataMap = _data.value.toMap().toMutableMap()
         currentDataMap.putAll(updates)
         _data.value = TestMenuData.fromMap(currentDataMap)
+    }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            toggleDynamicMode = { toggleDynamicMode() },
+            navigateToAlignmentComboTest = { navigateToAlignmentComboTest() },
+            navigateToAlignmentTest = { navigateToAlignmentTest() },
+            navigateToBindingTest = { navigateToBindingTest() },
+            navigateToButtonEnabledTest = { navigateToButtonEnabledTest() },
+            navigateToButtonTest = { navigateToButtonTest() },
+            navigateToCollectionTest = { navigateToCollectionTest() },
+            navigateToComponentsTest = { navigateToComponentsTest() },
+            navigateToConverterTest = { navigateToConverterTest() },
+            navigateToCustomComponentTest = { navigateToCustomComponentTest() },
+            navigateToDatePickerTest = { navigateToDatePickerTest() },
+            navigateToDisabledTest = { navigateToDisabledTest() },
+            navigateToFormTest = { navigateToFormTest() },
+            navigateToImplementedAttributesTest = { navigateToImplementedAttributesTest() },
+            navigateToIncludeTest = { navigateToIncludeTest() },
+            navigateToKeyboardAvoidanceTest = { navigateToKeyboardAvoidanceTest() },
+            navigateToLineBreakTest = { navigateToLineBreakTest() },
+            navigateToMarginsTest = { navigateToMarginsTest() },
+            navigateToPartialAttributesTest = { navigateToPartialAttributesTest() },
+            navigateToRadioIconsTest = { navigateToRadioIconsTest() },
+            navigateToRelativeTest = { navigateToRelativeTest() },
+            navigateToScrollTest = { navigateToScrollTest() },
+            navigateToSecureFieldTest = { navigateToSecureFieldTest() },
+            navigateToSegmentTest = { navigateToSegmentTest() },
+            navigateToSwitchEventsTest = { navigateToSwitchEventsTest() },
+            navigateToTextDecorationTest = { navigateToTextDecorationTest() },
+            navigateToTextFieldEventsTest = { navigateToTextFieldEventsTest() },
+            navigateToTextFieldTest = { navigateToTextFieldTest() },
+            navigateToTextStylingTest = { navigateToTextStylingTest() },
+            navigateToTextViewHintTest = { navigateToTextViewHintTest() },
+            navigateToUserProfileTest = { navigateToUserProfileTest() },
+            navigateToVisibilityTest = { navigateToVisibilityTest() },
+            navigateToWeightTest = { navigateToWeightTest() },
+            navigateToWeightTestWithFixed = { navigateToWeightTestWithFixed() },
+            navigateToWidthTest = { navigateToWidthTest() }
+        )
     }
 }

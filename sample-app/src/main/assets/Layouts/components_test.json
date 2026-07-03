@@ -311,6 +311,10 @@
       "name": "toggle1IsOn",
       "class": "Bool",
       "defaultValue": false
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }

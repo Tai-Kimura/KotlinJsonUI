@@ -84,6 +84,26 @@
       "name": "title",
       "class": "String",
       "defaultValue": "Button Enabled Test"
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "testAction",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "toggleEnabled",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "neverCalled",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "alwaysCalled",
+      "class": "(() -> Void)?"
     }
   ]
 }

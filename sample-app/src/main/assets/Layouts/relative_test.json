@@ -27,6 +27,10 @@
             "name": "title",
             "class": "String",
             "defaultValue": "RelativePosition Test - Margins & Padding"
+          },
+          {
+            "name": "toggleDynamicMode",
+            "class": "(() -> Void)?"
           }
         ]
       },

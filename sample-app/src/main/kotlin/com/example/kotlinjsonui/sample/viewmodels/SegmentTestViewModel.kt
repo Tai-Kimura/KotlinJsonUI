@@ -35,4 +35,12 @@ class SegmentTestViewModel(application: Application) : AndroidViewModel(applicat
         )
         _data.value = newData
     }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            handleSegmentChange = { _, value -> handleSegmentChange(value) }
+        )
+    }
 }

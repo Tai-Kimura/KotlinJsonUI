@@ -2,87 +2,96 @@ package com.example.kotlinjsonui.sample.views.collection_test
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.kotlinjsonui.sample.data.CollectionTestData
-import com.example.kotlinjsonui.sample.viewmodels.CollectionTestViewModel
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.foundation.layout.Box
-import com.kotlinjsonui.core.DynamicModeManager
-import com.kotlinjsonui.components.SafeDynamicView
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.border
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.kotlinjsonui.sample.views.product_cell.ProductCellView
-import com.example.kotlinjsonui.sample.data.ProductCellData
-import com.example.kotlinjsonui.sample.viewmodels.ProductCellViewModel
-import com.example.kotlinjsonui.sample.views.simple_cell.SimpleCellView
-import com.example.kotlinjsonui.sample.data.SimpleCellData
-import com.example.kotlinjsonui.sample.viewmodels.SimpleCellViewModel
-import com.example.kotlinjsonui.sample.views.basic_cell.BasicCellView
-import com.example.kotlinjsonui.sample.data.BasicCellData
-import com.example.kotlinjsonui.sample.viewmodels.BasicCellViewModel
-import com.example.kotlinjsonui.sample.views.image_cell.ImageCellView
-import com.example.kotlinjsonui.sample.data.ImageCellData
-import com.example.kotlinjsonui.sample.viewmodels.ImageCellViewModel
-import com.example.kotlinjsonui.sample.views.feature_cell.FeatureCellView
-import com.example.kotlinjsonui.sample.data.FeatureCellData
-import com.example.kotlinjsonui.sample.viewmodels.FeatureCellViewModel
-import com.example.kotlinjsonui.sample.views.horizontal_card.HorizontalCardView
-import com.example.kotlinjsonui.sample.data.HorizontalCardData
-import com.example.kotlinjsonui.sample.viewmodels.HorizontalCardViewModel
-import com.example.kotlinjsonui.sample.views.section_header.SectionHeaderView
-import com.example.kotlinjsonui.sample.data.SectionHeaderData
-import com.example.kotlinjsonui.sample.viewmodels.SectionHeaderViewModel
-import com.example.kotlinjsonui.sample.views.section_footer.SectionFooterView
-import com.example.kotlinjsonui.sample.data.SectionFooterData
-import com.example.kotlinjsonui.sample.viewmodels.SectionFooterViewModel
-import com.example.kotlinjsonui.sample.views.grid_header.GridHeaderView
-import com.example.kotlinjsonui.sample.data.GridHeaderData
-import com.example.kotlinjsonui.sample.viewmodels.GridHeaderViewModel
-import com.example.kotlinjsonui.sample.views.grid_footer.GridFooterView
-import com.example.kotlinjsonui.sample.data.GridFooterData
-import com.example.kotlinjsonui.sample.viewmodels.GridFooterViewModel
-import com.example.kotlinjsonui.sample.views.horizontal_header.HorizontalHeaderView
-import com.example.kotlinjsonui.sample.data.HorizontalHeaderData
-import com.example.kotlinjsonui.sample.viewmodels.HorizontalHeaderViewModel
-import com.example.kotlinjsonui.sample.views.category_header.CategoryHeaderView
-import com.example.kotlinjsonui.sample.data.CategoryHeaderData
-import com.example.kotlinjsonui.sample.viewmodels.CategoryHeaderViewModel
-import com.example.kotlinjsonui.sample.views.category_footer.CategoryFooterView
-import com.example.kotlinjsonui.sample.data.CategoryFooterData
-import com.example.kotlinjsonui.sample.viewmodels.CategoryFooterViewModel
-import com.example.kotlinjsonui.sample.views.featured_header.FeaturedHeaderView
-import com.example.kotlinjsonui.sample.data.FeaturedHeaderData
-import com.example.kotlinjsonui.sample.viewmodels.FeaturedHeaderViewModel
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.ui.res.stringResource
 import com.example.kotlinjsonui.sample.R
-import androidx.compose.ui.res.colorResource
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.ui.text.TextStyle
+import com.example.kotlinjsonui.sample.data.BasicCellData
+import com.example.kotlinjsonui.sample.data.CategoryFooterData
+import com.example.kotlinjsonui.sample.data.CategoryHeaderData
+import com.example.kotlinjsonui.sample.data.CollectionTestData
+import com.example.kotlinjsonui.sample.data.FeatureCellData
+import com.example.kotlinjsonui.sample.data.FeaturedHeaderData
+import com.example.kotlinjsonui.sample.data.GridFooterData
+import com.example.kotlinjsonui.sample.data.GridHeaderData
+import com.example.kotlinjsonui.sample.data.HorizontalCardData
+import com.example.kotlinjsonui.sample.data.HorizontalHeaderData
+import com.example.kotlinjsonui.sample.data.ImageCellData
+import com.example.kotlinjsonui.sample.data.ProductCellData
+import com.example.kotlinjsonui.sample.data.SectionFooterData
+import com.example.kotlinjsonui.sample.data.SectionHeaderData
+import com.example.kotlinjsonui.sample.viewmodels.BasicCellViewModel
+import com.example.kotlinjsonui.sample.viewmodels.CategoryFooterViewModel
+import com.example.kotlinjsonui.sample.viewmodels.CategoryHeaderViewModel
+import com.example.kotlinjsonui.sample.viewmodels.CollectionTestViewModel
+import com.example.kotlinjsonui.sample.viewmodels.FeatureCellViewModel
+import com.example.kotlinjsonui.sample.viewmodels.FeaturedHeaderViewModel
+import com.example.kotlinjsonui.sample.viewmodels.GridFooterViewModel
+import com.example.kotlinjsonui.sample.viewmodels.GridHeaderViewModel
+import com.example.kotlinjsonui.sample.viewmodels.HorizontalCardViewModel
+import com.example.kotlinjsonui.sample.viewmodels.HorizontalHeaderViewModel
+import com.example.kotlinjsonui.sample.viewmodels.ImageCellViewModel
+import com.example.kotlinjsonui.sample.viewmodels.ProductCellViewModel
+import com.example.kotlinjsonui.sample.viewmodels.SectionFooterViewModel
+import com.example.kotlinjsonui.sample.viewmodels.SectionHeaderViewModel
+import com.example.kotlinjsonui.sample.views.basic_cell.BasicCellView
+import com.example.kotlinjsonui.sample.views.category_footer.CategoryFooterView
+import com.example.kotlinjsonui.sample.views.category_header.CategoryHeaderView
+import com.example.kotlinjsonui.sample.views.feature_cell.FeatureCellView
+import com.example.kotlinjsonui.sample.views.featured_header.FeaturedHeaderView
+import com.example.kotlinjsonui.sample.views.grid_footer.GridFooterView
+import com.example.kotlinjsonui.sample.views.grid_header.GridHeaderView
+import com.example.kotlinjsonui.sample.views.horizontal_card.HorizontalCardView
+import com.example.kotlinjsonui.sample.views.horizontal_header.HorizontalHeaderView
+import com.example.kotlinjsonui.sample.views.image_cell.ImageCellView
+import com.example.kotlinjsonui.sample.views.product_cell.ProductCellView
+import com.example.kotlinjsonui.sample.views.section_footer.SectionFooterView
+import com.example.kotlinjsonui.sample.views.section_header.SectionHeaderView
+import com.kotlinjsonui.components.CollectionStack
+import com.kotlinjsonui.components.CollectionStackAxis
+import com.kotlinjsonui.components.CollectionStackMode
+import com.kotlinjsonui.components.SafeDynamicView
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.DynamicModeManager
+import com.kotlinjsonui.core.FontSpec
+import com.kotlinjsonui.core.ResolvedFont
 
 @Composable
 fun CollectionTestGeneratedView(
     data: CollectionTestData,
-    viewModel: CollectionTestViewModel
+    viewModel: CollectionTestViewModel,
+    modifier: Modifier = Modifier
 ) {
     // Generated Compose code from collection_test.json
     // This will be updated when you run 'kjui build'
@@ -92,6 +101,7 @@ fun CollectionTestGeneratedView(
         // Dynamic Mode - use SafeDynamicView for real-time updates
         SafeDynamicView(
             layoutName = "collection_test",
+            modifier = modifier,
             data = data.toMap(),
             fallback = {
                 // Show error or loading state when dynamic view is not available
@@ -125,7 +135,7 @@ fun CollectionTestGeneratedView(
     } else {
         // Static Mode - use generated code
         Box(
-        modifier = Modifier.background(colorResource(R.color.white_12))
+        modifier = modifier.background(colorResource(R.color.white_12))
     ) {
         LazyColumn(
             modifier = Modifier.imePadding()
@@ -134,35 +144,23 @@ fun CollectionTestGeneratedView(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.collection_test_collectionview_test),
-                    fontSize = 28.sp,
-                    color = colorResource(R.color.black),
-                    fontWeight = FontWeight.Bold,
-                    style = TextStyle(lineHeight = 28.sp),
-                    modifier = Modifier.padding(bottom = 20.dp)
-                )
-                Text(
-                    text = stringResource(R.string.collection_test_basic_collection_with_headers_f),
-                    fontSize = 20.sp,
-                    color = colorResource(R.color.black),
-                    fontWeight = FontWeight.SemiBold,
-                    style = TextStyle(lineHeight = 20.sp),
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
+                Section0(data, viewModel)
+                Section1(data, viewModel)
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
-                        .height(300.dp)
                         .padding(bottom = 20.dp)
+                        .height(300.dp)
                 ) {
-                    // Section 1: BasicCell (2 columns)
+                    // Section 1: basic_cell (2 columns)
                     data.items1?.sections?.getOrNull(0)?.let { section ->
-                        // Section 1 Header: SectionHeader
+                        // Section 1 Header: section_header
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: SectionHeaderViewModel = viewModel(key = "SectionHeader_header_0")
-                                headerViewModel.updateData(headerData.data)
+                                val headerViewModel: SectionHeaderViewModel = viewModel(key = "section_header_header_0_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) {
+                                    headerViewModel.updateData(headerData.data)
+                                }
                                 SectionHeaderView(
                                     viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -175,8 +173,11 @@ fun CollectionTestGeneratedView(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.TopStart
                                 ) {
-                                    val cellViewModel: BasicCellViewModel = viewModel(key = "BasicCell_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    val currentCellData = cellData.data[cellIndex]
+                                    val cellViewModel: BasicCellViewModel = viewModel(key = "basic_cell_cell_0_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) {
+                                        cellViewModel.updateData(currentCellData)
+                                    }
                                     BasicCellView(
                                         viewModel = cellViewModel,
                                         modifier = Modifier
@@ -184,11 +185,13 @@ fun CollectionTestGeneratedView(
                                 }
                             }
                         }
-                        // Section 1 Footer: SectionFooter
+                        // Section 1 Footer: section_footer
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val footerViewModel: SectionFooterViewModel = viewModel(key = "SectionFooter_footer_0")
-                                footerViewModel.updateData(footerData.data)
+                                val footerViewModel: SectionFooterViewModel = viewModel(key = "section_footer_footer_0_${viewModel.hashCode()}")
+                                LaunchedEffect(footerData.data) {
+                                    footerViewModel.updateData(footerData.data)
+                                }
                                 SectionFooterView(
                                     viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -197,27 +200,37 @@ fun CollectionTestGeneratedView(
                         }
                     }
                 }
+                val resolved_text333 = Configuration.Font.resolve(FontSpec(
+                    family = null,
+                    weight = FontWeight.SemiBold,
+                    size = 20.sp,
+                    italic = false
+                ))
                 Text(
                     text = stringResource(R.string.collection_test_grid_collection_with_multiple_c),
-                    fontSize = 20.sp,
                     color = colorResource(R.color.black),
-                    fontWeight = FontWeight.SemiBold,
-                    style = TextStyle(lineHeight = 20.sp),
+                    fontFamily = resolved_text333.family,
+                    fontWeight = resolved_text333.weight,
+                    fontSize = resolved_text333.size ?: TextUnit.Unspecified,
+                    fontStyle = resolved_text333.style ?: FontStyle.Normal,
+                    style = TextStyle(lineHeight = 26.0.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier
-                        .height(400.dp)
                         .padding(bottom = 20.dp)
+                        .height(400.dp)
                 ) {
-                    // Section 1: ImageCell (3 columns)
+                    // Section 1: image_cell (3 columns)
                     data.mixedItems?.sections?.getOrNull(0)?.let { section ->
-                        // Section 1 Header: GridHeader
+                        // Section 1 Header: grid_header
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: GridHeaderViewModel = viewModel(key = "GridHeader_header_0")
-                                headerViewModel.updateData(headerData.data)
+                                val headerViewModel: GridHeaderViewModel = viewModel(key = "grid_header_header_0_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) {
+                                    headerViewModel.updateData(headerData.data)
+                                }
                                 GridHeaderView(
                                     viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -230,8 +243,11 @@ fun CollectionTestGeneratedView(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.TopStart
                                 ) {
-                                    val cellViewModel: ImageCellViewModel = viewModel(key = "ImageCell_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    val currentCellData = cellData.data[cellIndex]
+                                    val cellViewModel: ImageCellViewModel = viewModel(key = "image_cell_cell_0_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) {
+                                        cellViewModel.updateData(currentCellData)
+                                    }
                                     ImageCellView(
                                         viewModel = cellViewModel,
                                         modifier = Modifier
@@ -239,11 +255,13 @@ fun CollectionTestGeneratedView(
                                 }
                             }
                         }
-                        // Section 1 Footer: GridFooter
+                        // Section 1 Footer: grid_footer
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val footerViewModel: GridFooterViewModel = viewModel(key = "GridFooter_footer_0")
-                                footerViewModel.updateData(footerData.data)
+                                val footerViewModel: GridFooterViewModel = viewModel(key = "grid_footer_footer_0_${viewModel.hashCode()}")
+                                LaunchedEffect(footerData.data) {
+                                    footerViewModel.updateData(footerData.data)
+                                }
                                 GridFooterView(
                                     viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -252,71 +270,107 @@ fun CollectionTestGeneratedView(
                         }
                     }
                 }
+                val resolved_text334 = Configuration.Font.resolve(FontSpec(
+                    family = null,
+                    weight = FontWeight.SemiBold,
+                    size = 20.sp,
+                    italic = false
+                ))
                 Text(
                     text = stringResource(R.string.collection_test_horizontal_collection),
-                    fontSize = 20.sp,
                     color = colorResource(R.color.black),
-                    fontWeight = FontWeight.SemiBold,
-                    style = TextStyle(lineHeight = 20.sp),
+                    fontFamily = resolved_text334.family,
+                    fontWeight = resolved_text334.weight,
+                    fontSize = resolved_text334.size ?: TextUnit.Unspecified,
+                    fontStyle = resolved_text334.style ?: FontStyle.Normal,
+                    style = TextStyle(lineHeight = 26.0.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
-                LazyHorizontalGrid(
-                    rows = GridCells.Fixed(1),
+                val section0 = data.horizontalItems?.sections?.getOrNull(0)
+                val cellData0 = section0?.cells
+                CollectionStack(
+                    mode = CollectionStackMode.LAZY,
+                    axis = CollectionStackAxis.HORIZONTAL,
                     modifier = Modifier
-                        .height(150.dp)
-                        .padding(bottom = 20.dp)
-                ) {
-                    // Section 1: HorizontalCard (1 columns)
-                    data.horizontalItems?.sections?.getOrNull(0)?.let { section ->
-                        // Section 1 Header: HorizontalHeader
-                        section.header?.let { headerData ->
-                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: HorizontalHeaderViewModel = viewModel(key = "HorizontalHeader_header_0")
-                                headerViewModel.updateData(headerData.data)
-                                HorizontalHeaderView(
-                                    viewModel = headerViewModel,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                                            .padding(bottom = 20.dp)
+                                            .height(150.dp),
+                    lazyContent = {
+                        // Section 1: horizontal_card
+                        if (section0 != null) {
+                            // Section 1 Header: horizontal_header
+                            section0.header?.let { headerData ->
+                                item {
+                                    val headerViewModel: HorizontalHeaderViewModel = viewModel(key = "horizontal_header_header_0_${viewModel.hashCode()}")
+                                    LaunchedEffect(headerData.data) { headerViewModel.updateData(headerData.data) }
+                                    HorizontalHeaderView(viewModel = headerViewModel, modifier = Modifier.fillMaxWidth())
+                                }
                             }
-                        }
-                        section.cells?.let { cellData ->
-                            items(cellData.data.size) { cellIndex ->
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.TopStart
-                                ) {
-                                    val cellViewModel: HorizontalCardViewModel = viewModel(key = "HorizontalCard_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                            if (cellData0 != null) {
+                                items(cellData0.data.size) { cellIndex ->
+                                    val currentCellData = cellData0.data[cellIndex]
+                                    val cellViewModel: HorizontalCardViewModel = viewModel(key = "horizontal_card_cell_0_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
                                     HorizontalCardView(
                                         viewModel = cellViewModel,
-                                        modifier = Modifier
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    eagerContent = {
+                        // Section 1: horizontal_card
+                        if (section0 != null) {
+                            section0.header?.let { headerData ->
+                                val headerViewModel: HorizontalHeaderViewModel = viewModel(key = "horizontal_header_header_0_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) { headerViewModel.updateData(headerData.data) }
+                                HorizontalHeaderView(viewModel = headerViewModel, modifier = Modifier.fillMaxWidth())
+                            }
+                            if (cellData0 != null) {
+                                cellData0.data.forEachIndexed { cellIndex, _ ->
+                                    val currentCellData = cellData0.data[cellIndex]
+                                    val cellViewModel: HorizontalCardViewModel = viewModel(key = "horizontal_card_cell_0_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
+                                    HorizontalCardView(
+                                        viewModel = cellViewModel,
+                                        modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }
                         }
                     }
-                }
+                )
+                val resolved_text335 = Configuration.Font.resolve(FontSpec(
+                    family = null,
+                    weight = FontWeight.SemiBold,
+                    size = 20.sp,
+                    italic = false
+                ))
                 Text(
                     text = stringResource(R.string.collection_test_sectioned_collection),
-                    fontSize = 20.sp,
                     color = colorResource(R.color.black),
-                    fontWeight = FontWeight.SemiBold,
-                    style = TextStyle(lineHeight = 20.sp),
+                    fontFamily = resolved_text335.family,
+                    fontWeight = resolved_text335.weight,
+                    fontSize = resolved_text335.size ?: TextUnit.Unspecified,
+                    fontStyle = resolved_text335.style ?: FontStyle.Normal,
+                    style = TextStyle(lineHeight = 26.0.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
-                        .height(400.dp)
                         .padding(bottom = 20.dp)
+                        .height(400.dp)
                 ) {
-                    // Section 1: ProductCell (2 columns)
+                    // Section 1: product_cell (2 columns)
                     data.sectionedItems?.sections?.getOrNull(0)?.let { section ->
-                        // Section 1 Header: CategoryHeader
+                        // Section 1 Header: category_header
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: CategoryHeaderViewModel = viewModel(key = "CategoryHeader_header_0")
-                                headerViewModel.updateData(headerData.data)
+                                val headerViewModel: CategoryHeaderViewModel = viewModel(key = "category_header_header_0_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) {
+                                    headerViewModel.updateData(headerData.data)
+                                }
                                 CategoryHeaderView(
                                     viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -329,8 +383,11 @@ fun CollectionTestGeneratedView(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.TopStart
                                 ) {
-                                    val cellViewModel: ProductCellViewModel = viewModel(key = "ProductCell_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    val currentCellData = cellData.data[cellIndex]
+                                    val cellViewModel: ProductCellViewModel = viewModel(key = "product_cell_cell_0_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) {
+                                        cellViewModel.updateData(currentCellData)
+                                    }
                                     ProductCellView(
                                         viewModel = cellViewModel,
                                         modifier = Modifier
@@ -338,11 +395,13 @@ fun CollectionTestGeneratedView(
                                 }
                             }
                         }
-                        // Section 1 Footer: CategoryFooter
+                        // Section 1 Footer: category_footer
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val footerViewModel: CategoryFooterViewModel = viewModel(key = "CategoryFooter_footer_0")
-                                footerViewModel.updateData(footerData.data)
+                                val footerViewModel: CategoryFooterViewModel = viewModel(key = "category_footer_footer_0_${viewModel.hashCode()}")
+                                LaunchedEffect(footerData.data) {
+                                    footerViewModel.updateData(footerData.data)
+                                }
                                 CategoryFooterView(
                                     viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -351,25 +410,35 @@ fun CollectionTestGeneratedView(
                         }
                     }
                 }
+                val resolved_text336 = Configuration.Font.resolve(FontSpec(
+                    family = null,
+                    weight = FontWeight.SemiBold,
+                    size = 20.sp,
+                    italic = false
+                ))
                 Text(
                     text = stringResource(R.string.collection_test_multisection_collection),
-                    fontSize = 20.sp,
                     color = colorResource(R.color.black),
-                    fontWeight = FontWeight.SemiBold,
-                    style = TextStyle(lineHeight = 20.sp),
+                    fontFamily = resolved_text336.family,
+                    fontWeight = resolved_text336.weight,
+                    fontSize = resolved_text336.size ?: TextUnit.Unspecified,
+                    fontStyle = resolved_text336.style ?: FontStyle.Normal,
+                    style = TextStyle(lineHeight = 26.0.sp),
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(12),
                     modifier = Modifier.height(600.dp)
                 ) {
-                    // Section 1: ProductCell (3 columns)
+                    // Section 1: product_cell (3 columns)
                     data.multiSectionItems?.sections?.getOrNull(0)?.let { section ->
-                        // Section 1 Header: CategoryHeader
+                        // Section 1 Header: category_header
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: CategoryHeaderViewModel = viewModel(key = "CategoryHeader_header_0")
-                                headerViewModel.updateData(headerData.data)
+                                val headerViewModel: CategoryHeaderViewModel = viewModel(key = "category_header_header_0_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) {
+                                    headerViewModel.updateData(headerData.data)
+                                }
                                 CategoryHeaderView(
                                     viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -382,8 +451,11 @@ fun CollectionTestGeneratedView(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.TopStart
                                 ) {
-                                    val cellViewModel: ProductCellViewModel = viewModel(key = "ProductCell_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    val currentCellData = cellData.data[cellIndex]
+                                    val cellViewModel: ProductCellViewModel = viewModel(key = "product_cell_cell_0_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) {
+                                        cellViewModel.updateData(currentCellData)
+                                    }
                                     ProductCellView(
                                         viewModel = cellViewModel,
                                         modifier = Modifier
@@ -391,11 +463,13 @@ fun CollectionTestGeneratedView(
                                 }
                             }
                         }
-                        // Section 1 Footer: CategoryFooter
+                        // Section 1 Footer: category_footer
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val footerViewModel: CategoryFooterViewModel = viewModel(key = "CategoryFooter_footer_0")
-                                footerViewModel.updateData(footerData.data)
+                                val footerViewModel: CategoryFooterViewModel = viewModel(key = "category_footer_footer_0_${viewModel.hashCode()}")
+                                LaunchedEffect(footerData.data) {
+                                    footerViewModel.updateData(footerData.data)
+                                }
                                 CategoryFooterView(
                                     viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -403,13 +477,15 @@ fun CollectionTestGeneratedView(
                             }
                         }
                     }
-                    // Section 2: FeatureCell (2 columns)
+                    // Section 2: feature_cell (2 columns)
                     data.multiSectionItems?.sections?.getOrNull(1)?.let { section ->
-                        // Section 2 Header: FeaturedHeader
+                        // Section 2 Header: featured_header
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: FeaturedHeaderViewModel = viewModel(key = "FeaturedHeader_header_1")
-                                headerViewModel.updateData(headerData.data)
+                                val headerViewModel: FeaturedHeaderViewModel = viewModel(key = "featured_header_header_1_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) {
+                                    headerViewModel.updateData(headerData.data)
+                                }
                                 FeaturedHeaderView(
                                     viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -422,8 +498,11 @@ fun CollectionTestGeneratedView(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.TopStart
                                 ) {
-                                    val cellViewModel: FeatureCellViewModel = viewModel(key = "FeatureCell_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    val currentCellData = cellData.data[cellIndex]
+                                    val cellViewModel: FeatureCellViewModel = viewModel(key = "feature_cell_cell_1_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) {
+                                        cellViewModel.updateData(currentCellData)
+                                    }
                                     FeatureCellView(
                                         viewModel = cellViewModel,
                                         modifier = Modifier
@@ -432,13 +511,15 @@ fun CollectionTestGeneratedView(
                             }
                         }
                     }
-                    // Section 3: ImageCell (4 columns)
+                    // Section 3: image_cell (4 columns)
                     data.multiSectionItems?.sections?.getOrNull(2)?.let { section ->
-                        // Section 3 Header: GridHeader
+                        // Section 3 Header: grid_header
                         section.header?.let { headerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val headerViewModel: GridHeaderViewModel = viewModel(key = "GridHeader_header_2")
-                                headerViewModel.updateData(headerData.data)
+                                val headerViewModel: GridHeaderViewModel = viewModel(key = "grid_header_header_2_${viewModel.hashCode()}")
+                                LaunchedEffect(headerData.data) {
+                                    headerViewModel.updateData(headerData.data)
+                                }
                                 GridHeaderView(
                                     viewModel = headerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -451,8 +532,11 @@ fun CollectionTestGeneratedView(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.TopStart
                                 ) {
-                                    val cellViewModel: ImageCellViewModel = viewModel(key = "ImageCell_cell_$cellIndex")
-                                    cellViewModel.updateData(cellData.data[cellIndex])
+                                    val currentCellData = cellData.data[cellIndex]
+                                    val cellViewModel: ImageCellViewModel = viewModel(key = "image_cell_cell_2_${cellIndex}_${viewModel.hashCode()}")
+                                    LaunchedEffect(currentCellData) {
+                                        cellViewModel.updateData(currentCellData)
+                                    }
                                     ImageCellView(
                                         viewModel = cellViewModel,
                                         modifier = Modifier
@@ -460,11 +544,13 @@ fun CollectionTestGeneratedView(
                                 }
                             }
                         }
-                        // Section 3 Footer: GridFooter
+                        // Section 3 Footer: grid_footer
                         section.footer?.let { footerData ->
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                val footerViewModel: GridFooterViewModel = viewModel(key = "GridFooter_footer_2")
-                                footerViewModel.updateData(footerData.data)
+                                val footerViewModel: GridFooterViewModel = viewModel(key = "grid_footer_footer_2_${viewModel.hashCode()}")
+                                LaunchedEffect(footerData.data) {
+                                    footerViewModel.updateData(footerData.data)
+                                }
                                 GridFooterView(
                                     viewModel = footerViewModel,
                                     modifier = Modifier.fillMaxWidth()
@@ -473,27 +559,92 @@ fun CollectionTestGeneratedView(
                         }
                     }
                 }
-                Button(
-                    onClick = { data.toggleDynamicMode?.invoke() },
-                    modifier = Modifier
-                        .padding(top = 20.dp)
-                        .wrapContentWidth()
-                        .height(44.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_blue_3),
-                                            contentColor = colorResource(R.color.white)
-                                        )
-                ) {
-                    Text(
-                        text = "${data.dynamicModeStatus}",
-                        fontSize = 14.sp
-                    )
-                }
+                Section3(data, viewModel)
             }
             }
         }
     }    }
     // >>> GENERATED_CODE_END
 }
+
+// >>> RESPONSIVE_HELPERS_START
+@Composable
+private fun Section0(
+    data: CollectionTestData,
+    viewModel: CollectionTestViewModel
+) {
+    val resolved_text331 = Configuration.Font.resolve(FontSpec(
+        family = null,
+        weight = FontWeight.Bold,
+        size = 28.sp,
+        italic = false
+    ))
+    Text(
+        text = stringResource(R.string.collection_test_collectionview_test),
+        color = colorResource(R.color.black),
+        fontFamily = resolved_text331.family,
+        fontWeight = resolved_text331.weight,
+        fontSize = resolved_text331.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text331.style ?: FontStyle.Normal,
+        style = TextStyle(lineHeight = 36.4.sp),
+        modifier = Modifier.padding(bottom = 20.dp)
+    )
+}
+
+@Composable
+private fun Section1(
+    data: CollectionTestData,
+    viewModel: CollectionTestViewModel
+) {
+    val resolved_text332 = Configuration.Font.resolve(FontSpec(
+        family = null,
+        weight = FontWeight.SemiBold,
+        size = 20.sp,
+        italic = false
+    ))
+    Text(
+        text = stringResource(R.string.collection_test_basic_collection_with_headers_f),
+        color = colorResource(R.color.black),
+        fontFamily = resolved_text332.family,
+        fontWeight = resolved_text332.weight,
+        fontSize = resolved_text332.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text332.style ?: FontStyle.Normal,
+        style = TextStyle(lineHeight = 26.0.sp),
+        modifier = Modifier.padding(bottom = 12.dp)
+    )
+}
+
+@Composable
+private fun Section3(
+    data: CollectionTestData,
+    viewModel: CollectionTestViewModel
+) {
+    Button(
+        onClick = { data.toggleDynamicMode?.invoke() },
+        modifier = Modifier
+            .padding(top = 20.dp)
+            .wrapContentWidth()
+            .height(44.dp),
+        shape = RoundedCornerShape(8.dp),
+        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
+        colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
+                                contentColor = colorResource(R.color.white)
+                            )
+    ) {
+        val resolved_button22 = Configuration.Font.resolve(FontSpec(
+            family = null,
+            weight = FontWeight.Medium,
+            size = 14.sp,
+            italic = false
+        ))
+        Text(
+            text = "${data.dynamicModeStatus}",
+            fontFamily = resolved_button22.family,
+            fontWeight = resolved_button22.weight,
+            fontSize = resolved_button22.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button22.style ?: FontStyle.Normal,
+        )
+    }
+}
+// >>> RESPONSIVE_HELPERS_END

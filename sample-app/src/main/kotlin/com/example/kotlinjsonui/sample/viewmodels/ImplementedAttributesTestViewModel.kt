@@ -46,4 +46,15 @@ class ImplementedAttributesTestViewModel(application: Application) : AndroidView
         )
         _data.value = newData
     }
+    
+    init {
+        // Wire JSON-declared event handlers: current kjui codegen invokes
+        // handlers through the data model (data.<name>?.invoke(...)).
+        _data.value = _data.value.copy(
+            handleFocus = { handleFocus() },
+            handleBlur = { handleBlur() },
+            handleBeginEditing = { handleBeginEditing() },
+            handleEndEditing = { handleEndEditing() }
+        )
+    }
 }

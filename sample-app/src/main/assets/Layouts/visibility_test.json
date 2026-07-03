@@ -176,7 +176,7 @@
         {
           "type": "Button",
           "text": "Toggle Visibility",
-          "onClick": "toggleVisibility",
+          "onClick": "@{toggleVisibility}",
           "topMargin": 10,
           "background": "medium_blue",
           "textColor": "white",
@@ -198,7 +198,7 @@
         {
           "type": "Button",
           "text": "Toggle Hidden",
-          "onClick": "toggleHidden",
+          "onClick": "@{toggleHidden}",
           "topMargin": 20,
           "background": "medium_green",
           "textColor": "white",
@@ -240,6 +240,18 @@
       "name": "isHidden",
       "class": "Boolean",
       "defaultValue": false
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "toggleVisibility",
+      "class": "(() -> Void)?"
+    },
+    {
+      "name": "toggleHidden",
+      "class": "(() -> Void)?"
     }
   ]
 }

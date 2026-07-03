@@ -81,6 +81,10 @@
       "name": "simpleText",
       "class": "String",
       "defaultValue": ""
+    },
+    {
+      "name": "toggleDynamicMode",
+      "class": "(() -> Void)?"
     }
   ]
 }
