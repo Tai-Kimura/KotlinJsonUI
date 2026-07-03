@@ -13,7 +13,6 @@ import com.example.kotlinjsonui.sample.data.ComponentsTestData
 import com.example.kotlinjsonui.sample.viewmodels.ComponentsTestViewModel
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale

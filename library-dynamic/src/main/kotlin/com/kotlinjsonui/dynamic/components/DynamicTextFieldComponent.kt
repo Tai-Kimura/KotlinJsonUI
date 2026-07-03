@@ -401,7 +401,7 @@ class DynamicTextFieldComponent {
                 keyboardType = keyboardType,
                 imeAction = imeAction,
                 capitalization = capitalization,
-                autoCorrect = autoCorrect
+                autoCorrectEnabled = autoCorrect
             )
         }
 

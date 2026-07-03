@@ -4,7 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -172,7 +172,7 @@ class DynamicTableComponent {
                         
                         // Header separator
                         if (separatorStyle != "none") {
-                            Divider(
+                            HorizontalDivider(
                                 color = Color.LightGray,
                                 thickness = 1.dp
                             )
@@ -248,7 +248,7 @@ class DynamicTableComponent {
                     
                     // Row separator
                     if (separatorStyle != "none") {
-                        Divider(
+                        HorizontalDivider(
                             modifier = if (separatorStartPadding > 0.dp) {
                                 Modifier.padding(start = separatorStartPadding)
                             } else {

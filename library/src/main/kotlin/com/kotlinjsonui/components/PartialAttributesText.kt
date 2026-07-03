@@ -2,13 +2,13 @@ package com.kotlinjsonui.components
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -62,7 +62,7 @@ data class PartialAttribute(
                 }
                 else -> null
             } ?: return null
-            
+
             return PartialAttribute(
                 startIndex = start,
                 endIndex = end,
@@ -155,12 +155,16 @@ private fun PartialAttributesTextImpl(
                     // Handle out of bounds
                 }
 
-                // Add clickable annotation with index
-                attr.onClick?.let {
+                // Attach the click handler directly; styling stays on the
+                // SpanStyles above (styles = null avoids double styling).
+                attr.onClick?.let { onClick ->
                     try {
-                        addStringAnnotation(
-                            tag = "CLICKABLE",
-                            annotation = partialAttributes.indexOf(attr).toString(),
+                        addLink(
+                            LinkAnnotation.Clickable(
+                                tag = "CLICKABLE",
+                                styles = null,
+                                linkInteractionListener = { onClick() }
+                            ),
                             start = start,
                             end = end
                         )
@@ -171,21 +175,11 @@ private fun PartialAttributesTextImpl(
             }
         }
     }
-    
-    ClickableText(
+
+    Text(
         text = annotatedString,
         modifier = modifier,
-        style = style,
-        onClick = { offset ->
-            annotatedString.getStringAnnotations("CLICKABLE", offset, offset)
-                .firstOrNull()?.let { annotation ->
-                    // Get the index and call the corresponding onClick
-                    val index = annotation.item.toIntOrNull()
-                    if (index != null && index < partialAttributes.size) {
-                        partialAttributes[index].onClick?.invoke()
-                    }
-                }
-        }
+        style = style
     )
 }
 
@@ -197,23 +191,23 @@ private fun LinkablePartialAttributesText(
     style: TextStyle = LocalTextStyle.current
 ) {
     val context = LocalContext.current
-    
+
     // Define patterns for linkable content
     val urlPattern = """https?://[^\s]+""".toRegex()
     val emailPattern = """[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}""".toRegex()
     val phonePattern = """\b\d{3}[-.]?\d{3}[-.]?\d{4}\b""".toRegex()
-    
+
     val annotatedString = buildAnnotatedString {
         append(text)
-        
+
         // First, apply all partial attributes
         partialAttributes.forEach { attr ->
             val start = attr.startIndex
             val end = attr.endIndex
-            
+
             // Validate range
             if (start >= 0 && end <= text.length && start < end) {
-                
+
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
@@ -244,12 +238,15 @@ private fun LinkablePartialAttributesText(
                     // Handle out of bounds
                 }
 
-                // Add clickable annotation with index
-                attr.onClick?.let {
+                // Attach the click handler directly (see PartialAttributesTextImpl)
+                attr.onClick?.let { onClick ->
                     try {
-                        addStringAnnotation(
-                            tag = "PARTIAL_CLICKABLE",
-                            annotation = partialAttributes.indexOf(attr).toString(),
+                        addLink(
+                            LinkAnnotation.Clickable(
+                                tag = "PARTIAL_CLICKABLE",
+                                styles = null,
+                                linkInteractionListener = { onClick() }
+                            ),
                             start = start,
                             end = end
                         )
@@ -259,12 +256,12 @@ private fun LinkablePartialAttributesText(
                 }
             }
         }
-        
-        // Then, detect and annotate URLs
+
+        // Then, detect and link URLs. LinkAnnotation.Url with no listener opens
+        // the URL via the platform default handler (ACTION_VIEW equivalent).
         urlPattern.findAll(text).forEach { match ->
-            addStringAnnotation(
-                tag = "URL",
-                annotation = match.value,
+            addLink(
+                LinkAnnotation.Url(match.value),
                 start = match.range.first,
                 end = match.range.last + 1
             )
@@ -277,12 +274,20 @@ private fun LinkablePartialAttributesText(
                 end = match.range.last + 1
             )
         }
-        
-        // Detect and annotate emails
+
+        // Detect and link emails
         emailPattern.findAll(text).forEach { match ->
-            addStringAnnotation(
-                tag = "EMAIL",
-                annotation = match.value,
+            addLink(
+                LinkAnnotation.Clickable(
+                    tag = "EMAIL",
+                    styles = null,
+                    linkInteractionListener = {
+                        val intent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:${match.value}")
+                        }
+                        context.startActivity(intent)
+                    }
+                ),
                 start = match.range.first,
                 end = match.range.last + 1
             )
@@ -295,12 +300,20 @@ private fun LinkablePartialAttributesText(
                 end = match.range.last + 1
             )
         }
-        
-        // Detect and annotate phone numbers
+
+        // Detect and link phone numbers
         phonePattern.findAll(text).forEach { match ->
-            addStringAnnotation(
-                tag = "PHONE",
-                annotation = match.value,
+            addLink(
+                LinkAnnotation.Clickable(
+                    tag = "PHONE",
+                    styles = null,
+                    linkInteractionListener = {
+                        val intent = Intent(Intent.ACTION_DIAL).apply {
+                            data = Uri.parse("tel:${match.value}")
+                        }
+                        context.startActivity(intent)
+                    }
+                ),
                 start = match.range.first,
                 end = match.range.last + 1
             )
@@ -314,51 +327,11 @@ private fun LinkablePartialAttributesText(
             )
         }
     }
-    
-    ClickableText(
+
+    Text(
         text = annotatedString,
         modifier = modifier,
-        style = style,
-        onClick = { offset ->
-            // First check for partial attribute clicks
-            annotatedString.getStringAnnotations("PARTIAL_CLICKABLE", offset, offset)
-                .firstOrNull()?.let { annotation ->
-                    // Get the index and call the corresponding onClick
-                    val index = annotation.item.toIntOrNull()
-                    if (index != null && index < partialAttributes.size) {
-                        partialAttributes[index].onClick?.invoke()
-                        return@ClickableText
-                    }
-                }
-            
-            // Then check for URL clicks
-            annotatedString.getStringAnnotations("URL", offset, offset)
-                .firstOrNull()?.let { annotation ->
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(annotation.item))
-                    context.startActivity(intent)
-                    return@ClickableText
-                }
-            
-            // Check for email clicks
-            annotatedString.getStringAnnotations("EMAIL", offset, offset)
-                .firstOrNull()?.let { annotation ->
-                    val intent = Intent(Intent.ACTION_SENDTO).apply {
-                        data = Uri.parse("mailto:${annotation.item}")
-                    }
-                    context.startActivity(intent)
-                    return@ClickableText
-                }
-            
-            // Check for phone clicks
-            annotatedString.getStringAnnotations("PHONE", offset, offset)
-                .firstOrNull()?.let { annotation ->
-                    val intent = Intent(Intent.ACTION_DIAL).apply {
-                        data = Uri.parse("tel:${annotation.item}")
-                    }
-                    context.startActivity(intent)
-                    return@ClickableText
-                }
-        }
+        style = style
     )
 }
 

@@ -24,7 +24,6 @@ import androidx.compose.material3.ButtonDefaults
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
 import com.kotlinjsonui.components.SelectBox
 import android.webkit.WebView

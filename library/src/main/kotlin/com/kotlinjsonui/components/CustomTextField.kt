@@ -107,7 +107,7 @@ fun CustomTextField(
                     unfocusedContainerColor = backgroundColor ?: Color.Transparent
                 ),
                 container = {
-                    OutlinedTextFieldDefaults.ContainerBox(
+                    OutlinedTextFieldDefaults.Container(
                         enabled = enabled,
                         isError = isError,
                         interactionSource = interactionSource,
@@ -142,7 +142,7 @@ fun CustomTextField(
                 container = {
                     val bg = if (isFocused) focusedBackground else unfocusedBackground
                     if (bg != Color.Transparent) {
-                        TextFieldDefaults.ContainerBox(
+                        TextFieldDefaults.Container(
                             enabled = enabled,
                             isError = isError,
                             interactionSource = interactionSource,

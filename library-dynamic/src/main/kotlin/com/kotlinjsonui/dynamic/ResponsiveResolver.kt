@@ -1,16 +1,17 @@
 package com.kotlinjsonui.dynamic
 
-import android.content.res.Configuration
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 
 /**
  * Resolves responsive overrides in JSON layouts based on the current
- * WindowWidthSizeClass and device orientation.
+ * WindowSizeClass width breakpoints and device orientation.
  *
  * JSON format:
  * ```json
@@ -37,13 +38,13 @@ object ResponsiveResolver {
     private val SIZE_CLASS_PRIORITY = listOf("compact", "medium", "regular")
 
     /**
-     * Map WindowWidthSizeClass to the JSON key used in the responsive block.
+     * Map the window width to the JSON key used in the responsive block,
+     * using the canonical 600/840dp breakpoints.
      */
-    internal fun widthSizeClassKey(widthSizeClass: WindowWidthSizeClass): String {
-        return when (widthSizeClass) {
-            WindowWidthSizeClass.COMPACT -> "compact"
-            WindowWidthSizeClass.MEDIUM -> "medium"
-            WindowWidthSizeClass.EXPANDED -> "regular"
+    internal fun widthSizeClassKey(windowSizeClass: WindowSizeClass): String {
+        return when {
+            windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND) -> "regular"
+            windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND) -> "medium"
             else -> "compact"
         }
     }
@@ -113,7 +114,7 @@ object ResponsiveResolver {
      */
     fun resolveNode(
         json: JsonObject,
-        widthSizeClass: WindowWidthSizeClass,
+        windowSizeClass: WindowSizeClass,
         isLandscape: Boolean
     ): JsonObject {
         val responsiveElement = json.get("responsive")
@@ -121,8 +122,30 @@ object ResponsiveResolver {
             return json
         }
 
-        val sizeClassKey = widthSizeClassKey(widthSizeClass)
+        val sizeClassKey = widthSizeClassKey(windowSizeClass)
         val matchingKeys = resolveMatchingKeys(sizeClassKey, isLandscape)
+        return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys)
+    }
+
+    /**
+     * Compatibility overload for the deprecated WindowWidthSizeClass comparison model.
+     */
+    @Deprecated(
+        "Use resolveNode(json, windowSizeClass: WindowSizeClass, isLandscape) instead",
+        ReplaceWith("resolveNode(json, windowSizeClass, isLandscape)")
+    )
+    @Suppress("DEPRECATION")
+    fun resolveNode(
+        json: JsonObject,
+        widthSizeClass: androidx.window.core.layout.WindowWidthSizeClass,
+        isLandscape: Boolean
+    ): JsonObject {
+        val responsiveElement = json.get("responsive")
+        if (responsiveElement == null || !responsiveElement.isJsonObject) {
+            return json
+        }
+
+        val matchingKeys = resolveMatchingKeys(legacyWidthSizeClassKey(widthSizeClass), isLandscape)
         return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys)
     }
 
@@ -153,11 +176,39 @@ object ResponsiveResolver {
      */
     fun resolveTree(
         json: JsonObject,
-        widthSizeClass: WindowWidthSizeClass,
+        windowSizeClass: WindowSizeClass,
         isLandscape: Boolean
     ): JsonObject {
-        val sizeClassKey = widthSizeClassKey(widthSizeClass)
+        val sizeClassKey = widthSizeClassKey(windowSizeClass)
         return resolveTreeInternal(json, sizeClassKey, isLandscape)
+    }
+
+    /**
+     * Compatibility overload for the deprecated WindowWidthSizeClass comparison model.
+     */
+    @Deprecated(
+        "Use resolveTree(json, windowSizeClass: WindowSizeClass, isLandscape) instead",
+        ReplaceWith("resolveTree(json, windowSizeClass, isLandscape)")
+    )
+    @Suppress("DEPRECATION")
+    fun resolveTree(
+        json: JsonObject,
+        widthSizeClass: androidx.window.core.layout.WindowWidthSizeClass,
+        isLandscape: Boolean
+    ): JsonObject {
+        return resolveTreeInternal(json, legacyWidthSizeClassKey(widthSizeClass), isLandscape)
+    }
+
+    @Suppress("DEPRECATION")
+    private fun legacyWidthSizeClassKey(
+        widthSizeClass: androidx.window.core.layout.WindowWidthSizeClass
+    ): String {
+        return when (widthSizeClass) {
+            androidx.window.core.layout.WindowWidthSizeClass.COMPACT -> "compact"
+            androidx.window.core.layout.WindowWidthSizeClass.MEDIUM -> "medium"
+            androidx.window.core.layout.WindowWidthSizeClass.EXPANDED -> "regular"
+            else -> "compact"
+        }
     }
 
     private fun resolveTreeInternal(
@@ -211,10 +262,8 @@ object ResponsiveResolver {
 @Composable
 fun resolveResponsiveNode(json: JsonObject): JsonObject {
     if (!json.has("responsive")) return json
-    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-    val widthSizeClass = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    return ResponsiveResolver.resolveNode(json, widthSizeClass, isLandscape)
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    return ResponsiveResolver.resolveNode(json, windowSizeClass, isWindowLandscape())
 }
 
 /**
@@ -224,8 +273,16 @@ fun resolveResponsiveNode(json: JsonObject): JsonObject {
  */
 @Composable
 fun resolveResponsiveTree(json: JsonObject): JsonObject {
-    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-    val widthSizeClass = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass
-    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    return ResponsiveResolver.resolveTree(json, widthSizeClass, isLandscape)
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    return ResponsiveResolver.resolveTree(json, windowSizeClass, isWindowLandscape())
+}
+
+/**
+ * Landscape = window wider than tall, derived from the window container size
+ * (replaces the deprecated LocalConfiguration.orientation read).
+ */
+@Composable
+private fun isWindowLandscape(): Boolean {
+    val containerSize = LocalWindowInfo.current.containerSize
+    return containerSize.width > containerSize.height
 }

@@ -1,6 +1,6 @@
 package com.kotlinjsonui.dynamic
 
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -13,17 +13,17 @@ class ResponsiveResolverTest {
 
     @Test
     fun widthSizeClassKey_compact() {
-        assertEquals("compact", ResponsiveResolver.widthSizeClassKey(WindowWidthSizeClass.COMPACT))
+        assertEquals("compact", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(400, 600)))
     }
 
     @Test
     fun widthSizeClassKey_medium() {
-        assertEquals("medium", ResponsiveResolver.widthSizeClassKey(WindowWidthSizeClass.MEDIUM))
+        assertEquals("medium", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(700, 900)))
     }
 
     @Test
     fun widthSizeClassKey_expanded() {
-        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowWidthSizeClass.EXPANDED))
+        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(900, 1200)))
     }
 
     // ── resolveMatchingKeys ──
@@ -280,7 +280,7 @@ class ResponsiveResolverTest {
             }
         """).asJsonObject
 
-        val result = ResponsiveResolver.resolveTree(json, WindowWidthSizeClass.EXPANDED, isLandscape = false)
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(900, 1200), isLandscape = false)
 
         // Root resolved
         assertEquals("horizontal", result.get("orientation").asString)
@@ -312,7 +312,7 @@ class ResponsiveResolverTest {
             }
         """).asJsonObject
 
-        val result = ResponsiveResolver.resolveTree(json, WindowWidthSizeClass.EXPANDED, isLandscape = false)
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(900, 1200), isLandscape = false)
 
         val child = result.getAsJsonObject("child")
         assertEquals(24, child.get("fontSize").asInt)
@@ -335,7 +335,7 @@ class ResponsiveResolverTest {
             }
         """).asJsonObject
 
-        val result = ResponsiveResolver.resolveTree(json, WindowWidthSizeClass.MEDIUM, isLandscape = false)
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(700, 900), isLandscape = false)
 
         val child = result.getAsJsonArray("children").get(0).asJsonObject
         assertEquals(16, child.get("fontSize").asInt)
@@ -364,7 +364,7 @@ class ResponsiveResolverTest {
             }
         """).asJsonObject
 
-        val result = ResponsiveResolver.resolveTree(json, WindowWidthSizeClass.EXPANDED, isLandscape = false)
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(900, 1200), isLandscape = false)
 
         val innerText = result.getAsJsonArray("child")
             .get(0).asJsonObject
@@ -451,7 +451,7 @@ class ResponsiveResolverTest {
             }
         """).asJsonObject
 
-        val result = ResponsiveResolver.resolveTree(json, WindowWidthSizeClass.COMPACT, isLandscape = false)
+        val result = ResponsiveResolver.resolveTree(json, WindowSizeClass(400, 600), isLandscape = false)
 
         assertEquals("View", result.get("type").asString)
         val child = result.getAsJsonArray("child").get(0).asJsonObject

@@ -145,7 +145,9 @@ class KjuiSelectBox @JvmOverloads constructor(
                 // Get dimensions
                 cornerRadius = typedArray.getDimension(R.styleable.KjuiSelectBox_cornerRadius, cornerRadius)
                 borderWidth = typedArray.getDimension(R.styleable.KjuiSelectBox_borderWidth, borderWidth)
-                fontSize = typedArray.getDimension(R.styleable.KjuiSelectBox_fontSize, fontSize * resources.displayMetrics.scaledDensity) / resources.displayMetrics.scaledDensity
+                // sp scale factor; replaces DisplayMetrics.scaledDensity (deprecated in API 34)
+                val spScale = resources.configuration.fontScale * resources.displayMetrics.density
+                fontSize = typedArray.getDimension(R.styleable.KjuiSelectBox_fontSize, fontSize * spScale) / spScale
                 
                 // Get date picker attributes
                 typedArray.getString(R.styleable.KjuiSelectBox_datePickerMode)?.let {

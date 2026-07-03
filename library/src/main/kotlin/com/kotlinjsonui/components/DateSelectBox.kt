@@ -241,7 +241,7 @@ fun DateSelectBox(
                                     .padding(vertical = 16.dp)
                             )
                             
-                            Divider(color = sheetTextColor.copy(alpha = 0.12f))
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
                             
                             TimeWheelPicker(
                                 selectedTime = calendar,
@@ -317,7 +317,7 @@ fun DateSelectBox(
                                     .padding(vertical = 16.dp)
                             )
                             
-                            Divider(color = sheetTextColor.copy(alpha = 0.12f))
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
                             
                             // Use wheel picker as default for time
                             TimeWheelPicker(
@@ -399,7 +399,7 @@ fun DateSelectBox(
                                     .padding(vertical = 16.dp)
                             )
 
-                            Divider(color = sheetTextColor.copy(alpha = 0.12f))
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
 
                             DateTimeWheelPicker(
                                 selectedDateTime = calendar,
@@ -473,7 +473,7 @@ fun DateSelectBox(
                                     .padding(vertical = 16.dp)
                             )
 
-                            Divider(color = sheetTextColor.copy(alpha = 0.12f))
+                            HorizontalDivider(color = sheetTextColor.copy(alpha = 0.12f))
 
                             // Use wheel picker as default for date/time
                             DateTimeWheelPicker(
@@ -554,7 +554,7 @@ fun DateSelectBox(
                                         .padding(vertical = 16.dp)
                                 )
 
-                                Divider()
+                                HorizontalDivider()
 
                                 DateWheelPicker(
                                     selectedDate = calendar,
@@ -979,12 +979,12 @@ fun NumberPicker(
                     .height(40.dp)
                     .align(Alignment.Center)
             ) {
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.align(Alignment.TopCenter),
                     color = textColor.copy(alpha = 0.2f),
                     thickness = 1.dp
                 )
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.align(Alignment.BottomCenter),
                     color = textColor.copy(alpha = 0.2f),
                     thickness = 1.dp

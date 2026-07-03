@@ -1,9 +1,8 @@
 package com.kotlinjsonui.components
 
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -11,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import com.kotlinjsonui.core.Configuration
 
 /**
- * Custom Segment component that wraps TabRow with Configuration defaults
+ * Custom Segment component that wraps SecondaryTabRow with Configuration defaults
  */
 @Composable
 fun Segment(
@@ -24,23 +23,20 @@ fun Segment(
     indicatorColor: Color? = null,
     tabs: @Composable () -> Unit
 ) {
-    TabRow(
+    SecondaryTabRow(
         selectedTabIndex = selectedTabIndex,
         containerColor = containerColor ?: Configuration.Segment.defaultBackgroundColor,
         contentColor = contentColor ?: Configuration.Segment.defaultTextColor,
-        indicator = { tabPositions ->
-            if (enabled) {
-                TabRowDefaults.Indicator(
-                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                    color = indicatorColor ?: Configuration.Segment.defaultSelectedBackgroundColor
-                )
-            } else {
-                // No indicator when disabled
-                TabRowDefaults.Indicator(
-                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                    color = Color.Transparent
-                )
-            }
+        indicator = {
+            TabRowDefaults.SecondaryIndicator(
+                Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = false),
+                color = if (enabled) {
+                    indicatorColor ?: Configuration.Segment.defaultSelectedBackgroundColor
+                } else {
+                    // No indicator when disabled
+                    Color.Transparent
+                }
+            )
         },
         modifier = modifier.alpha(if (enabled) 1f else 0.6f),
         tabs = tabs

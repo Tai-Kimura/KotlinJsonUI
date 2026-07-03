@@ -143,7 +143,7 @@ fun SelectBox(
                         .padding(vertical = 16.dp)
                 )
                 
-                Divider()
+                HorizontalDivider()
                 
                 // Scrollable list of options
                 LazyColumn(
@@ -186,7 +186,7 @@ fun SelectBox(
                                     )
                                 }
                             }
-                            Divider(modifier = Modifier.padding(horizontal = 20.dp))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
                         }
                     }
                     itemsIndexed(options) { index, option ->
@@ -233,13 +233,13 @@ fun SelectBox(
                             }
                         }
                         if (option != options.last()) {
-                            Divider(modifier = Modifier.padding(horizontal = 20.dp))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
                         }
                     }
                 }
                 
                 // Cancel button
-                Divider()
+                HorizontalDivider()
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -367,7 +367,7 @@ fun <T> SelectBox(
                         .padding(vertical = 16.dp)
                 )
                 
-                Divider()
+                HorizontalDivider()
                 
                 // Scrollable list of options
                 LazyColumn(
@@ -418,13 +418,13 @@ fun <T> SelectBox(
                             }
                         }
                         if (option != options.last()) {
-                            Divider(modifier = Modifier.padding(horizontal = 20.dp))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = 20.dp))
                         }
                     }
                 }
 
                 // Cancel button
-                Divider()
+                HorizontalDivider()
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()

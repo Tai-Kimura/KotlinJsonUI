@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.kotlinjsonui.sample.data.SegmentTestData
 import com.example.kotlinjsonui.sample.viewmodels.SegmentTestViewModel
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
 import com.kotlinjsonui.components.Segment
 import androidx.compose.material3.CircularProgressIndicator
