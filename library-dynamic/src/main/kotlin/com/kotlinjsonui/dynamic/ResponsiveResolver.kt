@@ -128,28 +128,6 @@ object ResponsiveResolver {
     }
 
     /**
-     * Compatibility overload for the deprecated WindowWidthSizeClass comparison model.
-     */
-    @Deprecated(
-        "Use resolveNode(json, windowSizeClass: WindowSizeClass, isLandscape) instead",
-        ReplaceWith("resolveNode(json, windowSizeClass, isLandscape)")
-    )
-    @Suppress("DEPRECATION")
-    fun resolveNode(
-        json: JsonObject,
-        widthSizeClass: androidx.window.core.layout.WindowWidthSizeClass,
-        isLandscape: Boolean
-    ): JsonObject {
-        val responsiveElement = json.get("responsive")
-        if (responsiveElement == null || !responsiveElement.isJsonObject) {
-            return json
-        }
-
-        val matchingKeys = resolveMatchingKeys(legacyWidthSizeClassKey(widthSizeClass), isLandscape)
-        return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys)
-    }
-
-    /**
      * Internal overload using pre-resolved size class key string.
      */
     internal fun resolveNode(
@@ -181,34 +159,6 @@ object ResponsiveResolver {
     ): JsonObject {
         val sizeClassKey = widthSizeClassKey(windowSizeClass)
         return resolveTreeInternal(json, sizeClassKey, isLandscape)
-    }
-
-    /**
-     * Compatibility overload for the deprecated WindowWidthSizeClass comparison model.
-     */
-    @Deprecated(
-        "Use resolveTree(json, windowSizeClass: WindowSizeClass, isLandscape) instead",
-        ReplaceWith("resolveTree(json, windowSizeClass, isLandscape)")
-    )
-    @Suppress("DEPRECATION")
-    fun resolveTree(
-        json: JsonObject,
-        widthSizeClass: androidx.window.core.layout.WindowWidthSizeClass,
-        isLandscape: Boolean
-    ): JsonObject {
-        return resolveTreeInternal(json, legacyWidthSizeClassKey(widthSizeClass), isLandscape)
-    }
-
-    @Suppress("DEPRECATION")
-    private fun legacyWidthSizeClassKey(
-        widthSizeClass: androidx.window.core.layout.WindowWidthSizeClass
-    ): String {
-        return when (widthSizeClass) {
-            androidx.window.core.layout.WindowWidthSizeClass.COMPACT -> "compact"
-            androidx.window.core.layout.WindowWidthSizeClass.MEDIUM -> "medium"
-            androidx.window.core.layout.WindowWidthSizeClass.EXPANDED -> "regular"
-            else -> "compact"
-        }
     }
 
     private fun resolveTreeInternal(
