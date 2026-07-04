@@ -47,6 +47,16 @@ class ConformanceSuiteTest {
     private val device: UiDevice = UiDevice.getInstance(instrumentation)
 
     private val defaultTimeoutMs = 5000L
+
+    // Per-fixture settle wait (waitForIdle). MUST stay small: on some hosted
+    // runners the accessibility event stream never quiets (continuous
+    // recomposition events), so waitForIdle times out EVERY time and the
+    // timeout is paid in full per fixture — at 5000ms that turned the suite
+    // from ~7 min into ~65 min (progress logs: constant ~7.3s/fixture, runs
+    // 28687476052 / 28693915877). Rendering correctness is guaranteed by the
+    // readyTag poll, not by this wait; it only lets the compositor settle
+    // (stale drop shadows / mid-settle heights in screenshots).
+    private val settleTimeoutMs = 1000L
     private val actionExecutor = ActionExecutor(device, defaultTimeoutMs)
     private val assertionExecutor = AssertionExecutor(device, defaultTimeoutMs)
     private val testLoader = TestLoader()
@@ -186,7 +196,7 @@ class ConformanceSuiteTest {
             val intent = Intent(targetContext, FixtureHostActivity::class.java)
                 .putExtra(FixtureHostActivity.EXTRA_FIXTURE_ID, fixture.id)
             scenario = ActivityScenario.launch(intent)
-            device.waitForIdle(defaultTimeoutMs)
+            device.waitForIdle(settleTimeoutMs)
         } else {
             FixtureHost.show(fixture.id)
         }
@@ -207,7 +217,7 @@ class ConformanceSuiteTest {
         // fixture and a flexible-TextView height mid-settle in screenshots.
         // Give the compositor a beat before capturing.
         if (fixture.clazz == "visual") {
-            device.waitForIdle(defaultTimeoutMs)
+            device.waitForIdle(settleTimeoutMs)
             Thread.sleep(150)
         }
 
