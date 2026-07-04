@@ -48,7 +48,10 @@ DEVICE_OUT="/sdcard/Android/data/$APP_PKG/files/conformance"
 
 FRESH=0
 FILTER="all"
-MAX_ATTEMPTS=8
+# A chopped fixture now costs up to 2 attempts (first dangle re-runs, second
+# dangles to error), and a slow runner legitimately needs several 20-min
+# attempts to cover the whole suite via resume — size the ceiling for both.
+MAX_ATTEMPTS=12
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --fresh) FRESH=1; shift ;;

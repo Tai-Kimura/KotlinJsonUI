@@ -21,11 +21,15 @@ data class FixtureResult(
  *
  * Appends one JSON line per fixture outcome to progress.jsonl as the suite
  * runs. A "running" marker is written before executing a fixture; if the app
- * process is killed mid-fixture (e.g. a renderer crash), the next
- * instrumentation invocation finds the dangling marker and records that
- * fixture as an error instead of retrying it forever. When every manifest
- * fixture has an outcome, [writeFinalResults] emits the RESULTS_SCHEMA
- * compliant android.results.json.
+ * process is killed mid-fixture, the next instrumentation invocation finds
+ * the dangling marker. A single dangling marker is NOT an error: on slow CI
+ * runners the caller's per-attempt timeout legitimately chops one in-flight
+ * fixture per attempt, and treating that as an error poisons the final
+ * results (the report gate fails on chop artifacts, not real failures). So
+ * the first dangle re-runs the fixture; only a fixture that dangles twice
+ * (started twice, never finished — a genuine hang or a crash loop) becomes
+ * an error. When every manifest fixture has an outcome, [writeFinalResults]
+ * emits the RESULTS_SCHEMA compliant android.results.json.
  */
 class ConformanceResultsStore(private val outputDir: File) {
     private val progressFile = File(outputDir, "progress.jsonl")
@@ -35,10 +39,17 @@ class ConformanceResultsStore(private val outputDir: File) {
         outputDir.mkdirs()
     }
 
-    /** id -> latest recorded outcome (crashed fixtures become errors). */
+    /**
+     * id -> latest recorded outcome. A fixture whose latest marker is
+     * "running" dangled: dangled once -> dropped from the map so the caller
+     * re-runs it (per-attempt timeout chop on a slow runner); dangled twice
+     * -> recorded as an error (genuine hang / crash loop).
+     */
     fun loadCompleted(): Map<String, FixtureResult> {
         if (!progressFile.isFile) return emptyMap()
         val latest = LinkedHashMap<String, FixtureResult>()
+        val startCounts = HashMap<String, Int>()
+        val finishCounts = HashMap<String, Int>()
         progressFile.readLines().forEach { line ->
             if (line.isBlank()) return@forEach
             val o = try {
@@ -47,22 +58,36 @@ class ConformanceResultsStore(private val outputDir: File) {
                 return@forEach // torn write from a crash — ignore
             }
             val id = o["id"]?.jsonPrimitive?.content ?: return@forEach
+            val status = o["status"]?.jsonPrimitive?.content ?: "error"
+            if (status == "running") {
+                startCounts[id] = (startCounts[id] ?: 0) + 1
+            } else {
+                finishCounts[id] = (finishCounts[id] ?: 0) + 1
+            }
             latest[id] = FixtureResult(
                 id = id,
-                status = o["status"]?.jsonPrimitive?.content ?: "error",
+                status = status,
                 detail = o["detail"]?.jsonPrimitive?.content ?: "",
                 screenshot = o["screenshot"]?.jsonPrimitive?.content
             )
         }
-        // Dangling "running" markers = the process died executing that fixture
-        return latest.mapValues { (_, r) ->
-            if (r.status == "running") {
-                r.copy(
+        val resolved = LinkedHashMap<String, FixtureResult>()
+        latest.forEach { (id, r) ->
+            if (r.status != "running") {
+                resolved[id] = r
+                return@forEach
+            }
+            val dangles = (startCounts[id] ?: 0) - (finishCounts[id] ?: 0)
+            if (dangles >= 2) {
+                resolved[id] = r.copy(
                     status = "error",
-                    detail = "instrumentation process died while executing this fixture (renderer crash?)"
+                    detail = "instrumentation died executing this fixture twice " +
+                        "(started $dangles times without finishing — hang or crash loop)"
                 )
-            } else r
+            }
+            // dangles == 1: omit -> the suite re-runs this fixture this attempt
         }
+        return resolved
     }
 
     fun markRunning(id: String) {
