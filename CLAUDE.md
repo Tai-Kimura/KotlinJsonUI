@@ -58,60 +58,33 @@ forward path.**
 ## Project Structure
 ```
 KotlinJsonUI/
-├── library/                     # Android library module
-│   ├── src/main/kotlin/
-│   │   └── com/kotlinjsonui/
-│   │       ├── core/           # Core parsing and factory
-│   │       ├── components/     # UI component implementations
-│   │       ├── binding/        # Data binding engine
-│   │       ├── style/          # Style system
-│   │       └── layout/         # Layout managers
-│   └── build.gradle.kts
-├── installer/                   # Installation scripts
-│   ├── README.md               # Installation documentation
-│   ├── bootstrap.sh            # Bootstrap script for remote installation
-│   └── install_kjui.sh         # Main installer script
-├── kjui_tools/                  # Code generation tools (structured like sjui_tools)
-│   ├── bin/                    # Executable scripts
-│   │   ├── kjui               # Main CLI executable (Kotlin script)
-│   │   └── install_deps       # Dependency installer
-│   ├── config/                # Configuration files
-│   │   └── library_versions.json
-│   ├── lib/                   # Core library code
-│   │   ├── cli/              # Command Line Interface
-│   │   │   ├── main.kt
-│   │   │   ├── commands/     # CLI commands
-│   │   │   │   ├── init.kt
-│   │   │   │   ├── generate.kt
-│   │   │   │   ├── build.kt
-│   │   │   │   └── watch.kt
-│   │   │   └── version.kt
-│   │   ├── core/             # Core functionality
-│   │   │   ├── json_loader.kt
-│   │   │   ├── config_manager.kt
-│   │   │   ├── file_watcher.kt
-│   │   │   └── style_loader.kt
-│   │   ├── xml/              # Android XML View System (like UIKit)
-│   │   │   ├── json_analyzer.kt
-│   │   │   ├── binding_manager.kt
-│   │   │   ├── generators/
-│   │   │   ├── handlers/
-│   │   │   └── views/
-│   │   └── compose/          # Jetpack Compose (like SwiftUI)
-│   │       ├── json_to_compose.kt
-│   │       ├── data_model_updater.kt
-│   │       ├── generators/
-│   │       ├── binding/
-│   │       └── views/
-│   └── scripts/              # Utility scripts
-│       └── setup_project.sh
-├── sample/                    # Sample applications
-│   ├── xml_sample/           # XML-based sample app
-│   └── compose_sample/       # Compose-based sample app
-├── build.gradle.kts          # Root build file
-├── settings.gradle.kts
-└── gradle.properties
+├── library/                     # :library — core published module (io.github.tai-kimura:kotlinjsonui)
+│   └── src/main/kotlin/com/kotlinjsonui/
+│       ├── core/               # KotlinJsonUI entry, Configuration, DynamicModeManager,
+│       │                       # DynamicViewProvider (reflection bridge), ColorResolver, FontSpec
+│       ├── components/         # Compose composables (SafeDynamicView, CollectionStack, SelectBox, ...)
+│       ├── binding/            # BindingAdapters
+│       ├── data/ embed/ graphics/ utils/ dynamic/
+│       └── views/              # Kjui* Android View widgets (XML interop — maintenance-frozen)
+├── library-dynamic/             # :library-dynamic — runtime JSON→Compose interpreter
+│                                # (io.github.tai-kimura:kotlinjsonui-dynamic, same version as :library)
+│   └── src/main/kotlin/com/kotlinjsonui/dynamic/
+│       ├── DynamicView.kt / DataBindingContext.kt / TypedAttrs.kt / ...
+│       ├── components/         # Dynamic*Component.kt (runtime mirror of kjui_tools emitters)
+│       └── hotloader/          # WebSocket hot reload client
+├── sample-app/                  # :sample-app — sample Compose app (dev/prod flavors)
+├── conformance-host/            # :conformance-host — Compose-dynamic conformance runner (UIAutomator)
+├── build.gradle.kts / settings.gradle.kts
+├── gradle.properties            # version= — the single version source for BOTH published modules
+└── jitpack.yml
 ```
+
+**The code generation tool (`kjui_tools`) is Ruby, and does NOT live in this
+repository.** It is part of the `jsonui-cli` monorepo:
+
+- Dev checkout: `~/resource/jsonui-cli/kjui_tools/`
+- Installed: `~/.jsonui-cli/kjui_tools/`
+- Consumer projects get a project-local mirror via `jui sync_tool`
 
 ## Development Commands
 
@@ -126,11 +99,11 @@ KotlinJsonUI/
 # Run lint checks
 ./gradlew :library:lint
 
-# Build sample app
-./gradlew :sample:assembleDebug
+# Build sample app (dev/prod flavors)
+./gradlew :sample-app:assembleDevDebug
 
 # Install sample app
-./gradlew :sample:installDebug
+./gradlew :sample-app:installDevDebug
 ```
 
 ### Code Quality
@@ -206,24 +179,12 @@ androidTestImplementation("androidx.test.espresso:espresso-core")
 - **SwiftJsonUI Wiki**: `~/resource/SwiftyJsonUI_wiki/`
 - Original Swift implementation: `~/resource/SwiftJsonUI/`
 
-## Current Progress
-- [x] Document SwiftJsonUI features
-- [ ] Set up Android library structure
-- [ ] Implement JSON parser
-- [ ] Create component factory
-- [ ] Build basic components
-- [ ] Add data binding
-- [ ] Implement style system
-- [ ] Complete all components
-- [ ] Create sample app
-- [ ] Configure distribution
-
 ## Important Notes
 - Maintain API compatibility with SwiftJsonUI where possible
 - Use Android native components (not custom drawing)
-- Support Android API 21+ (Lollipop)
+- Support Android API 24+ (minSdk 24, compileSdk 36)
 - Optimize for both phones and tablets
-- Consider adding Compose support in future
+- Jetpack Compose is the primary UI path; XML (Android Views) is maintenance-frozen (see Platform Mode Policy)
 
 ## Development Workflow
 1. Always run lint checks before committing
