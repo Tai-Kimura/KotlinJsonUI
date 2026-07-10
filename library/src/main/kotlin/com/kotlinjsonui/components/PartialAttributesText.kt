@@ -2,20 +2,31 @@ package com.kotlinjsonui.components
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
 import com.kotlinjsonui.core.Configuration
+import kotlin.math.roundToInt
 
 data class PartialAttribute(
     val startIndex: Int,
@@ -176,8 +187,10 @@ private fun PartialAttributesTextImpl(
         }
     }
 
-    Text(
-        text = annotatedString,
+    PartialTextWithRangeHitTargets(
+        fullText = text,
+        annotatedString = annotatedString,
+        partialAttributes = partialAttributes,
         modifier = modifier,
         style = style
     )
@@ -328,11 +341,95 @@ private fun LinkablePartialAttributesText(
         }
     }
 
-    Text(
-        text = annotatedString,
+    PartialTextWithRangeHitTargets(
+        fullText = text,
+        annotatedString = annotatedString,
+        partialAttributes = partialAttributes,
         modifier = modifier,
         style = style
     )
+}
+
+/**
+ * Renders the annotated text and, for every clickable partial attribute, an
+ * invisible hit-target sized to the range's real glyph rectangle.
+ *
+ * Why: a LinkAnnotation range is NOT exposed to the accessibility tree as its
+ * own node (measured 2026-07-10: the label is a single childless TextView node
+ * to UiAutomator), so UI tests — and TalkBack users outside the links menu —
+ * cannot target the range. iOS exposes the same range as a real a11y link
+ * element; these hit-targets restore that parity. Each target carries the
+ * range's text as contentDescription and fires the range's onClick, so
+ * `tap { id, text }` in jsonui-test resolves to the actual glyph rect instead
+ * of a proportional estimate.
+ *
+ * The root [Layout] carries the caller's [modifier] (testTag / size / weight
+ * semantics stay on one node, geometry identical to Text(modifier)); the text
+ * is measured with the incoming constraints and the layout adopts its size,
+ * so wrapContent / matchParent / centered labels behave exactly as before.
+ * A range wrapped across lines gets one union rect (path bounds).
+ */
+@Composable
+private fun PartialTextWithRangeHitTargets(
+    fullText: String,
+    annotatedString: AnnotatedString,
+    partialAttributes: List<PartialAttribute>,
+    modifier: Modifier,
+    style: TextStyle
+) {
+    val clickableAttrs = partialAttributes.filter { attr ->
+        attr.onClick != null &&
+            attr.startIndex >= 0 && attr.endIndex <= fullText.length && attr.startIndex < attr.endIndex
+    }
+
+    if (clickableAttrs.isEmpty()) {
+        Text(text = annotatedString, modifier = modifier, style = style)
+        return
+    }
+
+    // Plain holder, not state: onTextLayout fires during the Text's measure,
+    // strictly before this Layout's measure block reads it in the same pass.
+    val layoutHolder = remember { Ref<TextLayoutResult>() }
+
+    Layout(
+        content = {
+            Text(
+                text = annotatedString,
+                style = style,
+                onTextLayout = { layoutHolder.value = it }
+            )
+            clickableAttrs.forEach { attr ->
+                val rangeText = fullText.substring(attr.startIndex, attr.endIndex)
+                Box(
+                    Modifier
+                        .semantics { contentDescription = rangeText }
+                        .clickable { attr.onClick?.invoke() }
+                )
+            }
+        },
+        modifier = modifier
+    ) { measurables, constraints ->
+        val textPlaceable = measurables.first().measure(constraints)
+        val textLayout = layoutHolder.value
+
+        val placed = measurables.drop(1).mapIndexedNotNull { index, measurable ->
+            val attr = clickableAttrs[index]
+            val bounds = textLayout?.getPathForRange(attr.startIndex, attr.endIndex)?.getBounds()
+            if (bounds == null || bounds.isEmpty) return@mapIndexedNotNull null
+            val placeable = measurable.measure(
+                Constraints.fixed(
+                    bounds.width.roundToInt().coerceAtLeast(1),
+                    bounds.height.roundToInt().coerceAtLeast(1)
+                )
+            )
+            Triple(placeable, bounds.left.roundToInt(), bounds.top.roundToInt())
+        }
+
+        layout(textPlaceable.width, textPlaceable.height) {
+            textPlaceable.place(0, 0)
+            placed.forEach { (placeable, x, y) -> placeable.place(x, y) }
+        }
+    }
 }
 
 /**

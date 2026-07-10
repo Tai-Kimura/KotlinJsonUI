@@ -216,6 +216,48 @@ class PartialAttributesTextTest {
         // Note: Click detection may vary based on exact offset
     }
 
+    // Clickable ranges expose a per-range hit-target (contentDescription =
+    // range text) sized to the real glyph rect, so UI tests / a11y services
+    // can target the range — LinkAnnotation alone creates no a11y node.
+    @Test
+    fun partialAttributesText_clickableRangeExposesHitTarget() {
+        var clicked = false
+        composeTestRule.setContent {
+            PartialAttributesText(
+                text = "新規の方はこちらから会員登録",
+                partialAttributes = listOf(
+                    PartialAttribute(
+                        startIndex = 10,
+                        endIndex = 14,
+                        fontColor = "#0000FF",
+                        onClick = { clicked = true }
+                    )
+                )
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription("会員登録").assertExists()
+        composeTestRule.onNodeWithContentDescription("会員登録").performClick()
+        composeTestRule.runOnIdle {
+            assert(clicked) { "range hit-target click did not fire onClick" }
+        }
+    }
+
+    @Test
+    fun partialAttributesText_nonClickableRangeHasNoHitTarget() {
+        composeTestRule.setContent {
+            PartialAttributesText(
+                text = "Hello styled world",
+                partialAttributes = listOf(
+                    PartialAttribute(startIndex = 6, endIndex = 12, fontColor = "#FF0000")
+                )
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription("styled").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Hello styled world").assertIsDisplayed()
+    }
+
     @Test
     fun partialAttributesText_emptyAttributes() {
         composeTestRule.setContent {
