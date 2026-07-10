@@ -1,5 +1,6 @@
 package com.jsonui.testrunner.models
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
@@ -11,6 +12,9 @@ data class ScreenTest(
     val source: TestSource,
     val metadata: TestMetadata,
     val platform: PlatformTarget? = null,
+    val launch: LaunchConfig? = null,
+    /** API mock scenario set applied (and the app relaunched) before the cases run */
+    val mocks: Map<String, String>? = null,
     val initialState: InitialState? = null,
     val setup: List<TestStep>? = null,
     val teardown: List<TestStep>? = null,
@@ -43,6 +47,13 @@ data class TestCase(
     val description: String? = null,
     val skip: Boolean? = null,
     val platform: PlatformTarget? = null,
+    /**
+     * Case-level responsive gate (named bucket string or constraint object),
+     * evaluated against the current window size in dp — parallel to the
+     * case-level `platform` gate. Unmet → case skipped with
+     * skipReason "responsive".
+     */
+    val responsive: ResponsiveCondition? = null,
     val initialState: InitialState? = null,
     val steps: List<TestStep>,
     /** Default argument values for @{varName} substitution */
@@ -57,6 +68,7 @@ data class FlowTest(
     val sources: List<FlowTestSource>? = null,  // Now optional (not needed when using file references)
     val metadata: TestMetadata,
     val platform: PlatformTarget? = null,
+    val launch: LaunchConfig? = null,
     val initialState: FlowInitialState? = null,
     val setup: List<FlowTestStep>? = null,
     val teardown: List<FlowTestStep>? = null,
@@ -99,14 +111,33 @@ data class FlowTestStep(
     val button: String? = null,
     val label: String? = null,
     val index: Int? = null,
+    val retryTapIfNoChange: Boolean? = null,
+    val container: String? = null,
+    val variable: String? = null,
+    val times: Int? = null,
+    /** Target orientation for the setOrientation action ("portrait" | "landscape") */
+    val orientation: String? = null,
+    @SerialName("while")
+    val whileCondition: StepCondition? = null,
+    val maxRetries: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val paths: List<String>? = null,
+    val cropId: String? = null,
+    val threshold: Double? = null,
+    /** Scenario map for the setMocks action (operationId -> scenario) */
+    val mocks: Map<String, String>? = null,
+    @SerialName("when")
+    val whenCondition: StepCondition? = null,
+    val optional: Boolean? = null,
     // For file reference steps
     val file: String? = null,
-    @kotlinx.serialization.SerialName("case")
+    @SerialName("case")
     val caseName: String? = null,
     val cases: List<String>? = null,
     /** Arguments to override screen test default args (for file reference steps) */
     val args: Map<String, JsonElement>? = null,
-    // For block steps (grouped inline actions)
+    // For block steps (grouped inline actions) and control steps (repeat/retry)
     val block: String? = null,
     val description: String? = null,
     val descriptionFile: String? = null,
@@ -150,11 +181,85 @@ data class TestStep(
     val amount: Int? = null,
     val button: String? = null,
     val label: String? = null,
-    val index: Int? = null
+    val index: Int? = null,
+    val retryTapIfNoChange: Boolean? = null,
+    val container: String? = null,
+    val variable: String? = null,
+    val times: Int? = null,
+    /** Target orientation for the setOrientation action ("portrait" | "landscape") */
+    val orientation: String? = null,
+    @SerialName("while")
+    val whileCondition: StepCondition? = null,
+    val steps: List<TestStep>? = null,
+    val maxRetries: Int? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val paths: List<String>? = null,
+    val cropId: String? = null,
+    val threshold: Double? = null,
+    /** Scenario map for the setMocks action (operationId -> scenario) */
+    val mocks: Map<String, String>? = null,
+    @SerialName("when")
+    val whenCondition: StepCondition? = null,
+    val optional: Boolean? = null
 ) {
     val isAction: Boolean get() = action != null
     val isAssertion: Boolean get() = assert != null
 }
+
+// MARK: - Step Condition (used by `when` and `repeat.while`)
+
+/**
+ * Condition object evaluated before a step (`when`) or before each `repeat`
+ * iteration (`while`). Multiple keys are ANDed.
+ *
+ * Decoded via [StepConditionSerializer] so that keys outside the known set
+ * are captured in [unknownKeys] instead of being silently dropped by
+ * `ignoreUnknownKeys` (which would make the step run-anyway). A condition
+ * with unknown keys is fail-safe UNMET → the step is skipped.
+ */
+@Serializable(with = StepConditionSerializer::class)
+data class StepCondition(
+    /** Instant check: element is currently visible (no polling) */
+    val visible: String? = null,
+    /** Instant check: element is currently absent or invisible (no polling) */
+    val notVisible: String? = null,
+    /** Current platform matches (same rules as the step-level `platform` field) */
+    val platform: PlatformTarget? = null,
+    /** ViewModel state matches (requires a ViewModelStateProvider) */
+    val state: StateCondition? = null,
+    /** Current window size matches (named bucket or constraint object, in dp) */
+    val responsive: ResponsiveCondition? = null,
+    /**
+     * Raw JSON keys outside the known set
+     * (visible|notVisible|platform|state|responsive), i.e. written against a
+     * newer schema than this driver. Non-empty → condition is treated as
+     * unmet (skip), never run-anyway, never a hard error.
+     */
+    val unknownKeys: List<String> = emptyList()
+)
+
+@Serializable
+data class StateCondition(
+    val path: String,
+    val equals: JsonElement
+)
+
+// MARK: - Launch Configuration
+
+/**
+ * App launch configuration applied before the app under test starts.
+ * Android mapping: clearState -> `pm clear`, permissions -> `pm grant`/`pm revoke`,
+ * arguments -> JSONUI_TEST_ARGS string extra (JSON) on the launch intent.
+ */
+@Serializable
+data class LaunchConfig(
+    val clearState: Boolean? = null,
+    /** Permission name (camera, microphone, location, ...) -> "allow" | "deny" | "unset" */
+    val permissions: Map<String, String>? = null,
+    /** Launch arguments passed to the app as JSON */
+    val arguments: Map<String, JsonElement>? = null
+)
 
 // MARK: - Platform Target
 
@@ -178,7 +283,16 @@ data class TestResult(
     val caseName: String,
     val passed: Boolean,
     val error: String? = null,
-    val durationMs: Long = 0
+    val durationMs: Long = 0,
+    /** True when the case was skipped (skip flag, platform or responsive mismatch) */
+    val skipped: Boolean = false,
+    /**
+     * Why the case was skipped ("platform" | "responsive" — results.schema.json
+     * skipReason); null for plain `skip: true` skips and non-skipped results.
+     */
+    val skipReason: String? = null,
+    /** Warnings recorded during the case (optional-step failures, baseline created, ...) */
+    val warnings: List<String> = emptyList()
 )
 
 data class TestSuiteResult(

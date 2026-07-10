@@ -1,5 +1,13 @@
 package com.jsonui.testrunner.actions
 
+import android.content.ContentValues
+import android.content.Context
+import android.graphics.Rect
+import android.location.Criteria
+import android.location.Location
+import android.location.LocationManager
+import android.os.SystemClock
+import android.provider.MediaStore
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
@@ -25,6 +33,23 @@ class ActionExecutor(
     var screenshotHandler: ((name: String) -> Unit)? = null
 
     /**
+     * Runtime variable store shared with the runner. `readText` writes the
+     * element text here; later steps reference it via @{name} placeholders.
+     */
+    var variableStore: MutableMap<String, String>? = null
+
+    /** Sink for non-fatal warnings (e.g. no-op action stubs), set by the runner */
+    var warningHandler: ((String) -> Unit)? = null
+
+    /**
+     * Directory for resolving relative `addMedia` paths. Defaults to the
+     * instrumented app's external files dir (falling back to filesDir).
+     * Limitation: the media files must already exist on the device — push
+     * fixtures (e.g. via `adb push` or asset extraction) before the run.
+     */
+    var mediaFixturesDir: File? = null
+
+    /**
      * Execute an action step
      */
     fun execute(step: TestStep) {
@@ -36,8 +61,10 @@ class ActionExecutor(
             "doubleTap" -> executeDoubleTap(step, timeout)
             "longPress" -> executeLongPress(step, timeout)
             "input" -> executeInput(step, timeout)
+            "typeText" -> executeTypeText(step)
             "clear" -> executeClear(step, timeout)
             "scroll" -> executeScroll(step, timeout)
+            "scrollUntilVisible" -> executeScrollUntilVisible(step)
             "swipe" -> executeSwipe(step, timeout)
             "waitFor" -> executeWaitFor(step, timeout)
             "waitForAny" -> executeWaitForAny(step, timeout)
@@ -48,6 +75,18 @@ class ActionExecutor(
             "selectOption" -> executeSelectOption(step, timeout)
             "tapItem" -> executeTapItem(step, timeout)
             "selectTab" -> executeSelectTab(step, timeout)
+            "readText" -> executeReadText(step, timeout)
+            "setLocation" -> executeSetLocation(step)
+            "addMedia" -> executeAddMedia(step)
+            // setViewport is web-only by design (an Android window cannot be
+            // freely resized), so it is permanently a no-op+warn here; width-
+            // dependent asserts must self-gate with a matching `when.responsive`
+            // (evaluated against the device's fixed size).
+            "setViewport" -> executeNoOpStub(
+                "setViewport",
+                "the viewport cannot be resized on Android; dependent asserts should self-gate with when.responsive"
+            )
+            "setOrientation" -> executeSetOrientation(step)
             else -> throw IllegalArgumentException("Unknown action: $action")
         }
     }
@@ -62,6 +101,22 @@ class ActionExecutor(
             tapTextPortion(element, targetText)
         } else {
             element.click()
+        }
+
+        // Ghost-tap mitigation: when the UI did not change after the tap,
+        // tap once more (retryTapIfNoChange semantics).
+        if (step.retryTapIfNoChange == true) {
+            val packageName = InstrumentationRegistry.getInstrumentation().targetContext.packageName
+            val changed = device.waitForWindowUpdate(packageName, 500L)
+            if (!changed) {
+                // Re-find the element; the first tap may have invalidated it
+                val retryElement = waitForElement(id, timeout)
+                if (targetText != null) {
+                    tapTextPortion(retryElement, targetText)
+                } else {
+                    retryElement.click()
+                }
+            }
         }
     }
 
@@ -130,6 +185,35 @@ class ActionExecutor(
         }
     }
 
+    /**
+     * Type into whatever currently holds keyboard focus — no element id.
+     * For fields that are focused but not directly targetable: an alpha(0)
+     * Compose node is excluded from the semantics tree entirely, so By.res(id)
+     * can never match (the standard invisible code-entry TextField pattern).
+     * Focus is established app-side (auto-focus or a prior tap on a visible
+     * container); this routes the characters to the focused editable via
+     * Instrumentation key events.
+     */
+    private fun executeTypeText(step: TestStep) {
+        val value = step.value ?: throw IllegalArgumentException("typeText requires 'value'")
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        // Type CHARACTER BY CHARACTER, settling between keys. A whole-string
+        // sendStringSync burst corrupts Compose fields with a reactive two-way
+        // text binding (kjui generates one per TextField: a LaunchedEffect
+        // rewrites the field from the model on every change) — mid-burst the
+        // field and model are transiently out of sync and the rewrite clobbers
+        // characters that have not propagated yet, dropping/reordering input
+        // (test-android-typetext-burst-injection-corrupts-reactive-textfield).
+        // Espresso's typeText paces per character for the same reason.
+        // sendStringSync must run off the main thread (it is) and synchronously
+        // injects the key events into the focused window.
+        for (ch in value) {
+            instrumentation.sendStringSync(ch.toString())
+            instrumentation.waitForIdleSync()
+            Thread.sleep(TYPE_CHAR_DELAY_MS)
+        }
+    }
+
     private fun executeClear(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("clear requires 'id'")
         val element = waitForElement(id, timeout)
@@ -150,10 +234,19 @@ class ActionExecutor(
         val id = step.id ?: throw IllegalArgumentException("scroll requires 'id'")
         val direction = step.direction ?: throw IllegalArgumentException("scroll requires 'direction'")
 
-        waitForElement(id, timeout)
-
-        val (startX, startY, endX, endY) = getSwipeCoordinates(direction)
-        device.swipe(startX, startY, endX, endY, 20)
+        // Scroll WITHIN the target element's bounds (parity with `swipe` /
+        // `scrollUntilVisible` and with iOS, which scrolls the element's frame),
+        // not at fixed screen center. The `id` locates *where* to scroll, not
+        // merely that it exists. Fixed screen coordinates are a last resort only
+        // when bounds are unavailable.
+        val element = waitForElement(id, timeout)
+        val bounds = element.visibleBounds
+        if (!bounds.isEmpty) {
+            scrollWithinBounds(bounds, direction)
+        } else {
+            val (startX, startY, endX, endY) = getSwipeCoordinates(direction)
+            device.swipe(startX, startY, endX, endY, 20)
+        }
     }
 
     private fun executeSwipe(step: TestStep, timeout: Long) {
@@ -428,6 +521,198 @@ class ActionExecutor(
         }
     }
 
+    private fun executeScrollUntilVisible(step: TestStep) {
+        val id = step.id ?: throw IllegalArgumentException("scrollUntilVisible requires 'id'")
+        val direction = step.direction ?: "down"
+        val timeout = step.timeout?.toLong() ?: 20000L
+
+        fun targetVisible(): Boolean = device.findObject(By.res(id)) != null
+
+        if (targetVisible()) return
+
+        // Resolve the scrollable container: explicit id, else the app-under-test
+        // window bounds so fallback swipes stay ON the app surface (a fixed
+        // screen-center swipe can drift onto the status bar / notification shade
+        // over repeated scrolls and hide the app). getSwipeCoordinates is the
+        // final fallback only when even the app bounds are unavailable.
+        val containerBounds: Rect? = step.container?.let { containerId ->
+            device.findObject(By.res(containerId))?.visibleBounds
+        } ?: appSurfaceBounds()
+
+        val startTime = System.currentTimeMillis()
+        var previousSnapshot = ""
+        var unchangedCount = 0
+
+        while (System.currentTimeMillis() - startTime < timeout) {
+            if (containerBounds != null && !containerBounds.isEmpty) {
+                scrollWithinBounds(containerBounds, direction)
+            } else {
+                val (sx, sy, ex, ey) = getSwipeCoordinates(direction)
+                device.swipe(sx, sy, ex, ey, 20)
+            }
+
+            if (targetVisible()) return
+
+            // End-reached detection: two consecutive scrolls with no change
+            val snapshot = try {
+                device.findObject(By.pkg(InstrumentationRegistry.getInstrumentation().targetContext.packageName))
+                    ?.let { obj -> obj.children.joinToString("|") { it.resourceName ?: it.text ?: "" } } ?: ""
+            } catch (e: Exception) {
+                ""
+            }
+            if (snapshot.isNotEmpty() && snapshot == previousSnapshot) {
+                unchangedCount++
+                if (unchangedCount >= 1) {
+                    throw AssertionError("Element '$id' not found after scrolling to the end")
+                }
+            } else {
+                unchangedCount = 0
+            }
+            previousSnapshot = snapshot
+        }
+
+        throw AssertionError("Element '$id' did not become visible within ${timeout}ms of scrolling")
+    }
+
+    /**
+     * The app-under-test window bounds. Used to keep fallback scroll gestures on
+     * the app surface instead of the raw screen center (which can drift onto the
+     * status bar / notification shade). Returns null if the window can't be found.
+     */
+    private fun appSurfaceBounds(): Rect? = runCatching {
+        val pkg = InstrumentationRegistry.getInstrumentation().targetContext.packageName
+        device.findObject(By.pkg(pkg))?.visibleBounds
+    }.getOrNull()
+
+    private fun scrollWithinBounds(bounds: Rect, direction: String) {
+        val cx = bounds.centerX()
+        val cy = bounds.centerY()
+        val dy = (bounds.height() * 0.35).toInt()
+        val dx = (bounds.width() * 0.35).toInt()
+        when (direction) {
+            // Content moves toward `direction`; the finger swipes the opposite way.
+            "up" -> device.swipe(cx, cy - dy, cx, cy + dy, 20)
+            "down" -> device.swipe(cx, cy + dy, cx, cy - dy, 20)
+            "left" -> device.swipe(cx - dx, cy, cx + dx, cy, 20)
+            "right" -> device.swipe(cx + dx, cy, cx - dx, cy, 20)
+            else -> throw IllegalArgumentException("Invalid direction: $direction")
+        }
+    }
+
+    private fun executeReadText(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("readText requires 'id'")
+        val variable = step.variable ?: throw IllegalArgumentException("readText requires 'variable'")
+        val element = waitForElement(id, timeout)
+        val text = element.text ?: ""
+        val store = variableStore
+            ?: throw IllegalStateException("readText requires a variable store (set ActionExecutor.variableStore)")
+        store[variable] = text
+    }
+
+    private fun executeSetLocation(step: TestStep) {
+        val latitude = step.latitude ?: throw IllegalArgumentException("setLocation requires 'latitude'")
+        val longitude = step.longitude ?: throw IllegalArgumentException("setLocation requires 'longitude'")
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val packageName = context.packageName
+        try {
+            // Enable mock locations for the instrumented app
+            device.executeShellCommand("appops set $packageName android:mock_location allow")
+
+            val locationManager = InstrumentationRegistry.getInstrumentation()
+                .context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            val provider = LocationManager.GPS_PROVIDER
+            @Suppress("DEPRECATION")
+            locationManager.addTestProvider(
+                provider,
+                false, false, false, false, true, true, true,
+                Criteria.POWER_LOW, Criteria.ACCURACY_FINE
+            )
+            locationManager.setTestProviderEnabled(provider, true)
+            val mockLocation = Location(provider).apply {
+                this.latitude = latitude
+                this.longitude = longitude
+                this.accuracy = 1.0f
+                this.time = System.currentTimeMillis()
+                this.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+            }
+            locationManager.setTestProviderLocation(provider, mockLocation)
+        } catch (e: Exception) {
+            throw AssertionError("setLocation failed: ${e.message}. Ensure the app has mock-location permission.")
+        }
+    }
+
+    private fun executeAddMedia(step: TestStep) {
+        val paths = step.paths ?: throw IllegalArgumentException("addMedia requires 'paths'")
+        if (paths.isEmpty()) throw IllegalArgumentException("addMedia 'paths' must be non-empty")
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val baseDir = mediaFixturesDir
+            ?: context.getExternalFilesDir(null)
+            ?: context.filesDir
+
+        for (path in paths) {
+            val file = if (File(path).isAbsolute) File(path) else File(baseDir, path)
+            if (!file.exists()) {
+                throw AssertionError("addMedia file not found: ${file.absolutePath}")
+            }
+            val mimeType = when (file.extension.lowercase()) {
+                "png" -> "image/png"
+                "jpg", "jpeg" -> "image/jpeg"
+                "gif" -> "image/gif"
+                "mp4" -> "video/mp4"
+                else -> throw IllegalArgumentException("addMedia unsupported file type: ${file.name}")
+            }
+            val isVideo = mimeType.startsWith("video/")
+            val collection = if (isVideo) MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, file.name)
+                put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+            }
+            val resolver = context.contentResolver
+            val uri = resolver.insert(collection, values)
+                ?: throw AssertionError("addMedia could not insert ${file.name} into MediaStore")
+            resolver.openOutputStream(uri)?.use { out ->
+                file.inputStream().use { it.copyTo(out) }
+            } ?: throw AssertionError("addMedia could not open output stream for ${file.name}")
+        }
+    }
+
+    /**
+     * Rotate the device: landscape → setOrientationLeft, portrait →
+     * setOrientationNatural. Assumes a portrait-natural device (phones /
+     * portrait-default emulators); on a landscape-natural tablet "portrait"
+     * restores the natural — landscape — orientation instead. Waits for idle
+     * (plus a short settle) so the rotated layout is stable before the next
+     * step; responsive conditions re-read the live window size afterwards, so
+     * `landscape` / `*-landscape` buckets become exercisable.
+     */
+    private fun executeSetOrientation(step: TestStep) {
+        val orientation = step.orientation
+            ?: throw IllegalArgumentException("setOrientation requires 'orientation'")
+        when (orientation) {
+            "landscape" -> device.setOrientationLeft()
+            "portrait" -> device.setOrientationNatural()
+            else -> throw IllegalArgumentException(
+                "Invalid orientation: $orientation (expected 'portrait' or 'landscape')"
+            )
+        }
+        device.waitForIdle(defaultTimeout)
+        Thread.sleep(500) // rotation animation + Compose semantics settle
+    }
+
+    /**
+     * No-op stub for actions this driver deliberately does not (yet) execute.
+     * Warns through the runner's warning sink (surfaces in TestResult.warnings)
+     * and on stdout, mirroring the AssertionExecutor convention.
+     */
+    private fun executeNoOpStub(action: String, reason: String) {
+        val message = "'$action' is a no-op on this driver: $reason"
+        println("[ActionExecutor] Warning: $message")
+        warningHandler?.invoke(message)
+    }
+
     // Helper functions
 
     /**
@@ -474,7 +759,25 @@ class ActionExecutor(
      * Calculates the approximate position of the target text and taps there
      */
     private fun tapTextPortion(element: UiObject2, targetText: String) {
-        val fullText = element.text ?: throw IllegalArgumentException("Element has no text")
+        // Preferred: a clickable descendant hit-target carrying the range text.
+        // KotlinJsonUI PartialAttributesText (2.11.0+) emits one per clickable
+        // range, sized to the real glyph rect — exact for centered/matchParent
+        // and wrapped labels where the proportional estimate below misses
+        // (test-partialattributes-subrange-tap-misses-on-centered-matchparent-label).
+        val hitTarget = element.findObject(By.desc(targetText).clickable(true))
+            ?: element.findObject(By.text(targetText).clickable(true))
+        if (hitTarget != null) {
+            hitTarget.click()
+            return
+        }
+
+        // Fallback: proportional position (assumes left-aligned, single-line,
+        // full-width text). The text may live on a descendant TextView rather
+        // than the tagged node itself — use that node's bounds when it does.
+        val textNode = if (element.text != null) element
+            else element.findObjects(By.clazz("android.widget.TextView"))
+                .firstOrNull { it.text?.contains(targetText) == true } ?: element
+        val fullText = textNode.text ?: throw IllegalArgumentException("Element has no text")
         val startIndex = fullText.indexOf(targetText)
 
         if (startIndex == -1) {
@@ -495,11 +798,21 @@ class ActionExecutor(
         val centerRatio = (startRatio + endRatio) / 2f
 
         // Calculate the tap coordinate
-        val bounds = element.visibleBounds
+        val bounds = textNode.visibleBounds
         val tapX = bounds.left + (bounds.width() * centerRatio).toInt()
         val tapY = bounds.centerY()
 
         // Tap at the calculated position
         device.click(tapX, tapY)
+    }
+
+    companion object {
+        /**
+         * Inter-character settle for typeText. waitForIdleSync alone covers
+         * recomposition; the extra margin lets the field->model->field
+         * round-trip of a reactive two-way binding converge before the next
+         * key event.
+         */
+        private const val TYPE_CHAR_DELAY_MS = 50L
     }
 }
