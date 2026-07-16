@@ -87,6 +87,14 @@ class ActionExecutor(
                 "setViewport",
                 "the viewport cannot be resized on Android; dependent asserts should self-gate with when.responsive"
             )
+            // emitHook drives a browser-side hook (window.__jsonuiTestHooks);
+            // there is no equivalent injection channel into a native app, so it
+            // is permanently a no-op+warn here. Gate dependent steps/asserts
+            // with when.platform: web.
+            "emitHook" -> executeNoOpStub(
+                "emitHook",
+                "browser-side hooks do not exist on Android; gate dependent steps with when.platform"
+            )
             "setOrientation" -> executeSetOrientation(step)
             else -> throw IllegalArgumentException("Unknown action: $action")
         }
@@ -344,14 +352,36 @@ class ActionExecutor(
         val startTime = System.currentTimeMillis()
 
         while (System.currentTimeMillis() - startTime < timeout) {
-            // Try to find button by text in any dialog
-            val button = device.findObject(By.text(buttonText))
-            if (button != null) {
-                button.click()
+            // Prefer a CLICKABLE node with the label. A bare By.text match
+            // walks the hierarchy depth-first and hits a dialog *title* that
+            // shares the button's text (title "Sign Out" + button "Sign Out")
+            // before the button — the click is a no-op and the dialog stays
+            // open. iOS parity: its alertTap only queries .buttons[label].
+            //
+            // Same-node constraint (View Button: text lives on the clickable
+            // node itself).
+            val clickableButton = device.findObject(By.text(buttonText).clickable(true))
+            if (clickableButton != null) {
+                clickableButton.click()
                 return
             }
 
-            // Try standard Android dialog button IDs
+            // Compose TextButton: in the accessibility tree UiAutomator sees,
+            // the clickable node and the Text are SEPARATE nodes (semantics
+            // merging is TalkBack semantics — text+clickable never co-occur on
+            // one node here), so the same-node query above matches nothing.
+            // Match a clickable whose shallow descendant carries the label;
+            // maxDepth keeps a big clickable container with the title deep
+            // inside from stealing the match.
+            val composeButton = device.findObject(
+                By.clickable(true).hasDescendant(By.text(buttonText), 3)
+            )
+            if (composeButton != null) {
+                composeButton.click()
+                return
+            }
+
+            // Try standard Android dialog button IDs (View-based AlertDialog)
             val positiveButton = device.findObject(By.res("android:id/button1"))
             if (positiveButton != null && positiveButton.text == buttonText) {
                 positiveButton.click()
@@ -371,6 +401,16 @@ class ActionExecutor(
             }
 
             Thread.sleep(100)
+        }
+
+        // Legacy fallback: some custom dialogs expose a tappable label without
+        // the clickable flag. Only try the bare text match AFTER the clickable/
+        // res-id poll expires — inside the loop it would hit the title first
+        // on the very first pass, which is exactly the bug.
+        val fallback = device.findObject(By.text(buttonText))
+        if (fallback != null) {
+            fallback.click()
+            return
         }
 
         throw AssertionError("Alert button '$buttonText' not found within ${timeout}ms")
