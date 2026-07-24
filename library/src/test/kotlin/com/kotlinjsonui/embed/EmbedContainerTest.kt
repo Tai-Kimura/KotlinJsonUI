@@ -297,4 +297,32 @@ class EmbedContainerTest {
         assertSame(nav, custom.navigator)
         assertTrue(EmbedIsolatedNavigation.Automatic is EmbedIsolatedNavigation)
     }
+
+    // ── EmbedNavigatorRegistry (host-side imperative lookup, 2.12.0) ──
+
+    @Test
+    fun registry_lookupReturnsRegisteredNavigator() {
+        val nav = EmbedNavigator()
+        EmbedNavigatorRegistry.register("registry-pane-a", nav)
+        try {
+            assertSame(nav, EmbedNavigatorRegistry.get("registry-pane-a"))
+            assertNull(EmbedNavigatorRegistry.get("registry-pane-unknown"))
+        } finally {
+            EmbedNavigatorRegistry.unregister("registry-pane-a", nav)
+        }
+        assertNull(EmbedNavigatorRegistry.get("registry-pane-a"))
+    }
+
+    @Test
+    fun registry_lastRegistrationWinsAndStaleUnregisterIsIgnored() {
+        val first = EmbedNavigator()
+        val second = EmbedNavigator()
+        EmbedNavigatorRegistry.register("registry-pane-b", first)
+        EmbedNavigatorRegistry.register("registry-pane-b", second)
+        // The earlier container's teardown must not clobber the newer mount.
+        EmbedNavigatorRegistry.unregister("registry-pane-b", first)
+        assertSame(second, EmbedNavigatorRegistry.get("registry-pane-b"))
+        EmbedNavigatorRegistry.unregister("registry-pane-b", second)
+        assertNull(EmbedNavigatorRegistry.get("registry-pane-b"))
+    }
 }

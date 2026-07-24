@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonParser
 import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.embed.EmbedNavigatorRegistry
 
 /**
  * conformanceState provider — the ONE generic mechanism this host implements
@@ -30,8 +31,29 @@ import com.kotlinjsonui.dynamic.DataBindingContext
  */
 object ConformanceStateRegistry {
 
-    /** One manifest-declared handler: invoking it sets [varName] to the literal [value]. */
-    data class DeclaredHandler(val name: String, val varName: String, val value: String)
+    /** One manifest-declared handler (INTERACTIVE_HOST_CONTRACT.md, two kinds). */
+    sealed interface DeclaredHandler {
+        val name: String
+    }
+
+    /** Kind 1: invoking it sets [varName] to the literal [value]. */
+    data class SetHandler(
+        override val name: String,
+        val varName: String,
+        val value: String,
+    ) : DeclaredHandler
+
+    /**
+     * Kind 2: invoking it drives an isolated embed's private stack through
+     * [com.kotlinjsonui.embed.EmbedNavigatorRegistry].
+     */
+    data class EmbedHandler(
+        override val name: String,
+        val embedId: String,
+        val action: String,
+        val screen: String?,
+        val params: Map<String, Any>,
+    ) : DeclaredHandler
 
     private class ManifestIndex(
         val handlersById: Map<String, List<DeclaredHandler>>,
@@ -77,11 +99,29 @@ object ConformanceStateRegistry {
             val handlers = state.get("handlers")?.takeIf { it.isJsonArray }?.asJsonArray ?: continue
             val declared = handlers.mapNotNull { h ->
                 val obj = h.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
-                val set = obj.get("set")?.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
-                DeclaredHandler(
-                    name = obj.get("name")?.asString ?: return@mapNotNull null,
-                    varName = set.get("var")?.asString ?: return@mapNotNull null,
-                    value = set.get("value")?.asString ?: return@mapNotNull null,
+                val name = obj.get("name")?.asString ?: return@mapNotNull null
+                val set = obj.get("set")?.takeIf { it.isJsonObject }?.asJsonObject
+                if (set != null) {
+                    return@mapNotNull SetHandler(
+                        name = name,
+                        varName = set.get("var")?.asString ?: return@mapNotNull null,
+                        value = set.get("value")?.asString ?: return@mapNotNull null,
+                    )
+                }
+                val embed = obj.get("embed")?.takeIf { it.isJsonObject }?.asJsonObject
+                    ?: return@mapNotNull null
+                EmbedHandler(
+                    name = name,
+                    embedId = embed.get("id")?.asString ?: return@mapNotNull null,
+                    action = embed.get("action")?.asString ?: return@mapNotNull null,
+                    screen = embed.get("screen")?.takeIf { it.isJsonPrimitive }?.asString,
+                    params = embed.get("params")?.takeIf { it.isJsonObject }?.asJsonObject
+                        ?.entrySet()
+                        ?.mapNotNull { (key, value) ->
+                            value.takeIf { it.isJsonPrimitive }?.asString?.let { key to it as Any }
+                        }
+                        ?.toMap()
+                        ?: emptyMap(),
                 )
             }
             if (declared.isNotEmpty()) handlersById[id] = declared
@@ -109,8 +149,21 @@ fun rememberConformanceData(fixtureId: String): Map<String, Any> {
         buildMap {
             putAll(stateData)
             for (handler in handlers) {
-                val fire: () -> Unit = {
-                    bindingContext.updateValue(handler.varName, handler.value)
+                val fire: () -> Unit = when (handler) {
+                    is ConformanceStateRegistry.SetHandler -> {
+                        { bindingContext.updateValue(handler.varName, handler.value) }
+                    }
+                    is ConformanceStateRegistry.EmbedHandler -> {
+                        {
+                            val navigator = EmbedNavigatorRegistry.get(handler.embedId)
+                            when {
+                                navigator == null -> Unit
+                                handler.action == "push" && handler.screen != null ->
+                                    navigator.push(handler.screen, handler.params)
+                                handler.action == "pop" -> navigator.pop()
+                            }
+                        }
+                    }
                 }
                 put(handler.name, fire)
             }

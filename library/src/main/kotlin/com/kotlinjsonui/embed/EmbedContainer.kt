@@ -169,6 +169,13 @@ private fun EmbedContainerImpl(
         else -> rememberSaveable(embedId, saver = EmbedNavigator.StateSaver) { EmbedNavigator() }
     }
 
+    if (navigator != null) {
+        DisposableEffect(embedId, navigator) {
+            EmbedNavigatorRegistry.register(embedId, navigator)
+            onDispose { EmbedNavigatorRegistry.unregister(embedId, navigator) }
+        }
+    }
+
     val context = remember(embedId, params, eventBridge, navigationDelegate, navigator) {
         EmbeddedScreenContext(
             embedId = embedId,
