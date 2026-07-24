@@ -14,6 +14,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Manual gesture-delegation probe (04a §2) — not part of the suite. -->
+        <activity
+            android:name=".GestureProbeActivity"
+            android:exported="true" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
