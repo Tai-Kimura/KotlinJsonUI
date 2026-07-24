@@ -110,7 +110,7 @@ data class CommonAttributes(
     val heightRaw: String? = null,
     /** Height weight for flexible layouts (binding supported) */
     val heightWeight: AttrValue<Double>? = null,
-    /** Whether component is hidden (can be data binding) */
+    /** Whether the component is hidden: keeps its layout space but is not drawn and is hidden from accessibility (boolean shorthand for visibility:'invisible'; can be a data binding) */
     val hidden: AttrValue<Boolean>? = null,
     /** Background color when highlighted - hex string or color name from colors.json (binding supported) */
     val highlightBackground: AttrValue<String>? = null,

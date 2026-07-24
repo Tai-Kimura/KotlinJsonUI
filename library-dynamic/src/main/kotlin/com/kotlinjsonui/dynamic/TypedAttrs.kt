@@ -255,7 +255,7 @@ object UnappliedAttributes {
         Normalization.MARKER_KEY, "_generated",
         "type", "id", "child", "children", "data", "shared_data", "variables",
         "include", "style", "sections", "cell", "header", "footer",
-        "responsive", "platforms", "mode"
+        "responsive", "platform", "platforms", "mode"
     )
 
     /**
