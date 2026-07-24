@@ -57,19 +57,58 @@ class VisibilityLogicTest {
         assertEquals(1f, getAlpha(visibility), 0.01f)
     }
 
+    // hidden: true = boolean shorthand for visibility:"invisible" —
+    // the component composes and KEEPS its layout space (must NOT
+    // collapse), draws nothing (alpha 0), and clears its semantics so
+    // it is invisible to accessibility / UI test drivers.
+
     @Test
-    fun `hidden true should not render`() {
-        assertTrue(shouldHide(true))
+    fun `hidden true composes and keeps layout space`() {
+        assertTrue(composes(VisibilityResult.HIDDEN))
+        assertTrue(keepsLayoutSpace(VisibilityResult.HIDDEN))
     }
 
     @Test
-    fun `hidden false should render`() {
-        assertFalse(shouldHide(false))
+    fun `hidden true draws nothing`() {
+        assertEquals(0f, alphaOf(VisibilityResult.HIDDEN), 0.01f)
     }
 
     @Test
-    fun `hidden null should render`() {
-        assertFalse(shouldHide(null))
+    fun `hidden true has no semantics`() {
+        assertFalse(hasSemantics(VisibilityResult.HIDDEN))
+    }
+
+    @Test
+    fun `hidden false renders normally`() {
+        val result = computeVisibility(hidden = false, visibility = null)
+        assertEquals(VisibilityResult.VISIBLE, result)
+        assertTrue(hasSemantics(result))
+        assertEquals(1f, alphaOf(result), 0.01f)
+    }
+
+    @Test
+    fun `hidden null renders normally`() {
+        val result = computeVisibility(hidden = null, visibility = null)
+        assertEquals(VisibilityResult.VISIBLE, result)
+    }
+
+    @Test
+    fun `invisible keeps semantics while hidden clears them`() {
+        // visibility:"invisible" only skips drawing (alpha 0) — the node
+        // stays in the semantics tree. hidden goes further and also
+        // clears semantics.
+        assertTrue(hasSemantics(VisibilityResult.INVISIBLE))
+        assertFalse(hasSemantics(VisibilityResult.HIDDEN))
+        assertEquals(0f, alphaOf(VisibilityResult.INVISIBLE), 0.01f)
+        assertEquals(0f, alphaOf(VisibilityResult.HIDDEN), 0.01f)
+    }
+
+    @Test
+    fun `only gone collapses`() {
+        assertFalse(composes(VisibilityResult.GONE))
+        assertTrue(composes(VisibilityResult.HIDDEN))
+        assertTrue(composes(VisibilityResult.INVISIBLE))
+        assertTrue(composes(VisibilityResult.VISIBLE))
     }
 
     @Test
@@ -121,12 +160,31 @@ class VisibilityLogicTest {
         }
     }
 
-    private fun shouldHide(hidden: Boolean?): Boolean {
-        return hidden == true
-    }
-
     private enum class VisibilityResult {
         VISIBLE, INVISIBLE, GONE, HIDDEN
+    }
+
+    /** Mirrors VisibilityWrapper: only "gone" skips composition. */
+    private fun composes(result: VisibilityResult): Boolean {
+        return result != VisibilityResult.GONE
+    }
+
+    /** HIDDEN and INVISIBLE compose, so their layout space is kept. */
+    private fun keepsLayoutSpace(result: VisibilityResult): Boolean {
+        return composes(result)
+    }
+
+    /** Mirrors VisibilityWrapper alpha: HIDDEN/INVISIBLE draw nothing. */
+    private fun alphaOf(result: VisibilityResult): Float {
+        return when (result) {
+            VisibilityResult.HIDDEN, VisibilityResult.INVISIBLE -> 0f
+            else -> 1f
+        }
+    }
+
+    /** Mirrors VisibilityWrapper: only HIDDEN clears semantics. */
+    private fun hasSemantics(result: VisibilityResult): Boolean {
+        return result != VisibilityResult.HIDDEN
     }
 
     private fun computeVisibility(hidden: Boolean?, visibility: String?): VisibilityResult {

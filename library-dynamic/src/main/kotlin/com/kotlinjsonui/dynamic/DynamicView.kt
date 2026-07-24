@@ -136,9 +136,6 @@ private fun DynamicViewContent(
     }
     val hidden = resolveHidden(responsiveJson, effectiveData)
 
-    // Short-circuit: hidden = true → don't render at all
-    if (hidden == true) return
-
     // Render the appropriate component based on type
     val renderComponent: @Composable () -> Unit = {
         when (type.lowercase()) {
@@ -202,10 +199,17 @@ private fun DynamicViewContent(
         }
     }
 
-    // Apply visibility wrapper if visibility attribute is present
-    if (!visibility.isNullOrEmpty()) {
+    // Apply visibility/hidden wrapper if either attribute resolved.
+    // hidden = true is the boolean shorthand for visibility:"invisible":
+    // the component KEEPS its measured layout space, draws nothing
+    // (alpha 0), and exposes no accessibility/semantics nodes
+    // (clearAndSetSemantics) — it must NOT collapse. hidden stays
+    // reactive: resolveHidden re-reads the data map on every
+    // composition, so binding changes re-resolve on recomposition.
+    if (hidden == true || !visibility.isNullOrEmpty()) {
         VisibilityWrapper(
-            visibility = visibility
+            visibility = visibility,
+            hidden = hidden
         ) {
             renderComponent()
         }
@@ -219,7 +223,8 @@ private fun DynamicViewContent(
  * Supports: boolean, string "true"/"false", and canonical boolean binding
  * resolution (@{prop} / @{a.b} / @{prop ?? true} / @{!prop}).
  */
-private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
+@VisibleForTesting
+internal fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
     val element = json.get("hidden") ?: return null
     if (element.isJsonPrimitive) {
         val p = element.asJsonPrimitive
