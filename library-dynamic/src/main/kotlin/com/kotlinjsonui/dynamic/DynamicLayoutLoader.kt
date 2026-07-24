@@ -16,6 +16,7 @@ object DynamicLayoutLoader {
     private var context: Context? = null
     private val layoutCache = mutableMapOf<String, JsonObject?>()
     private val rawLayoutCache = mutableMapOf<String, JsonObject?>()
+    private val existsCache = mutableMapOf<String, Boolean>()
 
     /**
      * Initialize the loader with an application context
@@ -122,11 +123,65 @@ object DynamicLayoutLoader {
     }
 
     /**
+     * True when a layout asset with this name exists (direct path or one
+     * subdirectory deep — the same lookup loadLayoutRaw performs). Cached:
+     * assets are immutable at runtime.
+     */
+    fun layoutExists(layoutName: String): Boolean {
+        existsCache[layoutName]?.let { return it }
+        if (rawLayoutCache[layoutName] != null) {
+            existsCache[layoutName] = true
+            return true
+        }
+        val ctx = context ?: return false
+
+        val exists = assetExists(ctx, "Layouts/$layoutName.json") ||
+            (!layoutName.contains("/") && subdirAssetExists(ctx, layoutName))
+        existsCache[layoutName] = exists
+        return exists
+    }
+
+    /**
+     * Resolve the effective layout name for a size-class tier
+     * (responsive variant files, `home@regular.json`): `<name>@<tier>`
+     * when that variant layout exists, otherwise the base name. No
+     * cross-tier fallback — a medium window with only `@regular` shipped
+     * renders the base (06 variant-file resolution table).
+     */
+    fun resolveVariantLayoutName(layoutName: String, tier: String?): String {
+        if (tier == null || layoutName.contains('@')) return layoutName
+        val candidate = "$layoutName@$tier"
+        return if (layoutExists(candidate)) candidate else layoutName
+    }
+
+    private fun assetExists(ctx: Context, path: String): Boolean {
+        return try {
+            ctx.assets.open(path).use { }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun subdirAssetExists(ctx: Context, layoutName: String): Boolean {
+        try {
+            val layoutsDir = context?.assets?.list("Layouts") ?: return false
+            for (item in layoutsDir) {
+                if (assetExists(ctx, "Layouts/$item/$layoutName.json")) return true
+            }
+        } catch (e: Exception) {
+            // Error listing directories
+        }
+        return false
+    }
+
+    /**
      * Clear all layout caches (both expanded and raw)
      */
     fun clearCache() {
         layoutCache.clear()
         rawLayoutCache.clear()
+        existsCache.clear()
     }
 
     /**
@@ -135,5 +190,6 @@ object DynamicLayoutLoader {
     fun clearCache(layoutName: String) {
         layoutCache.remove(layoutName)
         rawLayoutCache.remove(layoutName)
+        existsCache.remove(layoutName)
     }
 }

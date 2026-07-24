@@ -13,6 +13,7 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.currentSizeClassTier
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.EmbedAttributes
@@ -144,7 +145,12 @@ class DynamicEmbedComponent {
             if (!handled) {
                 // Tier 2: dynamic fallback — load embedded layout JSON
                 // with only the given params (parent's data is NOT propagated).
-                val layoutJson = DynamicLayoutLoader.loadLayout(screenName)
+                // Responsive variant files (screen@regular.json) resolve per
+                // the current size-class tier, same as top-level DynamicView.
+                val effectiveScreen = DynamicLayoutLoader.resolveVariantLayoutName(
+                    screenName, currentSizeClassTier()
+                )
+                val layoutJson = DynamicLayoutLoader.loadLayout(effectiveScreen)
                 if (layoutJson != null) {
                     DynamicView(layoutJson, params)
                 } else {

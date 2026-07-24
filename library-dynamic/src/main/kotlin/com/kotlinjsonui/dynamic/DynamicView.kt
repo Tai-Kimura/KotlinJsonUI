@@ -410,14 +410,37 @@ fun DynamicView(
 
     var jsonObject by remember { mutableStateOf<JsonObject?>(null) }
     var styleUpdateCounter by remember { mutableStateOf(0) }
+    // Bumped when a hot-reload event may change which variant file wins
+    // (a variant appears/updates/disappears for the watched base screen).
+    var variantResolutionTick by remember { mutableStateOf(0) }
 
     // Check if dynamic mode is enabled
     val isDynamicModeEnabled by DynamicModeManager.isDynamicModeEnabled.collectAsState()
 
-    DisposableEffect(layoutName, isDynamicModeEnabled) {
+    // Responsive variant-file resolution (home@regular.json): pick the
+    // layout for the current size-class tier. Recomputed on window size
+    // changes (Split View / foldable posture) — the whole tree swaps while
+    // the caller-owned data map (VM state) survives.
+    val sizeClassTier = currentSizeClassTier()
+    val effectiveLayoutName = remember(layoutName, sizeClassTier, isDynamicModeEnabled, variantResolutionTick) {
+        if (layoutName.contains('@')) {
+            layoutName
+        } else {
+            val candidate = "$layoutName@$sizeClassTier"
+            val hotCached = isDynamicModeEnabled &&
+                HotLoader.getInstance(context).getCachedLayout(candidate) != null
+            when {
+                hotCached -> candidate
+                DynamicLayoutLoader.layoutExists(candidate) -> candidate
+                else -> layoutName
+            }
+        }
+    }
+
+    DisposableEffect(effectiveLayoutName, isDynamicModeEnabled, variantResolutionTick) {
         if (!isDynamicModeEnabled) {
             // Just load from assets once
-            loadLayoutFromAssets(context, layoutName, onError)?.let {
+            loadLayoutFromAssets(context, effectiveLayoutName, onError)?.let {
                 jsonObject = it
             }
             onDispose { }
@@ -426,7 +449,7 @@ fun DynamicView(
             val hotLoader = HotLoader.getInstance(context)
 
             // First try to load from cache
-            hotLoader.getCachedLayout(layoutName)?.let { cached ->
+            hotLoader.getCachedLayout(effectiveLayoutName)?.let { cached ->
                 try {
                     jsonObject = JsonParser.parseString(cached).asJsonObject
                 } catch (e: Exception) {
@@ -434,14 +457,17 @@ fun DynamicView(
                 }
             } ?: run {
                 // Fall back to loading from assets
-                loadLayoutFromAssets(context, layoutName, onError)?.let {
+                loadLayoutFromAssets(context, effectiveLayoutName, onError)?.let {
                     jsonObject = it
                 }
             }
 
             // Set up listener for updates. The listener params shadow this
-            // composable's `layoutName`, so capture it first.
-            val watchedLayoutName = layoutName
+            // composable's `layoutName`, so capture it first. Variant files
+            // of the watched base re-trigger resolution (the update may
+            // introduce or retire the variant that currently wins).
+            val watchedLayoutName = effectiveLayoutName
+            val watchedBase = LayoutVariantResolver.baseOf(layoutName)
             val listener = object : HotLoader.HotLoaderListener {
                 override fun onConnected() {
                     Log.d("DynamicView", "HotLoader connected")
@@ -452,13 +478,16 @@ fun DynamicView(
                 }
 
                 override fun onLayoutUpdated(layoutName: String, content: String) {
-                    if (layoutName == watchedLayoutName || layoutName == "$watchedLayoutName.json") {
+                    val incoming = layoutName.removeSuffix(".json")
+                    if (incoming == watchedLayoutName) {
                         try {
                             jsonObject = JsonParser.parseString(content).asJsonObject
                             Log.d("DynamicView", "Layout updated: $layoutName")
                         } catch (e: Exception) {
                             onError?.invoke(e)
                         }
+                    } else if (LayoutVariantResolver.baseOf(incoming) == watchedBase) {
+                        variantResolutionTick++
                     }
                 }
 
@@ -470,11 +499,15 @@ fun DynamicView(
                 }
 
                 override fun onLayoutAdded(layoutName: String) {
-                    // New layout added
+                    if (LayoutVariantResolver.baseOf(layoutName.removeSuffix(".json")) == watchedBase) {
+                        variantResolutionTick++
+                    }
                 }
 
                 override fun onLayoutRemoved(layoutName: String) {
-                    // Layout removed
+                    if (LayoutVariantResolver.baseOf(layoutName.removeSuffix(".json")) == watchedBase) {
+                        variantResolutionTick++
+                    }
                 }
 
                 override fun onError(error: Throwable) {
