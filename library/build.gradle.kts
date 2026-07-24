@@ -130,6 +130,8 @@ dependencies {
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
+    // BackHandler for isolated-embed private stacks (EmbedContainer)
+    implementation("androidx.activity:activity-compose:1.10.1")
     
     // JSON parsing
     implementation("com.google.code.gson:gson:2.13.1")

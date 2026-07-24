@@ -119,15 +119,12 @@ object ResourceResolver {
         var result = text
         val pattern = "@\\{([^}]+)\\}".toRegex()
         pattern.findAll(text).forEach { match ->
-            val variable = match.groupValues[1]
-            val value = if (variable.contains(" ?? ")) {
-                val parts = variable.split(" ?? ")
-                val varName = parts[0].trim()
-                data[varName]?.toString()
-                    ?: parts[1].trim().removeSurrounding("\"")
-            } else {
-                data[variable]?.toString() ?: ""
-            }
+            // DataBindingContext handles dot paths ("profile.name"), array
+            // access ("items[0].title") and `?? default` — a flat data[key]
+            // lookup here silently blanked nested-path bindings (caught by
+            // the Embed params conformance fixtures).
+            val value = DataBindingContext.evaluateExpression(match.value, data)
+                ?.toString() ?: ""
             result = result.replace(match.value, value)
         }
 

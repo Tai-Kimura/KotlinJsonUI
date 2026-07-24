@@ -213,4 +213,116 @@ class EmbedContainerTest {
         assertEquals(2, vm.callCount)
         assertEquals("b", vm.lastParams?.get("orderId"))
     }
+
+    // ── EmbedNavigator (isolated private stack, 2.12.0) ──
+
+    @Test
+    fun navigator_pushIncreasesDepth() {
+        val nav = EmbedNavigator()
+        assertEquals(0, nav.depth)
+        nav.push("order_detail")
+        assertEquals(1, nav.depth)
+        nav.push("order_history", mapOf("orderId" to "a"))
+        assertEquals(2, nav.depth)
+        assertEquals("order_history", nav.topEntry?.screen)
+    }
+
+    @Test
+    fun navigator_popStopsAtRoot() {
+        val nav = EmbedNavigator()
+        nav.push("a")
+        nav.pop()
+        assertEquals(0, nav.depth)
+        // Bounded at the embed stack root: extra pops are no-ops, never
+        // negative, never escape the embed.
+        nav.pop()
+        nav.pop()
+        assertEquals(0, nav.depth)
+        assertNull(nav.topEntry)
+    }
+
+    @Test
+    fun navigator_popToRootClearsAllPushedEntries() {
+        val nav = EmbedNavigator()
+        nav.push("a")
+        nav.push("b")
+        nav.push("c")
+        nav.popToRoot()
+        assertEquals(0, nav.depth)
+        nav.popToRoot() // no-op at root
+        assertEquals(0, nav.depth)
+    }
+
+    @Test
+    fun navigator_topEntryCarriesNestedParams() {
+        val nav = EmbedNavigator()
+        nav.push("detail", mapOf("profile" to mapOf("name" to "Ada")))
+        @Suppress("UNCHECKED_CAST")
+        val profile = nav.topEntry?.params?.get("profile") as? Map<String, Any>
+        assertEquals("Ada", profile?.get("name"))
+    }
+
+    // ── EmbeddedScreenContext.navigator plumbing ──
+
+    @Test
+    fun context_carriesNavigatorInIsolatedMode() {
+        val nav = EmbedNavigator()
+        val ctx = EmbeddedScreenContext(
+            embedId = "pane",
+            params = emptyMap(),
+            navigationDelegate = EmbeddedNavigationDelegate(boundedAtEmbed = false),
+            eventBridge = null,
+            navigator = nav
+        )
+        assertSame(nav, ctx.navigator)
+    }
+
+    @Test
+    fun context_navigatorDefaultsToNullForDelegateMode() {
+        val ctx = EmbeddedScreenContext(
+            embedId = "pane",
+            params = emptyMap(),
+            navigationDelegate = EmbeddedNavigationDelegate(boundedAtEmbed = true),
+            eventBridge = null
+        )
+        assertNull(ctx.navigator)
+    }
+
+    // ── EmbedIsolatedNavigation ──
+
+    @Test
+    fun isolatedNavigation_customCarriesNavigator() {
+        val nav = EmbedNavigator()
+        val custom = EmbedIsolatedNavigation.Custom(nav)
+        assertSame(nav, custom.navigator)
+        assertTrue(EmbedIsolatedNavigation.Automatic is EmbedIsolatedNavigation)
+    }
+
+    // ── EmbedNavigatorRegistry (host-side imperative lookup, 2.12.0) ──
+
+    @Test
+    fun registry_lookupReturnsRegisteredNavigator() {
+        val nav = EmbedNavigator()
+        EmbedNavigatorRegistry.register("registry-pane-a", nav)
+        try {
+            assertSame(nav, EmbedNavigatorRegistry.get("registry-pane-a"))
+            assertNull(EmbedNavigatorRegistry.get("registry-pane-unknown"))
+        } finally {
+            EmbedNavigatorRegistry.unregister("registry-pane-a", nav)
+        }
+        assertNull(EmbedNavigatorRegistry.get("registry-pane-a"))
+    }
+
+    @Test
+    fun registry_lastRegistrationWinsAndStaleUnregisterIsIgnored() {
+        val first = EmbedNavigator()
+        val second = EmbedNavigator()
+        EmbedNavigatorRegistry.register("registry-pane-b", first)
+        EmbedNavigatorRegistry.register("registry-pane-b", second)
+        // The earlier container's teardown must not clobber the newer mount.
+        EmbedNavigatorRegistry.unregister("registry-pane-b", first)
+        assertSame(second, EmbedNavigatorRegistry.get("registry-pane-b"))
+        EmbedNavigatorRegistry.unregister("registry-pane-b", second)
+        assertNull(EmbedNavigatorRegistry.get("registry-pane-b"))
+    }
 }

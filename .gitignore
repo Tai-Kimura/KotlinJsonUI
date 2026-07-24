@@ -110,3 +110,5 @@ gradle.properties.kotlinjsonui.claude/
 
 # Conformance fixtures are synced at run time from $CONFORMANCE_DIR (never committed)
 conformance-host/src/main/assets/conformance/
+# Companion embedded-screen layouts are synced at run time (never committed)
+conformance-host/src/main/assets/Layouts/
