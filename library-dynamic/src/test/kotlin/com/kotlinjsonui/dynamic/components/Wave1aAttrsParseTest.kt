@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** Parse-level coverage for the Toggle / CheckBox / Radio / Progress wave (1a). */
@@ -124,13 +125,17 @@ class Wave1aAttrsParseTest {
     }
 
     @Test
-    fun `radio items and selectedValue stay undeclared runtime extras`() {
+    fun `radio items stay undeclared while selectedValue is declared (2026-07-11 SSoT)`() {
+        // selectedValue/onValueChange entered attribute_definitions on 2026-07-11;
+        // the vendored table caught up with the 2026-07-24 re-vendor.
         assertFalse("items" in RadioAttributes.declaredAttributes)
-        assertFalse("selectedValue" in RadioAttributes.declaredAttributes)
+        assertTrue("selectedValue" in RadioAttributes.declaredAttributes)
+        assertTrue("onValueChange" in RadioAttributes.declaredAttributes)
 
         val node = obj("""{"type":"Radio","items":["a","b"],"selectedValue":"@{sel}"}""")
         assertNotNull(TypedAttrs.undeclared(node, "items"))
-        assertEquals("@{sel}", TypedAttrs.undeclared(node, "selectedValue")?.asString)
+        val a = RadioAttributes.parse(TypedAttrs.toAttrMap(node))
+        assertEquals("@{sel}", TypedAttrs.rawString(a.selectedValue))
     }
 
     // ── Progress ──

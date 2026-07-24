@@ -30,8 +30,12 @@ data class RadioAttributes(
     val iconSize: Double? = null,
     /** Radio label (can be data binding) */
     val label: AttrValue<String>? = null,
+    /** Value change handler - binding only (@{functionName}) */
+    val onValueChange: AttrValue<Any>? = null,
     /** Selected icon name */
     val selectedIcon: String? = null,
+    /** Selected value of the radio group (binding for two-way) */
+    val selectedValue: AttrValue<String>? = null,
     /** Selected icon name (underscore alias) */
     val selected_icon: String? = null,
     /** Space between icon and text (binding supported) */
@@ -59,7 +63,9 @@ data class RadioAttributes(
             "iconColor",
             "iconSize",
             "label",
+            "onValueChange",
             "selectedIcon",
+            "selectedValue",
             "selected_icon",
             "spacing",
             "text",
@@ -94,7 +100,9 @@ data class RadioAttributes(
             iconColor = AttrCoerce.string(AttrCoerce.lookup(json, "iconColor")),
             iconSize = AttrCoerce.number(AttrCoerce.lookup(json, "iconSize")),
             label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label")) { AttrCoerce.string(it) },
+            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
             selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon")),
+            selectedValue = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedValue")) { AttrCoerce.string(it) },
             selected_icon = AttrCoerce.string(AttrCoerce.lookup(json, "selected_icon")),
             spacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "spacing")) { AttrCoerce.number(it) },
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
