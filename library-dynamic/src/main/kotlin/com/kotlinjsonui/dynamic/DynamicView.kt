@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.kotlinjsonui.components.VisibilityWrapper
@@ -247,10 +248,13 @@ private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
  * data map — e.g. visibility defaults like "gone" apply when the ViewModel
  * doesn't explicitly provide the property.
  */
-private fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): Map<String, Any> {
+@VisibleForTesting
+internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): Map<String, Any> {
     val sections = mutableListOf<com.google.gson.JsonArray>()
 
-    // Root-level data section (canonical shape)
+    // Root-level data section (canonical shape). Added FIRST so it wins on
+    // duplicate names (first-wins below) — same precedence as SwiftJsonUI's
+    // DynamicView.mergeDataDefaults ("the root-level array wins").
     json.get("data")?.takeIf { it.isJsonArray }?.let { sections.add(it.asJsonArray) }
 
     // Data-only child element (legacy shape)
@@ -270,6 +274,8 @@ private fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): 
             val name = obj.get("name")?.asString ?: return@forEach
             // Only apply default if not already in data
             if (data.containsKey(name)) return@forEach
+            // First section wins (root-level over legacy child) — SJUI parity.
+            if (defaults.containsKey(name)) return@forEach
             val defaultValue = obj.get("defaultValue") ?: return@forEach
             when {
                 defaultValue.isJsonPrimitive -> {
@@ -286,6 +292,13 @@ private fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): 
                         }
                     }
                 }
+                // Nested defaults (object / array) convert recursively to the
+                // plain Map/List data-map shape so the canonical resolver's
+                // dot-path / bracket-index traversal reaches into them
+                // (e.g. @{profile.name} against a defaulted object).
+                defaultValue.isJsonObject || defaultValue.isJsonArray -> {
+                    convertDefaultElement(defaultValue)?.let { defaults[name] = it }
+                }
             }
         }
     }
@@ -294,6 +307,41 @@ private fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>): 
 
     // Merge: existing data overrides defaults
     return defaults.apply { putAll(data) }
+}
+
+/**
+ * Deep-convert a data-section defaultValue element to the plain-Kotlin
+ * shape ViewModels provide: JsonObject → Map<String, Any>, JsonArray →
+ * List<Any?> (positional nulls preserved so bracket indices stay stable),
+ * primitives keep gson number identity (`asNumber` — the same care as
+ * [DynamicEmbedComponent.resolveParams] and DataBindingContext's
+ * unwrapScalar, so an authored 5 does not become "5.0"). JsonNull yields
+ * null; null-valued object entries are dropped (both resolve as
+ * unresolved, so `??` fallbacks still apply).
+ *
+ * Note the top-level constructor-string skip ("CollectionDataSource()")
+ * does NOT apply to nested strings — inside an object/array default,
+ * parenthesized strings are ordinary data.
+ */
+private fun convertDefaultElement(element: com.google.gson.JsonElement): Any? = when {
+    element.isJsonNull -> null
+    element.isJsonPrimitive -> {
+        val p = element.asJsonPrimitive
+        when {
+            p.isBoolean -> p.asBoolean
+            p.isNumber -> p.asNumber
+            else -> p.asString
+        }
+    }
+    element.isJsonObject -> {
+        val out = LinkedHashMap<String, Any>()
+        for ((key, value) in element.asJsonObject.entrySet()) {
+            convertDefaultElement(value)?.let { out[key] = it }
+        }
+        out
+    }
+    element.isJsonArray -> element.asJsonArray.map { convertDefaultElement(it) }
+    else -> null
 }
 
 /**
