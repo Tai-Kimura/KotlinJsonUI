@@ -104,5 +104,29 @@ tasks.register("syncConformanceFixtures") {
         src.resolve("manifest.json").copyTo(dest.resolve("manifest.json"))
         src.resolve("fixtures").copyRecursively(dest.resolve("fixtures"))
         println("Synced conformance fixtures: $conformanceDir -> ${dest.relativeTo(rootDir)}")
+
+        // Companion embedded-screen layouts (Embed fixtures) must be
+        // loadable by bare screen name through DynamicLayoutLoader, which
+        // searches assets/Layouts/. Mirror every manifest `companions`
+        // entry there under its bare name (embed_root.layout.json →
+        // Layouts/embed_root.json).
+        val manifest = groovy.json.JsonSlurper().parse(src.resolve("manifest.json")) as Map<*, *>
+        val fixtures = manifest["fixtures"] as? List<*> ?: emptyList<Any>()
+        val companions = fixtures
+            .filterIsInstance<Map<*, *>>()
+            .flatMap { (it["companions"] as? List<*>).orEmpty() }
+            .filterIsInstance<String>()
+            .toSortedSet()
+        if (companions.isNotEmpty()) {
+            val layoutsDest = layout.projectDirectory.dir("src/main/assets/Layouts").asFile
+            layoutsDest.mkdirs()
+            for (companion in companions) {
+                val file = src.resolve(companion)
+                require(file.isFile) { "companion layout missing: $companion" }
+                val bare = file.name.removeSuffix(".layout.json") + ".json"
+                file.copyTo(layoutsDest.resolve(bare), overwrite = true)
+            }
+            println("Synced ${companions.size} companion embedded-screen layout(s) -> assets/Layouts")
+        }
     }
 }
