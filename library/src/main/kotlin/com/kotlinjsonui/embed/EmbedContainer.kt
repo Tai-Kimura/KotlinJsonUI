@@ -466,6 +466,12 @@ interface InitParamsReceiver {
  *
  * No-op when [viewModel] doesn't implement [InitParamsReceiver] or when
  * the screen is shown standalone (context is null).
+ *
+ * Double-drive guard (renderer-ssot-15, 2.13.0): a consecutive apply of
+ * the SAME params to the same VM instance is suppressed via
+ * [EmbedInitParamsGuard], so generated wiring and legacy manual wiring
+ * can coexist harmlessly during migration — the second call with
+ * identical params becomes a no-op. Changed params always apply again.
  */
 @Composable
 fun DriveEmbedInitParams(viewModel: Any) {
@@ -473,7 +479,43 @@ fun DriveEmbedInitParams(viewModel: Any) {
     if (viewModel !is InitParamsReceiver) return
     LaunchedEffect(context?.embedId, context?.params) {
         val params = context?.params ?: return@LaunchedEffect
-        if (params.isNotEmpty()) viewModel.applyInitParams(params)
+        if (params.isNotEmpty() && EmbedInitParamsGuard.shouldApply(viewModel, params)) {
+            viewModel.applyInitParams(params)
+        }
+    }
+}
+
+/**
+ * Suppresses consecutive applies of identical init params to the same
+ * ViewModel instance (fingerprint = the params map content, compared by
+ * equality; keyed weakly by VM identity so entries die with the VM).
+ *
+ * Rationale: during the generated-wiring migration both the generated
+ * screen composable AND a consumer's legacy manual wrapper may call
+ * [DriveEmbedInitParams] for the same VM — without the guard,
+ * `applyInitParams` would run twice per change. See
+ * docs/bugs/reports/2026-07-24-embed-init-params-design-decision.md
+ * (jsonui-cli).
+ */
+internal object EmbedInitParamsGuard {
+    private val lastApplied = java.util.WeakHashMap<Any, Map<String, Any>>()
+
+    /**
+     * Returns true (and records the fingerprint) when [params] differ
+     * from the last params applied to [viewModel]; false when this would
+     * be a consecutive apply of the same params.
+     */
+    fun shouldApply(viewModel: Any, params: Map<String, Any>): Boolean {
+        synchronized(lastApplied) {
+            if (lastApplied[viewModel] == params) return false
+            lastApplied[viewModel] = params
+            return true
+        }
+    }
+
+    /** Test hook: forget all recorded fingerprints. */
+    fun reset() {
+        synchronized(lastApplied) { lastApplied.clear() }
     }
 }
 

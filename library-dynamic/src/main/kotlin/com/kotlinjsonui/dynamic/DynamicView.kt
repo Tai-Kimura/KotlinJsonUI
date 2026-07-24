@@ -215,7 +215,8 @@ private fun DynamicViewContent(
 
 /**
  * Resolve the 'hidden' attribute with data binding support.
- * Supports: boolean, string "true"/"false", binding @{prop} → Boolean/String
+ * Supports: boolean, string "true"/"false", and canonical boolean binding
+ * resolution (@{prop} / @{a.b} / @{prop ?? true} / @{!prop}).
  */
 private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
     val element = json.get("hidden") ?: return null
@@ -225,12 +226,9 @@ private fun resolveHidden(json: JsonObject, data: Map<String, Any>): Boolean? {
         if (p.isString) {
             val s = p.asString
             if (s.startsWith("@{") && s.endsWith("}")) {
-                val prop = s.drop(2).dropLast(1)
-                return when (val bound = data[prop]) {
-                    is Boolean -> bound
-                    is String -> bound.equals("true", ignoreCase = true)
-                    else -> null
-                }
+                // Canonical boolean value context: dot paths, `?? default`,
+                // negation (@{!prop}), canonical bool coercion.
+                return DataBindingContext.resolveBoolean(s, data)
             }
             return s.equals("true", ignoreCase = true)
         }

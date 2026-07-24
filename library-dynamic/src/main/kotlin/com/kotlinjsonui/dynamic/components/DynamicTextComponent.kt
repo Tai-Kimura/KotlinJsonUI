@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.PartialAttribute
 import com.kotlinjsonui.components.PartialAttributesText
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.LabelAttributes
@@ -269,8 +270,9 @@ class DynamicTextComponent {
             val raw = a.fontWeight ?: return null
             val s = raw as? String ?: return raw.toString()
             if (s.startsWith("@{") && s.endsWith("}")) {
-                val prop = s.drop(2).dropLast(1)
-                return data[prop] as? String
+                // Canonical string value context (flat-first, dot paths,
+                // `?? default`).
+                return DataBindingContext.resolveString(s, data)
             }
             return s
         }

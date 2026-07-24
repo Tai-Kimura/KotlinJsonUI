@@ -124,7 +124,10 @@ class DynamicCollectionComponent {
                     raw.isJsonPrimitive && raw.asJsonPrimitive.isString -> {
                         val s = raw.asString
                         if (s.startsWith("@{") && s.endsWith("}")) {
-                            data[s.removePrefix("@{").removeSuffix("}")]
+                            // Canonical value resolution (flat-first, dot
+                            // paths, `?? default`); unresolved → null.
+                            DataBindingContext.evaluateExpression(s, data)
+                                .takeIf { it !== s }
                         } else s
                     }
                     else -> null
@@ -148,19 +151,18 @@ class DynamicCollectionComponent {
                 logAutoTrackingMisconfiguration(a.common.id)
             }
 
-            // Parse data binding for items
+            // Parse data binding for items — canonical whole-value
+            // resolution (flat-first, dot paths) of the bound object.
             val itemsRaw = TypedAttrs.raw(a.items) as? String
-            val itemsBinding = when {
-                itemsRaw?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(itemsRaw)?.groupValues?.get(1)
+            val itemsBoundValue: Any? = itemsRaw
+                ?.takeIf { it.startsWith("@{") && it.endsWith("}") }
+                ?.let { expr ->
+                    DataBindingContext.evaluateExpression(expr, data).takeIf { it !== expr }
                 }
-                else -> null
-            }
 
             // Get collection data source if sections are defined
-            val collectionDataSource = if (sections != null && itemsBinding != null) {
-                (data[itemsBinding] as? CollectionDataSource)?.reconfigured(
+            val collectionDataSource = if (sections != null) {
+                (itemsBoundValue as? CollectionDataSource)?.reconfigured(
                     cellIdProperty = cellIdProperty,
                     autoChangeTrackingId = autoChangeTrackingId
                 )
@@ -424,8 +426,8 @@ class DynamicCollectionComponent {
         private fun resolveScrollToFlow(a: CollectionAttributes, data: Map<String, Any>): SharedFlow<Int>? {
             val scrollToBinding = TypedAttrs.raw(a.scrollTo) as? String ?: return null
             if (!scrollToBinding.startsWith("@{") || !scrollToBinding.endsWith("}")) return null
-            val propName = scrollToBinding.substring(2, scrollToBinding.length - 1)
-            return data[propName] as? SharedFlow<Int>
+            // Canonical value resolution (flat-first, dot paths).
+            return DataBindingContext.evaluateExpression(scrollToBinding, data) as? SharedFlow<Int>
         }
 
         /**
@@ -476,13 +478,13 @@ class DynamicCollectionComponent {
             // alias spellings resolved by the generated parse (aliases are
             // skipped for L1-normalized layouts via canonicalOnly).
             val onPageChangedBinding = TypedAttrs.raw(a.onValueChange) as? String
-            val onPageChanged: ((Int) -> Unit)? = if (onPageChangedBinding != null) {
-                val pattern = "@\\{([^}]+)\\}".toRegex()
-                val propName = pattern.find(onPageChangedBinding)?.groupValues?.get(1)
-                if (propName != null) {
-                    data[propName] as? Function1<Int, Unit>
-                } else null
-            } else null
+            val onPageChanged: ((Int) -> Unit)? = onPageChangedBinding
+                ?.takeIf { it.startsWith("@{") && it.endsWith("}") }
+                ?.let { expr ->
+                    // Canonical value resolution of the handler reference
+                    // (flat-first, dot paths).
+                    DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
+                }
 
             // Detect page changes and invoke callback
             if (onPageChanged != null) {

@@ -90,10 +90,10 @@ object ResourceResolver {
     ): Int {
         if (value == null) return 0
 
-        // Binding
+        // Binding — canonical whole-value string resolution (flat-first,
+        // dot paths, `?? default`); unresolved → 0 (no drawable)
         val resolved = if (value.startsWith("@{") && value.endsWith("}")) {
-            val prop = value.drop(2).dropLast(1)
-            data[prop]?.toString() ?: return 0
+            DataBindingContext.resolveString(value, data) ?: return 0
         } else {
             value
         }
@@ -116,17 +116,12 @@ object ResourceResolver {
             return context?.let { ResourceCache.resolveString(text, it) } ?: text
         }
 
-        var result = text
-        val pattern = "@\\{([^}]+)\\}".toRegex()
-        pattern.findAll(text).forEach { match ->
-            // DataBindingContext handles dot paths ("profile.name"), array
-            // access ("items[0].title") and `?? default` — a flat data[key]
-            // lookup here silently blanked nested-path bindings (caught by
-            // the Embed params conformance fixtures).
-            val value = DataBindingContext.evaluateExpression(match.value, data)
-                ?.toString() ?: ""
-            result = result.replace(match.value, value)
-        }
+        // DataBindingContext is the canonical resolver: flat-key-first
+        // lookup, dot paths ("profile.name"), bracket array access
+        // ("items[0].title"), `?? default` and canonical stringification
+        // (integral numbers render without a decimal point). Unresolved
+        // occurrences render as empty strings.
+        val result = DataBindingContext.processBindings(text, data)
 
         // Resolve string resources on the result
         return context?.let { ResourceCache.resolveString(result, it) } ?: result
@@ -149,12 +144,10 @@ object ResourceResolver {
             if (p.isString) {
                 val s = p.asString
                 if (s.startsWith("@{") && s.endsWith("}")) {
-                    val prop = s.drop(2).dropLast(1)
-                    return when (val bound = data[prop]) {
-                        is Boolean -> bound
-                        is String -> bound.equals("true", ignoreCase = true)
-                        else -> default
-                    }
+                    // Canonical boolean value context: dot paths, `??`
+                    // default, negation (@{!prop}) and bool coercion
+                    // (bool / integral number / "true"/"1"/"false"/"0").
+                    return DataBindingContext.resolveBoolean(s, data) ?: default
                 }
                 return s.equals("true", ignoreCase = true)
             }
@@ -179,12 +172,9 @@ object ResourceResolver {
             if (p.isString) {
                 val s = p.asString
                 if (s.startsWith("@{") && s.endsWith("}")) {
-                    val prop = s.drop(2).dropLast(1)
-                    return when (val bound = data[prop]) {
-                        is Number -> bound.toFloat()
-                        is String -> bound.toFloatOrNull() ?: default
-                        else -> default
-                    }
+                    // Canonical number value context: dot paths, `??`
+                    // default, number-or-numeric-string coercion.
+                    return DataBindingContext.resolveNumber(s, data)?.toFloat() ?: default
                 }
                 return s.toFloatOrNull() ?: default
             }
@@ -207,8 +197,9 @@ object ResourceResolver {
         if (!element.isJsonPrimitive) return default
         val s = element.asString
         if (s.startsWith("@{") && s.endsWith("}")) {
-            val prop = s.drop(2).dropLast(1)
-            return data[prop]?.toString() ?: default
+            // Canonical string value context: dot paths, `?? default`,
+            // canonical stringification (objects/arrays stay unresolved).
+            return DataBindingContext.resolveString(s, data) ?: default
         }
         return s
     }

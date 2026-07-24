@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.CollectionAttributes
@@ -59,30 +60,19 @@ class DynamicTableComponent {
             )
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
-            // Parse data binding for items ('bind' first, then 'items')
+            // Parse data binding for items ('bind' first, then 'items') —
+            // canonical whole-value resolution (flat-first, dot paths).
             val bindRaw = a.common.bind as? String
             val itemsRaw = TypedAttrs.raw(a.items) as? String
-            val itemsBinding = when {
-                bindRaw?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(bindRaw)?.groupValues?.get(1)
-                }
-                itemsRaw?.contains("@{") == true -> {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(itemsRaw)?.groupValues?.get(1)
-                }
-                else -> null
-            }
-            
+            val itemsExpr = sequenceOf(bindRaw, itemsRaw)
+                .filterNotNull()
+                .firstOrNull { it.startsWith("@{") && it.endsWith("}") }
+
             // Get items from data binding
-            val items = when {
-                itemsBinding != null -> {
-                    when (val boundValue = data[itemsBinding]) {
-                        is List<*> -> boundValue
-                        is Array<*> -> boundValue.toList()
-                        else -> emptyList<Any>()
-                    }
-                }
+            val items = when (val boundValue =
+                itemsExpr?.let { DataBindingContext.evaluateExpression(it, data) }) {
+                is List<*> -> boundValue
+                is Array<*> -> boundValue.toList()
                 else -> emptyList<Any>()
             }
             

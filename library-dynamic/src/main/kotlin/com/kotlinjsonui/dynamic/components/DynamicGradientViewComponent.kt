@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.GradientViewAttributes
@@ -84,11 +85,14 @@ class DynamicGradientViewComponent {
                     parseColors(colorsElement.asJsonArray, data, context)
                 }
                 colorsElement?.isJsonPrimitive == true && colorsElement.asString.contains("@{") -> {
-                    // Dynamic colors from data binding
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    val variable = pattern.find(colorsElement.asString)?.groupValues?.get(1)
-                    if (variable != null) {
-                        resolveColorList(data[variable], data, context)
+                    // Dynamic colors from data binding — canonical
+                    // whole-value resolution (flat-first, dot paths).
+                    val expr = colorsElement.asString
+                    if (expr.startsWith("@{") && expr.endsWith("}")) {
+                        resolveColorList(
+                            DataBindingContext.evaluateExpression(expr, data).takeIf { it !== expr },
+                            data, context
+                        )
                     } else {
                         DEFAULT_COLORS
                     }

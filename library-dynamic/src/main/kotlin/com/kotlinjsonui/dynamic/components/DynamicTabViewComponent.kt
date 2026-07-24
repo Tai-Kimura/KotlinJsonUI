@@ -19,6 +19,7 @@ import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
 import com.kotlinjsonui.dynamic.SafeAreaConfig
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.TabViewAttributes
@@ -88,17 +89,15 @@ class DynamicTabViewComponent {
             // by the generated parser (and skipped for L1-normalized
             // layouts).
             val onTabChangeRaw = TypedAttrs.rawString(a.onValueChange)
-            val onTabChangeProperty = onTabChangeRaw?.let { value ->
-                if (value.contains("@{")) {
-                    val pattern = "@\\{([^}]+)\\}".toRegex()
-                    pattern.find(value)?.groupValues?.get(1)
-                } else null
-            }
 
             @Suppress("UNCHECKED_CAST")
-            val onTabChangeCallback = onTabChangeProperty?.let {
-                data[it] as? ((Int) -> Unit)
-            }
+            val onTabChangeCallback = onTabChangeRaw
+                ?.takeIf { it.startsWith("@{") && it.endsWith("}") }
+                ?.let { expr ->
+                    // Canonical value resolution of the handler reference
+                    // (flat-first, dot paths).
+                    DataBindingContext.evaluateExpression(expr, data) as? ((Int) -> Unit)
+                }
 
             // Get initial selected index
             val initialIndex = when {
@@ -316,9 +315,13 @@ class DynamicTabViewComponent {
                         primitive.isString -> {
                             val str = primitive.asString
                             if (str.startsWith("@{") && str.endsWith("}")) {
-                                val bindingProp = str.drop(2).dropLast(1)
-                                when (val value = data[bindingProp]) {
-                                    is Number -> if (value.toInt() > 0) value.toString() else null
+                                // Canonical value resolution (flat-first,
+                                // dot paths, `?? default`).
+                                when (val value = DataBindingContext.evaluateExpression(str, data)
+                                    .takeIf { it !== str }) {
+                                    is Number -> if (value.toInt() > 0) {
+                                        DataBindingContext.stringify(value)
+                                    } else null
                                     is String -> value.ifEmpty { null }
                                     else -> null
                                 }

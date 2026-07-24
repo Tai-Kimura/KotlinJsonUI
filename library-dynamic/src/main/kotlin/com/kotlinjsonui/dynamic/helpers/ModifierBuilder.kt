@@ -157,12 +157,9 @@ object ModifierBuilder {
                     p.isString -> {
                         val s = p.asString
                         if (s.startsWith("@{") && s.endsWith("}")) {
-                            val evaluated = DataBindingContext.evaluateExpression(s, data)
-                            when (evaluated) {
-                                is Number -> evaluated.toFloat()
-                                is String -> evaluated.toFloatOrNull() ?: 0f
-                                else -> 0f
-                            }
+                            // Canonical number value context; unresolved →
+                            // attribute default (no margin).
+                            DataBindingContext.resolveNumber(s, data)?.toFloat() ?: 0f
                         } else {
                             s.toFloatOrNull()
                         }
@@ -325,13 +322,9 @@ object ModifierBuilder {
             if (p.isString) {
                 val s = p.asString
                 if (s.startsWith("@{") && s.endsWith("}")) {
-                    val prop = s.drop(2).dropLast(1)
-                    val value = data[prop]
-                    val alphaVal = when (value) {
-                        is Number -> value.toFloat()
-                        is String -> value.toFloatOrNull() ?: 1f
-                        else -> 1f
-                    }
+                    // Canonical number value context (dot paths, `??`
+                    // default); unresolved → attribute default (opaque).
+                    val alphaVal = DataBindingContext.resolveNumber(s, data)?.toFloat() ?: 1f
                     return modifier.alpha(alphaVal.coerceIn(0f, 1f))
                 }
                 p.asString.toFloatOrNull()?.let {

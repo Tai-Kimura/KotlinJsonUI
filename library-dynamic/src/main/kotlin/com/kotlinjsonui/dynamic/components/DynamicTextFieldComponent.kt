@@ -308,10 +308,16 @@ class DynamicTextFieldComponent {
 
         // ── Helpers ──
 
+        /**
+         * Two-way write-back target: canonically a single FLAT identifier
+         * (no dots, brackets, `??` or `!`) — kept flat by design so the
+         * updateData key matches the ViewModel property. A stray `??`
+         * default is stripped defensively (whitespace-insensitive).
+         */
         private fun extractBindingVariable(text: String): String? {
             val pattern = "@\\{([^}]+)\\}".toRegex()
             val match = pattern.find(text) ?: return null
-            return match.groupValues[1].split(" ?? ")[0].trim()
+            return match.groupValues[1].split("??")[0].trim()
         }
 
         private fun hasMarginAttributes(json: JsonObject): Boolean {

@@ -87,43 +87,39 @@ object TypedAttrs {
     /** Static value only — a binding yields null. */
     fun <T> static(v: AttrValue<T>?): T? = v?.valueOrNull()
 
-    /** Static value or the bound data-map value, as String. */
+    /**
+     * Static value or the canonically resolved bound value, as String
+     * (dot paths, `?? default`, canonical scalar stringification;
+     * objects/arrays stay unresolved → null).
+     */
     fun string(v: AttrValue<String>?, data: Map<String, Any>): String? = when (v) {
         null -> null
-        is AttrValue.Binding -> data[v.expression] as? String
+        is AttrValue.Binding -> DataBindingContext.resolveStringInner(v.expression, data)
         is AttrValue.Value -> v.value
     }
 
-    /** Static value or the bound data-map value, as Float (legacy resolveFloat semantics). */
+    /** Static value or the canonically resolved bound value, as Float. */
     fun float(v: AttrValue<Double>?, data: Map<String, Any>): Float? = when (v) {
         null -> null
-        is AttrValue.Binding -> when (val bound = data[v.expression]) {
-            is Number -> bound.toFloat()
-            is String -> bound.toFloatOrNull()
-            else -> null
-        }
+        is AttrValue.Binding -> DataBindingContext.resolveNumberInner(v.expression, data)?.toFloat()
         is AttrValue.Value -> v.value.toFloat()
     }
 
-    /** Static value or the bound data-map value, as Int. */
+    /** Static value or the canonically resolved bound value, as Int. */
     fun int(v: AttrValue<Double>?, data: Map<String, Any>): Int? = when (v) {
         null -> null
-        is AttrValue.Binding -> when (val bound = data[v.expression]) {
-            is Number -> bound.toInt()
-            is String -> bound.toIntOrNull()
-            else -> null
-        }
+        is AttrValue.Binding -> DataBindingContext.resolveNumberInner(v.expression, data)?.toInt()
         is AttrValue.Value -> v.value.toInt()
     }
 
-    /** Static value or the bound data-map value, as Boolean (legacy resolveBoolean semantics). */
+    /**
+     * Static value or the canonically resolved bound value, as Boolean
+     * (dot paths, `?? default`, negation `@{!prop}`, canonical bool
+     * coercion: bool / integral number / "true"/"1"/"false"/"0").
+     */
     fun boolean(v: AttrValue<Boolean>?, data: Map<String, Any>): Boolean? = when (v) {
         null -> null
-        is AttrValue.Binding -> when (val bound = data[v.expression]) {
-            is Boolean -> bound
-            is String -> bound.equals("true", ignoreCase = true)
-            else -> null
-        }
+        is AttrValue.Binding -> DataBindingContext.resolveBooleanInner(v.expression, data)
         is AttrValue.Value -> v.value
     }
 
@@ -147,7 +143,8 @@ object TypedAttrs {
         parse: (String) -> T?
     ): T? = when (v) {
         null -> null
-        is AttrValue.Binding -> (data[v.expression] as? String)?.let(parse)
+        is AttrValue.Binding ->
+            DataBindingContext.resolveStringInner(v.expression, data)?.let(parse)
         is AttrValue.Value -> v.value.knownOrNull()
     }
 
@@ -175,7 +172,7 @@ object TypedAttrs {
         json: (T) -> String
     ): String? = when (v) {
         null -> null
-        is AttrValue.Binding -> data[v.expression] as? String
+        is AttrValue.Binding -> DataBindingContext.resolveStringInner(v.expression, data)
         is AttrValue.Value -> enumString(v.value, json)
     }
 

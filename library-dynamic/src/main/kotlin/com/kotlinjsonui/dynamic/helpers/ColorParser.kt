@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
 
 /**
@@ -62,10 +63,10 @@ object ColorParser {
     ): Color? {
         if (value == null) return null
 
-        // Check binding
+        // Check binding — canonical resolution (flat-first, dot paths,
+        // `?? default`), then color-specific interpretation of the value.
         if (value.startsWith("@{") && value.endsWith("}")) {
-            val prop = value.drop(2).dropLast(1)
-            return when (val bound = data[prop]) {
+            return when (val bound = DataBindingContext.evaluateExpression(value, data)) {
                 is Color -> bound
                 is String -> parseColorString(bound, context)
                 is Long -> Color(bound)

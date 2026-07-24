@@ -7,8 +7,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.annotation.VisibleForTesting
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -190,12 +192,20 @@ class DynamicEmbedComponent {
 
         /**
          * Resolve `params` tree: leaves whose values are `@{binding}` strings
-         * are looked up in the parent data dict; literals pass through.
+         * resolve against the parent data via the CANONICAL path resolution
+         * ([DataBindingContext.resolvePath] — flat key first, then dot-path
+         * traversal with bracket index); literals pass through with native
+         * JSON types preserved (gson `asNumber` keeps integer identity).
          * Intermediate nodes are literal objects (validated by the CLI:
-         * bindings are leaf-only, arrays unsupported) — recursed here so
-         * nested leaves resolve too.
+         * bindings are leaf-only, arrays unsupported, no `??` defaults in
+         * params) — recursed here so nested leaves resolve too.
+         *
+         * Unresolved leaf → key DROPPED so the embedded layout's own
+         * data-section defaultValue applies (canonical embedParams
+         * behavior).
          */
-        private fun resolveParams(
+        @VisibleForTesting
+        internal fun resolveParams(
             element: com.google.gson.JsonElement?,
             parentData: Map<String, Any>
         ): Map<String, Any> {
@@ -206,8 +216,9 @@ class DynamicEmbedComponent {
                 if (value.isJsonPrimitive && value.asJsonPrimitive.isString) {
                     val s = value.asString
                     if (s.startsWith("@{") && s.endsWith("}")) {
-                        val prop = s.substring(2, s.length - 1)
-                        parentData[prop]?.let { out[key] = it }
+                        val prop = s.substring(2, s.length - 1).trim()
+                        // Path-only resolution (embedParams features: path).
+                        DataBindingContext.resolvePath(prop, parentData)?.let { out[key] = it }
                         // unresolved binding → key dropped (let embedded layout's defaultValue apply)
                         continue
                     }
