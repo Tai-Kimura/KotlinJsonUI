@@ -16,6 +16,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.EmbedAttributes
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.embed.EmbedContainer
+import com.kotlinjsonui.embed.EmbedIsolatedNavigation
 import com.kotlinjsonui.embed.EmbedNavigationMode
 import com.kotlinjsonui.embed.EmbeddedEvent
 
@@ -74,41 +75,78 @@ class DynamicEmbedComponent {
             }
 
             val embedId = a.common.id ?: "embed"
-            // "isolated" is not a declared enum value (v1 declares only
-            // "delegate") — it reaches us through the AttrEnum unknown
-            // pass-through, matching the legacy raw-string comparison.
-            val navigationMode = when (TypedAttrs.enumString(a.navigationMode) { it.json }) {
+            // Version-skew guard: an unknown navigationMode means the layout
+            // was authored against a newer attribute vocabulary than this
+            // runtime. Never silently degrade to delegate — surface it.
+            val rawMode = TypedAttrs.enumString(a.navigationMode) { it.json }
+            val navigationMode = when (rawMode) {
+                null, "delegate" -> EmbedNavigationMode.Delegate
                 "isolated" -> EmbedNavigationMode.Isolated
-                else -> EmbedNavigationMode.Delegate
+                else -> {
+                    ErrorBox("Embed: unknown navigationMode `$rawMode` — update KotlinJsonUI")
+                    return
+                }
             }
             // Declared key read raw: legacy number handling relies on gson
             // JsonElement types (asNumber) — see class KDoc.
             val resolvedParams = resolveParams(TypedAttrs.rawKey(json, "params"), data)
             val eventBridge = buildEventBridge(a.events, data)
 
-            EmbedContainer(
-                embedId = embedId,
-                params = resolvedParams,
-                navigationMode = navigationMode,
-                eventBridge = eventBridge
-            ) { _ ->
-                // Tier 1: compiled screen via custom component handler
-                val viewJson = JsonObject().apply {
-                    addProperty("type", screenName)
+            if (navigationMode == EmbedNavigationMode.Isolated) {
+                EmbedContainer(
+                    embedId = embedId,
+                    params = resolvedParams,
+                    navigationMode = EmbedNavigationMode.Isolated,
+                    isolatedNavigation = EmbedIsolatedNavigation.Automatic,
+                    destinationContent = { entry ->
+                        EmbeddedScreenContent(
+                            screenName = entry.screen,
+                            params = entry.params
+                        )
+                    },
+                    eventBridge = eventBridge
+                ) { _ ->
+                    EmbeddedScreenContent(screenName = screenName, params = resolvedParams)
                 }
-                val handled = Configuration.customComponentHandler?.invoke(
-                    screenName, viewJson, resolvedParams
-                ) ?: false
+            } else {
+                EmbedContainer(
+                    embedId = embedId,
+                    params = resolvedParams,
+                    navigationMode = navigationMode,
+                    eventBridge = eventBridge
+                ) { _ ->
+                    EmbeddedScreenContent(screenName = screenName, params = resolvedParams)
+                }
+            }
+        }
 
-                if (!handled) {
-                    // Tier 2: dynamic fallback — load embedded layout JSON
-                    // with only the resolved params (parent's data is NOT propagated).
-                    val layoutJson = DynamicLayoutLoader.loadLayout(screenName)
-                    if (layoutJson != null) {
-                        DynamicView(layoutJson, resolvedParams)
-                    } else {
-                        ErrorBox("Embed: layout not found for screen `$screenName`")
-                    }
+        /**
+         * Two-tier screen resolution shared by the embed root and pushed
+         * isolated-stack entries: compiled screen via
+         * [Configuration.customComponentHandler], else [DynamicView] loading
+         * the layout JSON with only the given params.
+         */
+        @Composable
+        private fun EmbeddedScreenContent(
+            screenName: String,
+            params: Map<String, Any>
+        ) {
+            // Tier 1: compiled screen via custom component handler
+            val viewJson = JsonObject().apply {
+                addProperty("type", screenName)
+            }
+            val handled = Configuration.customComponentHandler?.invoke(
+                screenName, viewJson, params
+            ) ?: false
+
+            if (!handled) {
+                // Tier 2: dynamic fallback — load embedded layout JSON
+                // with only the given params (parent's data is NOT propagated).
+                val layoutJson = DynamicLayoutLoader.loadLayout(screenName)
+                if (layoutJson != null) {
+                    DynamicView(layoutJson, params)
+                } else {
+                    ErrorBox("Embed: layout not found for screen `$screenName`")
                 }
             }
         }
@@ -151,8 +189,11 @@ class DynamicEmbedComponent {
         }
 
         /**
-         * Resolve `params` element: keys whose values are `@{binding}` strings
-         * are looked up in the parent data dict. Literals pass through.
+         * Resolve `params` tree: leaves whose values are `@{binding}` strings
+         * are looked up in the parent data dict; literals pass through.
+         * Intermediate nodes are literal objects (validated by the CLI:
+         * bindings are leaf-only, arrays unsupported) — recursed here so
+         * nested leaves resolve too.
          */
         private fun resolveParams(
             element: com.google.gson.JsonElement?,
@@ -178,8 +219,10 @@ class DynamicEmbedComponent {
                         p.isNumber -> p.asNumber
                         else -> p.asString
                     }
+                } else if (value.isJsonObject) {
+                    out[key] = resolveParams(value, parentData)
                 }
-                // nested objects/arrays: not supported in v1
+                // arrays: unsupported (CLI validate error)
             }
             return out
         }
