@@ -25,6 +25,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
@@ -115,6 +118,23 @@ private fun MinSizeMarker(screenId: String) {
 }
 
 /**
+ * Candidate C — a sized child inside a wrapper that reports ZERO size to its
+ * parent. Candidate B costs 1.dp of layout in every Column-shaped screen,
+ * which shifts real content and every screenshot baseline; this shape is the
+ * Compose equivalent of the iOS overlay, and the open question is whether a
+ * child placed outside its parent's 0x0 bounds is still reported to the
+ * accessibility tree.
+ */
+@Composable
+private fun ZeroLayoutMarker(screenId: String) {
+    val sizePx = with(LocalDensity.current) { 1.dp.roundToPx() }
+    Layout(content = { Box(Modifier.size(1.dp).testTag("__screen_$screenId")) }) { measurables, _ ->
+        val placeable = measurables.first().measure(Constraints.fixed(sizePx, sizePx))
+        layout(0, 0) { placeable.place(0, 0) }
+    }
+}
+
+/**
  * A screen body shaped like generated code: a root container carrying its own
  * testTag plus identified children, with the marker as a SIBLING of the
  * content rather than a wrapper.
@@ -144,6 +164,24 @@ private fun NavProbe() {
         // answers question 1 and question 2.
         ProbeScreenBody("zerosize")
         ProbeScreenBody("minsize", minSizeMarker = true)
+
+        // Candidate C measured in the same content shape: does a child
+        // placed outside its zero-size parent survive into the a11y tree?
+        Column {
+            Text("zerolayout-content", modifier = Modifier.testTag("zerolayout_child_0"))
+            ZeroLayoutMarker("zerolayout")
+        }
+
+        // The LIBRARY's real composable, in the shape code generation emits
+        // it (a sibling inside a Box) and deliberately WITHOUT an ancestor
+        // that opts into testTagsAsResourceId — the library sets that on the
+        // marker node itself, and this is what proves that is enough.
+        Box(Modifier.semantics { testTagsAsResourceId = false }) {
+            Box {
+                Text("library-content", modifier = Modifier.testTag("library_child_0"))
+                com.kotlinjsonui.core.ScreenMarker("library_shape")
+            }
+        }
 
         // A marker underneath a merged ancestor: expected to vanish.
         Column(Modifier.semantics(mergeDescendants = true) { }) {

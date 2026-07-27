@@ -122,6 +122,10 @@ class ScreenMarkerProbeTest {
             println("  " + snapshot("zeroSize(child id)", "zerosize_child_0"))
             println("  " + snapshot("minSize(root id)", "minsize_root_view"))
             println("  " + snapshot("minSize(child id)", "minsize_child_0"))
+            println("  " + snapshot("zeroLayout(marker)", marker("zerolayout")))
+            println("  " + snapshot("zeroLayout(sibling id)", "zerolayout_child_0"))
+            println("  " + snapshot("library ScreenMarker()", marker("library_shape")))
+            println("  " + snapshot("library(sibling id)", "library_child_0"))
 
             println("[screen-marker] ANCESTOR SEMANTICS")
             println("  " + snapshot("mergeDescendants(zeroSize)", marker("merged_host")))
