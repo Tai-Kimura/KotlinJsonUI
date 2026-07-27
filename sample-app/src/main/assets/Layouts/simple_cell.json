@@ -1,5 +1,6 @@
 {
   "type": "View",
+  "role": "cell",
   "orientation": "horizontal",
   "padding": 12,
   "background": "white_28",
