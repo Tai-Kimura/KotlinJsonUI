@@ -18,6 +18,10 @@
         <activity
             android:name=".GestureProbeActivity"
             android:exported="true" />
+        <!-- Screen-marker measurement probe (screen-identity Phase 0) — not part of the suite. -->
+        <activity
+            android:name=".ScreenMarkerProbeActivity"
+            android:exported="true" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

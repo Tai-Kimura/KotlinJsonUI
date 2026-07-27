@@ -60,6 +60,9 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.runtime:runtime")
+    // ScreenMarkerProbeActivity only: the screen-marker predicate has to be
+    // measured against the real NavHost consumers use, not a hand-rolled stack.
+    implementation("androidx.navigation:navigation-compose:2.9.3")
 
     // library-dynamic parses layouts with Gson; the host reads fixture JSON with it too
     implementation("com.google.code.gson:gson:2.13.1")
