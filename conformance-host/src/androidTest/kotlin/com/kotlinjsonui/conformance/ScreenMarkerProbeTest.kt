@@ -126,6 +126,13 @@ class ScreenMarkerProbeTest {
             println("  " + snapshot("zeroLayout(sibling id)", "zerolayout_child_0"))
             println("  " + snapshot("library ScreenMarker()", marker("library_shape")))
             println("  " + snapshot("library(sibling id)", "library_child_0"))
+            println("  " + snapshot("library PRE-inset-offset", marker("library_shape_old")))
+            println("  " + snapshot("library old(sibling id)", "library_old_child_0"))
+            println("  " + snapshot("offset BEFORE tag", marker("order_a")))
+            println("  " + snapshot("offset AFTER semantics", marker("order_b")))
+            println("  " + snapshot("offset on OUTER node", marker("order_c")))
+            println("  " + snapshot("nested PADDING", marker("order_d")))
+            println("  " + snapshot("outer opt-in + offset", marker("order_e")))
 
             println("[screen-marker] ANCESTOR SEMANTICS")
             println("  " + snapshot("mergeDescendants(zeroSize)", marker("merged_host")))
@@ -138,6 +145,14 @@ class ScreenMarkerProbeTest {
             check(foundAnyWindow("minsize_root_view") == 1) { "marker clobbered the root id" }
             check(foundAnyWindow("minsize_child_0") == 1) { "marker clobbered a child id" }
             check(foundAnyWindow(marker("minsize")) == 1) { "a screen must expose exactly one marker" }
+            // The library's own self-opt-in has to survive under an ancestor
+            // that sets testTagsAsResourceId = false — a tree that opts in
+            // higher up masks a break here, and that is how a modifier-order
+            // mistake in ScreenMarker nearly shipped.
+            check(foundAnyWindow(marker("library_shape")) == 1) {
+                "library ScreenMarker() is not addressable under an opted-out ancestor: " +
+                    snapshot("library", marker("library_shape"))
+            }
         }
     }
 
@@ -227,6 +242,105 @@ class ScreenMarkerProbeTest {
             println("  " + snapshot("inside_bottom(reached?)", "inside_scroll_bottom"))
             println("  " + snapshot("outside_bottom(reached?)", "outside_scroll_bottom"))
         }
+    }
+
+    // MARK: - Edge-to-edge: the shape a generated screen actually has
+
+    /**
+     * Every other probe here runs under a root that pads the system bars away.
+     * A generated screen has no such padding, so its marker lands at the window
+     * origin with the status bar on top of it — which is the one placement none
+     * of these measurements ever covered.
+     *
+     * Records three candidates at the SAME origin, one launch each: the shipped
+     * node, the same node placed past the insets, and a larger node (to tell
+     * "this region is hidden" apart from "this node is too small").
+     */
+    @Test
+    fun edgeToEdgeMarkerPlacement() {
+        for (mode in listOf("edge_current", "edge_origin", "edge_big", "edge_nested")) {
+            launch(mode).use {
+                // Wait on content, NOT on the marker: waiting on the marker
+                // would hang for exactly the candidate under suspicion.
+                check(device.wait(Until.hasObject(By.res("edge_child_0")), 10_000) != null) {
+                    "$mode: probe content never appeared"
+                }
+                device.waitForIdle()
+                println("[screen-marker] EDGE-TO-EDGE $mode")
+                println("  " + snapshot("marker", marker("edge_marker")))
+                println("  " + snapshot("content", "edge_child_0"))
+                println("  insets=" + insetsLabel())
+            }
+        }
+    }
+
+    /**
+     * REGRESSION GUARD — the library marker must satisfy the DRIVER's own
+     * predicate on the shape a generated screen actually has.
+     *
+     * This is the check that was missing. Every other probe here runs under a
+     * root that pads the system bars away, so the marker was never measured in
+     * the one position generated code puts it in: the window origin, under the
+     * status bar. Asserting presence in the tree would not have caught it
+     * either — the node IS in the tree at y=0; it is `By.res` that drops it.
+     */
+    @Test
+    fun edgeToEdgeMarkerSatisfiesTheDriverPredicate() {
+        launch("edge_current").use {
+            check(device.wait(Until.hasObject(By.res("edge_child_0")), 10_000) != null) {
+                "probe content never appeared"
+            }
+            device.waitForIdle()
+            val id = marker("edge_marker")
+            // Spelled exactly as the driver spells it, not as a presence test:
+            // `inTree` would pass with the bug in place.
+            val found = device.findObject(By.res(id)) != null
+            check(found) {
+                "marker is not findable by By.res at the window origin — " +
+                    snapshot("marker", id)
+            }
+        }
+    }
+
+    /**
+     * Sweeps the marker's y offset to find where visibility actually flips.
+     * A single reading was ambiguous — y=48 measured visible while y=0 did not,
+     * under a 72px inset — so the boundary is read off rather than assumed.
+     */
+    @Test
+    fun edgeToEdgeVisibilityBoundary() {
+        launch("edge_sweep").use {
+            check(device.wait(Until.hasObject(By.res("__screen_sweep_144")), 10_000) != null) {
+                "sweep never appeared"
+            }
+            device.waitForIdle()
+            println("[screen-marker] EDGE SWEEP  insets=" + insetsLabel())
+            // The windows above the app are what the a11y framework subtracts
+            // from its visible region, so their bounds are the candidate
+            // explanation for wherever the boundary lands.
+            for (w in instrumentation.uiAutomation.windows) {
+                val r = Rect().also { w.getBoundsInScreen(it) }
+                println("  window type=${w.type} layer=${w.layer} bounds=$r")
+            }
+            for (y in SWEEP_OFFSETS) {
+                println("  " + snapshot("y=$y", "__screen_sweep_$y"))
+            }
+        }
+    }
+
+    /** The inset row the probe renders, so bounds read against a measured number. */
+    private fun insetsLabel(): String {
+        val root = instrumentation.uiAutomation.rootInActiveWindow ?: return "-"
+        return findByPrefix(root, "edge_insets_")?.viewIdResourceName ?: "-"
+    }
+
+    private fun findByPrefix(node: AccessibilityNodeInfo?, prefix: String): AccessibilityNodeInfo? {
+        if (node == null) return null
+        if (node.viewIdResourceName?.startsWith(prefix) == true) return node
+        for (i in 0 until node.childCount) {
+            findByPrefix(node.getChild(i), prefix)?.let { return it }
+        }
+        return null
     }
 
     @Test
