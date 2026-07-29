@@ -31,8 +31,8 @@ data class ButtonAttributes(
     val highlightColor: AttrValue<String>? = null,
     /** Highlight color - hex string or color name from colors.json (typo alias) */
     val hilightColor: String? = null,
-    /** Button image */
-    val image: String? = null,
+    /** Button image - asset name (binding supported) */
+    val image: AttrValue<String>? = null,
     /** Background when tapped - hex string or color name from colors.json */
     val tapBackground: String? = null,
     /** Button text (can be data binding, supports interpolation) */
@@ -121,7 +121,7 @@ data class ButtonAttributes(
             highlightBackground = AttrCoerce.string(AttrCoerce.lookup(json, "highlightBackground")),
             highlightColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "highlightColor", listOf("hilightColor"), canonicalOnly)) { AttrCoerce.string(it) },
             hilightColor = AttrCoerce.string(AttrCoerce.lookup(json, "hilightColor")),
-            image = AttrCoerce.string(AttrCoerce.lookup(json, "image")),
+            image = AttrCoerce.attrValue(AttrCoerce.lookup(json, "image")) { AttrCoerce.string(it) },
             tapBackground = AttrCoerce.string(AttrCoerce.lookup(json, "tapBackground")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             textAlign = parseTextAlign(AttrCoerce.lookup(json, "textAlign")),

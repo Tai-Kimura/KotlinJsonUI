@@ -66,12 +66,17 @@ class DynamicButtonComponent {
                 context = context
             )
 
+            // `image` is binding-capable, so the typed value is an AttrValue;
+            // rawString gives back the layout spelling — the static name or
+            // "@{expr}" — which resolveDrawable then resolves.
+            val imageName = TypedAttrs.rawString(a.image)
+            val hasImage = !imageName.isNullOrEmpty()
+
             // Resolve button text with binding + resource support.
             // "Button" is the placeholder for a button with nothing in it, so
             // it only applies when there is no icon either — otherwise an
             // icon-only button renders the word "Button" beside its icon
             // (button_component.rb makes the same call).
-            val hasImage = !a.image.isNullOrEmpty()
             val text = (TypedAttrs.rawString(a.text)
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: "")
                 .ifEmpty { if (hasImage) "" else "Button" }
@@ -166,7 +171,7 @@ class DynamicButtonComponent {
 
             // Optional leading/trailing icon ('imagePosition'/'iconSize' are
             // undeclared legacy runtime extras)
-            val imageResId = a.image?.let {
+            val imageResId = imageName?.let {
                 ResourceResolver.resolveDrawable(it, data, context).takeIf { id -> id != 0 }
             }
             val imagePosition = TypedAttrs.undeclared(json, "imagePosition")?.asString?.lowercase() ?: "leading"
@@ -181,7 +186,7 @@ class DynamicButtonComponent {
             )
             // An icon-only button has no accessible name unless the icon
             // carries one; beside a label the icon is decorative.
-            val iconDescription = if (text.isEmpty()) a.image?.humanizedIconName() else null
+            val iconDescription = if (text.isEmpty()) imageName?.humanizedIconName() else null
 
             // Text alignment (Button-level). Compose default is center; tool allows override.
             // The legacy reader also honored the undeclared "start"/"end"
