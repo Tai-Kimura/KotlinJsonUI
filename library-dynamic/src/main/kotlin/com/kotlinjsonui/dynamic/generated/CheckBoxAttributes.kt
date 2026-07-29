@@ -39,7 +39,7 @@ data class CheckBoxAttributes(
     val onSrc: String? = null,
     /** Value change handler - binding only (@{functionName}) */
     val onValueChange: AttrValue<Any>? = null,
-    /** Selected icon name */
+    /** Selected icon name [aliases: onSrc] */
     val selectedIcon: String? = null,
     /** Space between icon and text (binding supported) */
     val spacing: AttrValue<Double>? = null,
@@ -111,7 +111,7 @@ data class CheckBoxAttributes(
             label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label")) { AttrCoerce.string(it) },
             onSrc = AttrCoerce.string(AttrCoerce.lookup(json, "onSrc")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
-            selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon")),
+            selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon", listOf("onSrc"), canonicalOnly)),
             spacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "spacing")) { AttrCoerce.number(it) },
             src = AttrCoerce.string(AttrCoerce.lookup(json, "src")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },

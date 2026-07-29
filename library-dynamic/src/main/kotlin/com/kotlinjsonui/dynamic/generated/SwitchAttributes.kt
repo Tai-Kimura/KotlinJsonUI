@@ -29,7 +29,7 @@ data class SwitchAttributes(
     val onTintColor: String? = null,
     /** Toggle handler function - binding only (@{functionName}). Alias of onValueChange. */
     val onToggle: AttrValue<Any>? = null,
-    /** Value change handler - binding only (@{functionName}) */
+    /** Value change handler - binding only (@{functionName}) [aliases: onToggle] */
     val onValueChange: AttrValue<Any>? = null,
     /** Thumb tint color - hex string or color name from colors.json (binding supported) */
     val thumbTintColor: AttrValue<String>? = null,
@@ -105,7 +105,7 @@ data class SwitchAttributes(
             offTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "offTintColor")) { AttrCoerce.string(it) },
             onTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "onTintColor")),
             onToggle = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onToggle")),
-            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
+            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("onToggle"), canonicalOnly)),
             thumbTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "thumbTintColor")) { AttrCoerce.string(it) },
             tint = AttrCoerce.attrValue(AttrCoerce.lookup(json, "tint")) { AttrCoerce.string(it) },
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),

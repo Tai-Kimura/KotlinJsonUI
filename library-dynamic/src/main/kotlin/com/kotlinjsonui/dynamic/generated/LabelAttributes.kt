@@ -44,11 +44,11 @@ data class LabelAttributes(
     val lineSpacing: AttrValue<Double>? = null,
     /** Maximum number of lines (0 for unlimited) (binding supported) */
     val lines: AttrValue<Double>? = null,
-    /** Enable URL/phone detection */
+    /** Enable URL/phone detection. Auto-links BARE http(s) URLs and phone numbers found in the text. It does not parse markdown, and relative paths are deliberately never linked: a path like "/guides/x" only means something to a web router, so linkifying it would produce a control that is dead on iOS and Android. Express a cross-document reference with partialAttributes 'range' + 'onclick', where the handler performs the navigation itself — including scrolling to the target position, which an href cannot express on mobile anyway. */
     val linkable: AttrValue<Boolean>? = null,
     /** Minimum scale factor for auto-shrink (binding supported) */
     val minimumScaleFactor: AttrValue<Double>? = null,
-    /** Partial text styling */
+    /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onclick'. This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. */
     val partialAttributes: List<Any?>? = null,
     /** Placeholder text when empty (alias for hint) */
     val placeholder: String? = null,
@@ -56,7 +56,7 @@ data class LabelAttributes(
     val selected: AttrValue<Boolean>? = null,
     /** Strikethrough styling (boolean for simple, object for styled) [accepts: boolean | object] */
     val strikethrough: Any? = null,
-    /** Text content (can be data binding, supports interpolation) */
+    /** Text content (can be data binding, supports interpolation). PLAIN TEXT: markdown is not interpreted, so "[label](/path)", "**bold**" and backticks render literally, brackets and all. To emphasise or link part of the string, use partialAttributes ('range' plus font/color/underline, and 'onclick' for a tappable span). Rendering real markdown is out of scope for Label — write a custom component. */
     val text: AttrValue<String>? = null,
     /** Text alignment (binding supported) */
     val textAlign: AttrValue<AttrEnum<TextAlign>>? = null,
