@@ -11,6 +11,8 @@ package com.kotlinjsonui.dynamic.generated
 data class BlurAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** Blur radius in dp. Android only: Compose has no material-blur equivalent of UIVisualEffectView, so effectStyle resolves to a radius there and this overrides it. */
+    val blurRadius: Double? = null,
     /** Blur effect style */
     val effectStyle: AttrEnum<EffectStyle>? = null,
 ) {
@@ -36,6 +38,7 @@ data class BlurAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "blurRadius",
             "effectStyle",
         )
 
@@ -56,6 +59,7 @@ data class BlurAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): BlurAttributes = BlurAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            blurRadius = AttrCoerce.number(AttrCoerce.lookup(json, "blurRadius")),
             effectStyle = parseEffectStyle(AttrCoerce.lookup(json, "effectStyle")),
         )
 
