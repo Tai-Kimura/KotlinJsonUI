@@ -1,6 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.PaddingValues
@@ -65,10 +66,15 @@ class DynamicButtonComponent {
                 context = context
             )
 
-            // Resolve button text with binding + resource support
+            // Resolve button text with binding + resource support.
+            // "Button" is the placeholder for a button with nothing in it, so
+            // it only applies when there is no icon either — otherwise an
+            // icon-only button renders the word "Button" beside its icon
+            // (button_component.rb makes the same call).
+            val hasImage = !a.image.isNullOrEmpty()
             val text = (TypedAttrs.rawString(a.text)
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: "")
-                .ifEmpty { "Button" }
+                .ifEmpty { if (hasImage) "" else "Button" }
 
             // Loading state (undeclared legacy runtime extra)
             var isLoading by remember {
@@ -165,6 +171,17 @@ class DynamicButtonComponent {
             }
             val imagePosition = TypedAttrs.undeclared(json, "imagePosition")?.asString?.lowercase() ?: "leading"
             val iconSize = TypedAttrs.undeclared(json, "iconSize")?.asFloat ?: 18f
+            // Tint only when the layout asked for one. Icon() forces a single
+            // colour, which flattens a multi-colour asset; the untinted case
+            // draws the drawable as authored. Same rule as button_component.rb
+            // and the web converter.
+            val iconTint = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor) ?: TypedAttrs.rawString(a.fontColor),
+                data, context
+            )
+            // An icon-only button has no accessible name unless the icon
+            // carries one; beside a label the icon is decorative.
+            val iconDescription = if (text.isEmpty()) a.image?.humanizedIconName() else null
 
             // Text alignment (Button-level). Compose default is center; tool allows override.
             // The legacy reader also honored the undeclared "start"/"end"
@@ -215,15 +232,12 @@ class DynamicButtonComponent {
                             textAlign = textAlign
                         )
                     }
+                } else if (imageResId != null && text.isEmpty()) {
+                    ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
                 } else if (imageResId != null) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         if (imagePosition == "leading") {
-                            Icon(
-                                painter = painterResource(id = imageResId),
-                                contentDescription = null,
-                                modifier = Modifier.size(iconSize.dp),
-                                tint = textColor
-                            )
+                            ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                         Text(
@@ -234,12 +248,7 @@ class DynamicButtonComponent {
                         )
                         if (imagePosition == "trailing") {
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                painter = painterResource(id = imageResId),
-                                contentDescription = null,
-                                modifier = Modifier.size(iconSize.dp),
-                                tint = textColor
-                            )
+                            ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
                         }
                     }
                 } else {
@@ -252,6 +261,36 @@ class DynamicButtonComponent {
                 }
             }
         }
+
+        // ── Icon ──
+
+        /**
+         * Button icon. [tint] null means the drawable is drawn as authored —
+         * `Icon` would flatten a multi-colour asset to a single colour, so the
+         * tint is only applied when the layout asked for one via `tintColor`
+         * or `fontColor`.
+         */
+        @Composable
+        private fun ButtonIcon(resId: Int, size: Float, tint: Color?, description: String?) {
+            if (tint != null) {
+                Icon(
+                    painter = painterResource(id = resId),
+                    contentDescription = description,
+                    modifier = Modifier.size(size.dp),
+                    tint = tint
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = resId),
+                    contentDescription = description,
+                    modifier = Modifier.size(size.dp)
+                )
+            }
+        }
+
+        /** "menu_open" -> "menu open": a readable accessible name. */
+        private fun String.humanizedIconName(): String =
+            substringBeforeLast('.').replace('_', ' ').replace('-', ' ')
 
         // ── Click Handler ──
 
@@ -399,7 +438,10 @@ class DynamicButtonComponent {
         private val APPLIED: Set<String> = setOf(
             "text", "enabled", "fontSize", "fontWeight", "fontColor",
             "disabledFontColor", "tapBackground", "highlightBackground",
-            "image", "textAlign", "disabledBackground"
+            "image", "textAlign", "disabledBackground",
+            // Common attribute, but the shared pipeline does not apply it —
+            // Button consumes it as the icon tint.
+            "tintColor"
         )
     }
 }
