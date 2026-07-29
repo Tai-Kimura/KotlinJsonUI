@@ -68,6 +68,9 @@ class VisibilityWrapperTest {
             }
         }
 
+        // hidden=true keeps layout space (alpha 0) but clears semantics
+        // (clearAndSetSemantics), so the text node is not findable —
+        // exactly the "not visible to accessibility" contract.
         composeTestRule.onNodeWithText("Hidden Content").assertDoesNotExist()
     }
 
@@ -79,7 +82,8 @@ class VisibilityWrapperTest {
             }
         }
 
-        // hidden=true takes precedence over visibility="visible"
+        // hidden=true takes precedence over visibility="visible": space is
+        // kept but semantics are cleared, so the node is not findable.
         composeTestRule.onNodeWithText("Should Be Hidden").assertDoesNotExist()
     }
 
