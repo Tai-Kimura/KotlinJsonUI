@@ -102,6 +102,46 @@ if [[ "$FRESH" == "1" ]]; then
   adbsh rm -rf "$DEVICE_OUT" || true
 fi
 
+# 3b. Let the launcher taskbar settle before anything is captured.
+#
+# Full-screen captures include the tablet taskbar, whose recent/predicted app
+# row reorders itself for a few seconds around the first launch of the app
+# under test. Measured: the taskbar row is byte-identical across all 468
+# screenshots WITHIN a run — it settles once and stays — but differed BETWEEN
+# runs, putting 9 fixtures over the dHash threshold. So the fix is not to hide
+# it (SafeAreaView fixtures need real insets) but to start capturing only
+# after it has stopped moving.
+#
+# Waiting on the whole screen rather than the taskbar strip keeps this to
+# shell: with the app parked on its idle launch screen, "screen stopped
+# changing" and "taskbar settled" are the same event.
+echo "Settling the launcher taskbar..."
+adbsh am start -n "$APP_PKG/.FixtureHostActivity" >/dev/null 2>&1 || \
+  adbsh monkey -p "$APP_PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 || true
+settle_prev=""
+settle_stable=0
+for _ in $(seq 1 20); do
+  sleep 1
+  settle_now="$(timeout 30 "$ADB" exec-out screencap -p 2>/dev/null | md5 2>/dev/null \
+                || timeout 30 "$ADB" exec-out screencap -p 2>/dev/null | md5sum 2>/dev/null \
+                || echo "")"
+  [[ -z "$settle_now" ]] && break
+  if [[ "$settle_now" == "$settle_prev" ]]; then
+    settle_stable=$((settle_stable + 1))
+    # Two identical consecutive samples: one could catch a mid-animation
+    # pause, three would cost 3s on every run for no extra certainty.
+    [[ $settle_stable -ge 2 ]] && break
+  else
+    settle_stable=0
+  fi
+  settle_prev="$settle_now"
+done
+if [[ $settle_stable -ge 2 ]]; then
+  echo "screen settled"
+else
+  echo "warning: screen did not settle within 20s — taskbar may drift between runs" >&2
+fi
+
 # 4. Run instrumentation; restart after process crashes until the final
 #    results file exists (progress.jsonl makes reruns resume, and dangling
 #    "running" markers turn crashed fixtures into error outcomes).
