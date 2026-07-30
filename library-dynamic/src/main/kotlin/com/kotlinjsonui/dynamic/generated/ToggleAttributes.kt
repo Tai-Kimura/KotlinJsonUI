@@ -6,13 +6,11 @@ package com.kotlinjsonui.dynamic.generated
 
 /** Typed attribute extraction for the `Toggle` component.
  * Shared attributes are available via [common].
- * Overrides the common definition of: `bind`, `enabled`, `tintColor` (use the property on this class).
+ * Overrides the common definition of: `enabled`, `tintColor` (use the property on this class).
  */
 data class ToggleAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Two-way binding @{variable} [binding: two-way] */
-    val bind: AttrValue<Any>? = null,
     /** Toggle state alias (binding for two-way) [binding: two-way] */
     val checked: AttrValue<Boolean>? = null,
     /** Whether enabled (can be data binding) */
@@ -62,7 +60,6 @@ data class ToggleAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
-            "bind",
             "checked",
             "enabled",
             "isOn",
@@ -96,7 +93,6 @@ data class ToggleAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): ToggleAttributes = ToggleAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            bind = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "bind")),
             checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
             enabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "enabled")) { AttrCoerce.boolean(it) },
             isOn = AttrCoerce.attrValue(AttrCoerce.lookup(json, "isOn")) { AttrCoerce.boolean(it) },

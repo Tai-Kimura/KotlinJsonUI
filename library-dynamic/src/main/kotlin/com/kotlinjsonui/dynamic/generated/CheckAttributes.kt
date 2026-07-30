@@ -6,13 +6,11 @@ package com.kotlinjsonui.dynamic.generated
 
 /** Typed attribute extraction for the `Check` component.
  * Shared attributes are available via [common].
- * Overrides the common definition of: `bind`, `enabled` (use the property on this class).
+ * Overrides the common definition of: `enabled` (use the property on this class).
  */
 data class CheckAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Two-way binding @{variable} [binding: two-way] */
-    val bind: AttrValue<Any>? = null,
     /** Check state (binding for two-way) [binding: two-way] */
     val checked: AttrValue<Boolean>? = null,
     /** Color when checked. */
@@ -54,7 +52,6 @@ data class CheckAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
-            "bind",
             "checked",
             "checkedColor",
             "enabled",
@@ -93,7 +90,6 @@ data class CheckAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): CheckAttributes = CheckAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            bind = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "bind")),
             checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
             checkedColor = AttrCoerce.string(AttrCoerce.lookup(json, "checkedColor")),
             enabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "enabled")) { AttrCoerce.boolean(it) },
