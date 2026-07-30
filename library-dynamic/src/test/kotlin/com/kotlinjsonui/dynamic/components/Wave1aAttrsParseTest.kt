@@ -83,10 +83,13 @@ class Wave1aAttrsParseTest {
         )
         assertEquals("a", TypedAttrs.binding(a.isOn ?: a.checked))
 
+        // `bind` is declared once, on common: it means "the component's primary
+        // value" on every component, so the four per-component copies were
+        // redundant and were dropped from the catalog.
         val bound = CheckBoxAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"CheckBox","bind":"@{c}"}"""))
         )
-        assertEquals("@{c}", TypedAttrs.raw(bound.bind))
+        assertEquals("@{c}", TypedAttrs.raw(bound.common.bind))
     }
 
     @Test

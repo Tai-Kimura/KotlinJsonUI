@@ -241,7 +241,7 @@ class DynamicSwitchComponent {
             TypedAttrs.binding(stateAttr)?.let { return it }
 
             // Fall back to bind
-            (TypedAttrs.raw(a.bind) as? String)?.let { bind ->
+            (TypedAttrs.raw(a.common.bind) as? String)?.let { bind ->
                 ModifierBuilder.extractBindingProperty(bind)?.let { return it }
             }
 
