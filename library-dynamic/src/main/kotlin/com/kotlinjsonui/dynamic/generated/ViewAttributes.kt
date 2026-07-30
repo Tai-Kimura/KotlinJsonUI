@@ -6,13 +6,11 @@ package com.kotlinjsonui.dynamic.generated
 
 /** Typed attribute extraction for the `View` component.
  * Shared attributes are available via [common].
- * Overrides the common definition of: `alignment`, `distribution` (use the property on this class).
+ * Overrides the common definition of: `distribution` (use the property on this class).
  */
 data class ViewAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Child alignment */
-    val alignment: String? = null,
     /** Child component(s) */
     val child: List<Any?>? = null,
     /** Child components (alias for child) */
@@ -124,7 +122,6 @@ data class ViewAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
-            "alignment",
             "child",
             "children",
             "direction",
@@ -162,7 +159,6 @@ data class ViewAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): ViewAttributes = ViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            alignment = AttrCoerce.string(AttrCoerce.lookup(json, "alignment")),
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
             direction = parseDirection(AttrCoerce.lookup(json, "direction")),
