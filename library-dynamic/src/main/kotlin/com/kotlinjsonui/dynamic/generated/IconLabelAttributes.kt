@@ -24,7 +24,7 @@ data class IconLabelAttributes(
     val icon_off: String? = null,
     /** Selected icon */
     val icon_on: String? = null,
-    /** Selected state (binding supported) */
+    /** Selected state (binding supported). Chooses icon_on over icon_off and selectedFontColor over fontColor, so every platform declaring those needs this too. */
     val selected: AttrValue<Boolean>? = null,
     /** Selected text color - hex string or color name from colors.json */
     val selectedFontColor: String? = null,
