@@ -20,7 +20,7 @@ data class NetworkImageAttributes(
     val defaultImage: String? = null,
     /** Error image name */
     val errorImage: String? = null,
-    /** HTTP headers for the image request (Coil ImageRequest.Builder.addHeader). */
+    /** HTTP headers for the image request (Coil 3: httpHeaders(NetworkHeaders) on ImageRequest.Builder). */
     val headers: Map<String, Any?>? = null,
     /** Placeholder image name (primary) */
     val hint: String? = null,
