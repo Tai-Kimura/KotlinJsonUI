@@ -14,7 +14,7 @@ data class EditTextAttributes(
     val hint: String? = null,
     /** Placeholder color - hex string or color name from colors.json (binding supported) */
     val hintColor: AttrValue<String>? = null,
-    /** Input type for Android */
+    /** Input type for Android (Android-only; `input` is the cross-platform attribute) */
     val inputType: String? = null,
     /** Placeholder text (alias for hint) */
     val placeholder: String? = null,
