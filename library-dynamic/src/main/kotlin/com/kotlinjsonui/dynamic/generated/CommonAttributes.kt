@@ -210,9 +210,9 @@ data class CommonAttributes(
     val onDisappear: String? = null,
     /** Long press gesture handler (camelCase) - binding only (@{functionName}) [binding: one-way] */
     val onLongPress: AttrValue<Any>? = null,
-    /** Pan gesture handler (camelCase) - binding only (@{functionName}) */
+    /** Pan gesture handler (camelCase) - binding only (@{functionName}). Invoked repeatedly while the user drags. Payload: cumulative translation since the gesture began (iOS CGSize, Android Offset; web passes the PointerEvent). A handler declared () -> Void is called without the payload. */
     val onPan: AttrValue<Any>? = null,
-    /** Pinch gesture handler (camelCase) - binding only (@{functionName}) */
+    /** Pinch gesture handler (camelCase) - binding only (@{functionName}). Invoked repeatedly while the user pinches. Payload: cumulative scale factor since the gesture began (iOS CGFloat, Android Float; web passes the TouchEvent). A handler declared () -> Void is called without the payload. */
     val onPinch: AttrValue<Any>? = null,
     /** Click handler function name (selector-based, lowercase) - string only, no binding [accepts: string | array] */
     val onclick: Any? = null,
