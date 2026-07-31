@@ -30,8 +30,8 @@ data class IconLabelAttributes(
     val selectedFontColor: String? = null,
     /** Label text (can be data binding) */
     val text: AttrValue<String>? = null,
-    /** Text shadow */
-    val textShadow: String? = null,
+    /** Text shadow — same object contract as Label ({color, blur, offset: [x, y]}; the UIKit runtime passes the identical JSON to both) [accepts: string | object] */
+    val textShadow: Any? = null,
 ) {
     enum class IconPosition(val json: String) {
         LEFT("Left"),
@@ -97,7 +97,7 @@ data class IconLabelAttributes(
             selected = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selected")) { AttrCoerce.boolean(it) },
             selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
-            textShadow = AttrCoerce.string(AttrCoerce.lookup(json, "textShadow")),
+            textShadow = AttrCoerce.lookup(json, "textShadow"),
         )
 
         private fun parseIconPosition(raw: Any?): AttrEnum<IconPosition>? {
