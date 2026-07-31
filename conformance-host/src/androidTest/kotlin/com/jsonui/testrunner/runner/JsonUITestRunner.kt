@@ -24,6 +24,23 @@ import com.jsonui.testrunner.models.matchesResponsive
  */
 data class TestRunnerConfig(
     val defaultTimeout: Long = 5000L,
+    /**
+     * Verify the screen marker automatically whenever a flow's inline step
+     * moves to a different `screen`, without the test spelling an assertion.
+     * ON by default — this is the canonical behaviour.
+     *
+     * An app whose generated code predates screen markers will fail every
+     * screen change with `marker-absent`. That is the intended signal: the app
+     * needs `jui build` and a current library pin. Set this to false to opt
+     * out while migrating.
+     */
+    val verifyScreenTransitions: Boolean = true,
+    /**
+     * Timeout for those implicit verifications. Deliberately larger than
+     * defaultTimeout: real cross-screen waits already use 15-20s after a cold
+     * start.
+     */
+    val screenTransitionTimeout: Long = 10000L,
     val screenshotOnFailure: Boolean = true,
     val platform: String = "android",
     val verbose: Boolean = false,
@@ -659,10 +676,21 @@ class JsonUITestRunner(
      * full display size when the app window cannot be located.
      */
     private fun currentWindowSizeDp(): WindowDimensions {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
         val density = context.resources.displayMetrics.density
+        // Root of the active accessibility window, NOT findObject(By.pkg(...)):
+        // By.pkg matches an ARBITRARY first node of the package — measured on a
+        // Compose tablet window it non-deterministically returned a 24x24dp
+        // icon leaf, flipping a 1280x800dp regular device into `compact` and
+        // running compact-gated steps on tablet. The a11y root IS the app
+        // window (same acquisition family scrollUntilVisible already uses).
+        // The package guard skips roots owned by another process (e.g. an IME
+        // window being active) rather than measuring the wrong window.
         val bounds = runCatching {
-            device.findObject(By.pkg(context.packageName))?.visibleBounds
+            instrumentation.uiAutomation.rootInActiveWindow
+                ?.takeIf { it.packageName == context.packageName }
+                ?.let { root -> android.graphics.Rect().also { root.getBoundsInScreen(it) } }
         }.getOrNull()
         val (widthPx, heightPx) = if (bounds != null && !bounds.isEmpty) {
             bounds.width() to bounds.height()
@@ -670,6 +698,28 @@ class JsonUITestRunner(
             device.displayWidth to device.displayHeight
         }
         return WindowDimensions((widthPx / density).toInt(), (heightPx / density).toInt())
+    }
+
+    /**
+     * The screen the previously executed inline step ran on; null means
+     * "unknown", which forces the next inline step to be verified.
+     */
+    private var trackedScreen: String? = null
+
+    /**
+     * Implicit screen verification (canon: implicitVerification). Runs BEFORE
+     * the step, because the step is meant to run ON that screen.
+     */
+    private fun verifyScreenTransitionIfNeeded(step: FlowTestStep) {
+        if (!config.verifyScreenTransitions) return
+        val screen = step.screen ?: return
+        // Same screen as the last executed step: nothing has changed.
+        if (screen == trackedScreen) return
+
+        assertionExecutor.execute(
+            TestStep(assert = "screen", name = screen, timeout = config.screenTransitionTimeout.toInt())
+        )
+        trackedScreen = screen
     }
 
     private fun executeFlowStep(step: FlowTestStep, warnings: MutableList<String>) {
@@ -683,6 +733,10 @@ class JsonUITestRunner(
 
         // Handle file reference steps
         if (step.isFileReference) {
+            // A file reference carries no screen of its own, and the case it
+            // runs may end anywhere — reset to unknown so the next inline
+            // step is verified rather than trusted.
+            trackedScreen = null
             executeFileReferenceStep(step, warnings)
             return
         }
@@ -695,6 +749,7 @@ class JsonUITestRunner(
 
         // Handle inline steps - convert FlowTestStep to TestStep and execute
         if (step.action != null || step.assert != null) {
+            verifyScreenTransitionIfNeeded(step)
             executeStepGuarded(step.toTestStep(), warnings)
         }
     }

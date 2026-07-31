@@ -288,7 +288,14 @@ class ActionExecutor(
 
         val centerX = bounds.centerX()
         val centerY = bounds.centerY()
-        val swipeDistance = minOf(bounds.width(), bounds.height()) / 2
+        // The gesture must START strictly inside the element: Compose routes
+        // the whole pointer stream by the hit test of the DOWN event, and
+        // center ± width/2 is the element's exclusive edge pixel — a down
+        // there misses the node, so a drag detector on it (onPan) never sees
+        // the gesture. Measured on the conformance host: edge-start never
+        // fires, 8px-inset start always does. Inset both endpoints.
+        val inset = 8
+        val swipeDistance = (minOf(bounds.width(), bounds.height()) / 2 - inset).coerceAtLeast(1)
 
         when (direction) {
             "up" -> device.swipe(centerX, centerY + swipeDistance, centerX, centerY - swipeDistance, 10)
@@ -590,18 +597,6 @@ class ActionExecutor(
 
         if (device.findObject(By.res(id)) != null) return
 
-        // Preferred path (container given): scroll via the accessibility
-        // ACTION_SCROLL_FORWARD/BACKWARD on the container node instead of
-        // injecting gestures. The action is dispatched by node identity, not
-        // coordinates, so it still reaches the target when the semantics tree's
-        // POSITIONS are stale (measured on a consumer page: a visibility
-        // collapse while scrolled desynced a whole column's bounds
-        // permanently — gesture scrolling then never finds an on-screen
-        // element). It also scrolls in page-sized steps with no fling
-        // momentum, so the overscroll-clamp freeze cannot occur at all.
-        val deadline = System.currentTimeMillis() + timeout
-        if (semanticsScrollUntilVisible(step.container, id, direction, deadline)) return
-
         // Resolve the scrollable container: explicit id, else the app-under-test
         // window bounds so fallback swipes stay ON the app surface (a fixed
         // screen-center swipe can drift onto the status bar / notification shade
@@ -611,11 +606,65 @@ class ActionExecutor(
             device.findObject(By.res(containerId))?.visibleBounds
         } ?: appSurfaceBounds()
 
-        val startTime = System.currentTimeMillis()
+        // `direction` is the FIRST direction to search, not a constraint: when
+        // the primary sweep reaches the end of content without a hit, the
+        // search continues from there in the OPPOSITE direction all the way to
+        // the other end. The target can legitimately sit on the far side of
+        // the starting offset — measured on a tablet 2-column page: a tall
+        // section left partially visible at the viewport top made an
+        // "scroll up until <section> visible" reset step a correct no-op, and
+        // a down-only search then ran to the bottom while the target sat just
+        // ABOVE the viewport (intermittent by a few px of scroll position).
+        if (searchInDirection(step.container, containerBounds, id, direction,
+                System.currentTimeMillis() + timeout)) return
+
+        // Reverse leg: grant it a real budget even when the primary leg burned
+        // the step timeout scrolling a long page to its end (bounded: at most
+        // one extra half-timeout).
+        val reverse = oppositeDirection(direction)
+        if (searchInDirection(step.container, containerBounds, id, reverse,
+                System.currentTimeMillis() + maxOf(timeout / 2, 6000L))) return
+
+        throw AssertionError("Element '$id' not found after scrolling to both ends")
+    }
+
+    private fun oppositeDirection(direction: String): String = when (direction) {
+        "down" -> "up"
+        "up" -> "down"
+        "left" -> "right"
+        "right" -> "left"
+        else -> "up"
+    }
+
+    /**
+     * One directional search leg: a11y-action scrolling first (container
+     * given), then gesture sweeps with end-of-content detection. Returns true
+     * when the target appeared; false when this direction is exhausted (end
+     * reached, container non-scrollable, or the leg's deadline passed) so the
+     * caller can try the opposite direction.
+     */
+    private fun searchInDirection(
+        containerId: String?,
+        containerBounds: Rect?,
+        id: String,
+        direction: String,
+        deadline: Long
+    ): Boolean {
+        // Preferred path (container given): scroll via the accessibility
+        // ACTION_SCROLL_FORWARD/BACKWARD on the container node instead of
+        // injecting gestures. The action is dispatched by node identity, not
+        // coordinates, so it still reaches the target when the semantics tree's
+        // POSITIONS are stale (measured on a consumer page: a visibility
+        // collapse while scrolled desynced a whole column's bounds
+        // permanently — gesture scrolling then never finds an on-screen
+        // element). It also scrolls in page-sized steps with no fling
+        // momentum, so the overscroll-clamp freeze cannot occur at all.
+        if (semanticsScrollUntilVisible(containerId, id, direction, deadline)) return true
+
         var previousSnapshot: String? = null
         var unchangedCount = 0
 
-        while (System.currentTimeMillis() - startTime < timeout) {
+        while (System.currentTimeMillis() < deadline) {
             if (containerBounds != null && !containerBounds.isEmpty) {
                 scrollWithinBounds(containerBounds, direction)
             } else {
@@ -627,7 +676,7 @@ class ActionExecutor(
             // the mid-scroll (or not-yet-updated) a11y tree. The bounded wait
             // both settles and polls for the target.
             device.waitForIdle(1000)
-            if (device.wait(Until.hasObject(By.res(id)), 800)) return
+            if (device.wait(Until.hasObject(By.res(id)), 800)) return true
 
             // End-reached detection: two consecutive scrolls with no change.
             // Never silently disabled — error states become distinct sentinel
@@ -645,11 +694,11 @@ class ActionExecutor(
                     // (measured on a bottom-flush target: the dumped hierarchy
                     // trailed the real scroll offset by exactly one swipe).
                     // A small reverse drag forces a scroll event and a fresh
-                    // semantics pass before the final verdict.
+                    // semantics pass before this leg's verdict.
                     nudgeBackward(containerBounds, direction)
                     device.waitForIdle(1000)
-                    if (device.wait(Until.hasObject(By.res(id)), 1500)) return
-                    throw AssertionError("Element '$id' not found after scrolling to the end")
+                    if (device.wait(Until.hasObject(By.res(id)), 1500)) return true
+                    return recoverFrozenSemantics(id, containerBounds, direction)
                 }
             } else {
                 unchangedCount = 0
@@ -657,10 +706,9 @@ class ActionExecutor(
             previousSnapshot = snapshot
         }
 
-        // Last look before declaring timeout — the loop may have exited right
+        // Last look before this leg gives up — the loop may have exited right
         // after a swipe whose settle revealed the target.
-        if (device.findObject(By.res(id)) != null) return
-        throw AssertionError("Element '$id' did not become visible within ${timeout}ms of scrolling")
+        return device.findObject(By.res(id)) != null
     }
 
     /**
@@ -698,6 +746,55 @@ class ActionExecutor(
             "left" -> device.swipe(cx + d, cy, cx - d, cy, 40)
             "right" -> device.swipe(cx - d, cy, cx + d, cy, 40)
         }
+    }
+
+    /**
+     * Frozen-semantics recovery. On complex Compose pages a visibility
+     * collapse shortly after entry can leave the app-side accessibility
+     * provider serving a stale, viewport-clipped snapshot: rendering and
+     * scrolling stay correct, but nodes keep pre-collapse coordinates and
+     * content below the stale viewport (the scroll target included) never
+     * enters the tree — even though a11y events keep flowing. Measured on a
+     * real page: dumps stay byte-identical across time, and
+     * UiAutomation.clearCache() alone right after failure still misses the
+     * target, but a pair of full-step bidirectional swipes followed by
+     * clearCache + a serviceInfo resync brings the live tree back.
+     *
+     * This runs ONLY on the failure path (end of scroll, target still
+     * missing), so healthy pages never pay for it. Returns true when the
+     * target appeared after a recovery round.
+     */
+    private fun recoverFrozenSemantics(id: String, bounds: Rect?, direction: String): Boolean {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val b = bounds ?: appSurfaceBounds() ?: return false
+        val cx = b.centerX()
+        val cy = b.centerY()
+        val d = (b.height() * 0.25).toInt().coerceAtLeast(120)
+        repeat(2) {
+            // Net-zero bidirectional swipe: forces real scroll traffic (and the
+            // layout passes that come with it) without losing the end position.
+            when (direction) {
+                "up", "down" -> {
+                    device.swipe(cx, cy - d, cx, cy + d, 20)
+                    device.waitForIdle(1000)
+                    device.swipe(cx, cy + d, cx, cy - d, 20)
+                }
+                else -> {
+                    device.swipe(cx - d, cy, cx + d, cy, 20)
+                    device.waitForIdle(1000)
+                    device.swipe(cx + d, cy, cx - d, cy, 20)
+                }
+            }
+            device.waitForIdle(1000)
+            // Drop the UiAutomation-side node cache (API 34+; older APIs skip)
+            // and resync the a11y service state, then look again.
+            runCatching {
+                android.app.UiAutomation::class.java.getMethod("clearCache").invoke(automation)
+            }
+            runCatching { automation.serviceInfo = automation.serviceInfo }
+            if (device.wait(Until.hasObject(By.res(id)), 2000)) return true
+        }
+        return false
     }
 
     /**

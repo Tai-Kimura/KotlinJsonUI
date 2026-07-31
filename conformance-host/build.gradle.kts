@@ -10,6 +10,15 @@ android {
     namespace = "com.kotlinjsonui.conformance"
     compileSdk = 36
 
+    // AAPT's default ignore pattern contains `<dir>_*`, which silently drops
+    // any assets DIRECTORY starting with an underscore — i.e. the entire
+    // fixtures/__control/ tree (40 control fixtures errored with
+    // FileNotFoundException while sitting right there in src/main/assets).
+    // Same defaults minus that rule.
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:.*:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
     defaultConfig {
         applicationId = "com.kotlinjsonui.conformance"
         minSdk = 24

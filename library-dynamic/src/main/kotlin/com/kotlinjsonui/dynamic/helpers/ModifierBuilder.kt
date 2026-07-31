@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -16,6 +18,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.Color
@@ -26,6 +29,7 @@ import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationExceptio
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.Dp
@@ -81,6 +85,13 @@ object ModifierBuilder {
                 viewId != null -> {
                     @Suppress("UNCHECKED_CAST")
                     (fn as? (String) -> Unit)?.invoke(viewId)
+                        ?: (fn as? () -> Unit)?.invoke()
+                }
+                valueExpr != null -> {
+                    // Payload without an id (e.g. onPan/onPinch on an id-less
+                    // node): (T) -> Unit gets the payload, () -> Unit ignores it.
+                    @Suppress("UNCHECKED_CAST")
+                    (fn as? (Any) -> Unit)?.invoke(valueExpr)
                         ?: (fn as? () -> Unit)?.invoke()
                 }
                 else -> {
@@ -402,12 +413,43 @@ object ModifierBuilder {
         // onLongPress first: the outer pointerInput sees the gesture before the
         // inner .clickable, fires after the long-press timeout and consumes the
         // remaining events, so a long press never also triggers onClick.
-        val result = applyLongPressable(modifier, json, data)
-        val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString ?: return result
-        val viewId = json.get("id")?.asString
-        return result.clickable {
-            resolveEventHandler(handler, data, viewId)
+        var result = applyLongPressable(modifier, json, data)
+        result = applyPannable(result, json, data)
+        result = applyPinchable(result, json, data)
+        val enabled = resolveEnabled(json, data)
+        val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString
+        if (handler != null) {
+            val viewId = json.get("id")?.asString
+            result = result.clickable(enabled = enabled != false) {
+                resolveEventHandler(handler, data, viewId)
+            }
         }
+        // `common.enabled` must be readable from the a11y tree (that is what a
+        // UI test asserts), with or without a click handler — mirrors the
+        // static codegen's build_disabled_semantics. The kjui codegen got this
+        // in 2026-07; the dynamic path had been skipped, so the View-hosted
+        // enabled__false fixture failed here while passing on web.
+        if (enabled == false) {
+            result = result.semantics { disabled() }
+        }
+        return result
+    }
+
+    /**
+     * common.enabled — resolved value, or null when the attribute is absent.
+     * Accepts the literal boolean and the `@{binding}` form (canonical bool
+     * value context via DataBindingContext); an unresolved binding falls back
+     * to the attribute default (enabled).
+     */
+    private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? {
+        val raw = json.get("enabled") ?: return null
+        if (!raw.isJsonPrimitive) return null
+        val p = raw.asJsonPrimitive
+        if (p.isBoolean) return p.asBoolean
+        if (p.isString && isBinding(p.asString)) {
+            return DataBindingContext.resolveBoolean(p.asString, data)
+        }
+        return null
     }
 
     /**
@@ -458,6 +500,73 @@ object ModifierBuilder {
                         event.changes.forEach { it.consume() }
                     } while (event.changes.any { it.pressed })
                 }
+            }
+        }
+    }
+
+    /**
+     * onPan (common attribute) → drag gesture. Fires on every drag event with
+     * the cumulative translation (Offset) since the gesture began —
+     * accumulated from per-event deltas so the payload matches SwiftUI's
+     * DragGesture.Value.translation. Declaring onPan means this node owns
+     * drags: detectDragGestures consumes them, so a surrounding scroll
+     * container will not also scroll from touches on this node.
+     *
+     * The host-contract () -> Unit closure is reached through
+     * [resolveEventHandler]'s cast ladder; an (Offset)-typed handler
+     * receives the payload.
+     */
+    fun applyPannable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        val handler = json.get("onPan")?.asString ?: return modifier
+        val viewId = json.get("id")?.asString
+        return modifier.pointerInput(handler, data) {
+            var total = Offset.Zero
+            detectDragGestures(
+                onDragStart = { total = Offset.Zero },
+                onDrag = { change, dragAmount ->
+                    change.consume()
+                    total += dragAmount
+                    resolveEventHandler(handler, data, viewId, total)
+                }
+            )
+        }
+    }
+
+    /**
+     * onPinch (common attribute) → pinch/zoom gesture. Fires with the
+     * cumulative scale factor since the gesture began (Float, matching
+     * MagnifyGesture.Value.magnification on iOS). A raw awaitEachGesture
+     * loop rather than detectTransformGestures because the scale must reset
+     * per gesture and detectTransformGestures has no gesture-start hook.
+     * calculateZoom() is 1f for single-pointer events, so taps and
+     * one-finger drags pass through untouched (onPan and onClick on the
+     * same node keep working).
+     */
+    fun applyPinchable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>
+    ): Modifier {
+        val handler = json.get("onPinch")?.asString ?: return modifier
+        val viewId = json.get("id")?.asString
+        return modifier.pointerInput(handler, data) {
+            awaitEachGesture {
+                awaitFirstDown(requireUnconsumed = false)
+                var scale = 1f
+                var event: PointerEvent
+                do {
+                    event = awaitPointerEvent()
+                    val zoom = event.calculateZoom()
+                    if (zoom != 1f) {
+                        scale *= zoom
+                        event.changes.forEach { it.consume() }
+                        resolveEventHandler(handler, data, viewId, scale)
+                    }
+                } while (event.changes.any { it.pressed })
             }
         }
     }
