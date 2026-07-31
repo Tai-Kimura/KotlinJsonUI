@@ -48,7 +48,11 @@ fun CustomTextField(
     onBlur: (() -> Unit)? = null,
     onBeginEditing: (() -> Unit)? = null,
     onEndEditing: (() -> Unit)? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    // `tintColor` in JsonUI vocabulary: the caret (cursor) accent. Falls
+    // back to the text colour / theme primary, which was the previous
+    // hard-wired behaviour.
+    cursorColor: Color? = null
 ) {
     // Determine background colors
     val unfocusedBackground = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
@@ -168,7 +172,7 @@ fun CustomTextField(
             enabled = enabled,
             textStyle = effectiveTextStyle,
             keyboardOptions = keyboardOptions,
-            cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
+            cursorBrush = SolidColor(cursorColor ?: textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
             interactionSource = interactionSource,
             decorator = { innerTextField -> DecorationContent(innerTextField) }
         )
@@ -184,7 +188,7 @@ fun CustomTextField(
             } else {
                 androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines)
             },
-            cursorBrush = SolidColor(textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
+            cursorBrush = SolidColor(cursorColor ?: textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
             interactionSource = interactionSource,
             decorator = { innerTextField -> DecorationContent(innerTextField) }
         )
@@ -217,7 +221,8 @@ fun CustomTextFieldWithMargins(
     onBlur: (() -> Unit)? = null,
     onBeginEditing: (() -> Unit)? = null,
     onEndEditing: (() -> Unit)? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    cursorColor: Color? = null
 ) {
     Box(modifier = boxModifier) {
         CustomTextField(
@@ -241,7 +246,8 @@ fun CustomTextFieldWithMargins(
             onBlur = onBlur,
             onBeginEditing = onBeginEditing,
             onEndEditing = onEndEditing,
-            enabled = enabled
+            enabled = enabled,
+            cursorColor = cursorColor
         )
     }
 }
