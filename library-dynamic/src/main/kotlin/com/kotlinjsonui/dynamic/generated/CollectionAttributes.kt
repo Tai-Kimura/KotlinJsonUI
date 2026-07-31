@@ -74,8 +74,6 @@ data class CollectionAttributes(
     val scrollEnabled: AttrValue<Boolean>? = null,
     /** PassthroughSubject<Int, Never> for programmatic scrolling to cell index */
     val scrollTo: AttrValue<Any>? = null,
-    /** When true, section headers stick using LazyColumn.stickyHeader (Compose). */
-    val sectionSticky: Boolean? = null,
     /** Section-based configuration */
     val sections: List<Any?>? = null,
     /** Set target as data source */
@@ -205,7 +203,6 @@ data class CollectionAttributes(
             "scrollAnimated",
             "scrollEnabled",
             "scrollTo",
-            "sectionSticky",
             "sections",
             "setTargetAsDataSource",
             "setTargetAsDelegate",
@@ -265,7 +262,6 @@ data class CollectionAttributes(
             scrollAnimated = AttrCoerce.boolean(AttrCoerce.lookup(json, "scrollAnimated")),
             scrollEnabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "scrollEnabled")) { AttrCoerce.boolean(it) },
             scrollTo = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "scrollTo")),
-            sectionSticky = AttrCoerce.boolean(AttrCoerce.lookup(json, "sectionSticky")),
             sections = AttrCoerce.array(AttrCoerce.lookup(json, "sections")),
             setTargetAsDataSource = AttrCoerce.boolean(AttrCoerce.lookup(json, "setTargetAsDataSource")),
             setTargetAsDelegate = AttrCoerce.boolean(AttrCoerce.lookup(json, "setTargetAsDelegate")),
