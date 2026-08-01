@@ -63,6 +63,8 @@ data class TextFieldAttributes(
     val hintFontSize: Double? = null,
     /** Input type (includes 'allphabet' typo for backward compatibility) */
     val input: AttrEnum<Input>? = null,
+    /** Input type for Android (Android-only; `input` is the cross-platform attribute) */
+    val inputType: String? = null,
     /** Keyboard appearance: dark, light [DEPRECATED: Compose keyboard appearance is system-controlled.] */
     val keyboardAppearance: String? = null,
     /** Left view configuration */
@@ -256,6 +258,7 @@ data class TextFieldAttributes(
             "hintFont",
             "hintFontSize",
             "input",
+            "inputType",
             "keyboardAppearance",
             "leftView",
             "leftViewMode",
@@ -334,6 +337,7 @@ data class TextFieldAttributes(
             hintFont = AttrCoerce.string(AttrCoerce.lookup(json, "hintFont")),
             hintFontSize = AttrCoerce.number(AttrCoerce.lookup(json, "hintFontSize")),
             input = parseInput(AttrCoerce.lookup(json, "input")),
+            inputType = AttrCoerce.string(AttrCoerce.lookup(json, "inputType")),
             keyboardAppearance = AttrCoerce.string(AttrCoerce.lookup(json, "keyboardAppearance")),
             leftView = AttrCoerce.obj(AttrCoerce.lookup(json, "leftView")),
             leftViewMode = AttrCoerce.string(AttrCoerce.lookup(json, "leftViewMode")),

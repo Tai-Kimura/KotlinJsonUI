@@ -5,17 +5,18 @@
 package com.kotlinjsonui.dynamic.generated
 
 /** Typed attribute extraction for the `Toggle` component.
+ * Component alias of `Switch` — full clone of the canonical table (the runtime selects tables by raw spelling).
  * Shared attributes are available via [common].
  * Overrides the common definition of: `enabled`, `tintColor` (use the property on this class).
  */
 data class ToggleAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Toggle state alias (binding for two-way) [binding: two-way] */
+    /** Switch state alias (binding for two-way) [binding: two-way] */
     val checked: AttrValue<Boolean>? = null,
     /** Whether enabled (can be data binding) */
     val enabled: AttrValue<Boolean>? = null,
-    /** Toggle state (binding for two-way) [binding: two-way] */
+    /** Switch state (binding for two-way) [binding: two-way] */
     val isOn: AttrValue<Boolean>? = null,
     /** Label styling for Toggle */
     val labelAttributes: Map<String, Any?>? = null,
@@ -37,7 +38,7 @@ data class ToggleAttributes(
     val tintColor: String? = null,
     /** Deprecated on swift. [DEPRECATED: SwiftUI Toggle uses unified tint only.] */
     val trackTintColor: String? = null,
-    /** Toggle state alias (binding for two-way) [binding: two-way] */
+    /** Switch state alias (binding for two-way) [binding: two-way] */
     val value: AttrValue<Boolean>? = null,
 ) {
     enum class LabelPosition(val json: String) {

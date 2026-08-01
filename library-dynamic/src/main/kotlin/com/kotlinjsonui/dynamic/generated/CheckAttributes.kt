@@ -5,13 +5,14 @@
 package com.kotlinjsonui.dynamic.generated
 
 /** Typed attribute extraction for the `Check` component.
+ * Component alias of `CheckBox` — full clone of the canonical table (the runtime selects tables by raw spelling).
  * Shared attributes are available via [common].
  * Overrides the common definition of: `enabled` (use the property on this class).
  */
 data class CheckAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Check state (binding for two-way) [binding: two-way] */
+    /** Checked state alias (binding for two-way) [binding: two-way] */
     val checked: AttrValue<Boolean>? = null,
     /** Color when checked. */
     val checkedColor: String? = null,
@@ -31,7 +32,7 @@ data class CheckAttributes(
     val iconSize: Double? = null,
     /** Checked state (binding for two-way) [binding: two-way] */
     val isOn: AttrValue<Boolean>? = null,
-    /** Check label text (can be data binding) */
+    /** Checkbox label (can be data binding) */
     val label: AttrValue<String>? = null,
     /** Value change handler - binding only (@{functionName}) */
     val onValueChange: AttrValue<Any>? = null,
@@ -39,12 +40,14 @@ data class CheckAttributes(
     val selectedIcon: String? = null,
     /** Space between icon and text (binding supported) */
     val spacing: AttrValue<Double>? = null,
-    /** Image source for unchecked state */
+    /** Icon name for unchecked state (alias) */
     val src: String? = null,
-    /** Check label text alias (can be data binding) */
+    /** Checkbox label (alias, can be data binding) */
     val text: AttrValue<String>? = null,
     /** Color when unchecked. */
     val uncheckedColor: String? = null,
+    /** Associated value when checked */
+    val value: Any? = null,
 ) {
     companion object {
         /**
@@ -69,6 +72,7 @@ data class CheckAttributes(
             "src",
             "text",
             "uncheckedColor",
+            "value",
         )
 
         /**
@@ -107,6 +111,7 @@ data class CheckAttributes(
             src = AttrCoerce.string(AttrCoerce.lookup(json, "src")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             uncheckedColor = AttrCoerce.string(AttrCoerce.lookup(json, "uncheckedColor")),
+            value = AttrCoerce.lookup(json, "value"),
         )
     }
 }
