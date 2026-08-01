@@ -34,6 +34,16 @@ object FixtureHost {
     /** Fixture id from manifest.json, e.g. "Label/text__static". */
     val currentFixtureId = MutableStateFlow<String?>(null)
 
+    /**
+     * Rendering pipeline for the run: "dynamic" (DynamicView, the baseline
+     * pipeline) or "codegen" (kjui-generated Compose views — what production
+     * apps ship; see scripts/generate_codegen_host.rb). The instrumentation
+     * suite sets this from its `conformanceHostMode` argument before the
+     * activity launches; parity of the two pipelines is judged by
+     * `jui conformance parity` against the dynamic baselines.
+     */
+    val hostMode = MutableStateFlow("dynamic")
+
     /** Render/load errors reported by DynamicView for the current fixture. */
     val renderErrors = CopyOnWriteArrayList<String>()
 
@@ -89,6 +99,39 @@ class FixtureHostActivity : ComponentActivity() {
 @Composable
 private fun FixtureScreen(fixtureId: String) {
     val context = LocalContext.current
+    val hostMode by FixtureHost.hostMode.collectAsState()
+
+    if (hostMode == "codegen") {
+        // Generated views check DynamicModeManager.isActive() in their body;
+        // switch it off before the first codegen fixture composes so nothing
+        // slips through the dynamic path.
+        remember {
+            com.kotlinjsonui.core.DynamicModeManager
+                .setDynamicModeEnabled(context, false)
+        }
+        val entry = CodegenFixtureEntries.map[fixtureId]
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .systemBarsPadding()
+                .testTag(FixtureHost.readyTag(fixtureId))
+                .semantics { testTagsAsResourceId = true }
+        ) {
+            if (entry != null) {
+                entry()
+            } else {
+                // Same channel a dynamic load failure uses, so the suite
+                // reports a fixture the registry does not carry as an error
+                // rather than asserting against a blank screen.
+                remember(fixtureId) {
+                    FixtureHost.renderErrors.add("no generated view for fixture: $fixtureId")
+                    true
+                }
+            }
+        }
+        return
+    }
+
     val layoutJson: JsonObject? = remember(fixtureId) {
         try {
             context.assets.open(ConformanceStateRegistry.layoutAssetPath(context, fixtureId))

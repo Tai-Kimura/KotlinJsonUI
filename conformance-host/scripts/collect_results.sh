@@ -24,17 +24,26 @@ if ! "$ADB" shell "[ -f $DEVICE_OUT/android.results.json ]"; then
   exit 1
 fi
 
-mkdir -p "$CONFORMANCE_DIR/results" "$CONFORMANCE_DIR/artifacts/android"
-"$ADB" pull "$DEVICE_OUT/android.results.json" "$CONFORMANCE_DIR/results/android.results.json"
+# HOST_MODE=codegen: results/artifacts land in codegen-suffixed locations so
+# a parity run never clobbers the dynamic truth (results/ + artifacts/android).
+if [ "${HOST_MODE:-dynamic}" = "codegen" ]; then
+  RESULTS_DEST="$CONFORMANCE_DIR/codegen/android.results.json"
+  ARTIFACTS_DEST="$CONFORMANCE_DIR/artifacts/android-codegen"
+else
+  RESULTS_DEST="$CONFORMANCE_DIR/results/android.results.json"
+  ARTIFACTS_DEST="$CONFORMANCE_DIR/artifacts/android"
+fi
+mkdir -p "$(dirname "$RESULTS_DEST")" "$ARTIFACTS_DEST"
+"$ADB" pull "$DEVICE_OUT/android.results.json" "$RESULTS_DEST"
 
 if "$ADB" shell "[ -d $DEVICE_OUT/artifacts/android ]"; then
   tmp="$(mktemp -d)"
   "$ADB" pull "$DEVICE_OUT/artifacts/android" "$tmp/android" >/dev/null
   # merge (adb pull creates the dir); keep destination flat
-  cp -R "$tmp/android/." "$CONFORMANCE_DIR/artifacts/android/"
+  cp -R "$tmp/android/." "$ARTIFACTS_DEST/"
   rm -rf "$tmp"
 fi
 
-count_png=$(ls "$CONFORMANCE_DIR/artifacts/android" 2>/dev/null | wc -l | tr -d ' ')
-echo "Collected results -> $CONFORMANCE_DIR/results/android.results.json"
-echo "Collected $count_png screenshot artifact(s) -> $CONFORMANCE_DIR/artifacts/android/"
+count_png=$(ls "$ARTIFACTS_DEST" 2>/dev/null | wc -l | tr -d ' ')
+echo "Collected results -> $RESULTS_DEST"
+echo "Collected $count_png screenshot artifact(s) -> $ARTIFACTS_DEST/"

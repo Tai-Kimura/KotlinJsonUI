@@ -165,6 +165,7 @@ while true; do
   # On timeout (124) the loop re-probes liveness and resumes.
   timeout 1200 "$ADB" shell am instrument -w \
     -e conformanceFilter "$FILTER" \
+    -e conformanceHostMode "${HOST_MODE:-dynamic}" \
     -e class "$APP_PKG.ConformanceSuiteTest" \
     "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" || true
 

@@ -79,6 +79,11 @@ class ConformanceSuiteTest {
         val manifestHash = sha256Hex(manifestBytes)
         val filter = InstrumentationRegistry.getArguments()
             .getString("conformanceFilter", "all")
+        val hostMode = InstrumentationRegistry.getArguments()
+            .getString("conformanceHostMode", "dynamic")
+        // Same process as the app: flip the pipeline before the activity
+        // composes its first fixture.
+        FixtureHost.hostMode.value = hostMode
 
         artifactsDir.mkdirs()
         actionExecutor.screenshotHandler = { name -> captureScreenshot(name) }
@@ -128,6 +133,15 @@ class ConformanceSuiteTest {
     private fun classifySkip(fixture: ManifestFixture, filter: String): FixtureResult? {
         if (!fixture.platforms.contains("android")) {
             return FixtureResult(fixture.id, "skipped", "not applicable to android")
+        }
+        if (FixtureHost.hostMode.value == "codegen" && fixture.clazz != "visual") {
+            // Parity is a visual question (screenshot vs dynamic baseline);
+            // interactive fixtures drive dynamic bindings and assert-only
+            // fixtures have no screenshot to compare.
+            return FixtureResult(
+                fixture.id, "skipped",
+                "class ${fixture.clazz} not hosted (codegen parity host is visual-only)"
+            )
         }
         if (!fixture.runsOnComposeDynamic()) {
             return FixtureResult(

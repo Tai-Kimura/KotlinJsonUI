@@ -8,6 +8,16 @@ plugins {
 
 android {
     namespace = "com.kotlinjsonui.conformance"
+
+    // Codegen host sources (scripts/generate_codegen_host.rb, gitignored)
+    // replace the committed fallback registry when present — exactly one
+    // CodegenFixtureEntries per build.
+    sourceSets["main"].kotlin.srcDir(
+        if (file("src/codegen/kotlin").exists()) "src/codegen/kotlin" else "src/fallback/kotlin"
+    )
+    if (file("src/codegen/res").exists()) {
+        sourceSets["main"].res.srcDir("src/codegen/res")
+    }
     compileSdk = 36
 
     // AAPT's default ignore pattern contains `<dir>_*`, which silently drops
@@ -77,6 +87,18 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     // Image loading used by dynamic image components
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Codegen host (kjui-generated views, scripts/generate_codegen_host.rb):
+    // the generated pipeline is the CONSUMER surface, so it pulls the same
+    // libraries kjui init wires into consumer apps — coil3 for NetworkImage
+    // (3.1.0: newest whose Kotlin metadata the host's Kotlin 2.2 compiler reads)
+    // (the dynamic path above still uses the library's coil2), Compose
+    // ConstraintLayout for constraint-based layouts, extended material icons
+    // for icon vocabulary.
+    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.2")
+    implementation("androidx.compose.material:material-icons-extended")
 
     // Instrumented conformance suite + vendored jsonui-test-runner driver
     androidTestImplementation("junit:junit:4.13.2")
