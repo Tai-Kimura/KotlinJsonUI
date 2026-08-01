@@ -3,10 +3,11 @@
 ## Documentation Reference
 
 When looking for information about KotlinJsonUI components, attributes, or features:
-- **KotlinJsonUI Wiki**: `~/resource/KotlinJsonUI_wiki/`
-- **SwiftJsonUI Wiki**: `~/resource/SwiftyJsonUI_wiki/`
+- **jsonui-cli dev guide**: `~/resource/jsonui-cli/docs/dev-guide/`
+- **SSoT attribute/component definitions**: `~/resource/jsonui-cli/shared/core/`
+- **Documentation site source**: `~/resource/JsonUIDocument/`
 
-Always check these wiki directories first for accurate documentation.
+Always check these before guessing attribute names or behavior.
 
 ## Project Overview
 This project is creating an Android library (KotlinJsonUI) that is the Android/Kotlin equivalent of SwiftJsonUI. The library allows developers to build native Android UI using JSON configuration files.
@@ -175,8 +176,9 @@ androidTestImplementation("androidx.test.espresso:espresso-core")
 5. Provide code generation tools
 
 ## Reference Documentation
-- **KotlinJsonUI Wiki**: `~/resource/KotlinJsonUI_wiki/`
-- **SwiftJsonUI Wiki**: `~/resource/SwiftyJsonUI_wiki/`
+- **jsonui-cli dev guide**: `~/resource/jsonui-cli/docs/dev-guide/`
+- **SSoT attribute/component definitions**: `~/resource/jsonui-cli/shared/core/`
+- **Documentation site source**: `~/resource/JsonUIDocument/`
 - Original Swift implementation: `~/resource/SwiftJsonUI/`
 
 ## Important Notes
