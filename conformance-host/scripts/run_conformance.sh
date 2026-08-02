@@ -175,6 +175,17 @@ while true; do
   progress_count=$(adbsh "wc -l < $DEVICE_OUT/progress.jsonl" 2>/dev/null | tr -d '[:space:]' || true)
   echo "progress.jsonl outcomes after attempt $attempt: ${progress_count:-0}"
 
+  # Logcat snapshots for CI post-mortems (2026-08-02: the all-fixtures
+  # "did not render" signature exists ONLY on hosted CI — no local repro
+  # even at identical SHAs/fixtures/fresh-install, so the app-side view is
+  # unobtainable except from the run itself). First attempt separately:
+  # app startup + first composition is where that signature decides.
+  mkdir -p "$CONFORMANCE_DIR/results"
+  if [[ $attempt -eq 1 ]]; then
+    "$ADB" logcat -d -v time -t 8000 > "$CONFORMANCE_DIR/results/android.logcat.first.txt" 2>/dev/null || true
+  fi
+  "$ADB" logcat -d -v time -t 8000 > "$CONFORMANCE_DIR/results/android.logcat.txt" 2>/dev/null || true
+
   if adbsh "[ -f $DEVICE_OUT/android.results.json ]"; then
     echo "android.results.json produced on device."
     break

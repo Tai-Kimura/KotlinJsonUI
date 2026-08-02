@@ -47,3 +47,12 @@ fi
 count_png=$(ls "$ARTIFACTS_DEST" 2>/dev/null | wc -l | tr -d ' ')
 echo "Collected results -> $RESULTS_DEST"
 echo "Collected $count_png screenshot artifact(s) -> $ARTIFACTS_DEST/"
+
+# Hosted CI only: kill the emulator ourselves so the emulator-runner action's
+# teardown finds it already gone. Observed 2026-08-02 (run 30741336803 retry):
+# suite + collect finished at 74.5 min, then the action's own teardown hung
+# ~25 min into the step ceiling and voided a successful run. Never do this
+# locally — the conf_ci AVD belongs to the developer, not this script.
+if [[ "${CI:-}" == "true" ]]; then
+  "$ADB" emu kill >/dev/null 2>&1 || true
+fi

@@ -217,10 +217,20 @@ class ConformanceSuiteTest {
         val readyTimeout = if (firstFixture) 15000L else 8000L
         if (!waitForResourceId(FixtureHost.readyTag(fixture.id), readyTimeout)) {
             val renderErrors = FixtureHost.renderErrors.joinToString("; ")
+            // Diagnostic triple for the CI-only "nothing renders" signature
+            // (2026-08-02, runs 30735629989/30741336803): from these three
+            // bits the failure layer is decidable off one results.json —
+            // app window absent (activity never fronted) vs window present
+            // but the tag unfindable (composition or a11y projection stall)
+            // vs composed-with-id (UIAutomator resource-id mapping broken).
+            val appWindow = device.hasObject(By.pkg(targetContext.packageName))
+            val anyTag = device.hasObject(By.res(Regex("conformance_ready_.*").toPattern()))
+            val fixtureFlow = FixtureHost.currentFixtureId.value
             FixtureHost.show(null)
             return FixtureResult(
                 fixture.id, "error",
                 "fixture did not render within ${readyTimeout}ms" +
+                    " [appWindow=$appWindow anyReadyTag=$anyTag flow=$fixtureFlow]" +
                     if (renderErrors.isNotEmpty()) " — render errors: ${brief(renderErrors)}" else ""
             )
         }
