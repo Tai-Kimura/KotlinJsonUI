@@ -927,27 +927,12 @@ class DynamicCollectionComponent {
                         }
                     }
                 }
-                // Default placeholder
-                else -> {
-                    items(10) { index ->
-                        Card(
-                            modifier = Modifier
-                                .padding(4.dp)
-                                .then(
-                                    if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
-                                    else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
-                                    else Modifier.fillMaxWidth().height(80.dp)
-                                )
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = gravityAlignment
-                            ) {
-                                Text("Item $index")
-                            }
-                        }
-                    }
-                }
+                // Declaration-faithful (2026-08-02 ruling): no cells/sections/
+                // template declared → nothing rendered. The old 10-item
+                // "Item $index" placeholder Cards were undeclared behavior
+                // (the container itself still renders with its declared
+                // size/background via the surrounding modifier chain).
+                else -> {}
             }
         }
 
