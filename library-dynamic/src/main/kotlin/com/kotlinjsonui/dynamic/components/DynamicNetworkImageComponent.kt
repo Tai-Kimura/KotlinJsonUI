@@ -50,7 +50,7 @@ class DynamicNetworkImageComponent {
     companion object {
         /** NetworkImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "url", "src", "contentMode", "hint", "placeholder", "errorImage"
+            "url", "src", "contentMode", "hint", "placeholder", "errorImage", "loadingImage"
         )
 
         @Composable
@@ -96,8 +96,12 @@ class DynamicNetworkImageComponent {
                 else -> ContentScale.Fit
             }
 
-            // ── Placeholder: hint > placeholder, strip .png/.jpg extension ──
-            val placeholderName = a.hint ?: a.placeholder
+            // ── Placeholder: hint > placeholder > loadingImage (the same
+            // in-flight-image chain as the static converter,
+            // networkimage_component.rb — the declared `loadingImage` was
+            // previously never read here: parity family
+            // kjui-dynamic-loadingimage), strip .png/.jpg extension ──
+            val placeholderName = a.hint ?: a.placeholder ?: a.loadingImage
             val placeholderResId = placeholderName?.let { name ->
                 val cleanName = name
                     .removeSuffix(".png")

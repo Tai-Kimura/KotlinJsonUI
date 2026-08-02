@@ -2,8 +2,10 @@ package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -12,6 +14,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ImageAttributes
+import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -30,7 +33,7 @@ class DynamicImageComponent {
     companion object {
         /** Image-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "srcName", "src", "contentMode"
+            "srcName", "src", "contentMode", "renderingMode"
         )
 
         @Composable
@@ -107,12 +110,30 @@ class DynamicImageComponent {
             // Lifecycle effects
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
+            // renderingMode — `template` means "take the tint, ignore the
+            // asset's own colours" (ColorFilter here, `.renderingMode(.template)`
+            // on iOS); `original` suppresses a tint that would otherwise
+            // apply; no mode → a declared tint still applies. Mirrors the
+            // static converter's rendering_color_filter (image_component.rb)
+            // — this path used to ignore renderingMode/tintColor entirely
+            // (parity family kjui-dynamic-renderingmode).
+            val renderingMode = TypedAttrs.enumString(a.renderingMode) { it.json }?.lowercase()
+            val tint = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
+            )
+            val colorFilter = when (renderingMode) {
+                "template" -> ColorFilter.tint(tint ?: LocalContentColor.current)
+                "original" -> null
+                else -> tint?.let { ColorFilter.tint(it) }
+            }
+
             Image(
                 painter = painterResource(id = resourceId),
                 contentDescription = contentDescription,
                 modifier = modifier,
                 contentScale = contentScale,
-                alpha = alpha.coerceIn(0f, 1f)
+                alpha = alpha.coerceIn(0f, 1f),
+                colorFilter = colorFilter
             )
         }
     }
