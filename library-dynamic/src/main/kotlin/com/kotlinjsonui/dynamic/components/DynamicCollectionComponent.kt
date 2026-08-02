@@ -98,10 +98,18 @@ class DynamicCollectionComponent {
 
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
-            // Support both 'layout' and 'orientation' attributes for horizontal/vertical
-            val layout = TypedAttrs.enumString(a.layout) { it.json }
-                ?: TypedAttrs.enumString(a.orientation) { it.json }
-                ?: "vertical"
+            // Support both 'layout' and 'orientation' attributes for
+            // horizontal/vertical; `horizontalScroll: true` is the declared
+            // boolean spelling of the same direction fact (ScrollView's
+            // vocabulary — real carousels use it). Codegen honors it; not
+            // reading it here rendered those Collections vertical
+            // (parity d=32 on Collection/horizontalScroll__true).
+            val layout = when {
+                a.horizontalScroll == true -> "horizontal"
+                else -> TypedAttrs.enumString(a.layout) { it.json }
+                    ?: TypedAttrs.enumString(a.orientation) { it.json }
+                    ?: "vertical"
+            }
             val isHorizontal = layout == "horizontal"
             val isFlow = layout == "flow"
 
