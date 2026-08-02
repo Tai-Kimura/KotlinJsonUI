@@ -2,3 +2,4 @@
 # Codegen host output (scripts/generate_codegen_host.rb) — @generated
 src/codegen/
 codegen-build.log
+codegen-map.json

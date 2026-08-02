@@ -42,7 +42,13 @@ build_dir = ENV['CONFORMANCE_CODEGEN_BUILD_DIR'] || '/tmp/jsonui-codegen-android
 codegen_src = File.join(host_dir, 'src', 'codegen', 'kotlin')
 FileUtils.rm_rf(build_dir)
 FileUtils.rm_rf(codegen_src)
-layouts_dir = File.join(build_dir, 'src', 'Layouts')
+# Consumer-shaped staging: the color extraction writes
+# assets/Layouts/Resources/colors.json at the DEFAULT layouts path
+# regardless of config, while emission-side resolution reads the
+# configured path — align both on the consumer default or every
+# named color falls back to parseColor('pale_gray') and crashes
+# at render (caught by the first codegen suite run).
+layouts_dir = File.join(build_dir, 'src', 'assets', 'Layouts')
 FileUtils.mkdir_p(layouts_dir)
 
 # Host namespace: generated code references R.drawable.* (fixture images),
@@ -88,7 +94,7 @@ File.write(File.join(build_dir, 'kjui.config.json'), JSON.pretty_generate(
   'project_name' => 'ConformanceCodegen',
   'package_name' => PACKAGE,
   'source_directory' => 'src',
-  'layouts_directory' => 'Layouts',
+  'layouts_directory' => 'assets/Layouts',
   'styles_directory' => 'Styles',
   'view_directory' => 'kotlin/views',
   'data_directory' => 'kotlin/data',
@@ -117,11 +123,9 @@ if File.directory?(src_res)
   FileUtils.rm_rf(codegen_res)
   FileUtils.mkdir_p(codegen_res)
   FileUtils.cp_r(File.join(src_res, '.'), codegen_res)
-  # The generated views reference no R.string.* (strings render inline);
-  # the extractor's strings.xml keys are layout-path-derived and aapt
-  # rejects the dots ('.._.._Layouts_…'), so shipping it only breaks the
-  # merge. Colors (bg-<key> etc.) are the resources the views DO use.
-  FileUtils.rm_f(File.join(codegen_res, 'values', 'strings.xml'))
+  # With the consumer-shaped staging paths the extractor emits clean
+  # screen-scoped string keys (fx_0013_sample) that the generated views
+  # reference via R.string — the res tree rides along verbatim.
 end
 
 # ---------------------------------------------------------------- registry
