@@ -75,7 +75,11 @@ fun CollectionStack(
     modifier: Modifier = Modifier,
     spacing: Dp = 0.dp,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
+    // Top, not CenterVertically: undeclared gravity means the platform
+    // default (top|start) — the dynamic renderer top-aligns horizontal
+    // collections, and centering here was the parity deviation on every
+    // horizontal Collection fixture. Callers wanting centering pass it.
+    verticalAlignment: Alignment.Vertical = Alignment.Top,
     userScrollEnabled: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     insetLeading: Dp = 0.dp,
