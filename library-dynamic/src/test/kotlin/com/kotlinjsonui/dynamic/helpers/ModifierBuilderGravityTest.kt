@@ -83,15 +83,44 @@ class ModifierBuilderGravityTest {
     }
 
     @Test
-    fun resolvedAlignFlags_mergesGravityAndBooleans() {
+    fun resolvedAlignFlags_outerBooleansDoNotLeakIntoContent() {
+        // Declaration-faithful (2026-08-02, parity family
+        // kjui-dynamic-alignment): alignLeft means "align to PARENT left"
+        // (attribute_definitions.json) and must not reposition the node's
+        // own children — the flags here feed the container's CONTENT
+        // alignment only. The old contract merged the two additively.
         val json = JsonObject().apply {
             addProperty("gravity", "centerVertical")
             addProperty("alignLeft", true)
         }
         val flags = ModifierBuilder.resolvedAlignFlags(json)
         assertTrue(flags.centerV)
-        assertTrue(flags.alignLeft)
+        assertFalse(flags.alignLeft)
         assertFalse(flags.alignRight)
+    }
+
+    @Test
+    fun resolvedAlignFlags_readsTheAlignmentStringAlternative() {
+        // `alignment` is the SwiftUI-spelled alternative to gravity and was
+        // previously never read at all. SwiftUI reading: `top` is
+        // top-and-horizontally-centred.
+        val json = JsonObject().apply { addProperty("alignment", "top") }
+        val flags = ModifierBuilder.resolvedAlignFlags(json)
+        assertTrue(flags.alignTop)
+        assertTrue(flags.centerH)
+        assertFalse(flags.alignBottom)
+
+        val center = JsonObject().apply { addProperty("alignment", "center") }
+        assertTrue(ModifierBuilder.resolvedAlignFlags(center).centerInParent)
+
+        // gravity wins when both are set (same precedence as the static side)
+        val both = JsonObject().apply {
+            addProperty("gravity", "bottom")
+            addProperty("alignment", "top")
+        }
+        val bothFlags = ModifierBuilder.resolvedAlignFlags(both)
+        assertTrue(bothFlags.alignBottom)
+        assertFalse(bothFlags.alignTop)
     }
 
     @Test

@@ -751,7 +751,10 @@ object ModifierBuilder {
             else -> return null
         }
         if (tokens.isEmpty()) return null
+        return foldGravityTokens(tokens)
+    }
 
+    private fun foldGravityTokens(tokens: List<String>): AlignFlags {
         var alignTop = false
         var alignBottom = false
         var alignLeft = false
@@ -775,26 +778,48 @@ object ModifierBuilder {
     }
 
     /**
-     * INNER content-alignment flags: merge `gravity` with the individual
-     * align/center booleans. Either source setting a flag switches it on;
-     * the two are additive.
+     * `alignment` is the SwiftUI-spelled string alternative to `gravity`
+     * (attribute_definitions.json) and resolves to the same child-positioning
+     * flags. The nine values follow the SwiftUI reading — `top` is
+     * top-and-horizontally-centred, `leading` is leading-and-vertically-
+     * centred — and the token table is the canon shared with the static
+     * converter (ALIGNMENT_GRAVITY in container_component.rb); change both
+     * together, never one alone. Case-insensitive like the static side.
+     */
+    private val ALIGNMENT_GRAVITY_TOKENS: Map<String, List<String>> = mapOf(
+        "topleading" to listOf("top", "left"),
+        "top" to listOf("top", "centerHorizontal"),
+        "toptrailing" to listOf("top", "right"),
+        "leading" to listOf("centerVertical", "left"),
+        "center" to listOf("center"),
+        "trailing" to listOf("centerVertical", "right"),
+        "bottomleading" to listOf("bottom", "left"),
+        "bottom" to listOf("bottom", "centerHorizontal"),
+        "bottomtrailing" to listOf("bottom", "right")
+    )
+
+    internal fun parseAlignmentString(json: JsonObject): AlignFlags? {
+        val element = json.get("alignment") ?: return null
+        if (!element.isJsonPrimitive || !element.asJsonPrimitive.isString) return null
+        val tokens = ALIGNMENT_GRAVITY_TOKENS[element.asString.lowercase()] ?: return null
+        return foldGravityTokens(tokens)
+    }
+
+    /**
+     * INNER content-alignment flags: `gravity`, or the `alignment` string
+     * alternative when gravity is absent (gravity wins when both are set —
+     * same precedence as the static converter).
      *
-     * Only valid for a container's OWN content alignment (Arrangement /
-     * contentAlignment in DynamicContainerComponent): `gravity` positions
-     * the node's children, never the node itself. For the node's placement
-     * inside its parent use [outerAlignFlags].
+     * Declaration-faithful (2026-08-02, parity family kjui-dynamic-alignment):
+     * the node's own outer placement booleans (`alignTop` / `centerInParent` /
+     * …) mean "align to PARENT" per attribute_definitions.json and must not
+     * leak into the node's children — they used to be folded in here, so a
+     * `centerInParent` container silently centered its own children too,
+     * while the declared `alignment` string was never read at all.
+     * For the node's placement inside its parent use [outerAlignFlags].
      */
     internal fun resolvedAlignFlags(json: JsonObject): AlignFlags {
-        val fromGravity = parseGravity(json) ?: AlignFlags()
-        return AlignFlags(
-            alignTop = fromGravity.alignTop || json.get("alignTop")?.asBoolean == true,
-            alignBottom = fromGravity.alignBottom || json.get("alignBottom")?.asBoolean == true,
-            alignLeft = fromGravity.alignLeft || json.get("alignLeft")?.asBoolean == true,
-            alignRight = fromGravity.alignRight || json.get("alignRight")?.asBoolean == true,
-            centerH = fromGravity.centerH || json.get("centerHorizontal")?.asBoolean == true,
-            centerV = fromGravity.centerV || json.get("centerVertical")?.asBoolean == true,
-            centerInParent = fromGravity.centerInParent || json.get("centerInParent")?.asBoolean == true
-        )
+        return parseGravity(json) ?: parseAlignmentString(json) ?: AlignFlags()
     }
 
     /**
