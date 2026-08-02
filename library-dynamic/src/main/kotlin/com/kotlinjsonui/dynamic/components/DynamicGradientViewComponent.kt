@@ -71,14 +71,19 @@ class DynamicGradientViewComponent {
             // `gradient` is declared as a color array, but the legacy reader
             // accepts this object wrapper — wider than the declared type, so
             // read raw (see TypedAttrs.rawKey).
-            val gradientObject = TypedAttrs.rawKey(json, "gradient")
+            val gradientElement = TypedAttrs.rawKey(json, "gradient")
+            val gradientObject = gradientElement
                 ?.takeIf { it.isJsonObject }?.asJsonObject
             val effective = gradientObject ?: json
 
-            // Parse gradient colors from 'colors' or 'items' array
-            // (undeclared legacy runtime extras at node level; plain object
-            // fields inside the gradient wrapper).
-            val colorsElement = TypedAttrs.undeclared(effective, "colors")
+            // The DECLARED shape of `gradient` is the color ARRAY itself —
+            // read it first (this path used to accept only the object
+            // wrapper and the undeclared 'colors'/'items' spellings, so a
+            // declared gradient fell to the black/white default on BOTH
+            // kotlin paths while ios/web honored it: parity family
+            // kjui-codegen-gradientview / dead declared attr).
+            val colorsElement = gradientElement?.takeIf { it.isJsonArray }
+                ?: TypedAttrs.undeclared(effective, "colors")
                 ?: TypedAttrs.undeclared(effective, "items")
             val colors = when {
                 colorsElement?.isJsonArray == true -> {
@@ -199,9 +204,14 @@ class DynamicGradientViewComponent {
             // declared enum and must also serve the nested gradient wrapper
             // — read raw (see TypedAttrs.rawKey). 'orientation' is an
             // undeclared legacy runtime extra.
-            val direction = TypedAttrs.rawKey(effective, "gradientDirection")?.asString
-                ?: TypedAttrs.undeclared(effective, "orientation")?.asString
+            // Declared enum is Vertical/Horizontal/Oblique (capitalized) —
+            // match case-insensitively like sjui/rjui; the camelCase
+            // spellings stay as legacy extras.
+            val direction = (TypedAttrs.rawKey(effective, "gradientDirection")?.asString
+                ?: TypedAttrs.undeclared(effective, "orientation")?.asString)
+                ?.replaceFirstChar { it.lowercaseChar() }
             when (direction) {
+                "oblique" -> return Brush.linearGradient(colors)
                 "horizontal", "leftToRight" -> return Brush.horizontalGradient(colors)
                 "vertical", "topToBottom" -> return Brush.verticalGradient(colors)
                 "rightToLeft" -> return Brush.horizontalGradient(colors, startX = Float.POSITIVE_INFINITY, endX = 0f)
