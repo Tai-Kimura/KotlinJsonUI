@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -251,8 +252,20 @@ class DynamicTextViewComponent {
                     when (widthElement.asString) {
                         "matchParent", "match_parent" -> modifier.fillMaxWidth()
                         "wrapContent", "wrap_content" -> modifier
-                        else -> modifier.fillMaxWidth()
+                        else -> {
+                            widthElement.asString.toFloatOrNull()?.let {
+                                modifier.width(it.dp)
+                            } ?: modifier.fillMaxWidth()
+                        }
                     }
+                }
+                // A declared numeric width was silently swallowed by the
+                // final else and rendered fillMaxWidth — declaration-faithful
+                // fix (parity family F5: every TextView fixture with
+                // width: 200 rendered full-bleed on dynamic only). Mirrors
+                // the height branch below.
+                widthElement.isJsonPrimitive && widthElement.asJsonPrimitive.isNumber -> {
+                    modifier.width(widthElement.asFloat.dp)
                 }
                 else -> modifier.fillMaxWidth()
             }

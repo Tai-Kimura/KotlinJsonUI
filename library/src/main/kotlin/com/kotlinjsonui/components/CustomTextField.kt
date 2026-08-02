@@ -103,12 +103,12 @@ fun CustomTextField(
                 placeholder = placeholder,
                 contentPadding = effectiveContentPadding,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                    unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
+                    focusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
+                    unfocusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
                     focusedTextColor = effectiveTextStyle.color,
                     unfocusedTextColor = effectiveTextStyle.color,
-                    focusedContainerColor = backgroundColor ?: Color.Transparent,
-                    unfocusedContainerColor = backgroundColor ?: Color.Transparent
+                    focusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor,
+                    unfocusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
                 ),
                 container = {
                     OutlinedTextFieldDefaults.Container(
@@ -116,10 +116,10 @@ fun CustomTextField(
                         isError = isError,
                         interactionSource = interactionSource,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                            unfocusedBorderColor = borderColor ?: MaterialTheme.colorScheme.outline,
-                            focusedContainerColor = backgroundColor ?: Color.Transparent,
-                            unfocusedContainerColor = backgroundColor ?: Color.Transparent
+                            focusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
+                            unfocusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
+                            focusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor,
+                            unfocusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
                         ),
                         shape = effectiveShape
                     )
