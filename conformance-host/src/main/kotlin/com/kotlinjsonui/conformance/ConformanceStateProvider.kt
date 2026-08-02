@@ -6,7 +6,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.kotlinjsonui.data.CollectionDataSection
+import com.kotlinjsonui.data.CollectionDataSource
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.embed.EmbedNavigatorRegistry
 
@@ -80,6 +84,88 @@ object ConformanceStateRegistry {
         return "conformance/$layout"
     }
 
+    /**
+     * Requirement 4 (INTERACTIVE_HOST_CONTRACT.md §4, mirror of the ios
+     * host): `{"name": N, "class": "CollectionDataSource", "defaultValue"}`
+     * entries in the fixture layout's root `data` section become real
+     * [CollectionDataSource] values — the dynamic renderer resolves
+     * `items: "@{prop}"` with an `as? CollectionDataSource` cast, which a
+     * raw defaults map never survives. Accepted defaultValue shapes:
+     * shorthand `[ {...}, ... ]` (one section holding these cells) and
+     * explicit `{"sections": [{"cell": name?, "cells": [...]}]}`. The
+     * renderer takes cell view names from the Collection node's own
+     * `sections` declaration; the per-section `cell` here is carried for
+     * tuple fidelity only.
+     */
+    fun collectionDataFor(context: Context, fixtureId: String): Map<String, CollectionDataSource> {
+        val text = try {
+            context.assets.open(layoutAssetPath(context, fixtureId))
+                .bufferedReader().use { it.readText() }
+        } catch (_: Exception) {
+            return emptyMap()
+        }
+        val root = try {
+            JsonParser.parseString(text).takeIf { it.isJsonObject }?.asJsonObject
+        } catch (_: Exception) {
+            null
+        } ?: return emptyMap()
+        val entries = root.get("data")?.takeIf { it.isJsonArray }?.asJsonArray
+            ?: return emptyMap()
+        val out = mutableMapOf<String, CollectionDataSource>()
+        for (element in entries) {
+            val entry = element.takeIf { it.isJsonObject }?.asJsonObject ?: continue
+            val name = entry.get("name")?.takeIf { it.isJsonPrimitive }?.asString ?: continue
+            if (entry.get("class")?.takeIf { it.isJsonPrimitive }?.asString != "CollectionDataSource") continue
+            val defaultValue = entry.get("defaultValue") ?: continue
+            out[name] = materializeCollection(defaultValue)
+        }
+        return out
+    }
+
+    private fun materializeCollection(raw: JsonElement): CollectionDataSource {
+        if (raw.isJsonArray) {
+            return CollectionDataSource(
+                sections = listOf(
+                    CollectionDataSection(
+                        cells = CollectionDataSection.CellData(
+                            viewName = "",
+                            data = raw.asJsonArray.mapNotNull { cell ->
+                                cell.takeIf { it.isJsonObject }?.asJsonObject?.toPlainMap()
+                            }
+                        )
+                    )
+                )
+            )
+        }
+        val sectionsArr = raw.takeIf { it.isJsonObject }?.asJsonObject
+            ?.get("sections")?.takeIf { it.isJsonArray }?.asJsonArray
+            ?: return CollectionDataSource()
+        return CollectionDataSource(
+            sections = sectionsArr.mapNotNull { el ->
+                val obj = el.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+                CollectionDataSection(
+                    cells = CollectionDataSection.CellData(
+                        viewName = obj.get("cell")?.takeIf { it.isJsonPrimitive }?.asString ?: "",
+                        data = obj.get("cells")?.takeIf { it.isJsonArray }?.asJsonArray
+                            ?.mapNotNull { c -> c.takeIf { it.isJsonObject }?.asJsonObject?.toPlainMap() }
+                            ?: emptyList()
+                    )
+                )
+            }
+        )
+    }
+
+    private fun JsonObject.toPlainMap(): Map<String, Any> =
+        entrySet().mapNotNull { (key, v) ->
+            val value: Any? = when {
+                v.isJsonPrimitive && v.asJsonPrimitive.isString -> v.asString
+                v.isJsonPrimitive && v.asJsonPrimitive.isBoolean -> v.asBoolean
+                v.isJsonPrimitive && v.asJsonPrimitive.isNumber -> v.asNumber
+                else -> null
+            }
+            value?.let { key to it }
+        }.toMap()
+
     private fun indexFor(context: Context): ManifestIndex =
         index ?: parseManifest(context).also { index = it }
 
@@ -144,9 +230,16 @@ fun rememberConformanceData(fixtureId: String): Map<String, Any> {
     }
     val bindingContext = remember(fixtureId) { DataBindingContext() }
     val stateData by bindingContext.data.collectAsState()
+    // Requirement 4: declared CollectionDataSource entries, materialized once
+    // per fixture. Interactive state wins on a name collision (declared vars
+    // are the more specific intent) — hence collection data goes in first.
+    val collectionData = remember(fixtureId) {
+        ConformanceStateRegistry.collectionDataFor(context, fixtureId)
+    }
 
     return remember(fixtureId, stateData) {
         buildMap {
+            putAll(collectionData)
             putAll(stateData)
             for (handler in handlers) {
                 val fire: () -> Unit = when (handler) {
