@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
@@ -147,7 +148,7 @@ class DynamicTextViewComponent {
                 TypedAttrs.rawString(a.hintColor), data, context
             )
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
-                buildPlaceholder(a, placeholderText, fontSize, hintColor)
+                buildPlaceholder(a, placeholderText, TypedAttrs.int(a.fontSize, data), hintColor)
             } else null
 
             // Check margins
@@ -325,21 +326,37 @@ class DynamicTextViewComponent {
         private fun buildPlaceholder(
             a: TextViewAttributes,
             text: String,
-            baseFontSize: Int,
+            declaredFontSize: Int?,
             hintColor: androidx.compose.ui.graphics.Color? = null
         ): @Composable () -> Unit {
             val hintLineHeightMultiple = a.hintLineHeightMultiple?.toFloat()
             val hintFontSize = a.hintFontSize?.toFloat()
-            val lineHeight = if (hintLineHeightMultiple != null) {
-                ((hintFontSize ?: baseFontSize.toFloat()) * hintLineHeightMultiple).sp
-            } else androidx.compose.ui.unit.TextUnit.Unspecified
 
             return {
+                // Derive from LocalTextStyle — a bare TextStyle() discards the
+                // M3 placeholder typography (bodyLarge) and drops to the raw
+                // 14sp default, the same theme-destruction bug the Label
+                // edgeInset ruling fixed. Only declared fields override.
+                // The lineHeight multiple resolves against the hint's own
+                // rendered size (declared hintFontSize, else the inherited
+                // style size) — the codegen placeholder does the same, and
+                // the old TextView-fontSize basis measurably desynced them.
+                val base = LocalTextStyle.current
+                val effectiveSize = hintFontSize?.sp ?: base.fontSize
+                // Multiple basis: hint size, else the field's DECLARED size,
+                // else the inherited M3 size — the exact chain the codegen
+                // placeholder resolves at generation time.
+                val multipleBasis = hintFontSize
+                    ?: declaredFontSize?.toFloat()
+                    ?: (if (base.fontSize != androidx.compose.ui.unit.TextUnit.Unspecified) base.fontSize.value else 16f)
+                val lineHeight = if (hintLineHeightMultiple != null) {
+                    (multipleBasis * hintLineHeightMultiple).sp
+                } else base.lineHeight
                 Text(
                     text = text,
-                    style = TextStyle(
-                        color = hintColor ?: androidx.compose.ui.graphics.Color.Unspecified,
-                        fontSize = hintFontSize?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+                    style = base.copy(
+                        color = hintColor ?: base.color,
+                        fontSize = effectiveSize,
                         lineHeight = lineHeight
                     )
                 )

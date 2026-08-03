@@ -118,7 +118,10 @@ class DynamicIconLabelComponent {
 
             // Parse text attributes ('fontWeight' is an undeclared legacy
             // runtime extra — 'font' is the declared row, not consumed here)
-            val fontSize = a.fontSize?.toFloat() ?: 14f
+            // 16 is the cross-platform canonical default (IconLabelView.swift
+            // fontSize: 16; kjui codegen inherits M3 bodyLarge 16sp) — 14f was
+            // a KJUI-only deviation (32 parity re-measure).
+            val fontSize = a.fontSize?.toFloat() ?: 16f
             val fontColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
                 ?: Color.Unspecified
             // 'font' is the declared weight-spelling row (33 cross-effect:
@@ -134,9 +137,12 @@ class DynamicIconLabelComponent {
             val iconPosition = TypedAttrs.enumString(a.iconPosition) { it.json }
                 ?.lowercase() ?: "left"
             // iconMargin is the declared row; 'spacing' the legacy spelling
-            // (33 cross-effect: android ignored iconMargin).
+            // (33 cross-effect: android ignored iconMargin). The undeclared
+            // default is 5 — the cross-platform canonical (IconLabelView.swift
+            // and the ios dynamic converter; 8f was a KJUI-only deviation,
+            // 32 parity re-measure).
             val spacing = a.iconMargin?.toFloat()
-                ?: TypedAttrs.undeclared(json, "spacing")?.asFloat ?: 8f
+                ?: TypedAttrs.undeclared(json, "spacing")?.asFloat ?: 5f
 
             // Build icon composable content ('contentDescription' is an
             // undeclared legacy runtime extra)
@@ -176,12 +182,18 @@ class DynamicIconLabelComponent {
                             )
                         )
                     }
+                    // Style derives from LocalTextStyle: TextStyle.Default
+                    // dropped the M3 line height (24sp on bodyLarge), so the
+                    // label's text box ran tighter than the codegen label and
+                    // pushed the icon up (32 parity, the theme-destruction
+                    // class the TextView hint fix named).
+                    val labelBase = androidx.compose.material3.LocalTextStyle.current
                     Text(
                         text = text,
                         fontSize = fontSize.sp,
                         color = fontColor,
                         fontWeight = fontWeight,
-                        style = shadowStyle ?: androidx.compose.ui.text.TextStyle.Default
+                        style = shadowStyle?.let { labelBase.merge(it) } ?: labelBase
                     )
                 }
             }
