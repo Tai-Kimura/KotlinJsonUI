@@ -50,7 +50,8 @@ class DynamicNetworkImageComponent {
     companion object {
         /** NetworkImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "url", "src", "contentMode", "hint", "placeholder", "errorImage", "loadingImage"
+            "url", "src", "contentMode", "hint", "placeholder", "errorImage",
+            "loadingImage", "defaultImage"
         )
 
         @Composable
@@ -122,6 +123,19 @@ class DynamicNetworkImageComponent {
                 context.resources.getIdentifier(cleanName, "drawable", context.packageName)
             }?.takeIf { it != 0 }
 
+            // ── Default image: what the view shows when there is no src at
+            // all (canonical networkImage.noSrc = defaultImage, shared/core/
+            // attribute_semantics.json). Previously parsed but never read —
+            // a control declaring only defaultImage rendered blank. ──
+            val defaultResId = a.defaultImage?.let { name ->
+                val cleanName = name
+                    .removeSuffix(".png")
+                    .removeSuffix(".jpg")
+                    .removeSuffix(".jpeg")
+                    .removeSuffix(".webp")
+                context.resources.getIdentifier(cleanName, "drawable", context.packageName)
+            }?.takeIf { it != 0 }
+
             // ── Build modifier ──
             // Standard order: testTag → margins → size → alpha → shadow → background(clip+border+bg) → clickable → padding
             // Special handling: "size" attribute overrides width/height with square .size(N.dp)
@@ -150,18 +164,22 @@ class DynamicNetworkImageComponent {
             }
 
             // ── AsyncImage ──
-            // Use errorResId if specified, otherwise fall back to placeholder
-            val effectiveErrorResId = errorResId ?: placeholderResId
+            // Canonical chains (networkImage.noSrc = defaultImage): no src →
+            // defaultImage; error → errorImage, falling back to defaultImage.
+            // Empty url becomes null so Coil takes the fallback path instead
+            // of treating "" as a failing request.
+            val effectiveErrorResId = errorResId ?: defaultResId ?: placeholderResId
+            val effectiveFallbackResId = defaultResId ?: errorResId ?: placeholderResId
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(imageUrl)
+                    .data(imageUrl.takeIf { it.isNotEmpty() })
                     .crossfade(true)
                     .build(),
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 placeholder = placeholderResId?.let { painterResource(it) },
                 error = effectiveErrorResId?.let { painterResource(it) },
-                fallback = effectiveErrorResId?.let { painterResource(it) },
+                fallback = effectiveFallbackResId?.let { painterResource(it) },
                 modifier = modifier
             )
         }

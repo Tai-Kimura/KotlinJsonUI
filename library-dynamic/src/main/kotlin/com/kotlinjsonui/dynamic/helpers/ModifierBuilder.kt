@@ -206,31 +206,69 @@ object ModifierBuilder {
             }
         }
 
+        // Ordering per canonical size.maxBoundsClampFill (shared/core/
+        // attribute_semantics.json): a min/max bound must precede a FILL —
+        // fillMaxWidth() first pins the incoming constraints and a widthIn
+        // after it is a no-op, which is exactly the matchParent+maxWidth
+        // bug this ordering fixes. An EXPLICIT numeric size is the opposite
+        // case: the declared dimension wins and the bound stays inert, so
+        // the bound is applied after it (mirrors kjui codegen 847fb56).
+
         // Width
         val hasWeight = json.has("weight")
         val widthElement = json.get("width")
+        var widthBoundsApplied = false
         if (widthElement != null) {
             val skipWidth = hasWeight && widthElement.isJsonPrimitive &&
                     widthElement.asJsonPrimitive.isNumber && widthElement.asFloat == 0f
             if (!skipWidth) {
+                if (isFillDimension(widthElement)) {
+                    result = applyWidthConstraints(result, json)
+                    widthBoundsApplied = true
+                }
                 result = applySingleDimension(result, json, "width", isWidth = true)
             }
         } else if (defaultFillMaxWidth) {
+            result = applyWidthConstraints(result, json)
+            widthBoundsApplied = true
             result = result.fillMaxWidth()
+        }
+        if (!widthBoundsApplied) {
+            result = applyWidthConstraints(result, json)
         }
 
         // Height
         val hasHeightWeight = json.has("heightWeight")
         val heightElement = json.get("height")
+        var heightBoundsApplied = false
         if (heightElement != null) {
             val skipHeight = hasHeightWeight && heightElement.isJsonPrimitive &&
                     heightElement.asJsonPrimitive.isNumber && heightElement.asFloat == 0f
             if (!skipHeight) {
+                if (isFillDimension(heightElement)) {
+                    result = applyHeightConstraints(result, json)
+                    heightBoundsApplied = true
+                }
                 result = applySingleDimension(result, json, "height", isWidth = false)
             }
         }
+        if (!heightBoundsApplied) {
+            result = applyHeightConstraints(result, json)
+        }
 
-        return applyConstraints(result, json)
+        return applyAspectRatio(result, json)
+    }
+
+    /** matchParent (or a negative number, the legacy fill spelling)? */
+    private fun isFillDimension(element: com.google.gson.JsonElement): Boolean {
+        if (!element.isJsonPrimitive) return false
+        val p = element.asJsonPrimitive
+        return when {
+            p.isString -> p.asString == "matchParent" || p.asString == "match_parent" ||
+                    (p.asString.toFloatOrNull()?.let { it < 0 } ?: false)
+            p.isNumber -> p.asFloat < 0
+            else -> false
+        }
     }
 
     private fun applySingleDimension(
@@ -276,15 +314,17 @@ object ModifierBuilder {
     }
 
     private fun applyConstraints(modifier: Modifier, json: JsonObject): Modifier {
+        // Frame-object path: explicit sizes, bounds stay inert after them.
+        return applyAspectRatio(
+            applyHeightConstraints(applyWidthConstraints(modifier, json), json), json
+        )
+    }
+
+    private fun applyWidthConstraints(modifier: Modifier, json: JsonObject): Modifier {
         var result = modifier
         val hasWidth = json.has("width")
-        val hasHeight = json.has("height")
         val maxWidth = parseOptionalDp(json, "maxWidth")
-        val maxHeight = parseOptionalDp(json, "maxHeight")
         val minWidth = parseOptionalDp(json, "minWidth")
-        val minHeight = parseOptionalDp(json, "minHeight")
-
-        // Width constraints
         if (minWidth != null && maxWidth != null) {
             result = result.widthIn(min = minWidth, max = maxWidth)
         } else if (maxWidth != null) {
@@ -293,8 +333,14 @@ object ModifierBuilder {
         } else if (minWidth != null) {
             result = result.widthIn(min = minWidth)
         }
+        return result
+    }
 
-        // Height constraints
+    private fun applyHeightConstraints(modifier: Modifier, json: JsonObject): Modifier {
+        var result = modifier
+        val hasHeight = json.has("height")
+        val maxHeight = parseOptionalDp(json, "maxHeight")
+        val minHeight = parseOptionalDp(json, "minHeight")
         if (minHeight != null && maxHeight != null) {
             result = result.heightIn(min = minHeight, max = maxHeight)
         } else if (maxHeight != null) {
@@ -303,15 +349,15 @@ object ModifierBuilder {
         } else if (minHeight != null) {
             result = result.heightIn(min = minHeight)
         }
+        return result
+    }
 
-        // Aspect ratio
+    private fun applyAspectRatio(modifier: Modifier, json: JsonObject): Modifier {
         val aw = json.get("aspectWidth")?.asFloat
         val ah = json.get("aspectHeight")?.asFloat
-        if (aw != null && ah != null && ah > 0) {
-            result = result.aspectRatio(aw / ah)
-        }
-
-        return result
+        return if (aw != null && ah != null && ah > 0) {
+            modifier.aspectRatio(aw / ah)
+        } else modifier
     }
 
     private fun parseOptionalDp(json: JsonObject, key: String): Dp? {
