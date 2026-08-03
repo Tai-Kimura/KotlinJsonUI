@@ -285,9 +285,13 @@ class DynamicCheckBoxComponent {
                 checkedState = newValue
             }
 
-            // Resolve icon drawable resources
-            val iconName = a.icon ?: "check_box_outline_blank"
-            val selectedIconName = a.selectedIcon ?: "check_box"
+            // Resolve icon drawable resources — each state falls back to the
+            // OTHER supplied asset, not to a Material drawable name that the
+            // app does not ship (kjui codegen and iOS share this contract;
+            // "check_box_outline_blank" resolved to 0 and drew NOTHING for a
+            // selectedIcon-only declaration).
+            val iconName = a.icon ?: a.selectedIcon ?: "check_box_outline_blank"
+            val selectedIconName = a.selectedIcon ?: a.icon ?: "check_box"
             val iconRes = ResourceResolver.resolveDrawable(iconName, data, context)
             val selectedIconRes = ResourceResolver.resolveDrawable(selectedIconName, data, context)
 
