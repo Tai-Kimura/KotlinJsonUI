@@ -112,7 +112,7 @@ class DynamicProgressComponent {
             val progressColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.progressTintColor), data, context
             ) ?: ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.common.tintColor), data, context
+                a.tintColor, data, context
             )
             val trackColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.trackTintColor), data, context

@@ -212,7 +212,11 @@ class DynamicRadioComponent {
             }
 
             // Get current selected value
-            val isSelected = (data[selectedVar] as? String) == id
+            // A literal checked: true seeds the selection (33 cross-effect:
+            // both mobiles ignored it — group data remains the override).
+            val literalChecked = (TypedAttrs.raw(a.checked) as? Boolean) == true
+            val isSelected = (data[selectedVar] as? String) == id ||
+                (literalChecked && data[selectedVar] == null)
 
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)

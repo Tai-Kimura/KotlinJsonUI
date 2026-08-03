@@ -1,6 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
@@ -218,6 +219,12 @@ class DynamicCheckBoxComponent {
                     checked = checkedState,
                     onCheckedChange = onCheckedChange,
                     enabled = isEnabled,
+                    // iconSize scales the default glyph via the size modifier
+                    // (mirrors checkbox_component.rb — no separate glyph to
+                    // size on a Material Checkbox).
+                    modifier = a.iconSize?.let {
+                        Modifier.size(it.toInt().dp)
+                    } ?: Modifier,
                     // The labeled path dropped the color skin entirely —
                     // uncheckedColor/checkedColor never reached the box
                     // every text-bearing fixture renders (33 cross-effect).

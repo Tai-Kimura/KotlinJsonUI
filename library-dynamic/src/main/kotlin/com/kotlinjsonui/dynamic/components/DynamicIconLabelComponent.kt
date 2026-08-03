@@ -121,16 +121,22 @@ class DynamicIconLabelComponent {
             val fontSize = a.fontSize?.toFloat() ?: 14f
             val fontColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
                 ?: Color.Unspecified
-            val fontWeight = TypedAttrs.undeclared(json, "fontWeight")?.asString?.let { fw ->
-                WEIGHT_NAMES[fw.lowercase()]
-            }
+            // 'font' is the declared weight-spelling row (33 cross-effect:
+            // android rendered default weight for font: bold).
+            val fontWeight = (
+                TypedAttrs.undeclared(json, "fontWeight")?.asString
+                    ?: a.font
+            )?.let { fw -> WEIGHT_NAMES[fw.lowercase()] }
 
             // Parse layout attributes (iconPosition feeds the existing
             // lowercase switch; 'spacing' is an undeclared legacy runtime
             // extra — 'iconMargin' is the declared row, not consumed here)
             val iconPosition = TypedAttrs.enumString(a.iconPosition) { it.json }
                 ?.lowercase() ?: "left"
-            val spacing = TypedAttrs.undeclared(json, "spacing")?.asFloat ?: 8f
+            // iconMargin is the declared row; 'spacing' the legacy spelling
+            // (33 cross-effect: android ignored iconMargin).
+            val spacing = a.iconMargin?.toFloat()
+                ?: TypedAttrs.undeclared(json, "spacing")?.asFloat ?: 8f
 
             // Build icon composable content ('contentDescription' is an
             // undeclared legacy runtime extra)
@@ -148,11 +154,32 @@ class DynamicIconLabelComponent {
             // Build text composable content
             val textContent: @Composable () -> Unit = {
                 if (text.isNotEmpty()) {
+                    // textShadow { color, blur, offset:[x,y] } — mirrors the
+                    // Label path (33 cross-effect: IconLabel rendered flat).
+                    val shadowObj = (a.textShadow as? com.google.gson.JsonElement)
+                        ?.takeIf { it.isJsonObject }?.asJsonObject
+                    val shadowStyle = shadowObj?.let { so ->
+                        val sc = ColorParser.parseColorStringWithBinding(
+                            so.get("color")?.asString, data, context
+                        ) ?: Color.Black.copy(alpha = 0.3f)
+                        val blur = so.get("blur")?.asFloat ?: 1f
+                        val off = so.get("offset")?.takeIf { it.isJsonArray }?.asJsonArray
+                        val ox = off?.takeIf { it.size() >= 2 }?.get(0)?.asFloat ?: 0f
+                        val oy = off?.takeIf { it.size() >= 2 }?.get(1)?.asFloat ?: 1f
+                        androidx.compose.ui.text.TextStyle(
+                            shadow = androidx.compose.ui.graphics.Shadow(
+                                color = sc,
+                                offset = androidx.compose.ui.geometry.Offset(ox, oy),
+                                blurRadius = blur
+                            )
+                        )
+                    }
                     Text(
                         text = text,
                         fontSize = fontSize.sp,
                         color = fontColor,
-                        fontWeight = fontWeight
+                        fontWeight = fontWeight,
+                        style = shadowStyle ?: androidx.compose.ui.text.TextStyle.Default
                     )
                 }
             }
