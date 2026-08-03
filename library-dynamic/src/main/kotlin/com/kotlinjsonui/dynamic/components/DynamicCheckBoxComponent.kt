@@ -87,7 +87,10 @@ class DynamicCheckBoxComponent {
             )
 
             val hasLabel = a.label != null || a.text != null
-            val hasCustomIcon = a.icon != null || a.selectedIcon != null
+            // 'src' is the common-attribute spelling of the unchecked icon
+            // (ios renders it — 33 cross-effect measured android dropping it).
+            val hasCustomIcon = a.icon != null || a.selectedIcon != null ||
+                a.src != null
 
             when {
                 hasCustomIcon -> createIconCheckbox(json, a, data, parentType)
@@ -214,7 +217,11 @@ class DynamicCheckBoxComponent {
                 Checkbox(
                     checked = checkedState,
                     onCheckedChange = onCheckedChange,
-                    enabled = isEnabled
+                    enabled = isEnabled,
+                    // The labeled path dropped the color skin entirely —
+                    // uncheckedColor/checkedColor never reached the box
+                    // every text-bearing fixture renders (33 cross-effect).
+                    colors = buildCheckboxColors(json, a, data, context)
                 )
 
                 // Spacer with configurable spacing
@@ -290,8 +297,9 @@ class DynamicCheckBoxComponent {
             // app does not ship (kjui codegen and iOS share this contract;
             // "check_box_outline_blank" resolved to 0 and drew NOTHING for a
             // selectedIcon-only declaration).
-            val iconName = a.icon ?: a.selectedIcon ?: "check_box_outline_blank"
-            val selectedIconName = a.selectedIcon ?: a.icon ?: "check_box"
+            val srcIcon = a.src
+            val iconName = a.icon ?: srcIcon ?: a.selectedIcon ?: "check_box_outline_blank"
+            val selectedIconName = a.selectedIcon ?: a.icon ?: srcIcon ?: "check_box"
             val iconRes = ResourceResolver.resolveDrawable(iconName, data, context)
             val selectedIconRes = ResourceResolver.resolveDrawable(selectedIconName, data, context)
 
@@ -333,9 +341,11 @@ class DynamicCheckBoxComponent {
             data: Map<String, Any>,
             context: android.content.Context
         ): androidx.compose.material3.CheckboxColors {
-            // 'checkColor' is an undeclared legacy runtime extra
-            // (the declared spelling is 'checkedColor')
+            // Declared spelling first; 'checkColor' is the undeclared
+            // legacy runtime extra.
             val checkedColor = ColorParser.parseColorStringWithBinding(
+                a.checkedColor, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
                 TypedAttrs.undeclared(json, "checkColor")?.asString, data, context
             )
             val uncheckedColor = ColorParser.parseColorStringWithBinding(

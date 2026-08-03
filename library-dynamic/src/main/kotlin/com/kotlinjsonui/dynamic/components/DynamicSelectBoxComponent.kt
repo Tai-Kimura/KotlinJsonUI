@@ -208,6 +208,11 @@ class DynamicSelectBoxComponent {
                 textColor = textColor,
                 hintColor = hintColor,
                 cornerRadius = cornerRadius,
+                // fontSize/fontWeight were parsed but never forwarded — the
+                // library SelectBox has carried both params all along (33
+                // cross-effect: android rendered default size/weight).
+                fontSize = fontSize?.toInt() ?: 16,
+                fontWeight = fontWeight ?: androidx.compose.ui.text.font.FontWeight.Normal,
                 contentPadding = contentPadding ?: PaddingValues(horizontal = 16.dp),
                 cancelButtonBackgroundColor = cancelButtonBackgroundColor ?: backgroundColor,
                 cancelButtonTextColor = cancelButtonTextColor ?: textColor

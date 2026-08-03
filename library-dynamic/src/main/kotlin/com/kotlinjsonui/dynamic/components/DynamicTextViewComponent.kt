@@ -141,9 +141,13 @@ class DynamicTextViewComponent {
                 }
             }
 
-            // Placeholder
+            // Placeholder. hintColor styles it (33 cross-effect: android
+            // rendered the default gray for a declared hintColor).
+            val hintColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.hintColor), data, context
+            )
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
-                buildPlaceholder(a, placeholderText, fontSize)
+                buildPlaceholder(a, placeholderText, fontSize, hintColor)
             } else null
 
             // Check margins
@@ -210,7 +214,7 @@ class DynamicTextViewComponent {
             "text", "hint", "placeholder", "enabled", "fontSize", "fontColor",
             "highlightBackground", "containerInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
-            "hintFontSize", "flexible"
+            "hintFontSize", "hintColor", "flexible"
         )
 
         /**
@@ -321,21 +325,24 @@ class DynamicTextViewComponent {
         private fun buildPlaceholder(
             a: TextViewAttributes,
             text: String,
-            baseFontSize: Int
+            baseFontSize: Int,
+            hintColor: androidx.compose.ui.graphics.Color? = null
         ): @Composable () -> Unit {
             val hintLineHeightMultiple = a.hintLineHeightMultiple?.toFloat()
+            val hintFontSize = a.hintFontSize?.toFloat()
+            val lineHeight = if (hintLineHeightMultiple != null) {
+                ((hintFontSize ?: baseFontSize.toFloat()) * hintLineHeightMultiple).sp
+            } else androidx.compose.ui.unit.TextUnit.Unspecified
 
-            return if (hintLineHeightMultiple != null) {
-                val hintFontSize = a.hintFontSize?.toFloat() ?: baseFontSize.toFloat()
-                val lineHeight = hintFontSize * hintLineHeightMultiple
-                {
-                    Text(
-                        text = text,
-                        style = TextStyle(lineHeight = lineHeight.sp)
+            return {
+                Text(
+                    text = text,
+                    style = TextStyle(
+                        color = hintColor ?: androidx.compose.ui.graphics.Color.Unspecified,
+                        fontSize = hintFontSize?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified,
+                        lineHeight = lineHeight
                     )
-                }
-            } else {
-                { Text(text = text) }
+                )
             }
         }
 

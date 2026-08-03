@@ -124,7 +124,11 @@ class DynamicSwitchComponent {
             val colors = if (checkedTrackColor != null || checkedThumbColor != null) {
                 SwitchDefaults.colors(
                     checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
-                    checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor
+                    checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
+                    // thumbTintColor skins the thumb in BOTH states (UIKit
+                    // heritage; ios renders it on an off switch — 33
+                    // cross-effect measured the android thumb inert).
+                    uncheckedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().uncheckedThumbColor
                 )
             } else {
                 SwitchDefaults.colors()

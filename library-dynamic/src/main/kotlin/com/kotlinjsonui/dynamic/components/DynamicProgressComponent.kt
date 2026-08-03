@@ -107,8 +107,12 @@ class DynamicProgressComponent {
             val style = json.get("style")?.asString ?: "linear"
 
             // Parse colors (supports @{binding})
+            // progressTintColor is the specific spelling; plain tintColor is
+            // the common accent (33 cross-effect: android rendered neither).
             val progressColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.progressTintColor), data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
             )
             val trackColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.trackTintColor), data, context

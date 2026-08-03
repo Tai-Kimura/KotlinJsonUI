@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
@@ -122,10 +123,19 @@ class DynamicRadioComponent {
             // Parse colors (supports @{binding}) — 'selectedColor' /
             // 'unselectedColor' are undeclared legacy runtime extras
             // (the declared spellings are checkedColor/uncheckedColor)
+            // Declared spellings first (checkedColor/uncheckedColor/iconColor
+            // were parsed but never read — 33 cross-effect measured android
+            // rendering the default glyph for all three).
             val selectedColor = ColorParser.parseColorStringWithBinding(
+                a.checkedColor, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
                 TypedAttrs.undeclared(json, "selectedColor")?.asString, data, context
             )
             val unselectedColor = ColorParser.parseColorStringWithBinding(
+                a.uncheckedColor, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
+                a.iconColor, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
                 TypedAttrs.undeclared(json, "unselectedColor")?.asString, data, context
             )
 
@@ -274,10 +284,27 @@ class DynamicRadioComponent {
                     }
                     // Default radio button
                     else -> {
+                        // The default-glyph path dropped the color skin
+                        // entirely (33 cross-effect) — rebuild the declared
+                        // checked/unchecked/icon colors here.
+                        val itemSelectedColor = ColorParser.parseColorStringWithBinding(
+                            a.checkedColor, data, context
+                        )
+                        val itemUnselectedColor = ColorParser.parseColorStringWithBinding(
+                            a.uncheckedColor, data, context
+                        ) ?: ColorParser.parseColorStringWithBinding(
+                            a.iconColor, data, context
+                        )
                         RadioButton(
                             selected = isSelected,
                             onClick = onSelect,
-                            modifier = glyphModifier
+                            modifier = glyphModifier,
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = itemSelectedColor
+                                    ?: RadioButtonDefaults.colors().selectedColor,
+                                unselectedColor = itemUnselectedColor
+                                    ?: RadioButtonDefaults.colors().unselectedColor
+                            )
                         )
                     }
                 }
@@ -294,7 +321,22 @@ class DynamicRadioComponent {
                                 TypedAttrs.undeclared(json, "textColor")?.asString, data, context
                             )
                             ?: Color.Black
-                    Text(text = text, color = textColor)
+                    // font (weight spelling) / fontSize were never read on
+                    // the label (33 cross-effect: android rendered default
+                    // weight/size for font: bold / fontSize).
+                    val labelWeight = when (TypedAttrs.rawString(a.font)?.lowercase()) {
+                        "bold" -> androidx.compose.ui.text.font.FontWeight.Bold
+                        "semibold" -> androidx.compose.ui.text.font.FontWeight.SemiBold
+                        "medium" -> androidx.compose.ui.text.font.FontWeight.Medium
+                        else -> null
+                    }
+                    val labelSize = TypedAttrs.float(a.fontSize, data)
+                    Text(
+                        text = text,
+                        color = textColor,
+                        fontWeight = labelWeight,
+                        fontSize = labelSize?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified
+                    )
                 }
             }
         }

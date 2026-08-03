@@ -141,7 +141,11 @@ class DynamicSliderComponent {
             // 'minimumTrackTintColor' and 'maximumTrackTintColor' are
             // undeclared legacy runtime extras on Slider
             val thumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
+            // minimumTrackTintColor is the specific spelling; plain tintColor
+            // is the accent for the active track (UISlider heritage — 33
+            // cross-effect measured both mobiles rendering neither).
             val activeTrackColor = ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
             val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
 
             val colors = if (thumbColor != null || activeTrackColor != null || inactiveTrackColor != null) {
