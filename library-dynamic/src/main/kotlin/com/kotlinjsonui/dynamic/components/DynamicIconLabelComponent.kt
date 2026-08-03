@@ -91,10 +91,14 @@ class DynamicIconLabelComponent {
                 ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
-            // Parse icon resource ('icon'/'src' are undeclared legacy runtime
-            // extras — the declared rows are icon_on/icon_off, which this
-            // component does not consume)
-            val rawIcon = TypedAttrs.undeclared(json, "icon")?.asString
+            // Parse icon resource — the declared rows are icon_on/icon_off,
+            // chosen by `selected` with each state falling back to the other
+            // supplied asset (the codegen paths and iOS do the same);
+            // 'icon'/'src' stay as undeclared legacy runtime extras.
+            val isSelected = TypedAttrs.boolean(a.selected, data) ?: false
+            val declaredIcon = if (isSelected) (a.icon_on ?: a.icon_off) else (a.icon_off ?: a.icon_on)
+            val rawIcon = declaredIcon
+                ?: TypedAttrs.undeclared(json, "icon")?.asString
                 ?: TypedAttrs.undeclared(json, "src")?.asString
                 ?: ""
             val iconResId = ResourceResolver.resolveDrawable(rawIcon, data, context)

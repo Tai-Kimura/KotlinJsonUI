@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -354,11 +355,44 @@ object ModifierBuilder {
 
         return when {
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isString -> {
-                modifier.dropShadow(shape = shape, shadow = Shadow(radius = 4.dp))
+                // The string form is the UIKit pipe contract
+                // 'color|offsetX|offsetY|opacity|radius' — exactly five
+                // fields; anything else draws nothing (the canonical guard
+                // all render paths share).
+                val parts = shadowElement.asString.split("|")
+                if (parts.size != 5) return modifier
+                val color = ColorParser.parseColorString(parts[0]) ?: return modifier
+                val x = parts[1].toFloatOrNull() ?: return modifier
+                val y = parts[2].toFloatOrNull() ?: return modifier
+                val alpha = parts[3].toFloatOrNull() ?: return modifier
+                val radius = parts[4].toFloatOrNull() ?: return modifier
+                modifier.dropShadow(
+                    shape = shape,
+                    shadow = Shadow(
+                        radius = radius.dp,
+                        color = color,
+                        offset = DpOffset(x.dp, y.dp),
+                        alpha = alpha.coerceIn(0f, 1f)
+                    )
+                )
             }
             shadowElement.isJsonObject -> {
-                val radius = shadowElement.asJsonObject.get("radius")?.asFloat ?: 4f
-                modifier.dropShadow(shape = shape, shadow = Shadow(radius = radius.dp))
+                val obj = shadowElement.asJsonObject
+                val radius = obj.get("radius")?.asFloat ?: 4f
+                val color = obj.get("color")?.takeIf { it.isJsonPrimitive }
+                    ?.let { ColorParser.parseColorString(it.asString) }
+                val offsetX = obj.get("offsetX")?.asFloat ?: 0f
+                val offsetY = obj.get("offsetY")?.asFloat ?: 0f
+                val alpha = obj.get("opacity")?.asFloat ?: 1f
+                modifier.dropShadow(
+                    shape = shape,
+                    shadow = Shadow(
+                        radius = radius.dp,
+                        color = color ?: Color.Black,
+                        offset = DpOffset(offsetX.dp, offsetY.dp),
+                        alpha = alpha.coerceIn(0f, 1f)
+                    )
+                )
             }
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isNumber -> {
                 modifier.dropShadow(shape = shape, shadow = Shadow(radius = shadowElement.asFloat.dp))

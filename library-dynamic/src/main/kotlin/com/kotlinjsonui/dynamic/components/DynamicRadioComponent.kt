@@ -8,6 +8,7 @@ import com.kotlinjsonui.dynamic.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -220,13 +221,22 @@ class DynamicRadioComponent {
                         ?.invoke(mapOf(selectedVar to id))
                 }
 
+                // iconSize sizes the GLYPH: Material draws its radio glyph at
+                // a fixed 20dp, so a bare .size(N) just clips it. Scaling by
+                // N/20 inside the N-dp box draws it at the declared size
+                // (same emission as the kjui codegen icon_appearance_args).
+                val glyphModifier = a.iconSize?.let {
+                    Modifier.size(it.dp).scale((it / 20.0).toFloat())
+                } ?: Modifier
+
                 when {
                     // Standard radio button (circle icons or no icons)
                     (icon == "circle" || icon == null) &&
                             (selectedIcon == "checkmark.circle.fill" || selectedIcon == null) -> {
                         RadioButton(
                             selected = isSelected,
-                            onClick = onSelect
+                            onClick = onSelect,
+                            modifier = glyphModifier
                         )
                     }
                     // Square checkbox appearance
@@ -266,7 +276,8 @@ class DynamicRadioComponent {
                     else -> {
                         RadioButton(
                             selected = isSelected,
-                            onClick = onSelect
+                            onClick = onSelect,
+                            modifier = glyphModifier
                         )
                     }
                 }
