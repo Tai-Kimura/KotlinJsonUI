@@ -39,7 +39,7 @@ class DynamicProgressComponent {
     companion object {
         /** Progress-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "bind", "progressTintColor", "trackTintColor"
+            "bind", "progress", "progressTintColor", "trackTintColor"
         )
 
         @Composable
@@ -59,14 +59,17 @@ class DynamicProgressComponent {
                 context = context
             )
 
-            // Determine if this is determinate (has value/bind) or indeterminate.
-            // 'value' is an undeclared legacy runtime extra on Progress.
+            // Determine if this is determinate (has progress/value/bind) or
+            // indeterminate. `progress` is the canonical declared value
+            // (0..1); 'value' is the undeclared legacy runtime extra
+            // (shared/core/attribute_semantics.json → progressValue).
+            val progressAttr = a.progress
             val hasValueAttr = TypedAttrs.undeclared(json, "value") != null
-            val hasValue = hasValueAttr || a.common.bind != null
+            val hasValue = progressAttr != null || hasValueAttr || a.common.bind != null
 
-            // Parse binding variable from value or bind
-            // ('value' is an undeclared legacy runtime extra)
+            // Parse binding variable from bind, canonical progress, or legacy value
             val bindingVariable = extractBindingVariable(a.common.bind as? String)
+                ?: progressAttr?.bindingExpressionOrNull()
                 ?: extractBindingVariable(TypedAttrs.undeclared(json, "value")?.asString)
 
             // Resolve progress value (coerced to 0..1)
@@ -78,6 +81,7 @@ class DynamicProgressComponent {
                         else -> 0f
                     }
                 }
+                progressAttr != null -> (progressAttr.valueOrNull() ?: 0.0).toFloat()
                 hasValueAttr -> {
                     // undeclared legacy runtime extra
                     ResourceResolver.resolveFloat(json, "value", data, 0f) ?: 0f
