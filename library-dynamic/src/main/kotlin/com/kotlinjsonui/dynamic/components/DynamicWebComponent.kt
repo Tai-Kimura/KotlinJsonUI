@@ -73,6 +73,13 @@ class DynamicWebComponent {
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) }
                 ?: ""
 
+            // Inline HTML content — only in force when no url is declared
+            // (codegen: `if json_data['url'].nil? && json_data['html']`).
+            // A null base URL keeps the document in an opaque origin.
+            val html = if (TypedAttrs.rawString(a.url) == null) {
+                a.html?.let { ResourceResolver.resolveTextValue(it, data, context) }
+            } else null
+
             // Parse WebView settings ('javaScriptEnabled', 'userAgent' and
             // 'allowZoom' are undeclared legacy runtime extras — kept on the
             // binding-aware json readers)
@@ -133,6 +140,8 @@ class DynamicWebComponent {
 
                         if (currentUrl.isNotEmpty()) {
                             loadUrl(currentUrl)
+                        } else if (html != null) {
+                            loadDataWithBaseURL(null, html, "text/html", "utf-8", null)
                         }
                     }
                 },
@@ -148,7 +157,7 @@ class DynamicWebComponent {
 
         /** Web-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "url"
+            "url", "html"
         )
     }
 }

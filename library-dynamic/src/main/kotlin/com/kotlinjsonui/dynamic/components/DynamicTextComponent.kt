@@ -2,6 +2,7 @@ package com.kotlinjsonui.dynamic.components
 
 import android.content.Context
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
@@ -84,25 +86,59 @@ class DynamicTextComponent {
             data: Map<String, Any>,
             context: Context
         ) {
-            // Font size
-            val fontSize = TypedAttrs.float(a.fontSize, data)
+            // highlightAttributes / highlightColor take over while `selected`
+            // is true (SSoT: "Decides which attribute set is in force").
+            // Mirrors text_component.rb highlight_overrides: the highlight's
+            // `font` replaces the base `font` wholesale, and a bare
+            // `highlightColor` is the color-only fallback when the
+            // highlightAttributes object contributes nothing.
+            val isSelected = TypedAttrs.boolean(a.selected, data) == true
+            val hl: Map<String, Any?>? =
+                if (isSelected) a.highlightAttributes?.takeIf { it.isNotEmpty() } else null
+            val hlFallbackColor: String? =
+                if (isSelected && hl == null) TypedAttrs.rawString(a.highlightColor) else null
+            val hlFont = hl?.get("font") as? String
 
-            // Font color (supports @{binding})
-            val fontColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.fontColor), data, context
-            )
+            // Font size
+            val fontSize = (hl?.get("fontSize") as? Number)?.toFloat()
+                ?: TypedAttrs.float(a.fontSize, data)
+
+            // Font color (supports @{binding}; highlight values are static)
+            val fontColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
+                ?.let { ColorParser.parseColorString(it, context) }
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.fontColor), data, context
+                )
 
             // Font weight – handle both 'font' and 'fontWeight' attributes
-            val fontWeight = resolveFontWeight(a, data)
+            val fontWeight = when {
+                hlFont != null && WEIGHT_NAMES.containsKey(hlFont.lowercase()) ->
+                    WEIGHT_NAMES[hlFont.lowercase()]
+                hlFont != null ->
+                    fontWeightString(a, data)?.let { WEIGHT_NAMES[it.lowercase()] ?: FontWeight.Normal }
+                else -> resolveFontWeight(a, data)
+            }
 
             // Font family – custom font from 'font' attribute (if not a weight name)
-            val fontFamily = resolveFontFamily(a, context, data)
+            val fontFamily = when {
+                hlFont != null && !WEIGHT_NAMES.containsKey(hlFont.lowercase()) ->
+                    resolveFontResource(hlFont, context) ?: resolveFontFamilyAttr(a, context, data)
+                hlFont != null -> resolveFontFamilyAttr(a, context, data)
+                else -> resolveFontFamily(a, context, data)
+            }
 
             // Text decoration
             val textDecoration = resolveTextDecoration(a)
 
             // Text alignment
-            val textAlign = resolveTextAlign(a)
+            val textAlign = (hl?.get("textAlign") as? String)?.let { align ->
+                when (align.lowercase()) {
+                    "center" -> TextAlign.Center
+                    "right" -> TextAlign.End
+                    "left" -> TextAlign.Start
+                    else -> null
+                }
+            } ?: resolveTextAlign(a)
 
             // Auto size (text shrinking)
             val useAutoSize = a.autoShrink == true || a.minimumScaleFactor != null
@@ -130,7 +166,10 @@ class DynamicTextComponent {
             }
 
             // Build style (shadow, lineHeight)
-            val style = buildTextStyle(a, data, fontSize)
+            val style = buildTextStyle(
+                a, data, fontSize,
+                overrideLineHeightMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
+            )
 
             // Build modifier using composite builder
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -140,7 +179,9 @@ class DynamicTextComponent {
 
             Text(
                 text = text,
-                fontSize = fontSize?.sp ?: 14.sp,
+                // No declared size inherits LocalTextStyle (the codegen emit
+                // is `resolved.size ?: TextUnit.Unspecified` — same rule).
+                fontSize = fontSize?.sp ?: TextUnit.Unspecified,
                 color = fontColor ?: Color.Unspecified,
                 fontWeight = fontWeight,
                 fontFamily = fontFamily,
@@ -152,7 +193,7 @@ class DynamicTextComponent {
                     minFontSize = ((fontSize ?: 14f) *
                         (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp
                 ) else null,
-                style = style,
+                style = style ?: LocalTextStyle.current,
                 modifier = modifier
             )
         }
@@ -231,7 +272,7 @@ class DynamicTextComponent {
             "autoShrink", "minimumScaleFactor", "lines", "lineBreakMode",
             "textAlign", "underline", "strikethrough", "textShadow",
             "lineHeight", "lineHeightMultiple", "lineSpacing", "edgeInset",
-            "onclick"
+            "onclick", "selected", "highlightAttributes", "highlightColor"
         )
 
         private val WEIGHT_NAMES = mapOf(
@@ -283,33 +324,39 @@ class DynamicTextComponent {
             data: Map<String, Any>
         ): FontFamily? {
             // fontFamily attribute takes priority over font attribute for family resolution
-            val fontFamilyValue = TypedAttrs.string(a.fontFamily, data)
-            fontFamilyValue?.let { family ->
-                val fontResName = family.replace("-", "_").replace(" ", "_").lowercase()
-                val resId = context.resources.getIdentifier(
-                    fontResName, "font", context.packageName
-                )
-                if (resId != 0) {
-                    return FontFamily(Font(resId))
-                }
-            }
+            resolveFontFamilyAttr(a, context, data)?.let { return it }
 
             // Fall back to font attribute (custom font family if not a weight name)
             val fontValue = TypedAttrs.string(a.font, data)
             fontValue?.let { font ->
-                val lower = font.lowercase()
-                if (!WEIGHT_NAMES.containsKey(lower)) {
-                    // Custom font family – try to resolve via resource
-                    val fontResName = font.replace("-", "_").lowercase()
-                    val resId = context.resources.getIdentifier(
-                        fontResName, "font", context.packageName
-                    )
-                    if (resId != 0) {
-                        return FontFamily(Font(resId))
-                    }
+                if (!WEIGHT_NAMES.containsKey(font.lowercase())) {
+                    resolveFontResource(font, context)?.let { return it }
                 }
             }
             return null
+        }
+
+        /** The `fontFamily` attribute alone (no `font` fallback). */
+        private fun resolveFontFamilyAttr(
+            a: LabelAttributes,
+            context: Context,
+            data: Map<String, Any>
+        ): FontFamily? {
+            val fontFamilyValue = TypedAttrs.string(a.fontFamily, data) ?: return null
+            val fontResName = fontFamilyValue.replace("-", "_").replace(" ", "_").lowercase()
+            val resId = context.resources.getIdentifier(
+                fontResName, "font", context.packageName
+            )
+            return if (resId != 0) FontFamily(Font(resId)) else null
+        }
+
+        /** Resolve a family name against the app's font resources. */
+        private fun resolveFontResource(name: String, context: Context): FontFamily? {
+            val fontResName = name.replace("-", "_").lowercase()
+            val resId = context.resources.getIdentifier(
+                fontResName, "font", context.packageName
+            )
+            return if (resId != 0) FontFamily(Font(resId)) else null
         }
 
         private fun resolveTextDecoration(a: LabelAttributes): TextDecoration? {
@@ -347,15 +394,26 @@ class DynamicTextComponent {
          * Build TextStyle for shadow and lineHeight.
          * Matches text_component.rb style generation.
          */
+        /**
+         * Returns null when neither lineHeight nor shadow applies — the
+         * caller then falls back to LocalTextStyle, matching the codegen
+         * emit which only passes a `style =` argument when it has style
+         * parts (an empty TextStyle would DISCARD the Material theme's
+         * bodyLarge defaults and change the effective font size).
+         */
         private fun buildTextStyle(
             a: LabelAttributes,
             data: Map<String, Any>,
-            fontSize: Float?
-        ): TextStyle {
-            var style = TextStyle()
+            fontSize: Float?,
+            overrideLineHeightMultiple: Float? = null
+        ): TextStyle? {
+            var style: TextStyle? = null
 
             // Line height calculation matching Ruby implementation
-            val lineHeightMultiple = TypedAttrs.float(a.lineHeightMultiple, data)
+            // (the highlight override resolves against the highlight's own
+            // font size, which is what the caller passes as fontSize)
+            val lineHeightMultiple = overrideLineHeightMultiple
+                ?: TypedAttrs.float(a.lineHeightMultiple, data)
             val lineSpacing = TypedAttrs.float(a.lineSpacing, data)
             val lineHeight = when {
                 lineHeightMultiple != null -> (fontSize ?: 14f) * lineHeightMultiple
@@ -366,11 +424,11 @@ class DynamicTextComponent {
                 }
                 else -> null
             }
-            lineHeight?.let { style = style.copy(lineHeight = it.sp) }
+            lineHeight?.let { style = (style ?: TextStyle()).copy(lineHeight = it.sp) }
 
             // Text shadow
             if (a.textShadow != null) {
-                style = style.copy(
+                style = (style ?: TextStyle()).copy(
                     shadow = androidx.compose.ui.graphics.Shadow(
                         color = Color.Black,
                         offset = androidx.compose.ui.geometry.Offset(2f, 2f),
@@ -391,7 +449,7 @@ class DynamicTextComponent {
             context: Context
         ): TextStyle {
             val fontSize = TypedAttrs.float(a.fontSize, data)
-            var style = buildTextStyle(a, data, fontSize)
+            var style = buildTextStyle(a, data, fontSize) ?: TextStyle()
 
             fontSize?.let {
                 style = style.copy(fontSize = it.sp)

@@ -229,8 +229,12 @@ class DynamicGradientViewComponent {
             if (startName != null && endName != null) {
                 return namedOffset(startName) to namedOffset(endName)
             }
-            // Fall back to top-left → bottom-right linear.
-            return Offset(0f, 0f) to Offset.Infinite
+            // Fall back to a VERTICAL run (top → bottom): the canonical
+            // default all render paths share — the ios reference renders
+            // vertical and the kjui codegen emits Brush.verticalGradient
+            // when no direction is declared (a diagonal fallback here was
+            // the dynamic-only deviation).
+            return Offset(0f, 0f) to Offset(0f, Float.POSITIVE_INFINITY)
         }
 
         /**

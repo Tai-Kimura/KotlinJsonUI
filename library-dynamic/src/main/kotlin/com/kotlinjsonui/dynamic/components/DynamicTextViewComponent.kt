@@ -275,7 +275,13 @@ class DynamicTextViewComponent {
             val isFlexible = a.flexible ?: false
 
             if (isFlexible) {
-                val minH = TypedAttrs.static(a.common.minHeight)?.toFloat() ?: 40f
+                // A declared numeric height is the growth floor when
+                // minHeight is absent (codegen: `minHeight || height || 24`).
+                val declaredHeight = TypedAttrs.rawKey(json, "height")
+                    ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }
+                    ?.asFloat
+                val minH = TypedAttrs.static(a.common.minHeight)?.toFloat()
+                    ?: declaredHeight ?: 24f
                 val maxH = TypedAttrs.static(a.common.maxHeight)?.toFloat()
                 modifier = if (maxH != null) {
                     modifier.heightIn(min = minH.dp, max = maxH.dp)
