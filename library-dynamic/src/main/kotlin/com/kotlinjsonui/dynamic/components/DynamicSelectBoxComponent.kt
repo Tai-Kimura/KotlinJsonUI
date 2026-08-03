@@ -107,8 +107,19 @@ class DynamicSelectBoxComponent {
                 data[bindingVariable]?.toString() ?: ""
             } else ""
 
+            // Literal selectedValue / selectedIndex seed the initial
+            // selection (33 cross-effect: both mobiles ignored them).
+            val literalInitial = TypedAttrs.rawString(a.selectedValue)
+                ?: (TypedAttrs.raw(a.selectedIndex) as? Number)?.toInt()?.let { idx ->
+                    (a.items as? List<*>)?.getOrNull(idx)?.let { item ->
+                        when (item) {
+                            is Map<*, *> -> (item["value"] ?: item["label"])?.toString()
+                            else -> item?.toString()
+                        }
+                    }
+                }
             var selectedValue by remember(currentValue, bindingVariable, data) {
-                mutableStateOf(currentValue)
+                mutableStateOf(currentValue.ifEmpty { literalInitial ?: "" })
             }
 
             LaunchedEffect(data, bindingVariable) {
