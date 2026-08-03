@@ -156,16 +156,18 @@ class DynamicIconLabelComponent {
                 if (text.isNotEmpty()) {
                     // textShadow { color, blur, offset:[x,y] } — mirrors the
                     // Label path (33 cross-effect: IconLabel rendered flat).
-                    val shadowObj = (a.textShadow as? com.google.gson.JsonElement)
-                        ?.takeIf { it.isJsonObject }?.asJsonObject
+                    // The typed table is Map-based (kotlin lookup), so the
+                    // object arrives as a Map, not a Gson JsonElement — the
+                    // earlier cast silently nulled the shadow (33 round-2).
+                    val shadowObj = a.textShadow as? Map<*, *>
                     val shadowStyle = shadowObj?.let { so ->
                         val sc = ColorParser.parseColorStringWithBinding(
-                            so.get("color")?.asString, data, context
+                            so["color"] as? String, data, context
                         ) ?: Color.Black.copy(alpha = 0.3f)
-                        val blur = so.get("blur")?.asFloat ?: 1f
-                        val off = so.get("offset")?.takeIf { it.isJsonArray }?.asJsonArray
-                        val ox = off?.takeIf { it.size() >= 2 }?.get(0)?.asFloat ?: 0f
-                        val oy = off?.takeIf { it.size() >= 2 }?.get(1)?.asFloat ?: 1f
+                        val blur = (so["blur"] as? Number)?.toFloat() ?: 1f
+                        val off = so["offset"] as? List<*>
+                        val ox = (off?.getOrNull(0) as? Number)?.toFloat() ?: 0f
+                        val oy = (off?.getOrNull(1) as? Number)?.toFloat() ?: 1f
                         androidx.compose.ui.text.TextStyle(
                             shadow = androidx.compose.ui.graphics.Shadow(
                                 color = sc,

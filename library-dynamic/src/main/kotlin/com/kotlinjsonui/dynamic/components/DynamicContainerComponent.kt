@@ -92,7 +92,18 @@ class DynamicContainerComponent {
                 else -> children
             }
 
-            when (layout) {
+            if (direction == "rightToLeft" && layout == "Column") {
+                // RTL on a column mirrors the inline axis — children anchor
+                // to the trailing edge (ios renders it so; 33 cross-effect:
+                // android ignored rightToLeft on columns). Row keeps the
+                // children-reversal path above.
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.ui.platform.LocalLayoutDirection provides
+                        androidx.compose.ui.unit.LayoutDirection.Rtl
+                ) {
+                    createColumn(json, a, modifier, orderedChildren, data, context)
+                }
+            } else when (layout) {
                 "Column" -> createColumn(json, a, modifier, orderedChildren, data, context)
                 "Row" -> createRow(json, a, modifier, orderedChildren, data, context)
                 else -> createBox(json, modifier, orderedChildren, data, context)

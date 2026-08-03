@@ -247,10 +247,27 @@ class DynamicRadioComponent {
                     // Standard radio button (circle icons or no icons)
                     (icon == "circle" || icon == null) &&
                             (selectedIcon == "checkmark.circle.fill" || selectedIcon == null) -> {
+                        // Declared color skin — this branch (the one every
+                        // icon-less fixture takes) never received it (33
+                        // cross-effect round-2: android still default).
+                        val stdSelectedColor = ColorParser.parseColorStringWithBinding(
+                            a.checkedColor, data, context
+                        )
+                        val stdUnselectedColor = ColorParser.parseColorStringWithBinding(
+                            a.uncheckedColor, data, context
+                        ) ?: ColorParser.parseColorStringWithBinding(
+                            a.iconColor, data, context
+                        )
                         RadioButton(
                             selected = isSelected,
                             onClick = onSelect,
-                            modifier = glyphModifier
+                            modifier = glyphModifier,
+                            colors = RadioButtonDefaults.colors(
+                                selectedColor = stdSelectedColor
+                                    ?: RadioButtonDefaults.colors().selectedColor,
+                                unselectedColor = stdUnselectedColor
+                                    ?: RadioButtonDefaults.colors().unselectedColor
+                            )
                         )
                     }
                     // Square checkbox appearance
