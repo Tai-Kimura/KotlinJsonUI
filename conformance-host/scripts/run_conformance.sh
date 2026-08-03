@@ -142,6 +142,44 @@ else
   echo "warning: screen did not settle within 20s — taskbar may drift between runs" >&2
 fi
 
+# 3c. a11y projection probe + boot re-roll. Run 30762153614 (first
+# instrumented recurrence of the CI-only all-fixtures render-timeout): the
+# app renders, input and lifecycle stay healthy, but
+# AccessibilityManagerService never completes window registration ("wait for
+# adding window timeout") for the WHOLE boot — UIAutomator is globally blind
+# and the a11y-dependent fixture classes grind 8s timeouts for hours. The
+# wedge is per-boot and probabilistic, so: probe a fresh app window through
+# the same a11y channel UIAutomator uses; on failure REBOOT the device to
+# re-roll the race (up to 3 reboots) instead of paying 20-min attempts.
+# Visual fixtures don't need this (in-process readiness + SurfaceFlinger
+# screenshots) — the probe protects the assertable/interactive classes.
+a11y_probe() {
+  adbsh "am start -W -n $APP_PKG/.FixtureHostActivity" >/dev/null 2>&1 || return 1
+  sleep 2
+  adbsh "rm -f /sdcard/a11y_probe.xml; uiautomator dump /sdcard/a11y_probe.xml" >/dev/null 2>&1 || return 1
+  adbsh "grep -q \"package=[\\\"']$APP_PKG\" /sdcard/a11y_probe.xml" || return 1
+  adbsh "am force-stop $APP_PKG" >/dev/null 2>&1 || true
+  return 0
+}
+for roll in 1 2 3 4; do
+  if a11y_probe; then
+    echo "a11y projection probe: OK (roll $roll)"
+    break
+  fi
+  if [[ $roll -eq 4 ]]; then
+    echo "error: a11y projection stayed wedged through 3 reboots — giving up this emulator" >&2
+    exit 1
+  fi
+  echo "a11y projection probe FAILED (roll $roll) — rebooting to re-roll the boot race..."
+  "$ADB" reboot
+  for i in $(seq 1 60); do
+    booted="$(adbsh getprop sys.boot_completed 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ "$booted" == "1" ]] && break
+    sleep 5
+  done
+  sleep 10
+done
+
 # 4. Run instrumentation; restart after process crashes until the final
 #    results file exists (progress.jsonl makes reruns resume, and dangling
 #    "running" markers turn crashed fixtures into error outcomes).

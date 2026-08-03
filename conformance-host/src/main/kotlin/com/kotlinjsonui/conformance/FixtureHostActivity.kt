@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
@@ -21,6 +22,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.kotlinjsonui.dynamic.DynamicView
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -47,9 +49,25 @@ object FixtureHost {
     /** Render/load errors reported by DynamicView for the current fixture. */
     val renderErrors = CopyOnWriteArrayList<String>()
 
+    /**
+     * In-process render signal: fixture ids whose ready-Box has completed
+     * layout (onGloballyPositioned). The suite polls THIS for visual
+     * fixtures instead of the a11y tree — the accessibility projection can
+     * wedge per-boot on CI emulators (AccessibilityManagerService "wait for
+     * adding window timeout", run 30762153614: rendering + input + lifecycle
+     * all healthy while UIAutomator is globally blind), and screenshots go
+     * through SurfaceFlinger, so visual coverage must not hinge on a11y.
+     */
+    val renderedIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
+    fun markRendered(fixtureId: String) {
+        renderedIds.add(fixtureId)
+    }
+
     /** Show a fixture (or null to blank the screen). Clears collected errors. */
     fun show(fixtureId: String?) {
         renderErrors.clear()
+        fixtureId?.let { renderedIds.remove(it) }
         currentFixtureId.value = fixtureId
     }
 
@@ -116,6 +134,7 @@ private fun FixtureScreen(fixtureId: String) {
                 .systemBarsPadding()
                 .testTag(FixtureHost.readyTag(fixtureId))
                 .semantics { testTagsAsResourceId = true }
+                .onGloballyPositioned { FixtureHost.markRendered(fixtureId) }
         ) {
             if (entry != null) {
                 entry()
@@ -154,6 +173,7 @@ private fun FixtureScreen(fixtureId: String) {
             .systemBarsPadding()
             .testTag(FixtureHost.readyTag(fixtureId))
             .semantics { testTagsAsResourceId = true }
+            .onGloballyPositioned { FixtureHost.markRendered(fixtureId) }
     ) {
         layoutJson?.let { json ->
             DynamicView(

@@ -215,22 +215,39 @@ class ConformanceSuiteTest {
             FixtureHost.show(fixture.id)
         }
         val readyTimeout = if (firstFixture) 15000L else 8000L
-        if (!waitForResourceId(FixtureHost.readyTag(fixture.id), readyTimeout)) {
+        // Visual fixtures wait on the IN-PROCESS layout signal, not the a11y
+        // tree: the a11y projection wedges per-boot on CI emulators
+        // (AccessibilityManagerService "wait for adding window timeout" —
+        // run 30762153614 measured rendering/input/lifecycle all healthy
+        // while UIAutomator stayed globally blind) and screenshots capture
+        // via SurfaceFlinger, so visual coverage survives a wedged boot.
+        // Assertable/interactive fixtures still need the a11y tree (their
+        // finds/taps/asserts go through it), so they keep the UIAutomator
+        // wait — on a wedged boot they fail into the run script's probe/
+        // re-roll path instead of poisoning visual coverage.
+        val needsA11y = fixture.clazz == "assertable" || fixture.clazz == "interactive"
+        val ready = if (needsA11y) {
+            waitForResourceId(FixtureHost.readyTag(fixture.id), readyTimeout)
+        } else {
+            waitForRendered(fixture.id, readyTimeout)
+        }
+        if (!ready) {
             val renderErrors = FixtureHost.renderErrors.joinToString("; ")
-            // Diagnostic triple for the CI-only "nothing renders" signature
-            // (2026-08-02, runs 30735629989/30741336803): from these three
-            // bits the failure layer is decidable off one results.json —
-            // app window absent (activity never fronted) vs window present
-            // but the tag unfindable (composition or a11y projection stall)
-            // vs composed-with-id (UIAutomator resource-id mapping broken).
+            // Diagnostic quadruple for the CI-only "nothing renders"
+            // signature (runs 30735629989/30741336803/30762153614): decides
+            // the failure layer off one results.json — activity never
+            // fronted (appWindow=false) vs composition stalled
+            // (rendered=false) vs a11y projection wedged (rendered=true,
+            // appWindow=false — the 30762153614 verdict).
             val appWindow = device.hasObject(By.pkg(targetContext.packageName))
             val anyTag = device.hasObject(By.res(Regex("conformance_ready_.*").toPattern()))
+            val rendered = FixtureHost.renderedIds.contains(fixture.id)
             val fixtureFlow = FixtureHost.currentFixtureId.value
             FixtureHost.show(null)
             return FixtureResult(
                 fixture.id, "error",
                 "fixture did not render within ${readyTimeout}ms" +
-                    " [appWindow=$appWindow anyReadyTag=$anyTag flow=$fixtureFlow]" +
+                    " [appWindow=$appWindow anyReadyTag=$anyTag rendered=$rendered flow=$fixtureFlow]" +
                     if (renderErrors.isNotEmpty()) " — render errors: ${brief(renderErrors)}" else ""
             )
         }
@@ -248,6 +265,13 @@ class ConformanceSuiteTest {
         val status = try {
             for (case in screenTest.cases) {
                 for (step in case.steps) {
+                    // Non-a11y fixtures already proved layout via the
+                    // in-process signal above; the generated waitFor(root)
+                    // would re-ask the a11y tree, which may be wedged
+                    // (30762153614) while SurfaceFlinger screenshots work.
+                    // Every visual fixture is exactly [waitFor, screenshot]
+                    // (audited 606/606), so the skip forfeits nothing.
+                    if (!needsA11y && step.action == "waitFor") continue
                     when {
                         step.isAction -> actionExecutor.execute(step)
                         step.isAssertion -> assertionExecutor.execute(step)
@@ -290,6 +314,16 @@ class ConformanceSuiteTest {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
             if (device.findObject(By.res(resourceId)) != null) return true
+            Thread.sleep(50)
+        }
+        return false
+    }
+
+    /** In-process layout signal (FixtureHost.renderedIds) — a11y-independent. */
+    private fun waitForRendered(fixtureId: String, timeoutMs: Long): Boolean {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            if (FixtureHost.renderedIds.contains(fixtureId)) return true
             Thread.sleep(50)
         }
         return false
