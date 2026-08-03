@@ -87,14 +87,23 @@ class DynamicNetworkImageComponent {
                 ).ifEmpty { "Image" }
 
             // ── Content scale (case-insensitive; static-only legacy read) ──
-            val contentScale = when (
+            val modeLower =
                 TypedAttrs.staticEnumString(a.contentMode) { it.json }?.lowercase()
-            ) {
+            val contentScale = when (modeLower) {
                 "aspectfit" -> ContentScale.Fit
                 "aspectfill" -> ContentScale.Crop
                 "fill", "scaletofill" -> ContentScale.FillBounds
-                "center" -> ContentScale.None
+                // Positional modes draw unscaled (UIKit contentMode
+                // positions).
+                "center", "top", "bottom", "left", "right" -> ContentScale.None
                 else -> ContentScale.Fit
+            }
+            val contentAlignment = when (modeLower) {
+                "top" -> androidx.compose.ui.Alignment.TopCenter
+                "bottom" -> androidx.compose.ui.Alignment.BottomCenter
+                "left" -> androidx.compose.ui.Alignment.CenterStart
+                "right" -> androidx.compose.ui.Alignment.CenterEnd
+                else -> androidx.compose.ui.Alignment.Center
             }
 
             // ── Placeholder: hint > placeholder > loadingImage (the same
@@ -177,6 +186,7 @@ class DynamicNetworkImageComponent {
                     .build(),
                 contentDescription = contentDescription,
                 contentScale = contentScale,
+                alignment = contentAlignment,
                 placeholder = placeholderResId?.let { painterResource(it) },
                 error = effectiveErrorResId?.let { painterResource(it) },
                 fallback = effectiveFallbackResId?.let { painterResource(it) },

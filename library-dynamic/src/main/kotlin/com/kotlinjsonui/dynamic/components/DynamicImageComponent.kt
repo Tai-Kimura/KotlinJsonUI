@@ -78,14 +78,24 @@ class DynamicImageComponent {
                 ?: ""
 
             // ContentScale mapping (case-insensitive)
-            val contentScale = when (
+            val modeLower =
                 TypedAttrs.enumStringResolved(a.contentMode, data) { it.json }?.lowercase()
-            ) {
+            val contentScale = when (modeLower) {
                 "aspectfill" -> ContentScale.Crop
                 "aspectfit" -> ContentScale.Fit
                 "fill", "scaletofill" -> ContentScale.FillBounds
-                "center" -> ContentScale.None
+                // Positional modes draw unscaled (UIKit contentMode
+                // positions — 33 cross-effect: android dropped the
+                // directional four to fit).
+                "center", "top", "bottom", "left", "right" -> ContentScale.None
                 else -> ContentScale.Fit
+            }
+            val contentAlignment = when (modeLower) {
+                "top" -> androidx.compose.ui.Alignment.TopCenter
+                "bottom" -> androidx.compose.ui.Alignment.BottomCenter
+                "left" -> androidx.compose.ui.Alignment.CenterStart
+                "right" -> androidx.compose.ui.Alignment.CenterEnd
+                else -> androidx.compose.ui.Alignment.Center
             }
 
             // Alpha with binding support (alpha and opacity are both
@@ -132,6 +142,7 @@ class DynamicImageComponent {
                 contentDescription = contentDescription,
                 modifier = modifier,
                 contentScale = contentScale,
+                alignment = contentAlignment,
                 alpha = alpha.coerceIn(0f, 1f),
                 colorFilter = colorFilter
             )
