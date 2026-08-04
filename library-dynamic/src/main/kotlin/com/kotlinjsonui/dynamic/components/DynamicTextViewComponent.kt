@@ -77,6 +77,17 @@ class DynamicTextViewComponent {
             val textColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.fontColor), data, context
             ) ?: Configuration.TextField.defaultTextColor
+            // `font` (the weight spelling, or a family name when it is not a
+            // weight) and `fontFamily` reached nothing on this component —
+            // both rows were parsed and never read (34: `TextView/font` and
+            // `TextView/fontFamily` pixel-identical to their controls). sjui
+            // reads the same `fontFamily || font` order
+            // (textview_converter.rb:146).
+            val fieldFontSpelling = TypedAttrs.string(a.font, data)
+            val fieldFontWeight = ResourceResolver.fontWeightFor(fieldFontSpelling)
+            val fieldFontFamily = ResourceResolver.resolveFontFamily(
+                TypedAttrs.string(a.fontFamily, data), fieldFontSpelling, context
+            )
 
             // Background colors (supports @{binding}); 'highlightBackground'
             // is a declared common attribute for TextView (no Button-style
@@ -177,7 +188,12 @@ class DynamicTextViewComponent {
                     isOutlined = isOutlined,
                     maxLines = maxLines,
                     singleLine = false,
-                    textStyle = TextStyle(fontSize = fontSize.sp, color = textColor),
+                    textStyle = TextStyle(
+                        fontSize = fontSize.sp,
+                        color = textColor,
+                        fontWeight = fieldFontWeight,
+                        fontFamily = fieldFontFamily
+                    ),
                     keyboardOptions = keyboardOptions,
                     contentPadding = contentPadding,
                     enabled = isEnabled
@@ -200,7 +216,12 @@ class DynamicTextViewComponent {
                     isOutlined = isOutlined,
                     maxLines = maxLines,
                     singleLine = false,
-                    textStyle = TextStyle(fontSize = fontSize.sp, color = textColor),
+                    textStyle = TextStyle(
+                        fontSize = fontSize.sp,
+                        color = textColor,
+                        fontWeight = fieldFontWeight,
+                        fontFamily = fieldFontFamily
+                    ),
                     keyboardOptions = keyboardOptions,
                     contentPadding = contentPadding,
                     enabled = isEnabled
@@ -215,7 +236,8 @@ class DynamicTextViewComponent {
             "text", "hint", "placeholder", "enabled", "fontSize", "fontColor",
             "highlightBackground", "containerInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
-            "hintFontSize", "hintColor", "flexible"
+            "hintFontSize", "hintColor", "flexible",
+            "font", "fontFamily", "hintFont"
         )
 
         /**
@@ -331,6 +353,13 @@ class DynamicTextViewComponent {
         ): @Composable () -> Unit {
             val hintLineHeightMultiple = a.hintLineHeightMultiple?.toFloat()
             val hintFontSize = a.hintFontSize?.toFloat()
+            // `hintFont` carries the placeholder's WEIGHT spelling, exactly as
+            // the codegen placeholder reads it
+            // (textview_component.rb:37 `hint_attr('font') || hintFont`,
+            // resolved through the same weight table). The row was parsed and
+            // never read here (34: `TextView/hintFont` pixel-identical to its
+            // control).
+            val hintFontWeight = ResourceResolver.fontWeightFor(a.hintFont)
 
             return {
                 // Derive from LocalTextStyle — a bare TextStyle() discards the
@@ -357,6 +386,7 @@ class DynamicTextViewComponent {
                     style = base.copy(
                         color = hintColor ?: base.color,
                         fontSize = effectiveSize,
+                        fontWeight = hintFontWeight ?: base.fontWeight,
                         lineHeight = lineHeight
                     )
                 )

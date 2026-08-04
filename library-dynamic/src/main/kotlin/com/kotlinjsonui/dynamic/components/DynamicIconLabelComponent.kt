@@ -64,7 +64,7 @@ class DynamicIconLabelComponent {
 
         /** IconLabel-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "text", "fontSize", "fontColor", "iconPosition", "tintColor"
+            "text", "fontSize", "fontColor", "selectedFontColor", "iconPosition", "tintColor"
         )
 
         @Composable
@@ -111,7 +111,21 @@ class DynamicIconLabelComponent {
             // Parse icon attributes ('iconSize'/'iconColor' are undeclared
             // legacy runtime extras; 'tintColor' is the declared common row)
             val iconSize = TypedAttrs.undeclared(json, "iconSize")?.asFloat ?: 24f
-            val iconTintColor = ColorParser.parseColorWithBinding(json, "iconColor", data, context)
+            // `selectedFontColor` is the selected-state colour and wins over
+            // `fontColor` while `selected` holds — recolouring on selection is
+            // the whole point of the row. Only `fontColor` was read here, so
+            // the declaration went nowhere (34: `IconLabel/selectedFontColor`
+            // pixel-identical to its control; the kjui codegen swaps the pair
+            // in iconlabel_component.rb#text_color).
+            val selectedFontColor = ColorParser.parseColorStringWithBinding(
+                a.selectedFontColor, data, context
+            )
+            // selectedFontColor reaches the icon too while selected — the
+            // codegen's icon_color_filter tints with it and falls back to the
+            // resting iconColor/tintColor (an explicit tint stays the resting
+            // one so a multi-colour asset is not flattened unasked).
+            val iconTintColor = (if (isSelected) selectedFontColor else null)
+                ?: ColorParser.parseColorWithBinding(json, "iconColor", data, context)
                 ?: ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.common.tintColor), data, context
                 )
@@ -122,7 +136,8 @@ class DynamicIconLabelComponent {
             // fontSize: 16; kjui codegen inherits M3 bodyLarge 16sp) — 14f was
             // a KJUI-only deviation (32 parity re-measure).
             val fontSize = a.fontSize?.toFloat() ?: 16f
-            val fontColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
+            val fontColor = (if (isSelected) selectedFontColor else null)
+                ?: ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
                 ?: Color.Unspecified
             // 'font' is the declared weight-spelling row (33 cross-effect:
             // android rendered default weight for font: bold).

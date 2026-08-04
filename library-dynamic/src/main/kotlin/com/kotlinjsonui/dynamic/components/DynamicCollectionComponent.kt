@@ -12,6 +12,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -351,6 +352,31 @@ class DynamicCollectionComponent {
 
             // LazyGrid state for programmatic scrolling
             val gridState = rememberLazyGridState()
+
+            // defaultScrollAnchor — where the list STARTS, as opposed to
+            // `scrollAnchor`, which positions a programmatic scrollTo. Only
+            // center/bottom do anything (top is already the resting position),
+            // and it applies once: keyed on the item count because the data
+            // usually arrives async and an anchor applied to an empty list
+            // does nothing, with the remembered flag stopping a later append
+            // from yanking the user back. The kjui codegen emits exactly this
+            // shape (collection_component.rb#default_scroll_anchor_code); the
+            // dynamic path had no equivalent (34: `Collection/
+            // defaultScrollAnchor` pixel-identical to its control).
+            val defaultAnchor = TypedAttrs.enumString(a.defaultScrollAnchor) { it.json }
+            if (defaultAnchor == "center" || defaultAnchor == "bottom") {
+                val anchorCount = collectionDataSource
+                    ?.sections?.firstOrNull()?.cells?.data?.size ?: 0
+                val anchorApplied = remember { mutableStateOf(false) }
+                LaunchedEffect(anchorCount) {
+                    if (!anchorApplied.value && anchorCount > 0) {
+                        gridState.scrollToItem(
+                            if (defaultAnchor == "center") anchorCount / 2 else anchorCount - 1
+                        )
+                        anchorApplied.value = true
+                    }
+                }
+            }
 
             // Handle scrollTo
             if (scrollToFlow != null) {
@@ -1106,7 +1132,7 @@ class DynamicCollectionComponent {
             "headerClasses", "insetHorizontal", "insetVertical", "insets",
             "itemSpacing", "items", "layout", "lazy", "lineSpacing",
             "onValueChange", "orientation", "paging", "reverseLayout",
-            "scrollAnchor", "scrollEnabled", "scrollTo"
+            "scrollAnchor", "defaultScrollAnchor", "scrollEnabled", "scrollTo"
         )
 
         private val loggedMisconfiguredCollections = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()

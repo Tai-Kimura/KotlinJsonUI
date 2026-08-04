@@ -1,6 +1,9 @@
 package com.kotlinjsonui.dynamic.helpers
 
 import android.content.Context
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
@@ -202,5 +205,54 @@ object ResourceResolver {
             return DataBindingContext.resolveString(s, data) ?: default
         }
         return s
+    }
+
+    // ── Font vocabulary ──────────────────────────────────────────────
+    //
+    // `font` carries a WEIGHT name (bold / semibold / …) on every component
+    // that reads it, and a family name otherwise; `fontFamily` always names a
+    // family. Both spellings resolve against the app's `res/font` resources.
+    // This lives here rather than in each component because a duplicated
+    // vocabulary drifts — the Label copy was the only one for a long time and
+    // TextView/TextField silently had none.
+
+    /** Weight spellings shared by every component that reads `font`. */
+    val WEIGHT_NAMES: Map<String, FontWeight> = mapOf(
+        "thin" to FontWeight.Thin,
+        "extralight" to FontWeight.ExtraLight,
+        "light" to FontWeight.Light,
+        "normal" to FontWeight.Normal,
+        "regular" to FontWeight.Normal,
+        "medium" to FontWeight.Medium,
+        "semibold" to FontWeight.SemiBold,
+        "bold" to FontWeight.Bold,
+        "extrabold" to FontWeight.ExtraBold,
+        "heavy" to FontWeight.ExtraBold,
+        "black" to FontWeight.Black
+    )
+
+    /** The weight a `font` / `hintFont` spelling names, or null if it is a family. */
+    fun fontWeightFor(name: String?): FontWeight? =
+        name?.let { WEIGHT_NAMES[it.lowercase()] }
+
+    /** Resolve a family name against the app's `res/font` resources. */
+    fun resolveFontResource(name: String?, context: Context): FontFamily? {
+        if (name.isNullOrBlank()) return null
+        val resName = name.replace("-", "_").replace(" ", "_").lowercase()
+        val resId = context.resources.getIdentifier(resName, "font", context.packageName)
+        return if (resId != 0) FontFamily(Font(resId)) else null
+    }
+
+    /**
+     * The family for a component declaring `fontFamily` and/or `font`:
+     * `fontFamily` wins, and `font` contributes only when it is NOT a weight
+     * spelling (sjui `textview_converter.rb:146` reads the same order).
+     */
+    fun resolveFontFamily(fontFamily: String?, font: String?, context: Context): FontFamily? {
+        resolveFontResource(fontFamily, context)?.let { return it }
+        if (font != null && fontWeightFor(font) == null) {
+            return resolveFontResource(font, context)
+        }
+        return null
     }
 }

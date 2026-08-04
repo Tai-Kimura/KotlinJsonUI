@@ -198,7 +198,7 @@ class DynamicTextFieldComponent {
             val contentPadding = buildContentPadding(json, a)
 
             // Text style
-            val textStyle = buildTextStyle(a, textColor, fontSize)
+            val textStyle = buildTextStyle(a, textColor, fontSize, context, data)
 
             // Keyboard options
             val keyboardOptions = buildKeyboardOptions(a, nextFocusId)
@@ -358,11 +358,22 @@ class DynamicTextFieldComponent {
         private fun buildTextStyle(
             a: TextFieldAttributes,
             textColor: androidx.compose.ui.graphics.Color,
-            fontSize: Int
+            fontSize: Int,
+            context: android.content.Context,
+            data: Map<String, Any>
         ): TextStyle {
+            // `fontFamily` reached nothing on this component (34:
+            // `TextField/fontFamily` pixel-identical to its control). `font`
+            // contributes the family only when it is not a weight spelling —
+            // the same `fontFamily || font` order sjui reads.
+            val fontSpelling = TypedAttrs.string(a.font, data)
             var style = TextStyle(
                 fontSize = fontSize.sp,
-                color = textColor
+                color = textColor,
+                fontWeight = ResourceResolver.fontWeightFor(fontSpelling),
+                fontFamily = ResourceResolver.resolveFontFamily(
+                    TypedAttrs.string(a.fontFamily, data), fontSpelling, context
+                )
             )
 
             // Text alignment
@@ -495,7 +506,8 @@ class DynamicTextFieldComponent {
             "fontSize", "textAlign", "borderStyle", "returnKeyType",
             "autocapitalizationType", "autocorrectionType",
             "highlightBackground", "fieldPadding", "textPaddingLeft",
-            "placeholderColor", "tintColor", "caretAttributes"
+            "placeholderColor", "tintColor", "caretAttributes",
+            "font", "fontFamily"
         )
 
         private fun buildContentPadding(json: JsonObject, a: TextFieldAttributes): PaddingValues? {

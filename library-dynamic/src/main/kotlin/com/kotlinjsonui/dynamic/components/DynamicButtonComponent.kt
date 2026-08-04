@@ -140,6 +140,15 @@ class DynamicButtonComponent {
             ) ?: ColorParser.parseColorStringWithBinding(
                 TypedAttrs.undeclared(json, "hilightBackground")?.asString, data, context
             )
+            // Pressed-state CONTENT colour. The container already swapped on
+            // press while `highlightColor` — the declared label colour for the
+            // same state, which the kjui codegen swaps
+            // (button_component.rb:48 + the contentColor ternary) — was never
+            // read here. `hilightColor` is its declared alias spelling and the
+            // generated parser folds it onto this row.
+            val pressedTextColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.highlightColor), data, context
+            )
 
             // Shape
             val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)
@@ -150,11 +159,13 @@ class DynamicButtonComponent {
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
             val containerColor = if (pressedBgColor != null && isPressed) pressedBgColor else backgroundColor
+            val contentColorNow =
+                if (pressedTextColor != null && isPressed) pressedTextColor else textColor
 
             // Button colors
             val colors = ButtonDefaults.buttonColors(
                 containerColor = containerColor,
-                contentColor = textColor,
+                contentColor = contentColorNow,
                 disabledContainerColor = disabledBgColor,
                 disabledContentColor = disabledTextColor
             )
@@ -447,6 +458,7 @@ class DynamicButtonComponent {
         private val APPLIED: Set<String> = setOf(
             "text", "enabled", "fontSize", "fontWeight", "fontColor",
             "disabledFontColor", "tapBackground", "highlightBackground",
+            "highlightColor",
             "image", "textAlign", "disabledBackground",
             // Common attribute, but the shared pipeline does not apply it —
             // Button consumes it as the icon tint.

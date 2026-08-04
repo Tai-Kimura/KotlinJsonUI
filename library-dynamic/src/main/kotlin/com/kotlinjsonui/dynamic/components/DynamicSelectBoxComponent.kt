@@ -54,10 +54,26 @@ import androidx.compose.ui.platform.LocalContext
 class DynamicSelectBoxComponent {
     companion object {
         /** SelectBox-specific attributes this component applies (see UnappliedAttributes). */
+        /**
+         * A key of the `labelAttributes` object.
+         *
+         * On a SelectBox the collapsed text IS the label, so these keys win
+         * over the component-level ones — the same precedence the kjui codegen
+         * (`selectbox_component.rb:222`) and the web converter use. The row was
+         * parsed and never read (34: `SelectBox/labelAttributes`
+         * pixel-identical to its control).
+         *
+         * `fontColor` / `fontSize` are the keys the library surface carries;
+         * `font` and `textAlign` have no SelectBox parameter on either path
+         * yet, so they stay unread here exactly as they do in the codegen.
+         */
+        internal fun labelAttr(a: SelectBoxAttributes, key: String): Any? =
+            a.labelAttributes?.get(key)
+
         private val APPLIED: Set<String> = setOf(
             "selectItemType", "selectedItem", "selectedDate", "bind",
             "items", "enabled", "prompt", "hint", "placeholder",
-            "fontColor", "hintColor", "fontSize", "font",
+            "fontColor", "hintColor", "fontSize", "font", "labelAttributes",
             "datePickerMode", "datePickerStyle", "dateStringFormat",
             "minuteInterval", "minimumDate", "maximumDate",
             "onValueChange", "onValueChanged"
@@ -155,8 +171,9 @@ class DynamicSelectBoxComponent {
             val borderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.borderColor), data, context
             ) ?: Color(0xFFCCCCCC)
-            val textColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
-                ?: Color.Black
+            val textColor = ColorParser.parseColorStringWithBinding(
+                labelAttr(a, "fontColor") as? String ?: a.fontColor, data, context
+            ) ?: Color.Black
             val hintColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.hintColor), data, context
             ) ?: Color(0xFF999999)
@@ -164,7 +181,8 @@ class DynamicSelectBoxComponent {
             val cornerRadius = TypedAttrs.int(a.common.cornerRadius, data) ?: 8
 
             // Font styling
-            val fontSize = a.fontSize?.toFloat()
+            val fontSize = (labelAttr(a, "fontSize") as? Number)?.toFloat()
+                ?: a.fontSize?.toFloat()
             val fontWeight = parseFontWeight(a.font)
 
             // 'cancelButtonBackgroundColor'/'cancelButtonTextColor' are
@@ -295,8 +313,9 @@ class DynamicSelectBoxComponent {
             val borderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.borderColor), data, context
             ) ?: Color(0xFFCCCCCC)
-            val textColor = ColorParser.parseColorStringWithBinding(a.fontColor, data, context)
-                ?: Color.Black
+            val textColor = ColorParser.parseColorStringWithBinding(
+                labelAttr(a, "fontColor") as? String ?: a.fontColor, data, context
+            ) ?: Color.Black
             val hintColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.hintColor), data, context
             ) ?: Color(0xFF999999)
