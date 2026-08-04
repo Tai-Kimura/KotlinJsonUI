@@ -100,12 +100,14 @@ adbsh settings put global animator_duration_scale 0
 # is why env=ci android hashes drifted between runs and made ci baselines
 # unbakeable. So: issue the commands, then PROVE demo mode took, and retry.
 #
-# The probe is a positive control, not a guess. With the launcher parked and
-# nothing else moving, two samples at the same demo clock must be identical
-# (screen is quiet) and a sample at a DIFFERENT demo clock must differ (SystemUI
-# is honouring the command). Both conditions together rule out the two ways this
-# can lie: a busy screen that changes on its own, and a dead demo channel where
-# nothing ever changes.
+# The probe is a positive control, not a guess: a sample taken at one demo clock
+# must differ from a sample at a DIFFERENT demo clock, on a screen that is
+# otherwise known to be quiet. Both halves are needed — a busy screen changes on
+# its own (so a difference proves nothing) and a dead demo channel never changes
+# (so equality proves nothing either). Which is why the verification runs AFTER
+# the settle block below, not here: measured 2026-08-04 (run 30868405003), this
+# probe placed right after install reported quiet=no five times in a row because
+# the launcher is still painting itself minutes after the APKs land.
 # Never fails: callers treat an empty result as "could not sample" rather than
 # dying, because `set -e` + pipefail would otherwise turn one timed-out
 # screencap on a busy runner into an aborted suite.
@@ -114,49 +116,32 @@ screen_hash() {
       | { md5 2>/dev/null || md5sum 2>/dev/null; } \
       | awk '{print $1}'; } || true
 }
+# Two identical consecutive samples, or empty if the screen never stops moving.
+wait_quiet() {
+  local tries="${1:-15}" prev="" now="" stable=0
+  for _ in $(seq 1 "$tries"); do
+    sleep 1
+    now="$(screen_hash)"
+    [[ -z "$now" ]] && { echo ""; return; }
+    if [[ "$now" == "$prev" ]]; then
+      stable=$((stable + 1))
+      [[ $stable -ge 1 ]] && { echo "$now"; return; }
+    else
+      stable=0
+    fi
+    prev="$now"
+  done
+  echo ""
+}
 demo_broadcast() {
   adbsh am broadcast -a com.android.systemui.demo -e command "$@" >/dev/null 2>&1 || true
 }
 adbsh settings put global sysui_demo_allowed 1
-demo_frozen=0
-for attempt in 1 2 3 4 5; do
-  demo_broadcast exit
-  demo_broadcast enter
-  demo_broadcast battery -e level 100 -e plugged false
-  demo_broadcast network -e wifi show -e level 4
-  demo_broadcast clock -e hhmm 0930
-  sleep 2
-  probe_a="$(screen_hash)"
-  sleep 1
-  probe_b="$(screen_hash)"
-  demo_broadcast clock -e hhmm 1200
-  sleep 2
-  probe_c="$(screen_hash)"
-  if [[ -z "$probe_a" || -z "$probe_b" || -z "$probe_c" ]]; then
-    echo "warning: screencap probe returned nothing (attempt $attempt) — cannot verify demo mode" >&2
-    continue
-  fi
-  if [[ "$probe_a" == "$probe_b" && "$probe_a" != "$probe_c" ]]; then
-    demo_frozen=1
-    echo "SystemUI demo mode verified (clock frozen at 12:00, attempt $attempt)"
-    break
-  fi
-  echo "demo-mode probe inconclusive (attempt $attempt): quiet=$([[ "$probe_a" == "$probe_b" ]] && echo yes || echo no) responsive=$([[ "$probe_a" != "$probe_c" ]] && echo yes || echo no)" >&2
-  sleep 3
-done
-if [[ "$demo_frozen" != "1" ]]; then
-  # A live clock silently poisons every screenshot the run produces, so the
-  # honest outcome is a failed attempt (the workflow retries on a FRESH
-  # emulator) rather than a green run whose baselines cannot be reused.
-  # Set CONFORMANCE_ALLOW_LIVE_CHROME=1 to downgrade this to a warning when
-  # you only need the assertable classes and do not care about the pixels.
-  if [[ "${CONFORMANCE_ALLOW_LIVE_CHROME:-0}" == "1" ]]; then
-    echo "warning: SystemUI demo mode never took — screenshots carry a live clock" >&2
-  else
-    echo "error: SystemUI demo mode never took after 5 attempts — screenshots would carry a live clock and the captures could not be baselined" >&2
-    exit 1
-  fi
-fi
+demo_broadcast exit
+demo_broadcast enter
+demo_broadcast battery -e level 100 -e plugged false
+demo_broadcast network -e wifi show -e level 4
+demo_broadcast clock -e hhmm 1200
 
 # Predicted-apps row of the tablet taskbar: the launcher reorders it between
 # boots (measured 2026-08-04 across two CI runs — [Messages, Phone] became
@@ -213,11 +198,57 @@ if [[ $settle_stable -ge 2 ]]; then
 else
   echo "warning: screen did not settle within 20s — taskbar may drift between runs" >&2
 fi
-# Chrome fingerprint: the idle-screen hash with the app parked. Two runs whose
-# captures should be comparable must print the SAME value here — it is the
-# cheapest way to tell "the renders diverged" from "the system chrome moved"
-# when a later baseline diff looks suspiciously whole-suite.
-echo "chrome fingerprint (idle screen): ${settle_prev:-unavailable}"
+
+# 3b-2. Now that the screen is quiet, PROVE the status bar froze (see the probe
+# rationale above). Toggling the demo clock must move pixels; if it does not,
+# SystemUI dropped the broadcast and every screenshot this run produces carries
+# a live clock.
+demo_frozen=0
+for attempt in 1 2 3 4 5; do
+  quiet_hash="$(wait_quiet 15)"
+  if [[ -z "$quiet_hash" ]]; then
+    echo "demo-mode probe: screen never quiet (attempt $attempt)" >&2
+    demo_broadcast enter
+    continue
+  fi
+  demo_broadcast clock -e hhmm 0930
+  sleep 2
+  probe_other="$(screen_hash)"
+  demo_broadcast clock -e hhmm 1200
+  sleep 2
+  probe_back="$(screen_hash)"
+  if [[ -n "$probe_other" && "$quiet_hash" != "$probe_other" && "$quiet_hash" == "$probe_back" ]]; then
+    demo_frozen=1
+    echo "SystemUI demo mode verified (clock frozen at 12:00, attempt $attempt)"
+    break
+  fi
+  echo "demo-mode probe inconclusive (attempt $attempt): responsive=$([[ "$quiet_hash" != "$probe_other" ]] && echo yes || echo no) reverts=$([[ "$quiet_hash" == "$probe_back" ]] && echo yes || echo no)" >&2
+  demo_broadcast exit
+  demo_broadcast enter
+  demo_broadcast battery -e level 100 -e plugged false
+  demo_broadcast network -e wifi show -e level 4
+  demo_broadcast clock -e hhmm 1200
+  sleep 3
+done
+if [[ "$demo_frozen" != "1" ]]; then
+  # A live clock silently poisons every screenshot the run produces, so the
+  # honest outcome is a failed attempt (the workflow retries on a FRESH
+  # emulator) rather than a green run whose baselines cannot be reused.
+  # Set CONFORMANCE_ALLOW_LIVE_CHROME=1 to downgrade this to a warning when
+  # you only need the assertable classes and do not care about the pixels.
+  if [[ "${CONFORMANCE_ALLOW_LIVE_CHROME:-0}" == "1" ]]; then
+    echo "warning: SystemUI demo mode never took — screenshots carry a live clock" >&2
+  else
+    echo "error: SystemUI demo mode never took after 5 attempts — screenshots would carry a live clock and the captures could not be baselined" >&2
+    exit 1
+  fi
+fi
+
+# Chrome fingerprint: the idle-screen hash with the app parked and the status
+# bar frozen. Two runs whose captures should be comparable must print the SAME
+# value here — it is the cheapest way to tell "the renders diverged" from "the
+# system chrome moved" when a later baseline diff looks suspiciously whole-suite.
+echo "chrome fingerprint (idle screen): $(screen_hash)"
 
 # 3c. a11y projection probe + boot re-roll. Run 30762153614 (first
 # instrumented recurrence of the CI-only all-fixtures render-timeout): the
