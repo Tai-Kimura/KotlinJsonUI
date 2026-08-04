@@ -185,7 +185,7 @@ class DynamicContainerComponent {
             context: Context
         ) {
             val weight = ModifierBuilder.getWeight(child)
-            val alignment = ModifierBuilder.getChildAlignment(child, "Column")
+            val alignment = ModifierBuilder.getChildAlignment(child, "Column", data)
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier
@@ -220,7 +220,7 @@ class DynamicContainerComponent {
             context: Context
         ) {
             val weight = ModifierBuilder.getWeight(child)
-            val alignment = ModifierBuilder.getChildAlignment(child, "Row")
+            val alignment = ModifierBuilder.getChildAlignment(child, "Row", data)
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier
@@ -253,7 +253,7 @@ class DynamicContainerComponent {
             data: Map<String, Any>,
             context: Context
         ) {
-            val alignment = ModifierBuilder.getChildAlignment(child, "Box")
+            val alignment = ModifierBuilder.getChildAlignment(child, "Box", data)
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier

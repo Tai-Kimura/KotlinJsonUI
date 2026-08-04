@@ -91,7 +91,7 @@ class DynamicIndicatorComponent {
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
             modifier = ModifierBuilder.applyPadding(modifier, json)
-            modifier = ModifierBuilder.applyAlignment(modifier, json, parentType)
+            modifier = ModifierBuilder.applyAlignment(modifier, json, parentType, data)
 
             // Apply weight if in Row or Column
             val weight = ModifierBuilder.getWeight(json)

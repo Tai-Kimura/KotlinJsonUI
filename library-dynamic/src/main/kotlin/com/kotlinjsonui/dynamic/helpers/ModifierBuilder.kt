@@ -856,9 +856,11 @@ object ModifierBuilder {
     fun applyAlignment(
         modifier: Modifier,
         json: JsonObject,
-        parentType: String?
+        parentType: String?,
+        data: Map<String, Any> = emptyMap()
     ): Modifier {
-        val alignment = getChildAlignment(json, parentType ?: return modifier) ?: return modifier
+        val alignment = getChildAlignment(json, parentType ?: return modifier, data)
+            ?: return modifier
 
         // Alignment modifiers require scope context.
         // In Dynamic mode we pass it via BoxScope / RowScope / ColumnScope extension.
@@ -984,14 +986,22 @@ object ModifierBuilder {
      * `{ gravity: "center", alignBottom: true, alignRight: true }` gets
      * centered in the parent instead of bottom-end aligned.
      */
-    internal fun outerAlignFlags(json: JsonObject): AlignFlags = AlignFlags(
-        alignTop = json.get("alignTop")?.asBoolean == true,
-        alignBottom = json.get("alignBottom")?.asBoolean == true,
-        alignLeft = json.get("alignLeft")?.asBoolean == true,
-        alignRight = json.get("alignRight")?.asBoolean == true,
-        centerH = json.get("centerHorizontal")?.asBoolean == true,
-        centerV = json.get("centerVertical")?.asBoolean == true,
-        centerInParent = json.get("centerInParent")?.asBoolean == true
+    internal fun outerAlignFlags(
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): AlignFlags = AlignFlags(
+        // gson's asBoolean on a STRING is Boolean.parseBoolean, so a binding
+        // form silently read as `false` and the placement was dropped without
+        // a word — the bound align/center fixtures measured inert for that
+        // reason, not because the flags did nothing. Resolving keeps a literal
+        // false false and lets a bound true through.
+        alignTop = ResourceResolver.resolveBoolean(json, "alignTop", data),
+        alignBottom = ResourceResolver.resolveBoolean(json, "alignBottom", data),
+        alignLeft = ResourceResolver.resolveBoolean(json, "alignLeft", data),
+        alignRight = ResourceResolver.resolveBoolean(json, "alignRight", data),
+        centerH = ResourceResolver.resolveBoolean(json, "centerHorizontal", data),
+        centerV = ResourceResolver.resolveBoolean(json, "centerVertical", data),
+        centerInParent = ResourceResolver.resolveBoolean(json, "centerInParent", data)
     )
 
     /**
@@ -1000,8 +1010,12 @@ object ModifierBuilder {
      * Reads the OUTER placement booleans only — the child's `gravity` is
      * consumed by the child's own container path, not by its parent.
      */
-    fun getChildAlignment(json: JsonObject, parentType: String): Any? {
-        val flags = outerAlignFlags(json)
+    fun getChildAlignment(
+        json: JsonObject,
+        parentType: String,
+        data: Map<String, Any> = emptyMap()
+    ): Any? {
+        val flags = outerAlignFlags(json, data)
         return when (parentType) {
             "Row", "HStack" -> when {
                 flags.alignTop -> Alignment.Top
@@ -1123,7 +1137,7 @@ object ModifierBuilder {
         // Parent constraints (individual align booleans only — `gravity` is
         // inner content alignment and never links the node to its parent,
         // matching build_relative_positioning in the static tool)
-        val flags = outerAlignFlags(json)
+        val flags = outerAlignFlags(json, data)
         if (flags.alignTop) {
             constraints += "top.linkTo(parent.top${marginSuffix(topMargin)})"
         }

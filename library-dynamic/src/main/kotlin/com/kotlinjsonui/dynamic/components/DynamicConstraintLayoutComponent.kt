@@ -18,6 +18,7 @@ import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
@@ -130,7 +131,7 @@ class DynamicConstraintLayoutComponent {
 
                         constrain(ref) {
                             // Apply relative positioning constraints
-                            applyRelativePositioning(childJson, this@ConstraintSet, this, refs)
+                            applyRelativePositioning(childJson, this@ConstraintSet, this, refs, data)
 
                             // Apply dimension constraints
                             applyDimensionConstraints(childJson, this)
@@ -159,6 +160,16 @@ class DynamicConstraintLayoutComponent {
             }
         }
 
+        /**
+         * Whether a child asks to be positioned relative to something.
+         *
+         * Decided BEFORE the data map is consulted, so a BINDING counts as
+         * declared whatever its value resolves to: if the container does not
+         * take this route, the constraint has nowhere to land, and fixing the
+         * resolver downstream changes nothing. A literal `false` still does
+         * not route — it is a statement that the node is NOT so positioned.
+         * (Same rule F pinned on the ios dynamic path, `f248fbd`.)
+         */
         private fun hasRelativePositioning(childNode: JsonObject): Boolean {
             val relativeAttrs = listOf(
                 "alignTopOfView", "alignBottomOfView", "alignLeftOfView", "alignRightOfView",
@@ -168,29 +179,39 @@ class DynamicConstraintLayoutComponent {
                 "centerHorizontal", "centerVertical", "centerInParent"
             )
 
-            return relativeAttrs.any { childNode.has(it) }
+            return relativeAttrs.any { key ->
+                val element = childNode.get(key) ?: return@any false
+                val p = element.takeIf { it.isJsonPrimitive }?.asJsonPrimitive
+                when {
+                    p == null -> true
+                    p.isBoolean -> p.asBoolean
+                    p.isString && p.asString.equals("false", ignoreCase = true) -> false
+                    else -> true
+                }
+            }
         }
 
         private fun applyRelativePositioning(
             childNode: JsonObject,
             setScope: ConstraintSetScope,
             scope: ConstrainScope,
-            refs: Map<String, androidx.constraintlayout.compose.ConstrainedLayoutReference>
+            refs: Map<String, androidx.constraintlayout.compose.ConstrainedLayoutReference>,
+            data: Map<String, Any>
         ) {
             with(scope) {
                 // Extract margins
-                var topMargin = childNode.get("topMargin")?.asInt ?: 0
-                var bottomMargin = childNode.get("bottomMargin")?.asInt ?: 0
-                var leftMargin = childNode.get("leftMargin")?.asInt ?: 0
-                var rightMargin = childNode.get("rightMargin")?.asInt ?: 0
+                var topMargin = ModifierBuilder.dimen(childNode.get("topMargin"), data)?.toInt() ?: 0
+                var bottomMargin = ModifierBuilder.dimen(childNode.get("bottomMargin"), data)?.toInt() ?: 0
+                var leftMargin = ModifierBuilder.dimen(childNode.get("leftMargin"), data)?.toInt() ?: 0
+                var rightMargin = ModifierBuilder.dimen(childNode.get("rightMargin"), data)?.toInt() ?: 0
 
                 // Handle margins array
                 childNode.get("margins")?.asJsonArray?.let { margins ->
                     if (margins.size() == 4) {
-                        val arrayTopMargin = margins[0].asInt
-                        val arrayRightMargin = margins[1].asInt
-                        val arrayBottomMargin = margins[2].asInt
-                        val arrayLeftMargin = margins[3].asInt
+                        val arrayTopMargin = ModifierBuilder.dimen(margins[0], data)?.toInt() ?: 0
+                        val arrayRightMargin = ModifierBuilder.dimen(margins[1], data)?.toInt() ?: 0
+                        val arrayBottomMargin = ModifierBuilder.dimen(margins[2], data)?.toInt() ?: 0
+                        val arrayLeftMargin = ModifierBuilder.dimen(margins[3], data)?.toInt() ?: 0
 
                         // Use array values if individual margins not specified
                         if (!childNode.has("topMargin")) topMargin = arrayTopMargin
@@ -267,33 +288,33 @@ class DynamicConstraintLayoutComponent {
                 }
 
                 // Parent constraints
-                if (childNode.get("alignTop")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "alignTop", data, default = false)) {
                     top.linkTo(parent.top, margin = topMargin.dp)
                 }
 
-                if (childNode.get("alignBottom")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "alignBottom", data, default = false)) {
                     bottom.linkTo(parent.bottom, margin = bottomMargin.dp)
                 }
 
-                if (childNode.get("alignLeft")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "alignLeft", data, default = false)) {
                     start.linkTo(parent.start, margin = leftMargin.dp)
                 }
 
-                if (childNode.get("alignRight")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "alignRight", data, default = false)) {
                     end.linkTo(parent.end, margin = rightMargin.dp)
                 }
 
-                if (childNode.get("centerHorizontal")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "centerHorizontal", data, default = false)) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
 
-                if (childNode.get("centerVertical")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "centerVertical", data, default = false)) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                 }
 
-                if (childNode.get("centerInParent")?.asBoolean == true) {
+                if (ResourceResolver.resolveBoolean(childNode, "centerInParent", data, default = false)) {
                     top.linkTo(parent.top)
                     bottom.linkTo(parent.bottom)
                     start.linkTo(parent.start)
