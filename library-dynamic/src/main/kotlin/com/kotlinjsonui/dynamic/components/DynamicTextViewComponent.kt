@@ -364,7 +364,7 @@ class DynamicTextViewComponent {
         }
 
         private fun buildKeyboardOptions(a: TextViewAttributes): KeyboardOptions {
-            val keyboardType = a.keyboardType?.let { type ->
+            val keyboardType = TypedAttrs.enumString(a.keyboardType) { it.json }?.let { type ->
                 when (type.lowercase()) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number

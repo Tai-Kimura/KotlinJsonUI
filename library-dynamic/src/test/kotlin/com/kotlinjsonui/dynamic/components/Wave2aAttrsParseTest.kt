@@ -36,8 +36,20 @@ class Wave2aAttrsParseTest {
             )
         )
         assertEquals(AttrValue.Value(5.0), a.minimum)
-        // The standalone declared row keeps its own value.
-        assertEquals(AttrValue.Value(20.0), a.minValue)
+    }
+
+    @Test
+    fun `slider minValue folds onto minimum instead of keeping a row of its own`() {
+        // 49-E removed the alias self-invalidation: `minValue` / `minimumValue`
+        // used to be declared independently alongside the aliases of the same
+        // name, which emptied the aliasMap and gave each spelling a field.
+        // They are plain aliases of `minimum` now.
+        val a = SliderAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Slider","minValue":20}"""))
+        )
+        assertEquals(AttrValue.Value(20.0), a.minimum)
+        assertEquals("minimum", SliderAttributes.aliasMap["minValue"])
+        assertEquals("maximum", SliderAttributes.aliasMap["maxValue"])
     }
 
     @Test

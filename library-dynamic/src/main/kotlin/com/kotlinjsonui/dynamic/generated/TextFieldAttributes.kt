@@ -11,29 +11,29 @@ package com.kotlinjsonui.dynamic.generated
 data class TextFieldAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Input accessory background - hex string or color name from colors.json */
+    /** Input accessory toolbar background - hex string or color name from colors.json. UIKit only: read by SJUITextField's accessory toolbar; SwiftUI has no input-accessory surface. */
     val accessoryBackground: String? = null,
     /** Accessory corner radius */
     val accessoryCornerRadius: Double? = null,
-    /** Input accessory text color - hex string or color name from colors.json */
+    /** Input accessory toolbar text color - hex string or color name from colors.json. UIKit only (see accessoryBackground). */
     val accessoryTextColor: String? = null,
     /** Apply liquid glass effect */
     val applyLiquidGlass: Boolean? = null,
-    /** Auto-capitalization type */
-    val autocapitalizationType: String? = null,
-    /** Auto-correction type */
-    val autocorrectionType: String? = null,
+    /** Auto-capitalization type. UIKit's vocabulary, honoured on every platform (.textInputAutocapitalization / KeyboardCapitalization / the HTML autocapitalize attribute). `characters` is an accepted alias spelling of allCharacters. */
+    val autocapitalizationType: AttrEnum<AutocapitalizationType>? = null,
+    /** Auto-correction type. UIKit's vocabulary; `on`/`true` and `off`/`false` are accepted alias spellings of yes/no. `default` means "leave it to the platform" — web deliberately emits nothing for it. */
+    val autocorrectionType: AttrEnum<AutocorrectionType>? = null,
     /** Border style */
     val borderStyle: AttrEnum<BorderStyle>? = null,
-    /** Caret styling attributes (fontColor for cursor color) [DEPRECATED: SwiftUI cannot style the caret (iOS 17 has partial .tint API).] */
+    /** Caret styling attributes (fontColor for cursor color) */
     val caretAttributes: Map<String, Any?>? = null,
     /** Clear button mode */
     val clearButtonMode: String? = null,
-    /** Content type for autofill (binding supported) */
-    val contentType: AttrValue<String>? = null,
+    /** Content type for autofill (binding supported). The enum is the set of tokens at least one platform actually maps: iOS to .textContentType, web to the autoComplete attribute, Android to the keyboard type. `email` (not emailAddress) and `telephoneNumber` (not tel) are the canonical spellings — the web converter only matches those two, so the alternates are normalized before conversion. Tokens no platform maps are deliberately absent: declaring UIKit's full UITextContentType list would enumerate values that cannot reach any output. */
+    val contentType: AttrValue<AttrEnum<ContentType>>? = null,
     /** Background color when disabled - hex string or color name from colors.json */
     val disabledBackground: String? = null,
-    /** Done button text */
+    /** Text of the input accessory toolbar's Done button. UIKit only (see accessoryBackground). */
     val doneText: String? = null,
     /** Field padding */
     val fieldPadding: Double? = null,
@@ -55,18 +55,16 @@ data class TextFieldAttributes(
     val hint: String? = null,
     /** Hint text attributes (font, color, etc.) */
     val hintAttributes: Map<String, Any?>? = null,
-    /** Placeholder color - hex string or color name from colors.json (binding supported) [DEPRECATED: SwiftUI TextField placeholder cannot be color-styled.] */
+    /** Placeholder color - hex string or color name from colors.json (binding supported). `placeholderColor` is an accepted alias spelling. [aliases: placeholderColor] */
     val hintColor: AttrValue<String>? = null,
-    /** Placeholder font [DEPRECATED: SwiftUI TextField placeholder cannot be custom-font-styled.] */
+    /** Placeholder font */
     val hintFont: String? = null,
-    /** Placeholder font size [DEPRECATED: SwiftUI TextField placeholder cannot be custom-size-styled.] */
+    /** Placeholder font size */
     val hintFontSize: Double? = null,
     /** Input type (includes 'allphabet' typo for backward compatibility) */
     val input: AttrEnum<Input>? = null,
-    /** Input type for Android (Android-only; `input` is the cross-platform attribute) */
-    val inputType: String? = null,
-    /** Keyboard appearance: dark, light [DEPRECATED: Compose keyboard appearance is system-controlled.] */
-    val keyboardAppearance: String? = null,
+    /** Input type for Android (Android-only; `input` is the cross-platform attribute). Both the JsonUI spellings and the raw android:inputType names the frozen XML mapper passed through are accepted; the latter normalize to the former. */
+    val inputType: AttrEnum<InputType>? = null,
     /** Left view configuration */
     val leftView: Map<String, Any?>? = null,
     /** Left view display mode */
@@ -105,8 +103,6 @@ data class TextFieldAttributes(
     val pattern: String? = null,
     /** Placeholder text (alias for hint) */
     val placeholder: String? = null,
-    /** Deprecated on swift. [DEPRECATED: SwiftUI TextField placeholder cannot be color-styled.] */
-    val placeholderColor: String? = null,
     /** Required field validation */
     val required: Boolean? = null,
     /** Return key type */
@@ -117,8 +113,6 @@ data class TextFieldAttributes(
     val rightViewMode: String? = null,
     /** Secure text entry for passwords (can be data binding) */
     val secure: AttrValue<Boolean>? = null,
-    /** Spell checking type [DEPRECATED: Compose does not expose spell-checking control.] */
-    val spellCheckingType: String? = null,
     /** Text content (binding for two-way) [binding: two-way] */
     val text: AttrValue<String>? = null,
     /** Text alignment */
@@ -132,6 +126,40 @@ data class TextFieldAttributes(
     /** Cursor/caret color - hex string or color name from colors.json */
     val tintColor: String? = null,
 ) {
+    enum class AutocapitalizationType(val json: String) {
+        NONE("none"),
+        WORDS("words"),
+        SENTENCES("sentences"),
+        ALL_CHARACTERS("allCharacters");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): AutocapitalizationType? = when (raw.lowercase()) {
+                "none" -> NONE
+                "words" -> WORDS
+                "sentences" -> SENTENCES
+                "allcharacters", "characters" -> ALL_CHARACTERS
+                else -> null
+            }
+        }
+    }
+
+    enum class AutocorrectionType(val json: String) {
+        DEFAULT("default"),
+        YES("yes"),
+        NO("no");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): AutocorrectionType? = when (raw.lowercase()) {
+                "default" -> DEFAULT
+                "yes", "on", "true" -> YES
+                "no", "off", "false" -> NO
+                else -> null
+            }
+        }
+    }
+
     enum class BorderStyle(val json: String) {
         NONE("none"),
         LINE("line"),
@@ -145,6 +173,44 @@ data class TextFieldAttributes(
                 "line" -> LINE
                 "bezel" -> BEZEL
                 "roundedrect" -> ROUNDED_RECT
+                else -> null
+            }
+        }
+    }
+
+    enum class ContentType(val json: String) {
+        USERNAME("username"),
+        PASSWORD("password"),
+        NEW_PASSWORD("newPassword"),
+        ONE_TIME_CODE("oneTimeCode"),
+        EMAIL("email"),
+        NAME("name"),
+        GIVEN_NAME("givenName"),
+        FAMILY_NAME("familyName"),
+        TELEPHONE_NUMBER("telephoneNumber"),
+        STREET_ADDRESS("streetAddress"),
+        POSTAL_CODE("postalCode"),
+        COUNTRY("country"),
+        CREDIT_CARD_NUMBER("creditCardNumber"),
+        URL("URL");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): ContentType? = when (raw.lowercase()) {
+                "username" -> USERNAME
+                "password" -> PASSWORD
+                "newpassword" -> NEW_PASSWORD
+                "onetimecode" -> ONE_TIME_CODE
+                "email", "emailaddress" -> EMAIL
+                "name" -> NAME
+                "givenname" -> GIVEN_NAME
+                "familyname" -> FAMILY_NAME
+                "telephonenumber", "tel", "phone" -> TELEPHONE_NUMBER
+                "streetaddress" -> STREET_ADDRESS
+                "postalcode" -> POSTAL_CODE
+                "country" -> COUNTRY
+                "creditcardnumber" -> CREDIT_CARD_NUMBER
+                "url" -> URL
                 else -> null
             }
         }
@@ -173,6 +239,30 @@ data class TextFieldAttributes(
                 "url" -> URL
                 "password" -> PASSWORD
                 "decimal" -> DECIMAL
+                else -> null
+            }
+        }
+    }
+
+    enum class InputType(val json: String) {
+        TEXT("text"),
+        NUMBER("number"),
+        NUMBER_DECIMAL("numberDecimal"),
+        PHONE("phone"),
+        EMAIL("email"),
+        PASSWORD("password"),
+        MULTILINE("multiline");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): InputType? = when (raw.lowercase()) {
+                "text" -> TEXT
+                "number" -> NUMBER
+                "numberdecimal" -> NUMBER_DECIMAL
+                "phone" -> PHONE
+                "email", "textemailaddress" -> EMAIL
+                "password", "textpassword" -> PASSWORD
+                "multiline" -> MULTILINE
                 else -> null
             }
         }
@@ -259,7 +349,6 @@ data class TextFieldAttributes(
             "hintFontSize",
             "input",
             "inputType",
-            "keyboardAppearance",
             "leftView",
             "leftViewMode",
             "maxLength",
@@ -279,13 +368,11 @@ data class TextFieldAttributes(
             "onTextChange",
             "pattern",
             "placeholder",
-            "placeholderColor",
             "required",
             "returnKeyType",
             "rightView",
             "rightViewMode",
             "secure",
-            "spellCheckingType",
             "text",
             "textAlign",
             "textPaddingLeft",
@@ -299,7 +386,10 @@ data class TextFieldAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+            "placeholderColor" to "hintColor",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -315,12 +405,12 @@ data class TextFieldAttributes(
             accessoryCornerRadius = AttrCoerce.number(AttrCoerce.lookup(json, "accessoryCornerRadius")),
             accessoryTextColor = AttrCoerce.string(AttrCoerce.lookup(json, "accessoryTextColor")),
             applyLiquidGlass = AttrCoerce.boolean(AttrCoerce.lookup(json, "applyLiquidGlass")),
-            autocapitalizationType = AttrCoerce.string(AttrCoerce.lookup(json, "autocapitalizationType")),
-            autocorrectionType = AttrCoerce.string(AttrCoerce.lookup(json, "autocorrectionType")),
+            autocapitalizationType = parseAutocapitalizationType(AttrCoerce.lookup(json, "autocapitalizationType")),
+            autocorrectionType = parseAutocorrectionType(AttrCoerce.lookup(json, "autocorrectionType")),
             borderStyle = parseBorderStyle(AttrCoerce.lookup(json, "borderStyle")),
             caretAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "caretAttributes")),
             clearButtonMode = AttrCoerce.string(AttrCoerce.lookup(json, "clearButtonMode")),
-            contentType = AttrCoerce.attrValue(AttrCoerce.lookup(json, "contentType")) { AttrCoerce.string(it) },
+            contentType = AttrCoerce.attrValue(AttrCoerce.lookup(json, "contentType")) { parseContentType(it) },
             disabledBackground = AttrCoerce.string(AttrCoerce.lookup(json, "disabledBackground")),
             doneText = AttrCoerce.string(AttrCoerce.lookup(json, "doneText")),
             fieldPadding = AttrCoerce.number(AttrCoerce.lookup(json, "fieldPadding")),
@@ -333,12 +423,11 @@ data class TextFieldAttributes(
             hideOnFocused = AttrCoerce.boolean(AttrCoerce.lookup(json, "hideOnFocused")),
             hint = AttrCoerce.string(AttrCoerce.lookup(json, "hint")),
             hintAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "hintAttributes")),
-            hintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "hintColor")) { AttrCoerce.string(it) },
+            hintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "hintColor", listOf("placeholderColor"), canonicalOnly)) { AttrCoerce.string(it) },
             hintFont = AttrCoerce.string(AttrCoerce.lookup(json, "hintFont")),
             hintFontSize = AttrCoerce.number(AttrCoerce.lookup(json, "hintFontSize")),
             input = parseInput(AttrCoerce.lookup(json, "input")),
-            inputType = AttrCoerce.string(AttrCoerce.lookup(json, "inputType")),
-            keyboardAppearance = AttrCoerce.string(AttrCoerce.lookup(json, "keyboardAppearance")),
+            inputType = parseInputType(AttrCoerce.lookup(json, "inputType")),
             leftView = AttrCoerce.obj(AttrCoerce.lookup(json, "leftView")),
             leftViewMode = AttrCoerce.string(AttrCoerce.lookup(json, "leftViewMode")),
             maxLength = AttrCoerce.number(AttrCoerce.lookup(json, "maxLength")),
@@ -358,13 +447,11 @@ data class TextFieldAttributes(
             onTextChange = AttrCoerce.string(AttrCoerce.lookup(json, "onTextChange")),
             pattern = AttrCoerce.string(AttrCoerce.lookup(json, "pattern")),
             placeholder = AttrCoerce.string(AttrCoerce.lookup(json, "placeholder")),
-            placeholderColor = AttrCoerce.string(AttrCoerce.lookup(json, "placeholderColor")),
             required = AttrCoerce.boolean(AttrCoerce.lookup(json, "required")),
             returnKeyType = parseReturnKeyType(AttrCoerce.lookup(json, "returnKeyType")),
             rightView = AttrCoerce.obj(AttrCoerce.lookup(json, "rightView")),
             rightViewMode = AttrCoerce.string(AttrCoerce.lookup(json, "rightViewMode")),
             secure = AttrCoerce.attrValue(AttrCoerce.lookup(json, "secure")) { AttrCoerce.boolean(it) },
-            spellCheckingType = AttrCoerce.string(AttrCoerce.lookup(json, "spellCheckingType")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             textAlign = parseTextAlign(AttrCoerce.lookup(json, "textAlign")),
             textPaddingLeft = AttrCoerce.number(AttrCoerce.lookup(json, "textPaddingLeft")),
@@ -372,6 +459,24 @@ data class TextFieldAttributes(
             textVerticalAlign = AttrCoerce.string(AttrCoerce.lookup(json, "textVerticalAlign")),
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
         )
+
+        private fun parseAutocapitalizationType(raw: Any?): AttrEnum<AutocapitalizationType>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                AutocapitalizationType.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("TextField.autocapitalizationType: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseAutocorrectionType(raw: Any?): AttrEnum<AutocorrectionType>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                AutocorrectionType.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("TextField.autocorrectionType: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
 
         private fun parseBorderStyle(raw: Any?): AttrEnum<BorderStyle>? {
             if (raw == null) return null
@@ -382,12 +487,30 @@ data class TextFieldAttributes(
             return AttrEnum.Unknown(raw)
         }
 
+        private fun parseContentType(raw: Any?): AttrEnum<ContentType>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                ContentType.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("TextField.contentType: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
         private fun parseInput(raw: Any?): AttrEnum<Input>? {
             if (raw == null) return null
             (raw as? String)?.let { s ->
                 Input.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("TextField.input: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseInputType(raw: Any?): AttrEnum<InputType>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                InputType.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("TextField.inputType: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
 

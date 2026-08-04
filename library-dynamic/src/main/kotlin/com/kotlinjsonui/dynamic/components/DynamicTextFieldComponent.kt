@@ -85,7 +85,7 @@ class DynamicTextFieldComponent {
             // Parse secure field
             val isSecure = TypedAttrs.static(a.secure) == true ||
                     TypedAttrs.enumString(a.input) { it.json }?.lowercase() == "password" ||
-                    TypedAttrs.static(a.contentType)?.lowercase()?.let {
+                    TypedAttrs.staticEnumString(a.contentType) { it.json }?.lowercase()?.let {
                         it == "password" || it == "newpassword"
                     } ?: false
 
@@ -163,7 +163,7 @@ class DynamicTextFieldComponent {
             // coverage gap ledger on android.
             val placeholderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.hintColor), data, context
-            ) ?: ColorParser.parseColorStringWithBinding(a.placeholderColor, data, context)
+            )
                 ?: Configuration.TextField.defaultPlaceholderColor
             // `tintColor` is the caret accent; `caretAttributes.fontColor` is
             // the object form of the same fact and reads behind it, matching
@@ -398,7 +398,7 @@ class DynamicTextFieldComponent {
             }
 
             // Auto-capitalization
-            val capitalization = a.autocapitalizationType?.let { type ->
+            val capitalization = TypedAttrs.enumString(a.autocapitalizationType) { it.json }?.let { type ->
                 when (type.lowercase()) {
                     "none" -> KeyboardCapitalization.None
                     "words" -> KeyboardCapitalization.Words
@@ -409,7 +409,7 @@ class DynamicTextFieldComponent {
             } ?: KeyboardCapitalization.None
 
             // Auto-correction
-            val autoCorrect = a.autocorrectionType?.let { type ->
+            val autoCorrect = TypedAttrs.enumString(a.autocorrectionType) { it.json }?.let { type ->
                 when (type.lowercase()) {
                     "no", "false", "off" -> false
                     else -> true
@@ -426,7 +426,7 @@ class DynamicTextFieldComponent {
 
         private fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
             // contentType takes priority
-            TypedAttrs.static(a.contentType)?.let { type ->
+            TypedAttrs.staticEnumString(a.contentType) { it.json }?.let { type ->
                 return when (type.lowercase()) {
                     "emailaddress", "email" -> KeyboardType.Email
                     "password", "newpassword" -> KeyboardType.Password

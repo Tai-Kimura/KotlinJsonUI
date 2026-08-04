@@ -36,8 +36,6 @@ data class RadioAttributes(
     val selectedIcon: String? = null,
     /** Selected value of the radio group (binding for two-way) */
     val selectedValue: AttrValue<String>? = null,
-    /** Selected icon name (underscore alias) */
-    val selected_icon: String? = null,
     /** Space between icon and text (binding supported) */
     val spacing: AttrValue<Double>? = null,
     /** Radio label (alias, can be data binding) */
@@ -66,7 +64,6 @@ data class RadioAttributes(
             "onValueChange",
             "selectedIcon",
             "selectedValue",
-            "selected_icon",
             "spacing",
             "text",
             "uncheckedColor",
@@ -78,7 +75,10 @@ data class RadioAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+            "selected_icon" to "selectedIcon",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -103,7 +103,6 @@ data class RadioAttributes(
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
             selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon", listOf("selected_icon"), canonicalOnly)),
             selectedValue = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedValue")) { AttrCoerce.string(it) },
-            selected_icon = AttrCoerce.string(AttrCoerce.lookup(json, "selected_icon")),
             spacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "spacing")) { AttrCoerce.number(it) },
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             uncheckedColor = AttrCoerce.string(AttrCoerce.lookup(json, "uncheckedColor")),

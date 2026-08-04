@@ -40,7 +40,12 @@ class PilotAttrsParseTest {
         val content = TextFieldAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"TextField","contentType":"newPassword"}"""))
         )
-        assertEquals("newpassword", TypedAttrs.static(content.contentType)?.lowercase())
+        // 49-E declared contentType as an enum, so the row is
+        // AttrValue<AttrEnum<ContentType>> and unwraps to its declared spelling.
+        assertEquals(
+            "newpassword",
+            TypedAttrs.staticEnumString(content.contentType) { it.json }?.lowercase()
+        )
     }
 
     @Test

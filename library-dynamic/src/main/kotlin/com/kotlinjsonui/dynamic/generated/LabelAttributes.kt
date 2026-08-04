@@ -12,7 +12,7 @@ data class LabelAttributes(
     val common: CommonAttributes,
     /** Enable auto-shrink */
     val autoShrink: Boolean? = null,
-    /** Edge insets as array or pipe-separated string [accepts: array | string; DEPRECATED: Compose Text has no edgeInset; use padding* instead.] */
+    /** Edge insets as array or pipe-separated string. Applied on every platform including Compose, where it maps to .padding() (kjui text_component.rb / DynamicTextComponent.kt) - the former "Compose Text has no edgeInset" deprecation was contradicted by that implementation and was retracted 2026-08-05. [accepts: array | string] */
     val edgeInset: Any? = null,
     /** Font weight name (regular/medium/semibold/bold/...) or font name. Passed as the `weight` field of `FontSpec` to `Configuration.Font.fontProvider`. Can be a data binding. */
     val font: AttrValue<String>? = null,
@@ -164,7 +164,9 @@ data class LabelAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =

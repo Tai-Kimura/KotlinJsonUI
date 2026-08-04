@@ -36,8 +36,6 @@ data class CommonAttributes(
     val alignTopView: String? = null,
     /** String alternative to numeric gravity. Resolves to SwiftUI Alignment / Compose Arrangement+Alignment. */
     val alignment: AttrEnum<Alignment>? = null,
-    /** Opacity (0-1) - can be data binding */
-    val alpha: AttrValue<Double>? = null,
     /** Aspect ratio height (binding supported) */
     val aspectHeight: AttrValue<Double>? = null,
     /** Aspect ratio width (binding supported) */
@@ -54,7 +52,7 @@ data class CommonAttributes(
     val binding_group: Any? = null,
     /** Binding ID */
     val binding_id: String? = null,
-    /** Border color - hex string or color name from colors.json (binding supported) */
+    /** Border color - hex string or color name from colors.json (binding supported). There is deliberately NO default: a border is drawn only when borderWidth AND borderColor are both declared, and neither half summons one on its own (2026-08-03 user ruling, recorded in attribute_semantics.json#semantics.border and gated by `jui conformance gate --cross-effect` against the five `observable` entries there). Declaring a default here would make borderWidth alone draw, which is the direction d2c8628 took once and the ruling superseded. */
     val borderColor: AttrValue<String>? = null,
     /** Border line style - solid (default), dashed, or dotted [default: solid] */
     val borderStyle: AttrEnum<BorderStyle>? = null,
@@ -216,7 +214,7 @@ data class CommonAttributes(
     val onPinch: AttrValue<Any>? = null,
     /** Click handler function name (selector-based, lowercase) - string only, no binding [accepts: string | array] */
     val onclick: Any? = null,
-    /** Opacity (0-1), alias for alpha - can be data binding [aliases: alpha] */
+    /** Opacity (0-1) - can be data binding. `alpha` is an accepted alias spelling. [aliases: alpha] */
     val opacity: AttrValue<Double>? = null,
     /** Uniform padding value (binding supported) */
     val padding: AttrValue<Double>? = null,
@@ -392,7 +390,6 @@ data class CommonAttributes(
             "alignTopOfView",
             "alignTopView",
             "alignment",
-            "alpha",
             "aspectHeight",
             "aspectWidth",
             "background",
@@ -527,7 +524,9 @@ data class CommonAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -553,7 +552,6 @@ data class CommonAttributes(
             alignTopOfView = AttrCoerce.string(AttrCoerce.lookup(json, "alignTopOfView")),
             alignTopView = AttrCoerce.string(AttrCoerce.lookup(json, "alignTopView")),
             alignment = parseAlignment(AttrCoerce.lookup(json, "alignment")),
-            alpha = AttrCoerce.attrValue(AttrCoerce.lookup(json, "alpha")) { AttrCoerce.number(it) },
             aspectHeight = AttrCoerce.attrValue(AttrCoerce.lookup(json, "aspectHeight")) { AttrCoerce.number(it) },
             aspectWidth = AttrCoerce.attrValue(AttrCoerce.lookup(json, "aspectWidth")) { AttrCoerce.number(it) },
             background = AttrCoerce.attrValue(AttrCoerce.lookup(json, "background")) { AttrCoerce.string(it) },

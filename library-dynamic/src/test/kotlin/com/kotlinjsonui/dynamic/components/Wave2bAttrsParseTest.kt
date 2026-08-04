@@ -35,7 +35,8 @@ class Wave2bAttrsParseTest {
                 obj("""{"type":"TextView","keyboardType":"email","input":"number","returnKeyType":"Done"}""")
             )
         )
-        assertEquals("email", a.keyboardType)
+        // 49-E declared keyboardType as an enum, so the row is AttrEnum<KeyboardType>.
+        assertEquals("email", TypedAttrs.enumString(a.keyboardType) { it.json })
         assertEquals("number", TypedAttrs.enumString(a.input) { it.json })
         assertEquals("Done", TypedAttrs.enumString(a.returnKeyType) { it.json })
     }

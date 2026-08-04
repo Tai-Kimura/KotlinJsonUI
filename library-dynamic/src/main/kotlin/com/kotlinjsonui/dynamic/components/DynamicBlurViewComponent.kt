@@ -81,10 +81,9 @@ class DynamicBlurViewComponent {
                 ?: ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
                 ?: effectStyleColor(TypedAttrs.enumString(a.effectStyle) { it.json })
             if (bgColor != null) {
-                // opacity and alpha are both declared rows with identical
-                // semantics; legacy read order (opacity first) kept.
+                // `alpha` is an alias spelling of `opacity` (49-E), folded onto
+                // the canonical row by the generated parser — one read.
                 val opacity = TypedAttrs.float(a.common.opacity, data)
-                    ?: TypedAttrs.float(a.common.alpha, data)
                 val finalColor = if (opacity != null) {
                     bgColor.copy(alpha = opacity.coerceIn(0f, 1f))
                 } else {

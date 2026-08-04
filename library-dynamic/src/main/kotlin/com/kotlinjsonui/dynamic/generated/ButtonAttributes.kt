@@ -29,8 +29,6 @@ data class ButtonAttributes(
     val highlightBackground: String? = null,
     /** Highlight color - hex string or color name from colors.json (binding supported) [aliases: hilightColor] */
     val highlightColor: AttrValue<String>? = null,
-    /** Highlight color - hex string or color name from colors.json (typo alias) */
-    val hilightColor: String? = null,
     /** Button image - asset name (binding supported) */
     val image: AttrValue<String>? = null,
     /** Background when tapped - hex string or color name from colors.json */
@@ -87,7 +85,6 @@ data class ButtonAttributes(
             "fontWeight",
             "highlightBackground",
             "highlightColor",
-            "hilightColor",
             "image",
             "tapBackground",
             "text",
@@ -99,7 +96,10 @@ data class ButtonAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+            "hilightColor" to "highlightColor",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -120,7 +120,6 @@ data class ButtonAttributes(
             fontWeight = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontWeight")) { it },
             highlightBackground = AttrCoerce.string(AttrCoerce.lookup(json, "highlightBackground")),
             highlightColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "highlightColor", listOf("hilightColor"), canonicalOnly)) { AttrCoerce.string(it) },
-            hilightColor = AttrCoerce.string(AttrCoerce.lookup(json, "hilightColor")),
             image = AttrCoerce.attrValue(AttrCoerce.lookup(json, "image")) { AttrCoerce.string(it) },
             tapBackground = AttrCoerce.string(AttrCoerce.lookup(json, "tapBackground")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },

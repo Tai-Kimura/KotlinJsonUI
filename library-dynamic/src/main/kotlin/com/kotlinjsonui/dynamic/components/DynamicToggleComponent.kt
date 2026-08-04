@@ -120,10 +120,10 @@ class DynamicToggleComponent {
                     }
                 }
 
-                // Call onValueChange/onToggle handler (declared change callbacks,
-                // like Switch), falling back to legacy onclick/onClick
+                // Call the declared change callback (like Switch; `onToggle` is
+                // an alias spelling of `onValueChange` since 49-E and folds onto
+                // the canonical row), falling back to legacy onclick/onClick
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
-                    ?: TypedAttrs.raw(a.onToggle) as? String
                     ?: a.common.onclick as? String
                     ?: TypedAttrs.raw(a.common.onClick) as? String
                 if (handler != null) {

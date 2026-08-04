@@ -42,7 +42,12 @@ class Wave1dAttrsParseTest {
 
     @Test
     fun `safeareaview does not declare the legacy edges spelling`() {
-        assertFalse(SafeAreaViewAttributes.isDeclared("edges"))
+        // 49-E made `edges` a declared ALIAS of safeAreaInsetPositions — the
+        // Compose SafeAreaView builder has always read it
+        // (kjui compose_builder.rb:722 `json_data['edges'] || ...`), so the
+        // spelling is legal input that folds onto the canonical row.
+        assertEquals("safeAreaInsetPositions", SafeAreaViewAttributes.aliasMap["edges"])
+        assertFalse("edges" in SafeAreaViewAttributes.declaredAttributes)
         assertFalse(SafeAreaViewAttributes.isDeclared("ignoreKeyboard"))
         assertTrue(SafeAreaViewAttributes.isDeclared("safeAreaInsetPositions"))
     }

@@ -81,6 +81,7 @@ data class CheckAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
             "onSrc" to "selectedIcon",
         )
 

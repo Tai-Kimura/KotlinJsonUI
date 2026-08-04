@@ -43,7 +43,7 @@ data class ViewAttributes(
     val onDrop: AttrValue<Any>? = null,
     /** Stack orientation (default: zstack) */
     val orientation: AttrEnum<Orientation>? = null,
-    /** Safe area inset positions (SafeAreaView only) */
+    /** Which edges reserve the safe area. Declared here as well as on SafeAreaView on purpose: SafeAreaView is its own definition section and does not inherit View's, and every platform honours the attribute on a PLAIN view too (sjui base_view_converter.rb#apply_safe_area_insets_to_bag runs for every component; rjui view_converter.rb#safe_area_edges emits env(safe-area-inset-*) padding). The two declarations are the same concept reaching two routing paths, not a duplicate. */
     val safeAreaInsetPositions: List<Any?>? = null,
     /** Space between children (binding supported) */
     val spacing: AttrValue<Double>? = null,
@@ -147,7 +147,9 @@ data class ViewAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =

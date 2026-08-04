@@ -45,8 +45,24 @@ class Wave2cAttrsParseTest {
             )
         )
         assertEquals("<p>hi</p>", a.html)
-        assertEquals("allow-scripts", a.sandbox)
         assertEquals("fullscreen", a.allow)
+    }
+
+    @Test
+    fun `web sandbox is the boolean kill-switch, not a permission list`() {
+        // 49-E: `sandbox: false` emits no sandbox attribute at all; the
+        // permission list is built from the other Web rows, never from a value
+        // written here (rjui web_converter.rb:68 reads it the same way).
+        // A token string is therefore not a value this row accepts.
+        val off = WebAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Web","sandbox":false}"""))
+        )
+        assertEquals(false, off.sandbox)
+
+        val tokens = WebAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Web","sandbox":"allow-scripts"}"""))
+        )
+        assertNull(tokens.sandbox)
     }
 
     @Test

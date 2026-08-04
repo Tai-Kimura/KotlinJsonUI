@@ -10,6 +10,8 @@ package com.kotlinjsonui.dynamic.generated
 data class IndicatorAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** Whether the indicator is spinning. Defaults to true: an Indicator with nothing declared animates. `false` stops it, and hidesWhenStopped then decides whether the stopped indicator keeps its space or collapses out of the layout — which is why hidesWhenStopped is only ever read on this branch (sjui indicator_converter.rb:23, kjui indicator_component.rb:13). [default: True] */
+    val animating: AttrValue<Boolean>? = null,
     /** Indicator color - hex string or color name from colors.json (binding supported) */
     val color: AttrValue<String>? = null,
     /** Hide when stopped */
@@ -37,6 +39,7 @@ data class IndicatorAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "animating",
             "color",
             "hidesWhenStopped",
             "indicatorStyle",
@@ -47,7 +50,9 @@ data class IndicatorAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -59,6 +64,7 @@ data class IndicatorAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): IndicatorAttributes = IndicatorAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            animating = AttrCoerce.attrValue(AttrCoerce.lookup(json, "animating")) { AttrCoerce.boolean(it) },
             color = AttrCoerce.attrValue(AttrCoerce.lookup(json, "color")) { AttrCoerce.string(it) },
             hidesWhenStopped = AttrCoerce.boolean(AttrCoerce.lookup(json, "hidesWhenStopped")),
             indicatorStyle = parseIndicatorStyle(AttrCoerce.lookup(json, "indicatorStyle")),

@@ -307,9 +307,10 @@ class DynamicSwitchComponent {
                 }
             }
 
-            // Call onValueChange/onToggle handler (binding format only)
+            // Call the change handler (binding format only). `onToggle` is an
+            // alias spelling of `onValueChange` (49-E), folded onto the
+            // canonical row by the generated parser — one read.
             val handler = TypedAttrs.raw(a.onValueChange) as? String
-                ?: TypedAttrs.raw(a.onToggle) as? String
             if (handler != null && ModifierBuilder.isBinding(handler)) {
                 val viewId = a.common.id ?: "switch"
                 ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)

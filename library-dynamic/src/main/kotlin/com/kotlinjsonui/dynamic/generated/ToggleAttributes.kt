@@ -26,8 +26,6 @@ data class ToggleAttributes(
     val offTintColor: AttrValue<String>? = null,
     /** Track color when on - hex string or color name from colors.json */
     val onTintColor: String? = null,
-    /** Toggle handler function - binding only (@{functionName}). Alias of onValueChange. */
-    val onToggle: AttrValue<Any>? = null,
     /** Value change handler - binding only (@{functionName}) [aliases: onToggle] */
     val onValueChange: AttrValue<Any>? = null,
     /** Thumb tint color - hex string or color name from colors.json (binding supported) */
@@ -36,7 +34,7 @@ data class ToggleAttributes(
     val tint: AttrValue<String>? = null,
     /** Tint color - hex string or color name from colors.json (alias) */
     val tintColor: String? = null,
-    /** Deprecated on swift. [DEPRECATED: SwiftUI Toggle uses unified tint only.] */
+    /** Colour of the switch track - hex string or color name from colors.json. Deprecation retracted with the Slider pair; a SwiftUI Toggle is not limited to a unified tint any more than Progress is. */
     val trackTintColor: String? = null,
     /** Switch state alias (binding for two-way) [binding: two-way] */
     val value: AttrValue<Boolean>? = null,
@@ -68,7 +66,6 @@ data class ToggleAttributes(
             "labelPosition",
             "offTintColor",
             "onTintColor",
-            "onToggle",
             "onValueChange",
             "thumbTintColor",
             "tint",
@@ -82,7 +79,10 @@ data class ToggleAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+            "onToggle" to "onValueChange",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -101,7 +101,6 @@ data class ToggleAttributes(
             labelPosition = parseLabelPosition(AttrCoerce.lookup(json, "labelPosition")),
             offTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "offTintColor")) { AttrCoerce.string(it) },
             onTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "onTintColor")),
-            onToggle = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onToggle")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("onToggle"), canonicalOnly)),
             thumbTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "thumbTintColor")) { AttrCoerce.string(it) },
             tint = AttrCoerce.attrValue(AttrCoerce.lookup(json, "tint")) { AttrCoerce.string(it) },

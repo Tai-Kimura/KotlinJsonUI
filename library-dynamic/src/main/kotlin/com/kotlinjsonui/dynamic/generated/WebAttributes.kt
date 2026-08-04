@@ -18,8 +18,8 @@ data class WebAttributes(
     val allowsLinkPreview: Boolean? = null,
     /** HTML content */
     val html: String? = null,
-    /** Iframe sandbox attribute */
-    val sandbox: String? = null,
+    /** Iframe sandboxing kill-switch. `false` emits no sandbox attribute at all; otherwise the permission list is built from the other Web attributes (javaScriptEnabled, javaScriptCanOpenWindowsAutomatically, allowPopupsToEscapeSandbox, allowModals, ...) rather than from a value written here. */
+    val sandbox: Boolean? = null,
     /** Web page URL (can be data binding) */
     val url: AttrValue<String>? = null,
 ) {
@@ -42,7 +42,9 @@ data class WebAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -58,7 +60,7 @@ data class WebAttributes(
             allowsBackForwardNavigationGestures = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsBackForwardNavigationGestures")),
             allowsLinkPreview = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsLinkPreview")),
             html = AttrCoerce.string(AttrCoerce.lookup(json, "html")),
-            sandbox = AttrCoerce.string(AttrCoerce.lookup(json, "sandbox")),
+            sandbox = AttrCoerce.boolean(AttrCoerce.lookup(json, "sandbox")),
             url = AttrCoerce.attrValue(AttrCoerce.lookup(json, "url")) { AttrCoerce.string(it) },
         )
     }

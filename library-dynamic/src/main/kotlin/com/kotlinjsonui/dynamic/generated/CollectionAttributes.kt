@@ -66,7 +66,7 @@ data class CollectionAttributes(
     val paging: Boolean? = null,
     /** Reverse the layout direction of the Collection grid. When true, section order in the generated code is also reversed so that JSON definition order (index 0 first) matches the visual top-to-bottom order on iOS (which does not support reverseLayout). Compose's reverseLayout then flips the entire list so index 0 appears at the bottom. */
     val reverseLayout: Boolean? = null,
-    /** Anchor point for scroll target (default: bottom) */
+    /** Anchor point for the scrollTo target. Measured 2026-08-05: ios (sjui collection_converter.rb:1138), web (rjui build_command.rb:768) and the Compose GRID path (kjui collection_component.rb:313) all fall back to bottom, so bottom is the declared default. The Compose LIST path emits no anchor offset unless the attribute is explicitly declared, which lands the target at top - that is a divergence in that one path, not a second default. [default: bottom] */
     val scrollAnchor: AttrEnum<ScrollAnchor>? = null,
     /** Whether scrollTo uses animation (default: true) */
     val scrollAnimated: Boolean? = null,
@@ -214,6 +214,7 @@ data class CollectionAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
             "onPageChanged" to "onValueChange",
             "onValueChanged" to "onValueChange",
         )

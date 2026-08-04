@@ -11,27 +11,23 @@ package com.kotlinjsonui.dynamic.generated
 data class SliderAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Maximum value (binding supported) */
-    val maxValue: AttrValue<Double>? = null,
-    /** Maximum value (alias for maxValue) (binding supported) [aliases: maximumValue, maxValue] */
+    /** Maximum value (binding supported). `maxValue` / `maximumValue` are accepted alias spellings. [aliases: maximumValue, maxValue] */
     val maximum: AttrValue<Double>? = null,
     /** Image at maximum end */
     val maximumValueImage: String? = null,
-    /** Minimum value (binding supported) */
-    val minValue: AttrValue<Double>? = null,
-    /** Minimum value (alias for minValue) (binding supported) [aliases: minimumValue, minValue] */
+    /** Minimum value (binding supported). `minValue` / `minimumValue` are accepted alias spellings. [aliases: minimumValue, minValue] */
     val minimum: AttrValue<Double>? = null,
     /** Image at minimum end */
     val minimumValueImage: String? = null,
     /** Value change handler - binding only (@{functionName}) [aliases: onValueChanged] */
     val onValueChange: AttrValue<Any>? = null,
-    /** Deprecated on swift. [DEPRECATED: SwiftUI Slider uses unified tint only.] */
+    /** Colour of the filled portion of the track - hex string or color name from colors.json. Was declared deprecated on swift ("SwiftUI Slider uses unified tint only"); retracted 2026-08-05 because Progress, also SwiftUI, maps the same attribute to .tint(). Unimplemented on the Slider path, not impossible. */
     val progressTintColor: String? = null,
     /** Step increment value */
     val step: Double? = null,
     /** Tint color - hex string or color name from colors.json */
     val tintColor: String? = null,
-    /** Deprecated on swift. [DEPRECATED: SwiftUI Slider uses unified tint only.] */
+    /** Colour of the unfilled track - hex string or color name from colors.json. Deprecation retracted with progressTintColor: SwiftUI Progress reaches the same result through .background(). */
     val trackTintColor: String? = null,
     /** Current value (binding for two-way) [binding: two-way] */
     val value: AttrValue<Double>? = null,
@@ -42,10 +38,8 @@ data class SliderAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
-            "maxValue",
             "maximum",
             "maximumValueImage",
-            "minValue",
             "minimum",
             "minimumValueImage",
             "onValueChange",
@@ -62,7 +56,10 @@ data class SliderAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+            "maxValue" to "maximum",
             "maximumValue" to "maximum",
+            "minValue" to "minimum",
             "minimumValue" to "minimum",
             "onValueChanged" to "onValueChange",
         )
@@ -77,10 +74,8 @@ data class SliderAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): SliderAttributes = SliderAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            maxValue = AttrCoerce.attrValue(AttrCoerce.lookup(json, "maxValue")) { AttrCoerce.number(it) },
             maximum = AttrCoerce.attrValue(AttrCoerce.lookup(json, "maximum", listOf("maximumValue", "maxValue"), canonicalOnly)) { AttrCoerce.number(it) },
             maximumValueImage = AttrCoerce.string(AttrCoerce.lookup(json, "maximumValueImage")),
-            minValue = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minValue")) { AttrCoerce.number(it) },
             minimum = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minimum", listOf("minimumValue", "minValue"), canonicalOnly)) { AttrCoerce.number(it) },
             minimumValueImage = AttrCoerce.string(AttrCoerce.lookup(json, "minimumValueImage")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("onValueChanged"), canonicalOnly)),

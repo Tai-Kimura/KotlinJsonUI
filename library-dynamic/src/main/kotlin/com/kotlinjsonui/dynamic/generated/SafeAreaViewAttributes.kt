@@ -16,7 +16,7 @@ data class SafeAreaViewAttributes(
     val children: List<Any?>? = null,
     /** Stack orientation (default: zstack) */
     val orientation: AttrEnum<Orientation>? = null,
-    /** Safe area edges */
+    /** Safe area edges. `edges` is an accepted alias spelling: the Compose SafeAreaView builder reads it (kjui compose_builder.rb:722 `json_data['edges'] || json_data['safeAreaInsetPositions']`) while no declaration named it, so iOS and web silently ignored a layout that used it. Declaring the alias normalizes it to the canonical spelling and makes it reach all three platforms. [aliases: edges] */
     val safeAreaInsetPositions: List<Any?>? = null,
 ) {
     enum class Orientation(val json: String) {
@@ -50,7 +50,10 @@ data class SafeAreaViewAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+            "edges" to "safeAreaInsetPositions",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -65,7 +68,7 @@ data class SafeAreaViewAttributes(
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
             orientation = parseOrientation(AttrCoerce.lookup(json, "orientation")),
-            safeAreaInsetPositions = AttrCoerce.array(AttrCoerce.lookup(json, "safeAreaInsetPositions")),
+            safeAreaInsetPositions = AttrCoerce.array(AttrCoerce.lookup(json, "safeAreaInsetPositions", listOf("edges"), canonicalOnly)),
         )
 
         private fun parseOrientation(raw: Any?): AttrEnum<Orientation>? {

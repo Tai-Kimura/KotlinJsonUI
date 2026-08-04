@@ -21,8 +21,8 @@ data class TextViewAttributes(
     val dataDetectorTypes: String? = null,
     /** Background color when disabled - hex string or color name from colors.json */
     val disabledBackground: String? = null,
-    /** Deprecated on kotlin. [DEPRECATED: Compose Text has no edgeInset; use padding* instead.] */
-    val edgeInset: String? = null,
+    /** The UIKit spelling of containerInset (content inset). Same accepted shapes: a single number, or an array of 1/2/4 numbers. Was declared deprecated on kotlin ("Compose Text has no edgeInset"); retracted 2026-08-05 because Label.edgeInset maps to .padding() on Compose in both the codegen and the dynamic renderer. Unimplemented on the Compose TextView path, not impossible. [accepts: number | array] */
+    val edgeInset: Any? = null,
     /** Enable/disable editing */
     val editable: Boolean? = null,
     /** Enable flexible height */
@@ -51,10 +51,10 @@ data class TextViewAttributes(
     val hintLineHeightMultiple: Double? = null,
     /** Input type (includes 'allphabet' typo for backward compatibility) */
     val input: AttrEnum<Input>? = null,
-    /** Keyboard type */
-    val keyboardType: String? = null,
-    /** Line break mode */
-    val lineBreakMode: String? = null,
+    /** Soft-keyboard type. The canonical token of each pair is the one all three converters accept: `number` rather than UIKit's numberPad (Compose only matches `number` and would fall back to a plain text keyboard), likewise decimal/phone/email. `namePhonePad` and `twitter` reach iOS only; the other platforms fall back to their default keyboard. */
+    val keyboardType: AttrEnum<KeyboardType>? = null,
+    /** Truncation mode. Same vocabulary as Label.lineBreakMode — the two were the same concept declared twice, once enumerated and once as a bare string. */
+    val lineBreakMode: AttrEnum<LineBreakMode>? = null,
     /** Maximum input length */
     val maxLength: Double? = null,
     /** Begin editing event handler */
@@ -115,6 +115,58 @@ data class TextViewAttributes(
                 "url" -> URL
                 "password" -> PASSWORD
                 "decimal" -> DECIMAL
+                else -> null
+            }
+        }
+    }
+
+    enum class KeyboardType(val json: String) {
+        DEFAULT("default"),
+        ASCII_CAPABLE("asciiCapable"),
+        NUMBER("number"),
+        DECIMAL("decimal"),
+        PHONE("phone"),
+        EMAIL("email"),
+        URL("URL"),
+        WEB_SEARCH("webSearch"),
+        NAME_PHONE_PAD("namePhonePad"),
+        TWITTER("twitter");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): KeyboardType? = when (raw.lowercase()) {
+                "default", "text" -> DEFAULT
+                "asciicapable", "alphabet" -> ASCII_CAPABLE
+                "number", "numberpad", "numbersandpunctuation" -> NUMBER
+                "decimal", "decimalpad" -> DECIMAL
+                "phone", "phonepad", "numeric" -> PHONE
+                "email", "emailaddress" -> EMAIL
+                "url", "weburl" -> URL
+                "websearch", "search" -> WEB_SEARCH
+                "namephonepad" -> NAME_PHONE_PAD
+                "twitter" -> TWITTER
+                else -> null
+            }
+        }
+    }
+
+    enum class LineBreakMode(val json: String) {
+        CHAR("Char"),
+        CLIP("Clip"),
+        WORD("Word"),
+        HEAD("Head"),
+        MIDDLE("Middle"),
+        TAIL("Tail");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): LineBreakMode? = when (raw.lowercase()) {
+                "char" -> CHAR
+                "clip" -> CLIP
+                "word" -> WORD
+                "head" -> HEAD
+                "middle" -> MIDDLE
+                "tail" -> TAIL
                 else -> null
             }
         }
@@ -239,7 +291,9 @@ data class TextViewAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -256,7 +310,7 @@ data class TextViewAttributes(
             containerInset = AttrCoerce.lookup(json, "containerInset"),
             dataDetectorTypes = AttrCoerce.string(AttrCoerce.lookup(json, "dataDetectorTypes")),
             disabledBackground = AttrCoerce.string(AttrCoerce.lookup(json, "disabledBackground")),
-            edgeInset = AttrCoerce.string(AttrCoerce.lookup(json, "edgeInset")),
+            edgeInset = AttrCoerce.lookup(json, "edgeInset"),
             editable = AttrCoerce.boolean(AttrCoerce.lookup(json, "editable")),
             flexible = AttrCoerce.boolean(AttrCoerce.lookup(json, "flexible")),
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
@@ -271,8 +325,8 @@ data class TextViewAttributes(
             hintFontSize = AttrCoerce.number(AttrCoerce.lookup(json, "hintFontSize")),
             hintLineHeightMultiple = AttrCoerce.number(AttrCoerce.lookup(json, "hintLineHeightMultiple")),
             input = parseInput(AttrCoerce.lookup(json, "input")),
-            keyboardType = AttrCoerce.string(AttrCoerce.lookup(json, "keyboardType")),
-            lineBreakMode = AttrCoerce.string(AttrCoerce.lookup(json, "lineBreakMode")),
+            keyboardType = parseKeyboardType(AttrCoerce.lookup(json, "keyboardType")),
+            lineBreakMode = parseLineBreakMode(AttrCoerce.lookup(json, "lineBreakMode")),
             maxLength = AttrCoerce.number(AttrCoerce.lookup(json, "maxLength")),
             onBeginEditing = AttrCoerce.string(AttrCoerce.lookup(json, "onBeginEditing")),
             onChangeSelection = AttrCoerce.string(AttrCoerce.lookup(json, "onChangeSelection")),
@@ -299,6 +353,24 @@ data class TextViewAttributes(
                 Input.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("TextView.input: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseKeyboardType(raw: Any?): AttrEnum<KeyboardType>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                KeyboardType.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("TextView.keyboardType: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseLineBreakMode(raw: Any?): AttrEnum<LineBreakMode>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                LineBreakMode.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("TextView.lineBreakMode: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
 

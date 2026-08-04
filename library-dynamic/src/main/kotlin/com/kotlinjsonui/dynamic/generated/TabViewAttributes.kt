@@ -11,8 +11,6 @@ package com.kotlinjsonui.dynamic.generated
 data class TabViewAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Tab change handler - binding only (@{functionName}) */
-    val onTabChange: AttrValue<Any>? = null,
     /** Tab/page selection change handler. Canonical; prefer over onTabChange/onPageChanged. [aliases: onTabChange, onPageChanged; binding: one-way] */
     val onValueChange: AttrValue<String>? = null,
     /** Currently selected tab index (binding for two-way) [aliases: selectedTabIndex; binding: two-way] */
@@ -34,7 +32,6 @@ data class TabViewAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
-            "onTabChange",
             "onValueChange",
             "selectedIndex",
             "showLabels",
@@ -50,7 +47,9 @@ data class TabViewAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
             "onPageChanged" to "onValueChange",
+            "onTabChange" to "onValueChange",
             "selectedTabIndex" to "selectedIndex",
         )
 
@@ -64,7 +63,6 @@ data class TabViewAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): TabViewAttributes = TabViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            onTabChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onTabChange")),
             onValueChange = AttrCoerce.attrValue(AttrCoerce.lookup(json, "onValueChange", listOf("onTabChange", "onPageChanged"), canonicalOnly)) { AttrCoerce.string(it) },
             selectedIndex = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedIndex", listOf("selectedTabIndex"), canonicalOnly)) { AttrCoerce.number(it) },
             showLabels = AttrCoerce.boolean(AttrCoerce.lookup(json, "showLabels")),

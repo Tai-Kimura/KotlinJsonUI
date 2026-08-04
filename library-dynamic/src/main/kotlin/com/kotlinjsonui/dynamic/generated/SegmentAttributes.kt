@@ -53,6 +53,7 @@ data class SegmentAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "alpha" to "opacity",
             "normalColor" to "fontColor",
             "selectedColor" to "selectedFontColor",
         )

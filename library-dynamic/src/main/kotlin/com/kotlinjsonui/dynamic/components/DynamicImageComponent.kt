@@ -98,11 +98,10 @@ class DynamicImageComponent {
                 else -> androidx.compose.ui.Alignment.Center
             }
 
-            // Alpha with binding support (alpha and opacity are both
-            // declared rows with identical semantics; legacy read order kept)
-            val alpha = TypedAttrs.float(a.common.alpha, data)
-                ?: TypedAttrs.float(a.common.opacity, data)
-                ?: 1f
+            // Alpha with binding support. `alpha` is an alias spelling of
+            // `opacity` (49-E), folded onto the canonical row by the generated
+            // parser — one read.
+            val alpha = TypedAttrs.float(a.common.opacity, data) ?: 1f
 
             // Build modifier using composite builder
             // Order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
