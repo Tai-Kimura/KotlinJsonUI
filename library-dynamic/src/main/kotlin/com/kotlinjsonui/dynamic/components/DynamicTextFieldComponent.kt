@@ -195,7 +195,7 @@ class DynamicTextFieldComponent {
             val isOutlined = resolveIsOutlined(json, a)
 
             // Content padding
-            val contentPadding = buildContentPadding(json, a)
+            val contentPadding = buildContentPadding(json, a, data)
 
             // Text style
             val textStyle = buildTextStyle(a, textColor, fontSize, context, data)
@@ -510,25 +510,29 @@ class DynamicTextFieldComponent {
             "font", "fontFamily"
         )
 
-        private fun buildContentPadding(json: JsonObject, a: TextFieldAttributes): PaddingValues? {
+        private fun buildContentPadding(
+            json: JsonObject,
+            a: TextFieldAttributes,
+            data: Map<String, Any>
+        ): PaddingValues? {
             // paddings (array or single number)
             TypedAttrs.rawKey(json, "paddings")?.let { element ->
                 if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-                    return PaddingValues(element.asFloat.dp)
+                    return PaddingValues((ModifierBuilder.dimen(element, data) ?: 0f).dp)
                 }
                 if (element.isJsonArray) {
                     val arr = element.asJsonArray
                     return when (arr.size()) {
-                        1 -> PaddingValues(arr[0].asFloat.dp)
+                        1 -> PaddingValues((ModifierBuilder.dimen(arr[0], data) ?: 0f).dp)
                         2 -> PaddingValues(
-                            vertical = arr[0].asFloat.dp,
-                            horizontal = arr[1].asFloat.dp
+                            vertical = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                            horizontal = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp
                         )
                         4 -> PaddingValues(
-                            start = arr[3].asFloat.dp,
-                            top = arr[0].asFloat.dp,
-                            end = arr[1].asFloat.dp,
-                            bottom = arr[2].asFloat.dp
+                            start = (ModifierBuilder.dimen(arr[3], data) ?: 0f).dp,
+                            top = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                            end = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                            bottom = (ModifierBuilder.dimen(arr[2], data) ?: 0f).dp
                         )
                         else -> null
                     }

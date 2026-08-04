@@ -179,7 +179,7 @@ class DynamicButtonComponent {
 
             // Content padding (padding/paddings accept edge-inset arrays —
             // wider than the declared type, so read raw; see TypedAttrs.rawKey)
-            val contentPadding = buildContentPadding(json)
+            val contentPadding = buildContentPadding(json, data)
 
             // Elevation
             val elevation = resolveElevation(a.common.shadow)
@@ -374,39 +374,42 @@ class DynamicButtonComponent {
 
         // ── Content Padding ──
 
-        private fun buildContentPadding(json: JsonObject): PaddingValues {
+        private fun buildContentPadding(
+            json: JsonObject,
+            data: Map<String, Any>
+        ): PaddingValues {
             // paddings (array or single number)
             TypedAttrs.rawKey(json, "paddings")?.let { element ->
                 if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-                    return PaddingValues(element.asFloat.dp)
+                    return PaddingValues((ModifierBuilder.dimen(element, data) ?: 0f).dp)
                 }
                 if (element.isJsonArray) {
-                    return parsePaddingArray(element.asJsonArray)
+                    return parsePaddingArray(element.asJsonArray, data)
                 }
             }
 
             // padding (single value or array)
             TypedAttrs.rawKey(json, "padding")?.let { element ->
                 if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-                    return PaddingValues(element.asFloat.dp)
+                    return PaddingValues((ModifierBuilder.dimen(element, data) ?: 0f).dp)
                 }
                 if (element.isJsonArray) {
-                    return parsePaddingArray(element.asJsonArray)
+                    return parsePaddingArray(element.asJsonArray, data)
                 }
             }
 
             // Individual padding values ('paddingVertical'/'paddingHorizontal'
             // are undeclared legacy spellings)
-            val paddingTop = TypedAttrs.rawKey(json, "paddingTop")?.asFloat
-                ?: TypedAttrs.undeclared(json, "paddingVertical")?.asFloat ?: 0f
-            val paddingBottom = TypedAttrs.rawKey(json, "paddingBottom")?.asFloat
-                ?: TypedAttrs.undeclared(json, "paddingVertical")?.asFloat ?: 0f
-            val paddingStart = TypedAttrs.rawKey(json, "paddingStart")?.asFloat
-                ?: TypedAttrs.rawKey(json, "paddingLeft")?.asFloat
-                ?: TypedAttrs.undeclared(json, "paddingHorizontal")?.asFloat ?: 0f
-            val paddingEnd = TypedAttrs.rawKey(json, "paddingEnd")?.asFloat
-                ?: TypedAttrs.rawKey(json, "paddingRight")?.asFloat
-                ?: TypedAttrs.undeclared(json, "paddingHorizontal")?.asFloat ?: 0f
+            val paddingTop = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingTop"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingVertical"), data) ?: 0f
+            val paddingBottom = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingBottom"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingVertical"), data) ?: 0f
+            val paddingStart = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingStart"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingLeft"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingHorizontal"), data) ?: 0f
+            val paddingEnd = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingEnd"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingRight"), data)
+                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingHorizontal"), data) ?: 0f
 
             return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
                 PaddingValues(
@@ -420,24 +423,27 @@ class DynamicButtonComponent {
             }
         }
 
-        private fun parsePaddingArray(arr: com.google.gson.JsonArray): PaddingValues {
+        private fun parsePaddingArray(
+            arr: com.google.gson.JsonArray,
+            data: Map<String, Any>
+        ): PaddingValues {
             return when (arr.size()) {
-                1 -> PaddingValues(arr[0].asFloat.dp)
+                1 -> PaddingValues((ModifierBuilder.dimen(arr[0], data) ?: 0f).dp)
                 2 -> PaddingValues(
-                    vertical = arr[0].asFloat.dp,
-                    horizontal = arr[1].asFloat.dp
+                    vertical = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                    horizontal = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp
                 )
                 3 -> PaddingValues(
-                    start = arr[1].asFloat.dp,
-                    top = arr[0].asFloat.dp,
-                    end = arr[1].asFloat.dp,
-                    bottom = arr[2].asFloat.dp
+                    start = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                    top = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                    end = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                    bottom = (ModifierBuilder.dimen(arr[2], data) ?: 0f).dp
                 )
                 4 -> PaddingValues(
-                    start = arr[3].asFloat.dp,
-                    top = arr[0].asFloat.dp,
-                    end = arr[1].asFloat.dp,
-                    bottom = arr[2].asFloat.dp
+                    start = (ModifierBuilder.dimen(arr[3], data) ?: 0f).dp,
+                    top = (ModifierBuilder.dimen(arr[0], data) ?: 0f).dp,
+                    end = (ModifierBuilder.dimen(arr[1], data) ?: 0f).dp,
+                    bottom = (ModifierBuilder.dimen(arr[2], data) ?: 0f).dp
                 )
                 else -> ButtonDefaults.ContentPadding
             }

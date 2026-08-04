@@ -123,16 +123,16 @@ object ModifierBuilder {
             if (element.isJsonArray) {
                 val arr = element.asJsonArray
                 return when (arr.size()) {
-                    1 -> modifier.padding(arr[0].asFloat.dp)
+                    1 -> modifier.padding((dimen(arr[0], data) ?: 0f).dp)
                     2 -> modifier.padding(
-                        vertical = arr[0].asFloat.dp,
-                        horizontal = arr[1].asFloat.dp
+                        vertical = (dimen(arr[0], data) ?: 0f).dp,
+                        horizontal = (dimen(arr[1], data) ?: 0f).dp
                     )
                     4 -> modifier.padding(
-                        top = arr[0].asFloat.dp,
-                        end = arr[1].asFloat.dp,
-                        bottom = arr[2].asFloat.dp,
-                        start = arr[3].asFloat.dp
+                        top = (dimen(arr[0], data) ?: 0f).dp,
+                        end = (dimen(arr[1], data) ?: 0f).dp,
+                        bottom = (dimen(arr[2], data) ?: 0f).dp,
+                        start = (dimen(arr[3], data) ?: 0f).dp
                     )
                     else -> modifier
                 }
@@ -185,15 +185,16 @@ object ModifierBuilder {
     }
 
     /** build_weight: weight > 0 within Row/Column only */
-    fun getWeight(json: JsonObject): Float? {
-        return json.get("weight")?.asFloat?.takeIf { it > 0 }
+    fun getWeight(json: JsonObject, data: Map<String, Any> = emptyMap()): Float? {
+        return dimen(json.get("weight"), data)?.takeIf { it > 0 }
     }
 
     /** build_size: frame object, width/height, matchParent/wrapContent, min/max, aspectRatio */
     fun applySize(
         modifier: Modifier,
         json: JsonObject,
-        defaultFillMaxWidth: Boolean = false
+        defaultFillMaxWidth: Boolean = false,
+        data: Map<String, Any> = emptyMap()
     ): Modifier {
         var result = modifier
 
@@ -314,18 +315,27 @@ object ModifierBuilder {
         }
     }
 
-    private fun applyConstraints(modifier: Modifier, json: JsonObject): Modifier {
+    private fun applyConstraints(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
         // Frame-object path: explicit sizes, bounds stay inert after them.
         return applyAspectRatio(
-            applyHeightConstraints(applyWidthConstraints(modifier, json), json), json
+            applyHeightConstraints(applyWidthConstraints(modifier, json, data), json, data),
+            json, data
         )
     }
 
-    private fun applyWidthConstraints(modifier: Modifier, json: JsonObject): Modifier {
+    private fun applyWidthConstraints(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
         var result = modifier
         val hasWidth = json.has("width")
-        val maxWidth = parseOptionalDp(json, "maxWidth")
-        val minWidth = parseOptionalDp(json, "minWidth")
+        val maxWidth = parseOptionalDp(json.get("maxWidth"), data)
+        val minWidth = parseOptionalDp(json.get("minWidth"), data)
         if (minWidth != null && maxWidth != null) {
             result = result.widthIn(min = minWidth, max = maxWidth)
         } else if (maxWidth != null) {
@@ -337,11 +347,15 @@ object ModifierBuilder {
         return result
     }
 
-    private fun applyHeightConstraints(modifier: Modifier, json: JsonObject): Modifier {
+    private fun applyHeightConstraints(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
         var result = modifier
         val hasHeight = json.has("height")
-        val maxHeight = parseOptionalDp(json, "maxHeight")
-        val minHeight = parseOptionalDp(json, "minHeight")
+        val maxHeight = parseOptionalDp(json.get("maxHeight"), data)
+        val minHeight = parseOptionalDp(json.get("minHeight"), data)
         if (minHeight != null && maxHeight != null) {
             result = result.heightIn(min = minHeight, max = maxHeight)
         } else if (maxHeight != null) {
@@ -353,22 +367,26 @@ object ModifierBuilder {
         return result
     }
 
-    private fun applyAspectRatio(modifier: Modifier, json: JsonObject): Modifier {
-        val aw = json.get("aspectWidth")?.asFloat
-        val ah = json.get("aspectHeight")?.asFloat
+    private fun applyAspectRatio(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
+        val aw = dimen(json.get("aspectWidth"), data)
+        val ah = dimen(json.get("aspectHeight"), data)
         return if (aw != null && ah != null && ah > 0) {
             modifier.aspectRatio(aw / ah)
         } else modifier
     }
 
-    private fun parseOptionalDp(json: JsonObject, key: String): Dp? {
-        val element = json.get(key) ?: return null
-        return try {
-            if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-                element.asFloat.dp
-            } else null
-        } catch (_: Exception) { null }
-    }
+    /**
+     * A bound min/max used to be DROPPED here (the isNumber guard let the
+     * binding string through as null), so the bound bounds fixtures measured
+     * inert. Resolving first keeps the guard's safety — an unresolved binding
+     * is still null — while letting a resolvable one through.
+     */
+    private fun parseOptionalDp(element: com.google.gson.JsonElement?, data: Map<String, Any>): Dp? =
+        dimen(element, data)?.dp
 
     /** build_alpha / build_visibility: alpha/opacity with binding support */
     fun applyAlpha(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
@@ -395,9 +413,13 @@ object ModifierBuilder {
     }
 
     /** build_shadow: shadow attribute → dropShadow */
-    fun applyShadow(modifier: Modifier, json: JsonObject): Modifier {
+    fun applyShadow(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
         val shadowElement = json.get("shadow") ?: return modifier
-        val cornerRadius = json.get("cornerRadius")?.asFloat
+        val cornerRadius = dimen(json.get("cornerRadius"), data)
         val shape = if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
 
         return when {
@@ -425,12 +447,12 @@ object ModifierBuilder {
             }
             shadowElement.isJsonObject -> {
                 val obj = shadowElement.asJsonObject
-                val radius = obj.get("radius")?.asFloat ?: 4f
+                val radius = dimen(obj.get("radius"), data) ?: 4f
                 val color = obj.get("color")?.takeIf { it.isJsonPrimitive }
                     ?.let { ColorParser.parseColorString(it.asString) }
-                val offsetX = obj.get("offsetX")?.asFloat ?: 0f
-                val offsetY = obj.get("offsetY")?.asFloat ?: 0f
-                val alpha = obj.get("opacity")?.asFloat ?: 1f
+                val offsetX = dimen(obj.get("offsetX"), data) ?: 0f
+                val offsetY = dimen(obj.get("offsetY"), data) ?: 0f
+                val alpha = dimen(obj.get("opacity"), data) ?: 1f
                 modifier.dropShadow(
                     shape = shape,
                     shadow = Shadow(
@@ -442,7 +464,7 @@ object ModifierBuilder {
                 )
             }
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isNumber -> {
-                modifier.dropShadow(shape = shape, shadow = Shadow(radius = shadowElement.asFloat.dp))
+                modifier.dropShadow(shape = shape, shadow = Shadow(radius = (dimen(shadowElement, data) ?: 4f).dp))
             }
             else -> modifier
         }
@@ -456,10 +478,10 @@ object ModifierBuilder {
         context: Context?
     ): Modifier {
         var result = modifier
-        val cornerRadius = json.get("cornerRadius")?.asFloat
+        val cornerRadius = dimen(json.get("cornerRadius"), data)
         val bgColor = ColorParser.parseColorWithBinding(json, "background", data, context)
         val borderColor = ColorParser.parseColorWithBinding(json, "borderColor", data, context)
-        val borderWidth = json.get("borderWidth")?.asFloat
+        val borderWidth = dimen(json.get("borderWidth"), data)
         val borderStyle = json.get("borderStyle")?.asString ?: "solid"
 
         // Clip with corner radius
@@ -501,6 +523,19 @@ object ModifierBuilder {
      * truthy for the binding STRING itself; resolving it here keeps a bound
      * `false` off instead of frozen on.
      */
+    /**
+     * A dimension slot's value, with `@{binding}` resolved BEFORE any numeric
+     * parse. `element.asFloat` on a binding string throws
+     * NumberFormatException — on the dynamic path that is a crash, not a
+     * compile error, and it took the whole android conformance lane down
+     * (`@{boundCornerRadius}`, `@{boundPaddingTop}`, …).
+     *
+     * The attribute name stays a literal at the CALL SITE (`json.get("x")`)
+     * so the coverage scans that grep for spellings keep seeing it.
+     */
+    internal fun dimen(element: com.google.gson.JsonElement?, data: Map<String, Any>): Float? =
+        ResourceResolver.resolveFloatElement(element, data)
+
     internal fun resolveClipToBounds(json: JsonObject, data: Map<String, Any>): Boolean? {
         val raw = json.get("clipToBounds") ?: return null
         if (!raw.isJsonPrimitive) return null
@@ -681,31 +716,35 @@ object ModifierBuilder {
     }
 
     /** build_padding: padding/paddings (array/single), individual padding properties */
-    fun applyPadding(modifier: Modifier, json: JsonObject): Modifier {
+    fun applyPadding(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): Modifier {
         // Handle paddings attribute first
         json.get("paddings")?.let { element ->
             if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-                return modifier.padding(element.asFloat.dp)
+                return modifier.padding((dimen(element, data) ?: 0f).dp)
             }
             if (element.isJsonArray) {
                 val arr = element.asJsonArray
                 return when (arr.size()) {
-                    1 -> modifier.padding(arr[0].asFloat.dp)
+                    1 -> modifier.padding((dimen(arr[0], data) ?: 0f).dp)
                     2 -> modifier.padding(
-                        vertical = arr[0].asFloat.dp,
-                        horizontal = arr[1].asFloat.dp
+                        vertical = (dimen(arr[0], data) ?: 0f).dp,
+                        horizontal = (dimen(arr[1], data) ?: 0f).dp
                     )
                     3 -> modifier.padding(
-                        start = arr[1].asFloat.dp,
-                        top = arr[0].asFloat.dp,
-                        end = arr[1].asFloat.dp,
-                        bottom = arr[2].asFloat.dp
+                        start = (dimen(arr[1], data) ?: 0f).dp,
+                        top = (dimen(arr[0], data) ?: 0f).dp,
+                        end = (dimen(arr[1], data) ?: 0f).dp,
+                        bottom = (dimen(arr[2], data) ?: 0f).dp
                     )
                     4 -> modifier.padding(
-                        top = arr[0].asFloat.dp,
-                        end = arr[1].asFloat.dp,
-                        bottom = arr[2].asFloat.dp,
-                        start = arr[3].asFloat.dp
+                        top = (dimen(arr[0], data) ?: 0f).dp,
+                        end = (dimen(arr[1], data) ?: 0f).dp,
+                        bottom = (dimen(arr[2], data) ?: 0f).dp,
+                        start = (dimen(arr[3], data) ?: 0f).dp
                     )
                     else -> modifier
                 }
@@ -716,27 +755,27 @@ object ModifierBuilder {
         json.get("padding")?.let { element ->
             when {
                 element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> {
-                    return modifier.padding(element.asFloat.dp)
+                    return modifier.padding((dimen(element, data) ?: 0f).dp)
                 }
                 element.isJsonArray -> {
                     val arr = element.asJsonArray
                     return when (arr.size()) {
-                        1 -> modifier.padding(arr[0].asFloat.dp)
+                        1 -> modifier.padding((dimen(arr[0], data) ?: 0f).dp)
                         2 -> modifier.padding(
-                            vertical = arr[0].asFloat.dp,
-                            horizontal = arr[1].asFloat.dp
+                            vertical = (dimen(arr[0], data) ?: 0f).dp,
+                            horizontal = (dimen(arr[1], data) ?: 0f).dp
                         )
                         3 -> modifier.padding(
-                            start = arr[1].asFloat.dp,
-                            top = arr[0].asFloat.dp,
-                            end = arr[1].asFloat.dp,
-                            bottom = arr[2].asFloat.dp
+                            start = (dimen(arr[1], data) ?: 0f).dp,
+                            top = (dimen(arr[0], data) ?: 0f).dp,
+                            end = (dimen(arr[1], data) ?: 0f).dp,
+                            bottom = (dimen(arr[2], data) ?: 0f).dp
                         )
                         4 -> modifier.padding(
-                            top = arr[0].asFloat.dp,
-                            end = arr[1].asFloat.dp,
-                            bottom = arr[2].asFloat.dp,
-                            start = arr[3].asFloat.dp
+                            top = (dimen(arr[0], data) ?: 0f).dp,
+                            end = (dimen(arr[1], data) ?: 0f).dp,
+                            bottom = (dimen(arr[2], data) ?: 0f).dp,
+                            start = (dimen(arr[3], data) ?: 0f).dp
                         )
                         else -> modifier
                     }
@@ -745,22 +784,22 @@ object ModifierBuilder {
         }
 
         // Individual padding properties
-        val paddingTop = json.get("paddingTop")?.asFloat
-            ?: json.get("topPadding")?.asFloat
-            ?: json.get("paddingVertical")?.asFloat ?: 0f
-        val paddingBottom = json.get("paddingBottom")?.asFloat
-            ?: json.get("bottomPadding")?.asFloat
-            ?: json.get("paddingVertical")?.asFloat ?: 0f
-        val paddingStart = json.get("paddingStart")?.asFloat
-            ?: json.get("startPadding")?.asFloat
-            ?: json.get("paddingLeft")?.asFloat
-            ?: json.get("leftPadding")?.asFloat
-            ?: json.get("paddingHorizontal")?.asFloat ?: 0f
-        val paddingEnd = json.get("paddingEnd")?.asFloat
-            ?: json.get("endPadding")?.asFloat
-            ?: json.get("paddingRight")?.asFloat
-            ?: json.get("rightPadding")?.asFloat
-            ?: json.get("paddingHorizontal")?.asFloat ?: 0f
+        val paddingTop = dimen(json.get("paddingTop"), data)
+            ?: dimen(json.get("topPadding"), data)
+            ?: dimen(json.get("paddingVertical"), data) ?: 0f
+        val paddingBottom = dimen(json.get("paddingBottom"), data)
+            ?: dimen(json.get("bottomPadding"), data)
+            ?: dimen(json.get("paddingVertical"), data) ?: 0f
+        val paddingStart = dimen(json.get("paddingStart"), data)
+            ?: dimen(json.get("startPadding"), data)
+            ?: dimen(json.get("paddingLeft"), data)
+            ?: dimen(json.get("leftPadding"), data)
+            ?: dimen(json.get("paddingHorizontal"), data) ?: 0f
+        val paddingEnd = dimen(json.get("paddingEnd"), data)
+            ?: dimen(json.get("endPadding"), data)
+            ?: dimen(json.get("paddingRight"), data)
+            ?: dimen(json.get("rightPadding"), data)
+            ?: dimen(json.get("paddingHorizontal"), data) ?: 0f
 
         return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
             modifier.padding(
@@ -785,24 +824,27 @@ object ModifierBuilder {
      * (same as the padding modifier): right -> end, left -> start.
      * Returns null when neither key is present.
      */
-    fun parseContentPadding(json: JsonObject): PaddingValues? {
+    fun parseContentPadding(
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap()
+    ): PaddingValues? {
         val element = json.get("paddings") ?: json.get("padding") ?: return null
         if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-            return PaddingValues(element.asFloat.dp)
+            return PaddingValues((dimen(element, data) ?: 0f).dp)
         }
         if (element.isJsonArray) {
             val arr = element.asJsonArray
             return when (arr.size()) {
-                1 -> PaddingValues(arr[0].asFloat.dp)
+                1 -> PaddingValues((dimen(arr[0], data) ?: 0f).dp)
                 2 -> PaddingValues(
-                    vertical = arr[0].asFloat.dp,
-                    horizontal = arr[1].asFloat.dp
+                    vertical = (dimen(arr[0], data) ?: 0f).dp,
+                    horizontal = (dimen(arr[1], data) ?: 0f).dp
                 )
                 4 -> PaddingValues(
-                    top = arr[0].asFloat.dp,
-                    end = arr[1].asFloat.dp,
-                    bottom = arr[2].asFloat.dp,
-                    start = arr[3].asFloat.dp
+                    top = (dimen(arr[0], data) ?: 0f).dp,
+                    end = (dimen(arr[1], data) ?: 0f).dp,
+                    bottom = (dimen(arr[2], data) ?: 0f).dp,
+                    start = (dimen(arr[3], data) ?: 0f).dp
                 )
                 else -> null
             }
@@ -1029,8 +1071,8 @@ object ModifierBuilder {
         json.get("margins")?.let { element ->
             if (element.isJsonArray && element.asJsonArray.size() == 4) {
                 val arr = element.asJsonArray
-                if (startMargin == null) startMargin = "${arr[3].asFloat}.dp"
-                if (endMargin == null) endMargin = "${arr[1].asFloat}.dp"
+                if (startMargin == null) startMargin = "${dimen(arr[3], data) ?: 0f}.dp"
+                if (endMargin == null) endMargin = "${dimen(arr[1], data) ?: 0f}.dp"
             }
         }
 
@@ -1157,17 +1199,17 @@ object ModifierBuilder {
         modifier = applyMargins(modifier, json, data)
         // 3. weight – caller must apply in RowScope/ColumnScope
         // 4. size
-        modifier = applySize(modifier, json, defaultFillMaxWidth)
+        modifier = applySize(modifier, json, defaultFillMaxWidth, data)
         // 5. alpha
         modifier = applyAlpha(modifier, json, data)
         // 6. shadow
-        modifier = applyShadow(modifier, json)
+        modifier = applyShadow(modifier, json, data)
         // 7. background (clip + border + bg)
         modifier = applyBackground(modifier, json, data, context)
         // 8. clickable
         modifier = applyClickable(modifier, json, data)
         // 9. padding
-        modifier = applyPadding(modifier, json)
+        modifier = applyPadding(modifier, json, data)
         // 10. alignment – handled by container
 
         return modifier

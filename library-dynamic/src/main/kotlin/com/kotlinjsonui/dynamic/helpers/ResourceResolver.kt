@@ -168,7 +168,31 @@ object ResourceResolver {
         data: Map<String, Any>,
         default: Float? = null
     ): Float? {
-        val element = json.get(key) ?: return default
+        return resolveFloatElement(json.get(key), data, default)
+    }
+
+    /**
+     * [resolveFloat] over an already-extracted element — array items and the
+     * fields of object-shaped attributes (`shadow`, `paddings`) need the same
+     * treatment and cannot name a key.
+     *
+     * EVERY numeric read of a layout value must come through here. A bare
+     * `element.asFloat` throws `NumberFormatException` on `"@{expr}"`, and on
+     * the dynamic path that is not a compile error but a CRASH: the 3PF
+     * re-measurement's android lane died on `@{boundCornerRadius}` and never
+     * produced a results file. The codegen side has the same guard in
+     * `BoundValue.dp` / `.float` / `.int`.
+     *
+     * An unresolved binding yields [default] (null unless the caller asks for
+     * one) — never an exception, so a value this map does not carry degrades
+     * to "attribute absent" instead of taking the screen down.
+     */
+    fun resolveFloatElement(
+        element: com.google.gson.JsonElement?,
+        data: Map<String, Any>,
+        default: Float? = null
+    ): Float? {
+        if (element == null || element.isJsonNull) return default
         if (element.isJsonPrimitive) {
             val p = element.asJsonPrimitive
             if (p.isNumber) return p.asFloat
