@@ -56,7 +56,8 @@ class DynamicRadioComponent {
     companion object {
         /** Radio-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "group", "text", "icon", "selectedIcon", "fontColor", "tintColor"
+            "group", "text", "label", "icon", "selectedIcon", "fontColor", "tintColor",
+            "selectedValue", "value"
         )
 
         @Composable
@@ -81,13 +82,75 @@ class DynamicRadioComponent {
                     createRadioGroupWithItems(json, a, data)
                 // Handle individual radio item —
                 // 'options' is an undeclared legacy runtime extra
-                a.group != null ||
-                    (a.text != null && TypedAttrs.undeclared(json, "options") == null) ->
+                rendersAsItem(a, hasOptions = TypedAttrs.undeclared(json, "options") != null) ->
                     createRadioItem(json, a, data)
                 // Handle radio group with options
                 else -> createRadioGroup(json, a, data)
             }
         }
+
+        // ── Item-mode decisions (pure; pinned by DynamicRadioItemModeTest) ──
+
+        /**
+         * Whether the node renders as a single radio row rather than a group.
+         *
+         * `label` is the cross-platform spelling of the row text and routes
+         * here exactly like `text` — the kjui codegen has read both since it
+         * was written (`radio_component.rb:19`, `text || label` at :182). The
+         * dynamic path read only `text`, so a label-only Radio fell through to
+         * the options branch and rendered an empty Column (34: `Radio/label`
+         * pixel-identical to its control on android).
+         */
+        internal fun rendersAsItem(a: RadioAttributes, hasOptions: Boolean): Boolean =
+            a.group != null || ((a.text != null || a.label != null) && !hasOptions)
+
+        /** The row's text: `text || label`, the codegen's order. */
+        internal fun itemText(a: RadioAttributes): String =
+            TypedAttrs.rawString(a.text) ?: TypedAttrs.rawString(a.label) ?: ""
+
+        /**
+         * The option's identity within its group: the declared `value`, with
+         * the node id as the fallback (`sjui radio_converter.rb:65` and the
+         * rjui single-radio path read the same order).
+         */
+        internal fun itemValue(a: RadioAttributes, id: String): String =
+            a.value?.toString() ?: id
+
+        /**
+         * Selected state for a single radio row.
+         *
+         * A declared `selectedValue` names the group's selected option
+         * directly and wins over the group state — a static one selects this
+         * row when it matches its value, a bound one is the two-way channel.
+         * Only the group data drove selection here, so a Radio declaring
+         * selectedValue rendered unselected (34: pixel-identical to its
+         * control on android; rjui was corrected the same way in plan 44
+         * Phase 0, `checked = selectedValue === value`).
+         *
+         * Without `selectedValue` the historical rule stands: the group state
+         * names this row's id, or a literal `checked: true` seeds an unset
+         * group.
+         */
+        internal fun itemIsSelected(
+            a: RadioAttributes,
+            id: String,
+            data: Map<String, Any>
+        ): Boolean {
+            val declaredSelection = TypedAttrs.string(a.selectedValue, data)
+            if (declaredSelection != null) return declaredSelection == itemValue(a, id)
+            val selectedVar = selectedVarName(a.group ?: "default")
+            val literalChecked = (TypedAttrs.raw(a.checked) as? Boolean) == true
+            return (data[selectedVar] as? String) == id ||
+                (literalChecked && data[selectedVar] == null)
+        }
+
+        /** Group name → the data key holding that group's selection. */
+        internal fun selectedVarName(group: String): String =
+            if (group.lowercase() != "default") {
+                "selected${group.replaceFirstChar { it.uppercase() }}"
+            } else {
+                "selectedRadiogroup"
+            }
 
         // ── Radio group with options (static array or @{binding}) ──
 
@@ -200,23 +263,11 @@ class DynamicRadioComponent {
             data: Map<String, Any>
         ) {
             val context = LocalContext.current
-            val group = a.group ?: "default"
             val id = a.common.id ?: "radio_${System.currentTimeMillis()}"
-            val text = TypedAttrs.rawString(a.text) ?: ""
-
-            // Variable name for selected state based on group
-            val selectedVar = if (group.lowercase() != "default") {
-                "selected${group.replaceFirstChar { it.uppercase() }}"
-            } else {
-                "selectedRadiogroup"
-            }
-
-            // Get current selected value
-            // A literal checked: true seeds the selection (33 cross-effect:
-            // both mobiles ignored it — group data remains the override).
-            val literalChecked = (TypedAttrs.raw(a.checked) as? Boolean) == true
-            val isSelected = (data[selectedVar] as? String) == id ||
-                (literalChecked && data[selectedVar] == null)
+            val text = itemText(a)
+            val radioValue = itemValue(a, id)
+            val selectedVar = selectedVarName(a.group ?: "default")
+            val isSelected = itemIsSelected(a, id, data)
 
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -228,11 +279,16 @@ class DynamicRadioComponent {
                 val icon = a.icon
                 val selectedIcon = a.selectedIcon
 
-                // Update function for selection
+                // Update function for selection. A bound `selectedValue` is
+                // the declared two-way channel, so the tap writes this row's
+                // value back through it as well as through the group state.
+                val selectionBinding =
+                    extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
                 val onSelect: () -> Unit = {
+                    val updates = mutableMapOf<String, Any>(selectedVar to id)
+                    if (selectionBinding != null) updates[selectionBinding] = radioValue
                     @Suppress("UNCHECKED_CAST")
-                    (data["updateData"] as? (Map<String, Any>) -> Unit)
-                        ?.invoke(mapOf(selectedVar to id))
+                    (data["updateData"] as? (Map<String, Any>) -> Unit)?.invoke(updates)
                 }
 
                 // iconSize sizes the GLYPH: Material draws its radio glyph at

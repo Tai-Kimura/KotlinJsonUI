@@ -277,7 +277,7 @@ object UnappliedAttributes {
         "background", "borderColor", "borderStyle", "borderWidth",
         "bottomMargin", "bottomPadding",
         "centerHorizontal", "centerInParent", "centerVertical",
-        "cornerRadius", "endMargin", "frame", "gravity",
+        "clipToBounds", "cornerRadius", "endMargin", "frame", "gravity",
         "height", "heightWeight",
         "leftMargin", "leftPadding", "margins",
         "maxHeight", "maxWidth", "minHeight", "minWidth",

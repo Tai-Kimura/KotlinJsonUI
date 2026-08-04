@@ -18,6 +18,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.shadow.Shadow
@@ -481,7 +482,35 @@ object ModifierBuilder {
             result = result.background(bgColor)
         }
 
+        // clipToBounds — last in the background group, exactly where
+        // build_background emits it in the kjui codegen (modifier_builder.rb).
+        // Compose does not clip a layout's children by default, so an
+        // overflowing row/column drew past its declared box on the dynamic
+        // path while the codegen path clipped (34: `common/clipToBounds`
+        // rendered pixel-identical to its control on android).
+        if (resolveClipToBounds(json, data) == true) {
+            result = result.clipToBounds()
+        }
+
         return result
+    }
+
+    /**
+     * common.clipToBounds — literal boolean or `@{binding}` (the attribute is
+     * declared binding-capable). The codegen's Ruby `if json_data[...]` is
+     * truthy for the binding STRING itself; resolving it here keeps a bound
+     * `false` off instead of frozen on.
+     */
+    internal fun resolveClipToBounds(json: JsonObject, data: Map<String, Any>): Boolean? {
+        val raw = json.get("clipToBounds") ?: return null
+        if (!raw.isJsonPrimitive) return null
+        val p = raw.asJsonPrimitive
+        if (p.isBoolean) return p.asBoolean
+        if (p.isString && isBinding(p.asString)) {
+            return DataBindingContext.resolveBoolean(p.asString, data)
+        }
+        if (p.isString) return p.asString.equals("true", ignoreCase = true)
+        return null
     }
 
     /** build_clickable: onClick/onclick → .clickable { handler }, onLongPress → long-press gesture */

@@ -78,15 +78,37 @@ class Wave2aAttrsParseTest {
     }
 
     @Test
-    fun `segment color rows keep binding representation and tintColor stays plain`() {
+    fun `segment normalColor and selectedColor resolve onto their canonical rows`() {
+        // `normalColor` / `selectedColor` are declared ALIASES of
+        // `fontColor` / `selectedFontColor` — the generated parser folds them
+        // onto the canonical rows rather than keeping fields of their own.
         val a = SegmentAttributes.parse(
             TypedAttrs.toAttrMap(
-                obj("""{"type":"Segment","normalColor":"@{nc}","selectedColor":"#FF0000","tintColor":"#00FF00"}""")
+                obj("""{"type":"Segment","normalColor":"#0000FF","selectedColor":"#FF0000","tintColor":"#00FF00"}""")
             )
         )
-        assertEquals("@{nc}", TypedAttrs.rawString(a.normalColor))
-        assertEquals("#FF0000", TypedAttrs.rawString(a.selectedColor))
+        assertEquals("#0000FF", a.fontColor)
+        assertEquals("#FF0000", a.selectedFontColor)
         assertEquals("#00FF00", a.tintColor)
+    }
+
+    @Test
+    fun `segment canonical color rows win over their aliases`() {
+        val a = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(
+                obj("""{"type":"Segment","fontColor":"#111111","normalColor":"#0000FF"}""")
+            )
+        )
+        assertEquals("#111111", a.fontColor)
+    }
+
+    @Test
+    fun `segment aliases are ignored for an L1-normalized layout`() {
+        val a = SegmentAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Segment","normalColor":"#0000FF"}""")),
+            canonicalOnly = true
+        )
+        assertEquals(null, a.fontColor)
     }
 
     // ── SelectBox ──
