@@ -136,7 +136,15 @@ class FixtureHostActivity : ComponentActivity() {
         // one lane and absent in the other. Nothing in this host ever needs the
         // IME visible (UiAutomator's setText does not require it), so keep it
         // down for the whole run.
+        // ALWAYS_HIDDEN alone was not enough (run 30871915452 still captured
+        // TextField/hint__static with the full keyboard over the lower half):
+        // it only applies as the window comes forward, and a TextField that
+        // takes focus afterwards raises the IME again. ALT_FOCUSABLE_IM makes
+        // the window ineligible for IME input at all, so focus no longer
+        // summons a keyboard — UiAutomator's setText does not go through the
+        // IME, so nothing in this host loses anything.
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+        window.addFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
 
         intent.getStringExtra(EXTRA_FIXTURE_ID)?.let { FixtureHost.show(it) }
 

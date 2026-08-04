@@ -86,7 +86,7 @@ class ConformanceSuiteTest {
         FixtureHost.hostMode.value = hostMode
 
         artifactsDir.mkdirs()
-        actionExecutor.screenshotHandler = { name -> captureScreenshot(name) }
+        actionExecutor.screenshotHandler = { name -> captureStableScreenshot(name) }
 
         val outcomes = store.loadCompleted().toMutableMap()
         log("Resuming with ${outcomes.size}/${manifest.fixtures.size} outcomes already recorded")
@@ -311,6 +311,43 @@ class ConformanceSuiteTest {
             lastScreenshot = "artifacts/android/$name.png"
         } else {
             throw AssertionError("screenshot capture failed: $name")
+        }
+    }
+
+    /**
+     * Capture until two consecutive frames are byte-identical — the same trick
+     * the web host uses, and for the same reason: readiness signals say the
+     * content exists, not that the display is showing it. Measured on CI across
+     * three runs (30839045057 / 30870693593 / 30871915452), the codegen lane
+     * captured `CheckBox/isOn__true` as a frame byte-identical to the fixture
+     * generated immediately before it — the registry maps it correctly and the
+     * generated view is right, so what landed in the PNG was the previous
+     * fixture still on screen. A fixed beat cannot cover an emulator whose
+     * present latency varies; stability can, and it costs nothing once the
+     * screen has actually caught up.
+     */
+    private fun captureStableScreenshot(name: String) {
+        val file = File(artifactsDir, "$name.png")
+        val scratch = File(artifactsDir, "$name.settling.png")
+        try {
+            if (!device.takeScreenshot(file)) {
+                throw AssertionError("screenshot capture failed: $name")
+            }
+            var previous = file.readBytes()
+            for (attempt in 0 until 12) {
+                Thread.sleep(100)
+                if (!device.takeScreenshot(scratch)) break
+                val current = scratch.readBytes()
+                scratch.copyTo(file, overwrite = true)
+                if (current.contentEquals(previous)) break
+                previous = current
+                if (attempt == 11) {
+                    Log.w("ConformanceSuite", "screenshot never stabilized: $name")
+                }
+            }
+            lastScreenshot = "artifacts/android/$name.png"
+        } finally {
+            scratch.delete()
         }
     }
 
