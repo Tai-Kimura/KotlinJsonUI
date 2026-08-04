@@ -13,6 +13,8 @@ data class SegmentAttributes(
     val common: CommonAttributes,
     /** Size segments by content */
     val apportionsSegmentWidthsByContent: Boolean? = null,
+    /** Label color of the UNSELECTED segments - hex string or color name from colors.json */
+    val fontColor: String? = null,
     /** Segment items array [required] */
     val items: List<Any?>? = null,
     /** Momentary selection mode */
@@ -23,9 +25,11 @@ data class SegmentAttributes(
     val onValueChange: AttrValue<Any>? = null,
     /** Selected state color - hex string or color name from colors.json (binding supported) */
     val selectedColor: AttrValue<String>? = null,
+    /** Label color of the selected segment, falling back to fontColor - hex string or color name from colors.json */
+    val selectedFontColor: String? = null,
     /** Initially selected index (binding for two-way) [binding: two-way] */
     val selectedIndex: AttrValue<Double>? = null,
-    /** Tint color - hex string or color name from colors.json */
+    /** Tint color of the selected segment's background - hex string or color name from colors.json */
     val tintColor: String? = null,
     /** Value change event */
     val valueChange: String? = null,
@@ -37,11 +41,13 @@ data class SegmentAttributes(
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "apportionsSegmentWidthsByContent",
+            "fontColor",
             "items",
             "momentary",
             "normalColor",
             "onValueChange",
             "selectedColor",
+            "selectedFontColor",
             "selectedIndex",
             "tintColor",
             "valueChange",
@@ -65,11 +71,13 @@ data class SegmentAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): SegmentAttributes = SegmentAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             apportionsSegmentWidthsByContent = AttrCoerce.boolean(AttrCoerce.lookup(json, "apportionsSegmentWidthsByContent")),
+            fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
             items = AttrCoerce.array(AttrCoerce.lookup(json, "items")),
             momentary = AttrCoerce.boolean(AttrCoerce.lookup(json, "momentary")),
             normalColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "normalColor")) { AttrCoerce.string(it) },
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
             selectedColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedColor")) { AttrCoerce.string(it) },
+            selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor")),
             selectedIndex = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedIndex")) { AttrCoerce.number(it) },
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
             valueChange = AttrCoerce.string(AttrCoerce.lookup(json, "valueChange")),

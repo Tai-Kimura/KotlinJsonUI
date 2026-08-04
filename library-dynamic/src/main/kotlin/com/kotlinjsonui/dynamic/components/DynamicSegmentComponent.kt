@@ -29,8 +29,11 @@ import androidx.compose.ui.platform.LocalContext
  * - enabled: Boolean or @{variable} to enable/disable
  * - backgroundColor: Color for container (containerColor); defaults to
  *   Color.Transparent when unspecified (matching the static codegen)
- * - normalColor: Color for unselected text (contentColor)
- * - selectedColor/tintColor/selectedSegmentTintColor: Color for selected text (selectedContentColor)
+ * - fontColor: Color for unselected text (contentColor); normalColor is the
+ *   legacy spelling of the same slot
+ * - selectedFontColor: Color for selected text (selectedContentColor), falling
+ *   back to fontColor; selectedColor/tintColor/selectedSegmentTintColor are the
+ *   legacy spellings behind it (contract: semantics.segmentLabelColors)
  * - indicatorColor: Color for tab indicator
  * - onValueChange: @{handler} for selection change callback (receives index)
  * - Modifiers: testTag, margins, size, alpha, padding, weight
@@ -45,6 +48,7 @@ class DynamicSegmentComponent {
         /** Segment-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "selectedIndex", "bind", "items", "enabled",
+            "fontColor", "selectedFontColor",
             "normalColor", "selectedColor", "tintColor",
             "onValueChange"
         )
@@ -106,11 +110,20 @@ class DynamicSegmentComponent {
             // 'indicatorColor' are undeclared legacy runtime extras on Segment)
             val containerColor = resolveContainerColor(json, data, context)
             val normalColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.normalColor), data, context
+                a.fontColor, data, context
             )
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.normalColor), data, context
+                )
             val selectedColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.selectedColor), data, context
+                a.selectedFontColor, data, context
             )
+                ?: ColorParser.parseColorStringWithBinding(
+                    a.fontColor, data, context
+                )
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.selectedColor), data, context
+                )
                 ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
                 ?: ColorParser.parseColorWithBinding(json, "selectedSegmentTintColor", data, context)
             val indicatorColor = ColorParser.parseColorWithBinding(json, "indicatorColor", data, context)
