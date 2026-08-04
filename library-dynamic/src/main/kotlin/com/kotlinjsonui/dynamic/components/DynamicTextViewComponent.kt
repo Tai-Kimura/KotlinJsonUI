@@ -359,7 +359,13 @@ class DynamicTextViewComponent {
             // resolved through the same weight table). The row was parsed and
             // never read here (34: `TextView/hintFont` pixel-identical to its
             // control).
-            val hintFontWeight = ResourceResolver.fontWeightFor(a.hintFont)
+            // `hintAttributes.font` outranks the flat `hintFont`: a bag scoped
+            // to the hint is the more specific statement, which is what all
+            // four readers do and what the SSoT wrote down on 2026-08-05.
+            // Same order as textview_component.rb:37.
+            val hintFontWeight = ResourceResolver.fontWeightFor(
+                (a.hintAttributes?.get("font") as? String) ?: a.hintFont
+            )
 
             return {
                 // Derive from LocalTextStyle — a bare TextStyle() discards the
