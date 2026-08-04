@@ -13,23 +13,19 @@ data class SegmentAttributes(
     val common: CommonAttributes,
     /** Size segments by content */
     val apportionsSegmentWidthsByContent: Boolean? = null,
-    /** Label color of the UNSELECTED segments - hex string or color name from colors.json */
+    /** Label color of the UNSELECTED segments - hex string or color name from colors.json [aliases: normalColor] */
     val fontColor: String? = null,
     /** Segment items array [required] */
     val items: List<Any?>? = null,
     /** Momentary selection mode */
     val momentary: Boolean? = null,
-    /** Normal state color - hex string or color name from colors.json (binding supported) */
-    val normalColor: AttrValue<String>? = null,
     /** Value change handler - binding only (@{functionName}) */
     val onValueChange: AttrValue<Any>? = null,
-    /** Selected state color - hex string or color name from colors.json (binding supported) */
-    val selectedColor: AttrValue<String>? = null,
-    /** Label color of the selected segment, falling back to fontColor - hex string or color name from colors.json */
+    /** Label color of the selected segment, falling back to fontColor - hex string or color name from colors.json [aliases: selectedColor] */
     val selectedFontColor: String? = null,
     /** Initially selected index (binding for two-way) [binding: two-way] */
     val selectedIndex: AttrValue<Double>? = null,
-    /** Tint color of the selected segment's background - hex string or color name from colors.json */
+    /** Accent color of the SELECTED segment - a background fill on ios/web, the indicator on Compose. Hex string or color name from colors.json */
     val tintColor: String? = null,
     /** Value change event */
     val valueChange: String? = null,
@@ -44,9 +40,7 @@ data class SegmentAttributes(
             "fontColor",
             "items",
             "momentary",
-            "normalColor",
             "onValueChange",
-            "selectedColor",
             "selectedFontColor",
             "selectedIndex",
             "tintColor",
@@ -58,7 +52,10 @@ data class SegmentAttributes(
          * Alias spellings that are also declared attributes keep
          * their own entry and are not redirected.
          */
-        val aliasMap: Map<String, String> = emptyMap()
+        val aliasMap: Map<String, String> = mapOf(
+            "normalColor" to "fontColor",
+            "selectedColor" to "selectedFontColor",
+        )
 
         /** True when `key` is a declared canonical name or alias spelling. */
         fun isDeclared(key: String): Boolean =
@@ -71,13 +68,11 @@ data class SegmentAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): SegmentAttributes = SegmentAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             apportionsSegmentWidthsByContent = AttrCoerce.boolean(AttrCoerce.lookup(json, "apportionsSegmentWidthsByContent")),
-            fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
+            fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor", listOf("normalColor"), canonicalOnly)),
             items = AttrCoerce.array(AttrCoerce.lookup(json, "items")),
             momentary = AttrCoerce.boolean(AttrCoerce.lookup(json, "momentary")),
-            normalColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "normalColor")) { AttrCoerce.string(it) },
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
-            selectedColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedColor")) { AttrCoerce.string(it) },
-            selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor")),
+            selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor", listOf("selectedColor"), canonicalOnly)),
             selectedIndex = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedIndex")) { AttrCoerce.number(it) },
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
             valueChange = AttrCoerce.string(AttrCoerce.lookup(json, "valueChange")),

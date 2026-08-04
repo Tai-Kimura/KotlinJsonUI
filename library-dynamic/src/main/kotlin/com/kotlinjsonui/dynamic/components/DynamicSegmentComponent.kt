@@ -29,12 +29,13 @@ import androidx.compose.ui.platform.LocalContext
  * - enabled: Boolean or @{variable} to enable/disable
  * - backgroundColor: Color for container (containerColor); defaults to
  *   Color.Transparent when unspecified (matching the static codegen)
- * - fontColor: Color for unselected text (contentColor); normalColor is the
- *   legacy spelling of the same slot
+ * - fontColor: Color for unselected text (contentColor); normalColor is a
+ *   declared alias the extraction resolves
  * - selectedFontColor: Color for selected text (selectedContentColor), falling
- *   back to fontColor; selectedColor/tintColor/selectedSegmentTintColor are the
- *   legacy spellings behind it (contract: semantics.segmentLabelColors)
- * - indicatorColor: Color for tab indicator
+ *   back to fontColor; selectedColor is its declared alias
+ *   (contract: semantics.segmentLabelColors)
+ * - tintColor/selectedSegmentTintColor: Color for the SELECTED segment's
+ *   background (the indicator); indicatorColor is the explicit spelling
  * - onValueChange: @{handler} for selection change callback (receives index)
  * - Modifiers: testTag, margins, size, alpha, padding, weight
  *
@@ -48,8 +49,7 @@ class DynamicSegmentComponent {
         /** Segment-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "selectedIndex", "bind", "items", "enabled",
-            "fontColor", "selectedFontColor",
-            "normalColor", "selectedColor", "tintColor",
+            "fontColor", "selectedFontColor", "tintColor",
             "onValueChange"
         )
 
@@ -109,24 +109,25 @@ class DynamicSegmentComponent {
             // Parse colors ('backgroundColor', 'selectedSegmentTintColor' and
             // 'indicatorColor' are undeclared legacy runtime extras on Segment)
             val containerColor = resolveContainerColor(json, data, context)
+            // normalColor / selectedColor are declared aliases — the generated
+            // extraction resolves them, so only the canonical names appear here.
             val normalColor = ColorParser.parseColorStringWithBinding(
                 a.fontColor, data, context
             )
-                ?: ColorParser.parseColorStringWithBinding(
-                    TypedAttrs.rawString(a.normalColor), data, context
-                )
             val selectedColor = ColorParser.parseColorStringWithBinding(
                 a.selectedFontColor, data, context
             )
                 ?: ColorParser.parseColorStringWithBinding(
                     a.fontColor, data, context
                 )
-                ?: ColorParser.parseColorStringWithBinding(
-                    TypedAttrs.rawString(a.selectedColor), data, context
-                )
+            // tintColor paints the SELECTED SEGMENT'S BACKGROUND on every
+            // platform (ios selectedSegmentTintColor, web bg-*); android used to
+            // feed it into the label colour instead, so the same declaration
+            // coloured different things (contract: semantics.segmentLabelColors).
+            // The indicator is this component's selected-state background.
+            val indicatorColor = ColorParser.parseColorWithBinding(json, "indicatorColor", data, context)
                 ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
                 ?: ColorParser.parseColorWithBinding(json, "selectedSegmentTintColor", data, context)
-            val indicatorColor = ColorParser.parseColorWithBinding(json, "indicatorColor", data, context)
 
             // Build modifier
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
