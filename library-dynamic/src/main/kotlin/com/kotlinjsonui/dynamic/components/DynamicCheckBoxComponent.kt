@@ -235,10 +235,15 @@ class DynamicCheckBoxComponent {
                 val spacing = TypedAttrs.float(a.spacing, data)?.dp ?: 8.dp
                 Spacer(modifier = Modifier.width(spacing))
 
-                // Label text with font attributes (raw representation —
-                // the legacy reader did not resolve bindings here)
-                val labelText = TypedAttrs.rawString(a.label)
-                    ?: TypedAttrs.rawString(a.text) ?: ""
+                // Label text. The raw representation is the LAYOUT spelling,
+                // so a bound label drew the characters `@{expr}` on screen
+                // (smoke run: CheckBox/text__binding rendered "@{boundText}").
+                // Every other component routes the same rows through
+                // ResourceResolver.resolveTextValue, which resolves the
+                // binding and the string-resource name alike.
+                val labelText = (TypedAttrs.rawString(a.label)
+                    ?: TypedAttrs.rawString(a.text))
+                    ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: ""
                 val fontSize = TypedAttrs.float(a.fontSize, data)
                 val fontColor = ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.fontColor), data, context

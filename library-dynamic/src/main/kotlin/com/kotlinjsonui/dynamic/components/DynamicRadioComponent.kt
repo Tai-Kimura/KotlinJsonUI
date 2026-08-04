@@ -18,6 +18,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.RadioAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
@@ -104,7 +105,14 @@ class DynamicRadioComponent {
         internal fun rendersAsItem(a: RadioAttributes, hasOptions: Boolean): Boolean =
             a.group != null || ((a.text != null || a.label != null) && !hasOptions)
 
-        /** The row's text: `text || label`, the codegen's order. */
+        /**
+         * The row's text as WRITTEN — `text || label`, the codegen's order.
+         *
+         * This is the layout spelling, so `@{expr}` comes back verbatim; the
+         * caller resolves it. Keeping the choice-of-row separate from the
+         * resolution is what lets it be pinned on the JVM, where there is no
+         * Context to resolve against.
+         */
         internal fun itemText(a: RadioAttributes): String =
             TypedAttrs.rawString(a.text) ?: TypedAttrs.rawString(a.label) ?: ""
 
@@ -271,7 +279,11 @@ class DynamicRadioComponent {
         ) {
             val context = LocalContext.current
             val id = a.common.id ?: "radio_${System.currentTimeMillis()}"
-            val text = itemText(a)
+            // Resolve the binding / string-resource name — the raw spelling
+            // used to reach the label unchanged, so a bound row drew the
+            // characters `@{expr}` on screen (smoke run: Radio/text__binding
+            // rendered "@{boundText}").
+            val text = ResourceResolver.resolveTextValue(itemText(a), data, context)
             val radioValue = itemValue(a, id)
             val selectedVar = selectedVarName(a.group ?: "default")
             val isSelected = itemIsSelected(a, id, data)
@@ -482,7 +494,8 @@ class DynamicRadioComponent {
 
             Column(modifier = modifier) {
                 // Add label if present
-                TypedAttrs.rawString(a.text)?.let { label ->
+                TypedAttrs.rawString(a.text)?.let {
+                    val label = ResourceResolver.resolveTextValue(it, data, context)
                     Text(text = label, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
