@@ -256,8 +256,12 @@ class ConformanceSuiteTest {
         // guarantee the *rendered frame* has settled after an in-place content
         // swap — calibration runs caught a stale drop shadow from the previous
         // fixture and a flexible-TextView height mid-settle in screenshots.
-        // Give the compositor a beat before capturing.
+        // Wait for the frame-committed signal (draw phase + next Choreographer
+        // frame), then still give the compositor the calibrated beat: the beat
+        // covers post-first-frame settling (shadows, flexible heights) that a
+        // single committed frame does not.
         if (fixture.clazz == "visual") {
+            waitForPresented(fixture.id, readyTimeout)
             device.waitForIdle(settleTimeoutMs)
             Thread.sleep(150)
         }
@@ -325,6 +329,25 @@ class ConformanceSuiteTest {
         while (System.currentTimeMillis() < deadline) {
             if (FixtureHost.renderedIds.contains(fixtureId)) return true
             Thread.sleep(50)
+        }
+        return false
+    }
+
+    /**
+     * Frame-committed signal (FixtureHost.presentedIds) — what a SurfaceFlinger
+     * capture actually needs. Layout finishing is one phase too early: on CI
+     * 2026-08-04 (run 30870693593) `CheckBox/isOn__true` was captured as a
+     * frame byte-identical to another fixture's while its 15 siblings matched
+     * their dynamic counterparts at distance <= 1. Returns false without
+     * failing the fixture — the caller keeps the layout signal as the hard
+     * gate, so a host that somehow never draws degrades to the old timing
+     * rather than erroring the whole visual class.
+     */
+    private fun waitForPresented(fixtureId: String, timeoutMs: Long): Boolean {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            if (FixtureHost.presentedIds.contains(fixtureId)) return true
+            Thread.sleep(25)
         }
         return false
     }

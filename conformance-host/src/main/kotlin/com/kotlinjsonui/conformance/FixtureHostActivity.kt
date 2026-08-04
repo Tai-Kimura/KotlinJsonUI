@@ -1,6 +1,9 @@
 package com.kotlinjsonui.conformance
 
 import android.os.Bundle
+import android.view.Choreographer
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -10,10 +13,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -64,10 +69,39 @@ object FixtureHost {
         renderedIds.add(fixtureId)
     }
 
+    /**
+     * Fixture ids whose content has been DRAWN and whose frame has been handed
+     * to the compositor. Layout completing is not the same event: measured on
+     * CI 2026-08-04 (run 30870693593), `CheckBox/isOn__true` captured a frame
+     * byte-identical to a different fixture's while every sibling matched at
+     * distance <= 1 — layout had signalled, the screenshot went through
+     * SurfaceFlinger, and the frame on the display was still the other one.
+     *
+     * [markDrawn] runs in the draw phase; the Choreographer callback it posts
+     * fires at the start of the NEXT frame, by which point the drawn frame has
+     * been submitted. That is the signal a SurfaceFlinger capture needs.
+     */
+    val presentedIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
+    fun markDrawn(fixtureId: String) {
+        // Draw runs every frame; only the first one per fixture needs to arm
+        // the callback, and `add` returning false makes that check free.
+        if (!drawArmed.add(fixtureId)) return
+        Choreographer.getInstance().postFrameCallback {
+            presentedIds.add(fixtureId)
+        }
+    }
+
+    private val drawArmed: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
     /** Show a fixture (or null to blank the screen). Clears collected errors. */
     fun show(fixtureId: String?) {
         renderErrors.clear()
-        fixtureId?.let { renderedIds.remove(it) }
+        fixtureId?.let {
+            renderedIds.remove(it)
+            presentedIds.remove(it)
+            drawArmed.remove(it)
+        }
         currentFixtureId.value = fixtureId
     }
 
@@ -95,10 +129,26 @@ class FixtureHostActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Fixtures swap in place inside one window, so a soft keyboard raised
+        // by an interactive fixture stays up over everything that follows —
+        // measured on CI 2026-08-04 (run 30870693593): `TextField/hint__static`
+        // was captured with the IME occupying the lower third of the frame in
+        // one lane and absent in the other. Nothing in this host ever needs the
+        // IME visible (UiAutomator's setText does not require it), so keep it
+        // down for the whole run.
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+
         intent.getStringExtra(EXTRA_FIXTURE_ID)?.let { FixtureHost.show(it) }
 
         setContent {
             val fixtureId by FixtureHost.currentFixtureId.collectAsState()
+            // ALWAYS_HIDDEN only applies when the window comes to the front, so
+            // it cannot undo an IME raised mid-run. Dismiss on every swap too.
+            LaunchedEffect(fixtureId) {
+                currentFocus?.clearFocus()
+                getSystemService(InputMethodManager::class.java)
+                    ?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
+            }
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     fixtureId?.let { id ->
@@ -135,6 +185,10 @@ private fun FixtureScreen(fixtureId: String) {
                 .testTag(FixtureHost.readyTag(fixtureId))
                 .semantics { testTagsAsResourceId = true }
                 .onGloballyPositioned { FixtureHost.markRendered(fixtureId) }
+                .drawWithContent {
+                    drawContent()
+                    FixtureHost.markDrawn(fixtureId)
+                }
         ) {
             if (entry != null) {
                 entry()
@@ -174,6 +228,10 @@ private fun FixtureScreen(fixtureId: String) {
             .testTag(FixtureHost.readyTag(fixtureId))
             .semantics { testTagsAsResourceId = true }
             .onGloballyPositioned { FixtureHost.markRendered(fixtureId) }
+            .drawWithContent {
+                drawContent()
+                FixtureHost.markDrawn(fixtureId)
+            }
     ) {
         layoutJson?.let { json ->
             DynamicView(
