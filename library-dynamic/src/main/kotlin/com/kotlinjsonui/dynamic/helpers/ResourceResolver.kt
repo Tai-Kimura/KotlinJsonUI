@@ -259,13 +259,61 @@ object ResourceResolver {
     fun fontWeightFor(name: String?): FontWeight? =
         name?.let { WEIGHT_NAMES[it.lowercase()] }
 
-    /** Resolve a family name against the app's `res/font` resources. */
+    /**
+     * The generic families every platform understands. A consumer writing
+     * `fontFamily: "serif"` means the platform's serif face, not a font file
+     * called `serif` — resolving these against `res/font` finds nothing and
+     * silently falls back to the default, which is how a declared `serif`
+     * used to render identically to no declaration at all.
+     */
+    private val GENERIC_FAMILIES: Map<String, FontFamily> = mapOf(
+        "sans-serif" to FontFamily.SansSerif,
+        "sansserif" to FontFamily.SansSerif,
+        "serif" to FontFamily.Serif,
+        "monospace" to FontFamily.Monospace,
+        "mono" to FontFamily.Monospace,
+        "cursive" to FontFamily.Cursive,
+        "default" to FontFamily.Default
+    )
+
+    /**
+     * The platform face a generic family name asks for, or null when the name
+     * is not one. Context-free on purpose: this branch must short-circuit
+     * before any resource lookup, and being callable without a Context is what
+     * lets it be pinned on the JVM.
+     */
+    fun genericFontFamily(name: String?): FontFamily? {
+        if (name.isNullOrBlank()) return null
+        return GENERIC_FAMILIES[name.trim().lowercase()]
+    }
+
+    /** Resolve a family name: a generic family first, then `res/font`. */
     fun resolveFontResource(name: String?, context: Context): FontFamily? {
         if (name.isNullOrBlank()) return null
+        genericFontFamily(name)?.let { return it }
         val resName = name.replace("-", "_").replace(" ", "_").lowercase()
         val resId = context.resources.getIdentifier(resName, "font", context.packageName)
         return if (resId != 0) FontFamily(Font(resId)) else null
     }
+
+    // ── Nested attribute bags ────────────────────────────────────────
+    //
+    // `hintAttributes` / `labelAttributes` scope a bag of styling to one part
+    // of a component. The nested key OUTRANKS the flat spelling
+    // (`hintColor` / `hintFont` / `hintFontSize`): a bag scoped to the hint is
+    // the more specific statement, which is the ordinary cascade rule and what
+    // all four readers do — written into the SSoT on 2026-08-05 after the one
+    // converter that had it backwards was found contradicting its own comment.
+    //
+    // The FLAT spelling stays a literal at the call site so the coverage scans
+    // that grep for attribute names keep seeing it.
+
+    /** A nested bag's key as String, or null when absent or another type. */
+    fun nestedString(bag: Map<String, Any?>?, key: String): String? = bag?.get(key) as? String
+
+    /** A nested bag's key as Double, or null when absent or another type. */
+    fun nestedNumber(bag: Map<String, Any?>?, key: String): Double? =
+        (bag?.get(key) as? Number)?.toDouble()
 
     /**
      * The family for a component declaring `fontFamily` and/or `font`:

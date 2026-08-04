@@ -155,8 +155,10 @@ class DynamicTextViewComponent {
 
             // Placeholder. hintColor styles it (33 cross-effect: android
             // rendered the default gray for a declared hintColor).
+            // hintAttributes.fontColor outranks the flat hintColor.
             val hintColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.hintColor), data, context
+                ResourceResolver.nestedString(a.hintAttributes, "fontColor")
+                    ?: TypedAttrs.rawString(a.hintColor), data, context
             )
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
                 buildPlaceholder(a, placeholderText, TypedAttrs.int(a.fontSize, data), hintColor)
@@ -236,7 +238,7 @@ class DynamicTextViewComponent {
             "text", "hint", "placeholder", "enabled", "fontSize", "fontColor",
             "highlightBackground", "containerInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
-            "hintFontSize", "hintColor", "flexible",
+            "hintFontSize", "hintColor", "hintAttributes", "flexible",
             "font", "fontFamily", "hintFont"
         )
 
@@ -351,20 +353,22 @@ class DynamicTextViewComponent {
             declaredFontSize: Int?,
             hintColor: androidx.compose.ui.graphics.Color? = null
         ): @Composable () -> Unit {
-            val hintLineHeightMultiple = a.hintLineHeightMultiple?.toFloat()
-            val hintFontSize = a.hintFontSize?.toFloat()
+            // The nested bag wins over every flat hint* spelling — the same
+            // cascade the codegen placeholder reads
+            // (textview_component.rb#build_placeholder `hint_attr(...) || flat`).
+            val hintLineHeightMultiple =
+                ResourceResolver.nestedNumber(a.hintAttributes, "lineHeightMultiple")?.toFloat()
+                    ?: a.hintLineHeightMultiple?.toFloat()
+            val hintFontSize = ResourceResolver.nestedNumber(a.hintAttributes, "fontSize")?.toFloat()
+                ?: a.hintFontSize?.toFloat()
             // `hintFont` carries the placeholder's WEIGHT spelling, exactly as
             // the codegen placeholder reads it
             // (textview_component.rb:37 `hint_attr('font') || hintFont`,
             // resolved through the same weight table). The row was parsed and
             // never read here (34: `TextView/hintFont` pixel-identical to its
             // control).
-            // `hintAttributes.font` outranks the flat `hintFont`: a bag scoped
-            // to the hint is the more specific statement, which is what all
-            // four readers do and what the SSoT wrote down on 2026-08-05.
-            // Same order as textview_component.rb:37.
             val hintFontWeight = ResourceResolver.fontWeightFor(
-                (a.hintAttributes?.get("font") as? String) ?: a.hintFont
+                ResourceResolver.nestedString(a.hintAttributes, "font") ?: a.hintFont
             )
 
             return {

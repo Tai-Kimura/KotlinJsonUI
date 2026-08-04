@@ -70,6 +70,13 @@ class DynamicSelectBoxComponent {
         internal fun labelAttr(a: SelectBoxAttributes, key: String): Any? =
             a.labelAttributes?.get(key)
 
+        /** The same cascade as `hintAttributes`, via the shared helpers. */
+        internal fun labelString(a: SelectBoxAttributes, key: String): String? =
+            ResourceResolver.nestedString(a.labelAttributes, key)
+
+        internal fun labelNumber(a: SelectBoxAttributes, key: String): Double? =
+            ResourceResolver.nestedNumber(a.labelAttributes, key)
+
         private val APPLIED: Set<String> = setOf(
             "selectItemType", "selectedItem", "selectedDate", "bind",
             "items", "enabled", "prompt", "hint", "placeholder",
@@ -172,7 +179,7 @@ class DynamicSelectBoxComponent {
                 TypedAttrs.rawString(a.common.borderColor), data, context
             ) ?: Color(0xFFCCCCCC)
             val textColor = ColorParser.parseColorStringWithBinding(
-                labelAttr(a, "fontColor") as? String ?: a.fontColor, data, context
+                labelString(a, "fontColor") ?: a.fontColor, data, context
             ) ?: Color.Black
             val hintColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.hintColor), data, context
@@ -181,7 +188,7 @@ class DynamicSelectBoxComponent {
             val cornerRadius = TypedAttrs.int(a.common.cornerRadius, data) ?: 8
 
             // Font styling
-            val fontSize = (labelAttr(a, "fontSize") as? Number)?.toFloat()
+            val fontSize = labelNumber(a, "fontSize")?.toFloat()
                 ?: a.fontSize?.toFloat()
             val fontWeight = parseFontWeight(a.font)
 
@@ -314,7 +321,7 @@ class DynamicSelectBoxComponent {
                 TypedAttrs.rawString(a.common.borderColor), data, context
             ) ?: Color(0xFFCCCCCC)
             val textColor = ColorParser.parseColorStringWithBinding(
-                labelAttr(a, "fontColor") as? String ?: a.fontColor, data, context
+                labelString(a, "fontColor") ?: a.fontColor, data, context
             ) ?: Color.Black
             val hintColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.hintColor), data, context

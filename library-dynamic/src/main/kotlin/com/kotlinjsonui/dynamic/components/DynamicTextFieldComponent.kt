@@ -162,7 +162,8 @@ class DynamicTextFieldComponent {
             // "Placeholder color"); reading it here is what took it off the
             // coverage gap ledger on android.
             val placeholderColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.hintColor), data, context
+                ResourceResolver.nestedString(a.hintAttributes, "fontColor")
+                    ?: TypedAttrs.rawString(a.hintColor), data, context
             )
                 ?: Configuration.TextField.defaultPlaceholderColor
             // `tintColor` is the caret accent; `caretAttributes.fontColor` is
@@ -184,7 +185,9 @@ class DynamicTextFieldComponent {
 
             // Font size
             val fontSize = TypedAttrs.int(a.fontSize, data) ?: Configuration.TextField.defaultFontSize
-            val hintFontSize = a.hintFontSize?.toInt()
+            // The nested hintAttributes bag outranks the flat hint* spellings.
+            val hintFontSize = ResourceResolver.nestedNumber(a.hintAttributes, "fontSize")?.toInt()
+                ?: a.hintFontSize?.toInt()
 
             // Shape
             val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)
@@ -213,7 +216,8 @@ class DynamicTextFieldComponent {
                         text = placeholderText,
                         color = placeholderColor,
                         fontSize = (hintFontSize ?: fontSize).sp,
-                        fontWeight = if (a.hintFont == "bold") {
+                        fontWeight = if ((ResourceResolver.nestedString(a.hintAttributes, "font")
+                                ?: a.hintFont) == "bold") {
                             androidx.compose.ui.text.font.FontWeight.Bold
                         } else null
                     )
@@ -500,7 +504,7 @@ class DynamicTextFieldComponent {
         /** TextField-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "text", "hint", "placeholder", "fontColor", "hintColor",
-            "hintFont", "hintFontSize", "secure", "input", "contentType",
+            "hintFont", "hintFontSize", "hintAttributes", "secure", "input", "contentType",
             "enabled", "onTextChange", "onSubmit", "onFocus",
             "onBeginEditing", "onBlur", "onEndEditing", "nextFocus",
             "fontSize", "textAlign", "borderStyle", "returnKeyType",
