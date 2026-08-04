@@ -137,10 +137,17 @@ class DynamicRadioComponent {
             data: Map<String, Any>
         ): Boolean {
             val declaredSelection = TypedAttrs.string(a.selectedValue, data)
-            if (declaredSelection != null) return declaredSelection == itemValue(a, id)
+            val token = itemValue(a, id)
+            if (declaredSelection != null) return declaredSelection == token
             val selectedVar = selectedVarName(a.group ?: "default")
+            // The group's selection is compared against this item's IDENTITY —
+            // `value` when declared, the node id otherwise — not against the id
+            // unconditionally. C settled the codegen on the same token
+            // (radio_component.rb#radio_selected_expr `token = value || id`),
+            // so a Radio declaring `value` used to agree with the codegen only
+            // by accident.
             val literalChecked = (TypedAttrs.raw(a.checked) as? Boolean) == true
-            return (data[selectedVar] as? String) == id ||
+            return (data[selectedVar] as? String) == token ||
                 (literalChecked && data[selectedVar] == null)
         }
 

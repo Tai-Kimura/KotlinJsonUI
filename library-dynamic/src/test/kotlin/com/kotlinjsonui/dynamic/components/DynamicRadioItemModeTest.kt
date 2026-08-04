@@ -144,6 +144,15 @@ class DynamicRadioItemModeTest {
     }
 
     @Test
+    fun groupStateComparesAgainstValueNotTheIdWhenValueIsDeclared() {
+        // C's codegen compares against `value || id`
+        // (radio_component.rb#radio_selected_expr).
+        val a = attrs("group" to "g", "text" to "Sample", "value" to "sample")
+        assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("selectedG" to "sample")))
+        assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("selectedG" to "target")))
+    }
+
+    @Test
     fun literalCheckedStillSeedsAnUnsetGroup() {
         val a = attrs("text" to "Sample", "checked" to true)
         assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", emptyMap()))
