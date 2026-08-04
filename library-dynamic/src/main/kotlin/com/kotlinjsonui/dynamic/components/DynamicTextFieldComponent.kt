@@ -158,9 +158,20 @@ class DynamicTextFieldComponent {
             val textColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.fontColor), data, context
             ) ?: Configuration.TextField.defaultTextColor
+            // `placeholderColor` is the alias spelling of hintColor (SSoT:
+            // "Placeholder color"); reading it here is what took it off the
+            // coverage gap ledger on android.
             val placeholderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.hintColor), data, context
-            ) ?: Configuration.TextField.defaultPlaceholderColor
+            ) ?: ColorParser.parseColorStringWithBinding(a.placeholderColor, data, context)
+                ?: Configuration.TextField.defaultPlaceholderColor
+            // `tintColor` is the caret accent; `caretAttributes.fontColor` is
+            // the object form of the same fact and reads behind it, matching
+            // both the sjui converter and the kjui codegen.
+            val cursorColor = ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    a.caretAttributes?.get("fontColor") as? String, data, context
+                )
             val backgroundColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.background), data, context
             ) ?: Configuration.TextField.defaultBackgroundColor
@@ -282,7 +293,8 @@ class DynamicTextFieldComponent {
                     isSecure = isSecure,
                     singleLine = singleLine,
                     maxLines = maxLines,
-                    enabled = isEnabled
+                    enabled = isEnabled,
+                    cursorColor = cursorColor
                 )
             } else {
                 CustomTextField(
@@ -301,7 +313,8 @@ class DynamicTextFieldComponent {
                     isSecure = isSecure,
                     singleLine = singleLine,
                     maxLines = maxLines,
-                    enabled = isEnabled
+                    enabled = isEnabled,
+                    cursorColor = cursorColor
                 )
             }
         }
@@ -481,7 +494,8 @@ class DynamicTextFieldComponent {
             "onBeginEditing", "onBlur", "onEndEditing", "nextFocus",
             "fontSize", "textAlign", "borderStyle", "returnKeyType",
             "autocapitalizationType", "autocorrectionType",
-            "highlightBackground", "fieldPadding", "textPaddingLeft"
+            "highlightBackground", "fieldPadding", "textPaddingLeft",
+            "placeholderColor", "tintColor", "caretAttributes"
         )
 
         private fun buildContentPadding(json: JsonObject, a: TextFieldAttributes): PaddingValues? {

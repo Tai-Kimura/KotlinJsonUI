@@ -48,6 +48,7 @@ class DynamicSwitchComponent {
             "isOn", "value", "checked", "bind", "enabled",
             "onValueChange", "onToggle",
             "onTintColor", "tint", "tintColor", "thumbTintColor",
+            "trackTintColor", "offTintColor",
             "labelAttributes"
         )
 
@@ -113,18 +114,25 @@ class DynamicSwitchComponent {
             // Build modifier: testTag, margins, alpha, padding
             val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
 
-            // Colors: onTintColor/tint/tintColor -> checkedTrackColor, thumbTintColor -> checkedThumbColor
+            // Colors: onTintColor/tint/tintColor -> checkedTrackColor, thumbTintColor -> checkedThumbColor.
+            // `trackTintColor` is the declared spelling for the track itself
+            // and skins the OFF state, which onTintColor overrides when on
+            // (switch.trackColors in shared/core/attribute_semantics.json);
+            // offTintColor is the UIKit legacy behind it.
             val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
                 ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.tint), data, context)
                 ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+            val uncheckedTrackColor = ColorParser.parseColorStringWithBinding(a.trackTintColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.offTintColor), data, context)
             val checkedThumbColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.thumbTintColor), data, context
             )
 
-            val colors = if (checkedTrackColor != null || checkedThumbColor != null) {
+            val colors = if (checkedTrackColor != null || uncheckedTrackColor != null || checkedThumbColor != null) {
                 SwitchDefaults.colors(
                     checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
                     checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
+                    uncheckedTrackColor = uncheckedTrackColor ?: SwitchDefaults.colors().uncheckedTrackColor,
                     // thumbTintColor skins the thumb in BOTH states (UIKit
                     // heritage; ios renders it on an off switch — 33
                     // cross-effect measured the android thumb inert).
@@ -202,18 +210,21 @@ class DynamicSwitchComponent {
                     fontWeight = fontWeightValue
                 )
 
-                // Colors for switch
+                // Colors for switch — same canonical/legacy pair as createSwitchOnly.
                 val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
                     ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.tint), data, context)
                     ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                val uncheckedTrackColor = ColorParser.parseColorStringWithBinding(a.trackTintColor, data, context)
+                    ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.offTintColor), data, context)
                 val checkedThumbColor = ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.thumbTintColor), data, context
                 )
 
-                val colors = if (checkedTrackColor != null || checkedThumbColor != null) {
+                val colors = if (checkedTrackColor != null || uncheckedTrackColor != null || checkedThumbColor != null) {
                     SwitchDefaults.colors(
                         checkedTrackColor = checkedTrackColor ?: SwitchDefaults.colors().checkedTrackColor,
-                        checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor
+                        checkedThumbColor = checkedThumbColor ?: SwitchDefaults.colors().checkedThumbColor,
+                        uncheckedTrackColor = uncheckedTrackColor ?: SwitchDefaults.colors().uncheckedTrackColor
                     )
                 } else {
                     SwitchDefaults.colors()

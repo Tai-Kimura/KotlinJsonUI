@@ -137,16 +137,19 @@ class DynamicSliderComponent {
                 }
             }
 
-            // Parse colors (supports @{binding}) — 'thumbTintColor',
-            // 'minimumTrackTintColor' and 'maximumTrackTintColor' are
-            // undeclared legacy runtime extras on Slider
+            // Parse colors (supports @{binding}). 'progressTintColor' and
+            // 'trackTintColor' are the spellings attribute_definitions
+            // declares — filled track and unfilled track respectively;
+            // 'minimum/maximumTrackTintColor' are the undeclared UIKit legacy
+            // and read BEHIND them, canonical-first (slider.trackColors in
+            // shared/core/attribute_semantics.json). Plain tintColor is the
+            // last-resort accent for the active track (UISlider heritage).
             val thumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
-            // minimumTrackTintColor is the specific spelling; plain tintColor
-            // is the accent for the active track (UISlider heritage — 33
-            // cross-effect measured both mobiles rendering neither).
-            val activeTrackColor = ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
+            val activeTrackColor = ColorParser.parseColorWithBinding(json, "progressTintColor", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
                 ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
-            val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
+            val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "trackTintColor", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
 
             val colors = if (thumbColor != null || activeTrackColor != null || inactiveTrackColor != null) {
                 SliderDefaults.colors(
