@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The drawable both render paths fall back to when an Image declares no
+  source: kjui codegen emits R.drawable.placeholder
+  (image_component.rb — errorImage > loadingImage > 'placeholder') and the
+  dynamic path resolves the same name (DynamicImageComponent — srcName > src
+  > defaultImage > text > "placeholder"). The host shipped neither, so the
+  codegen host failed to COMPILE on __control/Image__no-src while the dynamic
+  host silently resolved to resource id 0 and drew nothing.
+
+  A flat, full-bounds fill on purpose: the fixtures are compared pixel by
+  pixel, and any curve or inset would put antialiased edges into the
+  comparison for no diagnostic gain.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#BDBDBD"
+        android:pathData="M0,0 L24,0 L24,24 L0,24 Z" />
+</vector>
