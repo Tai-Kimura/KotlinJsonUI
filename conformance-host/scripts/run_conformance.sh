@@ -91,11 +91,84 @@ adbsh settings put global transition_animation_scale 0
 adbsh settings put global animator_duration_scale 0
 # Freeze the status bar (clock/battery/wifi) via SystemUI demo mode so
 # full-screen screenshots don't carry live-clock noise between runs.
+#
+# The broadcasts are fire-and-forget and SystemUI silently ignores them when it
+# is not ready yet, so this used to be a wish rather than a guarantee: of four
+# CI captures inspected on 2026-08-04 (run 30839045057, both lanes ×2 attempts)
+# THREE carried a live clock — 6:10, 6:09, 12:36 — and only one showed the
+# frozen 12:00. A live clock moves the status-bar row in every screenshot, which
+# is why env=ci android hashes drifted between runs and made ci baselines
+# unbakeable. So: issue the commands, then PROVE demo mode took, and retry.
+#
+# The probe is a positive control, not a guess. With the launcher parked and
+# nothing else moving, two samples at the same demo clock must be identical
+# (screen is quiet) and a sample at a DIFFERENT demo clock must differ (SystemUI
+# is honouring the command). Both conditions together rule out the two ways this
+# can lie: a busy screen that changes on its own, and a dead demo channel where
+# nothing ever changes.
+# Never fails: callers treat an empty result as "could not sample" rather than
+# dying, because `set -e` + pipefail would otherwise turn one timed-out
+# screencap on a busy runner into an aborted suite.
+screen_hash() {
+  { timeout 30 "$ADB" exec-out screencap -p 2>/dev/null \
+      | { md5 2>/dev/null || md5sum 2>/dev/null; } \
+      | awk '{print $1}'; } || true
+}
+demo_broadcast() {
+  adbsh am broadcast -a com.android.systemui.demo -e command "$@" >/dev/null 2>&1 || true
+}
 adbsh settings put global sysui_demo_allowed 1
-adbsh am broadcast -a com.android.systemui.demo -e command enter >/dev/null
-adbsh am broadcast -a com.android.systemui.demo -e command clock -e hhmm 1200 >/dev/null
-adbsh am broadcast -a com.android.systemui.demo -e command battery -e level 100 -e plugged false >/dev/null
-adbsh am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4 >/dev/null
+demo_frozen=0
+for attempt in 1 2 3 4 5; do
+  demo_broadcast exit
+  demo_broadcast enter
+  demo_broadcast battery -e level 100 -e plugged false
+  demo_broadcast network -e wifi show -e level 4
+  demo_broadcast clock -e hhmm 0930
+  sleep 2
+  probe_a="$(screen_hash)"
+  sleep 1
+  probe_b="$(screen_hash)"
+  demo_broadcast clock -e hhmm 1200
+  sleep 2
+  probe_c="$(screen_hash)"
+  if [[ -z "$probe_a" || -z "$probe_b" || -z "$probe_c" ]]; then
+    echo "warning: screencap probe returned nothing (attempt $attempt) — cannot verify demo mode" >&2
+    continue
+  fi
+  if [[ "$probe_a" == "$probe_b" && "$probe_a" != "$probe_c" ]]; then
+    demo_frozen=1
+    echo "SystemUI demo mode verified (clock frozen at 12:00, attempt $attempt)"
+    break
+  fi
+  echo "demo-mode probe inconclusive (attempt $attempt): quiet=$([[ "$probe_a" == "$probe_b" ]] && echo yes || echo no) responsive=$([[ "$probe_a" != "$probe_c" ]] && echo yes || echo no)" >&2
+  sleep 3
+done
+if [[ "$demo_frozen" != "1" ]]; then
+  # A live clock silently poisons every screenshot the run produces, so the
+  # honest outcome is a failed attempt (the workflow retries on a FRESH
+  # emulator) rather than a green run whose baselines cannot be reused.
+  # Set CONFORMANCE_ALLOW_LIVE_CHROME=1 to downgrade this to a warning when
+  # you only need the assertable classes and do not care about the pixels.
+  if [[ "${CONFORMANCE_ALLOW_LIVE_CHROME:-0}" == "1" ]]; then
+    echo "warning: SystemUI demo mode never took — screenshots carry a live clock" >&2
+  else
+    echo "error: SystemUI demo mode never took after 5 attempts — screenshots would carry a live clock and the captures could not be baselined" >&2
+    exit 1
+  fi
+fi
+
+# Predicted-apps row of the tablet taskbar: the launcher reorders it between
+# boots (measured 2026-08-04 across two CI runs — [Messages, Phone] became
+# [Phone, Messages], and a third capture had the host app itself promoted into
+# the row). Within a run it is stable, so the settle loop below was enough for
+# same-run comparisons, but env=ci baselines and codegen parity compare across
+# emulators, where the reorder lands as a whole-suite hash shift. Predictions
+# come from Android System Intelligence; with the provider disabled the row
+# falls back to the launcher's fixed default set.
+adbsh pm disable-user --user 0 com.google.android.as >/dev/null 2>&1 \
+  && echo "app-prediction provider disabled (taskbar row pinned to defaults)" \
+  || echo "note: com.google.android.as absent or not disableable — taskbar row may still drift" >&2
 
 if [[ "$FRESH" == "1" ]]; then
   echo "Wiping on-device conformance output..."
@@ -110,7 +183,8 @@ fi
 # screenshots WITHIN a run — it settles once and stays — but differed BETWEEN
 # runs, putting 9 fixtures over the dHash threshold. So the fix is not to hide
 # it (SafeAreaView fixtures need real insets) but to start capturing only
-# after it has stopped moving.
+# after it has stopped moving — plus the prediction-provider pin above, which
+# is what keeps the row equal ACROSS runs rather than merely within one.
 #
 # Waiting on the whole screen rather than the taskbar strip keeps this to
 # shell: with the app parked on its idle launch screen, "screen stopped
@@ -122,9 +196,7 @@ settle_prev=""
 settle_stable=0
 for _ in $(seq 1 20); do
   sleep 1
-  settle_now="$(timeout 30 "$ADB" exec-out screencap -p 2>/dev/null | md5 2>/dev/null \
-                || timeout 30 "$ADB" exec-out screencap -p 2>/dev/null | md5sum 2>/dev/null \
-                || echo "")"
+  settle_now="$(screen_hash)"
   [[ -z "$settle_now" ]] && break
   if [[ "$settle_now" == "$settle_prev" ]]; then
     settle_stable=$((settle_stable + 1))
@@ -141,6 +213,11 @@ if [[ $settle_stable -ge 2 ]]; then
 else
   echo "warning: screen did not settle within 20s — taskbar may drift between runs" >&2
 fi
+# Chrome fingerprint: the idle-screen hash with the app parked. Two runs whose
+# captures should be comparable must print the SAME value here — it is the
+# cheapest way to tell "the renders diverged" from "the system chrome moved"
+# when a later baseline diff looks suspiciously whole-suite.
+echo "chrome fingerprint (idle screen): ${settle_prev:-unavailable}"
 
 # 3c. a11y projection probe + boot re-roll. Run 30762153614 (first
 # instrumented recurrence of the CI-only all-fixtures render-timeout): the
