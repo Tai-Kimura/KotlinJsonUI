@@ -70,6 +70,41 @@ class DynamicSelectBoxComponent {
         internal fun labelAttr(a: SelectBoxAttributes, key: String): Any? =
             a.labelAttributes?.get(key)
 
+        /**
+         * The data key this box reads and writes: `selectedItem` >
+         * `selectedValue` > `bind`.
+         *
+         * `selectedValue` is declared two-way and was NOT a candidate, so a
+         * bound one fell through to the literal seed and the closed box drew
+         * `@{boundSelectedValue}` verbatim.
+         */
+        internal fun bindingVariableOf(a: SelectBoxAttributes): String? =
+            TypedAttrs.binding(a.selectedItem)
+                ?: TypedAttrs.binding(a.selectedValue)
+                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
+
+        /**
+         * What the closed box shows: the bound value if there is one, else the
+         * literal seed (`selectedValue`, or the item `selectedIndex` names).
+         *
+         * STATIC only for the seed — a bound `selectedValue` is the channel
+         * above, and printing its expression is the bug this replaced.
+         */
+        internal fun initialSelection(a: SelectBoxAttributes, data: Map<String, Any>): String {
+            val bindingVariable = bindingVariableOf(a)
+            val current = if (bindingVariable != null) data[bindingVariable]?.toString() ?: "" else ""
+            val seed = TypedAttrs.static(a.selectedValue)
+                ?: (TypedAttrs.raw(a.selectedIndex) as? Number)?.toInt()?.let { idx ->
+                    TypedAttrs.static(a.items)?.getOrNull(idx)?.let { item ->
+                        when (item) {
+                            is Map<*, *> -> (item["value"] ?: item["label"])?.toString()
+                            else -> item?.toString()
+                        }
+                    }
+                }
+            return current.ifEmpty { seed ?: "" }
+        }
+
         /** The same cascade as `hintAttributes`, via the shared helpers. */
         internal fun labelString(a: SelectBoxAttributes, key: String): String? =
             ResourceResolver.nestedString(a.labelAttributes, key)
@@ -121,28 +156,13 @@ class DynamicSelectBoxComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable: selectedItem > bind
-            val bindingVariable = TypedAttrs.binding(a.selectedItem)
-                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
-
-            // Get current selected value
+            val bindingVariable = bindingVariableOf(a)
             val currentValue = if (bindingVariable != null) {
                 data[bindingVariable]?.toString() ?: ""
             } else ""
 
-            // Literal selectedValue / selectedIndex seed the initial
-            // selection (33 cross-effect: both mobiles ignored them).
-            val literalInitial = TypedAttrs.rawString(a.selectedValue)
-                ?: (TypedAttrs.raw(a.selectedIndex) as? Number)?.toInt()?.let { idx ->
-                    TypedAttrs.static(a.items)?.getOrNull(idx)?.let { item ->
-                        when (item) {
-                            is Map<*, *> -> (item["value"] ?: item["label"])?.toString()
-                            else -> item?.toString()
-                        }
-                    }
-                }
             var selectedValue by remember(currentValue, bindingVariable, data) {
-                mutableStateOf(currentValue.ifEmpty { literalInitial ?: "" })
+                mutableStateOf(initialSelection(a, data))
             }
 
             LaunchedEffect(data, bindingVariable) {
@@ -293,8 +313,12 @@ class DynamicSelectBoxComponent {
                 ?: a.dateStringFormat
                 ?: "yyyy-MM-dd"
             val minuteInterval = a.minuteInterval?.toInt() ?: 1
-            val minimumDate = TypedAttrs.rawString(a.minimumDate)
-            val maximumDate = TypedAttrs.rawString(a.maximumDate)
+            // Both rows are declared binding-supported and were handed to the
+            // picker as the LAYOUT spelling, so a bound bound arrived as
+            // `@{expr}` and constrained nothing. Found by counting the raw
+            // reads rather than by stopping at the one that was reported.
+            val minimumDate = TypedAttrs.string(a.minimumDate, data)
+            val maximumDate = TypedAttrs.string(a.maximumDate, data)
 
             // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
             val isEnabled = when {
