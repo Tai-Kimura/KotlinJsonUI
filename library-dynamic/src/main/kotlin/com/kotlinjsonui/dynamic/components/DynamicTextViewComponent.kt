@@ -176,7 +176,7 @@ class DynamicTextViewComponent {
                 // TextField modifier with size (default fillMaxWidth + 120dp height)
                 var textFieldModifier = buildTextViewSizeModifier(json, a)
                 textFieldModifier = ModifierBuilder.applyAlpha(textFieldModifier, json, data)
-                textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json)
+                textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json, data)
 
                 CustomTextFieldWithMargins(
                     state = textFieldState,
@@ -205,7 +205,7 @@ class DynamicTextViewComponent {
                 var modifier = buildTextViewSizeModifier(json, a)
                 modifier = ModifierBuilder.applyTestTag(modifier, json)
                 modifier = ModifierBuilder.applyAlpha(modifier, json, data)
-                modifier = ModifierBuilder.applyPadding(modifier, json)
+                modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
                 CustomTextField(
                     state = textFieldState,

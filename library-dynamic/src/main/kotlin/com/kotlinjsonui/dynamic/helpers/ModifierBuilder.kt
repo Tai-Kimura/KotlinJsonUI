@@ -204,7 +204,7 @@ object ModifierBuilder {
                 val frame = frameElement.asJsonObject
                 result = applySingleDimension(result, frame, "width", isWidth = true)
                 result = applySingleDimension(result, frame, "height", isWidth = false)
-                return applyConstraints(result, json)
+                return applyConstraints(result, json, data)
             }
         }
 
@@ -225,18 +225,18 @@ object ModifierBuilder {
                     widthElement.asJsonPrimitive.isNumber && widthElement.asFloat == 0f
             if (!skipWidth) {
                 if (isFillDimension(widthElement)) {
-                    result = applyWidthConstraints(result, json)
+                    result = applyWidthConstraints(result, json, data)
                     widthBoundsApplied = true
                 }
                 result = applySingleDimension(result, json, "width", isWidth = true)
             }
         } else if (defaultFillMaxWidth) {
-            result = applyWidthConstraints(result, json)
+            result = applyWidthConstraints(result, json, data)
             widthBoundsApplied = true
             result = result.fillMaxWidth()
         }
         if (!widthBoundsApplied) {
-            result = applyWidthConstraints(result, json)
+            result = applyWidthConstraints(result, json, data)
         }
 
         // Height
@@ -248,17 +248,17 @@ object ModifierBuilder {
                     heightElement.asJsonPrimitive.isNumber && heightElement.asFloat == 0f
             if (!skipHeight) {
                 if (isFillDimension(heightElement)) {
-                    result = applyHeightConstraints(result, json)
+                    result = applyHeightConstraints(result, json, data)
                     heightBoundsApplied = true
                 }
                 result = applySingleDimension(result, json, "height", isWidth = false)
             }
         }
         if (!heightBoundsApplied) {
-            result = applyHeightConstraints(result, json)
+            result = applyHeightConstraints(result, json, data)
         }
 
-        return applyAspectRatio(result, json)
+        return applyAspectRatio(result, json, data)
     }
 
     /** matchParent (or a negative number, the legacy fill spelling)? */
@@ -463,8 +463,11 @@ object ModifierBuilder {
                     )
                 )
             }
-            shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isNumber -> {
-                modifier.dropShadow(shape = shape, shadow = Shadow(radius = (dimen(shadowElement, data) ?: 4f).dp))
+            dimen(shadowElement, data) != null -> {
+                modifier.dropShadow(
+                    shape = shape,
+                    shadow = Shadow(radius = (dimen(shadowElement, data) ?: 4f).dp)
+                )
             }
             else -> modifier
         }
@@ -723,9 +726,11 @@ object ModifierBuilder {
     ): Modifier {
         // Handle paddings attribute first
         json.get("paddings")?.let { element ->
-            if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-                return modifier.padding((dimen(element, data) ?: 0f).dp)
-            }
+            // No isNumber gate: a bound value is a STRING primitive, so the
+            // guard dropped it before `dimen` ever saw it. Converting the
+            // parse without removing the gate is why the bound padding
+            // fixtures stayed inert after the crash was fixed.
+            dimen(element, data)?.let { return modifier.padding(it.dp) }
             if (element.isJsonArray) {
                 val arr = element.asJsonArray
                 return when (arr.size()) {
@@ -754,7 +759,7 @@ object ModifierBuilder {
         // Handle single padding value
         json.get("padding")?.let { element ->
             when {
-                element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> {
+                dimen(element, data) != null -> {
                     return modifier.padding((dimen(element, data) ?: 0f).dp)
                 }
                 element.isJsonArray -> {
@@ -829,9 +834,7 @@ object ModifierBuilder {
         data: Map<String, Any> = emptyMap()
     ): PaddingValues? {
         val element = json.get("paddings") ?: json.get("padding") ?: return null
-        if (element.isJsonPrimitive && element.asJsonPrimitive.isNumber) {
-            return PaddingValues((dimen(element, data) ?: 0f).dp)
-        }
+        dimen(element, data)?.let { return PaddingValues(it.dp) }
         if (element.isJsonArray) {
             val arr = element.asJsonArray
             return when (arr.size()) {

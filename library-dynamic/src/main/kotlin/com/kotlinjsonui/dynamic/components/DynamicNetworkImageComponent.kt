@@ -158,10 +158,10 @@ class DynamicNetworkImageComponent {
                 // Square size instead of applySize
                 m = m.size(sizeValue.dp)
                 m = ModifierBuilder.applyAlpha(m, json, data)
-                m = ModifierBuilder.applyShadow(m, json)
+                m = ModifierBuilder.applyShadow(m, json, data)
                 m = ModifierBuilder.applyBackground(m, json, data, context)
                 m = ModifierBuilder.applyClickable(m, json, data)
-                m = ModifierBuilder.applyPadding(m, json)
+                m = ModifierBuilder.applyPadding(m, json, data)
                 m
             } else {
                 ModifierBuilder.buildModifier(json, data, context = context)

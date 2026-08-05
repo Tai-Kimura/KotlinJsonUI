@@ -119,7 +119,7 @@ class DynamicSafeAreaViewComponent {
             // Build modifier manually: special ordering required for SafeAreaView
             // background must go BEFORE systemBarsPadding so it extends to screen edges
             var modifier = ModifierBuilder.applyTestTag(Modifier, json)
-            modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true)
+            modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true, data)
 
             // Apply background color BEFORE systemBarsPadding so it extends to screen edges
             backgroundColor?.let {
@@ -153,7 +153,7 @@ class DynamicSafeAreaViewComponent {
 
             // Apply additional margins and padding
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
-            modifier = ModifierBuilder.applyPadding(modifier, json)
+            modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {

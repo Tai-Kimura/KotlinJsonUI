@@ -90,11 +90,11 @@ class DynamicIndicatorComponent {
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
-            modifier = ModifierBuilder.applyPadding(modifier, json)
+            modifier = ModifierBuilder.applyPadding(modifier, json, data)
             modifier = ModifierBuilder.applyAlignment(modifier, json, parentType, data)
 
             // Apply weight if in Row or Column
-            val weight = ModifierBuilder.getWeight(json)
+            val weight = ModifierBuilder.getWeight(json, data)
             // Weight is applied via parentType-aware buildModifier; handled by caller or RowScope/ColumnScope
 
             // Parse colors (supports @{binding})

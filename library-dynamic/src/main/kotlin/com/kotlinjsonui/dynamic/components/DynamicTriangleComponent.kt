@@ -102,7 +102,7 @@ class DynamicTriangleComponent {
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
 
             // 6. padding
-            modifier = ModifierBuilder.applyPadding(modifier, json)
+            modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
             // Lifecycle effects
             if (ModifierBuilder.hasLifecycleEvents(json)) {

@@ -141,7 +141,7 @@ class DynamicCircleImageComponent {
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
 
             // 9. padding
-            modifier = ModifierBuilder.applyPadding(modifier, json)
+            modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
             // Lifecycle effects
             if (ModifierBuilder.hasLifecycleEvents(json)) {

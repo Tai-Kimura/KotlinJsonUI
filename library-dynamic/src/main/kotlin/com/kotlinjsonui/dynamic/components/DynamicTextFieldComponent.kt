@@ -232,7 +232,7 @@ class DynamicTextFieldComponent {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
-            modifier = ModifierBuilder.applySize(modifier, json)
+            modifier = ModifierBuilder.applySize(modifier, json, data = data)
             if (isHidden) {
                 modifier = modifier.alpha(0f)
             } else {
@@ -264,7 +264,7 @@ class DynamicTextFieldComponent {
                 }
 
                 var textFieldModifier: Modifier = Modifier
-                textFieldModifier = ModifierBuilder.applySize(textFieldModifier, json)
+                textFieldModifier = ModifierBuilder.applySize(textFieldModifier, json, data = data)
                 if (fieldId != null) {
                     textFieldModifier = textFieldModifier
                         .focusRequester(focusRequester)

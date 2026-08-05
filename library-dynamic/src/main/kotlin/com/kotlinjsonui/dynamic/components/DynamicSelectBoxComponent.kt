@@ -230,7 +230,7 @@ class DynamicSelectBoxComponent {
             // paddings/padding become contentPadding (never a .padding()
             // modifier, which would inset the self-drawn border instead of
             // the content). Fallback mirrors the composable default.
-            val contentPadding = ModifierBuilder.parseContentPadding(json)
+            val contentPadding = ModifierBuilder.parseContentPadding(json, data)
 
             SelectBox(
                 value = selectedValue,
@@ -396,7 +396,7 @@ class DynamicSelectBoxComponent {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
-            modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true)
+            modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
             return modifier

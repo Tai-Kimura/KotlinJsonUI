@@ -219,7 +219,7 @@ class DynamicButtonComponent {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
-            modifier = ModifierBuilder.applySize(modifier, json)
+            modifier = ModifierBuilder.applySize(modifier, json, data = data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             // onLongPress: Button's native onClick handles taps; the outer
             // long-press gesture fires the handler and consumes the events so
