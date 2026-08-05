@@ -62,6 +62,14 @@ class DistributionTest {
     }
 
     @Test
+    fun equalCenteringIsSpaceAround() {
+        // Each child centred in an equal track. NOT SpaceEvenly: equal gaps
+        // everywhere leaves the outer children off-centre in their tracks.
+        // A reached the same primitive on the web side (`justify-around`).
+        assertEquals(Arrangement.SpaceAround, arrangementFor("equalCentering"))
+    }
+
+    @Test
     fun equalCenteringIsNotEqualSpacing() {
         // They used to collapse: android sent fillEqually AND equalCentering
         // both to SpaceEvenly, so no fixture could tell any pair apart.

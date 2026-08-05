@@ -369,11 +369,15 @@ class DynamicContainerComponent {
                 // `equalSpacing` = equal gaps between adjacent children, with
                 // no leading or trailing gap.
                 distribution == "equalSpacing" -> Arrangement.SpaceBetween
-                // `equalCentering` = equal CENTRE-TO-CENTRE distances. Compose
-                // has no such arrangement; SpaceEvenly is the closest and is
-                // exact only while the children are the same size. Recorded as
-                // an approximation rather than claimed as the canon.
-                distribution == "equalCentering" -> Arrangement.SpaceEvenly
+                // `equalCentering` = equal CENTRE-TO-CENTRE distances, which is
+                // each child centred in an equal track — SpaceAround's model.
+                // SpaceEvenly is NOT it: equal gaps everywhere leaves the
+                // outer children off-centre in their tracks. A named this on
+                // the web side (`justify-around`, base_converter.rb) and cited
+                // Compose's SpaceAround, so the three platforms agree; the
+                // whole point of the ruling is that the four values stop
+                // collapsing differently per platform.
+                distribution == "equalCentering" -> Arrangement.SpaceAround
                 flags.alignTop -> Arrangement.Top
                 flags.alignBottom -> Arrangement.Bottom
                 flags.centerV || flags.centerInParent -> Arrangement.Center
@@ -410,11 +414,15 @@ class DynamicContainerComponent {
                 // `equalSpacing` = equal gaps between adjacent children, with
                 // no leading or trailing gap.
                 distribution == "equalSpacing" -> Arrangement.SpaceBetween
-                // `equalCentering` = equal CENTRE-TO-CENTRE distances. Compose
-                // has no such arrangement; SpaceEvenly is the closest and is
-                // exact only while the children are the same size. Recorded as
-                // an approximation rather than claimed as the canon.
-                distribution == "equalCentering" -> Arrangement.SpaceEvenly
+                // `equalCentering` = equal CENTRE-TO-CENTRE distances, which is
+                // each child centred in an equal track — SpaceAround's model.
+                // SpaceEvenly is NOT it: equal gaps everywhere leaves the
+                // outer children off-centre in their tracks. A named this on
+                // the web side (`justify-around`, base_converter.rb) and cited
+                // Compose's SpaceAround, so the three platforms agree; the
+                // whole point of the ruling is that the four values stop
+                // collapsing differently per platform.
+                distribution == "equalCentering" -> Arrangement.SpaceAround
                 flags.alignLeft -> Arrangement.Start
                 flags.alignRight -> Arrangement.End
                 flags.centerH || flags.centerInParent -> Arrangement.Center
