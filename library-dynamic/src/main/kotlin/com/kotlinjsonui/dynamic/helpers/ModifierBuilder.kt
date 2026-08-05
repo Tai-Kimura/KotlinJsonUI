@@ -520,9 +520,21 @@ object ModifierBuilder {
             }
         }
 
-        // Background color
-        if (bgColor != null) {
-            result = result.background(bgColor)
+        // Background color, with `highlighted` swapping it for the highlight
+        // colour. UIKit's pressed/selected appearance flag: when set (literal
+        // true or a bool binding) the background becomes
+        // `tapBackground ?: highlightBackground` — sjui's
+        // apply_highlighted_to_bag, and what C landed on the codegen path
+        // (modifier_builder.rb:530-546). Neither spelling was read here at
+        // all, so `View/highlighted__true` drew its plain background while the
+        // codegen and web both drew red.
+        val highlightBg = if (resolveHighlighted(json, data) == true) {
+            ColorParser.parseColorWithBinding(json, "tapBackground", data, context)
+                ?: ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+        } else null
+        val effectiveBg = highlightBg ?: bgColor
+        if (effectiveBg != null) {
+            result = result.background(effectiveBg)
         }
 
         // effectStyle on a PLAIN node. The SSoT declares it on `common`, not
@@ -571,6 +583,17 @@ object ModifierBuilder {
      */
     internal fun dimen(element: com.google.gson.JsonElement?, data: Map<String, Any>): Float? =
         ResourceResolver.resolveFloatElement(element, data)
+
+    /**
+     * common.highlighted — literal boolean or `@{binding}`. The codegen's
+     * `case json_data['highlighted']` matches `true` and `'true'` literally and
+     * resolves a binding through the data map; a bare non-binding string is
+     * NOT truthy there, so it is not truthy here either.
+     */
+    internal fun resolveHighlighted(json: JsonObject, data: Map<String, Any>): Boolean? {
+        if (!json.has("highlighted")) return null
+        return ResourceResolver.resolveBoolean(json, "highlighted", data)
+    }
 
     internal fun resolveClipToBounds(json: JsonObject, data: Map<String, Any>): Boolean? {
         val raw = json.get("clipToBounds") ?: return null

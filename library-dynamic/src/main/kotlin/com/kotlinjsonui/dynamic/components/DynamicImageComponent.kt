@@ -33,7 +33,7 @@ class DynamicImageComponent {
     companion object {
         /** Image-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "srcName", "src", "contentMode", "renderingMode"
+            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage"
         )
 
         @Composable
@@ -49,12 +49,24 @@ class DynamicImageComponent {
                 context = context
             )
 
-            // Source priority: srcName > src > defaultImage > text > "placeholder"
+            // Source priority: srcName > src > defaultImage > errorImage >
+            // loadingImage > text > "placeholder".
+            //
+            // A STATIC Image has no in-flight state, so `loadingImage` can only
+            // mean fallback imagery here rather than a spinner — which is the
+            // same reason `errorImage` belongs in the chain. Both were declared
+            // on Image and read by neither Compose path until C put them in the
+            // codegen's chain (image_component.rb:12-20); this path still fell
+            // through to the literal `"placeholder"` drawable, which is why
+            // `Image_{errorImage,loadingImage}__static` sat at parity distance
+            // 10 across runs 3 and 4.
             // ('defaultImage'/'text' are undeclared legacy extras on Image)
             val defaultImage = TypedAttrs.undeclared(json, "defaultImage")?.asString
             val rawSrc = TypedAttrs.rawString(a.srcName)
                 ?: TypedAttrs.rawString(a.src)
                 ?: defaultImage
+                ?: a.errorImage
+                ?: a.loadingImage
                 ?: TypedAttrs.undeclared(json, "text")?.asString
                 ?: "placeholder"
 

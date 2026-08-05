@@ -202,13 +202,28 @@ class DynamicSwitchComponent {
                     else -> FontWeight.Normal
                 }
 
-                Text(
-                    text = labelText,
-                    modifier = Modifier.weight(1f),
-                    fontSize = fontSize?.sp ?: 16.sp,
-                    color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
-                    fontWeight = fontWeightValue
-                )
+                // `labelPosition` — which side of the Switch the label sits on.
+                // It was read by DynamicToggleComponent and by nobody here, so
+                // a Switch always drew its label LEADING; with `trailing` the
+                // codegen emits the Switch first and then the weighted label,
+                // which is what put the two paths 27 apart in run 4's parity.
+                //
+                // The `weight(1f)` stays on the label either way — it pushes
+                // the Switch to the far edge, which is what you want on both
+                // sides, and the codegen says the same thing in the same words.
+                val labelPosition = TypedAttrs.enumString(a.labelPosition) { it.json }
+                    ?.lowercase() ?: "leading"
+
+                val label: @Composable RowScope.() -> Unit = {
+                    Text(
+                        text = labelText,
+                        modifier = Modifier.weight(1f),
+                        fontSize = fontSize?.sp ?: 16.sp,
+                        color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
+                        fontWeight = fontWeightValue
+                    )
+                }
+                if (labelPosition != "trailing") label()
 
                 // Colors for switch — same canonical/legacy pair as createSwitchOnly.
                 val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
@@ -240,6 +255,8 @@ class DynamicSwitchComponent {
                     enabled = isEnabled,
                     colors = colors
                 )
+
+                if (labelPosition == "trailing") label()
             }
         }
 

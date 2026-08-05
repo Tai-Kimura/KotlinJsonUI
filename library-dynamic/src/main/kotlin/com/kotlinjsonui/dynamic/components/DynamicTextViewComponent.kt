@@ -70,7 +70,17 @@ class DynamicTextViewComponent {
             val placeholderText = ResourceResolver.resolveTextValue(rawPlaceholder, data, context)
 
             // Enabled state (supports @{binding})
-            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // `editable` rides the same argument as `enabled`, ANDed with it.
+            // It was declared on TextView and read by nobody on the Compose
+            // paths — only `lib/xml`, which is frozen. Compose's own `readOnly`
+            // would be the closer word, but CustomTextField does not expose it
+            // and sjui already settled the semantic by mapping
+            // `editable: false` onto `.disabled`, so the two flags AND into
+            // the one argument the library does expose. Same resolution the
+            // codegen reached (textview_component.rb:481-497), reproduced so
+            // the two paths cannot disagree about a disabled field.
+            val isEnabled = (TypedAttrs.boolean(a.common.enabled, data) ?: true) &&
+                (a.editable ?: true)
 
             // Text style (supports @{binding})
             val fontSize = TypedAttrs.int(a.fontSize, data) ?: Configuration.TextField.defaultFontSize
@@ -235,7 +245,7 @@ class DynamicTextViewComponent {
 
         /** TextView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "text", "hint", "placeholder", "enabled", "fontSize", "fontColor",
+            "text", "hint", "placeholder", "enabled", "editable", "fontSize", "fontColor",
             "highlightBackground", "containerInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",

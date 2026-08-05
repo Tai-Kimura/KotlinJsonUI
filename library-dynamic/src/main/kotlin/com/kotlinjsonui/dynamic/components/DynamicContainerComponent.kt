@@ -215,7 +215,21 @@ class DynamicContainerComponent {
                 "fill", "fillEqually" -> 1f
                 else -> null
             }
-            val weight = ModifierBuilder.getWeight(child, data, "Column") ?: distributedWeight
+            // A weight the CHILD declares owns that axis and overrides the
+            // child's own width/height there — web renders the weighted child
+            // full-width for `weight: 1, width: 200` (run 4 artifacts: 1049dp
+            // of a 1049dp row) and so does the kjui codegen, which puts weight
+            // and size on ONE node where Compose's `weight(fill = true)` wins.
+            // The dynamic path wraps instead, so the child kept painting its
+            // declared 200dp inside a full-width Box — `common_weight__*`,
+            // three android parity deviations at distance 18.
+            //
+            // A weight that came from the CONTAINER's `distribution` does NOT
+            // override it: 49-E ruled explicit child size beats distribution's
+            // size half. Which is why these two are read apart rather than
+            // collapsed into one nullable.
+            val declaredWeight = ModifierBuilder.getWeight(child, data, "Column")
+            val weight = declaredWeight ?: distributedWeight
             val alignment = ModifierBuilder.getChildAlignment(child, "Column", data)
             val visibility = resolveVisibility(child, data, context)
 
@@ -223,7 +237,7 @@ class DynamicContainerComponent {
             if (weight != null) {
                 childModifier = childModifier.weight(
                     weight,
-                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data, "Column") != null
+                    fill = distribution != "fill" || declaredWeight != null
                 )
             }
             if (alignment is Alignment.Horizontal) childModifier = childModifier.align(alignment)
@@ -231,7 +245,7 @@ class DynamicContainerComponent {
             // When weight is present, inject fillMaxHeight into the child JSON
             // so the child component fills the weighted space (matching static tool behavior)
             val effectiveChild = if (weight != null) {
-                injectFillSize(child, fillHeight = true, fillWidth = false)
+                injectFillSize(child, fillHeight = true, fillWidth = false, override = declaredWeight != null)
             } else child
 
             if (visibility != null) {
@@ -266,7 +280,21 @@ class DynamicContainerComponent {
                 "fill", "fillEqually" -> 1f
                 else -> null
             }
-            val weight = ModifierBuilder.getWeight(child, data, "Row") ?: distributedWeight
+            // A weight the CHILD declares owns that axis and overrides the
+            // child's own width/height there — web renders the weighted child
+            // full-width for `weight: 1, width: 200` (run 4 artifacts: 1049dp
+            // of a 1049dp row) and so does the kjui codegen, which puts weight
+            // and size on ONE node where Compose's `weight(fill = true)` wins.
+            // The dynamic path wraps instead, so the child kept painting its
+            // declared 200dp inside a full-width Box — `common_weight__*`,
+            // three android parity deviations at distance 18.
+            //
+            // A weight that came from the CONTAINER's `distribution` does NOT
+            // override it: 49-E ruled explicit child size beats distribution's
+            // size half. Which is why these two are read apart rather than
+            // collapsed into one nullable.
+            val declaredWeight = ModifierBuilder.getWeight(child, data, "Row")
+            val weight = declaredWeight ?: distributedWeight
             val alignment = ModifierBuilder.getChildAlignment(child, "Row", data)
             val visibility = resolveVisibility(child, data, context)
 
@@ -274,14 +302,14 @@ class DynamicContainerComponent {
             if (weight != null) {
                 childModifier = childModifier.weight(
                     weight,
-                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data, "Row") != null
+                    fill = distribution != "fill" || declaredWeight != null
                 )
             }
             if (alignment is Alignment.Vertical) childModifier = childModifier.align(alignment)
 
             // When weight is present, inject fillMaxWidth into the child JSON
             val effectiveChild = if (weight != null) {
-                injectFillSize(child, fillHeight = false, fillWidth = true)
+                injectFillSize(child, fillHeight = false, fillWidth = true, override = declaredWeight != null)
             } else child
 
             if (visibility != null) {
@@ -480,12 +508,17 @@ class DynamicContainerComponent {
          * axis. In Dynamic mode weight is on a wrapper Box, so we need to ensure the
          * child fills the available space by injecting matchParent on the weighted axis.
          */
-        private fun injectFillSize(json: JsonObject, fillHeight: Boolean, fillWidth: Boolean): JsonObject {
+        private fun injectFillSize(
+            json: JsonObject,
+            fillHeight: Boolean,
+            fillWidth: Boolean,
+            override: Boolean = false
+        ): JsonObject {
             val copy = json.deepCopy()
-            if (fillHeight && !copy.has("height")) {
+            if (fillHeight && (override || !copy.has("height"))) {
                 copy.addProperty("height", "matchParent")
             }
-            if (fillWidth && !copy.has("width")) {
+            if (fillWidth && (override || !copy.has("width"))) {
                 copy.addProperty("width", "matchParent")
             }
             return copy

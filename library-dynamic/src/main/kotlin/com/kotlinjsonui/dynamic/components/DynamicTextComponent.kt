@@ -91,7 +91,11 @@ class DynamicTextComponent {
 
             // Check for partialAttributes or linkable
             val partialAttributes = a.partialAttributes.orEmpty().filterIsInstance<Map<*, *>>()
-            val isLinkable = TypedAttrs.static(a.linkable) == true
+            // `linkable` is declared `["boolean","binding"]`; a STATIC-only
+            // read dropped the bound form, so `Label/linkable__binding` drew
+            // plain text where the codegen and web both drew a link (android
+            // parity distance 29). The bound-dropped family.
+            val isLinkable = TypedAttrs.boolean(a.linkable, data) == true
 
             when {
                 partialAttributes.isNotEmpty() ->
