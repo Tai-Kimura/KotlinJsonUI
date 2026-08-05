@@ -22,6 +22,7 @@ import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.r
 import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.renderChildInRow
 import com.kotlinjsonui.dynamic.generated.SafeAreaViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.SafeAreaEdges
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
@@ -81,28 +82,17 @@ class DynamicSafeAreaViewComponent {
             // Parse edges to apply safe area padding
             // 'edges' is an undeclared legacy runtime extra (canonical
             // spelling is safeAreaInsetPositions); legacy priority order kept
-            val edgesExtra = TypedAttrs.undeclared(json, "edges")?.asJsonArray
-            val requestedEdges = edgesExtra?.map { it.asString }
-                ?: a.safeAreaInsetPositions?.mapNotNull { it as? String }
+            // Edge vocabulary lives in SafeAreaEdges — the same rows are
+            // declared on plain View and must not be read two different ways.
+            // SafeAreaView is the one component that defaults to `all`:
+            // reserving the whole safe area is what it IS.
+            val requestedEdges = SafeAreaEdges.requested(json, a.safeAreaInsetPositions)
                 ?: listOf("all")
-
-            // Filter edges based on parent SafeAreaConfig
-            val edges = requestedEdges.toMutableList().apply {
-                if (safeAreaConfig.ignoreBottom) {
-                    remove("bottom")
-                    if (contains("all")) {
-                        remove("all")
-                        addAll(listOf("top", "start", "end"))
-                    }
-                }
-                if (safeAreaConfig.ignoreTop) {
-                    remove("top")
-                    if (contains("all")) {
-                        remove("all")
-                        addAll(listOf("bottom", "start", "end"))
-                    }
-                }
-            }.distinct()
+            val edges = SafeAreaEdges.filtered(
+                requestedEdges,
+                ignoreTop = safeAreaConfig.ignoreTop,
+                ignoreBottom = safeAreaConfig.ignoreBottom
+            )
 
             // Check if keyboard padding should be applied
             // ('ignoreKeyboard' is an undeclared legacy runtime extra)
@@ -127,29 +117,8 @@ class DynamicSafeAreaViewComponent {
             }
 
             // Apply safe area padding based on edges (after background)
-            modifier = when {
-                edges.contains("all") -> {
-                    modifier.systemBarsPadding()
-                }
-                else -> {
-                    if (edges.contains("top")) {
-                        modifier = modifier.statusBarsPadding()
-                    }
-                    if (edges.contains("bottom")) {
-                        modifier = modifier.navigationBarsPadding()
-                    }
-                    // For start/end, we use systemBarsPadding which handles both
-                    if (edges.contains("start") || edges.contains("end")) {
-                        modifier = modifier.systemBarsPadding()
-                    }
-                    modifier
-                }
-            }
-
-            // Apply keyboard padding unless ignored
-            if (!ignoreKeyboard) {
-                modifier = modifier.imePadding()
-            }
+            modifier = SafeAreaEdges.apply(modifier, edges)
+            modifier = SafeAreaEdges.applyKeyboard(modifier, ignoreKeyboard)
 
             // Apply additional margins and padding
             modifier = ModifierBuilder.applyMargins(modifier, json, data)

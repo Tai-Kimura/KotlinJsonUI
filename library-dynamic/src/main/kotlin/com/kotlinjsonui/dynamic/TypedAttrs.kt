@@ -315,13 +315,64 @@ object UnappliedAttributes {
         }
     }
 
+    private fun isAppDebuggable(context: android.content.Context?): Boolean =
+        DebugDiagnostics.isAppDebuggable(context)
+}
+
+/**
+ * The debug-build gate the diagnostic warnings share.
+ *
+ * Both diagnostics answer the same question — "the layout declared something
+ * that never reached the screen" — and both must stay silent in a consumer's
+ * release build. Keeping the gate in one place is the same rule the attribute
+ * vocabularies follow: a second copy drifts.
+ */
+object DebugDiagnostics {
+    /** Overridable for tests; null = derive from the app's debuggable flag. */
+    var enabledOverride: Boolean? = null
+
     private var debuggable: Boolean? = null
 
-    private fun isAppDebuggable(context: android.content.Context?): Boolean {
+    internal fun isAppDebuggable(context: android.content.Context?): Boolean {
+        enabledOverride?.let { return it }
         debuggable?.let { return it }
         if (context == null) return false
         val isDebug = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         debuggable = isDebug
         return isDebug
+    }
+}
+
+/**
+ * A resource NAME that resolved to nothing.
+ *
+ * `getIdentifier` returns 0 for a name the app does not ship, and every caller
+ * treats 0 as "draw nothing" — so a misspelled drawable is a blank area and no
+ * more. The codegen path spells the same name as `R.drawable.<name>` and fails
+ * to BUILD, which is how plan 49-G found `__control/Image__no-src`: the two
+ * paths disagreed about the same missing resource and only one of them said so.
+ *
+ * This does not change what `resolveDrawable` returns — a consumer's rendering
+ * is unaffected. It only makes the dynamic path say the thing the codegen path
+ * already says, and only in a debuggable build.
+ */
+object UnresolvedResource {
+    private const val TAG = "JsonUIUnresolved"
+
+    /** Test hook: receives every emitted warning message. */
+    var warningSink: ((String) -> Unit)? = null
+
+    private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /** Report a name that `getIdentifier` could not resolve. */
+    fun report(kind: String, name: String, context: android.content.Context?) {
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        val dedupeKey = "$kind:$name"
+        if (!warned.add(dedupeKey)) return
+        val message =
+            "$kind resource '$name' does not resolve — the layout names it but the app " +
+                "ships no such resource, so nothing is drawn there"
+        warningSink?.invoke(message)
+        Log.w(TAG, message)
     }
 }

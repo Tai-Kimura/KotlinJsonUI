@@ -10,10 +10,12 @@ import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.VisibilityWrapper
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.SafeAreaEdges
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
@@ -82,7 +84,25 @@ class DynamicContainerComponent {
             }
 
             // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json, data, parentType = null, context = context)
+            var modifier = ModifierBuilder.buildModifier(json, data, parentType = null, context = context)
+
+            // `safeAreaInsetPositions` is declared on View as well as on
+            // SafeAreaView — the SSoT says so explicitly, because SafeAreaView
+            // is its own definition section and does not inherit View's. Only
+            // the SafeAreaView component read it, so a plain View naming the
+            // edges reserved nothing. Unlike SafeAreaView there is NO default:
+            // a View that says nothing reserves nothing.
+            SafeAreaEdges.requested(json, a.safeAreaInsetPositions)?.let { requested ->
+                val cfg = LocalSafeAreaConfig.current
+                modifier = SafeAreaEdges.apply(
+                    modifier,
+                    SafeAreaEdges.filtered(
+                        requested,
+                        ignoreTop = cfg.ignoreTop,
+                        ignoreBottom = cfg.ignoreBottom
+                    )
+                )
+            }
 
             // Direction (reverse children order)
             val direction = TypedAttrs.enumString(a.direction) { it.json }
@@ -379,7 +399,8 @@ class DynamicContainerComponent {
 
         /** View-section attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "orientation", "direction", "spacing", "distribution"
+            "orientation", "direction", "spacing", "distribution",
+            "safeAreaInsetPositions"
         )
 
         /**

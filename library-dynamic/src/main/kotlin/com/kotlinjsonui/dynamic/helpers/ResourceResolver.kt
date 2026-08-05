@@ -7,6 +7,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
+import com.kotlinjsonui.dynamic.UnresolvedResource
 
 /**
  * Runtime equivalent of resource_resolver.rb in kjui_tools.
@@ -101,7 +102,14 @@ object ResourceResolver {
             value
         }
 
-        return context.resources.getIdentifier(resolved, "drawable", context.packageName)
+        val resId = context.resources.getIdentifier(resolved, "drawable", context.packageName)
+        // 0 still comes back — the caller's behaviour and the consumer's
+        // rendering are unchanged. It just stops being silent in a debuggable
+        // build: the codegen path spells the same name as R.drawable.<name>
+        // and fails to BUILD, so only one of the two paths used to say
+        // anything about a name the app does not ship.
+        if (resId == 0) UnresolvedResource.report("drawable", resolved, context)
+        return resId
     }
 
     /**
