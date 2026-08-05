@@ -25,8 +25,8 @@ data class ViewAttributes(
     val flexWrap: AttrEnum<FlexWrap>? = null,
     /** Gradient colors */
     val gradient: List<Any?>? = null,
-    /** Gradient direction */
-    val gradientDirection: String? = null,
+    /** Gradient direction. Canon copied from GradientView.gradientDirection, which declared the enum for the same concept while this spelling stayed a bare string. Vertical is the fallback on all three. CASE MATTERS on ios: sjui matches 'Horizontal'/'Oblique' literally (modifier_helper.rb:16) without downcasing, while Compose and web downcase — so the capitalised spellings are canonical and the aliases normalise to them before any converter sees the value. RightToLeft and BottomToTop are declared without an alias on purpose: they are reversed directions web implements (gradient_view_converter.rb:88,90) and the other two have no equivalent, so folding them into Horizontal/Vertical would silently reverse the gradient rather than preserve it. [default: Vertical] */
+    val gradientDirection: AttrEnum<GradientDirection>? = null,
     /** View highlighted state */
     val highlighted: Boolean? = null,
     /** Gradient color stop locations */
@@ -102,6 +102,26 @@ data class ViewAttributes(
         }
     }
 
+    enum class GradientDirection(val json: String) {
+        VERTICAL("Vertical"),
+        HORIZONTAL("Horizontal"),
+        OBLIQUE("Oblique"),
+        RIGHT_TO_LEFT("RightToLeft"),
+        BOTTOM_TO_TOP("BottomToTop");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): GradientDirection? = when (raw.lowercase()) {
+                "vertical", "toptobottom" -> VERTICAL
+                "horizontal", "lefttoright" -> HORIZONTAL
+                "oblique", "diagonal" -> OBLIQUE
+                "righttoleft" -> RIGHT_TO_LEFT
+                "bottomtotop" -> BOTTOM_TO_TOP
+                else -> null
+            }
+        }
+    }
+
     enum class Orientation(val json: String) {
         HORIZONTAL("horizontal"),
         VERTICAL("vertical");
@@ -168,7 +188,7 @@ data class ViewAttributes(
             draggable = AttrCoerce.boolean(AttrCoerce.lookup(json, "draggable")),
             flexWrap = parseFlexWrap(AttrCoerce.lookup(json, "flexWrap")),
             gradient = AttrCoerce.array(AttrCoerce.lookup(json, "gradient")),
-            gradientDirection = AttrCoerce.string(AttrCoerce.lookup(json, "gradientDirection")),
+            gradientDirection = parseGradientDirection(AttrCoerce.lookup(json, "gradientDirection")),
             highlighted = AttrCoerce.boolean(AttrCoerce.lookup(json, "highlighted")),
             locations = AttrCoerce.array(AttrCoerce.lookup(json, "locations")),
             onDragEnter = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onDragEnter")),
@@ -205,6 +225,15 @@ data class ViewAttributes(
                 FlexWrap.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("View.flexWrap: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseGradientDirection(raw: Any?): AttrEnum<GradientDirection>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                GradientDirection.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("View.gradientDirection: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
 

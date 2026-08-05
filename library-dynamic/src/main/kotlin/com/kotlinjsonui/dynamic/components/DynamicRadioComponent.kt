@@ -102,6 +102,22 @@ class DynamicRadioComponent {
          * the options branch and rendered an empty Column (34: `Radio/label`
          * pixel-identical to its control on android).
          */
+        /**
+         * `Radio.spacing` — "Space between icon and text", declared
+         * `["number","binding"]` and hard-coded at 8.dp here, so no declared
+         * value could reach the output. C landed the codegen half
+         * (`radio_component.rb:533` `radio_spacing_dp`, default 8) and run 4
+         * measured the gap at distance 12 once D raised the fixture from 8 to
+         * 16 — at 8 the two paths agreed by sharing a default, which is how a
+         * dropped attribute hides: BOTH sides silently right for one value.
+         *
+         * The vertical gap between a group's own label and its items is a
+         * different distance and stays where it is; the codegen does not spell
+         * it either.
+         */
+        internal fun spacingDp(a: RadioAttributes, data: Map<String, Any>): Float =
+            TypedAttrs.float(a.spacing, data) ?: 8f
+
         internal fun rendersAsItem(a: RadioAttributes, hasOptions: Boolean): Boolean =
             a.group != null || ((a.text != null || a.label != null) && !hasOptions)
 
@@ -272,7 +288,7 @@ class DynamicRadioComponent {
                             onClick = { onValueChange(value) },
                             colors = colors
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
                         Text(text = label)
                     }
                 }
@@ -417,7 +433,7 @@ class DynamicRadioComponent {
 
                 // Add label text
                 if (text.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
                     // 'textColor' is an undeclared legacy runtime extra
                     val textColor =
                         ColorParser.parseColorStringWithBinding(
@@ -522,7 +538,7 @@ class DynamicRadioComponent {
                             selected = selectedValue == item,
                             onClick = { onValueChange(item) }
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
                         Text(text = item, color = textColor)
                     }
                 }

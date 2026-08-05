@@ -173,12 +173,28 @@ class DynamicNetworkImageComponent {
             }
 
             // ── AsyncImage ──
-            // Canonical chains (networkImage.noSrc = defaultImage): no src →
-            // defaultImage; error → errorImage, falling back to defaultImage.
+            // Each Coil slot takes ONLY the images the ruling puts in its own
+            // state (`shared/core/attribute_semantics.json#networkImage`): no
+            // src → defaultImage; loading → hint/placeholder/loadingImage; on
+            // error → errorImage, falling back to defaultImage.
+            //
+            // The tails these two chains used to carry — `?: placeholderResId`
+            // on both, and `?: errorResId` on the fallback — made a state image
+            // appear in a state it was never declared for. Every NetworkImage
+            // conformance fixture is no-src, so the whole family rendered
+            // through `fallback`, and errorImage/loadingImage/placeholder went
+            // visibly active while `hint` — the only one declaring
+            // defaultImage — stayed inert. Same rule as `semantics.border`: an
+            // image not declared for this state is not summoned into it, and a
+            // no-src view with no defaultImage correctly shows nothing (49 #19,
+            // C's verdict ratified 2026-08-05; the codegen half is
+            // networkimage_component.rb, and the two must agree or the same
+            // layout draws differently on the two paths).
+            //
             // Empty url becomes null so Coil takes the fallback path instead
             // of treating "" as a failing request.
-            val effectiveErrorResId = errorResId ?: defaultResId ?: placeholderResId
-            val effectiveFallbackResId = defaultResId ?: errorResId ?: placeholderResId
+            val effectiveErrorResId = errorSlot(errorResId, defaultResId)
+            val effectiveFallbackResId = fallbackSlot(defaultResId)
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(imageUrl.takeIf { it.isNotEmpty() })
@@ -193,5 +209,28 @@ class DynamicNetworkImageComponent {
                 modifier = modifier
             )
         }
+
+        /**
+         * The ERROR state's image: the one declared for it, then the no-src
+         * image as the canon's only permitted fallback. Nothing else — see the
+         * call site for why the old `?: placeholder` tail was a defect.
+         */
+        internal fun errorSlot(errorResId: Int?, defaultResId: Int?): Int? =
+            errorResId ?: defaultResId
+
+        /**
+         * The NO-SRC state's image: `defaultImage` alone. A no-src view that
+         * declares no defaultImage correctly shows nothing.
+         */
+        internal fun fallbackSlot(defaultResId: Int?): Int? = defaultResId
+
+        /**
+         * The LOADING state's image: `hint` > `placeholder` > `loadingImage`,
+         * the same order and the same three spellings the codegen reads
+         * (networkimage_component.rb:41).
+         */
+        internal fun loadingSlot(hint: Int?, placeholder: Int?, loadingImage: Int?): Int? =
+            hint ?: placeholder ?: loadingImage
+
     }
 }

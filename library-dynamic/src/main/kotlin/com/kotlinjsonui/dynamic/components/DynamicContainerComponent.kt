@@ -215,7 +215,7 @@ class DynamicContainerComponent {
                 "fill", "fillEqually" -> 1f
                 else -> null
             }
-            val weight = ModifierBuilder.getWeight(child, data) ?: distributedWeight
+            val weight = ModifierBuilder.getWeight(child, data, "Column") ?: distributedWeight
             val alignment = ModifierBuilder.getChildAlignment(child, "Column", data)
             val visibility = resolveVisibility(child, data, context)
 
@@ -223,7 +223,7 @@ class DynamicContainerComponent {
             if (weight != null) {
                 childModifier = childModifier.weight(
                     weight,
-                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data) != null
+                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data, "Column") != null
                 )
             }
             if (alignment is Alignment.Horizontal) childModifier = childModifier.align(alignment)
@@ -266,7 +266,7 @@ class DynamicContainerComponent {
                 "fill", "fillEqually" -> 1f
                 else -> null
             }
-            val weight = ModifierBuilder.getWeight(child, data) ?: distributedWeight
+            val weight = ModifierBuilder.getWeight(child, data, "Row") ?: distributedWeight
             val alignment = ModifierBuilder.getChildAlignment(child, "Row", data)
             val visibility = resolveVisibility(child, data, context)
 
@@ -274,7 +274,7 @@ class DynamicContainerComponent {
             if (weight != null) {
                 childModifier = childModifier.weight(
                     weight,
-                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data) != null
+                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data, "Row") != null
                 )
             }
             if (alignment is Alignment.Vertical) childModifier = childModifier.align(alignment)

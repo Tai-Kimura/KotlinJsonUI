@@ -89,11 +89,15 @@ class DynamicCollectionComponent {
             )
             ModifierBuilder.ApplyLifecycleEffects(json, data)
 
-            // Resolve onItemAppear callback (function-valued callback type,
-            // skipped by the definitions codegen — undeclared legacy runtime extra)
+            // `onItemAppear` is a DECLARED row again (49-E `3a48d11`): it was
+            // `type: "callback"` — the only one in the SSoT — and attr-codegen
+            // skips that type as "function-valued, not extractable from JSON",
+            // so it had no row in any generated table. What a layout actually
+            // carries is the `@{handlerName}` STRING, which is a binding; the
+            // handler itself comes from the data map, as it does here.
             @Suppress("UNCHECKED_CAST")
             val onItemAppear: ((Int) -> Unit)? = run {
-                val raw = TypedAttrs.undeclared(json, "onItemAppear")?.asString ?: return@run null
+                val raw = TypedAttrs.rawString(a.onItemAppear) ?: return@run null
                 val propName = ModifierBuilder.extractBindingProperty(raw) ?: return@run null
                 data[propName] as? Function1<Int, Unit>
             }
@@ -1151,7 +1155,8 @@ class DynamicCollectionComponent {
             "headerClasses", "insetHorizontal", "insetVertical", "insets",
             "itemSpacing", "items", "layout", "lazy", "lineSpacing",
             "onValueChange", "orientation", "paging", "reverseLayout",
-            "scrollAnchor", "defaultScrollAnchor", "scrollEnabled", "scrollTo"
+            "scrollAnchor", "defaultScrollAnchor", "scrollEnabled", "scrollTo",
+            "onItemAppear"
         )
 
         private val loggedMisconfiguredCollections = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()

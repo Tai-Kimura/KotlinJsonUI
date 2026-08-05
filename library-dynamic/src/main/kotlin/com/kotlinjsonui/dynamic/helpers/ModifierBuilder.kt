@@ -18,6 +18,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.dropShadow
@@ -185,8 +186,25 @@ object ModifierBuilder {
     }
 
     /** build_weight: weight > 0 within Row/Column only */
-    fun getWeight(json: JsonObject, data: Map<String, Any> = emptyMap()): Float? {
-        return dimen(json.get("weight"), data)?.takeIf { it > 0 }
+    fun getWeight(
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap(),
+        parentOrientation: String? = null
+    ): Float? {
+        // `heightWeight` is the vertical spelling and reached no weight at all
+        // on either path: build_size consulted it to decide an explicit height
+        // was absent, and then nothing was ever distributed. C landed the
+        // codegen half (modifier_builder.rb:113) and run 4 measured the dynamic
+        // gap as `common_heightWeight__static` at distance 61 — the largest
+        // android parity deviation in the run. In a Column it is the
+        // axis-specific spelling and wins over the shorthand; everywhere else
+        // `weight` keeps its meaning, so no existing layout moves.
+        val element = if (parentOrientation == "Column" && json.has("heightWeight")) {
+            json.get("heightWeight")
+        } else {
+            json.get("weight")
+        }
+        return dimen(element, data)?.takeIf { it > 0 }
     }
 
     /** build_size: frame object, width/height, matchParent/wrapContent, min/max, aspectRatio */
@@ -505,6 +523,21 @@ object ModifierBuilder {
         // Background color
         if (bgColor != null) {
             result = result.background(bgColor)
+        }
+
+        // effectStyle on a PLAIN node. The SSoT declares it on `common`, not
+        // just on Blur, and only DynamicBlurViewComponent read it — so a View
+        // declaring a material got nothing. Same position and same table as
+        // the codegen (modifier_builder.rb:606-617 via EffectStyleHelper):
+        // scrim first, blur over it, both before clipToBounds. Blur builds its
+        // own richer chain from the same table and is skipped here, exactly as
+        // the codegen skips it.
+        val effectType = json.get("type")?.takeIf { it.isJsonPrimitive }?.asString
+        if (effectType != "Blur" && effectType != "BlurView") {
+            val effectStyle = json.get("effectStyle")
+                ?.takeIf { it.isJsonPrimitive }?.asString
+            EffectStyleTable.scrim(effectStyle)?.let { result = result.background(it) }
+            EffectStyleTable.blurDp(effectStyle)?.let { result = result.blur(it.dp) }
         }
 
         // clipToBounds — last in the background group, exactly where

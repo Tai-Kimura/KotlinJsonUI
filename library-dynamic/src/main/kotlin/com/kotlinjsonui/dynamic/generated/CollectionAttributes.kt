@@ -58,6 +58,8 @@ data class CollectionAttributes(
     val lazy: AttrValue<AttrEnum<Lazy>>? = null,
     /** Spacing between rows */
     val lineSpacing: Double? = null,
+    /** Called with the cell index (Int) when a cell appears on screen. Use for pagination by checking index against total count in ViewModel. Declared `binding` because that is what a layout actually carries: the author writes `@{handlerName}`, a STRING, and every reader matches it as one (kjui collection_component.rb:364 `json_data['onItemAppear'].match(/@\{([^}]+)\}/)`, and the binding validators infer `((Int) -> Unit)?` from that spelling). It was `type: "callback"` — the only callback-typed attribute in the whole SSoT — and attr-codegen skips that type as "function-valued, not extractable from JSON". True of a function; not true of the `@{...}` string a JSON layout can hold, so the attribute had no row in any generated table and no platform could read it typed (2026-08-05, plan 49-E, raised by A). */
+    val onItemAppear: AttrValue<String>? = null,
     /** Collection page/selection change handler. Canonical; prefer over onPageChanged. [aliases: onValueChanged, onPageChanged; binding: one-way] */
     val onValueChange: AttrValue<String>? = null,
     /** Scroll orientation (horizontal or vertical) */
@@ -72,7 +74,7 @@ data class CollectionAttributes(
     val scrollAnimated: Boolean? = null,
     /** Enable/disable scrolling (binding supported) */
     val scrollEnabled: AttrValue<Boolean>? = null,
-    /** PassthroughSubject<Int, Never> for programmatic scrolling to cell index */
+    /** Binding that requests a programmatic scroll. The declared DATA CLASS is a plain value — `String` when cellIdProperty is set (scroll to that cell id), `Int` otherwise (scroll to that index). It is deliberately NOT `PassthroughSubject<Int, Never>`, which this description used to prescribe: PassthroughSubject is a Combine type, and naming a Swift transport in the cross-platform SSoT is what made consumers write it into their data section, where kjui's map_to_kotlin_type passes unknown classes through verbatim and the Kotlin build dies on it. How the request is delivered is each platform's own business — iOS wraps the value in a publisher so a repeated send re-scrolls, Compose reads the String directly, web keys a useEffect on it. STATUS 2026-08-05, after B landed the derivation (jsonui-cli 8c41e3e): the CODEGEN side of all three platforms now takes the plain value — sjui emits `.onChange(of: data.<prop>)` with no publisher and no throttle, Compose keys a LaunchedEffect on it, web a useEffect. The remaining gap is the SwiftUI DYNAMIC renderer: CollectionConverter.swift:127 still resolves the binding as `data[propName] as? PassthroughSubject<Int, Never>` and gets nil for a plain value, so the scroll silently never fires there (it does not crash, it does nothing). Consequence for fixtures: a Collection.scrollTo fixture is now declarable and no longer kills the Kotlin build, and Collection.scrollAnchor is measurable on the codegen path — but ios codegen and ios dynamic will disagree until the dynamic resolver accepts the value, so expect a parity finding there rather than a render failure. Owner of the remainder: the SwiftJsonUI dynamic lane. Note also that the vendored CollectionAttributes.swift still carries the old publisher wording in its doc comment; it is generated from this description and will pick the correction up at the next re-vendor. */
     val scrollTo: AttrValue<Any>? = null,
     /** Section-based configuration */
     val sections: List<Any?>? = null,
@@ -193,6 +195,7 @@ data class CollectionAttributes(
             "layout",
             "lazy",
             "lineSpacing",
+            "onItemAppear",
             "onValueChange",
             "orientation",
             "paging",
@@ -253,6 +256,7 @@ data class CollectionAttributes(
             layout = parseLayout(AttrCoerce.lookup(json, "layout")),
             lazy = AttrCoerce.attrValue(AttrCoerce.lookup(json, "lazy")) { parseLazy(it) },
             lineSpacing = AttrCoerce.number(AttrCoerce.lookup(json, "lineSpacing")),
+            onItemAppear = AttrCoerce.attrValue(AttrCoerce.lookup(json, "onItemAppear")) { AttrCoerce.string(it) },
             onValueChange = AttrCoerce.attrValue(AttrCoerce.lookup(json, "onValueChange", listOf("onValueChanged", "onPageChanged"), canonicalOnly)) { AttrCoerce.string(it) },
             orientation = parseOrientation(AttrCoerce.lookup(json, "orientation")),
             paging = AttrCoerce.boolean(AttrCoerce.lookup(json, "paging")),

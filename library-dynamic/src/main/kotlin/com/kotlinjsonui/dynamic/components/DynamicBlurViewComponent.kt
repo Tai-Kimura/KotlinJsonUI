@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.kotlinjsonui.dynamic.helpers.EffectStyleTable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -109,11 +110,14 @@ class DynamicBlurViewComponent {
          * Tool emits `effectStyle: "Light" | "Dark" | "ExtraLight"` from the shared
          * Blur attribute catalog.
          */
-        private fun effectStyleColor(style: String?): Color? = when (style?.lowercase()) {
-            "light" -> Color.White.copy(alpha = 0.4f)
-            "dark" -> Color.Black.copy(alpha = 0.4f)
-            "extralight" -> Color.White.copy(alpha = 0.6f)
-            else -> null
-        }
+        // The same table the common path uses (EffectStyleTable): the
+        // component that OWNS the concept and the `common` spelling must not
+        // answer differently — the shape the codegen settled on when C folded
+        // its two tables together. The UIKit trio keeps the alphas this
+        // component already emitted, so sharing the table changes no Blur
+        // output; what changes is that a SwiftUI material name now draws a
+        // scrim here instead of nothing.
+        private fun effectStyleColor(style: String?): Color? =
+            EffectStyleTable.scrim(style)
     }
 }
