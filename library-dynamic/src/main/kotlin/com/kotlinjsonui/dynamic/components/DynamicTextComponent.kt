@@ -60,9 +60,34 @@ class DynamicTextComponent {
             )
 
             // Resolve text with binding + resource support
-            val text = TypedAttrs.rawString(a.text)
+            val declaredText = TypedAttrs.rawString(a.text)
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) }
                 ?: ""
+
+            // `hint` + `hintAttributes` — a Label's placeholder. UIKit's
+            // SJUILabel swaps in the hint, styled by hintAttributes, when the
+            // text is empty, and it requires BOTH: a hint with no attributes
+            // shows nothing. The kjui codegen states the same rule verbatim
+            // (text_component.rb#hint_overrides) rather than inventing a
+            // divergence; the dynamic path read none of the three rows.
+            // `placeholder` is the declared alias of `hint`.
+            val hintText = (a.hint ?: a.placeholder)
+                ?.takeIf { it.isNotEmpty() && a.hintAttributes != null }
+                ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+            val showHint = declaredText.isEmpty() && hintText != null
+            val text = if (showHint) hintText!! else declaredText
+            // The hint branch is OUTERMOST: an empty label is a hint first and
+            // a selected label second (the codegen orders them the same way).
+            // `hintColor` is the colour-only fallback when the bag carries no
+            // fontColor, exactly as hint_overrides reads it.
+            val hintStyle: Map<String, Any?>? = if (showHint) {
+                a.hintAttributes.orEmpty() + mapOf(
+                    "fontColor" to (
+                        (a.hintAttributes?.get("fontColor") as? String)
+                            ?: TypedAttrs.rawString(a.hintColor)
+                        )
+                )
+            } else null
 
             // Check for partialAttributes or linkable
             val partialAttributes = a.partialAttributes.orEmpty().filterIsInstance<Map<*, *>>()
@@ -72,7 +97,7 @@ class DynamicTextComponent {
                 partialAttributes.isNotEmpty() ->
                     createPartialAttributesText(json, a, partialAttributes, text, data, context)
                 isLinkable -> createLinkableText(json, a, text, data, context)
-                else -> createStandardText(json, a, text, data, context)
+                else -> createStandardText(json, a, text, data, context, hintStyle)
             }
         }
 
@@ -84,7 +109,8 @@ class DynamicTextComponent {
             a: LabelAttributes,
             text: String,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            hintStyle: Map<String, Any?>? = null
         ) {
             // highlightAttributes / highlightColor take over while `selected`
             // is true (SSoT: "Decides which attribute set is in force").
@@ -93,10 +119,12 @@ class DynamicTextComponent {
             // `highlightColor` is the color-only fallback when the
             // highlightAttributes object contributes nothing.
             val isSelected = TypedAttrs.boolean(a.selected, data) == true
-            val hl: Map<String, Any?>? =
-                if (isSelected) a.highlightAttributes?.takeIf { it.isNotEmpty() } else null
+            val hl: Map<String, Any?>? = hintStyle
+                ?: if (isSelected) a.highlightAttributes?.takeIf { it.isNotEmpty() } else null
             val hlFallbackColor: String? =
-                if (isSelected && hl == null) TypedAttrs.rawString(a.highlightColor) else null
+                if (hintStyle == null && isSelected && hl == null) {
+                    TypedAttrs.rawString(a.highlightColor)
+                } else null
             val hlFont = hl?.get("font") as? String
 
             // Font size
@@ -272,7 +300,8 @@ class DynamicTextComponent {
             "autoShrink", "minimumScaleFactor", "lines", "lineBreakMode",
             "textAlign", "underline", "strikethrough", "textShadow",
             "lineHeight", "lineHeightMultiple", "lineSpacing", "edgeInset",
-            "onclick", "selected", "highlightAttributes", "highlightColor"
+            "onclick", "selected", "highlightAttributes", "highlightColor",
+            "hint", "placeholder", "hintAttributes", "hintColor"
         )
 
         private val WEIGHT_NAMES = mapOf(

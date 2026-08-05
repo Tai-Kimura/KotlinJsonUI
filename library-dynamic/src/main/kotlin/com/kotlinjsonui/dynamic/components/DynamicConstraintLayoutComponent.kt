@@ -323,11 +323,32 @@ class DynamicConstraintLayoutComponent {
             }
         }
 
+        /** Margin keys — a margined child measures wider than its declared size. */
+        private val MARGIN_KEYS = listOf(
+            "topMargin", "bottomMargin", "leftMargin", "rightMargin",
+            "startMargin", "endMargin", "marginTop", "marginBottom",
+            "marginLeft", "marginRight", "marginStart", "marginEnd", "margins"
+        )
+
         private fun applyDimensionConstraints(
             childNode: JsonObject,
             scope: ConstrainScope
         ) {
+            // A margined child is rendered by DynamicView as padding AROUND the
+            // declared size, so it occupies margin+size — exactly what the
+            // codegen emits (`.padding(top=60).padding(start=60).width(50)`,
+            // a 110dp-wide element whose visible box starts at 60).
+            // Pinning the ref to the DECLARED size instead made `anchor.end`
+            // land 60dp short, and every sibling linked to it followed
+            // (common_alignRightOfView__static, d=95). Letting the ref wrap
+            // its content restores both edges: `start` at 0, `end` at 110.
+            val margined = MARGIN_KEYS.any { childNode.has(it) }
             with(scope) {
+                if (margined) {
+                    width = Dimension.wrapContent
+                    height = Dimension.wrapContent
+                    return@with
+                }
                 // Width constraint
                 childNode.get("width")?.let { widthElement ->
                     when {
