@@ -148,7 +148,7 @@ class DynamicContainerComponent {
                 horizontalAlignment = horizontalAlignment
             ) {
                 children.forEach { child ->
-                    renderChildInColumn(child, data, context)
+                    renderChildInColumn(child, data, context, distributionOf(a))
                 }
             }
         }
@@ -171,7 +171,7 @@ class DynamicContainerComponent {
                 verticalAlignment = verticalAlignment
             ) {
                 children.forEach { child ->
-                    renderChildInRow(child, data, context)
+                    renderChildInRow(child, data, context, distributionOf(a))
                 }
             }
         }
@@ -202,14 +202,30 @@ class DynamicContainerComponent {
         internal fun ColumnScope.renderChildInColumn(
             child: JsonObject,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            distribution: String? = null
         ) {
-            val weight = ModifierBuilder.getWeight(child, data)
+            // `fill` and `fillEqually` distribute SIZE among the children, so
+            // they are weights — not an Arrangement (49-E: "mapping `fill` to
+            // SpaceBetween is precisely backwards: fill means there is no free
+            // space left to distribute"). `fill` lets a child stay smaller
+            // than its share, `fillEqually` forces every child to the same
+            // size. An explicit `weight` on the child still wins.
+            val distributedWeight = when (distribution) {
+                "fill", "fillEqually" -> 1f
+                else -> null
+            }
+            val weight = ModifierBuilder.getWeight(child, data) ?: distributedWeight
             val alignment = ModifierBuilder.getChildAlignment(child, "Column", data)
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier
-            if (weight != null) childModifier = childModifier.weight(weight)
+            if (weight != null) {
+                childModifier = childModifier.weight(
+                    weight,
+                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data) != null
+                )
+            }
             if (alignment is Alignment.Horizontal) childModifier = childModifier.align(alignment)
 
             // When weight is present, inject fillMaxHeight into the child JSON
@@ -237,14 +253,30 @@ class DynamicContainerComponent {
         internal fun RowScope.renderChildInRow(
             child: JsonObject,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            distribution: String? = null
         ) {
-            val weight = ModifierBuilder.getWeight(child, data)
+            // `fill` and `fillEqually` distribute SIZE among the children, so
+            // they are weights — not an Arrangement (49-E: "mapping `fill` to
+            // SpaceBetween is precisely backwards: fill means there is no free
+            // space left to distribute"). `fill` lets a child stay smaller
+            // than its share, `fillEqually` forces every child to the same
+            // size. An explicit `weight` on the child still wins.
+            val distributedWeight = when (distribution) {
+                "fill", "fillEqually" -> 1f
+                else -> null
+            }
+            val weight = ModifierBuilder.getWeight(child, data) ?: distributedWeight
             val alignment = ModifierBuilder.getChildAlignment(child, "Row", data)
             val visibility = resolveVisibility(child, data, context)
 
             var childModifier: Modifier = Modifier
-            if (weight != null) childModifier = childModifier.weight(weight)
+            if (weight != null) {
+                childModifier = childModifier.weight(
+                    weight,
+                    fill = distribution != "fill" || ModifierBuilder.getWeight(child, data) != null
+                )
+            }
             if (alignment is Alignment.Vertical) childModifier = childModifier.align(alignment)
 
             // When weight is present, inject fillMaxWidth into the child JSON
@@ -305,7 +337,20 @@ class DynamicContainerComponent {
 
         // ── Arrangement / Alignment parsing (matches container_component.rb) ──
 
-        private fun parseVerticalArrangement(
+        /**
+         * The declared `distribution`, or null.
+         *
+         * Split by KIND (49-E ruling): `fill` / `fillEqually` distribute SIZE
+         * and become child weights; `equalSpacing` / `equalCentering`
+         * distribute FREE SPACE and become an Arrangement. Every platform
+         * conflated the two kinds, and each collapsed a DIFFERENT pair into one
+         * output — which is why no fixture comparing two declared values could
+         * tell them apart.
+         */
+        internal fun distributionOf(a: ViewAttributes): String? =
+            TypedAttrs.enumString(a.distribution) { it.json }
+
+        internal fun parseVerticalArrangement(
             a: ViewAttributes,
             json: JsonObject,
             data: Map<String, Any>
@@ -315,10 +360,19 @@ class DynamicContainerComponent {
             val flags = ModifierBuilder.resolvedAlignFlags(json)
 
             return when {
+                // An explicit `spacing` pins the GAP, so it overrides the gap
+                // the free-space values would compute; it says nothing about
+                // SIZE, so fill/fillEqually still apply as child weights
+                // underneath it (49-E: "the more specific declaration wins the
+                // axis it speaks about, and only that axis").
                 spacing != null -> Arrangement.spacedBy(spacing.dp)
-                distribution == "fillEqually" -> Arrangement.SpaceEvenly
-                distribution == "fill" -> Arrangement.SpaceBetween
-                distribution == "equalSpacing" -> Arrangement.SpaceAround
+                // `equalSpacing` = equal gaps between adjacent children, with
+                // no leading or trailing gap.
+                distribution == "equalSpacing" -> Arrangement.SpaceBetween
+                // `equalCentering` = equal CENTRE-TO-CENTRE distances. Compose
+                // has no such arrangement; SpaceEvenly is the closest and is
+                // exact only while the children are the same size. Recorded as
+                // an approximation rather than claimed as the canon.
                 distribution == "equalCentering" -> Arrangement.SpaceEvenly
                 flags.alignTop -> Arrangement.Top
                 flags.alignBottom -> Arrangement.Bottom
@@ -337,7 +391,7 @@ class DynamicContainerComponent {
             }
         }
 
-        private fun parseHorizontalArrangement(
+        internal fun parseHorizontalArrangement(
             a: ViewAttributes,
             json: JsonObject,
             data: Map<String, Any>
@@ -347,10 +401,19 @@ class DynamicContainerComponent {
             val flags = ModifierBuilder.resolvedAlignFlags(json)
 
             return when {
+                // An explicit `spacing` pins the GAP, so it overrides the gap
+                // the free-space values would compute; it says nothing about
+                // SIZE, so fill/fillEqually still apply as child weights
+                // underneath it (49-E: "the more specific declaration wins the
+                // axis it speaks about, and only that axis").
                 spacing != null -> Arrangement.spacedBy(spacing.dp)
-                distribution == "fillEqually" -> Arrangement.SpaceEvenly
-                distribution == "fill" -> Arrangement.SpaceBetween
-                distribution == "equalSpacing" -> Arrangement.SpaceAround
+                // `equalSpacing` = equal gaps between adjacent children, with
+                // no leading or trailing gap.
+                distribution == "equalSpacing" -> Arrangement.SpaceBetween
+                // `equalCentering` = equal CENTRE-TO-CENTRE distances. Compose
+                // has no such arrangement; SpaceEvenly is the closest and is
+                // exact only while the children are the same size. Recorded as
+                // an approximation rather than claimed as the canon.
                 distribution == "equalCentering" -> Arrangement.SpaceEvenly
                 flags.alignLeft -> Arrangement.Start
                 flags.alignRight -> Arrangement.End
