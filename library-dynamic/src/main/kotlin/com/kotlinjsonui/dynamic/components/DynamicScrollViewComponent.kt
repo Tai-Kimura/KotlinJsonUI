@@ -5,6 +5,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.PaddingValues
+import com.kotlinjsonui.dynamic.helpers.ContentInsetBehavior
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DynamicView
@@ -67,9 +70,20 @@ class DynamicScrollViewComponent {
             // Get children
             val children = DynamicContainerComponent.getChildren(json)
 
+            // `contentInsetAdjustmentBehavior` — UIKit adjusts by default and
+            // the attribute stops it; Compose never adjusts, so the values
+            // needing code are the opposite ones. Same mapping the codegen
+            // emits (ContentInsetHelper), because the two renders of one
+            // layout have to inset by the same amount.
+            val safeInset = ContentInsetBehavior.safeAreaPadding(
+                TypedAttrs.enumString(a.contentInsetAdjustmentBehavior) { it.json },
+                horizontal = isHorizontal
+            ) ?: PaddingValues(0.dp)
+
             if (isHorizontal) {
                 LazyRow(
                     modifier = modifier,
+                    contentPadding = safeInset,
                     userScrollEnabled = scrollEnabled
                 ) {
                     item {
@@ -81,6 +95,7 @@ class DynamicScrollViewComponent {
             } else {
                 LazyColumn(
                     modifier = modifier,
+                    contentPadding = safeInset,
                     userScrollEnabled = scrollEnabled
                 ) {
                     item {

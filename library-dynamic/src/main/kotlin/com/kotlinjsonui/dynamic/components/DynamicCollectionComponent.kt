@@ -29,6 +29,7 @@ import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.generated.DimensionValue
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.components.CollectionStackMode
+import com.kotlinjsonui.dynamic.helpers.ContentInsetBehavior
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.data.CollectionDataSource
 import com.kotlinjsonui.data.CollectionDataSection
@@ -201,7 +202,19 @@ class DynamicCollectionComponent {
             //   - contentPadding: number | [t, r, b, l]
             //   - insets / contentInsets: number | array | "t|r|b|l" pipe-separated string
             //   - insetHorizontal / insetVertical: separate axes
-            val contentPadding = parseCollectionPadding(a, json)
+            // A DECLARED numeric contentPadding/insets wins: the author named
+            // an exact value, and `contentInsetAdjustmentBehavior` only says
+            // "clear the system bars" — it cannot also mean "and discard the
+            // number I wrote". Same precedence the codegen uses.
+            val declaredPadding = parseCollectionPadding(a, json)
+            val contentPadding = if (hasDeclaredContentPadding(a, json)) {
+                declaredPadding
+            } else {
+                ContentInsetBehavior.safeAreaPadding(
+                    a.contentInsetAdjustmentBehavior,
+                    horizontal = isHorizontal
+                ) ?: declaredPadding
+            }
 
             // Parse spacing
             // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
@@ -1069,6 +1082,12 @@ class DynamicCollectionComponent {
          *   - array of 4 numbers:  [top, end, bottom, start]
          *   - string "t|r|b|l":    pipe-separated; whitespace and commas also work
          */
+        /** Whether the author named an exact content padding of their own. */
+        private fun hasDeclaredContentPadding(a: CollectionAttributes, json: JsonObject): Boolean =
+            TypedAttrs.undeclared(json, "contentPadding") != null ||
+                TypedAttrs.rawKey(json, "insets") != null ||
+                TypedAttrs.rawKey(json, "contentInsets") != null
+
         private fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject): PaddingValues {
             // 'contentPadding' is an undeclared legacy runtime extra; 'insets' /
             // 'contentInsets' are declared shape unions (number | array |
