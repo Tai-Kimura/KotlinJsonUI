@@ -153,6 +153,17 @@ class DynamicRadioItemModeTest {
     }
 
     @Test
+    fun aDeclaredGroupKeepsTheSeedOutOfIt() {
+        // `checked` is a SEED, not an override (49-E). A declared group drives
+        // the selection; letting the seed in pinned a radio the group was
+        // driving so it never switched again.
+        val a = attrs("group" to "g", "text" to "Sample", "checked" to true)
+        assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", emptyMap()))
+        assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("selectedG" to "target")))
+        assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("selectedG" to "other")))
+    }
+
+    @Test
     fun literalCheckedStillSeedsAnUnsetGroup() {
         val a = attrs("text" to "Sample", "checked" to true)
         assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", emptyMap()))

@@ -150,13 +150,23 @@ class DynamicRadioComponent {
             val selectedVar = selectedVarName(a.group ?: "default")
             // The group's selection is compared against this item's IDENTITY —
             // `value` when declared, the node id otherwise — not against the id
-            // unconditionally. C settled the codegen on the same token
-            // (radio_component.rb#radio_selected_expr `token = value || id`),
-            // so a Radio declaring `value` used to agree with the codegen only
-            // by accident.
+            // unconditionally (codegen: `token = value || id`).
+            val groupState = (data[selectedVar] as? String) == token
+
+            // `checked` is a SEED, not an override: it says which option STARTS
+            // selected when nothing else has. A DECLARED GROUP drives the
+            // selection, so the seed stays out of it entirely — otherwise the
+            // seed pins a radio the group is driving and it never switches
+            // again. (49-E wrote the precedence down from the three
+            // implementations: bound selectedValue > literal selectedValue >
+            // group > checked; C matches it in radio_selected_expr.)
+            if (a.group != null) return groupState
+
+            // Lone radio: the seed is all there is, and it holds only until the
+            // group has made a choice — the same "seeds the glyph rather than
+            // the state" the declaration describes.
             val literalChecked = (TypedAttrs.raw(a.checked) as? Boolean) == true
-            return (data[selectedVar] as? String) == token ||
-                (literalChecked && data[selectedVar] == null)
+            return groupState || (literalChecked && data[selectedVar] == null)
         }
 
         /** Group name → the data key holding that group's selection. */
