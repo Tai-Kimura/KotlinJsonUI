@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
+        android:name=".ConformanceHostApp"
         android:allowBackup="false"
         android:label="JsonUI Conformance Host"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
