@@ -15,7 +15,7 @@ data class ImageAttributes(
     val alt: String? = null,
     /** Enable tap gesture independent of onClick. */
     val canTap: Boolean? = null,
-    /** Content mode (binding supported) */
+    /** Content mode (binding supported). ScaleToFill is a declared synonym of fill (the stretch — see attribute_semantics.json#semantics.image); the normalizer folds it, fixtures are generated for the canonical spelling only. */
     val contentMode: AttrValue<AttrEnum<ContentMode>>? = null,
     /** Fallback image on load error. */
     val errorImage: String? = null,
@@ -49,14 +49,13 @@ data class ImageAttributes(
         LEFT("left"),
         RIGHT("right"),
         ASPECT_FILL("AspectFill"),
-        ASPECT_FIT("AspectFit"),
-        SCALE_TO_FILL("ScaleToFill");
+        ASPECT_FIT("AspectFit");
 
         companion object {
             /** Case-insensitive match against the declared values. */
             fun from(raw: String): ContentMode? = when (raw.lowercase()) {
                 "fit" -> FIT
-                "fill" -> FILL
+                "fill", "scaletofill" -> FILL
                 "center" -> CENTER
                 "top" -> TOP
                 "bottom" -> BOTTOM
@@ -64,7 +63,6 @@ data class ImageAttributes(
                 "right" -> RIGHT
                 "aspectfill" -> ASPECT_FILL
                 "aspectfit" -> ASPECT_FIT
-                "scaletofill" -> SCALE_TO_FILL
                 else -> null
             }
         }

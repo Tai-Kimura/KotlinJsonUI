@@ -16,7 +16,7 @@ data class SelectBoxAttributes(
     val caretAttributes: Map<String, Any?>? = null,
     /** Color scheme for native date picker icon visibility (set 'dark' for dark backgrounds) */
     val colorScheme: AttrEnum<ColorScheme>? = null,
-    /** Date picker mode */
+    /** Date picker mode. datetime is a declared synonym of dateAndTime and the normalizer folds it: sjui and rjui accept both spellings (selectbox_converter.rb case arms; rjui downcases), but KotlinJsonUI's DateSelectBox matches "dateAndTime" literally and datetime would silently fall to the date-only branch — so the UIKit spelling is canonical, same reasoning as gradientDirection's capitalised canon. */
     val datePickerMode: AttrEnum<DatePickerMode>? = null,
     /** Date picker style */
     val datePickerStyle: AttrEnum<DatePickerStyle>? = null,
@@ -90,7 +90,6 @@ data class SelectBoxAttributes(
     enum class DatePickerMode(val json: String) {
         DATE("date"),
         TIME("time"),
-        DATETIME("datetime"),
         DATE_AND_TIME("dateAndTime"),
         COUNT_DOWN("countDown");
 
@@ -99,8 +98,7 @@ data class SelectBoxAttributes(
             fun from(raw: String): DatePickerMode? = when (raw.lowercase()) {
                 "date" -> DATE
                 "time" -> TIME
-                "datetime" -> DATETIME
-                "dateandtime" -> DATE_AND_TIME
+                "dateandtime", "datetime" -> DATE_AND_TIME
                 "countdown" -> COUNT_DOWN
                 else -> null
             }
