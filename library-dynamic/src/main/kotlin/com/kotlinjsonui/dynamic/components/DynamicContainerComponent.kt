@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.components.DistributionFillColumn
+import com.kotlinjsonui.components.DistributionFillRow
 import com.kotlinjsonui.components.VisibilityWrapper
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
@@ -139,6 +141,25 @@ class DynamicContainerComponent {
             data: Map<String, Any>,
             context: Context
         ) {
+            // `distribution: fill` is not an arrangement and not a weight —
+            // children grow from their content to consume the axis
+            // (flex-grow, auto basis). Compose's weight cannot express it
+            // (weight(1f) IS fillEqually; fill=false just packs, which went
+            // inert against the control), so both renderers call the one
+            // measurement policy in the base library. `spacing` still pins
+            // the gap; a child that declares its own size on this axis keeps
+            // it (explicit > fill).
+            if (distributionOf(a) == "fill") {
+                DistributionFillColumn(
+                    modifier = modifier,
+                    gap = (TypedAttrs.float(a.spacing, data) ?: 0f).dp,
+                    grows = children.map { !it.has("height") }
+                ) {
+                    children.forEach { child -> renderChildPlain(child, data, context) }
+                }
+                return
+            }
+
             val verticalArrangement = parseVerticalArrangement(a, json, data)
             val horizontalAlignment = parseColumnHorizontalAlignment(json)
 
@@ -162,6 +183,18 @@ class DynamicContainerComponent {
             data: Map<String, Any>,
             context: Context
         ) {
+            // Same fill policy as createColumn — see the comment there.
+            if (distributionOf(a) == "fill") {
+                DistributionFillRow(
+                    modifier = modifier,
+                    gap = (TypedAttrs.float(a.spacing, data) ?: 0f).dp,
+                    grows = children.map { !it.has("width") }
+                ) {
+                    children.forEach { child -> renderChildPlain(child, data, context) }
+                }
+                return
+            }
+
             val horizontalArrangement = parseHorizontalArrangement(a, json, data)
             val verticalAlignment = parseRowVerticalAlignment(json)
 
@@ -173,6 +206,21 @@ class DynamicContainerComponent {
                 children.forEach { child ->
                     renderChildInRow(child, data, context, distributionOf(a))
                 }
+            }
+        }
+
+        /**
+         * Scope-free child render for the fill layouts: visibility still
+         * wraps, but weight/align are RowScope/ColumnScope concerns that the
+         * measurement policy replaces.
+         */
+        @Composable
+        private fun renderChildPlain(child: JsonObject, data: Map<String, Any>, context: Context) {
+            val visibility = resolveVisibility(child, data, context)
+            if (visibility != null) {
+                VisibilityWrapper(visibility = visibility) { DynamicView(child, data) }
+            } else {
+                DynamicView(child, data)
             }
         }
 
@@ -244,7 +292,16 @@ class DynamicContainerComponent {
 
             // When weight is present, inject fillMaxHeight into the child JSON
             // so the child component fills the weighted space (matching static tool behavior)
-            val effectiveChild = if (weight != null) {
+            // The SIZE half of `distribution` splits here, and this decision is
+            // what run 4's value-vs-value gate measured as "android collapses
+            // fill with fillEqually" (0px apart, and the canon requires them
+            // to differ: fill grows children from their content, fillEqually
+            // makes them equal regardless of it). Injecting matchParent into a
+            // `fill` child defeats `weight(fill = false)` — the child fills
+            // its track and draws exactly what fillEqually draws. So the
+            // inject serves declared weights and fillEqually only; a `fill`
+            // child keeps its content size inside its equal track.
+            val effectiveChild = if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
                 injectFillSize(child, fillHeight = true, fillWidth = false, override = declaredWeight != null)
             } else child
 
@@ -308,7 +365,16 @@ class DynamicContainerComponent {
             if (alignment is Alignment.Vertical) childModifier = childModifier.align(alignment)
 
             // When weight is present, inject fillMaxWidth into the child JSON
-            val effectiveChild = if (weight != null) {
+            // The SIZE half of `distribution` splits here, and this decision is
+            // what run 4's value-vs-value gate measured as "android collapses
+            // fill with fillEqually" (0px apart, and the canon requires them
+            // to differ: fill grows children from their content, fillEqually
+            // makes them equal regardless of it). Injecting matchParent into a
+            // `fill` child defeats `weight(fill = false)` — the child fills
+            // its track and draws exactly what fillEqually draws. So the
+            // inject serves declared weights and fillEqually only; a `fill`
+            // child keeps its content size inside its equal track.
+            val effectiveChild = if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
                 injectFillSize(child, fillHeight = false, fillWidth = true, override = declaredWeight != null)
             } else child
 
@@ -375,6 +441,21 @@ class DynamicContainerComponent {
          * output — which is why no fixture comparing two declared values could
          * tell them apart.
          */
+        /**
+         * Whether a weighted child is stretched to fill its track.
+         *
+         * The SIZE half of `distribution` splits exactly here: `fillEqually`
+         * makes every child its share regardless of content, while `fill`
+         * keeps the child content-sized inside its equal track — injecting
+         * matchParent into a `fill` child defeats `weight(fill = false)` and
+         * draws precisely what fillEqually draws, which is what run 4's
+         * value-vs-value gate measured as "android collapses fill with
+         * fillEqually" (0px apart). A weight the child DECLARES always
+         * stretches: that axis is its to own (f33e66c).
+         */
+        internal fun childFillsItsTrack(declaredWeight: Float?, distribution: String?): Boolean =
+            declaredWeight != null || distribution != "fill"
+
         internal fun distributionOf(a: ViewAttributes): String? =
             TypedAttrs.enumString(a.distribution) { it.json }
 

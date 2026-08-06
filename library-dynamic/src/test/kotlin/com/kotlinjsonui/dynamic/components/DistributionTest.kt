@@ -7,6 +7,8 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.generated.ViewAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -102,5 +104,28 @@ class DistributionTest {
         return DynamicContainerComponent.parseHorizontalArrangement(
             ViewAttributes.parse(TypedAttrs.toAttrMap(json)), json, emptyMap()
         )
+    }
+
+    // ── the SIZE half: fill vs fillEqually ───────────────────────────
+
+    @Test
+    fun aFillChildKeepsItsContentSizeInsideItsTrack() {
+        // The collapse run 4 measured: injecting matchParent into a `fill`
+        // child defeats weight(fill = false) and draws what fillEqually
+        // draws — 0px apart on the device. `fill` children stay content-sized.
+        assertFalse(DynamicContainerComponent.childFillsItsTrack(null, "fill"))
+    }
+
+    @Test
+    fun aFillEquallyChildIsStretchedToItsShare() {
+        assertTrue(DynamicContainerComponent.childFillsItsTrack(null, "fillEqually"))
+    }
+
+    @Test
+    fun aDeclaredWeightAlwaysStretches() {
+        // The child's own weight owns that axis (f33e66c) — even under
+        // `distribution: fill`.
+        assertTrue(DynamicContainerComponent.childFillsItsTrack(1f, "fill"))
+        assertTrue(DynamicContainerComponent.childFillsItsTrack(1f, null))
     }
 }
