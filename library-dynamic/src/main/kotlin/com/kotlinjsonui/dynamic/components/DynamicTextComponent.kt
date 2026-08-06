@@ -147,7 +147,7 @@ class DynamicTextComponent {
                 hlFont != null && WEIGHT_NAMES.containsKey(hlFont.lowercase()) ->
                     WEIGHT_NAMES[hlFont.lowercase()]
                 hlFont != null ->
-                    fontWeightString(a, data)?.let { WEIGHT_NAMES[it.lowercase()] ?: FontWeight.Normal }
+                    fontWeightRaw(a, data)?.let { ResourceResolver.fontWeightOf(it) ?: FontWeight.Normal }
                 else -> resolveFontWeight(a, data)
             }
 
@@ -273,7 +273,12 @@ class DynamicTextComponent {
                         text = text,
                         fontColor = attr["fontColor"] as? String,
                         fontSize = (attr["fontSize"] as? Number)?.toInt(),
-                        fontWeight = attr["fontWeight"] as? String
+                        // Declared string|number; PartialAttribute's boundary
+                        // is a String, and PartialAttributesText maps names
+                        // AND the css numbers in one place — so a numeric 600
+                        // travels as "600", not as a silent null.
+                        fontWeight = (attr["fontWeight"] as? String)
+                            ?: (attr["fontWeight"] as? Number)?.toInt()?.toString()
                             ?: attr["font"] as? String,
                         background = attr["background"] as? String,
                         underline = attr["underline"] as? Boolean ?: false,
@@ -330,19 +335,28 @@ class DynamicTextComponent {
                     return WEIGHT_NAMES[lower]
                 }
             }
-            // 'fontWeight' attribute (string | number in the definitions;
-            // numeric weights had no effect in the legacy reader either)
-            val fontWeightValue = fontWeightString(a, data)
-            fontWeightValue?.let { fw ->
-                return WEIGHT_NAMES[fw.lowercase()] ?: FontWeight.Normal
+            // 'fontWeight' attribute — declared string|number, and the number
+            // is the css column of the same table the names come from (600 IS
+            // semibold). The legacy reader stringified 600 and missed
+            // WEIGHT_NAMES, landing on Normal — run 6 measured android inert
+            // where ios drew it. Unknown values still fall back to Normal, as
+            // the mapping's own comment prescribes.
+            fontWeightRaw(a, data)?.let { fw ->
+                return ResourceResolver.fontWeightOf(fw) ?: FontWeight.Normal
             }
             return null
         }
 
-        /** `fontWeight` is declared string|number → typed as Any?. */
-        private fun fontWeightString(a: LabelAttributes, data: Map<String, Any>): String? {
+        /**
+         * `fontWeight` is declared string|number → typed as Any?. The number
+         * arrives as a gson Double, and stringifying it minted "600.0" — a
+         * spelling no table has, which is how the numeric path stayed dropped
+         * even after the css-column lookup existed (smoke: Button active,
+         * Label still inert). Numbers go through as numbers.
+         */
+        private fun fontWeightRaw(a: LabelAttributes, data: Map<String, Any>): Any? {
             val raw = a.fontWeight ?: return null
-            val s = raw as? String ?: return raw.toString()
+            val s = raw as? String ?: return raw
             if (s.startsWith("@{") && s.endsWith("}")) {
                 // Canonical string value context (flat-first, dot paths,
                 // `?? default`).

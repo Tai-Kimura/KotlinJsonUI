@@ -104,16 +104,13 @@ class DynamicButtonComponent {
                 ?: Configuration.Button.defaultFontSize.toFloat()
             // 'font' carries the weight spelling too (ios/web read it — 33
             // cross-effect: android rendered default weight for font: bold).
-            val weightSpelling = (TypedAttrs.static(a.fontWeight) as? String)
-                ?: a.font
-            val fontWeight = when (weightSpelling?.lowercase()) {
-                "bold" -> FontWeight.Bold
-                "semibold" -> FontWeight.SemiBold
-                "medium" -> FontWeight.Medium
-                "light" -> FontWeight.Light
-                "thin" -> FontWeight.Thin
-                else -> FontWeight.Normal
-            }
+            // `fontWeight` is declared string|number — the number is the css
+            // column of the shared weight table (600 IS semibold; run 6:
+            // android inert / ios active). One table answers both spellings
+            // (ResourceResolver), not a per-component when.
+            val fontWeight = ResourceResolver.fontWeightOf(TypedAttrs.static(a.fontWeight))
+                ?: ResourceResolver.fontWeightFor(a.font)
+                ?: FontWeight.Normal
 
             // Colors (supports @{binding})
             val textColor = ColorParser.parseColorStringWithBinding(

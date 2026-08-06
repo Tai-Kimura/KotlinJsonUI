@@ -140,16 +140,7 @@ private fun PartialAttributesTextImpl(
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
                     fontSize = attr.fontSize?.sp ?: style.fontSize,
-                    fontWeight = when (attr.fontWeight?.lowercase()) {
-                        "bold" -> FontWeight.Bold
-                        "semibold" -> FontWeight.SemiBold
-                        "medium" -> FontWeight.Medium
-                        "light" -> FontWeight.Light
-                        "thin" -> FontWeight.Thin
-                        "extrabold" -> FontWeight.ExtraBold
-                        "black" -> FontWeight.Black
-                        else -> style.fontWeight
-                    },
+                    fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = when {
                         attr.underline && attr.strikethrough ->
@@ -225,16 +216,7 @@ private fun LinkablePartialAttributesText(
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
                     fontSize = attr.fontSize?.sp ?: style.fontSize,
-                    fontWeight = when (attr.fontWeight?.lowercase()) {
-                        "bold" -> FontWeight.Bold
-                        "semibold" -> FontWeight.SemiBold
-                        "medium" -> FontWeight.Medium
-                        "light" -> FontWeight.Light
-                        "thin" -> FontWeight.Thin
-                        "extrabold" -> FontWeight.ExtraBold
-                        "black" -> FontWeight.Black
-                        else -> style.fontWeight
-                    },
+                    fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = when {
                         attr.underline && attr.strikethrough ->
@@ -452,4 +434,27 @@ private fun resolveColorString(colorString: String, context: android.content.Con
     } catch (_: Exception) {}
 
     return null
+}
+
+/**
+ * The weight a partial attribute's `fontWeight`/`font` spelling names — by
+ * name, or by the numeric css spelling of `font_weight_mapping.json` (600 IS
+ * semibold, 400/700 are `normal`/`bold` in numeric form). The SSoT declares
+ * `fontWeight` as string|number on all three platforms, and this component is
+ * the one seam both the codegen emit and the dynamic renderer pass through, so
+ * the two spellings are answered HERE once rather than per caller. Unknown
+ * values return null and the span inherits the label's own weight.
+ */
+private fun parseFontWeight(raw: String?): FontWeight? = when (raw?.trim()?.lowercase()) {
+    null -> null
+    "thin", "100" -> FontWeight.Thin
+    "ultralight", "extralight", "200" -> FontWeight.ExtraLight
+    "light", "300" -> FontWeight.Light
+    "regular", "normal", "400" -> FontWeight.Normal
+    "medium", "500" -> FontWeight.Medium
+    "semibold", "600" -> FontWeight.SemiBold
+    "bold", "700" -> FontWeight.Bold
+    "extrabold" -> FontWeight.ExtraBold
+    "black", "900" -> FontWeight.Black
+    else -> null
 }

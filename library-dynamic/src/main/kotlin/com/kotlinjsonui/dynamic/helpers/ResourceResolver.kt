@@ -263,9 +263,41 @@ object ResourceResolver {
         "black" to FontWeight.Black
     )
 
-    /** The weight a `font` / `hintFont` spelling names, or null if it is a family. */
+    /**
+     * The numeric weights `font_weight_mapping.json`'s css column names,
+     * inverted: the SSoT declares `fontWeight` as `["string","number"]` on all
+     * three platforms, and the numeric spellings are the css column of the
+     * SAME table the string names come from — 600 IS semibold, not a tenth
+     * vocabulary (run 6: ios drew 600, android and web dropped it; 49-E routed
+     * the fix through the shared table so the implementations cannot diverge).
+     * `400`/`700` are the css keywords `normal`/`bold` in numeric form. A
+     * number outside the table is unknown → null, and the caller falls back to
+     * regular exactly as the table's own comment prescribes for unknown names.
+     */
+    val NUMERIC_WEIGHTS: Map<Int, FontWeight> = mapOf(
+        100 to FontWeight.Thin,
+        200 to FontWeight.ExtraLight,
+        300 to FontWeight.Light,
+        400 to FontWeight.Normal,
+        500 to FontWeight.Medium,
+        600 to FontWeight.SemiBold,
+        700 to FontWeight.Bold,
+        900 to FontWeight.Black
+    )
+
+    /**
+     * The weight a `font` / `fontWeight` / `hintFont` spelling names — by
+     * name, or by the numeric css spelling — or null if it is a family.
+     */
     fun fontWeightFor(name: String?): FontWeight? =
-        name?.let { WEIGHT_NAMES[it.lowercase()] }
+        name?.let { WEIGHT_NAMES[it.lowercase()] ?: it.trim().toIntOrNull()?.let(NUMERIC_WEIGHTS::get) }
+
+    /** [fontWeightFor] over the raw `string|number` shapes the typed rows carry. */
+    fun fontWeightOf(raw: Any?): FontWeight? = when (raw) {
+        is Number -> NUMERIC_WEIGHTS[raw.toInt()]
+        is String -> fontWeightFor(raw)
+        else -> null
+    }
 
     /**
      * The generic families every platform understands. A consumer writing

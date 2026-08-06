@@ -144,7 +144,7 @@ class DynamicIconLabelComponent {
             val fontWeight = (
                 TypedAttrs.undeclared(json, "fontWeight")?.asString
                     ?: a.font
-            )?.let { fw -> WEIGHT_NAMES[fw.lowercase()] }
+            )?.let { fw -> ResourceResolver.fontWeightFor(fw) }
 
             // Parse layout attributes (iconPosition feeds the existing
             // lowercase switch; 'spacing' is an undeclared legacy runtime
