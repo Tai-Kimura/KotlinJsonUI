@@ -11,11 +11,11 @@ package com.kotlinjsonui.dynamic.generated
 data class SliderAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Maximum value (binding supported). `maxValue` / `maximumValue` are accepted alias spellings. [aliases: maximumValue, maxValue] */
+    /** Maximum value (binding supported). `maxValue` / `maximumValue` are accepted alias spellings. Defaults to 1: with no bounds declared the range is 0 .. 1, this SSoT's convention for a unitless value on a track (compare Progress.progress and opacity, both declared min 0 / max 1). Full ruling in attribute_semantics.json -> sliderRange. [default: 1; aliases: maximumValue, maxValue] */
     val maximum: AttrValue<Double>? = null,
     /** Image at maximum end */
     val maximumValueImage: String? = null,
-    /** Minimum value (binding supported). `minValue` / `minimumValue` are accepted alias spellings. [aliases: minimumValue, minValue] */
+    /** Minimum value (binding supported). `minValue` / `minimumValue` are accepted alias spellings. Defaults to 0: with no bounds declared the range is 0 .. 1, this SSoT's convention for a unitless value on a track (compare Progress.progress and opacity, both declared min 0 / max 1). Full ruling in attribute_semantics.json -> sliderRange. [default: 0; aliases: minimumValue, minValue] */
     val minimum: AttrValue<Double>? = null,
     /** Image at minimum end */
     val minimumValueImage: String? = null,
