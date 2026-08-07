@@ -195,6 +195,28 @@ class DynamicRadioComponent {
             return groupState || (seedChecked && data[selectedVar] == null)
         }
 
+        /**
+         * Which option an ITEMS-mode group starts on.
+         *
+         * `selectedValue` is declared on Radio, and the item-mode path reads it
+         * through the typed accessor — but this path reached for it through the
+         * `undeclared` escape hatch and then only asked whether it was a
+         * binding. A literal `selectedValue: "Gamma"` therefore named nothing
+         * and the group rendered with nothing selected
+         * (`Radio/selectedValue__gamma`).
+         *
+         * The two faces do different jobs, exactly as they do on SelectBox: the
+         * bound one is the group's live channel, the literal one is the seed.
+         */
+        internal fun groupInitialSelection(
+            a: RadioAttributes,
+            data: Map<String, Any>
+        ): String {
+            val bindingVariable = extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
+            if (bindingVariable != null) return (data[bindingVariable] as? String) ?: ""
+            return TypedAttrs.static(a.selectedValue) ?: ""
+        }
+
         /** Group name → the data key holding that group's selection. */
         internal fun selectedVarName(group: String): String =
             if (group.lowercase() != "default") {
@@ -489,15 +511,18 @@ class DynamicRadioComponent {
             val items = TypedAttrs.undeclared(json, "items")
                 ?.asJsonArray?.map { it.asString } ?: emptyList()
 
-            // Parse selected value binding from selectedValue attribute
-            // (undeclared legacy runtime extra)
-            val bindingVariable = extractBindingVariable(
-                TypedAttrs.undeclared(json, "selectedValue")?.asString
-            )
-
-            val currentSelected = if (bindingVariable != null) {
-                (data[bindingVariable] as? String) ?: ""
-            } else ""
+            // `selectedValue` IS declared on Radio — the item-mode path reads it
+            // through the typed accessor — so reaching for it through the
+            // `undeclared` escape hatch here was the bug, not a legacy quirk:
+            // the hatch returns the raw element, and only its BOUND face was
+            // ever consulted. A literal `selectedValue: "Gamma"` therefore
+            // named nothing and the group rendered with no option selected
+            // (Radio/selectedValue__gamma, redistributed by E2).
+            //
+            // Same two-face split as SelectBox's seed: the binding is the
+            // channel, the literal is the seed.
+            val bindingVariable = extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
+            val currentSelected = groupInitialSelection(a, data)
 
             var selectedValue by remember(currentSelected, bindingVariable, data) {
                 mutableStateOf(currentSelected)

@@ -368,19 +368,33 @@ class DynamicCheckBoxComponent {
             val uncheckedColor = ColorParser.parseColorStringWithBinding(
                 a.uncheckedColor, data, context
             )
+            // `iconColor` ("Icon tint color") had NO reference on this path at
+            // all, so a declared one rendered the default tick
+            // (CheckBox/iconColor__static, redistributed by E2). On a Material
+            // Checkbox the "icon" is the tick, not the box — the kjui codegen
+            // maps it to `checkmarkColor` and says so in as many words
+            // (checkbox_component.rb:227-231); this is the same mapping, not a
+            // second opinion about what the icon is.
+            val iconColor = ColorParser.parseColorStringWithBinding(
+                a.iconColor, data, context
+            )
 
-            return when {
-                checkedColor != null && uncheckedColor != null ->
-                    CheckboxDefaults.colors(
-                        checkedColor = checkedColor,
-                        uncheckedColor = uncheckedColor
-                    )
-                checkedColor != null ->
-                    CheckboxDefaults.colors(checkedColor = checkedColor)
-                uncheckedColor != null ->
-                    CheckboxDefaults.colors(uncheckedColor = uncheckedColor)
-                else -> CheckboxDefaults.colors()
-            }
+            // `Color.Unspecified` is Material's own "leave this slot alone":
+            // every parameter defaults to it, and the copy() underneath resolves
+            // each one with `takeOrElse { existing }`. So one call covers all
+            // eight combinations, and an undeclared colour keeps the THEME
+            // value rather than a value we reconstructed.
+            //
+            // Reading the defaults back out and passing them in would have been
+            // wrong, not merely verbose: `uncheckedColor` lands on
+            // `uncheckedBorderColor`, while `uncheckedBoxColor` is pinned to
+            // Transparent — so feeding the box colour into that parameter would
+            // have erased the unchecked border.
+            return CheckboxDefaults.colors(
+                checkedColor = checkedColor ?: Color.Unspecified,
+                uncheckedColor = uncheckedColor ?: Color.Unspecified,
+                checkmarkColor = iconColor ?: Color.Unspecified
+            )
         }
 
         /**

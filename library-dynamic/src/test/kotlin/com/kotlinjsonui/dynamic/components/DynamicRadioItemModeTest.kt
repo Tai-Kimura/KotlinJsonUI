@@ -188,6 +188,35 @@ class DynamicRadioItemModeTest {
         assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("boundChecked" to false)))
     }
 
+    // ── groupInitialSelection (items mode) ───────────────────────────
+
+    @Test
+    fun aLiteralSelectedValueSeedsAnItemsGroup() {
+        // The `Radio/selectedValue__gamma` fixture shape. This path reached for
+        // the row through the `undeclared` hatch and only asked whether it was
+        // a binding, so a literal named nothing and the group rendered with no
+        // option selected.
+        val a = attrs("items" to listOf("Alpha", "Beta", "Gamma"), "selectedValue" to "Gamma")
+        assertEquals("Gamma", DynamicRadioComponent.groupInitialSelection(a, emptyMap()))
+    }
+
+    @Test
+    fun aBoundSelectedValueIsTheGroupsChannel() {
+        val a = attrs("items" to listOf("Alpha", "Beta"), "selectedValue" to "@{chosen}")
+        assertEquals("Beta", DynamicRadioComponent.groupInitialSelection(a, mapOf("chosen" to "Beta")))
+        assertEquals(
+            "an unresolved channel selects nothing — it does not fall back to printing the expression",
+            "",
+            DynamicRadioComponent.groupInitialSelection(a, emptyMap())
+        )
+    }
+
+    @Test
+    fun anItemsGroupWithNoSelectedValueStartsUnselected() {
+        val a = attrs("items" to listOf("Alpha", "Beta"))
+        assertEquals("", DynamicRadioComponent.groupInitialSelection(a, emptyMap()))
+    }
+
     // ── selectedVarName ──────────────────────────────────────────────
 
     @Test
