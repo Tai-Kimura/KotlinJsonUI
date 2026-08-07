@@ -42,6 +42,20 @@ class ConformanceHostApp :
         OkHttpClient.Builder()
             .addInterceptor { chain ->
                 val host = chain.request().url.host
+                // `pending.invalid` MUST be matched before the `.invalid`
+                // catch-all (INTERACTIVE_HOST_CONTRACT.md §5.2): it never
+                // completes and never fails, so the in-flight state stops
+                // being a moment and becomes the resting state of the run.
+                // Still under `.invalid` (RFC 2606) so it cannot leave the
+                // machine either way.
+                if (host == "pending.invalid") {
+                    try {
+                        Thread.sleep(Long.MAX_VALUE)
+                    } catch (e: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                    }
+                    throw IOException("conformance: pending.invalid stall interrupted")
+                }
                 if (host == "conformance.invalid" || host.endsWith(".invalid")) {
                     throw IOException(
                         "conformance: '.invalid' never resolves (RFC 2606) — failing " +
