@@ -191,10 +191,18 @@ class DynamicSwitchComponent {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = rowModifier
             ) {
-                // Label Text with weight(1f)
+                // Label Text with weight(1f). One styling row, same cascade
+                // as the codegen (switch_component.rb#label_style_of): the
+                // labelAttributes BAG wins where it declares, the flat
+                // fontSize / fontColor — declared on Switch itself since 51-E
+                // — answer where it does not. Only the bag was ever read
+                // here, so the flat spellings were inert on the dynamic path
+                // (codegen_effect Switch.fontColor / Switch.fontSize).
                 val labelText = labelAttrs?.get("text") as? String ?: ""
                 val fontSize = (labelAttrs?.get("fontSize") as? Number)?.toFloat()
-                val fontColor = (labelAttrs?.get("fontColor") as? String)?.let {
+                    ?: TypedAttrs.float(a.fontSize, data)
+                val fontColor = ((labelAttrs?.get("fontColor") as? String)
+                    ?: TypedAttrs.rawString(a.fontColor))?.let {
                     ColorParser.parseColorStringWithBinding(it, data, context)
                 }
                 val fontWeightValue = when ((labelAttrs?.get("font") as? String)?.lowercase()) {
