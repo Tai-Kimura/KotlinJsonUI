@@ -1031,35 +1031,11 @@ class DynamicCollectionComponent {
             chrome: ListChrome?,
             content: @Composable () -> Unit
         ) {
-            if (chrome == null || chrome.plain) { content(); return }
-            val inset = when (chrome.style) {
-                "insetgrouped", "sidebar" -> 16.dp
-                else -> 0.dp
-            }
-            val corner = when (chrome.style) {
-                "insetgrouped" -> 12.dp
-                "sidebar" -> 8.dp
-                else -> 0.dp
-            }
-            val bg = when (chrome.style) {
-                "sidebar" -> MaterialTheme.colorScheme.surfaceContainerLow
-                else -> MaterialTheme.colorScheme.surfaceContainer
-            }
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = inset)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(corner))
-                        .background(bg)
-                ) { content() }
-                if (!chrome.hideSeparator) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = inset),
-                        thickness = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant
-                    )
-                }
-            }
+            com.kotlinjsonui.components.CollectionCellChrome(
+                style = chrome?.style,
+                hideSeparator = chrome?.hideSeparator == true,
+                content = content
+            )
         }
 
         @Composable
