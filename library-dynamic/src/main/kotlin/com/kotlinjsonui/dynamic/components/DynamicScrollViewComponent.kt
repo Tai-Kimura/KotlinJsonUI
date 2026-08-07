@@ -1,6 +1,9 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
@@ -34,7 +37,7 @@ class DynamicScrollViewComponent {
     companion object {
         /** ScrollView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "keyboardAvoidance", "scrollEnabled", "orientation"
+            "keyboardAvoidance", "scrollEnabled", "orientation", "defaultScrollAnchor"
         )
 
         @Composable
@@ -80,8 +83,24 @@ class DynamicScrollViewComponent {
                 horizontal = isHorizontal
             ) ?: PaddingValues(0.dp)
 
+            // defaultScrollAnchor — where the scroll STARTS. Everything sits
+            // in ONE lazy item here, so indices cannot anchor; scrollBy is
+            // item-agnostic: a huge delta clamps at the end (bottom), and
+            // backing up half the consumed extent is the centre. One-shot,
+            // same contract as the codegen emit and Collection's anchor.
+            val anchor = TypedAttrs.enumString(a.defaultScrollAnchor) { it.json }?.lowercase()
+                ?.takeIf { it == "bottom" || it == "center" }
+            val listState = rememberLazyListState()
+            if (anchor != null) {
+                LaunchedEffect(Unit) {
+                    val consumed = listState.scrollBy(1e9f)
+                    if (anchor == "center") listState.scrollBy(-consumed / 2f)
+                }
+            }
+
             if (isHorizontal) {
                 LazyRow(
+                    state = listState,
                     modifier = modifier,
                     contentPadding = safeInset,
                     userScrollEnabled = scrollEnabled
@@ -94,6 +113,7 @@ class DynamicScrollViewComponent {
                 }
             } else {
                 LazyColumn(
+                    state = listState,
                     modifier = modifier,
                     contentPadding = safeInset,
                     userScrollEnabled = scrollEnabled

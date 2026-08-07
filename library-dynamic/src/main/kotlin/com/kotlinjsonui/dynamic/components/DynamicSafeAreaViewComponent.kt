@@ -54,7 +54,7 @@ class DynamicSafeAreaViewComponent {
     companion object {
         /** SafeAreaView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "safeAreaInsetPositions", "orientation"
+            "safeAreaInsetPositions", "orientation", "direction"
         )
 
         @Composable
@@ -150,6 +150,18 @@ class DynamicSafeAreaViewComponent {
                 if (element.isJsonObject) {
                     childList.add(element.asJsonObject)
                 }
+            }
+
+            // `direction` reverses the children along the orientation axis —
+            // bottomToTop on a vertical stack, rightToLeft on a horizontal
+            // one, natural order otherwise (same two values the container
+            // paths honour). Nothing here read it, so the declaration was
+            // inert on this face (codegen_effect SafeAreaView.direction).
+            val direction = TypedAttrs.enumString(a.direction) { it.json }
+            if ((direction == "bottomToTop" && orientation == "vertical") ||
+                (direction == "rightToLeft" && orientation == "horizontal")
+            ) {
+                childList.reverse()
             }
 
             // Route children through the scope-aware renderers used by
