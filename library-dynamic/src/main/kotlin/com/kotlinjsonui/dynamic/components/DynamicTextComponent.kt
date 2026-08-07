@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -135,9 +134,18 @@ class DynamicTextComponent {
             val fontSize = (hl?.get("fontSize") as? Number)?.toFloat()
                 ?: TypedAttrs.float(a.fontSize, data)
 
-            // Font color (supports @{binding}; highlight values are static)
+            // Font color. The value can arrive from three places and only one
+            // of them is static: the `highlightAttributes` / `hintAttributes`
+            // BAG is a literal object, but the flat `highlightColor` and
+            // `hintColor` that feed `hlFallbackColor` / the hint bag are
+            // declared `["string","binding"]`. Parsing that branch with the
+            // binding-BLIND parser dropped both bound forms — `__static` was
+            // active on android while `Label/highlightColor__binding` and
+            // `Label/hintColor__binding` rendered the default colour. The
+            // binding-aware parser degrades to the same static parse for the
+            // bag's literals, so one call serves all three.
             val fontColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
-                ?.let { ColorParser.parseColorString(it, context) }
+                ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
                 ?: ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.fontColor), data, context
                 )
@@ -383,28 +391,29 @@ class DynamicTextComponent {
             return null
         }
 
-        /** The `fontFamily` attribute alone (no `font` fallback). */
+        /**
+         * The `fontFamily` attribute alone (no `font` fallback).
+         *
+         * Resolution goes through the SHARED [ResourceResolver.resolveFontResource],
+         * which tries the generic families (serif / sans-serif / monospace /
+         * cursive) before `res/font`. This component used to carry its own
+         * private copy that only did the `res/font` lookup, so a declared
+         * `serif` found no font file and rendered identically to no
+         * declaration at all — `Label/fontFamily` was inert on android in BOTH
+         * faces while TextView and TextField, which already called the shared
+         * helper, were active. The binding was never the problem here; the
+         * duplicated helper was.
+         */
         private fun resolveFontFamilyAttr(
             a: LabelAttributes,
             context: Context,
             data: Map<String, Any>
-        ): FontFamily? {
-            val fontFamilyValue = TypedAttrs.string(a.fontFamily, data) ?: return null
-            val fontResName = fontFamilyValue.replace("-", "_").replace(" ", "_").lowercase()
-            val resId = context.resources.getIdentifier(
-                fontResName, "font", context.packageName
-            )
-            return if (resId != 0) FontFamily(Font(resId)) else null
-        }
+        ): FontFamily? =
+            ResourceResolver.resolveFontResource(TypedAttrs.string(a.fontFamily, data), context)
 
-        /** Resolve a family name against the app's font resources. */
-        private fun resolveFontResource(name: String, context: Context): FontFamily? {
-            val fontResName = name.replace("-", "_").lowercase()
-            val resId = context.resources.getIdentifier(
-                fontResName, "font", context.packageName
-            )
-            return if (resId != 0) FontFamily(Font(resId)) else null
-        }
+        /** Resolve a family name against the generic families, then `res/font`. */
+        private fun resolveFontResource(name: String, context: Context): FontFamily? =
+            ResourceResolver.resolveFontResource(name, context)
 
         private fun resolveTextDecoration(a: LabelAttributes): TextDecoration? {
             // boolean-or-object attributes: only the simple boolean form

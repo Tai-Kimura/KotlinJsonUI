@@ -153,13 +153,21 @@ class DynamicRadioItemModeTest {
     }
 
     @Test
-    fun aDeclaredGroupKeepsTheSeedOutOfIt() {
-        // `checked` is a SEED, not an override (49-E). A declared group drives
-        // the selection; letting the seed in pinned a radio the group was
-        // driving so it never switched again.
+    fun aDeclaredGroupDoesNotCancelTheSeed() {
+        // `checked` is a SEED, not an override — and the declared precedence
+        // (SSoT Radio.checked) is `bound selectedValue > literal selectedValue
+        // > checked`, with NO group term above the seed. `group` only picks
+        // WHICH key holds the selection.
+        //
+        // This test previously asserted the opposite (a declared group cancels
+        // the seed outright). That rule was never declared, and it made android
+        // the deviant: `Radio/checked__true_with_group` rendered an unselected
+        // glyph while ios and web drew the seed (cross_effect, 51 CG-android).
         val a = attrs("group" to "g", "text" to "Sample", "checked" to true)
-        assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", emptyMap()))
+        assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", emptyMap()))
         assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("selectedG" to "target")))
+        // The original concern still holds: once the GROUP has chosen, the seed
+        // is out of the way, so it cannot pin a radio the user is driving.
         assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("selectedG" to "other")))
     }
 
@@ -167,6 +175,17 @@ class DynamicRadioItemModeTest {
     fun literalCheckedStillSeedsAnUnsetGroup() {
         val a = attrs("text" to "Sample", "checked" to true)
         assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", emptyMap()))
+    }
+
+    @Test
+    fun boundCheckedSeedsTheGlyphThroughTheDataMap() {
+        // The bound face of `checked` is declared, and the SSoT says it "seeds
+        // the glyph rather than the state ... it selects only while the group
+        // has made no choice yet". `raw(...) as? Boolean` saw the `"@{expr}"`
+        // String and dropped it (`Radio/checked__binding` inert on android).
+        val a = attrs("text" to "Sample", "checked" to "@{boundChecked}")
+        assertTrue(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("boundChecked" to true)))
+        assertFalse(DynamicRadioComponent.itemIsSelected(a, "target", mapOf("boundChecked" to false)))
     }
 
     // ── selectedVarName ──────────────────────────────────────────────

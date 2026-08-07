@@ -61,6 +61,26 @@ class SelectBoxSelectionTest {
     }
 
     @Test
+    fun aLiteralSelectedItemSeedsTheClosedBox() {
+        // The `SelectBox/selectedItem__static` fixture shape. `selectedItem` is
+        // declared `["string","binding"]`, but only its BOUND face was read
+        // (as the data key); the static face reached no seed, so the closed box
+        // drew empty on android where ios showed the selection.
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedItem":"Two"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    @Test
+    fun aLiteralSelectedItemOutranksALiteralSelectedValue() {
+        // Same order as the bound faces (selectedItem > selectedValue) and the
+        // same order the kjui codegen seeds in (selectbox_component.rb:54-60).
+        val a = attrs(
+            """{"type":"SelectBox","items":["One","Two"],"selectedItem":"Two","selectedValue":"One"}"""
+        )
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))
+    }
+
+    @Test
     fun selectedIndexStillSeedsTheClosedBox() {
         val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":1}""")
         assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))

@@ -129,8 +129,15 @@ class DynamicTextViewComponent {
             // Keyboard options
             val keyboardOptions = buildKeyboardOptions(a)
 
-            // Container inset → contentPadding
-            val contentPadding = buildContainerInset(a.containerInset)
+            // Container inset → contentPadding. `edgeInset` is the UIKit
+            // spelling of the same content inset and takes the same shapes;
+            // the codegen has read `containerInset || edgeInset` all along
+            // (textview_component.rb:325) while this path read only the first,
+            // so `TextView/edgeInset__static` rendered its control on android
+            // where ios and web inset the text. The SSoT says as much in the
+            // declaration itself: "Unimplemented on the Compose TextView path,
+            // not impossible."
+            val contentPadding = buildContainerInset(a.containerInset ?: a.edgeInset)
 
             // TextFieldState sync with data binding
             val viewId = a.common.id ?: "textview"
@@ -246,7 +253,7 @@ class DynamicTextViewComponent {
         /** TextView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "text", "hint", "placeholder", "enabled", "editable", "fontSize", "fontColor",
-            "highlightBackground", "containerInset", "keyboardType", "input",
+            "highlightBackground", "containerInset", "edgeInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",
             "font", "fontFamily", "hintFont"

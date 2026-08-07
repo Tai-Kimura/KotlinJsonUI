@@ -152,8 +152,8 @@ class DynamicRadioComponent {
          * Phase 0, `checked = selectedValue === value`).
          *
          * Without `selectedValue` the historical rule stands: the group state
-         * names this row's id, or a literal `checked: true` seeds an unset
-         * group.
+         * names this row's id, or a declared `checked` (static or bound) seeds
+         * the group while it is still unset.
          */
         internal fun itemIsSelected(
             a: RadioAttributes,
@@ -170,19 +170,29 @@ class DynamicRadioComponent {
             val groupState = (data[selectedVar] as? String) == token
 
             // `checked` is a SEED, not an override: it says which option STARTS
-            // selected when nothing else has. A DECLARED GROUP drives the
-            // selection, so the seed stays out of it entirely — otherwise the
-            // seed pins a radio the group is driving and it never switches
-            // again. (49-E wrote the precedence down from the three
-            // implementations: bound selectedValue > literal selectedValue >
-            // group > checked; C matches it in radio_selected_expr.)
-            if (a.group != null) return groupState
+            // selected when nothing else has. Both faces of the seed are
+            // declared — `["boolean","binding"]` — and the SSoT is explicit
+            // that the BOUND form "seeds the glyph rather than the state, since
+            // a property initialiser cannot read the data map: it selects only
+            // while the group has made no choice yet". `raw(...) as? Boolean`
+            // hands back the `"@{expr}"` String for that face, so the cast
+            // silently dropped it (Radio/checked__true active on android,
+            // Radio/checked__binding inert).
+            val seedChecked = TypedAttrs.boolean(a.checked, data) == true
 
-            // Lone radio: the seed is all there is, and it holds only until the
-            // group has made a choice — the same "seeds the glyph rather than
-            // the state" the declaration describes.
-            val literalChecked = (TypedAttrs.raw(a.checked) as? Boolean) == true
-            return groupState || (literalChecked && data[selectedVar] == null)
+            // "Until the group has made a choice" is the whole guard, and it is
+            // the SAME guard whether or not the node names a group: `group`
+            // only picks WHICH key holds the selection, it does not decide
+            // whether a seed exists. Returning groupState unconditionally for a
+            // named group discarded the seed even at first render, where
+            // nothing had chosen yet — Radio/checked__true_with_group drew an
+            // unselected glyph on android while ios and web drew the seed.
+            // Once the group HAS a selection the seed is out of the way, which
+            // is what stops it pinning a radio the user can no longer change.
+            // (49-E's precedence — bound selectedValue > literal selectedValue
+            // > checked — never listed the group state above the seed; the
+            // group is the state the seed initialises, not a rival to it.)
+            return groupState || (seedChecked && data[selectedVar] == null)
         }
 
         /** Group name → the data key holding that group's selection. */
@@ -446,12 +456,15 @@ class DynamicRadioComponent {
                     // font (weight spelling) / fontSize were never read on
                     // the label (33 cross-effect: android rendered default
                     // weight/size for font: bold / fontSize).
-                    val labelWeight = when (TypedAttrs.rawString(a.font)?.lowercase()) {
-                        "bold" -> androidx.compose.ui.text.font.FontWeight.Bold
-                        "semibold" -> androidx.compose.ui.text.font.FontWeight.SemiBold
-                        "medium" -> androidx.compose.ui.text.font.FontWeight.Medium
-                        else -> null
-                    }
+                    //
+                    // `font` is declared `["string","binding"]` and `rawString`
+                    // returns `"@{expr}"` verbatim, so the local table could
+                    // only match the static face — Radio/font__static was
+                    // active on android while Radio/font__binding drew the
+                    // default weight. Resolve, then use the shared table (the
+                    // local copy also stopped three names short of it).
+                    val labelWeight =
+                        ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
                     val labelSize = TypedAttrs.float(a.fontSize, data)
                     Text(
                         text = text,

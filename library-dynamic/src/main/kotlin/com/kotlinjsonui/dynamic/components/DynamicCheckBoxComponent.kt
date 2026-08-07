@@ -248,10 +248,15 @@ class DynamicCheckBoxComponent {
                 val fontColor = ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.fontColor), data, context
                 )
-                val fontWeightValue = when (TypedAttrs.rawString(a.font)?.lowercase()) {
-                    "bold" -> FontWeight.Bold
-                    else -> null
-                }
+                // `font` is declared `["string","binding"]`. `rawString` hands
+                // back `"@{expr}"` verbatim (it exists to feed the
+                // binding-AWARE helpers), so matching it against weight names
+                // could only ever hit the static face — CheckBox/font__static
+                // was active on android while CheckBox/font__binding rendered
+                // the default weight. Resolve first, then look the name up in
+                // the shared weight table rather than a local one-entry copy.
+                val fontWeightValue =
+                    ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
 
                 if (fontSize != null || fontColor != null || fontWeightValue != null) {
                     Text(

@@ -85,7 +85,8 @@ class DynamicSelectBoxComponent {
 
         /**
          * What the closed box shows: the bound value if there is one, else the
-         * literal seed (`selectedValue`, or the item `selectedIndex` names).
+         * literal seed (`selectedItem` / `selectedValue`, or the item
+         * `selectedIndex` names).
          *
          * STATIC only for the seed — a bound `selectedValue` is the channel
          * above, and printing its expression is the bug this replaced.
@@ -93,7 +94,15 @@ class DynamicSelectBoxComponent {
         internal fun initialSelection(a: SelectBoxAttributes, data: Map<String, Any>): String {
             val bindingVariable = bindingVariableOf(a)
             val current = if (bindingVariable != null) data[bindingVariable]?.toString() ?: "" else ""
-            val seed = TypedAttrs.static(a.selectedValue)
+            // `selectedItem` is declared `["string","binding"]`, so its STATIC
+            // face is a seed exactly like `selectedValue`'s — but only the
+            // bound face was ever read (via bindingVariableOf), so a literal
+            // `selectedItem: "Two"` selected nothing and the closed box drew
+            // empty (`SelectBox/selectedItem__static` inert on android, active
+            // on ios). The kjui codegen already seeds from all three spellings
+            // (selectbox_component.rb:54-60), so this also re-syncs the paths.
+            val seed = TypedAttrs.static(a.selectedItem)
+                ?: TypedAttrs.static(a.selectedValue)
                 ?: (TypedAttrs.raw(a.selectedIndex) as? Number)?.toInt()?.let { idx ->
                     TypedAttrs.static(a.items)?.getOrNull(idx)?.let { item ->
                         when (item) {
