@@ -22,7 +22,7 @@ import kotlin.math.roundToInt
  * Supported JSON attributes:
  * - value/bind: Float or @{variable} for current value
  * - minimum/minimumValue/min: Float minimum value (default 0)
- * - maximum/maximumValue/max: Float maximum value (default 100)
+ * - maximum/maximumValue/max: Float maximum value (default 1 — the declared default, 51-E)
  * - step: Float step size for discrete slider (steps = ((max-min)/step) - 1)
  * - onValueChange: @{handler} for change callback (updates binding + calls handler)
  * - enabled: Boolean or @{variable} to enable/disable
@@ -73,9 +73,14 @@ class DynamicSliderComponent {
             val minValue = TypedAttrs.float(a.minimum, data)
                 ?: ResourceResolver.resolveFloat(json, "min", data)
                 ?: 0f
+            // The DECLARED default is 1, not 100 (51-E slider-range ruling:
+            // an undeclared slider runs 0..1, the same unitless-track
+            // convention Progress.progress carries; the codegen moved with
+            // the ruling and this path lagged — the whole android Slider
+            // parity family, control included, was this one constant).
             val maxValue = TypedAttrs.float(a.maximum, data)
                 ?: ResourceResolver.resolveFloat(json, "max", data)
-                ?: 100f
+                ?: 1f
 
             // Resolve current value
             val currentValue = when {
