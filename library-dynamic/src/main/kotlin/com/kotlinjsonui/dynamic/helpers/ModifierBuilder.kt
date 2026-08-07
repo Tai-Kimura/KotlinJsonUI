@@ -313,7 +313,12 @@ object ModifierBuilder {
                                 if (v < 0) {
                                     if (isWidth) modifier.fillMaxWidth() else modifier.fillMaxHeight()
                                 } else {
-                                    if (isWidth) modifier.width(v.dp) else modifier.height(v.dp)
+                                    // requiredWidth/requiredHeight: a declared size WINS over the
+                                    // parent constraint (canonical size ruling; ios/web draw the
+                                    // declared box). Modifier.width coerced an over-constrained
+                                    // child to the parent size, so the clipToBounds overflow
+                                    // probes were byte-identical on android (2026-08-08).
+                                    if (isWidth) modifier.requiredWidth(v.dp) else modifier.requiredHeight(v.dp)
                                 }
                             } else modifier
                         }
@@ -323,7 +328,7 @@ object ModifierBuilder {
                         if (v < 0) {
                             if (isWidth) modifier.fillMaxWidth() else modifier.fillMaxHeight()
                         } else {
-                            if (isWidth) modifier.width(v.dp) else modifier.height(v.dp)
+                            if (isWidth) modifier.requiredWidth(v.dp) else modifier.requiredHeight(v.dp)
                         }
                     }
                     else -> modifier
