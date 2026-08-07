@@ -64,7 +64,7 @@ class DynamicIconLabelComponent {
 
         /** IconLabel-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "text", "fontSize", "fontColor", "selectedFontColor", "iconPosition", "tintColor"
+            "text", "fontSize", "fontColor", "selectedFontColor", "iconPosition", "tintColor", "iconSize"
         )
 
         @Composable
@@ -108,9 +108,24 @@ class DynamicIconLabelComponent {
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) }
                 ?: ""
 
-            // Parse icon attributes ('iconSize'/'iconColor' are undeclared
-            // legacy runtime extras; 'tintColor' is the declared common row)
-            val iconSize = TypedAttrs.undeclared(json, "iconSize")?.asFloat ?: 24f
+            // `iconSize` is DECLARED number|array (51-E): a number sizes both
+            // edges, a two-element [width, height] sizes them separately —
+            // the same two faces the codegen's icon_size_call reads. The old
+            // undeclared bridge read only the number face.
+            // ('iconColor' stays an undeclared legacy runtime extra;
+            // 'tintColor' is the declared common row.)
+            val iconSizeRaw = a.iconSize
+            val iconSizeW: Float
+            val iconSizeH: Float
+            when (iconSizeRaw) {
+                is Number -> { iconSizeW = iconSizeRaw.toFloat(); iconSizeH = iconSizeRaw.toFloat() }
+                is List<*> -> {
+                    val w = (iconSizeRaw.getOrNull(0) as? Number)?.toFloat() ?: 24f
+                    iconSizeW = w
+                    iconSizeH = (iconSizeRaw.getOrNull(1) as? Number)?.toFloat() ?: w
+                }
+                else -> { iconSizeW = 24f; iconSizeH = 24f }
+            }
             // `selectedFontColor` is the selected-state colour and wins over
             // `fontColor` while `selected` holds — recolouring on selection is
             // the whole point of the row. Only `fontColor` was read here, so
@@ -166,7 +181,7 @@ class DynamicIconLabelComponent {
                     Image(
                         painter = painterResource(id = iconResId),
                         contentDescription = TypedAttrs.undeclared(json, "contentDescription")?.asString ?: "",
-                        modifier = Modifier.size(iconSize.dp),
+                        modifier = Modifier.size(width = iconSizeW.dp, height = iconSizeH.dp),
                         colorFilter = iconTintColor?.let { ColorFilter.tint(it) }
                     )
                 }
