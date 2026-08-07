@@ -289,8 +289,13 @@ class DynamicTextComponent {
                             ?: (attr["fontWeight"] as? Number)?.toInt()?.toString()
                             ?: attr["font"] as? String,
                         background = attr["background"] as? String,
-                        underline = attr["underline"] as? Boolean ?: false,
-                        strikethrough = attr["strikethrough"] as? Boolean ?: false,
+                        // `partialAttributes[].underline` is declared OBJECT-ONLY
+                        // (the boolean face is not in that schema), so `as?
+                        // Boolean` forced the one declared face to false and no
+                        // partial ever drew a line. Same `textDecoration` ruling
+                        // as the Label body, so the same reader.
+                        underline = drawsLine(attr["underline"]),
+                        strikethrough = drawsLine(attr["strikethrough"]),
                         onClick = resolvePartialClickHandler(attr, data)
                     )
                     partialAttr?.let { pa -> partialAttributes.add(pa) }
@@ -415,11 +420,42 @@ class DynamicTextComponent {
         private fun resolveFontResource(name: String, context: Context): FontFamily? =
             ResourceResolver.resolveFontResource(name, context)
 
+        /**
+         * Whether a declared `underline` / `strikethrough` draws a line.
+         *
+         * The rows declare `boolean|object` and the contract is the SSoT's
+         * `textDecoration` ruling (attribute_semantics.json, 51-E §3):
+         *
+         *  - the boolean face: `true` draws, `false` does not;
+         *  - the OBJECT face draws the line it describes and **must never
+         *    render less than the boolean face** — a platform that cannot
+         *    honour `lineStyle` or `color` still draws the plain Single line
+         *    in the text colour;
+         *  - `lineStyle: "None"` is the single object value that draws
+         *    nothing, exactly equivalent to `false`.
+         *
+         * Testing the row with `== true` saw only the boolean face, so every
+         * styled object rendered no line at all — the violation the ruling
+         * names and assigns to this lane (cross_effect Label/underline__styled
+         * and Label/strikethrough__styled: android inert, ios and web active).
+         *
+         * Compose's `TextDecoration` carries neither colour nor thickness, so
+         * the plain line IS the faithful output here; `Double` and `Thick`
+         * stay undistinguished on purpose (the ruling keeps that gap in the
+         * coverage ledger rather than deleting the enum values).
+         */
+        internal fun drawsLine(declared: Any?): Boolean = when (declared) {
+            null -> false
+            is Boolean -> declared
+            is Map<*, *> -> !"none".equals(declared["lineStyle"] as? String, ignoreCase = true)
+            // A non-empty array face is a presence statement like `true`.
+            is List<*> -> declared.isNotEmpty()
+            else -> false
+        }
+
         private fun resolveTextDecoration(a: LabelAttributes): TextDecoration? {
-            // boolean-or-object attributes: only the simple boolean form
-            // toggles the decoration here (matches the legacy reader).
-            val hasUnderline = a.underline == true
-            val hasStrikethrough = a.strikethrough == true
+            val hasUnderline = drawsLine(a.underline)
+            val hasStrikethrough = drawsLine(a.strikethrough)
 
             return when {
                 hasUnderline && hasStrikethrough -> TextDecoration.combine(
