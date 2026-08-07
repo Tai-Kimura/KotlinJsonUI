@@ -273,22 +273,30 @@ class DynamicTextComponent {
             val partialAttributes = mutableListOf<PartialAttribute>()
 
             partialAttrMaps.forEach { attr ->
-                val range = resolvePartialRange(attr, text)
+                val range = resolvePartialRange(attr, text, data)
 
                 range?.let {
                     val partialAttr = PartialAttribute.fromJsonRange(
                         range = it,
                         text = text,
-                        fontColor = attr["fontColor"] as? String,
-                        fontSize = (attr["fontSize"] as? Number)?.toInt(),
+                        // EVERY value slot resolves `@{...}` first: the fields
+                        // inside a partial are declared binding-capable like
+                        // their Label counterparts, but this map is raw JSON —
+                        // `as? String` handed the SPELLING to the colour
+                        // parser, so a bound fontColor styled nothing while
+                        // the codegen (which interpolates `${data.x}` at
+                        // compose time) styled the resolved value
+                        // (downstream a-downstream-hour-row-cell, 2026-08-08).
+                        fontColor = resolvePartialString(attr["fontColor"], data),
+                        fontSize = resolvePartialInt(attr["fontSize"], data),
                         // Declared string|number; PartialAttribute's boundary
                         // is a String, and PartialAttributesText maps names
                         // AND the css numbers in one place — so a numeric 600
                         // travels as "600", not as a silent null.
-                        fontWeight = (attr["fontWeight"] as? String)
+                        fontWeight = resolvePartialString(attr["fontWeight"], data)
                             ?: (attr["fontWeight"] as? Number)?.toInt()?.toString()
-                            ?: attr["font"] as? String,
-                        background = attr["background"] as? String,
+                            ?: resolvePartialString(attr["font"], data),
+                        background = resolvePartialString(attr["background"], data),
                         // `partialAttributes[].underline` is declared OBJECT-ONLY
                         // (the boolean face is not in that schema), so `as?
                         // Boolean` forced the one declared face to false and no
@@ -593,7 +601,7 @@ class DynamicTextComponent {
         /**
          * Resolve partial attribute range: supports numeric array [start, end] or string pattern.
          */
-        private fun resolvePartialRange(attr: Map<*, *>, text: String): Any? {
+        internal fun resolvePartialRange(attr: Map<*, *>, text: String, data: Map<String, Any>): Any? {
             return when (val rangeValue = attr["range"]) {
                 is List<*> -> {
                     if (rangeValue.size == 2 && rangeValue.all { it is Number }) {
@@ -607,9 +615,35 @@ class DynamicTextComponent {
                         }
                     } else null
                 }
-                is String -> rangeValue
+                // A string range is a text pattern AND binding-capable: the
+                // raw spelling went straight to text.indexOf, so
+                // `range: "@{overrideBoldRange}"` never matched and the
+                // partial silently vanished. Resolve first; an empty resolved
+                // pattern (the VM's "no highlight today" value) builds no
+                // partial rather than a zero-width one.
+                is String -> resolvePartialString(rangeValue, data)?.takeIf { it.isNotEmpty() }
                 else -> null
             }
+        }
+
+        /**
+         * A partial-map value slot: `@{expr}` resolves against the data map
+         * through the same canonical resolver every Label-level binding uses
+         * (dot paths, `?? default`); a plain string passes through; an
+         * unresolvable binding yields null (slot absent), never the spelling.
+         */
+        internal fun resolvePartialString(raw: Any?, data: Map<String, Any>): String? {
+            val s = raw as? String ?: return null
+            val expr = com.kotlinjsonui.dynamic.generated.AttrCoerce.bindingExpression(s) ?: return s
+            return DataBindingContext.resolveStringInner(expr, data)
+        }
+
+        /** Numeric partial slot: literal number, or a binding resolved as number. */
+        internal fun resolvePartialInt(raw: Any?, data: Map<String, Any>): Int? = when (raw) {
+            is Number -> raw.toInt()
+            is String -> com.kotlinjsonui.dynamic.generated.AttrCoerce.bindingExpression(raw)
+                ?.let { DataBindingContext.resolveNumberInner(it, data)?.toInt() }
+            else -> null
         }
 
         /**
