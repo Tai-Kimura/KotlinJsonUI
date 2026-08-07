@@ -87,6 +87,18 @@ class SelectBoxSelectionTest {
     }
 
     @Test
+    fun aBoundSelectedIndexResolvesThroughTheDataMap() {
+        // `selectedIndex` is declared `["number","binding"]`, and the seed read
+        // it with `raw(...) as? Number` — a cast the bound face can never
+        // satisfy, since a binding arrives as the `"@{expr}"` String. No
+        // `selectedIndex__binding` fixture exists, so only the read-discipline
+        // scan could find it.
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.initialSelection(a, mapOf("idx" to 1)))
+        assertEquals("One", DynamicSelectBoxComponent.initialSelection(a, mapOf("idx" to 0)))
+    }
+
+    @Test
     fun nothingDeclaredShowsNothing() {
         val a = attrs("""{"type":"SelectBox","items":["One","Two"]}""")
         assertEquals("", DynamicSelectBoxComponent.initialSelection(a, emptyMap()))

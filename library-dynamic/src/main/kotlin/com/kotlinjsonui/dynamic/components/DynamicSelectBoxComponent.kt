@@ -103,7 +103,12 @@ class DynamicSelectBoxComponent {
             // (selectbox_component.rb:54-60), so this also re-syncs the paths.
             val seed = TypedAttrs.static(a.selectedItem)
                 ?: TypedAttrs.static(a.selectedValue)
-                ?: (TypedAttrs.raw(a.selectedIndex) as? Number)?.toInt()?.let { idx ->
+                // `raw(...) as? Number` cannot match the BOUND face — a binding
+                // arrives as the `"@{expr}"` String, so the cast silently
+                // dropped every bound `selectedIndex`. There is no
+                // `selectedIndex__binding` fixture, so nothing could have
+                // measured it; found by the read-discipline scan (51-G #2).
+                ?: TypedAttrs.int(a.selectedIndex, data)?.let { idx ->
                     TypedAttrs.static(a.items)?.getOrNull(idx)?.let { item ->
                         when (item) {
                             is Map<*, *> -> (item["value"] ?: item["label"])?.toString()
