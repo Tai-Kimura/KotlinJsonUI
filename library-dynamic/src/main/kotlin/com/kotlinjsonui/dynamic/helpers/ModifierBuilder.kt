@@ -585,6 +585,30 @@ object ModifierBuilder {
         ResourceResolver.resolveFloatElement(element, data)
 
     /**
+     * `common.offsetX` / `common.offsetY` — "Moves the view without changing
+     * the space it occupies or the position of its siblings".
+     *
+     * **`absoluteOffset`, not `offset`, and not `graphicsLayer`** — E ruled the
+     * primitive from the declarations (plan 51-E), overriding what C and this
+     * lane had agreed between ourselves:
+     *
+     *  - `graphicsLayer { translationX/Y }` leaves the HIT AREA behind, which
+     *    silently breaks the `onClick` / `canTap` that `common` declares on the
+     *    same node — the same argument that decided clipToBounds;
+     *  - plain `Modifier.offset` MIRRORS under RTL, but `offsetX` is an
+     *    absolute-axis spelling like the `leftMargin` family, not a
+     *    start/end one.
+     *
+     * Either spelling alone implies 0 for the other, as declared.
+     */
+    fun applyOffset(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        val x = dimen(json.get("offsetX"), data)
+        val y = dimen(json.get("offsetY"), data)
+        if (x == null && y == null) return modifier
+        return modifier.absoluteOffset(x = (x ?: 0f).dp, y = (y ?: 0f).dp)
+    }
+
+    /**
      * common.highlighted — literal boolean or `@{binding}`. The codegen's
      * `case json_data['highlighted']` matches `true` and `'true'` literally and
      * resolves a binding through the data map; a bare non-binding string is
@@ -1273,6 +1297,13 @@ object ModifierBuilder {
         // 3. weight – caller must apply in RowScope/ColumnScope
         // 4. size
         modifier = applySize(modifier, json, defaultFillMaxWidth, data)
+        // 4.5 offset — the slot is forced, not chosen: it must sit OUTSIDE
+        // background/shadow (Compose applies modifiers left-to-right, so an
+        // offset placed after them leaves the decoration behind and moves only
+        // the content) and INSIDE margins (siblings must not move). Between
+        // size and alpha is the only position satisfying both. Agreed with C
+        // so the two paths put `.absoluteOffset` in the same place.
+        modifier = applyOffset(modifier, json, data)
         // 5. alpha
         modifier = applyAlpha(modifier, json, data)
         // 6. shadow
