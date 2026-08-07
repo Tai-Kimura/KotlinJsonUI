@@ -217,6 +217,12 @@ class DynamicButtonComponent {
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, data = data)
+            // offset sits after size and before alpha, the same slot
+            // buildModifier uses — outside background/shadow so the
+            // decoration moves with the view, inside margins so siblings
+            // do not. This chain does not call buildModifier, which is why
+            // it needed the line of its own (51-C's warning, measured).
+            modifier = ModifierBuilder.applyOffset(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             // onLongPress: Button's native onClick handles taps; the outer
             // long-press gesture fires the handler and consumes the events so

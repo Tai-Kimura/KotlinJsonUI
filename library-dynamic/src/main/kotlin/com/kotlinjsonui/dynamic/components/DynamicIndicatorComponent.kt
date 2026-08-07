@@ -88,6 +88,12 @@ class DynamicIndicatorComponent {
 
             // Continue modifier chain: margins -> alpha -> clickable -> padding -> alignment -> weight
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
+            // offset sits after size and before alpha, the same slot
+            // buildModifier uses — outside background/shadow so the
+            // decoration moves with the view, inside margins so siblings
+            // do not. This chain does not call buildModifier, which is why
+            // it needed the line of its own (51-C's warning, measured).
+            modifier = ModifierBuilder.applyOffset(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
             modifier = ModifierBuilder.applyPadding(modifier, json, data)

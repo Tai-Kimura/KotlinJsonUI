@@ -110,6 +110,13 @@ class DynamicSafeAreaViewComponent {
             // background must go BEFORE systemBarsPadding so it extends to screen edges
             var modifier = ModifierBuilder.applyTestTag(Modifier, json)
             modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true, data)
+            // offset goes here rather than "before alpha" like the other
+            // hand-rolled chains: this one has no alpha step and deliberately
+            // inverts the usual order (background before the padding steps so
+            // it reaches the screen edges). The invariant that actually matters
+            // is unchanged — offset must sit OUTSIDE the background so the
+            // background moves with the view, and after size.
+            modifier = ModifierBuilder.applyOffset(modifier, json, data)
 
             // Apply background color BEFORE systemBarsPadding so it extends to screen edges
             backgroundColor?.let {
