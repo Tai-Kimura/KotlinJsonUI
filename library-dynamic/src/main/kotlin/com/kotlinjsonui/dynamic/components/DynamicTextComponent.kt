@@ -175,15 +175,17 @@ class DynamicTextComponent {
             // with a declared colour leaves the native decoration and is
             // drawn by styledTextLines in that colour instead; lineOffset is
             // UIKit's baselineOffset — the text shifts, the layout box stays.
-            val underlineLineColor = decorationLineColor(a.underline, data, context)
-            val strikethroughLineColor = decorationLineColor(a.strikethrough, data, context)
+            val effectiveTextColor = fontColor
+                ?: androidx.compose.material3.LocalContentColor.current
+            val underlineLine = decorationLineSpec(a.underline, data, context, effectiveTextColor)
+            val strikethroughLine = decorationLineSpec(a.strikethrough, data, context, effectiveTextColor)
             val underlineOffset = decorationLineOffset(a.underline)
             val textDecoration = resolveTextDecoration(
                 a,
-                suppressUnderline = underlineLineColor != null,
-                suppressStrikethrough = strikethroughLineColor != null
+                suppressUnderline = underlineLine != null,
+                suppressStrikethrough = strikethroughLine != null
             )
-            val lineState = if (underlineLineColor != null || strikethroughLineColor != null) {
+            val lineState = if (underlineLine != null || strikethroughLine != null) {
                 androidx.compose.runtime.remember { StyledLineState() }
             } else null
 
@@ -237,8 +239,8 @@ class DynamicTextComponent {
             if (lineState != null) {
                 modifier = modifier.styledTextLines(
                     lineState,
-                    underlineColor = underlineLineColor,
-                    strikethroughColor = strikethroughLineColor
+                    underline = underlineLine,
+                    strikethrough = strikethroughLine
                 )
             }
             if (underlineOffset != null && underlineOffset != 0f) {
@@ -492,18 +494,29 @@ class DynamicTextComponent {
         }
 
         /**
-         * The object face's declared `color`, resolved — or null for the
-         * boolean face / no colour. A face with a custom colour must be
-         * SUPPRESSED from the native decoration (see [styledTextLines]).
+         * The object face as a drawn [com.kotlinjsonui.components.StyledLine]
+         * — non-null when the face needs the drawing seam: a declared
+         * `color`, or a `lineStyle` (Double/Thick) the native decoration
+         * cannot express. `fallbackColor` is the effective text colour, used
+         * when the face styles the line but not its colour. A face with a
+         * spec must be SUPPRESSED from the native decoration.
          */
-        internal fun decorationLineColor(
+        internal fun decorationLineSpec(
             face: Any?,
             data: Map<String, Any>,
-            context: Context
-        ): Color? {
+            context: Context,
+            fallbackColor: Color
+        ): com.kotlinjsonui.components.StyledLine? {
             if (!drawsLine(face)) return null
-            val spelling = (face as? Map<*, *>)?.get("color") as? String ?: return null
-            return ColorParser.parseColorStringWithBinding(spelling, data, context)
+            val map = face as? Map<*, *> ?: return null
+            val style = (map["lineStyle"] as? String)?.lowercase() ?: "single"
+            val declared = (map["color"] as? String)
+                ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
+            if (declared == null && style != "double" && style != "thick") return null
+            return com.kotlinjsonui.components.StyledLine(
+                color = declared ?: fallbackColor,
+                style = style
+            )
         }
 
         /** The object face's underline-only `lineOffset` (UIKit baselineOffset). */
