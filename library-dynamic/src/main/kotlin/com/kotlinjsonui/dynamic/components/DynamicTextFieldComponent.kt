@@ -209,7 +209,15 @@ class DynamicTextFieldComponent {
             // Keyboard actions
             val keyboardActions = buildKeyboardActions(data, nextFocusId, onSubmitHandler, viewId)
 
-            // Placeholder composable
+            // Placeholder composable. hintLineHeightMultiple — Compose has no
+            // multiplier, so it resolves against the hint's own size (falling
+            // back to the field's), derived from LocalTextStyle so the M3
+            // placeholder typography survives; same cascade the codegen and
+            // the TextView hint block already read. The row was unread on
+            // this component (codegen_effect TextField.hintLineHeightMultiple).
+            val hintMultiple =
+                ResourceResolver.nestedNumber(a.hintAttributes, "lineHeightMultiple")?.toFloat()
+                    ?: a.hintLineHeightMultiple?.toFloat()
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
                 {
                     Text(
@@ -219,7 +227,12 @@ class DynamicTextFieldComponent {
                         fontWeight = if ((ResourceResolver.nestedString(a.hintAttributes, "font")
                                 ?: a.hintFont) == "bold") {
                             androidx.compose.ui.text.font.FontWeight.Bold
-                        } else null
+                        } else null,
+                        style = if (hintMultiple != null) {
+                            androidx.compose.material3.LocalTextStyle.current.copy(
+                                lineHeight = ((hintFontSize ?: fontSize) * hintMultiple).sp
+                            )
+                        } else androidx.compose.material3.LocalTextStyle.current
                     )
                 }
             } else null
