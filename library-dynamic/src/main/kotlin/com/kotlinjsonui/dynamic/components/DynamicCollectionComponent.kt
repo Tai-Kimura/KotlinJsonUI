@@ -19,6 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import com.google.gson.JsonArray
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
@@ -267,6 +272,12 @@ class DynamicCollectionComponent {
             // scrollEnabled - controls whether user can scroll (supports @{binding})
             val scrollEnabled = TypedAttrs.boolean(a.scrollEnabled, data) ?: true
 
+            // listStyle chrome + hideSeparator (51-E) — see ListChrome.
+            val listChrome = ListChrome(
+                style = (TypedAttrs.enumString(a.listStyle) { it.json } ?: "plain").lowercase(),
+                hideSeparator = a.hideSeparator == true
+            )
+
             // Parse scrollTo binding
             val scrollToFlow = resolveScrollToFlow(a, data)
             val scrollAnchor = TypedAttrs.enumString(a.scrollAnchor) { it.json } ?: "bottom"
@@ -427,6 +438,7 @@ class DynamicCollectionComponent {
                         cellTemplate = cellTemplate,
                         cellIdProperty = cellIdProperty,
                         data = data,
+                        chrome = listChrome,
                         cellWidth = cellWidth,
                         cellHeight = cellHeight,
                         isHorizontal = true,
@@ -456,6 +468,7 @@ class DynamicCollectionComponent {
                         cellTemplate = cellTemplate,
                         cellIdProperty = cellIdProperty,
                         data = data,
+                        chrome = listChrome,
                         cellWidth = cellWidth,
                         cellHeight = cellHeight,
                         isHorizontal = false,
@@ -839,6 +852,7 @@ class DynamicCollectionComponent {
             cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
+            chrome: ListChrome? = null,
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
             isHorizontal: Boolean,
@@ -917,7 +931,7 @@ class DynamicCollectionComponent {
                                                 .animateItem(),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear)
+                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome)
                                         }
                                     }
                                 } else {
@@ -936,7 +950,7 @@ class DynamicCollectionComponent {
                                                 ),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear)
+                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, chrome)
                                         }
                                     }
                                 }
@@ -998,8 +1012,72 @@ class DynamicCollectionComponent {
         private fun extractStringList(values: List<Any?>?): List<String> =
             values.orEmpty().filterIsInstance<String>()
 
+        /**
+         * `listStyle` chrome + `hideSeparator` (51-E). The chrome wraps each
+         * cell on the LAZY grid path — the one the conformance fixtures
+         * measure; flow/paging/non-lazy routes keep plain. grouped = surface
+         * background + divider; insetGrouped = + horizontal inset and rounded
+         * corners; sidebar = softer surface, tighter corners. The four values
+         * are pairwise-distinct on purpose, and hideSeparator only has a
+         * separator to hide once a chrome draws one (the declaration's own
+         * contract: a NO-OP where the container draws no separators).
+         */
+        internal data class ListChrome(val style: String, val hideSeparator: Boolean) {
+            val plain: Boolean get() = style == "plain" || style.isEmpty()
+        }
+
+        @Composable
+        private fun ChromedCell(
+            chrome: ListChrome?,
+            content: @Composable () -> Unit
+        ) {
+            if (chrome == null || chrome.plain) { content(); return }
+            val inset = when (chrome.style) {
+                "insetgrouped", "sidebar" -> 16.dp
+                else -> 0.dp
+            }
+            val corner = when (chrome.style) {
+                "insetgrouped" -> 12.dp
+                "sidebar" -> 8.dp
+                else -> 0.dp
+            }
+            val bg = when (chrome.style) {
+                "sidebar" -> MaterialTheme.colorScheme.surfaceContainerLow
+                else -> MaterialTheme.colorScheme.surfaceContainer
+            }
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = inset)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(corner))
+                        .background(bg)
+                ) { content() }
+                if (!chrome.hideSeparator) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = inset),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
+            }
+        }
+
         @Composable
         private fun renderCellView(
+            cellClassName: String?,
+            item: Any?,
+            index: Int,
+            data: Map<String, Any>,
+            onItemAppear: ((Int) -> Unit)? = null,
+            chrome: ListChrome? = null
+        ) {
+            ChromedCell(chrome) {
+                renderCellViewInner(cellClassName, item, index, data, onItemAppear)
+            }
+        }
+
+        @Composable
+        private fun renderCellViewInner(
             cellClassName: String?,
             item: Any?,
             index: Int,
