@@ -17,6 +17,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SwitchAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
@@ -49,7 +50,7 @@ class DynamicSwitchComponent {
             "onValueChange", "onToggle",
             "onTintColor", "tint", "tintColor", "thumbTintColor",
             "trackTintColor", "offTintColor",
-            "labelAttributes"
+            "labelAttributes", "label", "labelPosition"
         )
 
         @Composable
@@ -67,7 +68,14 @@ class DynamicSwitchComponent {
                 applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
                 context = LocalContext.current
             )
-            val hasLabel = a.labelAttributes != null
+            // Same gate as the codegen (switch_component.rb:37): a bag OR a
+            // flat label/text spelling makes a labelled switch. Only the bag
+            // was consulted, so a flat `label` — the declared row the
+            // fixtures use — rendered no label at all on this path (the
+            // android Switch_label parity family, distance 22 ×3).
+            val hasLabel = a.labelAttributes != null ||
+                TypedAttrs.rawString(a.label) != null ||
+                TypedAttrs.undeclared(json, "text") != null
             if (hasLabel) {
                 createWithLabel(json, a, data, parentType)
             } else {
@@ -198,7 +206,12 @@ class DynamicSwitchComponent {
                 // — answer where it does not. Only the bag was ever read
                 // here, so the flat spellings were inert on the dynamic path
                 // (codegen_effect Switch.fontColor / Switch.fontSize).
-                val labelText = labelAttrs?.get("text") as? String ?: ""
+                val labelText = (labelAttrs?.get("text") as? String)
+                    ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                    ?: (TypedAttrs.rawString(a.label)
+                        ?: TypedAttrs.undeclared(json, "text")?.takeIf { it.isJsonPrimitive }?.asString)
+                        ?.let { ResourceResolver.resolveTextValue(it, data, context) }
+                    ?: ""
                 val fontSize = (labelAttrs?.get("fontSize") as? Number)?.toFloat()
                     ?: TypedAttrs.float(a.fontSize, data)
                 val fontColor = ((labelAttrs?.get("fontColor") as? String)
