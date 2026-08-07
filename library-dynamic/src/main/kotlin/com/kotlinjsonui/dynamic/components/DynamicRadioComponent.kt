@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.RadioAttributes
@@ -35,9 +36,10 @@ import androidx.compose.ui.platform.LocalContext
  * Attribute access goes through the generated [RadioAttributes]
  * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
  * bridge; the node itself is only passed wholesale to the shared
- * ModifierBuilder pipeline. Several legacy runtime extras (items,
- * options, selectedValue, onValueChange, selectedColor, unselectedColor,
- * textColor) are not declared for Radio and stay on
+ * ModifierBuilder pipeline. `items`, `selectedValue` and `onValueChange`
+ * WERE legacy runtime extras and are declared as of plan 51-E, so they go
+ * through the typed rows now; `options`, `selectedColor`,
+ * `unselectedColor` and `textColor` are still undeclared and stay on
  * [TypedAttrs.undeclared].
  *
  * Supported JSON attributes:
@@ -77,9 +79,10 @@ class DynamicRadioComponent {
             )
 
             when {
-                // Handle radio group with items (highest priority) —
-                // 'items' is an undeclared legacy runtime extra on Radio
-                TypedAttrs.undeclared(json, "items") != null ->
+                // Handle radio group with items (highest priority).
+                // `items` is DECLARED on Radio since plan 51-E, so the routing
+                // asks the typed row rather than the raw element.
+                a.items != null ->
                     createRadioGroupWithItems(json, a, data)
                 // Handle individual radio item —
                 // 'options' is an undeclared legacy runtime extra
@@ -193,6 +196,27 @@ class DynamicRadioComponent {
             // > checked — never listed the group state above the seed; the
             // group is the state the seed initialises, not a rival to it.)
             return groupState || (seedChecked && data[selectedVar] == null)
+        }
+
+        /**
+         * The group's option list, both declared faces.
+         *
+         * `items` is declared `["array","binding"]` (plan 51-E). It used to be
+         * read through the raw hatch as `json.get("items").asJsonArray`, and
+         * gson throws `IllegalStateException` when that element is a primitive
+         * — so a BOUND `items: "@{options}"` did not degrade to an empty group,
+         * it took the renderer down. The routing test one function up only asks
+         * whether the element is present, so the bound face reached this line.
+         *
+         * Bound lists resolve the same way `parseOptions` already resolves
+         * them: the expression names a key whose value is the list.
+         */
+        @Suppress("UNCHECKED_CAST")
+        internal fun itemsOf(a: RadioAttributes, data: Map<String, Any>): List<String> {
+            TypedAttrs.static(a.items)?.let { return it.map { item -> item?.toString() ?: "" } }
+            val variable = TypedAttrs.binding(a.items) ?: return emptyList()
+            val bound = DataBindingContext.evaluateExpression("@{$variable}", data)
+            return (bound as? List<Any?>)?.map { item -> item?.toString() ?: "" } ?: emptyList()
         }
 
         /**
@@ -508,8 +532,7 @@ class DynamicRadioComponent {
         ) {
             val context = LocalContext.current
             // 'items' is an undeclared legacy runtime extra on Radio
-            val items = TypedAttrs.undeclared(json, "items")
-                ?.asJsonArray?.map { it.asString } ?: emptyList()
+            val items = itemsOf(a, data)
 
             // `selectedValue` IS declared on Radio — the item-mode path reads it
             // through the typed accessor — so reaching for it through the

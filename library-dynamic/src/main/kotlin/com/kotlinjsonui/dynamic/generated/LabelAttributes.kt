@@ -10,8 +10,10 @@ package com.kotlinjsonui.dynamic.generated
 data class LabelAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Enable auto-shrink */
+    /** Enable auto-shrink. Active only on a bounded axis (explicit size, matchParent, or a max bound) — a no-op under wrapContent, which grows to the content and leaves nothing to shrink into. Full ruling in attribute_semantics.json -> autoShrink. */
     val autoShrink: Boolean? = null,
+    /** Font color when disabled - hex string or color name from colors.json (binding supported). Declared from the implementation, which already read it: sjui label_converter.rb:179-180 (plan 51-E). */
+    val disabledFontColor: AttrValue<String>? = null,
     /** Edge insets as array or pipe-separated string. Applied on every platform including Compose, where it maps to .padding() (kjui text_component.rb / DynamicTextComponent.kt) - the former "Compose Text has no edgeInset" deprecation was contradicted by that implementation and was retracted 2026-08-05. [accepts: array | string] */
     val edgeInset: Any? = null,
     /** Font weight name (regular/medium/semibold/bold/...) or font name. Passed as the `weight` field of `FontSpec` to `Configuration.Font.fontProvider`. Can be a data binding. */
@@ -54,7 +56,7 @@ data class LabelAttributes(
     val placeholder: String? = null,
     /** Selected state (binding supported). Decides which attribute set is in force: while true the label renders with 'highlightAttributes' (or 'highlightColor'), otherwise with its base font and colour. */
     val selected: AttrValue<Boolean>? = null,
-    /** Strikethrough styling (boolean for simple, object for styled) [accepts: boolean | object] */
+    /** Strikethrough styling: boolean for a plain line, object to style it. Same contract as Label.underline, minus lineOffset, which strikethrough does not declare and must not invent. `lineStyle: "None"` draws nothing, exactly like `false`. Full ruling in attribute_semantics.json -> textDecoration; do not restate it in toolchain comments. [accepts: boolean | object] */
     val strikethrough: Any? = null,
     /** Text content (can be data binding, supports interpolation). PLAIN TEXT: markdown is not interpreted, so "[label](/path)", "**bold**" and backticks render literally, brackets and all. To emphasise or link part of the string, use partialAttributes ('range' plus font/color/underline, and 'onclick' for a tappable span). Rendering real markdown is out of scope for Label — write a custom component. */
     val text: AttrValue<String>? = null,
@@ -64,7 +66,7 @@ data class LabelAttributes(
     val textShadow: Any? = null,
     /** Text transformation */
     val textTransform: AttrEnum<TextTransform>? = null,
-    /** Underline styling (boolean for simple, object for styled) [accepts: boolean | object | array] */
+    /** Underline styling: boolean for a plain line, object to style it. The object face must never draw LESS than `true` does — a platform that cannot honour lineStyle or color still draws the plain Single line in the text colour. `lineStyle: "None"` is the one object value that draws nothing, exactly like `false`. Full ruling in attribute_semantics.json -> textDecoration; do not restate it in toolchain comments. [accepts: boolean | object | array] */
     val underline: Any? = null,
 ) {
     enum class LineBreakMode(val json: String) {
@@ -130,6 +132,7 @@ data class LabelAttributes(
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "autoShrink",
+            "disabledFontColor",
             "edgeInset",
             "font",
             "fontColor",
@@ -179,6 +182,7 @@ data class LabelAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): LabelAttributes = LabelAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             autoShrink = AttrCoerce.boolean(AttrCoerce.lookup(json, "autoShrink")),
+            disabledFontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "disabledFontColor")) { AttrCoerce.string(it) },
             edgeInset = AttrCoerce.lookup(json, "edgeInset"),
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },

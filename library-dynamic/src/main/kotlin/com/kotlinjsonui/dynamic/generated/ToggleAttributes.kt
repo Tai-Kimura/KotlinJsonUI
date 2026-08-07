@@ -16,8 +16,14 @@ data class ToggleAttributes(
     val checked: AttrValue<Boolean>? = null,
     /** Whether enabled (can be data binding) */
     val enabled: AttrValue<Boolean>? = null,
+    /** Text color - hex string or color name from colors.json (binding supported). Declared from the implementation, which already read it: sjui toggle_converter.rb:62-63,71-72 (plan 51-E). */
+    val fontColor: AttrValue<String>? = null,
+    /** Font size (binding supported). Declared from the implementation, which already read it: sjui toggle_converter.rb hands the whole component to the shared apply_font_modifiers helper, so the size was honoured with no declaration behind it (plan 51-E). */
+    val fontSize: AttrValue<Double>? = null,
     /** Switch state (binding for two-way) [binding: two-way] */
     val isOn: AttrValue<Boolean>? = null,
+    /** Switch label (can be data binding). Same shape CheckBox and Radio already declare: `label` is the canonical row and `text` folds into it. Declared from the implementation, which already read it: sjui toggle_converter.rb:21 (text || label) (plan 51-E). [aliases: text] */
+    val label: AttrValue<String>? = null,
     /** Label styling for Toggle */
     val labelAttributes: Map<String, Any?>? = null,
     /** Label position relative to the Switch. */
@@ -34,6 +40,8 @@ data class ToggleAttributes(
     val tint: AttrValue<String>? = null,
     /** Tint color - hex string or color name from colors.json (alias) */
     val tintColor: String? = null,
+    /** Which control shape the Switch is drawn as. A SwiftUI-only concept (the ToggleStyle protocol); an unrecognised value falls back to the platform default rather than erroring. Declared from the implementation, which already read it: sjui toggle_converter.rb:92-104 (plan 51-E). */
+    val toggleStyle: AttrEnum<ToggleStyle>? = null,
     /** Colour of the switch track - hex string or color name from colors.json. Deprecation retracted with the Slider pair; a SwiftUI Toggle is not limited to a unified tint any more than Progress is. */
     val trackTintColor: String? = null,
     /** Switch state alias (binding for two-way) [binding: two-way] */
@@ -53,6 +61,24 @@ data class ToggleAttributes(
         }
     }
 
+    enum class ToggleStyle(val json: String) {
+        SWITCH("switch"),
+        BUTTON("button"),
+        CHECKBOX("checkbox"),
+        DEFAULT("default");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): ToggleStyle? = when (raw.lowercase()) {
+                "switch" -> SWITCH
+                "button" -> BUTTON
+                "checkbox" -> CHECKBOX
+                "default" -> DEFAULT
+                else -> null
+            }
+        }
+    }
+
     companion object {
         /**
          * Canonical attribute names declared for this component, including
@@ -61,7 +87,10 @@ data class ToggleAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "checked",
             "enabled",
+            "fontColor",
+            "fontSize",
             "isOn",
+            "label",
             "labelAttributes",
             "labelPosition",
             "offTintColor",
@@ -70,6 +99,7 @@ data class ToggleAttributes(
             "thumbTintColor",
             "tint",
             "tintColor",
+            "toggleStyle",
             "trackTintColor",
             "value",
         )
@@ -82,6 +112,7 @@ data class ToggleAttributes(
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
             "onToggle" to "onValueChange",
+            "text" to "label",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -96,7 +127,10 @@ data class ToggleAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
             enabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "enabled")) { AttrCoerce.boolean(it) },
+            fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
+            fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
             isOn = AttrCoerce.attrValue(AttrCoerce.lookup(json, "isOn")) { AttrCoerce.boolean(it) },
+            label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label", listOf("text"), canonicalOnly)) { AttrCoerce.string(it) },
             labelAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "labelAttributes")),
             labelPosition = parseLabelPosition(AttrCoerce.lookup(json, "labelPosition")),
             offTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "offTintColor")) { AttrCoerce.string(it) },
@@ -105,6 +139,7 @@ data class ToggleAttributes(
             thumbTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "thumbTintColor")) { AttrCoerce.string(it) },
             tint = AttrCoerce.attrValue(AttrCoerce.lookup(json, "tint")) { AttrCoerce.string(it) },
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
+            toggleStyle = parseToggleStyle(AttrCoerce.lookup(json, "toggleStyle")),
             trackTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "trackTintColor")),
             value = AttrCoerce.attrValue(AttrCoerce.lookup(json, "value")) { AttrCoerce.boolean(it) },
         )
@@ -115,6 +150,15 @@ data class ToggleAttributes(
                 LabelPosition.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("Toggle.labelPosition: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseToggleStyle(raw: Any?): AttrEnum<ToggleStyle>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                ToggleStyle.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("Toggle.toggleStyle: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
     }

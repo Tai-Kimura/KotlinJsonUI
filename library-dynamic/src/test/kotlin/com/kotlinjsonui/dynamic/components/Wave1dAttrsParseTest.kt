@@ -83,12 +83,15 @@ class Wave1dAttrsParseTest {
     }
 
     @Test
-    fun `scrollview orientation is declared but horizontalScroll is a legacy extra`() {
+    fun `scrollview orientation and horizontalScroll are both declared rows`() {
         val a = ScrollViewAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"ScrollView","orientation":"horizontal"}"""))
         )
         assertEquals("horizontal", TypedAttrs.enumString(a.orientation) { it.json })
-        assertFalse(ScrollViewAttributes.isDeclared("horizontalScroll"))
+        // Declared in plan 51-E (c9b440e) "from the implementation, which
+        // already read it" (sjui scrollview_converter.rb:39) — it stopped being
+        // a legacy extra, so the old assertFalse pinned a fact that expired.
+        assertTrue(ScrollViewAttributes.isDeclared("horizontalScroll"))
     }
 
     // ── CircleImage (parses with ImageAttributes) ──
@@ -133,7 +136,23 @@ class Wave1dAttrsParseTest {
         )
         assertEquals("https://example.com/a.png", TypedAttrs.rawString(a.url))
         assertEquals("@{imageUrl}", TypedAttrs.rawString(a.src))
-        assertFalse(NetworkImageAttributes.isDeclared("source"))
+        // `source` is not an independent row: 51-E folded it into `url` as an
+        // ALIAS (57a527a). `isDeclared` is `declaredAttributes || aliasMap`, so
+        // an alias reads as declared — the old assertFalse was pinning "nothing
+        // knows this spelling", which stopped being true.
+        assertTrue(NetworkImageAttributes.isDeclared("source"))
+        assertFalse("an alias is not a row of its own",
+            "source" in NetworkImageAttributes.declaredAttributes)
+        assertEquals(
+            "https://example.com/b.png",
+            TypedAttrs.rawString(
+                NetworkImageAttributes.parse(
+                    TypedAttrs.toAttrMap(
+                        obj("""{"type":"NetworkImage","source":"https://example.com/b.png"}""")
+                    )
+                ).url
+            )
+        )
     }
 
     @Test

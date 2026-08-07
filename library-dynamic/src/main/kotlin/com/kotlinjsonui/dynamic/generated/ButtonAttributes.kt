@@ -21,6 +21,8 @@ data class ButtonAttributes(
     val font: String? = null,
     /** Font color - hex string or color name from colors.json (binding supported) */
     val fontColor: AttrValue<String>? = null,
+    /** Font family name (e.g., 'Noto Sans JP'). Passed as the `family` field of `FontSpec` to `Configuration.Font.fontProvider`. Coexists with `font` (weight) and `fontSize` which are passed in the same FontSpec. Declared from the implementation, which already read it: sjui button_converter.rb:173-178 (plan 51-E). */
+    val fontFamily: AttrValue<String>? = null,
     /** Font size */
     val fontSize: Double? = null,
     /** Font weight (e.g., 'bold', 'semibold', '500', 600, or binding) [accepts: string | number] */
@@ -31,6 +33,8 @@ data class ButtonAttributes(
     val highlightColor: AttrValue<String>? = null,
     /** Button image - asset name (binding supported) */
     val image: AttrValue<String>? = null,
+    /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onclick'. This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. Declared from the implementation, which already read it: sjui button_converter.rb:68-129 (plan 51-E). */
+    val partialAttributes: List<Any?>? = null,
     /** Background when tapped - hex string or color name from colors.json */
     val tapBackground: String? = null,
     /** Button text (can be data binding, supports interpolation) */
@@ -81,11 +85,13 @@ data class ButtonAttributes(
             "disabledFontColor",
             "font",
             "fontColor",
+            "fontFamily",
             "fontSize",
             "fontWeight",
             "highlightBackground",
             "highlightColor",
             "image",
+            "partialAttributes",
             "tapBackground",
             "text",
             "textAlign",
@@ -116,11 +122,13 @@ data class ButtonAttributes(
             disabledFontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "disabledFontColor")) { AttrCoerce.string(it) },
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
+            fontFamily = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontFamily")) { AttrCoerce.string(it) },
             fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
             fontWeight = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontWeight")) { it },
             highlightBackground = AttrCoerce.string(AttrCoerce.lookup(json, "highlightBackground")),
             highlightColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "highlightColor", listOf("hilightColor"), canonicalOnly)) { AttrCoerce.string(it) },
             image = AttrCoerce.attrValue(AttrCoerce.lookup(json, "image")) { AttrCoerce.string(it) },
+            partialAttributes = AttrCoerce.array(AttrCoerce.lookup(json, "partialAttributes")),
             tapBackground = AttrCoerce.string(AttrCoerce.lookup(json, "tapBackground")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             textAlign = parseTextAlign(AttrCoerce.lookup(json, "textAlign")),

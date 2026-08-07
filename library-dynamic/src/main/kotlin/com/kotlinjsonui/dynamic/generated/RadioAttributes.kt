@@ -10,7 +10,7 @@ package com.kotlinjsonui.dynamic.generated
 data class RadioAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Seeds the group's INITIAL selection — it is not the live state, and it is not two-way. The state a radio group carries is `selectedValue`; `checked` only says which option starts selected when nothing else has said. Precedence, and all three platforms implement it in this order: a BOUND `selectedValue` wins outright (the group's own two-way state), then a LITERAL `selectedValue` (a group-level statement naming the starting option), then this option's `checked`. So a radio group that binds selectedValue ignores `checked` entirely, which is what stops a seed from freezing a group that the user can no longer change. The bound form of `checked` seeds the glyph rather than the state, since a property initialiser cannot read the data map: it selects only while the group has made no choice yet (sjui radio_converter.rb:88-103, and the same rule in RadioConverter.swift). CONTRAST with CheckBox.checked and Switch.checked, which look identical and are not: those ARE the control's state and carry binding_direction two-way. A radio has no state of its own — the group does. Declared 2026-08-05 (plan 49-E) from the implementations; the previous description said only "Initial checked state", which was true and told nobody what happens when both are declared. */
+    /** Seeds the group's INITIAL selection — it is not the live state, and it is not two-way. The state a radio group carries is `selectedValue`; `checked` only says which option starts selected when nothing else has said. Precedence, and all three platforms implement it in this order: a BOUND `selectedValue` wins outright (the group's own two-way state), then a LITERAL `selectedValue` (a group-level statement naming the starting option), then this option's `checked`. So a radio group that binds selectedValue ignores `checked` entirely, which is what stops a seed from freezing a group that the user can no longer change. The bound form of `checked` seeds the glyph rather than the state, since a property initialiser cannot read the data map: it selects only while the group has made no choice yet (sjui radio_converter.rb:88-103, and the same rule in RadioConverter.swift). CONTRAST with CheckBox.checked and Switch.checked, which look identical and are not: those ARE the control's state and carry binding_direction two-way. A radio has no state of its own — the group does. Declared 2026-08-05 (plan 49-E) from the implementations; the previous description said only "Initial checked state", which was true and told nobody what happens when both are declared. `isOn` folds here (sjui radio_converter.rb:88,102 read both the literal and the bound form as `checked || isOn`). [aliases: isOn] */
     val checked: AttrValue<Boolean>? = null,
     /** Color when checked. */
     val checkedColor: String? = null,
@@ -28,6 +28,8 @@ data class RadioAttributes(
     val iconColor: String? = null,
     /** Icon size (pt / dp). */
     val iconSize: Double? = null,
+    /** List of items for normal picker (can be template variable). Declared from the implementation, which already read it: sjui radio_converter.rb:13 — the option list a radio GROUP renders; with it the converter emits a group, without it a single radio (plan 51-E). */
+    val items: AttrValue<List<Any?>>? = null,
     /** Radio label (can be data binding) */
     val label: AttrValue<String>? = null,
     /** Value change handler - binding only (@{functionName}) */
@@ -60,6 +62,7 @@ data class RadioAttributes(
             "icon",
             "iconColor",
             "iconSize",
+            "items",
             "label",
             "onValueChange",
             "selectedIcon",
@@ -77,6 +80,7 @@ data class RadioAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "isOn" to "checked",
             "selected_icon" to "selectedIcon",
         )
 
@@ -90,7 +94,7 @@ data class RadioAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): RadioAttributes = RadioAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
+            checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked", listOf("isOn"), canonicalOnly)) { AttrCoerce.boolean(it) },
             checkedColor = AttrCoerce.string(AttrCoerce.lookup(json, "checkedColor")),
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
@@ -99,6 +103,7 @@ data class RadioAttributes(
             icon = AttrCoerce.string(AttrCoerce.lookup(json, "icon")),
             iconColor = AttrCoerce.string(AttrCoerce.lookup(json, "iconColor")),
             iconSize = AttrCoerce.number(AttrCoerce.lookup(json, "iconSize")),
+            items = AttrCoerce.attrValue(AttrCoerce.lookup(json, "items")) { AttrCoerce.array(it) },
             label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label")) { AttrCoerce.string(it) },
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
             selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon", listOf("selected_icon"), canonicalOnly)),

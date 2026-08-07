@@ -61,6 +61,8 @@ data class TextFieldAttributes(
     val hintFont: String? = null,
     /** Placeholder font size */
     val hintFontSize: Double? = null,
+    /** Placeholder line height multiplier. Declared from the implementation, which already read it: sjui textfield_converter.rb:153 and textview_converter.rb:93,117 (EditText/Input follow via _alias_of) (plan 51-E). */
+    val hintLineHeightMultiple: Double? = null,
     /** Input type (includes 'allphabet' typo for backward compatibility) */
     val input: AttrEnum<Input>? = null,
     /** Input type for Android (Android-only; `input` is the cross-platform attribute). Both the JsonUI spellings and the raw android:inputType names the frozen XML mapper passed through are accepted; the latter normalize to the former. */
@@ -113,7 +115,7 @@ data class TextFieldAttributes(
     val rightViewMode: String? = null,
     /** Secure text entry for passwords (can be data binding) */
     val secure: AttrValue<Boolean>? = null,
-    /** Text content (binding for two-way) [binding: two-way] */
+    /** Text content (binding for two-way). `value` folds here (sjui textfield_converter.rb:527 reads `text || value || bind`). [aliases: value; binding: two-way] */
     val text: AttrValue<String>? = null,
     /** Text alignment */
     val textAlign: AttrEnum<TextAlign>? = null,
@@ -347,6 +349,7 @@ data class TextFieldAttributes(
             "hintColor",
             "hintFont",
             "hintFontSize",
+            "hintLineHeightMultiple",
             "input",
             "inputType",
             "leftView",
@@ -389,6 +392,7 @@ data class TextFieldAttributes(
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
             "placeholderColor" to "hintColor",
+            "value" to "text",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -426,6 +430,7 @@ data class TextFieldAttributes(
             hintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "hintColor", listOf("placeholderColor"), canonicalOnly)) { AttrCoerce.string(it) },
             hintFont = AttrCoerce.string(AttrCoerce.lookup(json, "hintFont")),
             hintFontSize = AttrCoerce.number(AttrCoerce.lookup(json, "hintFontSize")),
+            hintLineHeightMultiple = AttrCoerce.number(AttrCoerce.lookup(json, "hintLineHeightMultiple")),
             input = parseInput(AttrCoerce.lookup(json, "input")),
             inputType = parseInputType(AttrCoerce.lookup(json, "inputType")),
             leftView = AttrCoerce.obj(AttrCoerce.lookup(json, "leftView")),
@@ -452,7 +457,7 @@ data class TextFieldAttributes(
             rightView = AttrCoerce.obj(AttrCoerce.lookup(json, "rightView")),
             rightViewMode = AttrCoerce.string(AttrCoerce.lookup(json, "rightViewMode")),
             secure = AttrCoerce.attrValue(AttrCoerce.lookup(json, "secure")) { AttrCoerce.boolean(it) },
-            text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
+            text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text", listOf("value"), canonicalOnly)) { AttrCoerce.string(it) },
             textAlign = parseTextAlign(AttrCoerce.lookup(json, "textAlign")),
             textPaddingLeft = AttrCoerce.number(AttrCoerce.lookup(json, "textPaddingLeft")),
             textPaddingRight = AttrCoerce.number(AttrCoerce.lookup(json, "textPaddingRight")),

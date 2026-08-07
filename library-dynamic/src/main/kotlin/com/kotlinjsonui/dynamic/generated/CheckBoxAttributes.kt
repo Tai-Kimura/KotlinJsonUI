@@ -13,7 +13,7 @@ data class CheckBoxAttributes(
     val common: CommonAttributes,
     /** Checked state alias (binding for two-way) [binding: two-way] */
     val checked: AttrValue<Boolean>? = null,
-    /** Color when checked. */
+    /** Color when checked. Legacy accent spellings fold here (sjui checkbox_converter.rb:98 and kjui checkbox_component.rb:211 both read the same four spellings for this one colour). `tintColor` is deliberately NOT in the alias list: it is already declared on `common`, and an alias that is also a declared row is a silent no-op (test_no_alias_is_cancelled_by_a_declaration_of_its_own_name). On a CheckBox the common tint IS the checked colour - that is what both converters implement - so it needs no alias row. Declaring the other two also settles a live divergence: ios reads `checkedColor` first, android reads `checkColor` first, so a layout setting both drew two different colours until the normalizer began folding them (plan 51-E). [aliases: checkColor, onTintColor] */
     val checkedColor: String? = null,
     /** Whether enabled (can be data binding) */
     val enabled: AttrValue<Boolean>? = null,
@@ -23,6 +23,8 @@ data class CheckBoxAttributes(
     val fontColor: AttrValue<String>? = null,
     /** Font size (binding supported) */
     val fontSize: AttrValue<Double>? = null,
+    /** Font weight (e.g., 'bold', 'semibold', '500', 600). Canonical name matches Label and Button; the legacy `fontStyle` spelling folds here. Declared from the implementation, which already read it: sjui checkbox_converter.rb:74-76, which reads `fontStyle` and emits `fontWeight:` (plan 51-E). [aliases: fontStyle; accepts: string | number] */
+    val fontWeight: Any? = null,
     /** Icon name for unchecked state */
     val icon: String? = null,
     /** Icon tint color. */
@@ -33,7 +35,7 @@ data class CheckBoxAttributes(
     val isOn: AttrValue<Boolean>? = null,
     /** Checkbox label (can be data binding) */
     val label: AttrValue<String>? = null,
-    /** Value change handler - binding only (@{functionName}) */
+    /** Value change handler - binding only (@{functionName}). Legacy handler spellings fold here (sjui checkbox_converter.rb:122 reads `onValueChange || onClick || action || onValueChanged`; `onClick` stays common). [aliases: action, onValueChanged] */
     val onValueChange: AttrValue<Any>? = null,
     /** Selected icon name [aliases: onSrc] */
     val selectedIcon: String? = null,
@@ -60,6 +62,7 @@ data class CheckBoxAttributes(
             "font",
             "fontColor",
             "fontSize",
+            "fontWeight",
             "icon",
             "iconColor",
             "iconSize",
@@ -80,8 +83,13 @@ data class CheckBoxAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "action" to "onValueChange",
             "alpha" to "opacity",
+            "checkColor" to "checkedColor",
+            "fontStyle" to "fontWeight",
             "onSrc" to "selectedIcon",
+            "onTintColor" to "checkedColor",
+            "onValueChanged" to "onValueChange",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -95,17 +103,18 @@ data class CheckBoxAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): CheckBoxAttributes = CheckBoxAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
-            checkedColor = AttrCoerce.string(AttrCoerce.lookup(json, "checkedColor")),
+            checkedColor = AttrCoerce.string(AttrCoerce.lookup(json, "checkedColor", listOf("checkColor", "onTintColor"), canonicalOnly)),
             enabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "enabled")) { AttrCoerce.boolean(it) },
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
             fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
+            fontWeight = AttrCoerce.lookup(json, "fontWeight", listOf("fontStyle"), canonicalOnly),
             icon = AttrCoerce.string(AttrCoerce.lookup(json, "icon")),
             iconColor = AttrCoerce.string(AttrCoerce.lookup(json, "iconColor")),
             iconSize = AttrCoerce.number(AttrCoerce.lookup(json, "iconSize")),
             isOn = AttrCoerce.attrValue(AttrCoerce.lookup(json, "isOn")) { AttrCoerce.boolean(it) },
             label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label")) { AttrCoerce.string(it) },
-            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
+            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("action", "onValueChanged"), canonicalOnly)),
             selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon", listOf("onSrc"), canonicalOnly)),
             spacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "spacing")) { AttrCoerce.number(it) },
             src = AttrCoerce.string(AttrCoerce.lookup(json, "src")),

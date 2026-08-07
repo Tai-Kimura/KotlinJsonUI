@@ -20,11 +20,13 @@ data class IconLabelAttributes(
     val iconMargin: Double? = null,
     /** Icon position relative to text */
     val iconPosition: AttrEnum<IconPosition>? = null,
+    /** Icon size. A number sizes both edges; a two-element [width, height] sizes them separately (rjui icon_label_converter.rb:130-138 reads both, and its spec covers both). NOT the same shape as CheckBox.iconSize, which is a square glyph and takes a number only. sjui icon_label_converter.rb:50-51 interpolates the value straight into `iconSize:`, so the array form is web-only today — declared here because the attribute's value space is a property of the attribute, not of whichever face lags (plan 51-E). [accepts: number | array] */
+    val iconSize: Any? = null,
     /** Normal icon */
     val icon_off: String? = null,
     /** Selected icon */
     val icon_on: String? = null,
-    /** Selected state (binding supported). Chooses icon_on over icon_off and selectedFontColor over fontColor, so every platform declaring those needs this too. */
+    /** Selected state (binding supported). Chooses icon_on over icon_off and selectedFontColor over fontColor, so every platform declaring those needs this too. `isOn` folds here — the legacy spelling for the same state. IconLabelConverter.swift:145-151 says so in as many words ("Pre-SSoT layouts that spelled it `isOn` keep working") and reads it out of rawData because no typed slot existed; sjui icon_label_converter.rb:130 reads the canonical `selected` (plan 51-E). [aliases: isOn] */
     val selected: AttrValue<Boolean>? = null,
     /** Selected text color - hex string or color name from colors.json */
     val selectedFontColor: String? = null,
@@ -62,6 +64,7 @@ data class IconLabelAttributes(
             "fontSize",
             "iconMargin",
             "iconPosition",
+            "iconSize",
             "icon_off",
             "icon_on",
             "selected",
@@ -77,6 +80,7 @@ data class IconLabelAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "isOn" to "selected",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -94,9 +98,10 @@ data class IconLabelAttributes(
             fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
             iconMargin = AttrCoerce.number(AttrCoerce.lookup(json, "iconMargin")),
             iconPosition = parseIconPosition(AttrCoerce.lookup(json, "iconPosition")),
+            iconSize = AttrCoerce.lookup(json, "iconSize"),
             icon_off = AttrCoerce.string(AttrCoerce.lookup(json, "icon_off")),
             icon_on = AttrCoerce.string(AttrCoerce.lookup(json, "icon_on")),
-            selected = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selected")) { AttrCoerce.boolean(it) },
+            selected = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selected", listOf("isOn"), canonicalOnly)) { AttrCoerce.boolean(it) },
             selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             textShadow = AttrCoerce.lookup(json, "textShadow"),

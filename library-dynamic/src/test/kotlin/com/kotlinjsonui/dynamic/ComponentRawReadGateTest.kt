@@ -37,6 +37,13 @@ class ComponentRawReadGateTest {
 
         componentsDir.listFiles { f -> f.extension == "kt" }!!.sorted().forEach { file ->
             file.readLines().forEachIndexed { i, line ->
+                // A doc comment that quotes the anti-pattern is the clearest
+                // way to explain why a read moved to the typed row — and this
+                // gate used to report those quotes as violations, i.e. its own
+                // documentation. Comment-ONLY lines are dropped; a trailing
+                // comment still counts, because the code before it is real.
+                val trimmed = line.trimStart()
+                if (trimmed.startsWith("//") || trimmed.startsWith("*")) return@forEachIndexed
                 pattern.findAll(line).forEach { m ->
                     val key = m.groupValues[1]
                     if (key !in allowedKeys) {
@@ -52,5 +59,30 @@ class ComponentRawReadGateTest {
                 violations.joinToString("\n"),
             violations.isEmpty()
         )
+    }
+
+    /**
+     * The comment skip must not become a hole.
+     *
+     * Loosening a gate to stop it reporting a false positive is how gates rot,
+     * so the loosening itself is pinned: a real read still trips it, and a real
+     * read that merely *ends* in a comment still trips it.
+     */
+    @Test
+    fun `the comment skip does not blind the gate to real reads`() {
+        val pattern = Regex("""json\.(?:get|has|getAsJsonObject|getAsJsonArray)\("([A-Za-z_]+)"\)""")
+        fun scanned(line: String): Boolean {
+            val trimmed = line.trimStart()
+            if (trimmed.startsWith("//") || trimmed.startsWith("*")) return false
+            return pattern.containsMatchIn(line)
+        }
+
+        assertTrue("a bare read must be caught", scanned("""    val x = json.get("items")"""))
+        assertTrue(
+            "code that ends in a comment is still code",
+            scanned("""    val x = json.get("items") // legacy""")
+        )
+        assertTrue("a comment-only line must be skipped", !scanned("""    // json.get("items")"""))
+        assertTrue("a doc-comment body must be skipped", !scanned("""     * json.get("items")"""))
     }
 }

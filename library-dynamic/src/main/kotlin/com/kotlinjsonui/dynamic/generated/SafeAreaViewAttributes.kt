@@ -14,11 +14,37 @@ data class SafeAreaViewAttributes(
     val child: List<Any?>? = null,
     /** Child components (alias for child) */
     val children: List<Any?>? = null,
+    /** Layout direction. Declared from the implementation, which already read it: sjui view_converter.rb:140 (SafeAreaView routes through the View converter) (plan 51-E). */
+    val direction: AttrEnum<Direction>? = null,
+    /** Gradient colors. Declared from the implementation, which already read it: sjui view_converter.rb:456 (plan 51-E). */
+    val gradient: List<Any?>? = null,
     /** Stack orientation (default: zstack) */
     val orientation: AttrEnum<Orientation>? = null,
     /** Safe area edges. `edges` is an accepted alias spelling: the Compose SafeAreaView builder reads it (kjui compose_builder.rb:722 `json_data['edges'] || json_data['safeAreaInsetPositions']`) while no declaration named it, so iOS and web silently ignored a layout that used it. Declaring the alias normalizes it to the canonical spelling and makes it reach all three platforms. [aliases: edges] */
     val safeAreaInsetPositions: List<Any?>? = null,
+    /** Space between children (binding supported). Declared from the implementation, which already read it: sjui view_converter.rb:181 (plan 51-E). */
+    val spacing: AttrValue<Double>? = null,
 ) {
+    enum class Direction(val json: String) {
+        TOP_TO_BOTTOM("topToBottom"),
+        BOTTOM_TO_TOP("bottomToTop"),
+        LEFT_TO_RIGHT("leftToRight"),
+        RIGHT_TO_LEFT("rightToLeft"),
+        NONE("none");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): Direction? = when (raw.lowercase()) {
+                "toptobottom" -> TOP_TO_BOTTOM
+                "bottomtotop" -> BOTTOM_TO_TOP
+                "lefttoright" -> LEFT_TO_RIGHT
+                "righttoleft" -> RIGHT_TO_LEFT
+                "none" -> NONE
+                else -> null
+            }
+        }
+    }
+
     enum class Orientation(val json: String) {
         HORIZONTAL("horizontal"),
         VERTICAL("vertical");
@@ -41,8 +67,11 @@ data class SafeAreaViewAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "child",
             "children",
+            "direction",
+            "gradient",
             "orientation",
             "safeAreaInsetPositions",
+            "spacing",
         )
 
         /**
@@ -67,9 +96,21 @@ data class SafeAreaViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
+            direction = parseDirection(AttrCoerce.lookup(json, "direction")),
+            gradient = AttrCoerce.array(AttrCoerce.lookup(json, "gradient")),
             orientation = parseOrientation(AttrCoerce.lookup(json, "orientation")),
             safeAreaInsetPositions = AttrCoerce.array(AttrCoerce.lookup(json, "safeAreaInsetPositions", listOf("edges"), canonicalOnly)),
+            spacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "spacing")) { AttrCoerce.number(it) },
         )
+
+        private fun parseDirection(raw: Any?): AttrEnum<Direction>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                Direction.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("SafeAreaView.direction: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
 
         private fun parseOrientation(raw: Any?): AttrEnum<Orientation>? {
             if (raw == null) return null

@@ -35,7 +35,7 @@ data class TextViewAttributes(
     val fontFamily: AttrValue<String>? = null,
     /** Font size (binding supported) */
     val fontSize: AttrValue<Double>? = null,
-    /** Hide placeholder when focused [default: True] */
+    /** Hide placeholder when focused [default: true] */
     val hideOnFocused: Boolean? = null,
     /** Placeholder text (primary) */
     val hint: String? = null,

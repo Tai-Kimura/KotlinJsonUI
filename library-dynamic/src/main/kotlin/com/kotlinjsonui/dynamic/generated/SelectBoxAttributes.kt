@@ -20,7 +20,7 @@ data class SelectBoxAttributes(
     val datePickerMode: AttrEnum<DatePickerMode>? = null,
     /** Date picker style */
     val datePickerStyle: AttrEnum<DatePickerStyle>? = null,
-    /** Date string format */
+    /** Date string format. `dateFormat` folds here (sjui selectbox_converter.rb:132 reads `dateFormat || dateStringFormat`). [aliases: dateFormat] */
     val dateStringFormat: String? = null,
     /** Divider styling attributes */
     val dividerAttributes: Map<String, Any?>? = null,
@@ -62,7 +62,7 @@ data class SelectBoxAttributes(
     val referenceView: String? = null,
     /** Select item type */
     val selectItemType: AttrEnum<SelectItemType>? = null,
-    /** Initial selected date (yyyy-MM-dd format, two-way binding) */
+    /** Initial selected date (yyyy-MM-dd format, two-way binding). No `default`: when it is absent no initial selection has been stated, and the closed face shows the prompt / hint / placeholder rather than today's date. Full ruling in attribute_semantics.json -> selectBoxDate. */
     val selectedDate: AttrValue<String>? = null,
     /** Initial selected index for normal picker (two-way binding) [binding: two-way] */
     val selectedIndex: AttrValue<Double>? = null,
@@ -187,6 +187,7 @@ data class SelectBoxAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "dateFormat" to "dateStringFormat",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -204,7 +205,7 @@ data class SelectBoxAttributes(
             colorScheme = parseColorScheme(AttrCoerce.lookup(json, "colorScheme")),
             datePickerMode = parseDatePickerMode(AttrCoerce.lookup(json, "datePickerMode")),
             datePickerStyle = parseDatePickerStyle(AttrCoerce.lookup(json, "datePickerStyle")),
-            dateStringFormat = AttrCoerce.string(AttrCoerce.lookup(json, "dateStringFormat")),
+            dateStringFormat = AttrCoerce.string(AttrCoerce.lookup(json, "dateStringFormat", listOf("dateFormat"), canonicalOnly)),
             dividerAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "dividerAttributes")),
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),

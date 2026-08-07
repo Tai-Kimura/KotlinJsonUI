@@ -131,12 +131,26 @@ class Wave1aAttrsParseTest {
     fun `radio items stay undeclared while selectedValue is declared (2026-07-11 SSoT)`() {
         // selectedValue/onValueChange entered attribute_definitions on 2026-07-11;
         // the vendored table caught up with the 2026-07-24 re-vendor.
-        assertFalse("items" in RadioAttributes.declaredAttributes)
+        // `items` joined the declaration in plan 51-E (c9b440e) as
+        // ["array","binding"]. This assertion used to pin its ABSENCE, which
+        // is why the re-vendor turned it red: the test was holding the 2026-07
+        // SSoT, not a property of the code.
+        assertTrue("items" in RadioAttributes.declaredAttributes)
         assertTrue("selectedValue" in RadioAttributes.declaredAttributes)
         assertTrue("onValueChange" in RadioAttributes.declaredAttributes)
 
         val node = obj("""{"type":"Radio","items":["a","b"],"selectedValue":"@{sel}"}""")
-        assertNotNull(TypedAttrs.undeclared(node, "items"))
+        // The typed row now carries it, and the bound face is the reason that
+        // matters: reading it raw as `.asJsonArray` threw on `items: "@{x}"`.
+        val parsed = RadioAttributes.parse(TypedAttrs.toAttrMap(node))
+        assertEquals(listOf("a", "b"), DynamicRadioComponent.itemsOf(parsed, emptyMap()))
+        assertEquals(
+            listOf("x", "y"),
+            DynamicRadioComponent.itemsOf(
+                RadioAttributes.parse(TypedAttrs.toAttrMap(obj("""{"type":"Radio","items":"@{opts}"}"""))),
+                mapOf("opts" to listOf("x", "y"))
+            )
+        )
         val a = RadioAttributes.parse(TypedAttrs.toAttrMap(node))
         assertEquals("@{sel}", TypedAttrs.rawString(a.selectedValue))
     }

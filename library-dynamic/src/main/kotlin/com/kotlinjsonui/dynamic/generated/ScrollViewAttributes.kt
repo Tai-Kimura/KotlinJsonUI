@@ -24,6 +24,10 @@ data class ScrollViewAttributes(
     val contentSize: List<Any?>? = null,
     /** Deceleration rate */
     val decelerationRate: String? = null,
+    /** Initial scroll position anchor. Sets where the scroll view starts. Declared from the implementation, which already read it: sjui scrollview_converter.rb:207-215. Scope is deliberately all three platforms: the anchor is a portable concept and the declaration says an attribute EXISTS, not which face has caught up — the coverage ledger carries the android and web gaps. The "(iOS 17+)" note this description was copied with belonged to Collection's ios implementation, not to the contract, and has been dropped here (plan 51-E, raised by C). */
+    val defaultScrollAnchor: AttrEnum<DefaultScrollAnchor>? = null,
+    /** Enable horizontal scroll. Declared from the implementation, which already read it: sjui scrollview_converter.rb:39 (plan 51-E). */
+    val horizontalScroll: Boolean? = null,
     /** Scroll indicator style */
     val indicatorStyle: String? = null,
     /** Enable keyboard avoidance */
@@ -64,6 +68,22 @@ data class ScrollViewAttributes(
                 "always" -> ALWAYS
                 "automatic" -> AUTOMATIC
                 "scrollableaxes" -> SCROLLABLE_AXES
+                else -> null
+            }
+        }
+    }
+
+    enum class DefaultScrollAnchor(val json: String) {
+        TOP("top"),
+        CENTER("center"),
+        BOTTOM("bottom");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): DefaultScrollAnchor? = when (raw.lowercase()) {
+                "top" -> TOP
+                "center" -> CENTER
+                "bottom" -> BOTTOM
                 else -> null
             }
         }
@@ -140,6 +160,8 @@ data class ScrollViewAttributes(
             "contentOffset",
             "contentSize",
             "decelerationRate",
+            "defaultScrollAnchor",
+            "horizontalScroll",
             "indicatorStyle",
             "keyboardAvoidance",
             "keyboardDismissMode",
@@ -181,6 +203,8 @@ data class ScrollViewAttributes(
             contentOffset = AttrCoerce.array(AttrCoerce.lookup(json, "contentOffset")),
             contentSize = AttrCoerce.array(AttrCoerce.lookup(json, "contentSize")),
             decelerationRate = AttrCoerce.string(AttrCoerce.lookup(json, "decelerationRate")),
+            defaultScrollAnchor = parseDefaultScrollAnchor(AttrCoerce.lookup(json, "defaultScrollAnchor")),
+            horizontalScroll = AttrCoerce.boolean(AttrCoerce.lookup(json, "horizontalScroll")),
             indicatorStyle = AttrCoerce.string(AttrCoerce.lookup(json, "indicatorStyle")),
             keyboardAvoidance = AttrCoerce.boolean(AttrCoerce.lookup(json, "keyboardAvoidance")),
             keyboardDismissMode = parseKeyboardDismissMode(AttrCoerce.lookup(json, "keyboardDismissMode")),
@@ -202,6 +226,15 @@ data class ScrollViewAttributes(
                 ContentInsetAdjustmentBehavior.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("ScrollView.contentInsetAdjustmentBehavior: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseDefaultScrollAnchor(raw: Any?): AttrEnum<DefaultScrollAnchor>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                DefaultScrollAnchor.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("ScrollView.defaultScrollAnchor: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
 

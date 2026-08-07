@@ -13,6 +13,10 @@ data class BlurAttributes(
     val common: CommonAttributes,
     /** Blur radius in px/dp. Android and Web only: both blur by radius, while UIKit/SwiftUI express the appearance as effectStyle (UIVisualEffectView has styles, not radii). Overrides the radius effectStyle resolves to. */
     val blurRadius: Double? = null,
+    /** Child component(s). Declared from the implementation, which already read it: sjui blur_converter.rb:16 (plan 51-E). */
+    val child: List<Any?>? = null,
+    /** Child components (alias for child). Declared from the implementation, which already read it: sjui blur_converter.rb:16 (child || children) (plan 51-E). */
+    val children: List<Any?>? = null,
     /** Blur effect style */
     val effectStyle: AttrEnum<EffectStyle>? = null,
 ) {
@@ -39,6 +43,8 @@ data class BlurAttributes(
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "blurRadius",
+            "child",
+            "children",
             "effectStyle",
         )
 
@@ -62,6 +68,8 @@ data class BlurAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): BlurAttributes = BlurAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             blurRadius = AttrCoerce.number(AttrCoerce.lookup(json, "blurRadius")),
+            child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
+            children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
             effectStyle = parseEffectStyle(AttrCoerce.lookup(json, "effectStyle")),
         )
 

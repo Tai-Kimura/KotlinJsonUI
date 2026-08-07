@@ -14,8 +14,12 @@ data class CollectionAttributes(
     val autoChangeTrackingId: Boolean? = null,
     /** Cell class definitions */
     val cellClasses: List<Any?>? = null,
+    /** Fixed height for every cell, in pt / dp / px. Applied to the cell view AFTER it is built, so it overrides whatever height the cell layout asked for; leave it out to let each cell size itself. Declared from the implementation, which already read it: sjui collection_converter.rb:260,286,318,402 (plan 51-E). */
+    val cellHeight: Double? = null,
     /** Cell data property key to use as unique ID for ForEach identity. When set, scrollTo uses String type instead of Int. */
     val cellIdProperty: String? = null,
+    /** Fixed width for every cell, in pt / dp / px. Applied to the cell view AFTER it is built, so it overrides whatever width the cell layout asked for; leave it out to let each cell size itself. Declared from the implementation, which already read it: sjui collection_converter.rb:256,282,315,650 (plan 51-E). */
+    val cellWidth: Double? = null,
     /** Number of columns for CSS grid */
     val columnCount: Double? = null,
     /** Spacing between columns */
@@ -36,6 +40,8 @@ data class CollectionAttributes(
     val footerClasses: List<Any?>? = null,
     /** Header class definitions */
     val headerClasses: List<Any?>? = null,
+    /** Hide the row separators a list draws between cells. A NO-OP where the container draws no separators (a grid-shaped Collection has none) — that is the contract, not an unimplemented gap, and it does not license switching the container to a List. No CODEGEN face reads it, so the coverage row is runtime-only. Full ruling in attribute_semantics.json -> collectionSeparators. */
+    val hideSeparator: Boolean? = null,
     /** Enable horizontal scroll */
     val horizontalScroll: Boolean? = null,
     /** Horizontal inset */
@@ -56,8 +62,10 @@ data class CollectionAttributes(
     val layout: AttrEnum<Layout>? = null,
     /** Outer container shape for the Collection (single-column section path uses CollectionStackView/CollectionStack). Accepts: 'lazy' (default) -> ScrollView+LazyVStack/LazyHStack on iOS, LazyColumn/LazyRow on Android, with virtualized cell rendering. 'eager' -> ScrollView+VStack/HStack on iOS, Column(verticalScroll)/Row(horizontalScroll) on Android — no virtualization, smooth scrolling for heavy cells (markdown / images / attributed text) that suffer from LazyVStack re-evaluation. 'none' -> VStack/HStack only, no scroll container, parent must already be scrollable. Bindings (@{prop}) are resolved at runtime via the wrapper's mode parameter so toggles preserve view identity. Sticky headers and paging require 'lazy'. [default: lazy] */
     val lazy: AttrValue<AttrEnum<Lazy>>? = null,
-    /** Spacing between rows */
+    /** Spacing between rows. `sectionSpacing` folds here (sjui collection_converter.rb:799,960 read `sectionSpacing || lineSpacing || 8`). [aliases: sectionSpacing] */
     val lineSpacing: Double? = null,
+    /** Which list chrome the collection is drawn with. Enumerated from the only implementation that reads it (SwiftJsonUI TableConverter.applyListStyle); an unrecognised value falls back to plain. ORTHOGONAL to hideSeparator — that one hides the separators, this one picks the chrome, and neither overrides the other. No CODEGEN face reads it, so the coverage row is runtime-only: sjui collection_converter.rb:213 hardcodes PlainListStyle instead. Full ruling in attribute_semantics.json -> collectionSeparators. [default: plain] */
+    val listStyle: AttrEnum<ListStyle>? = null,
     /** Called with the cell index (Int) when a cell appears on screen. Use for pagination by checking index against total count in ViewModel. Declared `binding` because that is what a layout actually carries: the author writes `@{handlerName}`, a STRING, and every reader matches it as one (kjui collection_component.rb:364 `json_data['onItemAppear'].match(/@\{([^}]+)\}/)`, and the binding validators infer `((Int) -> Unit)?` from that spelling). It was `type: "callback"` — the only callback-typed attribute in the whole SSoT — and attr-codegen skips that type as "function-valued, not extractable from JSON". True of a function; not true of the `@{...}` string a JSON layout can hold, so the attribute had no row in any generated table and no platform could read it typed (2026-08-05, plan 49-E, raised by A). */
     val onItemAppear: AttrValue<String>? = null,
     /** Collection page/selection change handler. Canonical; prefer over onPageChanged. [aliases: onValueChanged, onPageChanged; binding: one-way] */
@@ -135,6 +143,24 @@ data class CollectionAttributes(
         }
     }
 
+    enum class ListStyle(val json: String) {
+        PLAIN("plain"),
+        GROUPED("grouped"),
+        INSET_GROUPED("insetGrouped"),
+        SIDEBAR("sidebar");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): ListStyle? = when (raw.lowercase()) {
+                "plain" -> PLAIN
+                "grouped" -> GROUPED
+                "insetgrouped" -> INSET_GROUPED
+                "sidebar" -> SIDEBAR
+                else -> null
+            }
+        }
+    }
+
     enum class Orientation(val json: String) {
         HORIZONTAL("horizontal"),
         VERTICAL("vertical");
@@ -173,7 +199,9 @@ data class CollectionAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "autoChangeTrackingId",
             "cellClasses",
+            "cellHeight",
             "cellIdProperty",
+            "cellWidth",
             "columnCount",
             "columnSpacing",
             "columns",
@@ -184,6 +212,7 @@ data class CollectionAttributes(
             "defaultScrollAnchor",
             "footerClasses",
             "headerClasses",
+            "hideSeparator",
             "horizontalScroll",
             "insetHorizontal",
             "insetVertical",
@@ -195,6 +224,7 @@ data class CollectionAttributes(
             "layout",
             "lazy",
             "lineSpacing",
+            "listStyle",
             "onItemAppear",
             "onValueChange",
             "orientation",
@@ -220,6 +250,7 @@ data class CollectionAttributes(
             "alpha" to "opacity",
             "onPageChanged" to "onValueChange",
             "onValueChanged" to "onValueChange",
+            "sectionSpacing" to "lineSpacing",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -234,7 +265,9 @@ data class CollectionAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             autoChangeTrackingId = AttrCoerce.boolean(AttrCoerce.lookup(json, "autoChangeTrackingId")),
             cellClasses = AttrCoerce.array(AttrCoerce.lookup(json, "cellClasses")),
+            cellHeight = AttrCoerce.number(AttrCoerce.lookup(json, "cellHeight")),
             cellIdProperty = AttrCoerce.string(AttrCoerce.lookup(json, "cellIdProperty")),
+            cellWidth = AttrCoerce.number(AttrCoerce.lookup(json, "cellWidth")),
             columnCount = AttrCoerce.number(AttrCoerce.lookup(json, "columnCount")),
             columnSpacing = AttrCoerce.number(AttrCoerce.lookup(json, "columnSpacing")),
             columns = AttrCoerce.attrValue(AttrCoerce.lookup(json, "columns")) { AttrCoerce.number(it) },
@@ -245,6 +278,7 @@ data class CollectionAttributes(
             defaultScrollAnchor = parseDefaultScrollAnchor(AttrCoerce.lookup(json, "defaultScrollAnchor")),
             footerClasses = AttrCoerce.array(AttrCoerce.lookup(json, "footerClasses")),
             headerClasses = AttrCoerce.array(AttrCoerce.lookup(json, "headerClasses")),
+            hideSeparator = AttrCoerce.boolean(AttrCoerce.lookup(json, "hideSeparator")),
             horizontalScroll = AttrCoerce.boolean(AttrCoerce.lookup(json, "horizontalScroll")),
             insetHorizontal = AttrCoerce.number(AttrCoerce.lookup(json, "insetHorizontal")),
             insetVertical = AttrCoerce.number(AttrCoerce.lookup(json, "insetVertical")),
@@ -255,7 +289,8 @@ data class CollectionAttributes(
             keyboardAvoidance = AttrCoerce.boolean(AttrCoerce.lookup(json, "keyboardAvoidance")),
             layout = parseLayout(AttrCoerce.lookup(json, "layout")),
             lazy = AttrCoerce.attrValue(AttrCoerce.lookup(json, "lazy")) { parseLazy(it) },
-            lineSpacing = AttrCoerce.number(AttrCoerce.lookup(json, "lineSpacing")),
+            lineSpacing = AttrCoerce.number(AttrCoerce.lookup(json, "lineSpacing", listOf("sectionSpacing"), canonicalOnly)),
+            listStyle = parseListStyle(AttrCoerce.lookup(json, "listStyle")),
             onItemAppear = AttrCoerce.attrValue(AttrCoerce.lookup(json, "onItemAppear")) { AttrCoerce.string(it) },
             onValueChange = AttrCoerce.attrValue(AttrCoerce.lookup(json, "onValueChange", listOf("onValueChanged", "onPageChanged"), canonicalOnly)) { AttrCoerce.string(it) },
             orientation = parseOrientation(AttrCoerce.lookup(json, "orientation")),
@@ -296,6 +331,15 @@ data class CollectionAttributes(
                 Lazy.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("Collection.lazy: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseListStyle(raw: Any?): AttrEnum<ListStyle>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                ListStyle.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("Collection.listStyle: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
 

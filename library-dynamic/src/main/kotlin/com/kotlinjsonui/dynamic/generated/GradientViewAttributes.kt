@@ -10,12 +10,20 @@ package com.kotlinjsonui.dynamic.generated
 data class GradientViewAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Gradient colors */
+    /** Child component(s). Declared from the implementation, which already read it: sjui gradient_view_converter.rb:16 (plan 51-E). */
+    val child: List<Any?>? = null,
+    /** Child components (alias for child). Declared from the implementation, which already read it: sjui gradient_view_converter.rb:16 (child || children) (plan 51-E). */
+    val children: List<Any?>? = null,
+    /** Unit coordinates in the view's own box for where the gradient ends: [x, y] or {"x": x, "y": y}, with 0 = leading/top, 0.5 = centre/middle, 1 = trailing/bottom. THREE faces read this key three incompatible ways today: sjui gradient_view_converter.rb:107-109 wants an OBJECT ({x, y}), rjui gradient_view_converter.rb:72-73 destructures an ARRAY ([x, y]), and kjui gradientview_component.rb:58-59 expects a STRING edge name ('top'). The two coordinate forms are declared because both are real coordinate spellings of the same thing; the android string form is NOT declared - it is `gradientDirection` semantics written under the wrong key, and is filed as a defect rather than blessed here. Declaring BOTH startPoint and endPoint replaces gradientDirection entirely; declaring only one is ignored and gradientDirection still decides (plan 51-E). [accepts: array | object] */
+    val endPoint: Any? = null,
+    /** Gradient colors. `colors` folds here (sjui gradient_view_converter.rb:52,66 read `colors || gradient`). On GradientView the gradient is the component's own fill, so the backgroundFill precedence question does not arise. [aliases: colors] */
     val gradient: List<Any?>? = null,
     /** Gradient direction */
     val gradientDirection: AttrEnum<GradientDirection>? = null,
     /** Color stop locations (0.0-1.0) */
     val locations: List<Any?>? = null,
+    /** Unit coordinates in the view's own box for where the gradient starts: [x, y] or {"x": x, "y": y}, with 0 = leading/top, 0.5 = centre/middle, 1 = trailing/bottom. THREE faces read this key three incompatible ways today: sjui gradient_view_converter.rb:107-109 wants an OBJECT ({x, y}), rjui gradient_view_converter.rb:72-73 destructures an ARRAY ([x, y]), and kjui gradientview_component.rb:58-59 expects a STRING edge name ('top'). The two coordinate forms are declared because both are real coordinate spellings of the same thing; the android string form is NOT declared - it is `gradientDirection` semantics written under the wrong key, and is filed as a defect rather than blessed here. Declaring BOTH startPoint and endPoint replaces gradientDirection entirely; declaring only one is ignored and gradientDirection still decides (plan 51-E). [accepts: array | object] */
+    val startPoint: Any? = null,
 ) {
     enum class GradientDirection(val json: String) {
         VERTICAL("Vertical"),
@@ -39,9 +47,13 @@ data class GradientViewAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "child",
+            "children",
+            "endPoint",
             "gradient",
             "gradientDirection",
             "locations",
+            "startPoint",
         )
 
         /**
@@ -51,6 +63,7 @@ data class GradientViewAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "colors" to "gradient",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -63,9 +76,13 @@ data class GradientViewAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): GradientViewAttributes = GradientViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            gradient = AttrCoerce.array(AttrCoerce.lookup(json, "gradient")),
+            child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
+            children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
+            endPoint = AttrCoerce.lookup(json, "endPoint"),
+            gradient = AttrCoerce.array(AttrCoerce.lookup(json, "gradient", listOf("colors"), canonicalOnly)),
             gradientDirection = parseGradientDirection(AttrCoerce.lookup(json, "gradientDirection")),
             locations = AttrCoerce.array(AttrCoerce.lookup(json, "locations")),
+            startPoint = AttrCoerce.lookup(json, "startPoint"),
         )
 
         private fun parseGradientDirection(raw: Any?): AttrEnum<GradientDirection>? {

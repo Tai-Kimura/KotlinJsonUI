@@ -23,9 +23,9 @@ data class SegmentAttributes(
     val onValueChange: AttrValue<Any>? = null,
     /** Label color of the selected segment, falling back to fontColor - hex string or color name from colors.json [aliases: selectedColor] */
     val selectedFontColor: String? = null,
-    /** Initially selected index (binding for two-way) [binding: two-way] */
+    /** Initially selected index (binding for two-way). `selectedTabIndex` folds here (sjui segment_converter.rb:16), matching the alias TabView already declares. [aliases: selectedTabIndex; binding: two-way] */
     val selectedIndex: AttrValue<Double>? = null,
-    /** Accent color of the SELECTED segment - a background fill on ios/web, the indicator on Compose. Hex string or color name from colors.json */
+    /** Accent color of the SELECTED segment - a background fill on ios/web, the indicator on Compose. Hex string or color name from colors.json. `selectedSegmentTintColor` folds here (sjui segment_converter.rb:128 reads `selectedSegmentTintColor || tintColor`). [aliases: selectedSegmentTintColor] */
     val tintColor: String? = null,
     /** Value change event */
     val valueChange: String? = null,
@@ -56,6 +56,8 @@ data class SegmentAttributes(
             "alpha" to "opacity",
             "normalColor" to "fontColor",
             "selectedColor" to "selectedFontColor",
+            "selectedSegmentTintColor" to "tintColor",
+            "selectedTabIndex" to "selectedIndex",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -74,8 +76,8 @@ data class SegmentAttributes(
             momentary = AttrCoerce.boolean(AttrCoerce.lookup(json, "momentary")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
             selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor", listOf("selectedColor"), canonicalOnly)),
-            selectedIndex = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedIndex")) { AttrCoerce.number(it) },
-            tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
+            selectedIndex = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedIndex", listOf("selectedTabIndex"), canonicalOnly)) { AttrCoerce.number(it) },
+            tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor", listOf("selectedSegmentTintColor"), canonicalOnly)),
             valueChange = AttrCoerce.string(AttrCoerce.lookup(json, "valueChange")),
         )
     }

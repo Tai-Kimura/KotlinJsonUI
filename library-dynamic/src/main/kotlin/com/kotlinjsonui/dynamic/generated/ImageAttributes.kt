@@ -17,6 +17,8 @@ data class ImageAttributes(
     val canTap: Boolean? = null,
     /** Content mode (binding supported). ScaleToFill is a declared synonym of fill (the stretch — see attribute_semantics.json#semantics.image); the normalizer folds it, fixtures are generated for the canonical spelling only. */
     val contentMode: AttrValue<AttrEnum<ContentMode>>? = null,
+    /** Default image name. Declared from the implementation, which already read it: sjui image_converter.rb:36,42 (defaultImage || errorImage || loadingImage) (plan 51-E). */
+    val defaultImage: String? = null,
     /** Fallback image on load error. */
     val errorImage: String? = null,
     /** Image when highlighted (binding supported) */
@@ -105,6 +107,7 @@ data class ImageAttributes(
             "alt",
             "canTap",
             "contentMode",
+            "defaultImage",
             "errorImage",
             "highlightSrc",
             "highlightSrcName",
@@ -140,6 +143,7 @@ data class ImageAttributes(
             alt = AttrCoerce.string(AttrCoerce.lookup(json, "alt")),
             canTap = AttrCoerce.boolean(AttrCoerce.lookup(json, "canTap")),
             contentMode = AttrCoerce.attrValue(AttrCoerce.lookup(json, "contentMode")) { parseContentMode(it) },
+            defaultImage = AttrCoerce.string(AttrCoerce.lookup(json, "defaultImage")),
             errorImage = AttrCoerce.string(AttrCoerce.lookup(json, "errorImage")),
             highlightSrc = AttrCoerce.attrValue(AttrCoerce.lookup(json, "highlightSrc")) { AttrCoerce.string(it) },
             highlightSrcName = AttrCoerce.attrValue(AttrCoerce.lookup(json, "highlightSrcName")) { AttrCoerce.string(it) },

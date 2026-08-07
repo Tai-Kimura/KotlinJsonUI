@@ -30,11 +30,13 @@ data class NetworkImageAttributes(
     val loadingImage: String? = null,
     /** Placeholder image name (alias for hint) */
     val placeholder: String? = null,
+    /** Rendering mode. Declared from the implementation, which already read it: sjui network_image_converter.rb:67-68 (plan 51-E). */
+    val renderingMode: AttrEnum<RenderingMode>? = null,
     /** Image URL (can be data binding) */
     val src: AttrValue<String>? = null,
     /** Download timeout in seconds */
     val timeout: Double? = null,
-    /** Image URL (alias, can be data binding) */
+    /** Image URL (alias, can be data binding). `source` folds here (sjui network_image_converter.rb:14 reads `url || source || src`). [aliases: source] */
     val url: AttrValue<String>? = null,
 ) {
     enum class ContentMode(val json: String) {
@@ -79,6 +81,20 @@ data class NetworkImageAttributes(
         }
     }
 
+    enum class RenderingMode(val json: String) {
+        ORIGINAL("original"),
+        TEMPLATE("template");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): RenderingMode? = when (raw.lowercase()) {
+                "original" -> ORIGINAL
+                "template" -> TEMPLATE
+                else -> null
+            }
+        }
+    }
+
     companion object {
         /**
          * Canonical attribute names declared for this component, including
@@ -95,6 +111,7 @@ data class NetworkImageAttributes(
             "loading",
             "loadingImage",
             "placeholder",
+            "renderingMode",
             "src",
             "timeout",
             "url",
@@ -107,6 +124,7 @@ data class NetworkImageAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "source" to "url",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -129,9 +147,10 @@ data class NetworkImageAttributes(
             loading = parseLoading(AttrCoerce.lookup(json, "loading")),
             loadingImage = AttrCoerce.string(AttrCoerce.lookup(json, "loadingImage")),
             placeholder = AttrCoerce.string(AttrCoerce.lookup(json, "placeholder")),
+            renderingMode = parseRenderingMode(AttrCoerce.lookup(json, "renderingMode")),
             src = AttrCoerce.attrValue(AttrCoerce.lookup(json, "src")) { AttrCoerce.string(it) },
             timeout = AttrCoerce.number(AttrCoerce.lookup(json, "timeout")),
-            url = AttrCoerce.attrValue(AttrCoerce.lookup(json, "url")) { AttrCoerce.string(it) },
+            url = AttrCoerce.attrValue(AttrCoerce.lookup(json, "url", listOf("source"), canonicalOnly)) { AttrCoerce.string(it) },
         )
 
         private fun parseContentMode(raw: Any?): AttrEnum<ContentMode>? {
@@ -149,6 +168,15 @@ data class NetworkImageAttributes(
                 Loading.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("NetworkImage.loading: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseRenderingMode(raw: Any?): AttrEnum<RenderingMode>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                RenderingMode.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("NetworkImage.renderingMode: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
     }

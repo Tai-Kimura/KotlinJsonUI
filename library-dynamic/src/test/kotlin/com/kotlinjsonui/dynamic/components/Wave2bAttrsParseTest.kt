@@ -84,7 +84,10 @@ class Wave2bAttrsParseTest {
     @Test
     fun `iconlabel legacy runtime extras are not declared`() {
         assertFalse(IconLabelAttributes.isDeclared("icon"))
-        assertFalse(IconLabelAttributes.isDeclared("iconSize"))
+        // `iconSize` was declared in plan 51-E (c9b440e); `icon` and `spacing`
+        // were not, so this test still has something to say — it is not the
+        // assertion that expired, only one of its three rows.
+        assertTrue(IconLabelAttributes.isDeclared("iconSize"))
         assertFalse(IconLabelAttributes.isDeclared("spacing"))
         assertTrue(IconLabelAttributes.isDeclared("icon_on"))
         assertTrue(IconLabelAttributes.isDeclared("iconMargin"))

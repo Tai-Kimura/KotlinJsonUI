@@ -40,7 +40,7 @@ data class CommonAttributes(
     val aspectHeight: AttrValue<Double>? = null,
     /** Aspect ratio width (binding supported) */
     val aspectWidth: AttrValue<Double>? = null,
-    /** Background color - hex string (#RRGGBB or #RRGGBBAA) or color name from colors.json (can be data binding) */
+    /** Background color - hex string (#RRGGBB or #RRGGBBAA) or color name from colors.json (can be data binding). `backgroundColor` folds here: the genuine layout reads of that spelling all chain with `background` (kjui blurview_component.rb:42 `background || backgroundColor`, kjui segment_component.rb:55 `backgroundColor || background`, rjui blur_converter.rb:58 and circle_view_converter.rb:55). Note the two kjui sites read the pair in OPPOSITE order, so a layout setting both drew two different colours until the normalizer began folding them — the same defect shape as CheckBox's accent chain (plan 51-E). When a `gradient` is also declared on the same view, the GRADIENT wins and this is the fallback fill — not a layer underneath it. Full ruling in attribute_semantics.json -> backgroundFill; do not restate it in toolchain comments. */
     val background: AttrValue<String>? = null,
     /** Two-way binding for the component's primary value — Switch/Check isOn, Slider value, Segment selectedIndex, SelectBox selectedValue, Progress progress, Table items. An alternative spelling to each component's own value attribute, which takes precedence when both are set. [binding: two-way] */
     val bind: AttrValue<Any>? = null,
@@ -72,7 +72,7 @@ data class CommonAttributes(
     val centerVertical: AttrValue<Boolean>? = null,
     /** Custom CSS class name */
     val className: String? = null,
-    /** Whether to clip content to bounds (binding supported) */
+    /** Whether to clip content to bounds (binding supported). Defaults to FALSE: content is not clipped unless the layout asks. A clipping default would silently destroy a child's `shadow` and would make `clipToBounds: true` inert on the platform that already clips. Full ruling in attribute_semantics.json -> clipToBounds; do not restate it in toolchain comments. [default: false] */
     val clipToBounds: AttrValue<Boolean>? = null,
     /** Horizontal compression resistance */
     val compressHorizontal: String? = null,
@@ -90,7 +90,7 @@ data class CommonAttributes(
     val disabledBackground: AttrValue<String>? = null,
     /** Child distribution for orientation-bearing containers. SwiftUI: Spacer/weight synthesis; Compose: Arrangement. */
     val distribution: AttrEnum<Distribution>? = null,
-    /** Visual effect (blur) style. Measured across the three converters 2026-08-05: the UIKit trio Light/Dark/ExtraLight is what all three map (sjui blur_converter.rb:71, kjui blurview_component.rb:38, rjui blur_converter.rb:98), and web additionally maps the SwiftUI material names. Every converter downcases before matching, so the casing here is presentational. `Regular` is the fallback all three already use for an unrecognised or absent value, hence the declared default. Enumerated because it was declared as a bare string while Blur.effectStyle — the same concept on the component that owns it — carried the enum: the split let the common spelling reach the render stage unvalidated, which is what the codegen-effect gate reported once the mode audit put these fixtures back in scope. [default: Regular] */
+    /** Visual effect (blur) style. Measured across the three converters 2026-08-05: the UIKit trio Light/Dark/ExtraLight is what all three map (sjui blur_converter.rb:71, kjui blurview_component.rb:38, rjui blur_converter.rb:98), and web additionally maps the SwiftUI material names. Every converter downcases before matching, so the casing here is presentational. `Regular` is the fallback all three already use for an unrecognised or absent value, hence the declared default. Enumerated because it was declared as a bare string while Blur.effectStyle — the same concept on the component that owns it — carried the enum: the split let the common spelling reach the render stage unvalidated, which is what the codegen-effect gate reported once the mode audit put these fixtures back in scope. Declared on `common`, so it applies on all three platforms and not only on Blur; the ios material/tint table is pinned in attribute_semantics.json -> effectStyle, which is also where the system* valueAliases and the tint layer order are ruled. [default: Regular] */
     val effectStyle: AttrEnum<EffectStyle>? = null,
     /** Whether component is enabled (can be data binding) */
     val enabled: AttrValue<Boolean>? = null,
@@ -100,7 +100,7 @@ data class CommonAttributes(
     val events: Map<String, Any?>? = null,
     /** Frame configuration with width/height */
     val frame: Map<String, Any?>? = null,
-    /** Content gravity/alignment [accepts: string | array] */
+    /** Content gravity/alignment. A single value names ONE axis; the axis it does not name falls to the container default (top vertically, start horizontally), so in LTR `left` and `top` both resolve to (start, top) and render identically. Use the array form to name both axes. Full ruling in attribute_semantics.json -> gravityDefaults; do not restate it in toolchain comments. [accepts: string | array] */
     val gravity: Any? = null,
     /** Height (number, 'matchParent', 'wrapContent') - binding supported. Not required if weight is specified. [required] */
     val height: AttrValue<DimensionValue>? = null,
@@ -200,6 +200,10 @@ data class CommonAttributes(
     val minWidth: AttrValue<Double>? = null,
     /** Minimum width weight (binding supported) */
     val minWidthWeight: AttrValue<Double>? = null,
+    /** Horizontal offset applied after layout, in pt / dp / px. Measurement and sibling placement are unchanged — the layout is computed first and the offset moves only this view. Its INTERACTIVE region moves with it: an offset control is tappable where it is drawn, which is what rules out a draw-only translation. Absolute, not RTL-mirroring, like leftMargin/rightMargin rather than startMargin/endMargin. Pairs with offsetY; either one alone implies 0 for the other. Full ruling (including the android primitive) in attribute_semantics.json -> offset. */
+    val offsetX: AttrValue<Double>? = null,
+    /** Vertical offset applied after layout, in pt / dp / px. Measurement and sibling placement are unchanged — the layout is computed first and the offset moves only this view. Its INTERACTIVE region moves with it: an offset control is tappable where it is drawn, which is what rules out a draw-only translation. Absolute, not RTL-mirroring, like leftMargin/rightMargin rather than startMargin/endMargin. Pairs with offsetX; either one alone implies 0 for the other. Full ruling (including the android primitive) in attribute_semantics.json -> offset. */
+    val offsetY: AttrValue<Double>? = null,
     /** Lifecycle callback when view appears (SwiftUI/Compose only) */
     val onAppear: String? = null,
     /** Click handler (camelCase) - binding only (@{functionName}) */
@@ -500,6 +504,8 @@ data class CommonAttributes(
             "minTopPadding",
             "minWidth",
             "minWidthWeight",
+            "offsetX",
+            "offsetY",
             "onAppear",
             "onClick",
             "onDisappear",
@@ -662,6 +668,8 @@ data class CommonAttributes(
             minTopPadding = AttrCoerce.number(AttrCoerce.lookup(json, "minTopPadding")),
             minWidth = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minWidth")) { AttrCoerce.number(it) },
             minWidthWeight = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minWidthWeight")) { AttrCoerce.number(it) },
+            offsetX = AttrCoerce.attrValue(AttrCoerce.lookup(json, "offsetX")) { AttrCoerce.number(it) },
+            offsetY = AttrCoerce.attrValue(AttrCoerce.lookup(json, "offsetY")) { AttrCoerce.number(it) },
             onAppear = AttrCoerce.string(AttrCoerce.lookup(json, "onAppear")),
             onClick = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onClick")),
             onDisappear = AttrCoerce.string(AttrCoerce.lookup(json, "onDisappear")),

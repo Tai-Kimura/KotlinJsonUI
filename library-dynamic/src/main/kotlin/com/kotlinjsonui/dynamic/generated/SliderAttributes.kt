@@ -23,6 +23,8 @@ data class SliderAttributes(
     val onValueChange: AttrValue<Any>? = null,
     /** Colour of the filled portion of the track - hex string or color name from colors.json. Was declared deprecated on swift ("SwiftUI Slider uses unified tint only"); retracted 2026-08-05 because Progress, also SwiftUI, maps the same attribute to .tint(). Unimplemented on the Slider path, not impossible. */
     val progressTintColor: String? = null,
+    /** Both bounds at once, as [minimum, maximum] — a shorthand for declaring `minimum` and `maximum` separately. It is NOT an alias: one spelling carries two values, so the normalizer cannot fold it. Read only when it is a two-element array; anything else leaves `minimum` / `maximum` to speak for themselves. Declared from the implementation, which already read it: sjui slider_converter.rb:16-19 (plan 51-E). */
+    val range: List<Any?>? = null,
     /** Step increment value */
     val step: Double? = null,
     /** Tint color - hex string or color name from colors.json */
@@ -44,6 +46,7 @@ data class SliderAttributes(
             "minimumValueImage",
             "onValueChange",
             "progressTintColor",
+            "range",
             "step",
             "tintColor",
             "trackTintColor",
@@ -80,6 +83,7 @@ data class SliderAttributes(
             minimumValueImage = AttrCoerce.string(AttrCoerce.lookup(json, "minimumValueImage")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("onValueChanged"), canonicalOnly)),
             progressTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "progressTintColor")),
+            range = AttrCoerce.array(AttrCoerce.lookup(json, "range")),
             step = AttrCoerce.number(AttrCoerce.lookup(json, "step")),
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
             trackTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "trackTintColor")),

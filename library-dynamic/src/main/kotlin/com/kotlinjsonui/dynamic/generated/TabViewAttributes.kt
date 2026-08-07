@@ -15,7 +15,7 @@ data class TabViewAttributes(
     val onValueChange: AttrValue<String>? = null,
     /** Currently selected tab index (binding for two-way) [aliases: selectedTabIndex; binding: two-way] */
     val selectedIndex: AttrValue<Double>? = null,
-    /** Whether to show tab labels (default: true) [default: True] */
+    /** Whether to show tab labels (default: true) [default: true] */
     val showLabels: Boolean? = null,
     /** Tab bar background color - hex string or color name from colors.json (binding supported) */
     val tabBarBackground: AttrValue<String>? = null,
