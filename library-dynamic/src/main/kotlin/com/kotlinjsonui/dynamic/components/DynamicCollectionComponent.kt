@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -237,7 +238,25 @@ class DynamicCollectionComponent {
             val columnSpacing = (a.columnSpacing?.toFloat() ?: defaultSpacing).dp
 
             // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            // Container-level listStyle chrome: an EMPTY collection must
+            // still discriminate the four values (the conformance probes
+            // carry no cells), the way an empty ios List still shows its
+            // style's background — same recipe the codegen emits.
+            run {
+                val style = (TypedAttrs.enumString(a.listStyle) { it.json } ?: "plain").lowercase()
+                if (style in setOf("grouped", "insetgrouped", "sidebar")) {
+                    if (style == "insetgrouped" || style == "sidebar") {
+                        modifier = modifier
+                            .padding(horizontal = 16.dp)
+                            .clip(RoundedCornerShape(if (style == "insetgrouped") 12.dp else 8.dp))
+                    }
+                    modifier = modifier.background(
+                        if (style == "sidebar") MaterialTheme.colorScheme.surfaceContainerLow
+                        else MaterialTheme.colorScheme.surfaceContainer
+                    )
+                }
+            }
 
             // Get cell height/width if specified ('cellHeight'/'cellWidth' are
             // undeclared legacy runtime extras)
