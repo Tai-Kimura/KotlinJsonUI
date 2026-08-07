@@ -255,8 +255,14 @@ class DynamicCheckBoxComponent {
                 // was active on android while CheckBox/font__binding rendered
                 // the default weight. Resolve first, then look the name up in
                 // the shared weight table rather than a local one-entry copy.
+                // `fontWeight` (string|number, declared 51-E) outranks the
+                // legacy `font` weight spelling — the codegen reads the same
+                // cascade. Only `font` was read here, so a declared
+                // fontWeight was inert on this face (codegen_effect
+                // CheckBox.fontWeight android).
                 val fontWeightValue =
-                    ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
+                    ResourceResolver.fontWeightOf(a.fontWeight)
+                        ?: ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
 
                 if (fontSize != null || fontColor != null || fontWeightValue != null) {
                     Text(
