@@ -20,6 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.PartialAttribute
+import com.kotlinjsonui.components.StyledLineState
+import com.kotlinjsonui.components.styledTextLines
+import androidx.compose.ui.graphics.graphicsLayer
 import com.kotlinjsonui.components.PartialAttributesText
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -168,7 +171,21 @@ class DynamicTextComponent {
             }
 
             // Text decoration
-            val textDecoration = resolveTextDecoration(a)
+            // The object face's colour/offset (the drawBehind seam): a face
+            // with a declared colour leaves the native decoration and is
+            // drawn by styledTextLines in that colour instead; lineOffset is
+            // UIKit's baselineOffset — the text shifts, the layout box stays.
+            val underlineLineColor = decorationLineColor(a.underline, data, context)
+            val strikethroughLineColor = decorationLineColor(a.strikethrough, data, context)
+            val underlineOffset = decorationLineOffset(a.underline)
+            val textDecoration = resolveTextDecoration(
+                a,
+                suppressUnderline = underlineLineColor != null,
+                suppressStrikethrough = strikethroughLineColor != null
+            )
+            val lineState = if (underlineLineColor != null || strikethroughLineColor != null) {
+                androidx.compose.runtime.remember { StyledLineState() }
+            } else null
 
             // Text alignment
             val textAlign = (hl?.get("textAlign") as? String)?.let { align ->
@@ -217,8 +234,21 @@ class DynamicTextComponent {
             // Handle edgeInset for text-specific padding (overrides regular padding)
             modifier = applyEdgeInset(modifier, a.edgeInset)
 
+            if (lineState != null) {
+                modifier = modifier.styledTextLines(
+                    lineState,
+                    underlineColor = underlineLineColor,
+                    strikethroughColor = strikethroughLineColor
+                )
+            }
+            if (underlineOffset != null && underlineOffset != 0f) {
+                val shift = underlineOffset
+                modifier = modifier.graphicsLayer { translationY = -shift.dp.toPx() }
+            }
+
             Text(
                 text = text,
+                onTextLayout = { lineState?.layout = it },
                 // No declared size inherits LocalTextStyle (the codegen emit
                 // is `resolved.size ?: TextUnit.Unspecified` — same rule).
                 fontSize = fontSize?.sp ?: TextUnit.Unspecified,
@@ -461,9 +491,32 @@ class DynamicTextComponent {
             else -> false
         }
 
-        private fun resolveTextDecoration(a: LabelAttributes): TextDecoration? {
-            val hasUnderline = drawsLine(a.underline)
-            val hasStrikethrough = drawsLine(a.strikethrough)
+        /**
+         * The object face's declared `color`, resolved — or null for the
+         * boolean face / no colour. A face with a custom colour must be
+         * SUPPRESSED from the native decoration (see [styledTextLines]).
+         */
+        internal fun decorationLineColor(
+            face: Any?,
+            data: Map<String, Any>,
+            context: Context
+        ): Color? {
+            if (!drawsLine(face)) return null
+            val spelling = (face as? Map<*, *>)?.get("color") as? String ?: return null
+            return ColorParser.parseColorStringWithBinding(spelling, data, context)
+        }
+
+        /** The object face's underline-only `lineOffset` (UIKit baselineOffset). */
+        internal fun decorationLineOffset(face: Any?): Float? =
+            ((face as? Map<*, *>)?.takeIf { drawsLine(it) }?.get("lineOffset") as? Number)?.toFloat()
+
+        private fun resolveTextDecoration(
+            a: LabelAttributes,
+            suppressUnderline: Boolean = false,
+            suppressStrikethrough: Boolean = false
+        ): TextDecoration? {
+            val hasUnderline = drawsLine(a.underline) && !suppressUnderline
+            val hasStrikethrough = drawsLine(a.strikethrough) && !suppressStrikethrough
 
             return when {
                 hasUnderline && hasStrikethrough -> TextDecoration.combine(
