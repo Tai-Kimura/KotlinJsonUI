@@ -338,6 +338,7 @@ class DynamicCollectionComponent {
                     modifier
                 }
                 renderNonLazyRow(
+                    chrome = listChrome,
                     sections = sections,
                     collectionDataSource = collectionDataSource,
                     cellTemplate = cellTemplate,
@@ -360,6 +361,7 @@ class DynamicCollectionComponent {
                     modifier
                 }
                 renderNonLazy(
+                    chrome = listChrome,
                     sections = sections,
                     collectionDataSource = collectionDataSource,
                     cellTemplate = cellTemplate,
@@ -741,6 +743,8 @@ class DynamicCollectionComponent {
             cellHeight: androidx.compose.ui.unit.Dp?,
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null
+        ,
+            chrome: ListChrome? = null
         ) {
             Column(
                 modifier = modifier.then(Modifier.padding(contentPadding)),
@@ -770,7 +774,7 @@ class DynamicCollectionComponent {
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear)
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome)
                                         }
                                     }
                                 }
@@ -820,6 +824,8 @@ class DynamicCollectionComponent {
             cellHeight: androidx.compose.ui.unit.Dp?,
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null
+        ,
+            chrome: ListChrome? = null
         ) {
             Row(
                 modifier = modifier.then(Modifier.padding(contentPadding)),
@@ -840,7 +846,7 @@ class DynamicCollectionComponent {
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear)
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome)
                                         }
                                     }
                                 }
