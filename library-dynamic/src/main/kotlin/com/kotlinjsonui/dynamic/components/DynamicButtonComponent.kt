@@ -118,7 +118,7 @@ class DynamicButtonComponent {
             // shared Text path: generic families, then res/font.
             val fontWeightRaw: Any? = when (val fw = a.fontWeight) {
                 is AttrValue.Value -> fw.value
-                is AttrValue.Binding -> DataBindingContext.resolveString(fw.expression, data)
+                is AttrValue.Binding -> DataBindingContext.resolveStringInner(fw.expression, data)
                 null -> null
             }
             val fontWeight = ResourceResolver.fontWeightOf(fontWeightRaw)
