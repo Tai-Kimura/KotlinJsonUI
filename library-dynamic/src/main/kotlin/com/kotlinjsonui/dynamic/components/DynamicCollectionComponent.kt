@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -945,13 +946,19 @@ class DynamicCollectionComponent {
                                         span = if (itemSpan > 1) { { GridItemSpan(itemSpan) } } else null
                                     ) { idx ->
                                         val identified = identifiedItems[idx]
+                                        // A declared cell size binds on BOTH axes (it was axis-gated
+                                        // here, so cellWidth was unread on the vertical path), and the
+                                        // overflow clips — the same anchored-and-clipped picture the
+                                        // codegen face and web draw (Collection_cellWidth__static
+                                        // parity d=30, run 31202080745). Size first: a fill would pin
+                                        // the constraints and the size after it could not shrink them.
                                         Box(
                                             modifier = Modifier
-                                                .fillMaxSize()
+                                                .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
                                                 .then(
-                                                    if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
-                                                    else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
-                                                    else Modifier
+                                                    if (cellWidth != null || cellHeight != null) Modifier.clipToBounds()
+                                                    else Modifier.fillMaxSize()
                                                 )
                                                 .animateItem(),
                                             contentAlignment = gravityAlignment
@@ -967,11 +974,11 @@ class DynamicCollectionComponent {
                                         val item = cellData.data[cellIndex]
                                         Box(
                                             modifier = Modifier
-                                                .fillMaxSize()
+                                                .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
                                                 .then(
-                                                    if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
-                                                    else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
-                                                    else Modifier
+                                                    if (cellWidth != null || cellHeight != null) Modifier.clipToBounds()
+                                                    else Modifier.fillMaxSize()
                                                 ),
                                             contentAlignment = gravityAlignment
                                         ) {
