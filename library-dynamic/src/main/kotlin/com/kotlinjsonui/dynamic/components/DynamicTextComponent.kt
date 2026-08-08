@@ -147,11 +147,23 @@ class DynamicTextComponent {
             // `Label/hintColor__binding` rendered the default colour. The
             // binding-aware parser degrades to the same static parse for the
             // bag's literals, so one call serves all three.
-            val fontColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
+            val enabledColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
                 ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
                 ?: ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.fontColor), data, context
                 )
+            // `disabledFontColor` replaces the font colour while the label is
+            // statically disabled — the same gate the codegen face emits
+            // (text_component.rb: enabled == false && disabledFontColor).
+            // Nothing here read it, so the android dynamic face was inert
+            // while ios and web coloured the disabled label
+            // (Label/disabledFontColor__static/binding, run 31243724782
+            // cross-effect).
+            val fontColor = if (TypedAttrs.boolean(a.common.enabled, data) == false) {
+                ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.rawString(a.disabledFontColor), data, context
+                ) ?: enabledColor
+            } else enabledColor
 
             // Font weight – handle both 'font' and 'fontWeight' attributes
             val fontWeight = when {
