@@ -74,6 +74,15 @@ elif [[ ! -f "$MODULE_DIR/src/main/assets/conformance/manifest.json" ]]; then
   exit 1
 fi
 
+# 1b. Wipe the device's previous OUTPUT state. progress.jsonl exists so a
+# crashed ATTEMPT resumes inside one invocation — but carrying it (and the
+# old screenshots) across INVOCATIONS makes a re-run resume past everything
+# and re-serve last run's pixels: a local re-run after a library fix
+# measured the OLD library (2026-08-08, SafeAreaView_spacing/cellWidth —
+# CI never sees this because its emulators are fresh). A new invocation is
+# a new measurement; it starts from zero.
+adbsh rm -rf "/sdcard/Android/data/$APP_PKG/files/conformance" || true
+
 # 2. Build + install both APKs. Timeout-bounded: a healthy install is ~3-4 min,
 # so 8 min fast-fails a gradle/emulator wedge in this phase (the boot succeeded
 # but the device wedged) instead of riding the step timeout.
