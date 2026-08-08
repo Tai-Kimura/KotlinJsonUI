@@ -567,12 +567,21 @@ class DynamicTextComponent {
          * parts (an empty TextStyle would DISCARD the Material theme's
          * bodyLarge defaults and change the effective font size).
          */
+        @Composable
         private fun buildTextStyle(
             a: LabelAttributes,
             data: Map<String, Any>,
             fontSize: Float?,
             overrideLineHeightMultiple: Float? = null
         ): TextStyle? {
+            // Derive from the CURRENT text style, never a bare TextStyle():
+            // the bare one discards the Material defaults — letterSpacing
+            // 0.5sp among them — so a style-carrying Label measured ~8dp
+            // narrower than the codegen face's LocalTextStyle-inheriting
+            // emit and wrapped one line later at the fixture's 200dp
+            // boundary (Label_hintAttributes__static android parity d=19,
+            // runs 31234163967/31243724782).
+            val base = androidx.compose.material3.LocalTextStyle.current
             var style: TextStyle? = null
 
             // Line height calculation matching Ruby implementation
@@ -590,11 +599,11 @@ class DynamicTextComponent {
                 }
                 else -> null
             }
-            lineHeight?.let { style = (style ?: TextStyle()).copy(lineHeight = it.sp) }
+            lineHeight?.let { style = (style ?: base).copy(lineHeight = it.sp) }
 
             // Text shadow
             if (a.textShadow != null) {
-                style = (style ?: TextStyle()).copy(
+                style = (style ?: base).copy(
                     shadow = androidx.compose.ui.graphics.Shadow(
                         color = Color.Black,
                         offset = androidx.compose.ui.geometry.Offset(2f, 2f),
@@ -609,6 +618,7 @@ class DynamicTextComponent {
         /**
          * Build full TextStyle for PartialAttributesText (includes fontSize, color, textAlign).
          */
+        @Composable
         private fun buildFullTextStyle(
             a: LabelAttributes,
             data: Map<String, Any>,
