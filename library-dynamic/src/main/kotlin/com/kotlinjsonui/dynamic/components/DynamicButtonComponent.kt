@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.generated.AttrValue
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ButtonAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
@@ -108,9 +110,23 @@ class DynamicButtonComponent {
             // column of the shared weight table (600 IS semibold; run 6:
             // android inert / ios active). One table answers both spellings
             // (ResourceResolver), not a per-component when.
-            val fontWeight = ResourceResolver.fontWeightOf(TypedAttrs.static(a.fontWeight))
+            // Binding-aware weight read (the static-only read dropped
+            // Button/fontWeight__binding to the default weight — run
+            // 31243724782 cross-effect), and the declared fontFamily was not
+            // read at ALL on this component while ios/web honoured it
+            // (fontFamily__static/binding). Same resolution chain as the
+            // shared Text path: generic families, then res/font.
+            val fontWeightRaw: Any? = when (val fw = a.fontWeight) {
+                is AttrValue.Value -> fw.value
+                is AttrValue.Binding -> DataBindingContext.resolveString(fw.expression, data)
+                null -> null
+            }
+            val fontWeight = ResourceResolver.fontWeightOf(fontWeightRaw)
                 ?: ResourceResolver.fontWeightFor(a.font)
                 ?: FontWeight.Normal
+            val fontFamily = ResourceResolver.resolveFontResource(
+                TypedAttrs.string(a.fontFamily, data), context
+            )
 
             // Colors (supports @{binding})
             val textColor = ColorParser.parseColorStringWithBinding(
@@ -252,6 +268,7 @@ class DynamicButtonComponent {
                             text = TypedAttrs.undeclared(json, "loadingText")?.asString ?: text,
                             fontSize = fontSize.sp,
                             fontWeight = fontWeight,
+                            fontFamily = fontFamily,
                             textAlign = textAlign
                         )
                     }
@@ -267,6 +284,7 @@ class DynamicButtonComponent {
                             text = text,
                             fontSize = fontSize.sp,
                             fontWeight = fontWeight,
+                            fontFamily = fontFamily,
                             textAlign = textAlign
                         )
                         if (imagePosition == "trailing") {
@@ -279,6 +297,7 @@ class DynamicButtonComponent {
                         text = text,
                         fontSize = fontSize.sp,
                         fontWeight = fontWeight,
+                            fontFamily = fontFamily,
                         textAlign = textAlign
                     )
                 }
