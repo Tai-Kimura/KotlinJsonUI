@@ -953,7 +953,20 @@ class DynamicCollectionComponent {
                                         // parity d=30, run 31202080745). Size first: a fill would pin
                                         // the constraints and the size after it could not shrink them.
                                         Box(
+                                            // wrapContentSize FIRST: a lazy-grid lane hands the item
+                                            // TIGHT constraints (min == max == lane width), and
+                                            // Modifier.width coerces itself into the incoming
+                                            // constraints — so the declared cell size was a no-op here
+                                            // (run 31234163967, Collection_cellWidth__static still
+                                            // d=30 after the first fix). Resetting to loose and
+                                            // anchoring topStart lets the size bind and keeps the
+                                            // web picture (leading-edge sliver).
                                             modifier = Modifier
+                                                .then(
+                                                    if (cellWidth != null || cellHeight != null) {
+                                                        Modifier.wrapContentSize(align = Alignment.TopStart)
+                                                    } else Modifier
+                                                )
                                                 .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
                                                 .then(
@@ -974,6 +987,11 @@ class DynamicCollectionComponent {
                                         val item = cellData.data[cellIndex]
                                         Box(
                                             modifier = Modifier
+                                                .then(
+                                                    if (cellWidth != null || cellHeight != null) {
+                                                        Modifier.wrapContentSize(align = Alignment.TopStart)
+                                                    } else Modifier
+                                                )
                                                 .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
                                                 .then(
