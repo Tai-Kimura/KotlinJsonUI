@@ -1,8 +1,10 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -14,6 +16,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -195,6 +198,26 @@ class DynamicNetworkImageComponent {
             // of treating "" as a failing request.
             val effectiveErrorResId = errorSlot(errorResId, defaultResId)
             val effectiveFallbackResId = fallbackSlot(defaultResId)
+
+            // renderingMode — `template` means "take the tint, ignore the
+            // asset's own colours"; `original` suppresses a tint that would
+            // otherwise apply; no mode → a declared tint still applies. The
+            // same mapping DynamicImageComponent and the codegen face
+            // (ImageComponent.rendering_color_filter, handed to AsyncImage's
+            // colorFilter by networkimage_component.rb) already use — this
+            // path ignored both spellings
+            // (NetworkImage_renderingMode__template parity d=13, run
+            // 31202080745).
+            val renderingMode = TypedAttrs.enumString(a.renderingMode) { it.json }?.lowercase()
+            val tint = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
+            )
+            val colorFilter = when (renderingMode) {
+                "template" -> ColorFilter.tint(tint ?: LocalContentColor.current)
+                "original" -> null
+                else -> tint?.let { ColorFilter.tint(it) }
+            }
+
             AsyncImage(
                 model = ImageRequest.Builder(context)
                     .data(imageUrl.takeIf { it.isNotEmpty() })
@@ -206,6 +229,7 @@ class DynamicNetworkImageComponent {
                 placeholder = placeholderResId?.let { painterResource(it) },
                 error = effectiveErrorResId?.let { painterResource(it) },
                 fallback = effectiveFallbackResId?.let { painterResource(it) },
+                colorFilter = colorFilter,
                 modifier = modifier
             )
         }

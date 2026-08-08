@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -169,16 +171,36 @@ class DynamicSafeAreaViewComponent {
             // applied in the correct scope. Plain DynamicView(s) calls do
             // not apply weight, which causes children like ScrollView with
             // weight:1 to lose their slot and push later siblings off-screen.
+            // `spacing` is declared on SafeAreaView (51-E) and the codegen
+            // face emits Arrangement.spacedBy for it; nothing here read it,
+            // so the declared gap collapsed to 0 on the dynamic path only
+            // (SafeAreaView_spacing__static/binding parity d=27, run
+            // 31202080745).
+            val spacing = TypedAttrs.float(a.spacing, data)
             when (orientation) {
                 "horizontal" -> {
-                    Row(modifier = modifier) {
+                    Row(
+                        modifier = modifier,
+                        horizontalArrangement = if (spacing != null) {
+                            Arrangement.spacedBy(spacing.dp)
+                        } else {
+                            Arrangement.Start
+                        }
+                    ) {
                         childList.forEach { child ->
                             renderChildInRow(child, data, context)
                         }
                     }
                 }
                 "vertical" -> {
-                    Column(modifier = modifier) {
+                    Column(
+                        modifier = modifier,
+                        verticalArrangement = if (spacing != null) {
+                            Arrangement.spacedBy(spacing.dp)
+                        } else {
+                            Arrangement.Top
+                        }
+                    ) {
                         childList.forEach { child ->
                             renderChildInColumn(child, data, context)
                         }
