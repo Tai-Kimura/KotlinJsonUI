@@ -317,7 +317,7 @@ class DynamicTextComponent {
             val partialAttributes = mutableListOf<PartialAttribute>()
 
             partialAttrMaps.forEach { attr ->
-                val range = resolvePartialRange(attr, text, data)
+                val range = resolvePartialRange(attr, text, data, context)
 
                 range?.let {
                     val partialAttr = PartialAttribute.fromJsonRange(
@@ -695,7 +695,12 @@ class DynamicTextComponent {
         /**
          * Resolve partial attribute range: supports numeric array [start, end] or string pattern.
          */
-        internal fun resolvePartialRange(attr: Map<*, *>, text: String, data: Map<String, Any>): Any? {
+        internal fun resolvePartialRange(
+            attr: Map<*, *>,
+            text: String,
+            data: Map<String, Any>,
+            context: Context? = null
+        ): Any? {
             return when (val rangeValue = attr["range"]) {
                 is List<*> -> {
                     if (rangeValue.size == 2 && rangeValue.all { it is Number }) {
@@ -709,13 +714,24 @@ class DynamicTextComponent {
                         }
                     } else null
                 }
-                // A string range is a text pattern AND binding-capable: the
-                // raw spelling went straight to text.indexOf, so
-                // `range: "@{overrideBoldRange}"` never matched and the
-                // partial silently vanished. Resolve first; an empty resolved
-                // pattern (the VM's "no highlight today" value) builds no
-                // partial rather than a zero-width one.
-                is String -> resolvePartialString(rangeValue, data)?.takeIf { it.isNotEmpty() }
+                // A string range is a text pattern AND binding-capable AND a
+                // string-resource key: the codegen face resolves it through
+                // process_text (stringResource(R.string.key) at compose
+                // time), so `range: "terms_of_service"` means the LOCALIZED
+                // substring, matched against the equally-localized text. This
+                // path resolved only the binding face and handed the raw key
+                // to text.indexOf — every key-form range silently vanished on
+                // the dynamic face (a downstream registration screen/login, ja locale,
+                // 2026-08-09) while numeric and literal patterns matched.
+                // Chain: binding → string resource → literal, the same order
+                // the text itself resolves (ResourceResolver.resolveTextValue).
+                is String -> {
+                    val bound = resolvePartialString(rangeValue, data)
+                    val resolved = bound?.let { b ->
+                        if (context != null) ResourceResolver.resolveTextValue(b, data, context) else b
+                    }
+                    resolved?.takeIf { it.isNotEmpty() }
+                }
                 else -> null
             }
         }

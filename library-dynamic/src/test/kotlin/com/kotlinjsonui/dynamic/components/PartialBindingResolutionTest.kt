@@ -40,6 +40,20 @@ class PartialBindingResolutionTest {
     }
 
     @Test
+    fun `static string range passes through unchanged without a context`() {
+        // The resource-key half of the chain (binding -> string resource ->
+        // literal) needs an Android context; with context = null the literal
+        // must survive untouched — the pre-resource behavior every existing
+        // literal pattern relies on. The resource half is pinned on-device
+        // (a downstream login screen/registration, ja+en, 2026-08-09: key-form ranges
+        // "terms_of_service"/"apply_for_membership" resolve and style).
+        val range = DynamicTextComponent.resolvePartialRange(
+            mapOf("range" to "Sam"), "Sample", emptyMap(), null
+        )
+        org.junit.Assert.assertEquals("Sam", range)
+    }
+
+    @org.junit.Test
     fun `static string range passes through unchanged`() {
         val attr = mapOf("range" to "(本日)")
         assertEquals(
