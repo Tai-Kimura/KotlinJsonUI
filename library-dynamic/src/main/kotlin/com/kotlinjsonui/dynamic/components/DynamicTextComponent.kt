@@ -637,7 +637,13 @@ class DynamicTextComponent {
             context: Context
         ): TextStyle {
             val fontSize = TypedAttrs.float(a.fontSize, data)
-            var style = buildTextStyle(a, data, fontSize) ?: TextStyle()
+            // LocalTextStyle fallback, not a bare TextStyle(): an unstyled
+            // linkable label built its full style from the bare base and
+            // dropped the Material defaults the plain-Text path keeps —
+            // tighter letterSpacing and leading than the codegen face
+            // (Label_linkable__true/binding parity d=33, run 31283456670).
+            var style = buildTextStyle(a, data, fontSize)
+                ?: androidx.compose.material3.LocalTextStyle.current
 
             fontSize?.let {
                 style = style.copy(fontSize = it.sp)
