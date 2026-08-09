@@ -389,7 +389,14 @@ private fun PartialTextWithRangeHitTargets(
                 )
             }
         },
-        modifier = modifier
+        // mergeDescendants: the caller's testTag lands on THIS node, so it
+        // must also carry the text — the inner Text's semantics merge up,
+        // exactly what the plain Text(modifier) branch exposes. Without the
+        // merge the tagged node answered text='' to UiAutomator and every
+        // subrange tap failed with "Element has no text" (the driver computes
+        // the glyph rect from node.text). The clickable hit-target Boxes are
+        // their own merge boundaries, so they stay separate a11y nodes.
+        modifier = modifier.semantics(mergeDescendants = true) {}
     ) { measurables, constraints ->
         val textPlaceable = measurables.first().measure(constraints)
         val textLayout = layoutHolder.value
