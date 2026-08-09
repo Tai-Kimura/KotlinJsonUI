@@ -527,6 +527,11 @@ fun DynamicView(
     // Render the view - include styleUpdateCounter as a key to force recomposition
     jsonObject?.let { json ->
         key(styleUpdateCounter) {
+            // Strings resolve while the components below build this layout's
+            // subtree; announce whose strings.json sections own bare keys
+            // first (the codegen face's own-section-first order). Variant
+            // suffixes (@regular) never name a section — announce the base.
+            ResourceCache.beginLayout(LayoutVariantResolver.baseOf(effectiveLayoutName))
             DynamicView(json, data, onError)
         }
     }

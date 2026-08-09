@@ -441,7 +441,15 @@ class DynamicButtonComponent {
                     end = paddingEnd.dp
                 )
             } else {
-                ButtonDefaults.ContentPadding
+                // Canonical no-padding face is ZERO, not the M3 default:
+                // button_component.rb emits PaddingValues(0.dp) whenever the
+                // layout declares no padding ("use zero padding to avoid
+                // Material default (24dp horizontal)"). Falling back to
+                // ButtonDefaults.ContentPadding centered the text inside a
+                // button 48dp wider than its glyphs, so a right-aligned
+                // wrapContent button showed a phantom end gap on the dynamic
+                // face only (a downstream login screen "forgot?", 2026-08-10).
+                PaddingValues(0.dp)
             }
         }
 

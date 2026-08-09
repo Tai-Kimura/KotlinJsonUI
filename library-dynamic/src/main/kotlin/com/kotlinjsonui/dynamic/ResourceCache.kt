@@ -25,6 +25,17 @@ object ResourceCache {
     private var stringsCache: Map<String, String>? = null
     private var colorsCache: Map<String, String>? = null
 
+    // strings.json section → the keys it declares. A bare key like "open"
+    // exists in as many sections as declare it ({home: 営業中, store_info:
+    // 開店} in a downstream app), and the flat keyToPrefixedKey map resolves it by
+    // insertion order — the LAST section in strings.json wins,
+    // deterministically wrong for every earlier one. The codegen face
+    // resolves through the layout's OWN section first; these two fields are
+    // the dynamic equivalent (a downstream home screen tab rendered 開店 for home's
+    // 営業中, 2026-08-10).
+    private var sectionKeys: Map<String, Set<String>>? = null
+    private var currentSections: List<String> = emptyList()
+
     // Reverse map: unprefixed key → prefixed key (e.g. "edit_profile" → "mypage_edit_profile")
     private var keyToPrefixedKey: Map<String, String>? = null
     
@@ -124,11 +135,14 @@ object ResourceCache {
             // as fallback) for cache population. For both shapes the
             // unprefixed→prefixed map is always populated so R.string lookup
             // (`<fileName>_<key>`) can bypass a missing strings.json value.
+            val sections = mutableMapOf<String, MutableSet<String>>()
             for ((fileName, fileObject) in jsonObject.entrySet()) {
                 if (!fileObject.isJsonObject) continue
                 val fileJsonObject = fileObject.asJsonObject
+                val sectionKeySet = sections.getOrPut(fileName) { mutableSetOf() }
                 for ((key, value) in fileJsonObject.entrySet()) {
                     val flatKey = "${fileName}_${key}"
+                    sectionKeySet.add(key)
                     // Unprefixed → prefixed mapping always recorded, regardless
                     // of whether a cached value can be extracted. This is the
                     // critical input for resolveString's R.string lookup path.
@@ -144,6 +158,7 @@ object ResourceCache {
 
             stringsCache = flattenedStrings
             keyToPrefixedKey = reverseKeyMap
+            sectionKeys = sections
             Log.d(TAG, "Loaded ${flattenedStrings.size} strings (${reverseKeyMap.size} key mappings)")
             
         } catch (e: Exception) {
@@ -263,8 +278,28 @@ object ResourceCache {
         stringsCache = null
         colorsCache = null
         keyToPrefixedKey = null
+        sectionKeys = null
+        currentSections = emptyList()
         stringsLoadAttempted = false
         colorsLoadAttempted = false
+    }
+
+    /**
+     * Announce the layout about to render. Bare keys then resolve through
+     * the sections this layout owns before the flat (insertion-order) map —
+     * the same ownership order the codegen face applies. Both the basename
+     * and the path-flattened spelling are candidates, matching the
+     * StringManagerCore namespace candidates.
+     */
+    fun beginLayout(name: String) {
+        fun sanitized(s: String) =
+            s.lowercase().replace(Regex("[^a-z0-9]"), "_")
+        val base = name.substringAfterLast('/')
+        currentSections = if (base != name) {
+            listOf(sanitized(base), sanitized(name))
+        } else {
+            listOf(sanitized(name))
+        }
     }
     
     /**
@@ -287,6 +322,20 @@ object ResourceCache {
 
         // Always prefer Android native string resources (R.string.*) over strings.json values,
         // because strings.json may contain English defaults while R.string has proper localization.
+
+        // The rendering layout's own sections win first — the flat map below
+        // answers by strings.json insertion order, i.e. by chance.
+        for (section in currentSections) {
+            if (sectionKeys?.get(section)?.contains(text) != true) continue
+            val ownPrefixed = "${section}_${text}"
+            try {
+                val resId = context.resources.getIdentifier(ownPrefixed, "string", context.packageName)
+                if (resId != 0) {
+                    return context.getString(resId)
+                }
+            } catch (_: Exception) { }
+            stringsCache?.get(ownPrefixed)?.let { return it }
+        }
 
         // First try with prefixed key (e.g. "detail_button" → R.string.candidate_card_detail_button)
         val prefixedKey = keyToPrefixedKey?.get(text)
