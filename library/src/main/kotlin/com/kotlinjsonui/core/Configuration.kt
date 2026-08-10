@@ -221,16 +221,34 @@ object Configuration {
         val defaultTextColor = Colors.text
         val defaultPlaceholderColor = Colors.placeholder
         val defaultBorderColor = Colors.border
-        val defaultSheetBackgroundColor = Colors.background  // 白
-        val defaultSheetTextColor = Colors.text  // 黒
+        // Sheet chrome is app-brand styling, not per-screen semantics: these
+        // are mutable so apps can restyle the option sheet globally without
+        // any layout attribute. Precedence stays: layout-declared attribute >
+        // Configuration > built-in default.
+        var defaultSheetBackgroundColor = Colors.background  // 白
+        var defaultSheetTextColor = Colors.text  // 黒
         const val defaultHeight = 44
         const val defaultCornerRadius = Sizes.cornerRadius
 
+        // Sheet typography overrides. null keeps the MaterialTheme-derived
+        // style the sheet has always used, so an app that sets nothing sees
+        // no change at all.
+        /** Font family for ALL sheet text (title, option rows, cancel). */
+        var sheetFontFamily: FontFamily? = null
+        /** Option-row font size in sp. null → MaterialTheme bodyLarge. */
+        var sheetItemFontSize: Int? = null
+        /** Option-row font weight. null → MaterialTheme bodyLarge. */
+        var sheetItemFontWeight: FontWeight? = null
+        /** Sheet title font size in sp. null → MaterialTheme titleMedium. */
+        var sheetTitleFontSize: Int? = null
+
         // Sheet button styles
         object SheetButton {
-            val defaultCancelButtonTextColor = Colors.primary
-            const val defaultFontSize = 17  // sp
-            const val defaultFontWeight = 700  // Bold
+            var defaultCancelButtonTextColor = Colors.primary
+            // NOTE deliberately no longer `const`: existing binaries that
+            // inlined 17/700 keep those values until recompiled.
+            var defaultFontSize = 17  // sp
+            var defaultFontWeight = 700  // Bold
         }
     }
 
@@ -247,18 +265,26 @@ object Configuration {
         val defaultTextColor = Colors.text
         val defaultSelectedColor = Colors.primary
         val defaultTodayColor = Colors.secondary
-        val defaultSheetBackgroundColor = Colors.background  // 白
-        val defaultSheetTextColor = Colors.text  // 黒
+        // Mutable sheet chrome — same contract as Configuration.SelectBox.
+        var defaultSheetBackgroundColor = Colors.background  // 白
+        var defaultSheetTextColor = Colors.text  // 黒
         const val defaultHeight = 44
+
+        // Sheet typography overrides (title + buttons; the Material picker
+        // internals keep their own typography). null = no change.
+        var sheetFontFamily: FontFamily? = null
+        /** Sheet title font size in sp. null → MaterialTheme titleMedium. */
+        var sheetTitleFontSize: Int? = null
 
         // Sheet button styles
         object SheetButton {
-            val defaultButtonBackgroundColor = Colors.primary
-            val defaultButtonTextColor = Color.White
-            val defaultCancelButtonBackgroundColor = Color.Transparent
-            val defaultCancelButtonTextColor = Colors.primary
-            const val defaultFontSize = 17  // sp
-            const val defaultFontWeight = 700  // Bold
+            var defaultButtonBackgroundColor = Colors.primary
+            var defaultButtonTextColor = Color.White
+            var defaultCancelButtonBackgroundColor = Color.Transparent
+            var defaultCancelButtonTextColor = Colors.primary
+            // NOTE deliberately no longer `const` — see SelectBox.SheetButton.
+            var defaultFontSize = 17  // sp
+            var defaultFontWeight = 700  // Bold
         }
     }
 

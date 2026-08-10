@@ -234,7 +234,12 @@ fun DateSelectBox(
                             // iOS-style wheel time picker
                             Text(
                                 text = "時刻を選択",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                ),
                                 color = sheetTextColor,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
@@ -279,6 +284,7 @@ fun DateSelectBox(
                                         text = "キャンセル",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
@@ -302,6 +308,7 @@ fun DateSelectBox(
                                         text = "確定",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
                                     )
                                 }
@@ -310,7 +317,12 @@ fun DateSelectBox(
                             // Default time picker in sheet
                             Text(
                                 text = "時刻を選択",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                ),
                                 color = sheetTextColor,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
@@ -356,6 +368,7 @@ fun DateSelectBox(
                                         text = "キャンセル",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
@@ -379,6 +392,7 @@ fun DateSelectBox(
                                         text = "確定",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
                                     )
                                 }
@@ -392,7 +406,12 @@ fun DateSelectBox(
                             // iOS-style wheel date/time picker
                             Text(
                                 text = "日付と時刻を選択",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                ),
                                 color = sheetTextColor,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
@@ -439,6 +458,7 @@ fun DateSelectBox(
                                         text = "キャンセル",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
@@ -458,6 +478,7 @@ fun DateSelectBox(
                                         text = "確定",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
                                     )
                                 }
@@ -466,7 +487,12 @@ fun DateSelectBox(
                             // Default date/time picker in sheet
                             Text(
                                 text = "日付と時刻を選択",
-                                style = MaterialTheme.typography.titleMedium,
+                                style = sheetTextStyle(
+                                    MaterialTheme.typography.titleMedium,
+                                    Configuration.DatePicker.sheetFontFamily,
+                                    Configuration.DatePicker.sheetTitleFontSize,
+                                    null
+                                ),
                                 color = sheetTextColor,
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
@@ -514,6 +540,7 @@ fun DateSelectBox(
                                         text = "キャンセル",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                     )
                                 }
@@ -533,6 +560,7 @@ fun DateSelectBox(
                                         text = "確定",
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
+                                        fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
                                     )
                                 }

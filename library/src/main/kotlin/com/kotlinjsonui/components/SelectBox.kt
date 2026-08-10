@@ -137,14 +137,29 @@ fun SelectBox(
                 // Title or header (optional)
                 Text(
                     text = "選択してください",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = sheetTextStyle(
+                        MaterialTheme.typography.titleMedium,
+                        Configuration.SelectBox.sheetFontFamily,
+                        Configuration.SelectBox.sheetTitleFontSize,
+                        null
+                    ),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 16.dp)
                 )
-                
+
                 HorizontalDivider()
-                
+
+                // Option-row style: MaterialTheme bodyLarge with the
+                // Configuration sheet-typography overrides merged in (null
+                // overrides = the style the sheet has always had).
+                val itemStyle = sheetTextStyle(
+                    MaterialTheme.typography.bodyLarge,
+                    Configuration.SelectBox.sheetFontFamily,
+                    Configuration.SelectBox.sheetItemFontSize,
+                    Configuration.SelectBox.sheetItemFontWeight
+                )
+
                 // Scrollable list of options
                 LazyColumn(
                     modifier = Modifier
@@ -181,7 +196,7 @@ fun SelectBox(
                                 ) {
                                     Text(
                                         text = placeholderRow,
-                                        style = MaterialTheme.typography.bodyLarge,
+                                        style = itemStyle,
                                         color = sheetTextColor.copy(alpha = 0.6f)
                                     )
                                 }
@@ -215,7 +230,7 @@ fun SelectBox(
                             ) {
                                 Text(
                                     text = option,
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    style = itemStyle,
                                     color = if (option == value) {
                                         sheetTextColor
                                     } else {
@@ -237,7 +252,7 @@ fun SelectBox(
                         }
                     }
                 }
-                
+
                 // Cancel button
                 HorizontalDivider()
                 Surface(
@@ -256,6 +271,7 @@ fun SelectBox(
                         text = "キャンセル",
                         fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
+                        fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = cancelButtonTextColor,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -361,14 +377,31 @@ fun <T> SelectBox(
                 // Title or header (optional)
                 Text(
                     text = "選択してください",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = sheetTextStyle(
+                        MaterialTheme.typography.titleMedium,
+                        Configuration.SelectBox.sheetFontFamily,
+                        Configuration.SelectBox.sheetTitleFontSize,
+                        null
+                    ),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 16.dp)
                 )
-                
+
                 HorizontalDivider()
-                
+
+                // Same sheet styling contract as the String overload: rows
+                // derive from the sheet colors (NOT the Material color
+                // scheme — this overload used primaryContainer/surface until
+                // 2.22.0, a face split with no design behind it) and carry
+                // the Configuration typography overrides.
+                val itemStyle = sheetTextStyle(
+                    MaterialTheme.typography.bodyLarge,
+                    Configuration.SelectBox.sheetFontFamily,
+                    Configuration.SelectBox.sheetItemFontSize,
+                    Configuration.SelectBox.sheetItemFontWeight
+                )
+
                 // Scrollable list of options
                 LazyColumn(
                     modifier = Modifier
@@ -387,9 +420,9 @@ fun <T> SelectBox(
                                     showBottomSheet = false
                                 },
                             color = if (option.value == value) {
-                                MaterialTheme.colorScheme.primaryContainer
+                                sheetBackgroundColor.copy(alpha = 0.9f)
                             } else {
-                                MaterialTheme.colorScheme.surface
+                                sheetBackgroundColor
                             }
                         ) {
                             Row(
@@ -400,11 +433,11 @@ fun <T> SelectBox(
                             ) {
                                 Text(
                                     text = option.label,
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    style = itemStyle,
                                     color = if (option.value == value) {
-                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                        sheetTextColor
                                     } else {
-                                        MaterialTheme.colorScheme.onSurface
+                                        sheetTextColor.copy(alpha = 0.8f)
                                     }
                                 )
                                 if (option.value == value) {
@@ -423,7 +456,10 @@ fun <T> SelectBox(
                     }
                 }
 
-                // Cancel button
+                // Cancel button — same styling contract as the String
+                // overload (SheetButton config; the bare Surface + bodyLarge
+                // this overload had until 2.22.0 was the other half of the
+                // face split noted above).
                 HorizontalDivider()
                 Surface(
                     modifier = Modifier
@@ -434,12 +470,15 @@ fun <T> SelectBox(
                                 sheetState.hide()
                                 showBottomSheet = false
                             }
-                        }
+                        },
+                    color = sheetBackgroundColor
                 ) {
                     Text(
                         text = "キャンセル",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = sheetTextColor,
+                        fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
+                        fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
+                        fontFamily = Configuration.SelectBox.sheetFontFamily,
+                        color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),

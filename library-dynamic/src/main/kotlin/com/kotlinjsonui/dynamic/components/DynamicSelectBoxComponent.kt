@@ -12,6 +12,7 @@ import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -284,8 +285,16 @@ class DynamicSelectBoxComponent {
                 fontSize = fontSize?.toInt() ?: 16,
                 fontWeight = fontWeight ?: androidx.compose.ui.text.font.FontWeight.Normal,
                 contentPadding = contentPadding ?: PaddingValues(horizontal = 16.dp),
-                cancelButtonBackgroundColor = cancelButtonBackgroundColor ?: backgroundColor,
-                cancelButtonTextColor = cancelButtonTextColor ?: textColor
+                // Undeclared cancel colors fall to the SAME Configuration
+                // defaults the codegen face reaches by omitting the params
+                // (generated code emits these only when declared). The old
+                // `?: backgroundColor` / `?: textColor` fallbacks silently
+                // restyled the cancel row with the FIELD colors, a
+                // dynamic-only divergence from the codegen canon.
+                cancelButtonBackgroundColor = cancelButtonBackgroundColor
+                    ?: Configuration.SelectBox.defaultSheetBackgroundColor,
+                cancelButtonTextColor = cancelButtonTextColor
+                    ?: Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor
             )
         }
 
