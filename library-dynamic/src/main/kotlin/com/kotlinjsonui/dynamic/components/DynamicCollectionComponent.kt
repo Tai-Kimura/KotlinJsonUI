@@ -1420,7 +1420,8 @@ class DynamicCollectionComponent {
         /** Collection-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "autoChangeTrackingId", "cellClasses", "cellIdProperty",
-            "columnSpacing", "columns", "contentInsets", "footerClasses",
+            "columnSpacing", "columns", "contentInsets", "currentPage",
+            "footerClasses",
             "headerClasses", "insetHorizontal", "insetVertical", "insets",
             "itemSpacing", "items", "layout", "lazy", "lineSpacing",
             "onValueChange", "orientation", "paging", "reverseLayout",

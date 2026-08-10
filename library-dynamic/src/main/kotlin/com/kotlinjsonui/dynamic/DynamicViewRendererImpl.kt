@@ -178,10 +178,20 @@ class DynamicViewRendererImpl {
                     )
                 }
                 jsonObject != null -> {
-                    DynamicView(
-                        json = jsonObject!!,
-                        data = data
-                    )
+                    // This registered-renderer path (SafeDynamicView -> render)
+                    // IS the screen root for consumer apps, and it enters the
+                    // JsonObject overload directly — the DynamicRuntimeScope
+                    // wrapped around the layoutName overload never covers it.
+                    // Without a scope here two-way writebacks (a paging
+                    // collection's currentPage) find no writer and every swipe
+                    // is silently dropped (a downstream detail hero's dots,
+                    // 2026-08-10, second filing).
+                    DynamicRuntimeScope(data) { effectiveData ->
+                        DynamicView(
+                            json = jsonObject!!,
+                            data = effectiveData
+                        )
+                    }
                 }
             }
         }

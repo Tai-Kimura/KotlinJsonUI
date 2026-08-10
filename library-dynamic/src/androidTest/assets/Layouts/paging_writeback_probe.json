@@ -1,0 +1,20 @@
+{
+  "type": "View",
+  "orientation": "vertical",
+  "child": [
+    {
+      "type": "Collection",
+      "id": "probe_pager",
+      "layout": "horizontal",
+      "paging": true,
+      "height": 120,
+      "currentPage": "@{currentPage}",
+      "cell": { "type": "Label", "text": "page" }
+    },
+    {
+      "type": "Label",
+      "id": "probe_page_label",
+      "text": "@{currentPage}"
+    }
+  ]
+}
