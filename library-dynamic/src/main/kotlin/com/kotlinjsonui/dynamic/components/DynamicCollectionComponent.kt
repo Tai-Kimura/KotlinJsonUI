@@ -237,6 +237,20 @@ class DynamicCollectionComponent {
                 ?: 0f
             val lineSpacing = (a.lineSpacing?.toFloat() ?: defaultSpacing).dp
             val columnSpacing = (a.columnSpacing?.toFloat() ?: defaultSpacing).dp
+            // For a HORIZONTAL collection both spacing spellings act along
+            // the scroll axis, lineSpacing first: minimumLineSpacing
+            // separates the "lines" perpendicular to the scroll, which ARE
+            // the columns when the scroll runs horizontally. The codegen
+            // face emits exactly this fold (collection_component.rb
+            // `h_spacing = line_spacing || column_spacing`) while this path
+            // read only columnSpacing — a lineSpacing-declared carousel
+            // rendered its cells touching, dynamic face only (a downstream chat screen
+            // downstream chips, 2026-08-10).
+            val scrollAxisSpacing = if (isHorizontal) {
+                (a.lineSpacing?.toFloat() ?: a.columnSpacing?.toFloat() ?: defaultSpacing).dp
+            } else {
+                columnSpacing
+            }
 
             // Build modifier
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -346,7 +360,7 @@ class DynamicCollectionComponent {
                     cellIdProperty = cellIdProperty,
                     data = data,
                     modifier = rowModifier,
-                    columnSpacing = columnSpacing,
+                    columnSpacing = scrollAxisSpacing,
                     contentPadding = contentPadding,
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
@@ -450,8 +464,8 @@ class DynamicCollectionComponent {
                     reverseLayout = reverseLayout,
                     userScrollEnabled = scrollEnabled,
                     contentPadding = contentPadding,
-                    verticalArrangement = Arrangement.spacedBy(lineSpacing),
-                    horizontalArrangement = Arrangement.spacedBy(columnSpacing)
+                    verticalArrangement = Arrangement.spacedBy(0.dp) /* canon: codegen emits no cross-axis arrangement for horizontal (collection_component.rb:326) */,
+                    horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing)
                 ) {
                     generateCollectionItems(
                         sections = sections,
