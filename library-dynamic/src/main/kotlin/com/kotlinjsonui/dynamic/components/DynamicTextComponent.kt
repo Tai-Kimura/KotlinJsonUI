@@ -330,7 +330,7 @@ class DynamicTextComponent {
                         // parser, so a bound fontColor styled nothing while
                         // the codegen (which interpolates `${data.x}` at
                         // compose time) styled the resolved value
-                        // (downstream a-downstream-hour-row-cell, 2026-08-08).
+                        // (a downstream hour-row cell, 2026-08-08).
                         fontColor = resolvePartialString(attr["fontColor"], data),
                         fontSize = resolvePartialInt(attr["fontSize"], data),
                         // Declared string|number; PartialAttribute's boundary
@@ -637,13 +637,22 @@ class DynamicTextComponent {
             context: Context
         ): TextStyle {
             val fontSize = TypedAttrs.float(a.fontSize, data)
-            // LocalTextStyle fallback, not a bare TextStyle(): an unstyled
+            // LocalTextStyle base, not a bare TextStyle(): an unstyled
             // linkable label built its full style from the bare base and
             // dropped the Material defaults the plain-Text path keeps —
             // tighter letterSpacing and leading than the codegen face
             // (Label_linkable__true/binding parity d=33, run 31283456670).
-            var style = buildTextStyle(a, data, fontSize)
-                ?: androidx.compose.material3.LocalTextStyle.current
+            //
+            // And ONLY the base: the codegen face's PartialAttributesText
+            // style carries color/font/textAlign fragments and NEVER a
+            // lineHeight (text_component.rb partial style_parts — even a
+            // declared lineHeightMultiple emits nothing there), so the
+            // ambient theme's line height survives. Routing this through
+            // buildTextStyle injected the plain-path fontSize*1.3 default,
+            // and a partial-attributed label rendered a different line
+            // height than its codegen twin wherever the app theme sets one
+            // (downstream hour rows, 2026-08-10).
+            var style = androidx.compose.material3.LocalTextStyle.current
 
             fontSize?.let {
                 style = style.copy(fontSize = it.sp)
@@ -721,8 +730,7 @@ class DynamicTextComponent {
                 // substring, matched against the equally-localized text. This
                 // path resolved only the binding face and handed the raw key
                 // to text.indexOf — every key-form range silently vanished on
-                // the dynamic face (a downstream registration screen/login, ja locale,
-                // 2026-08-09) while numeric and literal patterns matched.
+                // the dynamic face (downstream report) while numeric and literal patterns matched.
                 // Chain: binding → string resource → literal, the same order
                 // the text itself resolves (ResourceResolver.resolveTextValue).
                 is String -> {

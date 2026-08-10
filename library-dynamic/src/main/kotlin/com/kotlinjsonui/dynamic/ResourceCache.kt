@@ -31,7 +31,7 @@ object ResourceCache {
     // insertion order — the LAST section in strings.json wins,
     // deterministically wrong for every earlier one. The codegen face
     // resolves through the layout's OWN section first; these two fields are
-    // the dynamic equivalent (a downstream home screen tab rendered 開店 for home's
+    // the dynamic equivalent (downstream bar home tab rendered 開店 for home's
     // 営業中, 2026-08-10).
     private var sectionKeys: Map<String, Set<String>>? = null
     private var currentSections: List<String> = emptyList()

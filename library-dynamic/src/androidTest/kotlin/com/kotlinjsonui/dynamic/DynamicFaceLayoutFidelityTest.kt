@@ -36,7 +36,7 @@ class DynamicFaceLayoutFidelityTest {
 
     @Test
     fun hourRowShapedCellMatchesTheCodegenEmitHeight() {
-        // downstream a-downstream-hour-row-cell: horizontal row, two fontSize-14
+        // A downstream hour-row cell: horizontal row, two fontSize-14
         // labels (one plain, one partialAttributes), paddingVertical 6.
         // The codegen face emits lineHeight = 14*1.3 = 18.2sp on the plain
         // label; the row measures padding + that line. The dynamic render
@@ -62,6 +62,16 @@ class DynamicFaceLayoutFidelityTest {
         var density = 0f
         rule.setContent {
             density = androidx.compose.ui.platform.LocalDensity.current.density
+            // A REAL ambient line height, like an app theme's typography —
+            // without it both faces coincide trivially and the partial-path
+            // lineHeight divergence hides (the false pass this test first
+            // produced).
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.material3.LocalTextStyle provides
+                    androidx.compose.material3.LocalTextStyle.current.copy(
+                        lineHeight = androidx.compose.ui.unit.TextUnit(24f, androidx.compose.ui.unit.TextUnitType.Sp)
+                    )
+            ) {
             androidx.compose.foundation.layout.Column {
                 Box(Modifier.testTag("dyn")) { DynamicView(json = row, data = emptyMap()) }
                 // The codegen emit shape, verbatim (BusinessHourRowGeneratedView).
@@ -81,8 +91,19 @@ class DynamicFaceLayoutFidelityTest {
                                 lineHeight = androidx.compose.ui.unit.TextUnit(18.2f, androidx.compose.ui.unit.TextUnitType.Sp)
                             )
                         )
+                        // The partial half, exactly as the codegen emits it:
+                        // style WITHOUT a lineHeight (the partial style_parts
+                        // never carry one).
+                        com.kotlinjsonui.components.PartialAttributesText(
+                            text = "18:00 - 2:00",
+                            partialAttributes = emptyList(),
+                            style = androidx.compose.material3.LocalTextStyle.current.copy(
+                                fontSize = androidx.compose.ui.unit.TextUnit(14f, androidx.compose.ui.unit.TextUnitType.Sp)
+                            )
+                        )
                     }
                 }
+            }
             }
         }
         rule.waitForIdle()
@@ -140,7 +161,7 @@ class DynamicFaceLayoutFidelityTest {
 
     @Test
     fun lazyHorizontalSingleLaneKeepsCellCrossSizeAndSpacing() {
-        // The downstream chips shape: an 80dp-tall LAZY horizontal collection of
+        // The downstream chip-carousel shape: an 80dp-tall LAZY horizontal collection of
         // chip-shaped cells. The cells must keep their OWN height (36dp), not
         // stretch to the lane, and must sit lineSpacing (8dp) apart.
         val json = JsonParser.parseString(

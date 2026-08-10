@@ -11,7 +11,7 @@ import org.junit.Test
  * untouched, which made a bound `range` never match (the partial silently
  * vanished) and a bound `fontColor` style nothing, while the codegen path —
  * which interpolates `${data.x}` at compose time — rendered both
- * (downstream a-downstream-hour-row-cell, 2026-08-08).
+ * (a downstream hour-row cell, 2026-08-08).
  */
 class PartialBindingResolutionTest {
 
@@ -45,7 +45,7 @@ class PartialBindingResolutionTest {
         // literal) needs an Android context; with context = null the literal
         // must survive untouched — the pre-resource behavior every existing
         // literal pattern relies on. The resource half is pinned on-device
-        // (a downstream login screen/registration, ja+en, 2026-08-09: key-form ranges
+        // (downstream login/registration screens, ja+en, 2026-08-09: key-form ranges
         // "terms_of_service"/"apply_for_membership" resolve and style).
         val range = DynamicTextComponent.resolvePartialRange(
             mapOf("range" to "Sam"), "Sample", emptyMap(), null

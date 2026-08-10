@@ -448,7 +448,7 @@ class DynamicButtonComponent {
                 // ButtonDefaults.ContentPadding centered the text inside a
                 // button 48dp wider than its glyphs, so a right-aligned
                 // wrapContent button showed a phantom end gap on the dynamic
-                // face only (a downstream login screen "forgot?", 2026-08-10).
+                // face only (a downstream trailing link button, 2026-08-10).
                 PaddingValues(0.dp)
             }
         }

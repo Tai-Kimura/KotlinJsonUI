@@ -244,8 +244,7 @@ class DynamicCollectionComponent {
             // face emits exactly this fold (collection_component.rb
             // `h_spacing = line_spacing || column_spacing`) while this path
             // read only columnSpacing — a lineSpacing-declared carousel
-            // rendered its cells touching, dynamic face only (a downstream chat screen
-            // downstream chips, 2026-08-10).
+            // rendered its cells touching, dynamic face only (a downstream chip carousel, 2026-08-10).
             val scrollAxisSpacing = if (isHorizontal) {
                 (a.lineSpacing?.toFloat() ?: a.columnSpacing?.toFloat() ?: defaultSpacing).dp
             } else {
@@ -419,7 +418,7 @@ class DynamicCollectionComponent {
             // LazyHorizontalGrid with rows=Fixed(1) STRETCHES every cell to
             // the lane height (grid semantics), so a 36dp chip in an 80dp
             // collection rendered 64dp tall with dead space under its label,
-            // dynamic face only (a downstream chat screen chips, 2026-08-10). Multi-row
+            // dynamic face only (a downstream chip carousel, 2026-08-10). Multi-row
             // horizontal grids keep the grid path below.
             if (isHorizontal && gridColumns == 1) {
                 renderLazyRowSingleLane(
