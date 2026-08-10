@@ -532,7 +532,13 @@ fun DynamicView(
             // first (the codegen face's own-section-first order). Variant
             // suffixes (@regular) never name a section — announce the base.
             ResourceCache.beginLayout(LayoutVariantResolver.baseOf(effectiveLayoutName))
-            DynamicView(json, data, onError)
+            // A screen render is a layout root: give its subtree a runtime
+            // write channel so two-way bindings (paging currentPage, ...)
+            // propagate to sibling readers the way the codegen face's view
+            // state does.
+            DynamicRuntimeScope(data) { effectiveData ->
+                DynamicView(json, effectiveData, onError)
+            }
         }
     }
 }

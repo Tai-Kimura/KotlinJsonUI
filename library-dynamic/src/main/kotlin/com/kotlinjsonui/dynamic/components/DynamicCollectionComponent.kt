@@ -28,6 +28,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import com.google.gson.JsonArray
 import com.kotlinjsonui.dynamic.DynamicView
+import com.kotlinjsonui.dynamic.DynamicRuntimeScope
+import com.kotlinjsonui.dynamic.LocalDynamicRuntimeWriter
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -597,7 +599,43 @@ class DynamicCollectionComponent {
 
             if (pageCount == 0) return
 
-            val pagerState = rememberPagerState { pageCount }
+            // `currentPage: "@{prop}"` is a TWO-WAY binding. The codegen face
+            // wires three legs (collection_component.rb): seed the pager from
+            // the bound value, follow later data writes with an animated
+            // scroll, and write every page change back into view state so
+            // sibling `@{prop}` readers (a page indicator) track the swipe.
+            // The write-back leg goes through the layout root's runtime scope
+            // (DynamicRuntimeScope) — the dynamic face's stand-in for the
+            // generated view's own mutable state.
+            val currentPageProp = (TypedAttrs.raw(a.currentPage) as? String)
+                ?.takeIf { it.startsWith("@{") && it.endsWith("}") }
+                ?.let { ModifierBuilder.extractBindingProperty(it) }
+            val boundPage = currentPageProp?.let { (data[it] as? Number)?.toInt() }
+
+            val pagerState = rememberPagerState(
+                initialPage = (boundPage ?: 0).coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+            ) { pageCount }
+
+            // Sync data binding -> pager. While this programmatic scroll is
+            // in flight the write-back leg stays quiet: writing intermediate
+            // pages back would move `boundPage`, which restarts this effect
+            // and cancels its own animation short of the target. (The codegen
+            // face's view-state store tolerates the echo; an override scope
+            // must not feed it back.)
+            val programmaticScroll = remember { mutableStateOf(false) }
+            if (boundPage != null) {
+                LaunchedEffect(boundPage) {
+                    val target = boundPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+                    if (pagerState.currentPage != target) {
+                        programmaticScroll.value = true
+                        try {
+                            pagerState.animateScrollToPage(target)
+                        } finally {
+                            programmaticScroll.value = false
+                        }
+                    }
+                }
+            }
 
             // Resolve the page-change callback from binding: canonical
             // 'onValueChange' with the 'onValueChanged' / 'onPageChanged'
@@ -612,11 +650,17 @@ class DynamicCollectionComponent {
                     DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
                 }
 
-            // Detect page changes and invoke callback
-            if (onPageChanged != null) {
+            // Sync pager -> binding + callback
+            val runtimeWriter = LocalDynamicRuntimeWriter.current
+            if ((currentPageProp != null && runtimeWriter != null) || onPageChanged != null) {
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.collect { page ->
-                        onPageChanged(page)
+                        if (currentPageProp != null && !programmaticScroll.value) {
+                            runtimeWriter?.invoke(currentPageProp, page)
+                        }
+                        // Callback parity with codegen: it fires for
+                        // programmatic changes too.
+                        onPageChanged?.invoke(page)
                     }
                 }
             }
@@ -666,7 +710,7 @@ class DynamicCollectionComponent {
                             val cellData = data.toMutableMap().apply {
                                 put("index", pageIndex)
                             }
-                            DynamicView(json = cellTemplate, data = cellData)
+                            CellRoot(cellTemplate, cellData)
                         }
                     }
                 }
@@ -759,7 +803,7 @@ class DynamicCollectionComponent {
                                 val cellData = data.toMutableMap().apply {
                                     put("index", index)
                                 }
-                                DynamicView(json = cellTemplate, data = cellData)
+                                CellRoot(cellTemplate, cellData)
                             }
                         }
                     }
@@ -839,7 +883,7 @@ class DynamicCollectionComponent {
                                 contentAlignment = gravityAlignment
                             ) {
                                 val cellData = data.toMutableMap().apply { put("index", index) }
-                                DynamicView(json = cellTemplate, data = cellData)
+                                CellRoot(cellTemplate, cellData)
                             }
                         }
                     }
@@ -914,7 +958,7 @@ class DynamicCollectionComponent {
                                 contentAlignment = gravityAlignment
                             ) {
                                 val cellData = data.toMutableMap().apply { put("index", index) }
-                                DynamicView(json = cellTemplate, data = cellData)
+                                CellRoot(cellTemplate, cellData)
                             }
                         }
                     }
@@ -978,7 +1022,7 @@ class DynamicCollectionComponent {
                                 contentAlignment = gravityAlignment
                             ) {
                                 val cellData = data.toMutableMap().apply { put("index", index) }
-                                DynamicView(json = cellTemplate, data = cellData)
+                                CellRoot(cellTemplate, cellData)
                             }
                         }
                     }
@@ -1150,10 +1194,7 @@ class DynamicCollectionComponent {
                             val cellData = data.toMutableMap().apply {
                                 put("index", index)
                             }
-                            DynamicView(
-                                json = cellTemplate,
-                                data = cellData
-                            )
+                            CellRoot(cellTemplate, cellData)
                         }
                     }
                 }
@@ -1214,6 +1255,18 @@ class DynamicCollectionComponent {
         ) {
             ChromedCell(chrome) {
                 renderCellViewInner(cellClassName, item, index, data, onItemAppear)
+            }
+        }
+
+        // Every cell render is a layout root on the dynamic face: it gets its
+        // own runtime write channel (DynamicRuntimeScope) so two-way bindings
+        // inside the cell layout (a nested paging collection's currentPage,
+        // ...) reach sibling readers in the SAME cell, mirroring the codegen
+        // face where the generated cell view owns that state.
+        @Composable
+        private fun CellRoot(cellJson: JsonObject, cellData: Map<String, Any>) {
+            DynamicRuntimeScope(cellData) { effectiveData ->
+                DynamicView(json = cellJson, data = effectiveData)
             }
         }
 
@@ -1280,10 +1333,7 @@ class DynamicCollectionComponent {
                 }
 
                 // Render the cell view with item data
-                DynamicView(
-                    json = cellJson,
-                    data = cellData
-                )
+                CellRoot(cellJson, cellData)
             } else {
                 // Fallback - display error
                 Card(
