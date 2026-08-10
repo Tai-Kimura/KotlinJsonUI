@@ -74,6 +74,13 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.google.code.gson:gson:2.13.1")
     testImplementation("androidx.window:window:1.4.0")
+
+    // Instrumented pins for dynamic-face layout fidelity (chip-shaped
+    // labels, horizontal collection spacing — downstream reports 2026-08-10).
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 
 // Signing configuration for vanniktech plugin

@@ -414,6 +414,33 @@ class DynamicCollectionComponent {
                 return
             }
 
+            // Single-lane horizontal (the CollectionStack shape codegen
+            // emits): a LazyRow whose cells keep their own cross-axis size.
+            // LazyHorizontalGrid with rows=Fixed(1) STRETCHES every cell to
+            // the lane height (grid semantics), so a 36dp chip in an 80dp
+            // collection rendered 64dp tall with dead space under its label,
+            // dynamic face only (a downstream chat screen chips, 2026-08-10). Multi-row
+            // horizontal grids keep the grid path below.
+            if (isHorizontal && gridColumns == 1) {
+                renderLazyRowSingleLane(
+                    sections = sections,
+                    collectionDataSource = collectionDataSource,
+                    cellTemplate = cellTemplate,
+                    cellIdProperty = cellIdProperty,
+                    data = data,
+                    modifier = modifier,
+                    scrollAxisSpacing = scrollAxisSpacing,
+                    contentPadding = contentPadding,
+                    cellWidth = cellWidth,
+                    cellHeight = cellHeight,
+                    gravityAlignment = gravityAlignment,
+                    scrollToFlow = scrollToFlow,
+                    onItemAppear = onItemAppear,
+                    chrome = listChrome
+                )
+                return
+            }
+
             // LazyGrid state for programmatic scrolling
             val gridState = rememberLazyGridState()
 
@@ -809,6 +836,81 @@ class DynamicCollectionComponent {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                contentAlignment = gravityAlignment
+                            ) {
+                                val cellData = data.toMutableMap().apply { put("index", index) }
+                                DynamicView(json = cellTemplate, data = cellData)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Single-lane horizontal LAZY renderer: LazyRow, cells wrap their
+         * own cross-axis size (the codegen face's CollectionStack LAZY
+         * shape). See the call site for why this is not LazyHorizontalGrid.
+         */
+        @Composable
+        private fun renderLazyRowSingleLane(
+            sections: JsonArray?,
+            collectionDataSource: CollectionDataSource?,
+            cellTemplate: JsonObject?,
+            cellIdProperty: String?,
+            data: Map<String, Any>,
+            modifier: Modifier,
+            scrollAxisSpacing: androidx.compose.ui.unit.Dp,
+            contentPadding: PaddingValues,
+            cellWidth: androidx.compose.ui.unit.Dp?,
+            cellHeight: androidx.compose.ui.unit.Dp?,
+            gravityAlignment: Alignment,
+            scrollToFlow: SharedFlow<Int>?,
+            onItemAppear: ((Int) -> Unit)? = null,
+            chrome: ListChrome? = null
+        ) {
+            val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+            if (scrollToFlow != null) {
+                LaunchedEffect(scrollToFlow) {
+                    scrollToFlow.collect { index -> listState.animateScrollToItem(index) }
+                }
+            }
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = modifier,
+                state = listState,
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing)
+            ) {
+                when {
+                    sections != null && collectionDataSource != null -> {
+                        sections.forEachIndexed { sectionIndex, sectionElement ->
+                            val sectionObj = sectionElement.asJsonObject
+                            val cellViewName = sectionObj.get("cell")?.asString
+                            collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
+                                section.cells?.let { cellData ->
+                                    items(cellData.data.size) { cellIndex ->
+                                        Box(
+                                            modifier = Modifier
+                                                .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                            contentAlignment = gravityAlignment
+                                        ) {
+                                            renderCellView(
+                                                cellViewName, cellData.data[cellIndex], cellIndex,
+                                                data, onItemAppear, chrome
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    cellTemplate != null -> {
+                        items(10) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
                                     .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                 contentAlignment = gravityAlignment
                             ) {
