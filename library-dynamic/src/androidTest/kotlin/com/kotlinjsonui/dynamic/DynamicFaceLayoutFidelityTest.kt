@@ -13,6 +13,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -31,6 +33,68 @@ class DynamicFaceLayoutFidelityTest {
 
     @get:Rule
     val rule = createComposeRule()
+
+    @Test
+    fun hourRowShapedCellMatchesTheCodegenEmitHeight() {
+        // downstream a-downstream-hour-row-cell: horizontal row, two fontSize-14
+        // labels (one plain, one partialAttributes), paddingVertical 6.
+        // The codegen face emits lineHeight = 14*1.3 = 18.2sp on the plain
+        // label; the row measures padding + that line. The dynamic render
+        // must measure the same (user report: dynamic rows ~3dp shorter,
+        // 2026-08-10).
+        val row = JsonParser.parseString(
+            """
+            {
+              "type": "View", "width": "matchParent", "height": "wrapContent",
+              "orientation": "horizontal", "gravity": "centerVertical",
+              "leftPadding": 16, "rightPadding": 16, "paddingTop": 6, "paddingBottom": 6,
+              "child": [
+                { "type": "Label", "id": "day", "width": 40, "height": "wrapContent",
+                  "text": "月", "fontSize": 14, "rightMargin": 16 },
+                { "type": "Label", "id": "hours", "height": "wrapContent", "weight": 1,
+                  "text": "18:00 - 2:00", "fontSize": 14,
+                  "partialAttributes": [{"range": "@{overrideBoldRange}", "font": "bold"}] }
+              ]
+            }
+            """.trimIndent()
+        ).asJsonObject
+
+        var density = 0f
+        rule.setContent {
+            density = androidx.compose.ui.platform.LocalDensity.current.density
+            androidx.compose.foundation.layout.Column {
+                Box(Modifier.testTag("dyn")) { DynamicView(json = row, data = emptyMap()) }
+                // The codegen emit shape, verbatim (BusinessHourRowGeneratedView).
+                Box(Modifier.testTag("gen")) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.then(
+                            androidx.compose.foundation.layout.PaddingValues(
+                                start = 16.dp, end = 16.dp, top = 6.dp, bottom = 6.dp
+                            ).let { pv -> Modifier.padding(pv) }
+                        ),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        androidx.compose.material3.Text(
+                            text = "月",
+                            fontSize = androidx.compose.ui.unit.TextUnit(14f, androidx.compose.ui.unit.TextUnitType.Sp),
+                            style = androidx.compose.material3.LocalTextStyle.current.copy(
+                                lineHeight = androidx.compose.ui.unit.TextUnit(18.2f, androidx.compose.ui.unit.TextUnitType.Sp)
+                            )
+                        )
+                    }
+                }
+            }
+        }
+        rule.waitForIdle()
+        val dynH = rule.onNodeWithTag("dyn").fetchSemanticsNode().size.height / density
+        val genH = rule.onNodeWithTag("gen").fetchSemanticsNode().size.height / density
+        // Face parity, measured against the verbatim codegen emit composed
+        // in the same ambient (both 32.0dp on phone_ci at density 2.625).
+        assertTrue(
+            "dynamic hour-row ${dynH}dp must equal the codegen emit ${genH}dp",
+            abs(dynH - genH) <= 0.5f
+        )
+    }
 
     @Test
     fun chipShapedLabelMeasuresItsDeclaredEnvelope() {
