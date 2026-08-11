@@ -10,12 +10,19 @@ import java.io.File
 object KotlinJsonUI {
     private const val TAG = "KotlinJsonUI"
     private var initialized = false
-    
+
+    // Application context captured at initialize() for the context-free
+    // string accessor below. Assigned before the initialized guard so a
+    // re-initialize still refreshes it (idempotent either way).
+    @Volatile
+    private var appContext: Context? = null
+
     /**
      * Initialize the KotlinJsonUI library
      * This should be called once during app startup
      */
     fun initialize(context: Context) {
+        appContext = context.applicationContext
         if (initialized) {
             return
         }
@@ -48,6 +55,40 @@ object KotlinJsonUI {
         Log.d(TAG, "KotlinJsonUI initialized")
     }
     
+    /**
+     * Locale-aware string lookup for generated code that runs OUTSIDE
+     * composition — a generated Data class's `defaultValue` resolves here,
+     * where `stringResource` (composable-only) cannot be called. The
+     * codegen face emits `KotlinJsonUI.localizedString(R.string.x, "raw")`
+     * for a defaultValue whose key the layout's own strings.json section
+     * declares, mirroring the generated-Data behavior on the other
+     * platforms.
+     *
+     * Honors the AppCompat per-app language (in-app locale switching):
+     * below API 33 only Activity contexts are auto-localized, so the
+     * application context is re-configured with the AppCompat locale list
+     * when one is set.
+     *
+     * Returns [fallback] before [initialize] has run (unit tests,
+     * previews) or when the resource id does not resolve.
+     */
+    fun localizedString(resId: Int, fallback: String = ""): String {
+        val ctx = appContext ?: return fallback
+        return try {
+            val locales = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+            val resolved = if (locales.isEmpty) {
+                ctx
+            } else {
+                val config = android.content.res.Configuration(ctx.resources.configuration)
+                config.setLocales(android.os.LocaleList.forLanguageTags(locales.toLanguageTags()))
+                ctx.createConfigurationContext(config)
+            }
+            resolved.getString(resId)
+        } catch (e: android.content.res.Resources.NotFoundException) {
+            fallback
+        }
+    }
+
     /**
      * Internal method to initialize dynamic view support
      * This will call the appropriate initializer based on build type
