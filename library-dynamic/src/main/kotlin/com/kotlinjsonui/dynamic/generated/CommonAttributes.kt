@@ -6,6 +6,8 @@ package com.kotlinjsonui.dynamic.generated
 
 /** Attributes shared across all components (emitted once). */
 data class CommonAttributes(
+    /** Alert configuration (iOS 15+). Same shape as confirmationDialog minus titleVisibility: .alert always shows its title, and unlike .confirmationDialog it draws the cancel role in a regular size class */
+    val alert: Map<String, Any?>? = null,
     /** Align to parent bottom (binding supported) */
     val alignBottom: AttrValue<Boolean>? = null,
     /** Align above specified view ID */
@@ -407,6 +409,7 @@ data class CommonAttributes(
          * (public metadata contract).
          */
         val declaredAttributes: Set<String> = setOf(
+            "alert",
             "alignBottom",
             "alignBottomOfView",
             "alignBottomView",
@@ -571,6 +574,7 @@ data class CommonAttributes(
          * alias fallback is then disabled.
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): CommonAttributes = CommonAttributes(
+            alert = AttrCoerce.obj(AttrCoerce.lookup(json, "alert")),
             alignBottom = AttrCoerce.attrValue(AttrCoerce.lookup(json, "alignBottom")) { AttrCoerce.boolean(it) },
             alignBottomOfView = AttrCoerce.string(AttrCoerce.lookup(json, "alignBottomOfView")),
             alignBottomView = AttrCoerce.string(AttrCoerce.lookup(json, "alignBottomView")),
