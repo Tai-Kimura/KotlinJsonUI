@@ -1286,6 +1286,51 @@ object ModifierBuilder {
      * Build a complete modifier applying all attributes in the standard order.
      * Matches the order of modifier_builder.rb build methods.
      */
+    /**
+     * One stage of the standard modifier chain: a name and what it does.
+     *
+     * The chain is DRIVEN by [standardOrder] rather than being a hand-written
+     * sequence of calls, so the declaration and the application are the same
+     * object: a stage that leaves the list stops being applied, and a stage in
+     * the list is always applied. Measured 2026-09-01: deleting any single
+     * apply line from the old hand-written body left the unit suite green for
+     * 8 of its 9 stages (782 tests; the one catch, background, is a SelectBox
+     * guard asserting element names for its own reasons — not a wiring test).
+     */
+    class Stage(
+        val name: String,
+        val apply: (Modifier, JsonObject, Map<String, Any>, Context?, Boolean) -> Modifier
+    )
+
+    /**
+     * The standard chain, in application order. ORDER IS LOAD-BEARING — see
+     * the offset note: Compose applies modifiers left-to-right, so its slot is
+     * forced, not chosen.
+     *
+     * Two stages of the reference semantics are ABSENT on purpose, not lost:
+     * `weight` must be applied by the caller (it only exists in
+     * RowScope/ColumnScope), and `alignment` is handled by the container. An
+     * entry here would declare an application this function cannot perform.
+     */
+    val standardOrder: List<Stage> = listOf(
+        Stage("testTag") { m, json, _, _, _ -> applyTestTag(m, json) },
+        Stage("margins") { m, json, data, _, _ -> applyMargins(m, json, data) },
+        Stage("size") { m, json, data, _, fill -> applySize(m, json, fill, data) },
+        // offset — the slot is forced, not chosen: it must sit OUTSIDE
+        // background/shadow (Compose applies modifiers left-to-right, so an
+        // offset placed after them leaves the decoration behind and moves only
+        // the content) and INSIDE margins (siblings must not move). Between
+        // size and alpha is the only position satisfying both. Agreed with C
+        // so the two paths put `.absoluteOffset` in the same place.
+        Stage("offset") { m, json, data, _, _ -> applyOffset(m, json, data) },
+        Stage("alpha") { m, json, data, _, _ -> applyAlpha(m, json, data) },
+        Stage("shadow") { m, json, data, _, _ -> applyShadow(m, json, data) },
+        // background folds clip + border + bg into one stage.
+        Stage("background") { m, json, data, ctx, _ -> applyBackground(m, json, data, ctx) },
+        Stage("clickable") { m, json, data, _, _ -> applyClickable(m, json, data) },
+        Stage("padding") { m, json, data, _, _ -> applyPadding(m, json, data) },
+    )
+
     fun buildModifier(
         json: JsonObject,
         data: Map<String, Any>,
@@ -1293,35 +1338,9 @@ object ModifierBuilder {
         context: Context? = null,
         defaultFillMaxWidth: Boolean = false
     ): Modifier {
-        var modifier: Modifier = Modifier
-
-        // 1. testTag
-        modifier = applyTestTag(modifier, json)
-        // 2. margins
-        modifier = applyMargins(modifier, json, data)
-        // 3. weight – caller must apply in RowScope/ColumnScope
-        // 4. size
-        modifier = applySize(modifier, json, defaultFillMaxWidth, data)
-        // 4.5 offset — the slot is forced, not chosen: it must sit OUTSIDE
-        // background/shadow (Compose applies modifiers left-to-right, so an
-        // offset placed after them leaves the decoration behind and moves only
-        // the content) and INSIDE margins (siblings must not move). Between
-        // size and alpha is the only position satisfying both. Agreed with C
-        // so the two paths put `.absoluteOffset` in the same place.
-        modifier = applyOffset(modifier, json, data)
-        // 5. alpha
-        modifier = applyAlpha(modifier, json, data)
-        // 6. shadow
-        modifier = applyShadow(modifier, json, data)
-        // 7. background (clip + border + bg)
-        modifier = applyBackground(modifier, json, data, context)
-        // 8. clickable
-        modifier = applyClickable(modifier, json, data)
-        // 9. padding
-        modifier = applyPadding(modifier, json, data)
-        // 10. alignment – handled by container
-
-        return modifier
+        return standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
+            stage.apply(modifier, json, data, context, defaultFillMaxWidth)
+        }
     }
 
     // ── Lifecycle Effects ────────────────────────────────────────────
