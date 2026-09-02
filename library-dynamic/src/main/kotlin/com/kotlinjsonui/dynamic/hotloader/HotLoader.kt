@@ -243,14 +243,14 @@ class HotLoader private constructor(context: Context) {
                 val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
                 if (response.isSuccessful) {
-                    val layoutJson = response.body?.string()
-                    if (layoutJson != null) {
-                        val update = LayoutUpdate(layoutName, layoutJson, System.currentTimeMillis())
-                        _lastUpdate.value = update
-                        saveLayoutToCache(layoutName, layoutJson)
-                        withContext(Dispatchers.Main) {
-                            listeners.forEach { it.onLayoutUpdated(layoutName, layoutJson) }
-                        }
+                    // okhttp 5 made `body` non-null, so there is no null case
+                    // left to guard — an empty body was never one anyway.
+                    val layoutJson = response.body.string()
+                    val update = LayoutUpdate(layoutName, layoutJson, System.currentTimeMillis())
+                    _lastUpdate.value = update
+                    saveLayoutToCache(layoutName, layoutJson)
+                    withContext(Dispatchers.Main) {
+                        listeners.forEach { it.onLayoutUpdated(layoutName, layoutJson) }
                     }
                 } else {
                     Log.e(TAG, "Failed to download layout $layoutName: HTTP ${response.code}")

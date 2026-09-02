@@ -122,7 +122,7 @@ class DynamicSelectBoxComponent {
                     TypedAttrs.static(a.items)?.getOrNull(idx)?.let { item ->
                         when (item) {
                             is Map<*, *> -> (item["value"] ?: item["label"])?.toString()
-                            else -> item?.toString()
+                            else -> item.toString()
                         }
                     }
                 }
@@ -292,7 +292,7 @@ class DynamicSelectBoxComponent {
                 // library SelectBox has carried both params all along (33
                 // cross-effect: android rendered default size/weight).
                 fontSize = fontSize?.toInt() ?: 16,
-                fontWeight = fontWeight ?: androidx.compose.ui.text.font.FontWeight.Normal,
+                fontWeight = fontWeight,
                 contentPadding = contentPadding ?: PaddingValues(horizontal = 16.dp),
                 // Undeclared cancel colors fall to the SAME Configuration
                 // defaults the codegen face reaches by omitting the params

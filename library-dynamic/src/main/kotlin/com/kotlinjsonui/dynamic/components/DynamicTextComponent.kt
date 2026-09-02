@@ -77,7 +77,7 @@ class DynamicTextComponent {
                 ?.takeIf { it.isNotEmpty() && a.hintAttributes != null }
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) }
             val showHint = declaredText.isEmpty() && hintText != null
-            val text = if (showHint) hintText!! else declaredText
+            val text = if (showHint) hintText else declaredText
             // The hint branch is OUTERMOST: an empty label is a hint first and
             // a selected label second (the codegen orders them the same way).
             // `hintColor` is the colour-only fallback when the bag carries no

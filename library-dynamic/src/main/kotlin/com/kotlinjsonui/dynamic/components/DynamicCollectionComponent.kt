@@ -1079,7 +1079,7 @@ class DynamicCollectionComponent {
                             if (headerViewName != null && section.header != null) {
                                 item(span = { GridItemSpan(maxLineSpan) }) {
                                     Box(modifier = Modifier.fillMaxWidth()) {
-                                        val headerData = (section.header as? CollectionDataSection.HeaderFooterData)?.data ?: emptyMap()
+                                        val headerData = section.header?.data ?: emptyMap()
                                         renderCellView(headerViewName, headerData, -1, data)
                                     }
                                 }
@@ -1169,7 +1169,7 @@ class DynamicCollectionComponent {
                             if (footerViewName != null && section.footer != null) {
                                 item(span = { GridItemSpan(maxLineSpan) }) {
                                     Box(modifier = Modifier.fillMaxWidth()) {
-                                        val footerData = (section.footer as? CollectionDataSection.HeaderFooterData)?.data ?: emptyMap()
+                                        val footerData = section.footer?.data ?: emptyMap()
                                         renderCellView(footerViewName, footerData, -2, data)
                                     }
                                 }
