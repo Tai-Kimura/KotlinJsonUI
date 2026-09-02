@@ -26,16 +26,16 @@ import java.io.IOException
  * deciding WHEN. An OkHttp application interceptor runs before DNS, so no
  * lookup happens at all.
  *
- * Both Coil generations get the client because the two render paths ride
- * different ones: the dynamic renderer (library-dynamic) is coil2, the
- * kjui-generated views are coil3. The codegen host is this same module built
- * with HOST_MODE=codegen — one Application covers both hosts, which is the
- * point: a fixture must not be able to render differently because the two
- * pipelines' networks disagreed.
+ * ONE loader serves both render paths. Until 2026-09-02 there were two —
+ * the dynamic renderer was coil2 and the kjui-generated views coil3 — and
+ * this class had to configure both identically so a fixture could not render
+ * differently because the two pipelines' networks disagreed. The library's
+ * migration to coil3 deleted that whole class of risk rather than managing
+ * it. The codegen host is this same module built with HOST_MODE=codegen, so
+ * one Application still covers both hosts.
  */
 class ConformanceHostApp :
     Application(),
-    coil.ImageLoaderFactory,
     coil3.SingletonImageLoader.Factory {
 
     private fun failFastClient(): OkHttpClient =
@@ -66,13 +66,7 @@ class ConformanceHostApp :
             }
             .build()
 
-    /** coil2 — the dynamic renderer's stack. */
-    override fun newImageLoader(): coil.ImageLoader =
-        coil.ImageLoader.Builder(this)
-            .okHttpClient(failFastClient())
-            .build()
-
-    /** coil3 — the kjui-generated views' stack. */
+    /** The single stack: dynamic renderer and generated views alike. */
     override fun newImageLoader(context: coil3.PlatformContext): coil3.ImageLoader =
         coil3.ImageLoader.Builder(context)
             .components {

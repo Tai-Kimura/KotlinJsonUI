@@ -5,8 +5,13 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageView
-import coil.load
-import coil.request.CachePolicy
+import coil3.load
+import coil3.request.CachePolicy
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.fallback
+import coil3.request.placeholder
+import coil3.request.transformations
 import com.kotlinjsonui.R
 
 /**
@@ -166,7 +171,7 @@ open class KjuiNetworkImageView @JvmOverloads constructor(
             
             // Corner radius transformation
             if (cornerRadius > 0) {
-                transformations(coil.transform.RoundedCornersTransformation(cornerRadius))
+                transformations(coil3.transform.RoundedCornersTransformation(cornerRadius))
             }
             
             // Crossfade animation
@@ -175,16 +180,16 @@ open class KjuiNetworkImageView @JvmOverloads constructor(
             // Scale type
             when (scaleType) {
                 ScaleType.CENTER_CROP -> {
-                    scale(coil.size.Scale.FILL)
+                    scale(coil3.size.Scale.FILL)
                 }
                 ScaleType.FIT_CENTER -> {
-                    scale(coil.size.Scale.FIT)
+                    scale(coil3.size.Scale.FIT)
                 }
                 ScaleType.CENTER_INSIDE -> {
-                    scale(coil.size.Scale.FIT)
+                    scale(coil3.size.Scale.FIT)
                 }
                 else -> {
-                    scale(coil.size.Scale.FILL)
+                    scale(coil3.size.Scale.FILL)
                 }
             }
         }

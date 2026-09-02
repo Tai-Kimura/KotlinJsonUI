@@ -123,7 +123,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
@@ -136,9 +136,20 @@ dependencies {
     // JSON parsing
     implementation("com.google.code.gson:gson:2.13.1")
     
-    // Image loading
-    implementation("io.coil-kt:coil:2.7.0")
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    // Image loading — coil3, the major the kjui codegen emits into consumer
+    // code (coil3.compose.AsyncImage; coil3.network.httpHeaders when a
+    // NetworkImage declares headers), so a coil3 consumer no longer ships two
+    // image loaders. `api`, not `implementation`, on purpose: generated code
+    // calls these packages directly and `kjui init` wires no coil of its own,
+    // so the compile classpath a consumer gets from this library is the only
+    // place they can come from (measured: conformance-host and sample-app
+    // compile their generated views with no coil declaration of their own).
+    // coil3's core has NO network fetcher — without coil-network-okhttp on
+    // the runtime classpath every URL image silently becomes its error
+    // painter (CoilNetworkFetcherTest pins the artifact's presence).
+    implementation("io.coil-kt.coil3:coil:3.5.0")
+    api("io.coil-kt.coil3:coil-compose:3.5.0")
+    api("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
     
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.3")

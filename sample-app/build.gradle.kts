@@ -139,7 +139,7 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -152,12 +152,8 @@ dependencies {
     // ConstraintLayout for Compose
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.1")
     
-    // Image loading with Coil
-    implementation("io.coil-kt:coil-compose:2.7.0")
-
-    // Coil 3 for generated NetworkImage/CircleImage code (kjui codegen emits coil3.compose.AsyncImage)
-    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+    // coil3 for generated NetworkImage/CircleImage code arrives through the
+    // library's `api` dependency — a consumer declares none of it.
 
     // Material icons (generated Radio custom icons / TabView icons use Icons.Filled/Outlined.*)
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
@@ -166,7 +162,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.05.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     
     // Debug

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CoilNetworkFetcherTest serves its image over plain HTTP from a
+     MockWebServer inside the test process; API 28+ blocks cleartext by
+     default, localhost included. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:usesCleartextTraffic="true" />
+</manifest>

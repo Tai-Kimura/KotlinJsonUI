@@ -75,7 +75,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.activity:activity-compose:1.10.1")
 
-    implementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.runtime:runtime")
@@ -85,18 +85,13 @@ dependencies {
 
     // library-dynamic parses layouts with Gson; the host reads fixture JSON with it too
     implementation("com.google.code.gson:gson:2.13.1")
-    // Image loading used by dynamic image components
-    implementation("io.coil-kt:coil-compose:2.7.0")
-
     // Codegen host (kjui-generated views, scripts/generate_codegen_host.rb):
-    // the generated pipeline is the CONSUMER surface, so it pulls the same
-    // libraries kjui init wires into consumer apps — coil3 for NetworkImage
-    // (3.1.0: newest whose Kotlin metadata the host's Kotlin 2.2 compiler reads)
-    // (the dynamic path above still uses the library's coil2), Compose
-    // ConstraintLayout for constraint-based layouts, extended material icons
-    // for icon vocabulary.
-    implementation("io.coil-kt.coil3:coil-compose:3.1.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.1.0")
+    // the generated pipeline is the CONSUMER surface, so it pulls only what
+    // kjui init wires into consumer apps. coil3 is deliberately NOT declared
+    // here: generated NetworkImage code reaches coil3 through the library's
+    // `api` dependency, and this host compiling is the measurement of that.
+    // Compose ConstraintLayout for constraint-based layouts, extended
+    // material icons for icon vocabulary.
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.2")
     implementation("androidx.compose.material:material-icons-extended")
 

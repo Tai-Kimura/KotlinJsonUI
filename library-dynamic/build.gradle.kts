@@ -53,7 +53,7 @@ dependencies {
     implementation(project(":library"))
 
     // Compose dependencies
-    implementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3.adaptive:adaptive")
@@ -67,7 +67,9 @@ dependencies {
     // Other dependencies
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("com.google.code.gson:gson:2.13.1")
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    // coil3 (see library/build.gradle.kts); the network fetcher arrives on the
+    // runtime classpath through :library.
+    implementation("io.coil-kt.coil3:coil-compose:3.5.0")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
 
     // Test dependencies
@@ -78,7 +80,10 @@ dependencies {
     // Instrumented pins for dynamic-face layout fidelity (chip-shaped
     // labels, horizontal collection spacing — downstream reports 2026-08-10).
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.03.00"))
+    // CoilNetworkFetcherTest: a local HTTP image server, so the "does a URL
+    // image load at all" measurement needs no internet from the emulator.
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.05.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

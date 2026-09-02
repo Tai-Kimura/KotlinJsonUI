@@ -2,9 +2,14 @@ package com.kotlinjsonui.views
 
 import android.content.Context
 import android.util.AttributeSet
-import coil.load
-import coil.request.CachePolicy
-import coil.transform.CircleCropTransformation
+import coil3.load
+import coil3.request.CachePolicy
+import coil3.request.crossfade
+import coil3.request.error
+import coil3.request.fallback
+import coil3.request.placeholder
+import coil3.request.transformations
+import coil3.transform.CircleCropTransformation
 import com.kotlinjsonui.R
 
 /**
@@ -91,7 +96,7 @@ class KjuiCircleImageView @JvmOverloads constructor(
             crossfade(crossfadeEnabled)
             
             // Always use FILL scale for circle images
-            scale(coil.size.Scale.FILL)
+            scale(coil3.size.Scale.FILL)
         }
     }
     
