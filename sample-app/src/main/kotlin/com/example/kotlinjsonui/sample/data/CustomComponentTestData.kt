@@ -31,7 +31,7 @@ data class CustomComponentTestData(
                 cardSubtitle = map["cardSubtitle"] as? String ?: "Dynamic subtitle for testing",
                 itemCount = (map["itemCount"] as? Number)?.toInt() ?: 10,
                 currentStatus = map["currentStatus"] as? String ?: "Online",
-                statusColor = map["statusColor"] as? Color ?: Color.Green,
+                statusColor = map["statusColor"] as? Color ?: (map["statusColor"] as? String)?.let { com.kotlinjsonui.generated.ColorManager.compose.colorOrHex(it) } ?: Color.Green,
                 notificationCount = (map["notificationCount"] as? Number)?.toInt() ?: 3,
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,

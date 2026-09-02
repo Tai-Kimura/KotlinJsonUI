@@ -8,13 +8,15 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class SegmentTestData(
     var selectedBasic: Int = 0,
     var selectedColor: Int = 1,
     var selectedEvent: Int = 1,
     var selectedDisabled: Int = 2,
-    var selectedSize: String = "Medium",
+    var selectedSize: String = KotlinJsonUI.localizedString(R.string.segment_test_medium, "Medium"),
     var handleSegmentChange: ((String, Int) -> Unit)? = null
 ) {
     companion object {
@@ -26,7 +28,7 @@ data class SegmentTestData(
                 selectedColor = (map["selectedColor"] as? Number)?.toInt() ?: 1,
                 selectedEvent = (map["selectedEvent"] as? Number)?.toInt() ?: 1,
                 selectedDisabled = (map["selectedDisabled"] as? Number)?.toInt() ?: 2,
-                selectedSize = map["selectedSize"] as? String ?: "Medium",
+                selectedSize = map["selectedSize"] as? String ?: KotlinJsonUI.localizedString(R.string.segment_test_medium, "Medium"),
                 handleSegmentChange = map["handleSegmentChange"] as? ((String, Int) -> Unit)?
             )
         }

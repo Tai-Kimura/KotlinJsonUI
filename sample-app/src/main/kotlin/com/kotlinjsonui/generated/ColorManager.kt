@@ -190,7 +190,6 @@ object ColorManager {
             return try { Color.parseColor(key) } catch (e: IllegalArgumentException) { null }
         }
 
-        val Color.Green: Int? get() = color("Color.Green")
         val black: Int? get() = color("black")
         val black2: Int? get() = color("black_2")
         val darkBlue: Int? get() = color("dark_blue")
@@ -200,7 +199,7 @@ object ColorManager {
         val darkGreen3: Int? get() = color("dark_green_3")
         val darkPurple: Int? get() = color("dark_purple")
         val darkRed: Int? get() = color("dark_red")
-        val light: Int? get() = color("light")
+        val lightColor: Int? get() = color("light")
         val light2: Int? get() = color("light_2")
         val lightBlue: Int? get() = color("light_blue")
         val lightBlue2: Int? get() = color("light_blue_2")
@@ -304,7 +303,6 @@ object ColorManager {
 
         /** Fixed values from `light` palette (not affected by setMode). */
         object light {
-            val Color.Green: Int? get() = null
             val black: Int? get() = try { Color.parseColor("#000000") } catch (e: IllegalArgumentException) { null }
             val black2: Int? get() = try { Color.parseColor("#00000033") } catch (e: IllegalArgumentException) { null }
             val darkBlue: Int? get() = try { Color.parseColor("#0000FF") } catch (e: IllegalArgumentException) { null }
@@ -426,7 +424,17 @@ object ColorManager {
             return ComposeColor(int)
         }
 
-        val Color.Green: ComposeColor? get() = color("Color.Green")
+        /**
+         * Runtime coercion for Color-typed data fields: a palette token
+         * first, then a hex literal. The data contract declares Color
+         * fields with token-string defaults, so a runtime String IS a
+         * legal value — `as? Color` alone silently dropped it while the
+         * dynamic path resolved it (a downstream detail screen, 2026-08-08).
+         */
+        fun colorOrHex(value: String): ComposeColor? =
+            color(value) ?: try { ComposeColor(Color.parseColor(value)) }
+            catch (e: IllegalArgumentException) { null }
+
         val black: ComposeColor? get() = color("black")
         val black2: ComposeColor? get() = color("black_2")
         val darkBlue: ComposeColor? get() = color("dark_blue")
@@ -436,7 +444,7 @@ object ColorManager {
         val darkGreen3: ComposeColor? get() = color("dark_green_3")
         val darkPurple: ComposeColor? get() = color("dark_purple")
         val darkRed: ComposeColor? get() = color("dark_red")
-        val light: ComposeColor? get() = color("light")
+        val lightColor: ComposeColor? get() = color("light")
         val light2: ComposeColor? get() = color("light_2")
         val lightBlue: ComposeColor? get() = color("light_blue")
         val lightBlue2: ComposeColor? get() = color("light_blue_2")
@@ -539,7 +547,6 @@ object ColorManager {
         val white9: ComposeColor? get() = color("white_9")
 
         object light {
-            val Color.Green: ComposeColor? get() = views.light.Color.Green?.let { ComposeColor(it) }
             val black: ComposeColor? get() = views.light.black?.let { ComposeColor(it) }
             val black2: ComposeColor? get() = views.light.black2?.let { ComposeColor(it) }
             val darkBlue: ComposeColor? get() = views.light.darkBlue?.let { ComposeColor(it) }

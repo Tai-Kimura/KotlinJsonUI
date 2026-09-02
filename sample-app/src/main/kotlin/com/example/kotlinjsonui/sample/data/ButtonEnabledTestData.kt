@@ -8,11 +8,13 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class ButtonEnabledTestData(
     var dynamicModeStatus: String = "OFF",
     var isButtonEnabled: Boolean = true,
-    var title: String = "Button Enabled Test",
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_button_enabled_test_2, "Button Enabled Test"),
     var toggleDynamicMode: (() -> Unit)? = null,
     var testAction: (() -> Unit)? = null,
     var toggleEnabled: (() -> Unit)? = null,
@@ -26,7 +28,7 @@ data class ButtonEnabledTestData(
             return ButtonEnabledTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
                 isButtonEnabled = map["isButtonEnabled"] as? Boolean ?: true,
-                title = map["title"] as? String ?: "Button Enabled Test",
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_button_enabled_test_2, "Button Enabled Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
                 testAction = map["testAction"] as? (() -> Unit)?,
                 toggleEnabled = map["toggleEnabled"] as? (() -> Unit)?,

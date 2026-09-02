@@ -583,4 +583,26 @@
     <string name='segment_test_disabled_1'>Disabled 1</string>
     <string name='segment_test_disabled_2'>Disabled 2</string>
     <string name='segment_test_disabled_3'>Disabled 3</string>
+    <string name='binding_test_選択してください'>選択してください</string>
+    <string name='binding_test_日付を選択'>日付を選択</string>
+    <string name='converter_test_collection_test'>Collection Test</string>
+    <string name='include_test_count_2'>Count -</string>
+    <string name='partial_attributes_test_今日は天気がいいですね_明日も晴れるといいです'>今日は天気がいいですね。明日も晴れるといいです。</string>
+    <string name='partial_attributes_test_晴れる'>晴れる</string>
+    <string name='test_menu_alignment_test'>Alignment Test</string>
+    <string name='test_menu_alignment_combo_test'>Alignment Combo Test</string>
+    <string name='test_menu_partial_attributes_test'>Partial Attributes Test</string>
+    <string name='test_menu_secure_field_test'>Secure Field Test</string>
+    <string name='test_menu_date_picker_test'>Date Picker Test</string>
+    <string name='test_menu_components_test'>Components Test</string>
+    <string name='test_menu_button_test'>Button Test</string>
+    <string name='test_menu_button_enabled_test'>Button Enabled Test</string>
+    <string name='test_menu_switch_events_test'>Switch Events Test</string>
+    <string name='test_menu_custom_component_test'>Custom Component Test</string>
+    <string name='test_menu_form_test'>Form Test</string>
+    <string name='test_menu_collection_test'>Collection Test</string>
+    <string name='test_menu_keyboard_avoidance_test'>Keyboard Avoidance Test</string>
+    <string name='test_menu_scroll_test'>Scroll Test</string>
+    <string name='weight_test_with_fixed_weight_1_2'>Weight 1</string>
+    <string name='weight_test_with_fixed_fixed_30_2'>Fixed: 30</string>
 </resources>

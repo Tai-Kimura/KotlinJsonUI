@@ -28,7 +28,20 @@ data class FormTestData(
     var zipCode: String = "",
     var toggleDynamicMode: (() -> Unit)? = null,
     var submitForm: (() -> Unit)? = null,
-    var clearForm: (() -> Unit)? = null
+    var clearForm: (() -> Unit)? = null,
+    var firstNameIsFocused: Boolean = false,
+    var lastNameIsFocused: Boolean = false,
+    var emailIsFocused: Boolean = false,
+    var phoneIsFocused: Boolean = false,
+    var addressIsFocused: Boolean = false,
+    var cityIsFocused: Boolean = false,
+    var zipCodeIsFocused: Boolean = false,
+    var countryIsFocused: Boolean = false,
+    var companyIsFocused: Boolean = false,
+    var jobTitleIsFocused: Boolean = false,
+    var bioIsFocused: Boolean = false,
+    var notesIsFocused: Boolean = false,
+    var commentsIsFocused: Boolean = false
 ) {
     companion object {
         // Update properties from map
@@ -53,7 +66,20 @@ data class FormTestData(
                 zipCode = map["zipCode"] as? String ?: "",
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
                 submitForm = map["submitForm"] as? (() -> Unit)?,
-                clearForm = map["clearForm"] as? (() -> Unit)?
+                clearForm = map["clearForm"] as? (() -> Unit)?,
+                firstNameIsFocused = map["firstNameIsFocused"] as? Boolean ?: false,
+                lastNameIsFocused = map["lastNameIsFocused"] as? Boolean ?: false,
+                emailIsFocused = map["emailIsFocused"] as? Boolean ?: false,
+                phoneIsFocused = map["phoneIsFocused"] as? Boolean ?: false,
+                addressIsFocused = map["addressIsFocused"] as? Boolean ?: false,
+                cityIsFocused = map["cityIsFocused"] as? Boolean ?: false,
+                zipCodeIsFocused = map["zipCodeIsFocused"] as? Boolean ?: false,
+                countryIsFocused = map["countryIsFocused"] as? Boolean ?: false,
+                companyIsFocused = map["companyIsFocused"] as? Boolean ?: false,
+                jobTitleIsFocused = map["jobTitleIsFocused"] as? Boolean ?: false,
+                bioIsFocused = map["bioIsFocused"] as? Boolean ?: false,
+                notesIsFocused = map["notesIsFocused"] as? Boolean ?: false,
+                commentsIsFocused = map["commentsIsFocused"] as? Boolean ?: false
             )
         }
     }
@@ -82,6 +108,19 @@ data class FormTestData(
         toggleDynamicMode?.let { map["toggleDynamicMode"] = it }
         submitForm?.let { map["submitForm"] = it }
         clearForm?.let { map["clearForm"] = it }
+        map["firstNameIsFocused"] = firstNameIsFocused
+        map["lastNameIsFocused"] = lastNameIsFocused
+        map["emailIsFocused"] = emailIsFocused
+        map["phoneIsFocused"] = phoneIsFocused
+        map["addressIsFocused"] = addressIsFocused
+        map["cityIsFocused"] = cityIsFocused
+        map["zipCodeIsFocused"] = zipCodeIsFocused
+        map["countryIsFocused"] = countryIsFocused
+        map["companyIsFocused"] = companyIsFocused
+        map["jobTitleIsFocused"] = jobTitleIsFocused
+        map["bioIsFocused"] = bioIsFocused
+        map["notesIsFocused"] = notesIsFocused
+        map["commentsIsFocused"] = commentsIsFocused
         
         return map
     }

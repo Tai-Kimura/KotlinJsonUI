@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,7 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun ImageCellGeneratedView(
@@ -44,6 +46,8 @@ fun ImageCellGeneratedView(
     // Generated Compose code from image_cell.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
+    // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+    DriveEmbedInitParams(viewModel)
     // Check if Dynamic Mode is active
     if (DynamicModeManager.isActive()) {
         // Dynamic Mode - use SafeDynamicView for real-time updates
@@ -95,10 +99,10 @@ fun ImageCellGeneratedView(
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .requiredHeight(120.dp)
                 .clip(RoundedCornerShape(8.dp))
         )
-        val resolved_text173 = Configuration.Font.resolve(FontSpec(
+        val resolved_text1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.SemiBold,
             size = 14.sp,
@@ -107,14 +111,14 @@ fun ImageCellGeneratedView(
         Text(
             text = "${data.title}",
             color = colorResource(R.color.dark_gray),
-            fontFamily = resolved_text173.family,
-            fontWeight = resolved_text173.weight,
-            fontSize = resolved_text173.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text173.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 18.2.sp),
+            fontFamily = resolved_text1.family,
+            fontWeight = resolved_text1.weight,
+            fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text1.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
             modifier = Modifier.padding(top = 8.dp)
         )
-        val resolved_text174 = Configuration.Font.resolve(FontSpec(
+        val resolved_text2 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = null,
             size = 12.sp,
@@ -123,11 +127,11 @@ fun ImageCellGeneratedView(
         Text(
             text = "${data.price}",
             color = colorResource(R.color.medium_blue),
-            fontFamily = resolved_text174.family,
-            fontWeight = resolved_text174.weight,
-            fontSize = resolved_text174.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text174.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 15.6.sp),
+            fontFamily = resolved_text2.family,
+            fontWeight = resolved_text2.weight,
+            fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text2.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 15.6.sp),
             modifier = Modifier.padding(top = 4.dp)
         )
     }    }

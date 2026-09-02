@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun SectionHeaderGeneratedView(
@@ -37,6 +39,8 @@ fun SectionHeaderGeneratedView(
     // Generated Compose code from section_header.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
+    // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+    DriveEmbedInitParams(viewModel)
     // Check if Dynamic Mode is active
     if (DynamicModeManager.isActive()) {
         // Dynamic Mode - use SafeDynamicView for real-time updates
@@ -81,7 +85,7 @@ fun SectionHeaderGeneratedView(
             .background(colorResource(R.color.white_17))
             .padding(vertical = 16.dp, horizontal = 8.dp)
     ) {
-        val resolved_text175 = Configuration.Font.resolve(FontSpec(
+        val resolved_text1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Bold,
             size = 18.sp,
@@ -90,11 +94,11 @@ fun SectionHeaderGeneratedView(
         Text(
             text = "${data.title}",
             color = colorResource(R.color.black),
-            fontFamily = resolved_text175.family,
-            fontWeight = resolved_text175.weight,
-            fontSize = resolved_text175.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text175.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 23.4.sp),
+            fontFamily = resolved_text1.family,
+            fontWeight = resolved_text1.weight,
+            fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text1.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
             modifier = Modifier
         )
     }    }

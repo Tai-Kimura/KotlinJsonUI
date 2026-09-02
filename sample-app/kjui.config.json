@@ -9,7 +9,7 @@
   "view_directory": "kotlin/com/example/kotlinjsonui/sample/views",
   "extension_directory": "kotlin/com/example/kotlinjsonui/sample/extensions",
   "adapter_directory": "kotlin/com/example/kotlinjsonui/sample/adapters",
-  "resource_manager_directory": "kotlin/com/example/kotlinjsonui/sample/generated",
+  "resource_manager_directory": "src/main/kotlin/com/kotlinjsonui/generated",
   "package_name": "com.example.kotlinjsonui.sample",
   "string_files": [
     "res/values/strings.xml",

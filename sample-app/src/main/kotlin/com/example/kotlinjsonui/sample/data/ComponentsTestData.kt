@@ -8,12 +8,14 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class ComponentsTestData(
     var dynamicModeStatus: String = "OFF",
     var checkbox1IsOn: Boolean = false,
     var progress1Value: Double = 0.6,
-    var selectedRadio1: String = "Medium",
+    var selectedRadio1: String = KotlinJsonUI.localizedString(R.string.components_test_medium, "Medium"),
     var selectedSegment1: Int = 0,
     var slider1Value: Double = 0.5,
     var toggle1IsOn: Boolean = false,
@@ -27,7 +29,7 @@ data class ComponentsTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
                 checkbox1IsOn = map["checkbox1IsOn"] as? Boolean ?: false,
                 progress1Value = (map["progress1Value"] as? Number)?.toDouble() ?: 0.6,
-                selectedRadio1 = map["selectedRadio1"] as? String ?: "Medium",
+                selectedRadio1 = map["selectedRadio1"] as? String ?: KotlinJsonUI.localizedString(R.string.components_test_medium, "Medium"),
                 selectedSegment1 = (map["selectedSegment1"] as? Number)?.toInt() ?: 0,
                 slider1Value = (map["slider1Value"] as? Number)?.toDouble() ?: 0.5,
                 toggle1IsOn = map["toggle1IsOn"] as? Boolean ?: false,

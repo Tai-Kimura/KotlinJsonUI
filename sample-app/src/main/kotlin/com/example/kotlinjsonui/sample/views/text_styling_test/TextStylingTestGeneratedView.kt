@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +39,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun TextStylingTestGeneratedView(
@@ -48,81 +51,87 @@ fun TextStylingTestGeneratedView(
     // Generated Compose code from text_styling_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "text_styling_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "text_styling_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading text_styling_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading text_styling_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(colorResource(R.color.white))
-            .imePadding()
-    ) {
-        item {
-        Column(
-            modifier = Modifier
+        } else {
+            // Static Mode - use generated code
+            LazyColumn(
+            modifier = modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .fillMaxHeight()
+                .background(colorResource(R.color.white))
+                .imePadding()
         ) {
-            Section0(data, viewModel)
-            Section1(data, viewModel)
-            Section2(data, viewModel)
-            Section3(data, viewModel)
-            Section4(data, viewModel)
-            Section5(data, viewModel)
-            Section6(data, viewModel)
-            Section7(data, viewModel)
-            Section8(data, viewModel)
-            Section9(data, viewModel)
-            Section10(data, viewModel)
-            Section11(data, viewModel)
-            Section12(data, viewModel)
-            Section13(data, viewModel)
-            Section14(data, viewModel)
-            Section15(data, viewModel)
-            Section16(data, viewModel)
-            Section17(data, viewModel)
-            Section18(data, viewModel)
-            Section19(data, viewModel)
-            Section20(data, viewModel)
-        }
-        }
-    }    }
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Section0(data, viewModel)
+                Section1(data, viewModel)
+                Section2(data, viewModel)
+                Section3(data, viewModel)
+                Section4(data, viewModel)
+                Section5(data, viewModel)
+                Section6(data, viewModel)
+                Section7(data, viewModel)
+                Section8(data, viewModel)
+                Section9(data, viewModel)
+                Section10(data, viewModel)
+                Section11(data, viewModel)
+                Section12(data, viewModel)
+                Section13(data, viewModel)
+                Section14(data, viewModel)
+                Section15(data, viewModel)
+                Section16(data, viewModel)
+                Section17(data, viewModel)
+                Section18(data, viewModel)
+                Section19(data, viewModel)
+                Section20(data, viewModel)
+            }
+            }
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("text_styling_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -136,15 +145,17 @@ private fun Section0(
         onClick = { data.toggleDynamicMode?.invoke() },
         modifier = Modifier
             .wrapContentWidth()
-            .height(44.dp),
+            .requiredHeight(44.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button6 = Configuration.Font.resolve(FontSpec(
+        val resolved_button1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Medium,
             size = 14.sp,
@@ -152,10 +163,10 @@ private fun Section0(
         ))
         Text(
             text = "${data.dynamicModeStatus}",
-            fontFamily = resolved_button6.family,
-            fontWeight = resolved_button6.weight,
-            fontSize = resolved_button6.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button6.style ?: FontStyle.Normal,
+            fontFamily = resolved_button1.family,
+            fontWeight = resolved_button1.weight,
+            fontSize = resolved_button1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button1.style ?: FontStyle.Normal,
         )
     }
 }
@@ -165,7 +176,7 @@ private fun Section1(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text43 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 24.sp,
@@ -174,11 +185,11 @@ private fun Section1(
     Text(
         text = "${data.title}",
         color = colorResource(R.color.black),
-        fontFamily = resolved_text43.family,
-        fontWeight = resolved_text43.weight,
-        fontSize = resolved_text43.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text43.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 31.2.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
         modifier = Modifier
             .testTag("title_label")
             .semantics { testTagsAsResourceId = true }
@@ -193,7 +204,7 @@ private fun Section2(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text44 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 18.sp,
@@ -202,11 +213,11 @@ private fun Section2(
     Text(
         text = stringResource(R.string.text_styling_test_font_sizes),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text44.family,
-        fontWeight = resolved_text44.weight,
-        fontSize = resolved_text44.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text44.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 20.dp)
     )
 }
@@ -216,7 +227,7 @@ private fun Section3(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text45 = Configuration.Font.resolve(FontSpec(
+    val resolved_text3 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 12.sp,
@@ -225,11 +236,11 @@ private fun Section3(
     Text(
         text = stringResource(R.string.text_styling_test_fontsize_12),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text45.family,
-        fontWeight = resolved_text45.weight,
-        fontSize = resolved_text45.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text45.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 15.6.sp),
+        fontFamily = resolved_text3.family,
+        fontWeight = resolved_text3.weight,
+        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text3.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 15.6.sp),
         modifier = Modifier.padding(top = 10.dp)
     )
 }
@@ -239,7 +250,7 @@ private fun Section4(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text46 = Configuration.Font.resolve(FontSpec(
+    val resolved_text4 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -248,11 +259,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.text_styling_test_fontsize_16),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text46.family,
-        fontWeight = resolved_text46.weight,
-        fontSize = resolved_text46.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text46.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text4.family,
+        fontWeight = resolved_text4.weight,
+        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text4.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }
@@ -262,7 +273,7 @@ private fun Section5(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text47 = Configuration.Font.resolve(FontSpec(
+    val resolved_text5 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 20.sp,
@@ -271,11 +282,11 @@ private fun Section5(
     Text(
         text = stringResource(R.string.text_styling_test_fontsize_20),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text47.family,
-        fontWeight = resolved_text47.weight,
-        fontSize = resolved_text47.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text47.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text5.family,
+        fontWeight = resolved_text5.weight,
+        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text5.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }
@@ -285,7 +296,7 @@ private fun Section6(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text48 = Configuration.Font.resolve(FontSpec(
+    val resolved_text6 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 24.sp,
@@ -294,11 +305,11 @@ private fun Section6(
     Text(
         text = stringResource(R.string.text_styling_test_fontsize_24),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text48.family,
-        fontWeight = resolved_text48.weight,
-        fontSize = resolved_text48.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text48.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 31.2.sp),
+        fontFamily = resolved_text6.family,
+        fontWeight = resolved_text6.weight,
+        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text6.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }
@@ -308,7 +319,7 @@ private fun Section7(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text49 = Configuration.Font.resolve(FontSpec(
+    val resolved_text7 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 18.sp,
@@ -317,11 +328,11 @@ private fun Section7(
     Text(
         text = stringResource(R.string.text_styling_test_font_styles),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text49.family,
-        fontWeight = resolved_text49.weight,
-        fontSize = resolved_text49.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text49.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text7.family,
+        fontWeight = resolved_text7.weight,
+        fontSize = resolved_text7.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text7.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 20.dp)
     )
 }
@@ -331,7 +342,7 @@ private fun Section8(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text50 = Configuration.Font.resolve(FontSpec(
+    val resolved_text8 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 16.sp,
@@ -340,11 +351,11 @@ private fun Section8(
     Text(
         text = stringResource(R.string.text_styling_test_bold_text),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text50.family,
-        fontWeight = resolved_text50.weight,
-        fontSize = resolved_text50.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text50.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text8.family,
+        fontWeight = resolved_text8.weight,
+        fontSize = resolved_text8.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text8.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(top = 10.dp)
     )
 }
@@ -354,7 +365,7 @@ private fun Section9(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text51 = Configuration.Font.resolve(FontSpec(
+    val resolved_text9 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -363,12 +374,12 @@ private fun Section9(
     Text(
         text = stringResource(R.string.text_styling_test_underlined_text),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text51.family,
-        fontWeight = resolved_text51.weight,
-        fontSize = resolved_text51.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text51.style ?: FontStyle.Normal,
+        fontFamily = resolved_text9.family,
+        fontWeight = resolved_text9.weight,
+        fontSize = resolved_text9.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text9.style ?: FontStyle.Normal,
         textDecoration = TextDecoration.Underline,
-        style = TextStyle(lineHeight = 20.8.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(top = 10.dp)
     )
 }
@@ -378,7 +389,7 @@ private fun Section10(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text52 = Configuration.Font.resolve(FontSpec(
+    val resolved_text10 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 18.sp,
@@ -387,11 +398,11 @@ private fun Section10(
     Text(
         text = stringResource(R.string.text_styling_test_text_alignment),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text52.family,
-        fontWeight = resolved_text52.weight,
-        fontSize = resolved_text52.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text52.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text10.family,
+        fontWeight = resolved_text10.weight,
+        fontSize = resolved_text10.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text10.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 20.dp)
     )
 }
@@ -401,7 +412,7 @@ private fun Section11(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text53 = Configuration.Font.resolve(FontSpec(
+    val resolved_text11 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -410,11 +421,11 @@ private fun Section11(
     Text(
         text = stringResource(R.string.text_styling_test_left_aligned_default),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text53.family,
-        fontWeight = resolved_text53.weight,
-        fontSize = resolved_text53.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text53.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text11.family,
+        fontWeight = resolved_text11.weight,
+        fontSize = resolved_text11.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text11.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .padding(top = 10.dp)
             .fillMaxWidth()
@@ -429,7 +440,7 @@ private fun Section12(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text54 = Configuration.Font.resolve(FontSpec(
+    val resolved_text12 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -438,11 +449,11 @@ private fun Section12(
     Text(
         text = stringResource(R.string.text_styling_test_center_aligned),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text54.family,
-        fontWeight = resolved_text54.weight,
-        fontSize = resolved_text54.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text54.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text12.family,
+        fontWeight = resolved_text12.weight,
+        fontSize = resolved_text12.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text12.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .padding(top = 10.dp)
             .fillMaxWidth()
@@ -457,7 +468,7 @@ private fun Section13(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text55 = Configuration.Font.resolve(FontSpec(
+    val resolved_text13 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -466,11 +477,11 @@ private fun Section13(
     Text(
         text = stringResource(R.string.text_styling_test_right_aligned),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text55.family,
-        fontWeight = resolved_text55.weight,
-        fontSize = resolved_text55.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text55.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text13.family,
+        fontWeight = resolved_text13.weight,
+        fontSize = resolved_text13.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text13.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .padding(top = 10.dp)
             .fillMaxWidth()
@@ -485,7 +496,7 @@ private fun Section14(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text56 = Configuration.Font.resolve(FontSpec(
+    val resolved_text14 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 18.sp,
@@ -494,11 +505,11 @@ private fun Section14(
     Text(
         text = stringResource(R.string.text_styling_test_line_spacing_test),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text56.family,
-        fontWeight = resolved_text56.weight,
-        fontSize = resolved_text56.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text56.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text14.family,
+        fontWeight = resolved_text14.weight,
+        fontSize = resolved_text14.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text14.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 20.dp)
     )
 }
@@ -508,7 +519,7 @@ private fun Section15(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text57 = Configuration.Font.resolve(FontSpec(
+    val resolved_text15 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -517,11 +528,11 @@ private fun Section15(
     Text(
         text = stringResource(R.string.text_styling_test_this_is_a_multiline_text_with_l),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text57.family,
-        fontWeight = resolved_text57.weight,
-        fontSize = resolved_text57.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text57.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 19.0.sp),
+        fontFamily = resolved_text15.family,
+        fontWeight = resolved_text15.weight,
+        fontSize = resolved_text15.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text15.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 19.0.sp),
         modifier = Modifier
             .padding(top = 10.dp)
             .background(colorResource(R.color.white))
@@ -534,7 +545,7 @@ private fun Section16(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text58 = Configuration.Font.resolve(FontSpec(
+    val resolved_text16 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -543,11 +554,11 @@ private fun Section16(
     Text(
         text = stringResource(R.string.text_styling_test_this_is_another_multiline_text_),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text58.family,
-        fontWeight = resolved_text58.weight,
-        fontSize = resolved_text58.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text58.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 24.0.sp),
+        fontFamily = resolved_text16.family,
+        fontWeight = resolved_text16.weight,
+        fontSize = resolved_text16.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text16.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 24.0.sp),
         modifier = Modifier
             .padding(top = 10.dp)
             .background(colorResource(R.color.white))
@@ -560,7 +571,7 @@ private fun Section17(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text59 = Configuration.Font.resolve(FontSpec(
+    val resolved_text17 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 18.sp,
@@ -569,11 +580,11 @@ private fun Section17(
     Text(
         text = stringResource(R.string.text_styling_test_font_colors),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text59.family,
-        fontWeight = resolved_text59.weight,
-        fontSize = resolved_text59.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text59.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text17.family,
+        fontWeight = resolved_text17.weight,
+        fontSize = resolved_text17.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text17.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 20.dp)
     )
 }
@@ -583,7 +594,7 @@ private fun Section18(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text60 = Configuration.Font.resolve(FontSpec(
+    val resolved_text18 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -592,11 +603,11 @@ private fun Section18(
     Text(
         text = stringResource(R.string.text_styling_test_red_text),
         color = colorResource(R.color.dark_red),
-        fontFamily = resolved_text60.family,
-        fontWeight = resolved_text60.weight,
-        fontSize = resolved_text60.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text60.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text18.family,
+        fontWeight = resolved_text18.weight,
+        fontSize = resolved_text18.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text18.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(top = 10.dp)
     )
 }
@@ -606,7 +617,7 @@ private fun Section19(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text61 = Configuration.Font.resolve(FontSpec(
+    val resolved_text19 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -615,11 +626,11 @@ private fun Section19(
     Text(
         text = stringResource(R.string.text_styling_test_green_text),
         color = colorResource(R.color.dark_green_2),
-        fontFamily = resolved_text61.family,
-        fontWeight = resolved_text61.weight,
-        fontSize = resolved_text61.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text61.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text19.family,
+        fontWeight = resolved_text19.weight,
+        fontSize = resolved_text19.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text19.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }
@@ -629,7 +640,7 @@ private fun Section20(
     data: TextStylingTestData,
     viewModel: TextStylingTestViewModel
 ) {
-    val resolved_text62 = Configuration.Font.resolve(FontSpec(
+    val resolved_text20 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -638,11 +649,11 @@ private fun Section20(
     Text(
         text = stringResource(R.string.text_styling_test_blue_text),
         color = colorResource(R.color.dark_blue),
-        fontFamily = resolved_text62.family,
-        fontWeight = resolved_text62.weight,
-        fontSize = resolved_text62.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text62.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text20.family,
+        fontWeight = resolved_text20.weight,
+        fontSize = resolved_text20.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text20.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }

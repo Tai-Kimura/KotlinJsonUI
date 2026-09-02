@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun ButtonEnabledTestGeneratedView(
@@ -43,59 +46,65 @@ fun ButtonEnabledTestGeneratedView(
     // Generated Compose code from button_enabled_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "button_enabled_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "button_enabled_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading button_enabled_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading button_enabled_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(colorResource(R.color.white))
-            .padding(20.dp)
-    ) {
-        Section0(data, viewModel)
-        Section1(data, viewModel)
-        Section2(data, viewModel)
-        Section3(data, viewModel)
-        Section4(data, viewModel)
-        Section5(data, viewModel)
-        Section6(data, viewModel)
-    }    }
+        } else {
+            // Static Mode - use generated code
+            Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(colorResource(R.color.white))
+                .padding(20.dp)
+        ) {
+            Section0(data, viewModel)
+            Section1(data, viewModel)
+            Section2(data, viewModel)
+            Section3(data, viewModel)
+            Section4(data, viewModel)
+            Section5(data, viewModel)
+            Section6(data, viewModel)
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("button_enabled_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -109,15 +118,17 @@ private fun Section0(
         onClick = { data.toggleDynamicMode?.invoke() },
         modifier = Modifier
             .wrapContentWidth()
-            .height(44.dp),
+            .requiredHeight(44.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
                         containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                        contentColor = colorResource(R.color.white)
+                        disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                        contentColor = colorResource(R.color.white),
+                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                     )
     ) {
-        val resolved_button14 = Configuration.Font.resolve(FontSpec(
+        val resolved_button1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Medium,
             size = 14.sp,
@@ -125,10 +136,10 @@ private fun Section0(
         ))
         Text(
             text = "${data.dynamicModeStatus}",
-            fontFamily = resolved_button14.family,
-            fontWeight = resolved_button14.weight,
-            fontSize = resolved_button14.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button14.style ?: FontStyle.Normal,
+            fontFamily = resolved_button1.family,
+            fontWeight = resolved_button1.weight,
+            fontSize = resolved_button1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button1.style ?: FontStyle.Normal,
         )
     }
 }
@@ -138,7 +149,7 @@ private fun Section1(
     data: ButtonEnabledTestData,
     viewModel: ButtonEnabledTestViewModel
 ) {
-    val resolved_text178 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 24.sp,
@@ -147,11 +158,11 @@ private fun Section1(
     Text(
         text = "${data.title}",
         color = colorResource(R.color.black),
-        fontFamily = resolved_text178.family,
-        fontWeight = resolved_text178.weight,
-        fontSize = resolved_text178.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text178.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 31.2.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
         modifier = Modifier
     )
 }
@@ -161,7 +172,7 @@ private fun Section2(
     data: ButtonEnabledTestData,
     viewModel: ButtonEnabledTestViewModel
 ) {
-    val resolved_text179 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -170,11 +181,11 @@ private fun Section2(
     Text(
         text = "${data.isButtonEnabled}",
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text179.family,
-        fontWeight = resolved_text179.weight,
-        fontSize = resolved_text179.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text179.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
     )
 }
@@ -190,7 +201,9 @@ private fun Section3(
         contentPadding = PaddingValues(10.dp),
         colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.medium_green_2),
-                        contentColor = colorResource(R.color.white)
+                        disabledContainerColor = colorResource(R.color.medium_green_2).copy(alpha = 0.5f),
+                        contentColor = colorResource(R.color.white),
+                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                     ),
         enabled = data.isButtonEnabled
     ) {
@@ -209,7 +222,9 @@ private fun Section4(
         contentPadding = PaddingValues(10.dp),
         colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.medium_blue_2),
-                        contentColor = colorResource(R.color.white)
+                        disabledContainerColor = colorResource(R.color.medium_blue_2).copy(alpha = 0.5f),
+                        contentColor = colorResource(R.color.white),
+                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                     )
     ) {
         Text(stringResource(R.string.button_enabled_test_toggle_enabled_state))
@@ -227,7 +242,9 @@ private fun Section5(
         contentPadding = PaddingValues(10.dp),
         colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.medium_red_2),
-                        contentColor = colorResource(R.color.white)
+                        disabledContainerColor = colorResource(R.color.medium_red_2).copy(alpha = 0.5f),
+                        contentColor = colorResource(R.color.white),
+                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                     ),
         enabled = false
     ) {
@@ -246,7 +263,9 @@ private fun Section6(
         contentPadding = PaddingValues(10.dp),
         colors = ButtonDefaults.buttonColors(
                         containerColor = colorResource(R.color.medium_purple),
-                        contentColor = colorResource(R.color.white)
+                        disabledContainerColor = colorResource(R.color.medium_purple).copy(alpha = 0.5f),
+                        contentColor = colorResource(R.color.white),
+                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                     ),
         enabled = true
     ) {

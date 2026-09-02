@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun Included2GeneratedView(
@@ -42,6 +44,8 @@ fun Included2GeneratedView(
     // Generated Compose code from included2.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
+    // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+    DriveEmbedInitParams(viewModel)
     // Check if Dynamic Mode is active
     if (DynamicModeManager.isActive()) {
         // Dynamic Mode - use SafeDynamicView for real-time updates
@@ -86,7 +90,7 @@ fun Included2GeneratedView(
             .background(colorResource(R.color.white_21))
             .padding(15.dp)
     ) {
-        val resolved_text447 = Configuration.Font.resolve(FontSpec(
+        val resolved_text1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = null,
             size = 18.sp,
@@ -95,11 +99,11 @@ fun Included2GeneratedView(
         Text(
             text = stringResource(R.string.included2_included_view_2),
             color = colorResource(R.color.medium_red_6),
-            fontFamily = resolved_text447.family,
-            fontWeight = resolved_text447.weight,
-            fontSize = resolved_text447.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text447.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 23.4.sp),
+            fontFamily = resolved_text1.family,
+            fontWeight = resolved_text1.weight,
+            fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text1.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
             modifier = Modifier
         )
         Column(
@@ -108,7 +112,7 @@ fun Included2GeneratedView(
                 .background(colorResource(R.color.white))
                 .padding(10.dp)
         ) {
-            val resolved_text448 = Configuration.Font.resolve(FontSpec(
+            val resolved_text2 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -117,14 +121,14 @@ fun Included2GeneratedView(
             Text(
                 text = "${data.viewTitle}",
                 color = colorResource(R.color.dark_gray),
-                fontFamily = resolved_text448.family,
-                fontWeight = resolved_text448.weight,
-                fontSize = resolved_text448.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text448.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text2.family,
+                fontWeight = resolved_text2.weight,
+                fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text2.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
-            val resolved_text449 = Configuration.Font.resolve(FontSpec(
+            val resolved_text3 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -133,14 +137,14 @@ fun Included2GeneratedView(
             Text(
                 text = "${data.viewStatus}",
                 color = colorResource(R.color.dark_gray),
-                fontFamily = resolved_text449.family,
-                fontWeight = resolved_text449.weight,
-                fontSize = resolved_text449.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text449.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text3.family,
+                fontWeight = resolved_text3.weight,
+                fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text3.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
-            val resolved_text450 = Configuration.Font.resolve(FontSpec(
+            val resolved_text4 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -149,11 +153,11 @@ fun Included2GeneratedView(
             Text(
                 text = "${data.viewCount}",
                 color = colorResource(R.color.dark_gray),
-                fontFamily = resolved_text450.family,
-                fontWeight = resolved_text450.weight,
-                fontSize = resolved_text450.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text450.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text4.family,
+                fontWeight = resolved_text4.weight,
+                fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text4.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
         }

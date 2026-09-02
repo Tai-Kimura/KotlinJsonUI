@@ -8,11 +8,13 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class RadioIconsTestData(
     var selectedDefaultgroup: String = "option1",
     var selectedCustomgroup: String = "custom1",
-    var selectedColor: String = "Red"
+    var selectedColor: String = KotlinJsonUI.localizedString(R.string.radio_icons_test_red, "Red")
 ) {
     companion object {
         // Update properties from map
@@ -20,7 +22,7 @@ data class RadioIconsTestData(
             return RadioIconsTestData(
                 selectedDefaultgroup = map["selectedDefaultgroup"] as? String ?: "option1",
                 selectedCustomgroup = map["selectedCustomgroup"] as? String ?: "custom1",
-                selectedColor = map["selectedColor"] as? String ?: "Red"
+                selectedColor = map["selectedColor"] as? String ?: KotlinJsonUI.localizedString(R.string.radio_icons_test_red, "Red")
             )
         }
     }

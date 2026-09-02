@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun FeatureCellGeneratedView(
@@ -42,6 +44,8 @@ fun FeatureCellGeneratedView(
     // Generated Compose code from feature_cell.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
+    // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+    DriveEmbedInitParams(viewModel)
     // Check if Dynamic Mode is active
     if (DynamicModeManager.isActive()) {
         // Dynamic Mode - use SafeDynamicView for real-time updates
@@ -86,7 +90,7 @@ fun FeatureCellGeneratedView(
             .background(colorResource(R.color.white))
             .padding(16.dp)
     ) {
-        val resolved_text337 = Configuration.Font.resolve(FontSpec(
+        val resolved_text1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = null,
             size = 10.sp,
@@ -95,17 +99,17 @@ fun FeatureCellGeneratedView(
         Text(
             text = "${data.badge}",
             color = colorResource(R.color.white),
-            fontFamily = resolved_text337.family,
-            fontWeight = resolved_text337.weight,
-            fontSize = resolved_text337.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text337.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 13.0.sp),
+            fontFamily = resolved_text1.family,
+            fontWeight = resolved_text1.weight,
+            fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text1.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 13.0.sp),
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
                 .background(colorResource(R.color.light_red))
                 .padding(vertical = 4.dp, horizontal = 8.dp)
         )
-        val resolved_text338 = Configuration.Font.resolve(FontSpec(
+        val resolved_text2 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Bold,
             size = 18.sp,
@@ -114,14 +118,14 @@ fun FeatureCellGeneratedView(
         Text(
             text = "${data.title}",
             color = colorResource(R.color.white),
-            fontFamily = resolved_text338.family,
-            fontWeight = resolved_text338.weight,
-            fontSize = resolved_text338.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text338.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 23.4.sp),
+            fontFamily = resolved_text2.family,
+            fontWeight = resolved_text2.weight,
+            fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text2.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
             modifier = Modifier.padding(top = 12.dp)
         )
-        val resolved_text339 = Configuration.Font.resolve(FontSpec(
+        val resolved_text3 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = null,
             size = 14.sp,
@@ -130,11 +134,11 @@ fun FeatureCellGeneratedView(
         Text(
             text = "${data.description}",
             color = colorResource(R.color.white),
-            fontFamily = resolved_text339.family,
-            fontWeight = resolved_text339.weight,
-            fontSize = resolved_text339.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text339.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 18.2.sp),
+            fontFamily = resolved_text3.family,
+            fontWeight = resolved_text3.weight,
+            fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text3.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
             modifier = Modifier
                 .alpha(0.9f)
                 .padding(top = 8.dp)

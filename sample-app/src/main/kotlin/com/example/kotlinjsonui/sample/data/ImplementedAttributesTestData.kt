@@ -16,7 +16,8 @@ data class ImplementedAttributesTestData(
     var handleFocus: (() -> Unit)? = null,
     var handleBlur: (() -> Unit)? = null,
     var handleBeginEditing: (() -> Unit)? = null,
-    var handleEndEditing: (() -> Unit)? = null
+    var handleEndEditing: (() -> Unit)? = null,
+    var textField1IsFocused: Boolean = false
 ) {
     companion object {
         // Update properties from map
@@ -29,7 +30,8 @@ data class ImplementedAttributesTestData(
                 handleFocus = map["handleFocus"] as? (() -> Unit)?,
                 handleBlur = map["handleBlur"] as? (() -> Unit)?,
                 handleBeginEditing = map["handleBeginEditing"] as? (() -> Unit)?,
-                handleEndEditing = map["handleEndEditing"] as? (() -> Unit)?
+                handleEndEditing = map["handleEndEditing"] as? (() -> Unit)?,
+                textField1IsFocused = map["textField1IsFocused"] as? Boolean ?: false
             )
         }
     }
@@ -46,6 +48,7 @@ data class ImplementedAttributesTestData(
         handleBlur?.let { map["handleBlur"] = it }
         handleBeginEditing?.let { map["handleBeginEditing"] = it }
         handleEndEditing?.let { map["handleEndEditing"] = it }
+        map["textField1IsFocused"] = textField1IsFocused
         
         return map
     }

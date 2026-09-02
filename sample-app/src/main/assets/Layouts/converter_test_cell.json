@@ -7,14 +7,14 @@
   "child": [
     {
       "type": "Label",
-      "text": "@{item[\"label\"] as? String ?: \"\"}",
+      "text": "@{item[\"label\"]}",
       "fontSize": 14,
       "fontColor": "black",
       "weight": 1
     },
     {
       "type": "Label",
-      "text": "@{item[\"value\"] as? String ?: \"\"}",
+      "text": "@{item[\"value\"]}",
       "fontSize": 14,
       "fontWeight": "bold",
       "fontColor": "medium_blue"

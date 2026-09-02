@@ -83,7 +83,9 @@
     "option_28": "Option 28",
     "option_29": "Option 29",
     "option_30": "Option 30",
-    "": "日付を選択"
+    "": "日付を選択",
+    "選択してください": "選択してください",
+    "日付を選択": "日付を選択"
   },
   "button_enabled_test": {
     "button_enabled_state_isbuttonen": "Button enabled state: @{isButtonEnabled}",
@@ -152,7 +154,8 @@
     "content_of_tab_2": "Content of Tab 2",
     "collection_test_2": "Collection Test",
     "image_test": "Image Test",
-    "networkimage_test": "NetworkImage Test"
+    "networkimage_test": "NetworkImage Test",
+    "collection_test": "Collection Test"
   },
   "custom_component_test": {
     "custom_component_test": "Custom Component Test",
@@ -284,7 +287,8 @@
     "4_include_with_shareddata_and_d": "4. Include with shared_data and data override:",
     "5_another_included1_with_refere": "5. Another included_1 with @{} references:",
     "4_include_with_shared_data_and_": "4. Include with shared_data and data override:",
-    "5_another_included_1_with_refer": "5. Another included_1 with @{} references:"
+    "5_another_included_1_with_refer": "5. Another included_1 with @{} references:",
+    "count_2": "Count -"
   },
   "included2": {
     "included_view_2": "Included View 2",
@@ -337,7 +341,9 @@
     "this_text_has_partial_styling_a": "This text has partial styling applied to different parts of the text.",
     "click_here_to_navigate_or_here_": "Click here to navigate or here for another action.",
     "mixed_styles_bold_italic_underl": "Mixed styles: bold, italic, underline, strikethrough",
-    "": "晴れる"
+    "": "晴れる",
+    "今日は天気がいいですね_明日も晴れるといいです": "今日は天気がいいですね。明日も晴れるといいです。",
+    "晴れる": "晴れる"
   },
   "radio_icons_test": {
     "radio_custom_icons_test": "Radio Custom Icons Test",
@@ -517,7 +523,21 @@
     "text_decoration_test_2": "Text Decoration Test",
     "textfield_test_2": "TextField Test",
     "textfield_events_test_2": "TextField Events Test",
-    "user_profile_test_2": "User Profile Test"
+    "user_profile_test_2": "User Profile Test",
+    "alignment_test": "Alignment Test",
+    "alignment_combo_test": "Alignment Combo Test",
+    "partial_attributes_test": "Partial Attributes Test",
+    "secure_field_test": "Secure Field Test",
+    "date_picker_test": "Date Picker Test",
+    "components_test": "Components Test",
+    "button_test": "Button Test",
+    "button_enabled_test": "Button Enabled Test",
+    "switch_events_test": "Switch Events Test",
+    "custom_component_test": "Custom Component Test",
+    "form_test": "Form Test",
+    "collection_test": "Collection Test",
+    "keyboard_avoidance_test": "Keyboard Avoidance Test",
+    "scroll_test": "Scroll Test"
   },
   "text_decoration_test": {
     "normal_text_without_links": "Normal text without links",
@@ -641,7 +661,9 @@
     "col_2": "Col 2",
     "footer_fixed_25": "Footer: Fixed 25",
     "vertical_multiple_weights_only": "Vertical: Multiple weights only",
-    "w2": "W:2"
+    "w2": "W:2",
+    "weight_1_2": "Weight 1",
+    "fixed_30_2": "Fixed: 30"
   },
   "width_test": {
     "width_test": "Width Test",

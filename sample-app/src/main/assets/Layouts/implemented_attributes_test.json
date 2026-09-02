@@ -305,7 +305,7 @@
           ],
           "selectedIndex": "@{selectedSegment}",
           "normalColor": "#000000",
-          "selectedColor": "#0000ff",
+          "selectedColor": "dark_blue",
           "tintColor": "dark_blue",
           "bottomMargin": 10
         },

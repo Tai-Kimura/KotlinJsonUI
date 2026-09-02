@@ -8,11 +8,13 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class ConverterTestData(
     var dynamicModeStatus: String = "OFF",
     var items: com.kotlinjsonui.data.CollectionDataSource = com.kotlinjsonui.data.CollectionDataSource(),
-    var title: String = "Converter Components Test",
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_converter_components_test, "Converter Components Test"),
     var toggleDynamicMode: (() -> Unit)? = null
 ) {
     companion object {
@@ -22,7 +24,7 @@ data class ConverterTestData(
             return ConverterTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
                 items = com.kotlinjsonui.data.CollectionDataSource(),
-                title = map["title"] as? String ?: "Converter Components Test",
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_converter_components_test, "Converter Components Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
             )
         }

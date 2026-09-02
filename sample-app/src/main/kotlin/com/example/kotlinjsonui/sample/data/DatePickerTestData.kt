@@ -8,6 +8,8 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class DatePickerTestData(
     var dynamicModeStatus: String = "OFF",
@@ -19,7 +21,7 @@ data class DatePickerTestData(
     var selectedTimeInterval: String = "",
     var selectedCalendarDate: String = "",
     var startDate: String = "2025-01-01",
-    var title: String = "Date Picker Test",
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_date_picker_test_2, "Date Picker Test"),
     var toggleDynamicMode: (() -> Unit)? = null
 ) {
     companion object {
@@ -36,7 +38,7 @@ data class DatePickerTestData(
                 selectedTimeInterval = map["selectedTimeInterval"] as? String ?: "",
                 selectedCalendarDate = map["selectedCalendarDate"] as? String ?: "",
                 startDate = map["startDate"] as? String ?: "2025-01-01",
-                title = map["title"] as? String ?: "Date Picker Test",
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_date_picker_test_2, "Date Picker Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
             )
         }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +45,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun ComponentsTestGeneratedView(
@@ -54,80 +57,86 @@ fun ComponentsTestGeneratedView(
     // Generated Compose code from components_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "components_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "components_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading components_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading components_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(colorResource(R.color.white))
-            .imePadding()
-    ) {
-        item {
-        Column(
-            modifier = Modifier
+        } else {
+            // Static Mode - use generated code
+            LazyColumn(
+            modifier = modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
+                .fillMaxHeight()
+                .background(colorResource(R.color.white))
+                .imePadding()
         ) {
-            Section0(data, viewModel)
-            Section1(data, viewModel)
-            Section2(data, viewModel)
-            Section3(data, viewModel)
-            Section4(data, viewModel)
-            Section5(data, viewModel)
-            Section6(data, viewModel)
-            Section7(data, viewModel)
-            Section8(data, viewModel)
-            Section9(data, viewModel)
-            Section10(data, viewModel)
-            Section11(data, viewModel)
-            Section12(data, viewModel)
-            Section13(data, viewModel)
-            Section14(data, viewModel)
-            Section15(data, viewModel)
-            Section16(data, viewModel)
-            Section17(data, viewModel)
-            Section18(data, viewModel)
-        }
-        }
-    }    }
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(top = 20.dp, end = 20.dp, bottom = 20.dp, start = 20.dp)
+            ) {
+                Section0(data, viewModel)
+                Section1(data, viewModel)
+                Section2(data, viewModel)
+                Section3(data, viewModel)
+                Section4(data, viewModel)
+                Section5(data, viewModel)
+                Section6(data, viewModel)
+                Section26(data, viewModel)
+                Section8(data, viewModel)
+                Section9(data, viewModel)
+                Section10(data, viewModel)
+                Section11(data, viewModel)
+                Section12(data, viewModel)
+                Section13(data, viewModel)
+                Section14(data, viewModel)
+                Section15(data, viewModel)
+                Section16(data, viewModel)
+                Section17(data, viewModel)
+                Section18(data, viewModel)
+            }
+            }
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("components_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -141,15 +150,17 @@ private fun Section0(
         onClick = { data.toggleDynamicMode?.invoke() },
         modifier = Modifier
             .wrapContentWidth()
-            .height(44.dp),
+            .requiredHeight(44.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button2 = Configuration.Font.resolve(FontSpec(
+        val resolved_button1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Medium,
             size = 14.sp,
@@ -157,10 +168,10 @@ private fun Section0(
         ))
         Text(
             text = "${data.dynamicModeStatus}",
-            fontFamily = resolved_button2.family,
-            fontWeight = resolved_button2.weight,
-            fontSize = resolved_button2.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button2.style ?: FontStyle.Normal,
+            fontFamily = resolved_button1.family,
+            fontWeight = resolved_button1.weight,
+            fontSize = resolved_button1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button1.style ?: FontStyle.Normal,
         )
     }
 }
@@ -170,7 +181,7 @@ private fun Section1(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text13 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 24.sp,
@@ -179,11 +190,11 @@ private fun Section1(
     Text(
         text = stringResource(R.string.components_test_new_components_test),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text13.family,
-        fontWeight = resolved_text13.weight,
-        fontSize = resolved_text13.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text13.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 31.2.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
         modifier = Modifier
     )
 }
@@ -193,7 +204,7 @@ private fun Section2(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text14 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -202,11 +213,11 @@ private fun Section2(
     Text(
         text = stringResource(R.string.components_test_togglecheckbox_components),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text14.family,
-        fontWeight = resolved_text14.weight,
-        fontSize = resolved_text14.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text14.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -216,13 +227,21 @@ private fun Section3(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    Switch(
-        checked = data.toggle1IsOn,
-        onCheckedChange = { newValue -> viewModel.updateData(mapOf("toggle1IsOn" to newValue)) },
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .testTag("toggle1")
             .semantics { testTagsAsResourceId = true }
-    )
+    ) {
+        Text(
+            text = "Enable Notifications",
+            modifier = Modifier.weight(1f)
+        )
+        Switch(
+            checked = data.toggle1IsOn,
+            onCheckedChange = { newValue -> viewModel.updateData(mapOf("toggle1IsOn" to newValue)) }
+        )
+    }
 }
 
 @Composable
@@ -250,7 +269,7 @@ private fun Section5(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text15 = Configuration.Font.resolve(FontSpec(
+    val resolved_text3 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -259,11 +278,11 @@ private fun Section5(
     Text(
         text = stringResource(R.string.components_test_progress_slider),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text15.family,
-        fontWeight = resolved_text15.weight,
-        fontSize = resolved_text15.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text15.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text3.family,
+        fontWeight = resolved_text3.weight,
+        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text3.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -274,23 +293,9 @@ private fun Section6(
     viewModel: ComponentsTestViewModel
 ) {
     LinearProgressIndicator(
+        progress = { data.progress1Value.toFloat() },
         modifier = Modifier
             .testTag("progress1")
-            .semantics { testTagsAsResourceId = true }
-    )
-}
-
-@Composable
-private fun Section7(
-    data: ComponentsTestData,
-    viewModel: ComponentsTestViewModel
-) {
-    Slider(
-        value = data.slider1Value.toFloat(),
-        onValueChange = { newValue -> viewModel.updateData(mapOf("slider1Value" to newValue.toDouble())) },
-        valueRange = 0.0f..1.0f,
-        modifier = Modifier
-            .testTag("slider1")
             .semantics { testTagsAsResourceId = true }
     )
 }
@@ -300,7 +305,7 @@ private fun Section8(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text16 = Configuration.Font.resolve(FontSpec(
+    val resolved_text4 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -309,11 +314,11 @@ private fun Section8(
     Text(
         text = stringResource(R.string.components_test_selection_components),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text16.family,
-        fontWeight = resolved_text16.weight,
-        fontSize = resolved_text16.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text16.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text4.family,
+        fontWeight = resolved_text4.weight,
+        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text4.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -422,7 +427,7 @@ private fun Section11(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text17 = Configuration.Font.resolve(FontSpec(
+    val resolved_text5 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -431,11 +436,11 @@ private fun Section11(
     Text(
         text = stringResource(R.string.components_test_loading_indicator),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text17.family,
-        fontWeight = resolved_text17.weight,
-        fontSize = resolved_text17.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text17.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text5.family,
+        fontWeight = resolved_text5.weight,
+        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text5.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -454,7 +459,7 @@ private fun Section13(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text18 = Configuration.Font.resolve(FontSpec(
+    val resolved_text6 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -463,11 +468,11 @@ private fun Section13(
     Text(
         text = stringResource(R.string.components_test_circle_image),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text18.family,
-        fontWeight = resolved_text18.weight,
-        fontSize = resolved_text18.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text18.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text6.family,
+        fontWeight = resolved_text6.weight,
+        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text6.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -492,7 +497,7 @@ private fun Section15(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text19 = Configuration.Font.resolve(FontSpec(
+    val resolved_text7 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -501,11 +506,11 @@ private fun Section15(
     Text(
         text = stringResource(R.string.components_test_gradient_view),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text19.family,
-        fontWeight = resolved_text19.weight,
-        fontSize = resolved_text19.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text19.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text7.family,
+        fontWeight = resolved_text7.weight,
+        fontSize = resolved_text7.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text7.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -518,11 +523,11 @@ private fun Section16(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .requiredHeight(100.dp)
             .background(Brush.horizontalGradient(listOf(Color(android.graphics.Color.parseColor("#FF6B6B")), Color(android.graphics.Color.parseColor("#4ECDC4")))))
             .clip(RoundedCornerShape(10.dp))
     ) {
-        val resolved_text20 = Configuration.Font.resolve(FontSpec(
+        val resolved_text8 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = null,
             size = 20.sp,
@@ -531,11 +536,11 @@ private fun Section16(
         Text(
             text = stringResource(R.string.components_test_gradient_background),
             color = colorResource(R.color.white),
-            fontFamily = resolved_text20.family,
-            fontWeight = resolved_text20.weight,
-            fontSize = resolved_text20.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text20.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 26.0.sp),
+            fontFamily = resolved_text8.family,
+            fontWeight = resolved_text8.weight,
+            fontSize = resolved_text8.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text8.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
             modifier = Modifier
         )
     }
@@ -546,7 +551,7 @@ private fun Section17(
     data: ComponentsTestData,
     viewModel: ComponentsTestViewModel
 ) {
-    val resolved_text21 = Configuration.Font.resolve(FontSpec(
+    val resolved_text9 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 18.sp,
@@ -555,11 +560,11 @@ private fun Section17(
     Text(
         text = stringResource(R.string.components_test_blur_view),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text21.family,
-        fontWeight = resolved_text21.weight,
-        fontSize = resolved_text21.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text21.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        fontFamily = resolved_text9.family,
+        fontWeight = resolved_text9.weight,
+        fontSize = resolved_text9.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text9.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier
     )
 }
@@ -572,11 +577,11 @@ private fun Section18(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp)
-            .blur(10.dp)
+            .requiredHeight(80.dp)
             .clip(RoundedCornerShape(10.dp))
+            .blur(10.dp)
     ) {
-        val resolved_text22 = Configuration.Font.resolve(FontSpec(
+        val resolved_text10 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = null,
             size = 18.sp,
@@ -585,13 +590,28 @@ private fun Section18(
         Text(
             text = stringResource(R.string.components_test_blurred_background),
             color = colorResource(R.color.dark_gray),
-            fontFamily = resolved_text22.family,
-            fontWeight = resolved_text22.weight,
-            fontSize = resolved_text22.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text22.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 23.4.sp),
+            fontFamily = resolved_text10.family,
+            fontWeight = resolved_text10.weight,
+            fontSize = resolved_text10.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_text10.style ?: FontStyle.Normal,
+            style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
             modifier = Modifier
         )
     }
+}
+
+@Composable
+private fun Section26(
+    data: ComponentsTestData,
+    viewModel: ComponentsTestViewModel
+) {
+    Slider(
+        value = data.slider1Value.toFloat(),
+        onValueChange = { newValue -> viewModel.updateData(mapOf("slider1Value" to newValue.toDouble())) },
+        valueRange = 0.0f..1.0f,
+        modifier = Modifier
+            .testTag("slider1")
+            .semantics { testTagsAsResourceId = true }
+    )
 }
 // >>> RESPONSIVE_HELPERS_END

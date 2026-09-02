@@ -8,10 +8,12 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class VisibilityTestData(
     var dynamicModeStatus: String = "OFF",
-    var title: String = "Visibility & Opacity Test",
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_visibility_opacity_test, "Visibility & Opacity Test"),
     var textVisibility: String = "visible",
     var isHidden: Boolean = false,
     var toggleDynamicMode: (() -> Unit)? = null,
@@ -24,7 +26,7 @@ data class VisibilityTestData(
         fun fromMap(map: Map<String, Any>): VisibilityTestData {
             return VisibilityTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
-                title = map["title"] as? String ?: "Visibility & Opacity Test",
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_visibility_opacity_test, "Visibility & Opacity Test"),
                 textVisibility = map["textVisibility"] as? String ?: "visible",
                 isHidden = map["isHidden"] as? Boolean ?: false,
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,

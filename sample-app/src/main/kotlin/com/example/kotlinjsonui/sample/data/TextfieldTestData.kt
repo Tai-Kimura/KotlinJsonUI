@@ -15,7 +15,13 @@ data class TextfieldTestData(
     var phone: String = "",
     var number: String = "",
     var search: String = "",
-    var url: String = ""
+    var url: String = "",
+    var emailFieldIsFocused: Boolean = false,
+    var passwordFieldIsFocused: Boolean = false,
+    var phoneFieldIsFocused: Boolean = false,
+    var numberFieldIsFocused: Boolean = false,
+    var searchFieldIsFocused: Boolean = false,
+    var urlFieldIsFocused: Boolean = false
 ) {
     companion object {
         // Update properties from map
@@ -26,7 +32,13 @@ data class TextfieldTestData(
                 phone = map["phone"] as? String ?: "",
                 number = map["number"] as? String ?: "",
                 search = map["search"] as? String ?: "",
-                url = map["url"] as? String ?: ""
+                url = map["url"] as? String ?: "",
+                emailFieldIsFocused = map["emailFieldIsFocused"] as? Boolean ?: false,
+                passwordFieldIsFocused = map["passwordFieldIsFocused"] as? Boolean ?: false,
+                phoneFieldIsFocused = map["phoneFieldIsFocused"] as? Boolean ?: false,
+                numberFieldIsFocused = map["numberFieldIsFocused"] as? Boolean ?: false,
+                searchFieldIsFocused = map["searchFieldIsFocused"] as? Boolean ?: false,
+                urlFieldIsFocused = map["urlFieldIsFocused"] as? Boolean ?: false
             )
         }
     }
@@ -42,6 +54,12 @@ data class TextfieldTestData(
         map["number"] = number
         map["search"] = search
         map["url"] = url
+        map["emailFieldIsFocused"] = emailFieldIsFocused
+        map["passwordFieldIsFocused"] = passwordFieldIsFocused
+        map["phoneFieldIsFocused"] = phoneFieldIsFocused
+        map["numberFieldIsFocused"] = numberFieldIsFocused
+        map["searchFieldIsFocused"] = searchFieldIsFocused
+        map["urlFieldIsFocused"] = urlFieldIsFocused
         
         return map
     }

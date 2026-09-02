@@ -8,15 +8,17 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class ButtonTestData(
-    var title: String = "Button Test"
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_button_test_2, "Button Test")
 ) {
     companion object {
         // Update properties from map
         fun fromMap(map: Map<String, Any>): ButtonTestData {
             return ButtonTestData(
-                title = map["title"] as? String ?: "Button Test"
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_button_test_2, "Button Test")
             )
         }
     }

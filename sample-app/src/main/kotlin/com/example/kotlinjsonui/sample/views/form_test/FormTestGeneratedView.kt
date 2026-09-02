@@ -14,13 +14,19 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -43,6 +49,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun FormTestGeneratedView(
@@ -53,68 +61,74 @@ fun FormTestGeneratedView(
     // Generated Compose code from form_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "form_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "form_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading form_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading form_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(colorResource(R.color.white))
-            .imePadding()
-    ) {
-        item {
-        Column(
-            modifier = Modifier
+        } else {
+            // Static Mode - use generated code
+            LazyColumn(
+            modifier = modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(16.dp)
+                .fillMaxHeight()
+                .background(colorResource(R.color.white))
+                .imePadding()
         ) {
-            Section0(data, viewModel)
-            Section1(data, viewModel)
-            Section2(data, viewModel)
-            Section3(data, viewModel)
-            Section4(data, viewModel)
-            Section5(data, viewModel)
-            Section6(data, viewModel)
-        }
-        }
-    }    }
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(16.dp)
+            ) {
+                Section0(data, viewModel)
+                Section1(data, viewModel)
+                Section2(data, viewModel)
+                Section3(data, viewModel)
+                Section4(data, viewModel)
+                Section5(data, viewModel)
+                Section6(data, viewModel)
+            }
+            }
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("form_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -128,15 +142,17 @@ private fun Section0(
         onClick = { data.toggleDynamicMode?.invoke() },
         modifier = Modifier
             .wrapContentWidth()
-            .height(44.dp),
+            .requiredHeight(44.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button3 = Configuration.Font.resolve(FontSpec(
+        val resolved_button1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Medium,
             size = 14.sp,
@@ -144,10 +160,10 @@ private fun Section0(
         ))
         Text(
             text = "${data.dynamicModeStatus}",
-            fontFamily = resolved_button3.family,
-            fontWeight = resolved_button3.weight,
-            fontSize = resolved_button3.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button3.style ?: FontStyle.Normal,
+            fontFamily = resolved_button1.family,
+            fontWeight = resolved_button1.weight,
+            fontSize = resolved_button1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button1.style ?: FontStyle.Normal,
         )
     }
 }
@@ -157,7 +173,7 @@ private fun Section1(
     data: FormTestData,
     viewModel: FormTestViewModel
 ) {
-    val resolved_text24 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 28.sp,
@@ -166,11 +182,11 @@ private fun Section1(
     Text(
         text = "${data.title}",
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text24.family,
-        fontWeight = resolved_text24.weight,
-        fontSize = resolved_text24.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text24.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 36.4.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 36.4.sp),
         modifier = Modifier.padding(bottom = 24.dp)
     )
 }
@@ -180,7 +196,7 @@ private fun Section2(
     data: FormTestData,
     viewModel: FormTestViewModel
 ) {
-    val resolved_text25 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.SemiBold,
         size = 20.sp,
@@ -189,11 +205,11 @@ private fun Section2(
     Text(
         text = stringResource(R.string.form_test_personal_information),
         color = colorResource(R.color.medium_blue),
-        fontFamily = resolved_text25.family,
-        fontWeight = resolved_text25.weight,
-        fontSize = resolved_text25.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text25.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 16.dp)
     )
 }
@@ -203,7 +219,7 @@ private fun Section3(
     data: FormTestData,
     viewModel: FormTestViewModel
 ) {
-    val resolved_text26 = Configuration.Font.resolve(FontSpec(
+    val resolved_text3 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -212,27 +228,12 @@ private fun Section3(
     Text(
         text = stringResource(R.string.form_test_first_name),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text26.family,
-        fontWeight = resolved_text26.weight,
-        fontSize = resolved_text26.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text26.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text3.family,
+        fontWeight = resolved_text3.weight,
+        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text3.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
-    )
-}
-
-@Composable
-private fun Section4_0(
-    data: FormTestData,
-    viewModel: FormTestViewModel
-) {
-    Switch(
-        checked = data.agreeToTerms,
-        onCheckedChange = { newValue -> viewModel.updateData(mapOf("agreeToTerms" to newValue)) },
-        modifier = Modifier
-            .testTag("agreeToggle")
-            .semantics { testTagsAsResourceId = true }
-            .padding(end = 12.dp)
     )
 }
 
@@ -241,7 +242,7 @@ private fun Section4_1(
     data: FormTestData,
     viewModel: FormTestViewModel
 ) {
-    val resolved_text42 = Configuration.Font.resolve(FontSpec(
+    val resolved_text19 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -250,11 +251,11 @@ private fun Section4_1(
     Text(
         text = stringResource(R.string.form_test_i_agree_to_the_terms_and_condit),
         color = colorResource(R.color.dark_gray),
-        fontFamily = resolved_text42.family,
-        fontWeight = resolved_text42.weight,
-        fontSize = resolved_text42.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text42.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text19.family,
+        fontWeight = resolved_text19.weight,
+        fontSize = resolved_text19.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text19.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.wrapContentWidth()
     )
 }
@@ -273,6 +274,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_firstName = remember { FocusRequester() }
+    val keyboardController_firstName = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.firstNameIsFocused) { if (data.firstNameIsFocused) { focusRequester_firstName.requestFocus(); keyboardController_firstName?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_firstName,
         boxModifier = Modifier
@@ -281,7 +285,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(50.dp),
+            .requiredHeight(50.dp)
+            .onFocusChanged { if (it.isFocused != data.firstNameIsFocused) viewModel.updateData(mapOf("firstNameIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_firstName),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_enter_your_first_name),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -290,9 +296,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield1.family, fontWeight = resolved_textfield1.weight, fontSize = (resolved_textfield1.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield1.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield1.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield1.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield1.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield1.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text27 = Configuration.Font.resolve(FontSpec(
+    val resolved_text4 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -301,11 +307,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_last_name),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text27.family,
-        fontWeight = resolved_text27.weight,
-        fontSize = resolved_text27.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text27.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text4.family,
+        fontWeight = resolved_text4.weight,
+        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text4.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_lastName = rememberTextFieldState(initialText = data.lastName)
@@ -317,6 +323,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_lastName = remember { FocusRequester() }
+    val keyboardController_lastName = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.lastNameIsFocused) { if (data.lastNameIsFocused) { focusRequester_lastName.requestFocus(); keyboardController_lastName?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_lastName,
         boxModifier = Modifier
@@ -325,7 +334,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.lastNameIsFocused) viewModel.updateData(mapOf("lastNameIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_lastName),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_enter_your_last_name),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -334,9 +345,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield2.family, fontWeight = resolved_textfield2.weight, fontSize = (resolved_textfield2.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield2.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield2.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield2.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield2.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield2.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text28 = Configuration.Font.resolve(FontSpec(
+    val resolved_text5 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -345,11 +356,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_email_address),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text28.family,
-        fontWeight = resolved_text28.weight,
-        fontSize = resolved_text28.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text28.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text5.family,
+        fontWeight = resolved_text5.weight,
+        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text5.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_email = rememberTextFieldState(initialText = data.email)
@@ -361,6 +372,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_email = remember { FocusRequester() }
+    val keyboardController_email = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.emailIsFocused) { if (data.emailIsFocused) { focusRequester_email.requestFocus(); keyboardController_email?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_email,
         boxModifier = Modifier
@@ -369,7 +383,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.emailIsFocused) viewModel.updateData(mapOf("emailIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_email),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_emailexamplecom),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -378,9 +394,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield3.family, fontWeight = resolved_textfield3.weight, fontSize = (resolved_textfield3.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield3.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield3.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield3.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield3.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield3.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text29 = Configuration.Font.resolve(FontSpec(
+    val resolved_text6 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -389,11 +405,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_phone_number),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text29.family,
-        fontWeight = resolved_text29.weight,
-        fontSize = resolved_text29.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text29.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text6.family,
+        fontWeight = resolved_text6.weight,
+        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text6.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_phone = rememberTextFieldState(initialText = data.phone)
@@ -405,6 +421,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_phone = remember { FocusRequester() }
+    val keyboardController_phone = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.phoneIsFocused) { if (data.phoneIsFocused) { focusRequester_phone.requestFocus(); keyboardController_phone?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_phone,
         boxModifier = Modifier
@@ -413,7 +432,9 @@ private fun Section4(
             .padding(bottom = 24.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.phoneIsFocused) viewModel.updateData(mapOf("phoneIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_phone),
         placeholder = { Text(
                             text = "+1 234 567 8900",
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -422,9 +443,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield4.family, fontWeight = resolved_textfield4.weight, fontSize = (resolved_textfield4.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield4.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield4.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield4.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield4.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield4.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text30 = Configuration.Font.resolve(FontSpec(
+    val resolved_text7 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.SemiBold,
         size = 20.sp,
@@ -433,14 +454,14 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_address_information),
         color = colorResource(R.color.medium_blue),
-        fontFamily = resolved_text30.family,
-        fontWeight = resolved_text30.weight,
-        fontSize = resolved_text30.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text30.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text7.family,
+        fontWeight = resolved_text7.weight,
+        fontSize = resolved_text7.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text7.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 16.dp)
     )
-    val resolved_text31 = Configuration.Font.resolve(FontSpec(
+    val resolved_text8 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -449,11 +470,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_street_address),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text31.family,
-        fontWeight = resolved_text31.weight,
-        fontSize = resolved_text31.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text31.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text8.family,
+        fontWeight = resolved_text8.weight,
+        fontSize = resolved_text8.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text8.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_address = rememberTextFieldState(initialText = data.address)
@@ -465,6 +486,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_address = remember { FocusRequester() }
+    val keyboardController_address = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.addressIsFocused) { if (data.addressIsFocused) { focusRequester_address.requestFocus(); keyboardController_address?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_address,
         boxModifier = Modifier
@@ -473,7 +497,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.addressIsFocused) viewModel.updateData(mapOf("addressIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_address),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_123_main_street),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -482,9 +508,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield5.family, fontWeight = resolved_textfield5.weight, fontSize = (resolved_textfield5.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield5.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield5.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield5.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield5.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield5.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text32 = Configuration.Font.resolve(FontSpec(
+    val resolved_text9 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -493,11 +519,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_city),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text32.family,
-        fontWeight = resolved_text32.weight,
-        fontSize = resolved_text32.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text32.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text9.family,
+        fontWeight = resolved_text9.weight,
+        fontSize = resolved_text9.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text9.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_city = rememberTextFieldState(initialText = data.city)
@@ -509,6 +535,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_city = remember { FocusRequester() }
+    val keyboardController_city = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.cityIsFocused) { if (data.cityIsFocused) { focusRequester_city.requestFocus(); keyboardController_city?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_city,
         boxModifier = Modifier
@@ -517,7 +546,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.cityIsFocused) viewModel.updateData(mapOf("cityIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_city),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_new_york),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -526,9 +557,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield6.family, fontWeight = resolved_textfield6.weight, fontSize = (resolved_textfield6.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield6.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield6.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield6.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield6.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield6.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text33 = Configuration.Font.resolve(FontSpec(
+    val resolved_text10 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -537,11 +568,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_zip_code),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text33.family,
-        fontWeight = resolved_text33.weight,
-        fontSize = resolved_text33.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text33.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text10.family,
+        fontWeight = resolved_text10.weight,
+        fontSize = resolved_text10.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text10.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_zipCode = rememberTextFieldState(initialText = data.zipCode)
@@ -553,6 +584,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_zipCode = remember { FocusRequester() }
+    val keyboardController_zipCode = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.zipCodeIsFocused) { if (data.zipCodeIsFocused) { focusRequester_zipCode.requestFocus(); keyboardController_zipCode?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_zipCode,
         boxModifier = Modifier
@@ -561,7 +595,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.zipCodeIsFocused) viewModel.updateData(mapOf("zipCodeIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_zipCode),
         placeholder = { Text(
                             text = "10001",
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -570,9 +606,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield7.family, fontWeight = resolved_textfield7.weight, fontSize = (resolved_textfield7.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield7.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield7.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield7.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield7.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield7.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text34 = Configuration.Font.resolve(FontSpec(
+    val resolved_text11 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -581,11 +617,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_country),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text34.family,
-        fontWeight = resolved_text34.weight,
-        fontSize = resolved_text34.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text34.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text11.family,
+        fontWeight = resolved_text11.weight,
+        fontSize = resolved_text11.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text11.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_country = rememberTextFieldState(initialText = data.country)
@@ -597,6 +633,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_country = remember { FocusRequester() }
+    val keyboardController_country = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.countryIsFocused) { if (data.countryIsFocused) { focusRequester_country.requestFocus(); keyboardController_country?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_country,
         boxModifier = Modifier
@@ -605,7 +644,9 @@ private fun Section4(
             .padding(bottom = 24.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.countryIsFocused) viewModel.updateData(mapOf("countryIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_country),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_united_states),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -614,9 +655,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield8.family, fontWeight = resolved_textfield8.weight, fontSize = (resolved_textfield8.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield8.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield8.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield8.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield8.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield8.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text35 = Configuration.Font.resolve(FontSpec(
+    val resolved_text12 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.SemiBold,
         size = 20.sp,
@@ -625,14 +666,14 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_professional_information),
         color = colorResource(R.color.medium_blue),
-        fontFamily = resolved_text35.family,
-        fontWeight = resolved_text35.weight,
-        fontSize = resolved_text35.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text35.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text12.family,
+        fontWeight = resolved_text12.weight,
+        fontSize = resolved_text12.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text12.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 16.dp)
     )
-    val resolved_text36 = Configuration.Font.resolve(FontSpec(
+    val resolved_text13 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -641,11 +682,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_company),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text36.family,
-        fontWeight = resolved_text36.weight,
-        fontSize = resolved_text36.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text36.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text13.family,
+        fontWeight = resolved_text13.weight,
+        fontSize = resolved_text13.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text13.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_company = rememberTextFieldState(initialText = data.company)
@@ -657,6 +698,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_company = remember { FocusRequester() }
+    val keyboardController_company = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.companyIsFocused) { if (data.companyIsFocused) { focusRequester_company.requestFocus(); keyboardController_company?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_company,
         boxModifier = Modifier
@@ -665,7 +709,9 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.companyIsFocused) viewModel.updateData(mapOf("companyIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_company),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_company_name),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -674,9 +720,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield9.family, fontWeight = resolved_textfield9.weight, fontSize = (resolved_textfield9.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield9.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield9.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield9.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield9.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield9.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text37 = Configuration.Font.resolve(FontSpec(
+    val resolved_text14 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -685,11 +731,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_job_title),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text37.family,
-        fontWeight = resolved_text37.weight,
-        fontSize = resolved_text37.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text37.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text14.family,
+        fontWeight = resolved_text14.weight,
+        fontSize = resolved_text14.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text14.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_jobTitle = rememberTextFieldState(initialText = data.jobTitle)
@@ -701,6 +747,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_jobTitle = remember { FocusRequester() }
+    val keyboardController_jobTitle = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.jobTitleIsFocused) { if (data.jobTitleIsFocused) { focusRequester_jobTitle.requestFocus(); keyboardController_jobTitle?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_jobTitle,
         boxModifier = Modifier
@@ -709,7 +758,9 @@ private fun Section4(
             .padding(bottom = 24.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .requiredHeight(48.dp)
+            .onFocusChanged { if (it.isFocused != data.jobTitleIsFocused) viewModel.updateData(mapOf("jobTitleIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_jobTitle),
         placeholder = { Text(
                             text = stringResource(R.string.form_test_software_engineer),
                             color = Configuration.TextField.defaultPlaceholderColor
@@ -718,9 +769,9 @@ private fun Section4(
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
-        textStyle = TextStyle(fontFamily = resolved_textfield10.family, fontWeight = resolved_textfield10.weight, fontSize = (resolved_textfield10.size ?: TextUnit.Unspecified), fontStyle = (resolved_textfield10.style ?: FontStyle.Normal), color = colorResource(R.color.black))
+        textStyle = TextStyle(fontFamily = (resolved_textfield10.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textfield10.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textfield10.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textfield10.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.black))
     )
-    val resolved_text38 = Configuration.Font.resolve(FontSpec(
+    val resolved_text15 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.SemiBold,
         size = 20.sp,
@@ -729,14 +780,14 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_additional_information),
         color = colorResource(R.color.medium_blue),
-        fontFamily = resolved_text38.family,
-        fontWeight = resolved_text38.weight,
-        fontSize = resolved_text38.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text38.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text15.family,
+        fontWeight = resolved_text15.weight,
+        fontSize = resolved_text15.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text15.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 16.dp)
     )
-    val resolved_text39 = Configuration.Font.resolve(FontSpec(
+    val resolved_text16 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -745,11 +796,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_bio_flexible_height),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text39.family,
-        fontWeight = resolved_text39.weight,
-        fontSize = resolved_text39.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text39.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text16.family,
+        fontWeight = resolved_text16.weight,
+        fontSize = resolved_text16.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text16.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_bio = rememberTextFieldState(initialText = data.bio)
@@ -761,6 +812,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_bio = remember { FocusRequester() }
+    val keyboardController_bio = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.bioIsFocused) { if (data.bioIsFocused) { focusRequester_bio.requestFocus(); keyboardController_bio?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_bio,
         boxModifier = Modifier
@@ -769,17 +823,24 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 80.dp, max = 200.dp),
-        placeholder = { Text(stringResource(R.string.form_test_tell_us_about_yourself_this_fie)) },
+            .heightIn(min = 80.dp, max = 200.dp)
+            .onFocusChanged { if (it.isFocused != data.bioIsFocused) viewModel.updateData(mapOf("bioIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_bio),
+        placeholder = {
+            Text(
+                text = stringResource(R.string.form_test_tell_us_about_yourself_this_fie),
+                color = colorResource(R.color.light_gray_8)
+            )
+        },
         shape = RoundedCornerShape(10.dp),
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
         maxLines = Int.MAX_VALUE,
         singleLine = false,
-        textStyle = TextStyle(fontFamily = resolved_textview1.family, fontWeight = resolved_textview1.weight, fontSize = (resolved_textview1.size ?: TextUnit.Unspecified), fontStyle = (resolved_textview1.style ?: FontStyle.Normal), color = colorResource(R.color.dark_gray))
+        textStyle = TextStyle(fontFamily = (resolved_textview1.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textview1.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textview1.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textview1.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.dark_gray))
     )
-    val resolved_text40 = Configuration.Font.resolve(FontSpec(
+    val resolved_text17 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -788,11 +849,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_notes_fixed_height),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text40.family,
-        fontWeight = resolved_text40.weight,
-        fontSize = resolved_text40.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text40.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text17.family,
+        fontWeight = resolved_text17.weight,
+        fontSize = resolved_text17.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text17.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_notes = rememberTextFieldState(initialText = data.notes)
@@ -804,6 +865,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_notes = remember { FocusRequester() }
+    val keyboardController_notes = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.notesIsFocused) { if (data.notesIsFocused) { focusRequester_notes.requestFocus(); keyboardController_notes?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_notes,
         boxModifier = Modifier
@@ -812,18 +876,25 @@ private fun Section4(
             .padding(bottom = 16.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .height(120.dp),
-        placeholder = { Text(stringResource(R.string.form_test_additional_notes_fixed_height_f)) },
+            .height(120.dp)
+            .onFocusChanged { if (it.isFocused != data.notesIsFocused) viewModel.updateData(mapOf("notesIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_notes),
+        placeholder = {
+            Text(
+                text = stringResource(R.string.form_test_additional_notes_fixed_height_f),
+                color = colorResource(R.color.light_gray_9)
+            )
+        },
         shape = RoundedCornerShape(10.dp),
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
         maxLines = Int.MAX_VALUE,
         singleLine = false,
-        textStyle = TextStyle(fontFamily = resolved_textview2.family, fontWeight = resolved_textview2.weight, fontSize = (resolved_textview2.size ?: TextUnit.Unspecified), fontStyle = (resolved_textview2.style ?: FontStyle.Normal), color = colorResource(R.color.dark_gray)),
+        textStyle = TextStyle(fontFamily = (resolved_textview2.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textview2.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textview2.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textview2.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.dark_gray)),
         // hideOnFocused = false
     )
-    val resolved_text41 = Configuration.Font.resolve(FontSpec(
+    val resolved_text18 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -832,11 +903,11 @@ private fun Section4(
     Text(
         text = stringResource(R.string.form_test_comments_very_flexible),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text41.family,
-        fontWeight = resolved_text41.weight,
-        fontSize = resolved_text41.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text41.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text18.family,
+        fontWeight = resolved_text18.weight,
+        fontSize = resolved_text18.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text18.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier.padding(bottom = 6.dp)
     )
     val textFieldState_comments = rememberTextFieldState(initialText = data.comments)
@@ -848,6 +919,9 @@ private fun Section4(
         size = 16.sp,
         italic = false
     ))
+    val focusRequester_comments = remember { FocusRequester() }
+    val keyboardController_comments = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.commentsIsFocused) { if (data.commentsIsFocused) { focusRequester_comments.requestFocus(); keyboardController_comments?.show() } }
     CustomTextFieldWithMargins(
         state = textFieldState_comments,
         boxModifier = Modifier
@@ -856,15 +930,23 @@ private fun Section4(
             .padding(bottom = 24.dp),
         textFieldModifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 60.dp, max = 300.dp),
-        placeholder = { Text(stringResource(R.string.form_test_any_comments_this_can_grow_very)) },
+            .heightIn(min = 60.dp, max = 300.dp)
+            .onFocusChanged { if (it.isFocused != data.commentsIsFocused) viewModel.updateData(mapOf("commentsIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_comments),
+        placeholder = {
+            Text(
+                text = stringResource(R.string.form_test_any_comments_this_can_grow_very),
+                color = colorResource(R.color.light_gray_10),
+                fontSize = 14.sp
+            )
+        },
         shape = RoundedCornerShape(10.dp),
         backgroundColor = colorResource(R.color.white),
         borderColor = colorResource(R.color.pale_gray),
         isOutlined = true,
         maxLines = Int.MAX_VALUE,
         singleLine = false,
-        textStyle = TextStyle(fontFamily = resolved_textview3.family, fontWeight = resolved_textview3.weight, fontSize = (resolved_textview3.size ?: TextUnit.Unspecified), fontStyle = (resolved_textview3.style ?: FontStyle.Normal), color = colorResource(R.color.dark_gray))
+        textStyle = TextStyle(fontFamily = (resolved_textview3.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_textview3.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_textview3.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_textview3.style ?: LocalTextStyle.current.fontStyle), color = colorResource(R.color.dark_gray))
     )
     Row(
         modifier = Modifier
@@ -872,7 +954,14 @@ private fun Section4(
             .fillMaxWidth()
             .wrapContentHeight()
     ) {
-        Section4_0(data, viewModel)
+        Switch(
+            checked = data.agreeToTerms,
+            onCheckedChange = { newValue -> viewModel.updateData(mapOf("agreeToTerms" to newValue)) },
+            modifier = Modifier
+                .testTag("agreeToggle")
+                .semantics { testTagsAsResourceId = true }
+                .padding(end = 12.dp)
+        )
         Section4_1(data, viewModel)
     }
 }
@@ -887,15 +976,17 @@ private fun Section5(
         modifier = Modifier
             .padding(bottom = 16.dp)
             .fillMaxWidth()
-            .height(54.dp),
+            .requiredHeight(54.dp),
         shape = RoundedCornerShape(12.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button4 = Configuration.Font.resolve(FontSpec(
+        val resolved_button2 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.SemiBold,
             size = 18.sp,
@@ -903,10 +994,10 @@ private fun Section5(
         ))
         Text(
             text = stringResource(R.string.form_test_submit_form),
-            fontFamily = resolved_button4.family,
-            fontWeight = resolved_button4.weight,
-            fontSize = resolved_button4.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button4.style ?: FontStyle.Normal,
+            fontFamily = resolved_button2.family,
+            fontWeight = resolved_button2.weight,
+            fontSize = resolved_button2.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button2.style ?: FontStyle.Normal,
         )
     }
 }
@@ -921,16 +1012,18 @@ private fun Section6(
         modifier = Modifier
             .padding(bottom = 40.dp)
             .fillMaxWidth()
-            .height(54.dp),
+            .requiredHeight(54.dp),
         shape = RoundedCornerShape(12.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.white),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.white).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         ),
         border = BorderStroke(2.dp, colorResource(R.color.medium_red))
     ) {
-        val resolved_button5 = Configuration.Font.resolve(FontSpec(
+        val resolved_button3 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.SemiBold,
             size = 18.sp,
@@ -938,10 +1031,10 @@ private fun Section6(
         ))
         Text(
             text = stringResource(R.string.form_test_clear_all_fields),
-            fontFamily = resolved_button5.family,
-            fontWeight = resolved_button5.weight,
-            fontSize = resolved_button5.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button5.style ?: FontStyle.Normal,
+            fontFamily = resolved_button3.family,
+            fontWeight = resolved_button3.weight,
+            fontSize = resolved_button3.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button3.style ?: FontStyle.Normal,
         )
     }
 }

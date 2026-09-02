@@ -8,6 +8,8 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class KeyboardAvoidanceTestData(
     var dynamicModeStatus: String = "OFF",
@@ -17,9 +19,15 @@ data class KeyboardAvoidanceTestData(
     var textField4: String = "",
     var textField5: String = "",
     var textView: String = "",
-    var title: String = "Keyboard Avoidance Test",
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_keyboard_avoidance_test_2, "Keyboard Avoidance Test"),
     var toggleDynamicMode: (() -> Unit)? = null,
-    var submitForm: (() -> Unit)? = null
+    var submitForm: (() -> Unit)? = null,
+    var textfield1IsFocused: Boolean = false,
+    var textfield2IsFocused: Boolean = false,
+    var textfield3IsFocused: Boolean = false,
+    var textfield4IsFocused: Boolean = false,
+    var textfield5IsFocused: Boolean = false,
+    var textviewIsFocused: Boolean = false
 ) {
     companion object {
         // Update properties from map
@@ -33,9 +41,15 @@ data class KeyboardAvoidanceTestData(
                 textField4 = map["textField4"] as? String ?: "",
                 textField5 = map["textField5"] as? String ?: "",
                 textView = map["textView"] as? String ?: "",
-                title = map["title"] as? String ?: "Keyboard Avoidance Test",
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_keyboard_avoidance_test_2, "Keyboard Avoidance Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
-                submitForm = map["submitForm"] as? (() -> Unit)?
+                submitForm = map["submitForm"] as? (() -> Unit)?,
+                textfield1IsFocused = map["textfield1IsFocused"] as? Boolean ?: false,
+                textfield2IsFocused = map["textfield2IsFocused"] as? Boolean ?: false,
+                textfield3IsFocused = map["textfield3IsFocused"] as? Boolean ?: false,
+                textfield4IsFocused = map["textfield4IsFocused"] as? Boolean ?: false,
+                textfield5IsFocused = map["textfield5IsFocused"] as? Boolean ?: false,
+                textviewIsFocused = map["textviewIsFocused"] as? Boolean ?: false
             )
         }
     }
@@ -55,6 +69,12 @@ data class KeyboardAvoidanceTestData(
         map["title"] = title
         toggleDynamicMode?.let { map["toggleDynamicMode"] = it }
         submitForm?.let { map["submitForm"] = it }
+        map["textfield1IsFocused"] = textfield1IsFocused
+        map["textfield2IsFocused"] = textfield2IsFocused
+        map["textfield3IsFocused"] = textfield3IsFocused
+        map["textfield4IsFocused"] = textfield4IsFocused
+        map["textfield5IsFocused"] = textfield5IsFocused
+        map["textviewIsFocused"] = textviewIsFocused
         
         return map
     }

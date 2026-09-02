@@ -8,14 +8,19 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class SecureFieldTestData(
     var dynamicModeStatus: String = "OFF",
     var confirmPassword: String = "",
     var password: String = "",
     var regularText: String = "",
-    var title: String = "Secure Field Test",
-    var toggleDynamicMode: (() -> Unit)? = null
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_secure_field_test_2, "Secure Field Test"),
+    var toggleDynamicMode: (() -> Unit)? = null,
+    var regularFieldIsFocused: Boolean = false,
+    var passwordFieldIsFocused: Boolean = false,
+    var confirmPasswordFieldIsFocused: Boolean = false
 ) {
     companion object {
         // Update properties from map
@@ -26,8 +31,11 @@ data class SecureFieldTestData(
                 confirmPassword = map["confirmPassword"] as? String ?: "",
                 password = map["password"] as? String ?: "",
                 regularText = map["regularText"] as? String ?: "",
-                title = map["title"] as? String ?: "Secure Field Test",
-                toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_secure_field_test_2, "Secure Field Test"),
+                toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
+                regularFieldIsFocused = map["regularFieldIsFocused"] as? Boolean ?: false,
+                passwordFieldIsFocused = map["passwordFieldIsFocused"] as? Boolean ?: false,
+                confirmPasswordFieldIsFocused = map["confirmPasswordFieldIsFocused"] as? Boolean ?: false
             )
         }
     }
@@ -43,6 +51,9 @@ data class SecureFieldTestData(
         map["regularText"] = regularText
         map["title"] = title
         toggleDynamicMode?.let { map["toggleDynamicMode"] = it }
+        map["regularFieldIsFocused"] = regularFieldIsFocused
+        map["passwordFieldIsFocused"] = passwordFieldIsFocused
+        map["confirmPasswordFieldIsFocused"] = confirmPasswordFieldIsFocused
         
         return map
     }

@@ -56,7 +56,7 @@
           ],
           "selectedIndex": "@{selectedColor}",
           "normalColor": "#666666",
-          "selectedColor": "#FF0000",
+          "selectedColor": "dark_red",
           "leftMargin": 20,
           "rightMargin": 20,
           "topMargin": 10

@@ -16,7 +16,10 @@ data class TextfieldEventsTestData(
     var passwordLength: String = "0",
     var notes: String = "",
     var handleEmailChange: ((String, String) -> Unit)? = null,
-    var handlePasswordChange: ((String, String) -> Unit)? = null
+    var handlePasswordChange: ((String, String) -> Unit)? = null,
+    var emailFieldIsFocused: Boolean = false,
+    var passwordFieldIsFocused: Boolean = false,
+    var notesFieldIsFocused: Boolean = false
 ) {
     companion object {
         // Update properties from map
@@ -29,7 +32,10 @@ data class TextfieldEventsTestData(
                 passwordLength = map["passwordLength"] as? String ?: "0",
                 notes = map["notes"] as? String ?: "",
                 handleEmailChange = map["handleEmailChange"] as? ((String, String) -> Unit)?,
-                handlePasswordChange = map["handlePasswordChange"] as? ((String, String) -> Unit)?
+                handlePasswordChange = map["handlePasswordChange"] as? ((String, String) -> Unit)?,
+                emailFieldIsFocused = map["emailFieldIsFocused"] as? Boolean ?: false,
+                passwordFieldIsFocused = map["passwordFieldIsFocused"] as? Boolean ?: false,
+                notesFieldIsFocused = map["notesFieldIsFocused"] as? Boolean ?: false
             )
         }
     }
@@ -46,6 +52,9 @@ data class TextfieldEventsTestData(
         map["notes"] = notes
         handleEmailChange?.let { map["handleEmailChange"] = it }
         handlePasswordChange?.let { map["handlePasswordChange"] = it }
+        map["emailFieldIsFocused"] = emailFieldIsFocused
+        map["passwordFieldIsFocused"] = passwordFieldIsFocused
+        map["notesFieldIsFocused"] = notesFieldIsFocused
         
         return map
     }

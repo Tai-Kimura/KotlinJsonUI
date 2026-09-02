@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun ScrollTestGeneratedView(
@@ -39,52 +42,58 @@ fun ScrollTestGeneratedView(
     // Generated Compose code from scroll_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "scroll_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "scroll_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading scroll_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading scroll_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        Column(
-        modifier = modifier.background(colorResource(R.color.white))
-    ) {
-        Section0(data, viewModel)
-        Section1(data, viewModel)
-        Section2(data, viewModel)
-        Section3(data, viewModel)
-    }    }
+        } else {
+            // Static Mode - use generated code
+            Column(
+            modifier = modifier.background(colorResource(R.color.white))
+        ) {
+            Section0(data, viewModel)
+            Section1(data, viewModel)
+            Section2(data, viewModel)
+            Section3(data, viewModel)
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("scroll_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -94,7 +103,7 @@ private fun Section0(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text72 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -103,11 +112,11 @@ private fun Section0(
     Text(
         text = stringResource(R.string.scroll_test_scrollview_test),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text72.family,
-        fontWeight = resolved_text72.weight,
-        fontSize = resolved_text72.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text72.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(10.dp)
     )
 }
@@ -117,7 +126,7 @@ private fun Section1_0(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text73 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -126,11 +135,11 @@ private fun Section1_0(
     Text(
         text = stringResource(R.string.scroll_test_no_vertical_indicator),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text73.family,
-        fontWeight = resolved_text73.weight,
-        fontSize = resolved_text73.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text73.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
     )
 }
@@ -140,7 +149,7 @@ private fun Section1_1(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text74 = Configuration.Font.resolve(FontSpec(
+    val resolved_text3 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -149,11 +158,11 @@ private fun Section1_1(
     Text(
         text = stringResource(R.string.scroll_test_item_1),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text74.family,
-        fontWeight = resolved_text74.weight,
-        fontSize = resolved_text74.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text74.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text3.family,
+        fontWeight = resolved_text3.weight,
+        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text3.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .background(colorResource(R.color.white_5))
             .padding(10.dp)
@@ -165,7 +174,7 @@ private fun Section1_2(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text75 = Configuration.Font.resolve(FontSpec(
+    val resolved_text4 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -174,11 +183,11 @@ private fun Section1_2(
     Text(
         text = stringResource(R.string.scroll_test_item_2),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text75.family,
-        fontWeight = resolved_text75.weight,
-        fontSize = resolved_text75.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text75.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text4.family,
+        fontWeight = resolved_text4.weight,
+        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text4.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .background(colorResource(R.color.white_6))
             .padding(10.dp)
@@ -190,7 +199,7 @@ private fun Section1_3(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text76 = Configuration.Font.resolve(FontSpec(
+    val resolved_text5 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -199,11 +208,11 @@ private fun Section1_3(
     Text(
         text = stringResource(R.string.scroll_test_item_3),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text76.family,
-        fontWeight = resolved_text76.weight,
-        fontSize = resolved_text76.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text76.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text5.family,
+        fontWeight = resolved_text5.weight,
+        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text5.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .background(colorResource(R.color.white_7))
             .padding(10.dp)
@@ -215,7 +224,7 @@ private fun Section1_4(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text77 = Configuration.Font.resolve(FontSpec(
+    val resolved_text6 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -224,11 +233,11 @@ private fun Section1_4(
     Text(
         text = stringResource(R.string.scroll_test_item_4),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text77.family,
-        fontWeight = resolved_text77.weight,
-        fontSize = resolved_text77.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text77.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text6.family,
+        fontWeight = resolved_text6.weight,
+        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text6.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .background(colorResource(R.color.white_8))
             .padding(10.dp)
@@ -240,7 +249,7 @@ private fun Section1_5(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text78 = Configuration.Font.resolve(FontSpec(
+    val resolved_text7 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -249,11 +258,11 @@ private fun Section1_5(
     Text(
         text = stringResource(R.string.scroll_test_item_5),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text78.family,
-        fontWeight = resolved_text78.weight,
-        fontSize = resolved_text78.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text78.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text7.family,
+        fontWeight = resolved_text7.weight,
+        fontSize = resolved_text7.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text7.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier
             .background(colorResource(R.color.white_9))
             .padding(10.dp)
@@ -267,7 +276,7 @@ private fun Section1(
 ) {
     LazyColumn(
         modifier = Modifier
-            .height(200.dp)
+            .requiredHeight(200.dp)
             .background(colorResource(R.color.white_17))
             .imePadding()
     ) {
@@ -293,7 +302,7 @@ private fun Section2(
 ) {
     LazyColumn(
         modifier = Modifier
-            .height(150.dp)
+            .requiredHeight(150.dp)
             .background(colorResource(R.color.white_17))
             .imePadding(),
         userScrollEnabled = false
@@ -302,7 +311,7 @@ private fun Section2(
         Column(
             modifier = Modifier.padding(10.dp)
         ) {
-            val resolved_text79 = Configuration.Font.resolve(FontSpec(
+            val resolved_text8 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = FontWeight.Bold,
                 size = 16.sp,
@@ -311,14 +320,14 @@ private fun Section2(
             Text(
                 text = stringResource(R.string.scroll_test_scroll_disabled),
                 color = colorResource(R.color.dark_red),
-                fontFamily = resolved_text79.family,
-                fontWeight = resolved_text79.weight,
-                fontSize = resolved_text79.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text79.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 20.8.sp),
+                fontFamily = resolved_text8.family,
+                fontWeight = resolved_text8.weight,
+                fontSize = resolved_text8.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text8.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
                 modifier = Modifier
             )
-            val resolved_text80 = Configuration.Font.resolve(FontSpec(
+            val resolved_text9 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -327,14 +336,14 @@ private fun Section2(
             Text(
                 text = stringResource(R.string.scroll_test_this_scrollview_cannot_be_scrol),
                 color = colorResource(R.color.black),
-                fontFamily = resolved_text80.family,
-                fontWeight = resolved_text80.weight,
-                fontSize = resolved_text80.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text80.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text9.family,
+                fontWeight = resolved_text9.weight,
+                fontSize = resolved_text9.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text9.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
-            val resolved_text81 = Configuration.Font.resolve(FontSpec(
+            val resolved_text10 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -343,14 +352,14 @@ private fun Section2(
             Text(
                 text = stringResource(R.string.scroll_test_item_1),
                 color = colorResource(R.color.black),
-                fontFamily = resolved_text81.family,
-                fontWeight = resolved_text81.weight,
-                fontSize = resolved_text81.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text81.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text10.family,
+                fontWeight = resolved_text10.weight,
+                fontSize = resolved_text10.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text10.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
-            val resolved_text82 = Configuration.Font.resolve(FontSpec(
+            val resolved_text11 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -359,14 +368,14 @@ private fun Section2(
             Text(
                 text = stringResource(R.string.scroll_test_item_2),
                 color = colorResource(R.color.black),
-                fontFamily = resolved_text82.family,
-                fontWeight = resolved_text82.weight,
-                fontSize = resolved_text82.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text82.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text11.family,
+                fontWeight = resolved_text11.weight,
+                fontSize = resolved_text11.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text11.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
-            val resolved_text83 = Configuration.Font.resolve(FontSpec(
+            val resolved_text12 = Configuration.Font.resolve(FontSpec(
                 family = null,
                 weight = null,
                 size = 14.sp,
@@ -375,11 +384,11 @@ private fun Section2(
             Text(
                 text = stringResource(R.string.scroll_test_item_3_hidden_below),
                 color = colorResource(R.color.black),
-                fontFamily = resolved_text83.family,
-                fontWeight = resolved_text83.weight,
-                fontSize = resolved_text83.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text83.style ?: FontStyle.Normal,
-                style = TextStyle(lineHeight = 18.2.sp),
+                fontFamily = resolved_text12.family,
+                fontWeight = resolved_text12.weight,
+                fontSize = resolved_text12.size ?: TextUnit.Unspecified,
+                fontStyle = resolved_text12.style ?: FontStyle.Normal,
+                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
                 modifier = Modifier
             )
         }
@@ -392,7 +401,7 @@ private fun Section3_0(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text84 = Configuration.Font.resolve(FontSpec(
+    val resolved_text13 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -401,13 +410,13 @@ private fun Section3_0(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_1),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text84.family,
-        fontWeight = resolved_text84.weight,
-        fontSize = resolved_text84.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text84.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text13.family,
+        fontWeight = resolved_text13.weight,
+        fontSize = resolved_text13.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text13.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_5))
             .padding(10.dp)
     )
@@ -418,7 +427,7 @@ private fun Section3_1(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text85 = Configuration.Font.resolve(FontSpec(
+    val resolved_text14 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -427,13 +436,13 @@ private fun Section3_1(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_2),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text85.family,
-        fontWeight = resolved_text85.weight,
-        fontSize = resolved_text85.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text85.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text14.family,
+        fontWeight = resolved_text14.weight,
+        fontSize = resolved_text14.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text14.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_6))
             .padding(10.dp)
     )
@@ -444,7 +453,7 @@ private fun Section3_2(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text86 = Configuration.Font.resolve(FontSpec(
+    val resolved_text15 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -453,13 +462,13 @@ private fun Section3_2(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_3),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text86.family,
-        fontWeight = resolved_text86.weight,
-        fontSize = resolved_text86.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text86.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text15.family,
+        fontWeight = resolved_text15.weight,
+        fontSize = resolved_text15.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text15.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_7))
             .padding(10.dp)
     )
@@ -470,7 +479,7 @@ private fun Section3_3(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text87 = Configuration.Font.resolve(FontSpec(
+    val resolved_text16 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -479,13 +488,13 @@ private fun Section3_3(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_4),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text87.family,
-        fontWeight = resolved_text87.weight,
-        fontSize = resolved_text87.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text87.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text16.family,
+        fontWeight = resolved_text16.weight,
+        fontSize = resolved_text16.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text16.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_8))
             .padding(10.dp)
     )
@@ -496,7 +505,7 @@ private fun Section3_4(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text88 = Configuration.Font.resolve(FontSpec(
+    val resolved_text17 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -505,13 +514,13 @@ private fun Section3_4(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_5),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text88.family,
-        fontWeight = resolved_text88.weight,
-        fontSize = resolved_text88.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text88.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text17.family,
+        fontWeight = resolved_text17.weight,
+        fontSize = resolved_text17.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text17.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_9))
             .padding(10.dp)
     )
@@ -522,7 +531,7 @@ private fun Section3_5(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text89 = Configuration.Font.resolve(FontSpec(
+    val resolved_text18 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -531,13 +540,13 @@ private fun Section3_5(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_6),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text89.family,
-        fontWeight = resolved_text89.weight,
-        fontSize = resolved_text89.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text89.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text18.family,
+        fontWeight = resolved_text18.weight,
+        fontSize = resolved_text18.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text18.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_22))
             .padding(10.dp)
     )
@@ -548,7 +557,7 @@ private fun Section3_6(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text90 = Configuration.Font.resolve(FontSpec(
+    val resolved_text19 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -557,13 +566,13 @@ private fun Section3_6(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_7),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text90.family,
-        fontWeight = resolved_text90.weight,
-        fontSize = resolved_text90.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text90.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text19.family,
+        fontWeight = resolved_text19.weight,
+        fontSize = resolved_text19.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text19.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_25))
             .padding(10.dp)
     )
@@ -574,7 +583,7 @@ private fun Section3_7(
     data: ScrollTestData,
     viewModel: ScrollTestViewModel
 ) {
-    val resolved_text91 = Configuration.Font.resolve(FontSpec(
+    val resolved_text20 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 14.sp,
@@ -583,13 +592,13 @@ private fun Section3_7(
     Text(
         text = stringResource(R.string.scroll_test_horizontal_scroll_item_8_end),
         color = colorResource(R.color.black),
-        fontFamily = resolved_text91.family,
-        fontWeight = resolved_text91.weight,
-        fontSize = resolved_text91.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text91.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 18.2.sp),
+        fontFamily = resolved_text20.family,
+        fontWeight = resolved_text20.weight,
+        fontSize = resolved_text20.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text20.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
         modifier = Modifier
-            .width(150.dp)
+            .requiredWidth(150.dp)
             .background(colorResource(R.color.white_26))
             .padding(10.dp)
     )
@@ -602,7 +611,7 @@ private fun Section3(
 ) {
     LazyRow(
         modifier = Modifier
-            .height(100.dp)
+            .requiredHeight(100.dp)
             .background(colorResource(R.color.white_17))
             .imePadding()
     ) {

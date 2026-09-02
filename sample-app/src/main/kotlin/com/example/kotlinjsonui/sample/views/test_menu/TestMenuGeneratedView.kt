@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun TestMenuGeneratedView(
@@ -44,106 +47,112 @@ fun TestMenuGeneratedView(
     // Generated Compose code from test_menu.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "test_menu",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "test_menu",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading test_menu: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading test_menu: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(colorResource(R.color.white_23))
-            .imePadding()
-    ) {
-        item {
-        Column(
-            modifier = Modifier
+        } else {
+            // Static Mode - use generated code
+            LazyColumn(
+            modifier = modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .fillMaxHeight()
                 .background(colorResource(R.color.white_23))
-                .padding(20.dp)
+                .imePadding()
         ) {
-            Section0(data, viewModel)
-            Section1(data, viewModel)
-            Section2(data, viewModel)
-            Section3(data, viewModel)
-            Section4(data, viewModel)
-            Section5(data, viewModel)
-            Section6(data, viewModel)
-            Section7(data, viewModel)
-            Section8(data, viewModel)
-            Section9(data, viewModel)
-            Section10(data, viewModel)
-            Section11(data, viewModel)
-            Section12(data, viewModel)
-            Section13(data, viewModel)
-            Section14(data, viewModel)
-            Section15(data, viewModel)
-            Section16(data, viewModel)
-            Section17(data, viewModel)
-            Section18(data, viewModel)
-            Section19(data, viewModel)
-            Section20(data, viewModel)
-            Section21(data, viewModel)
-            Section22(data, viewModel)
-            Section23(data, viewModel)
-            Section24(data, viewModel)
-            Section25(data, viewModel)
-            Section26(data, viewModel)
-            Section27(data, viewModel)
-            Section28(data, viewModel)
-            Section29(data, viewModel)
-            Section30(data, viewModel)
-            Section31(data, viewModel)
-            Section32(data, viewModel)
-            Section33(data, viewModel)
-            Section34(data, viewModel)
-            Section35(data, viewModel)
-            Section36(data, viewModel)
-            Section37(data, viewModel)
-            Section38(data, viewModel)
-            Section39(data, viewModel)
-            Section40(data, viewModel)
-            Section41(data, viewModel)
-            Section42(data, viewModel)
-            Section43(data, viewModel)
-        }
-        }
-    }    }
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .background(colorResource(R.color.white_23))
+                    .padding(20.dp)
+            ) {
+                Section0(data, viewModel)
+                Section1(data, viewModel)
+                Section2(data, viewModel)
+                Section3(data, viewModel)
+                Section4(data, viewModel)
+                Section5(data, viewModel)
+                Section6(data, viewModel)
+                Section7(data, viewModel)
+                Section8(data, viewModel)
+                Section9(data, viewModel)
+                Section10(data, viewModel)
+                Section11(data, viewModel)
+                Section12(data, viewModel)
+                Section13(data, viewModel)
+                Section14(data, viewModel)
+                Section15(data, viewModel)
+                Section16(data, viewModel)
+                Section17(data, viewModel)
+                Section18(data, viewModel)
+                Section19(data, viewModel)
+                Section20(data, viewModel)
+                Section21(data, viewModel)
+                Section22(data, viewModel)
+                Section23(data, viewModel)
+                Section24(data, viewModel)
+                Section25(data, viewModel)
+                Section26(data, viewModel)
+                Section27(data, viewModel)
+                Section28(data, viewModel)
+                Section29(data, viewModel)
+                Section30(data, viewModel)
+                Section31(data, viewModel)
+                Section32(data, viewModel)
+                Section33(data, viewModel)
+                Section34(data, viewModel)
+                Section35(data, viewModel)
+                Section36(data, viewModel)
+                Section37(data, viewModel)
+                Section38(data, viewModel)
+                Section39(data, viewModel)
+                Section40(data, viewModel)
+                Section41(data, viewModel)
+                Section42(data, viewModel)
+                Section43(data, viewModel)
+            }
+            }
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("test_menu")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -153,7 +162,7 @@ private fun Section0(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text63 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 28.sp,
@@ -162,11 +171,11 @@ private fun Section0(
     Text(
         text = stringResource(R.string.test_menu_kotlinjsonui_feature_tests),
         color = Color(android.graphics.Color.parseColor("#000000")),
-        fontFamily = resolved_text63.family,
-        fontWeight = resolved_text63.weight,
-        fontSize = resolved_text63.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text63.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 36.4.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 36.4.sp),
         modifier = Modifier.padding(bottom = 20.dp),
         textAlign = TextAlign.Center
     )
@@ -182,15 +191,17 @@ private fun Section1(
         modifier = Modifier
             .padding(bottom = 20.dp)
             .wrapContentWidth()
-            .height(44.dp),
+            .requiredHeight(44.dp),
         shape = RoundedCornerShape(6.dp),
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            disabledContentColor = Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button7 = Configuration.Font.resolve(FontSpec(
+        val resolved_button1 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.Medium,
             size = 14.sp,
@@ -198,10 +209,10 @@ private fun Section1(
         ))
         Text(
             text = "${data.dynamicModeStatus}",
-            fontFamily = resolved_button7.family,
-            fontWeight = resolved_button7.weight,
-            fontSize = resolved_button7.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button7.style ?: FontStyle.Normal,
+            fontFamily = resolved_button1.family,
+            fontWeight = resolved_button1.weight,
+            fontSize = resolved_button1.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button1.style ?: FontStyle.Normal,
         )
     }
 }
@@ -211,7 +222,7 @@ private fun Section2(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text64 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -220,11 +231,11 @@ private fun Section2(
     Text(
         text = stringResource(R.string.test_menu_layout_positioning),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text64.family,
-        fontWeight = resolved_text64.weight,
-        fontSize = resolved_text64.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text64.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -239,15 +250,17 @@ private fun Section3(
         modifier = Modifier
             .padding(bottom = 8.dp)
             .wrapContentWidth()
-            .height(55.dp),
+            .requiredHeight(55.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#007AFF")),
-                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#007AFF")).copy(alpha = 0.5f),
+                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            disabledContentColor = Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button8 = Configuration.Font.resolve(FontSpec(
+        val resolved_button2 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.SemiBold,
             size = 16.sp,
@@ -255,10 +268,10 @@ private fun Section3(
         ))
         Text(
             text = stringResource(R.string.test_menu_margins_padding_test),
-            fontFamily = resolved_button8.family,
-            fontWeight = resolved_button8.weight,
-            fontSize = resolved_button8.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button8.style ?: FontStyle.Normal,
+            fontFamily = resolved_button2.family,
+            fontWeight = resolved_button2.weight,
+            fontSize = resolved_button2.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button2.style ?: FontStyle.Normal,
         )
     }
 }
@@ -273,15 +286,17 @@ private fun Section4(
         modifier = Modifier
             .padding(bottom = 8.dp)
             .wrapContentWidth()
-            .height(55.dp),
+            .requiredHeight(55.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#007AFF")),
-                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#007AFF")).copy(alpha = 0.5f),
+                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            disabledContentColor = Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button9 = Configuration.Font.resolve(FontSpec(
+        val resolved_button3 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.SemiBold,
             size = 16.sp,
@@ -289,10 +304,10 @@ private fun Section4(
         ))
         Text(
             text = stringResource(R.string.test_menu_alignment_test_2),
-            fontFamily = resolved_button9.family,
-            fontWeight = resolved_button9.weight,
-            fontSize = resolved_button9.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button9.style ?: FontStyle.Normal,
+            fontFamily = resolved_button3.family,
+            fontWeight = resolved_button3.weight,
+            fontSize = resolved_button3.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button3.style ?: FontStyle.Normal,
         )
     }
 }
@@ -307,15 +322,17 @@ private fun Section5(
         modifier = Modifier
             .padding(bottom = 8.dp)
             .wrapContentWidth()
-            .height(55.dp),
+            .requiredHeight(55.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 12.dp, horizontal = 20.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#007AFF")),
-                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF"))
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#007AFF")).copy(alpha = 0.5f),
+                            contentColor = Color(android.graphics.Color.parseColor("#FFFFFF")),
+                            disabledContentColor = Color(android.graphics.Color.parseColor("#FFFFFF")).copy(alpha = 0.5f)
                         )
     ) {
-        val resolved_button10 = Configuration.Font.resolve(FontSpec(
+        val resolved_button4 = Configuration.Font.resolve(FontSpec(
             family = null,
             weight = FontWeight.SemiBold,
             size = 16.sp,
@@ -323,10 +340,10 @@ private fun Section5(
         ))
         Text(
             text = stringResource(R.string.test_menu_alignment_combo_test_2),
-            fontFamily = resolved_button10.family,
-            fontWeight = resolved_button10.weight,
-            fontSize = resolved_button10.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button10.style ?: FontStyle.Normal,
+            fontFamily = resolved_button4.family,
+            fontWeight = resolved_button4.weight,
+            fontSize = resolved_button4.size ?: TextUnit.Unspecified,
+            fontStyle = resolved_button4.style ?: FontStyle.Normal,
         )
     }
 }
@@ -343,7 +360,9 @@ private fun Section6(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_weight_distribution_test))
@@ -362,7 +381,9 @@ private fun Section7(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_weight_fixed_size_test))
@@ -381,7 +402,9 @@ private fun Section8(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_width_test))
@@ -400,7 +423,9 @@ private fun Section9(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_relative_positioning_test))
@@ -412,7 +437,7 @@ private fun Section10(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text65 = Configuration.Font.resolve(FontSpec(
+    val resolved_text3 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -421,11 +446,11 @@ private fun Section10(
     Text(
         text = stringResource(R.string.test_menu_style_appearance),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text65.family,
-        fontWeight = resolved_text65.weight,
-        fontSize = resolved_text65.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text65.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text3.family,
+        fontWeight = resolved_text3.weight,
+        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text3.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -442,7 +467,9 @@ private fun Section11(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_green),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_green).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_visibility_opacity_test))
@@ -461,7 +488,9 @@ private fun Section12(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_green),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_green).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_disabled_states_test))
@@ -473,7 +502,7 @@ private fun Section13(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text66 = Configuration.Font.resolve(FontSpec(
+    val resolved_text4 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -482,11 +511,11 @@ private fun Section13(
     Text(
         text = stringResource(R.string.test_menu_text_features),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text66.family,
-        fontWeight = resolved_text66.weight,
-        fontSize = resolved_text66.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text66.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text4.family,
+        fontWeight = resolved_text4.weight,
+        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text4.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -503,7 +532,9 @@ private fun Section14(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_text_styling_test))
@@ -522,7 +553,9 @@ private fun Section15(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_text_decoration_test))
@@ -541,7 +574,9 @@ private fun Section16(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_line_break_spacing_test))
@@ -560,7 +595,9 @@ private fun Section17(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_partial_attributes_test_2))
@@ -572,7 +609,7 @@ private fun Section18(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text67 = Configuration.Font.resolve(FontSpec(
+    val resolved_text5 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -581,11 +618,11 @@ private fun Section18(
     Text(
         text = stringResource(R.string.test_menu_input_components),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text67.family,
-        fontWeight = resolved_text67.weight,
-        fontSize = resolved_text67.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text67.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text5.family,
+        fontWeight = resolved_text5.weight,
+        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text5.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -602,7 +639,9 @@ private fun Section19(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_purple),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_purple).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_textfield_test))
@@ -621,7 +660,9 @@ private fun Section20(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_purple),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_purple).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_textfield_events_test))
@@ -640,7 +681,9 @@ private fun Section21(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_purple),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_purple).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_secure_field_test_2))
@@ -659,7 +702,9 @@ private fun Section22(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_purple),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_purple).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_textview_hint_test))
@@ -678,7 +723,9 @@ private fun Section23(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_purple),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_purple).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_date_picker_test_2))
@@ -690,7 +737,7 @@ private fun Section24(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text68 = Configuration.Font.resolve(FontSpec(
+    val resolved_text6 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -699,11 +746,11 @@ private fun Section24(
     Text(
         text = stringResource(R.string.test_menu_ui_components),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text68.family,
-        fontWeight = resolved_text68.weight,
-        fontSize = resolved_text68.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text68.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text6.family,
+        fontWeight = resolved_text6.weight,
+        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text6.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -720,7 +767,9 @@ private fun Section25(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_components_test_2))
@@ -739,7 +788,9 @@ private fun Section26(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_button_test_2))
@@ -758,7 +809,9 @@ private fun Section27(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_button_enabled_test_2))
@@ -777,10 +830,12 @@ private fun Section28(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        Text(stringResource(R.string.switch_events_test_switch_events_test))
+        Text(stringResource(R.string.test_menu_switch_events_test_2))
     }
 }
 
@@ -796,10 +851,12 @@ private fun Section29(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        Text(stringResource(R.string.radio_icons_test_radio_custom_icons_test))
+        Text(stringResource(R.string.test_menu_radio_custom_icons_test))
     }
 }
 
@@ -815,10 +872,12 @@ private fun Section30(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_blue_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_blue_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        Text(stringResource(R.string.segment_test_segment_control_test))
+        Text(stringResource(R.string.test_menu_segment_control_test))
     }
 }
 
@@ -827,7 +886,7 @@ private fun Section31(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text69 = Configuration.Font.resolve(FontSpec(
+    val resolved_text7 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -836,11 +895,11 @@ private fun Section31(
     Text(
         text = stringResource(R.string.test_menu_advanced_features),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text69.family,
-        fontWeight = resolved_text69.weight,
-        fontSize = resolved_text69.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text69.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text7.family,
+        fontWeight = resolved_text7.weight,
+        fontSize = resolved_text7.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text7.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -857,7 +916,9 @@ private fun Section32(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_binding_properties_test))
@@ -876,7 +937,9 @@ private fun Section33(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_converter_components_test))
@@ -895,10 +958,12 @@ private fun Section34(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        Text(stringResource(R.string.custom_component_test_custom_component_test))
+        Text(stringResource(R.string.test_menu_custom_component_test_2))
     }
 }
 
@@ -914,7 +979,9 @@ private fun Section35(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_user_profile_test))
@@ -933,7 +1000,9 @@ private fun Section36(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.medium_red),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.medium_red).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_include_component_test))
@@ -945,7 +1014,7 @@ private fun Section37(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text70 = Configuration.Font.resolve(FontSpec(
+    val resolved_text8 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -954,11 +1023,11 @@ private fun Section37(
     Text(
         text = stringResource(R.string.test_menu_forms_scrolling),
         color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text70.family,
-        fontWeight = resolved_text70.weight,
-        fontSize = resolved_text70.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text70.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text8.family,
+        fontWeight = resolved_text8.weight,
+        fontSize = resolved_text8.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text8.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 10.dp)
     )
 }
@@ -975,7 +1044,9 @@ private fun Section38(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_cyan_2),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_cyan_2).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_form_test_2))
@@ -994,10 +1065,12 @@ private fun Section39(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_cyan_2),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_cyan_2).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
-        Text(stringResource(R.string.converter_test_collection_test_2))
+        Text(stringResource(R.string.test_menu_collection_test_2))
     }
 }
 
@@ -1013,7 +1086,9 @@ private fun Section40(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_cyan_2),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_cyan_2).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_keyboard_avoidance_test_2))
@@ -1032,7 +1107,9 @@ private fun Section41(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.light_cyan_2),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.light_cyan_2).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_scroll_test_2))
@@ -1044,7 +1121,7 @@ private fun Section42(
     data: TestMenuData,
     viewModel: TestMenuViewModel
 ) {
-    val resolved_text71 = Configuration.Font.resolve(FontSpec(
+    val resolved_text9 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 20.sp,
@@ -1053,11 +1130,11 @@ private fun Section42(
     Text(
         text = stringResource(R.string.test_menu_complete_test_suite),
         color = colorResource(R.color.dark_red),
-        fontFamily = resolved_text71.family,
-        fontWeight = resolved_text71.weight,
-        fontSize = resolved_text71.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text71.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 26.0.sp),
+        fontFamily = resolved_text9.family,
+        fontWeight = resolved_text9.weight,
+        fontSize = resolved_text9.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text9.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 26.0.sp),
         modifier = Modifier.padding(bottom = 15.dp)
     )
 }
@@ -1074,7 +1151,9 @@ private fun Section43(
         contentPadding = PaddingValues(12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = colorResource(R.color.dark_green_3),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = colorResource(R.color.dark_green_3).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         Text(stringResource(R.string.test_menu_all_implemented_attributes_test))

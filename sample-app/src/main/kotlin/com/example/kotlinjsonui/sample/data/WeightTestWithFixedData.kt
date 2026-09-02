@@ -8,10 +8,12 @@
 
 package com.example.kotlinjsonui.sample.data
 
+import com.kotlinjsonui.core.KotlinJsonUI
+import com.example.kotlinjsonui.sample.R
 
 data class WeightTestWithFixedData(
     var dynamicModeStatus: String = "OFF",
-    var title: String = "Weight + Fixed Size Test",
+    var title: String = KotlinJsonUI.localizedString(R.string.test_menu_weight_fixed_size_test, "Weight + Fixed Size Test"),
     var toggleDynamicMode: (() -> Unit)? = null
 ) {
     companion object {
@@ -20,7 +22,7 @@ data class WeightTestWithFixedData(
         fun fromMap(map: Map<String, Any>): WeightTestWithFixedData {
             return WeightTestWithFixedData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
-                title = map["title"] as? String ?: "Weight + Fixed Size Test",
+                title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_weight_fixed_size_test, "Weight + Fixed Size Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
             )
         }

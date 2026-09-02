@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun DatePickerTestGeneratedView(
@@ -50,78 +53,84 @@ fun DatePickerTestGeneratedView(
     // Generated Compose code from date_picker_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "date_picker_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "date_picker_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading date_picker_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading date_picker_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        LazyColumn(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(colorResource(R.color.white))
-            .imePadding()
-    ) {
-        item {
-        Column(
-            modifier = Modifier
+        } else {
+            // Static Mode - use generated code
+            LazyColumn(
+            modifier = modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .fillMaxHeight()
+                .background(colorResource(R.color.white))
+                .imePadding()
         ) {
-            Section0(data, viewModel)
-            Section1(data, viewModel)
-            Section2(data, viewModel)
-            Section3(data, viewModel)
-            Section4(data, viewModel)
-            Section5(data, viewModel)
-            Section6(data, viewModel)
-            Section7(data, viewModel)
-            Section8(data, viewModel)
-            Section9(data, viewModel)
-            Section10(data, viewModel)
-            Section11(data, viewModel)
-            Section12(data, viewModel)
-            Section13(data, viewModel)
-            Section14(data, viewModel)
-            Section15(data, viewModel)
-            Section16(data, viewModel)
-            Section17(data, viewModel)
-        }
-        }
-    }    }
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                Section0(data, viewModel)
+                Section1(data, viewModel)
+                Section2(data, viewModel)
+                Section3(data, viewModel)
+                Section4(data, viewModel)
+                Section5(data, viewModel)
+                Section6(data, viewModel)
+                Section7(data, viewModel)
+                Section8(data, viewModel)
+                Section9(data, viewModel)
+                Section10(data, viewModel)
+                Section11(data, viewModel)
+                Section12(data, viewModel)
+                Section13(data, viewModel)
+                Section14(data, viewModel)
+                Section15(data, viewModel)
+                Section16(data, viewModel)
+                Section17(data, viewModel)
+            }
+            }
+        }    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("date_picker_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -135,12 +144,14 @@ private fun Section0(
         onClick = { data.toggleDynamicMode?.invoke() },
         modifier = Modifier
             .wrapContentWidth()
-            .height(44.dp),
+            .requiredHeight(44.dp),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                            contentColor = colorResource(R.color.white)
+                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                            contentColor = colorResource(R.color.white),
+                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
                         )
     ) {
         val resolved_button1 = Configuration.Font.resolve(FontSpec(
@@ -177,7 +188,7 @@ private fun Section1(
         fontWeight = resolved_text1.weight,
         fontSize = resolved_text1.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text1.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 31.2.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
         modifier = Modifier
             .testTag("title_label")
             .semantics { testTagsAsResourceId = true }
@@ -205,7 +216,7 @@ private fun Section2(
         fontWeight = resolved_text2.weight,
         fontSize = resolved_text2.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text2.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 20.dp)
     )
 }
@@ -229,7 +240,7 @@ private fun Section3(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(50.dp)
+            .requiredHeight(50.dp)
     )
 }
 
@@ -251,7 +262,7 @@ private fun Section4(
         fontWeight = resolved_text3.weight,
         fontSize = resolved_text3.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text3.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 30.dp)
     )
 }
@@ -274,7 +285,7 @@ private fun Section5(
         fontWeight = resolved_text4.weight,
         fontSize = resolved_text4.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text4.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 15.6.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 15.6.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }
@@ -300,7 +311,7 @@ private fun Section6(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(50.dp)
+            .requiredHeight(50.dp)
     )
 }
 
@@ -322,7 +333,7 @@ private fun Section7(
         fontWeight = resolved_text5.weight,
         fontSize = resolved_text5.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text5.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 30.dp)
     )
 }
@@ -346,7 +357,7 @@ private fun Section8(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(50.dp)
+            .requiredHeight(50.dp)
     )
 }
 
@@ -368,7 +379,7 @@ private fun Section9(
         fontWeight = resolved_text6.weight,
         fontSize = resolved_text6.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text6.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 30.dp)
     )
 }
@@ -392,7 +403,7 @@ private fun Section10(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(50.dp)
+            .requiredHeight(50.dp)
     )
 }
 
@@ -414,7 +425,7 @@ private fun Section11(
         fontWeight = resolved_text7.weight,
         fontSize = resolved_text7.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text7.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 30.dp)
     )
 }
@@ -437,7 +448,7 @@ private fun Section12(
         fontWeight = resolved_text8.weight,
         fontSize = resolved_text8.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text8.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 15.6.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 15.6.sp),
         modifier = Modifier.padding(top = 5.dp)
     )
 }
@@ -462,7 +473,7 @@ private fun Section13(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(50.dp)
+            .requiredHeight(50.dp)
     )
 }
 
@@ -484,7 +495,7 @@ private fun Section14(
         fontWeight = resolved_text9.weight,
         fontSize = resolved_text9.size ?: TextUnit.Unspecified,
         fontStyle = resolved_text9.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 23.4.sp),
+        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
         modifier = Modifier.padding(top = 30.dp)
     )
 }
@@ -509,7 +520,7 @@ private fun Section15(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(300.dp)
+            .requiredHeight(300.dp)
     )
 }
 
@@ -529,7 +540,7 @@ private fun Section16(
             .padding(start = 20.dp)
             .padding(end = 20.dp)
             .fillMaxWidth()
-            .height(50.dp)
+            .requiredHeight(50.dp)
     )
 }
 
@@ -562,7 +573,7 @@ private fun Section17(
             fontWeight = resolved_text10.weight,
             fontSize = resolved_text10.size ?: TextUnit.Unspecified,
             fontStyle = resolved_text10.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 18.2.sp),
+            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
             modifier = Modifier
         )
         val resolved_text11 = Configuration.Font.resolve(FontSpec(
@@ -578,7 +589,7 @@ private fun Section17(
             fontWeight = resolved_text11.weight,
             fontSize = resolved_text11.size ?: TextUnit.Unspecified,
             fontStyle = resolved_text11.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 15.6.sp),
+            style = LocalTextStyle.current.copy(lineHeight = 15.6.sp),
             modifier = Modifier.padding(top = 5.dp)
         )
         val resolved_text12 = Configuration.Font.resolve(FontSpec(
@@ -594,7 +605,7 @@ private fun Section17(
             fontWeight = resolved_text12.weight,
             fontSize = resolved_text12.size ?: TextUnit.Unspecified,
             fontStyle = resolved_text12.style ?: FontStyle.Normal,
-            style = TextStyle(lineHeight = 15.6.sp),
+            style = LocalTextStyle.current.copy(lineHeight = 15.6.sp),
             modifier = Modifier.padding(top = 5.dp)
         )
     }

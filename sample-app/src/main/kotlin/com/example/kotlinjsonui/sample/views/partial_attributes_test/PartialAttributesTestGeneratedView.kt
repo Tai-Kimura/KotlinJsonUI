@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,8 +32,10 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.ResolvedFont
+import com.kotlinjsonui.core.ScreenMarker
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
 import com.kotlinjsonui.dynamic.SafeAreaConfig
+import com.kotlinjsonui.embed.DriveEmbedInitParams
 
 @Composable
 fun PartialAttributesTestGeneratedView(
@@ -43,88 +46,51 @@ fun PartialAttributesTestGeneratedView(
     // Generated Compose code from partial_attributes_test.json
     // This will be updated when you run 'kjui build'
     // >>> GENERATED_CODE_START
-    // Check if Dynamic Mode is active
-    if (DynamicModeManager.isActive()) {
-        // Dynamic Mode - use SafeDynamicView for real-time updates
-        SafeDynamicView(
-            layoutName = "partial_attributes_test",
-            modifier = modifier,
-            data = data.toMap(),
-            fallback = {
-                // Show error or loading state when dynamic view is not available
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Dynamic view not available",
-                        color = Color.Gray
-                    )
+    Box(propagateMinConstraints = true) {
+        // Requires KotlinJsonUI >= 2.13.0 (embed init-params)
+        DriveEmbedInitParams(viewModel)
+        // Check if Dynamic Mode is active
+        if (DynamicModeManager.isActive()) {
+            // Dynamic Mode - use SafeDynamicView for real-time updates
+            SafeDynamicView(
+                layoutName = "partial_attributes_test",
+                modifier = modifier,
+                data = data.toMap(),
+                fallback = {
+                    // Show error or loading state when dynamic view is not available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Dynamic view not available",
+                            color = Color.Gray
+                        )
+                    }
+                },
+                onError = { error ->
+                    // Log error or show error UI
+                    android.util.Log.e("DynamicView", "Error loading partial_attributes_test: \$error")
+                },
+                onLoading = {
+                    // Show loading indicator
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            },
-            onError = { error ->
-                // Log error or show error UI
-                android.util.Log.e("DynamicView", "Error loading partial_attributes_test: \$error")
-            },
-            onLoading = {
-                // Show loading indicator
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+            ) { jsonContent ->
+                // Parse and render the dynamic JSON content
+                // This will be handled by the DynamicView implementation
             }
-        ) { jsonContent ->
-            // Parse and render the dynamic JSON content
-            // This will be handled by the DynamicView implementation
-        }
-    } else {
-        // Static Mode - use generated code
-        val safeAreaConfig = LocalSafeAreaConfig.current
-    val edges = mutableListOf("all").apply {
-        if (safeAreaConfig.ignoreBottom) {
-            remove("bottom")
-            if (contains("all")) { remove("all"); addAll(listOf("top", "start", "end")) }
-        }
-        if (safeAreaConfig.ignoreTop) {
-            remove("top")
-            if (contains("all")) { remove("all"); addAll(listOf("bottom", "start", "end")) }
-        }
-    }.distinct()
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(colorResource(R.color.white))
-            .then(if (edges.contains("all")) Modifier.systemBarsPadding() else Modifier)
-            .then(if (!edges.contains("all") && edges.contains("top")) Modifier.statusBarsPadding() else Modifier)
-            .then(if (!edges.contains("all") && edges.contains("bottom")) Modifier.navigationBarsPadding() else Modifier)
-            .imePadding()
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .imePadding()
-        ) {
-            item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(16.dp)
-            ) {
-                Section0(data, viewModel)
-                Section1(data, viewModel)
-                Section2(data, viewModel)
-                Section3(data, viewModel)
-                Section4(data, viewModel)
-                Section5(data, viewModel)
-            }
-            }
-        }
-    }    }
+        } else {
+            // Static Mode - use generated code
+        Section6(data, viewModel, modifier)    }
+        // Requires KotlinJsonUI >= 2.15.1 (screen marker)
+        ScreenMarker("partial_attributes_test")
+    }
     // >>> GENERATED_CODE_END
 }
 
@@ -134,7 +100,7 @@ private fun Section0(
     data: PartialAttributesTestData,
     viewModel: PartialAttributesTestViewModel
 ) {
-    val resolved_text325 = Configuration.Font.resolve(FontSpec(
+    val resolved_text1 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = FontWeight.Bold,
         size = 24.sp,
@@ -142,11 +108,11 @@ private fun Section0(
     ))
     Text(
         text = stringResource(R.string.partial_attributes_test_partialattributes_test),
-        fontFamily = resolved_text325.family,
-        fontWeight = resolved_text325.weight,
-        fontSize = resolved_text325.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text325.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 31.2.sp),
+        fontFamily = resolved_text1.family,
+        fontWeight = resolved_text1.weight,
+        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
         modifier = Modifier.padding(bottom = 20.dp)
     )
 }
@@ -156,7 +122,7 @@ private fun Section1(
     data: PartialAttributesTestData,
     viewModel: PartialAttributesTestViewModel
 ) {
-    val resolved_text326 = Configuration.Font.resolve(FontSpec(
+    val resolved_text2 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -164,11 +130,11 @@ private fun Section1(
     ))
     Text(
         text = stringResource(R.string.partial_attributes_test_this_is_a_normal_label_without_),
-        fontFamily = resolved_text326.family,
-        fontWeight = resolved_text326.weight,
-        fontSize = resolved_text326.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text326.style ?: FontStyle.Normal,
-        style = TextStyle(lineHeight = 20.8.sp),
+        fontFamily = resolved_text2.family,
+        fontWeight = resolved_text2.weight,
+        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+        style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
         modifier = Modifier.padding(bottom = 20.dp)
     )
 }
@@ -178,7 +144,7 @@ private fun Section2(
     data: PartialAttributesTestData,
     viewModel: PartialAttributesTestViewModel
 ) {
-    val resolved_text327 = Configuration.Font.resolve(FontSpec(
+    val resolved_text3 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -211,7 +177,7 @@ private fun Section2(
             )!!
         ),
         modifier = Modifier.padding(bottom = 20.dp),
-        style = TextStyle(fontFamily = resolved_text327.family, fontWeight = resolved_text327.weight, fontSize = (resolved_text327.size ?: TextUnit.Unspecified), fontStyle = (resolved_text327.style ?: FontStyle.Normal))
+        style = LocalTextStyle.current.copy(fontFamily = (resolved_text3.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_text3.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_text3.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_text3.style ?: LocalTextStyle.current.fontStyle))
     )
 }
 
@@ -220,7 +186,7 @@ private fun Section3(
     data: PartialAttributesTestData,
     viewModel: PartialAttributesTestViewModel
 ) {
-    val resolved_text328 = Configuration.Font.resolve(FontSpec(
+    val resolved_text4 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -245,7 +211,7 @@ private fun Section3(
             )!!
         ),
         modifier = Modifier.padding(bottom = 20.dp),
-        style = TextStyle(fontFamily = resolved_text328.family, fontWeight = resolved_text328.weight, fontSize = (resolved_text328.size ?: TextUnit.Unspecified), fontStyle = (resolved_text328.style ?: FontStyle.Normal))
+        style = LocalTextStyle.current.copy(fontFamily = (resolved_text4.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_text4.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_text4.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_text4.style ?: LocalTextStyle.current.fontStyle))
     )
 }
 
@@ -254,7 +220,7 @@ private fun Section4(
     data: PartialAttributesTestData,
     viewModel: PartialAttributesTestViewModel
 ) {
-    val resolved_text329 = Configuration.Font.resolve(FontSpec(
+    val resolved_text5 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
@@ -290,7 +256,7 @@ private fun Section4(
             )!!
         ),
         modifier = Modifier,
-        style = TextStyle(fontFamily = resolved_text329.family, fontWeight = resolved_text329.weight, fontSize = (resolved_text329.size ?: TextUnit.Unspecified), fontStyle = (resolved_text329.style ?: FontStyle.Normal))
+        style = LocalTextStyle.current.copy(fontFamily = (resolved_text5.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_text5.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_text5.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_text5.style ?: LocalTextStyle.current.fontStyle))
     )
 }
 
@@ -299,33 +265,86 @@ private fun Section5(
     data: PartialAttributesTestData,
     viewModel: PartialAttributesTestViewModel
 ) {
-    val resolved_text330 = Configuration.Font.resolve(FontSpec(
+    val resolved_text6 = Configuration.Font.resolve(FontSpec(
         family = null,
         weight = null,
         size = 16.sp,
         italic = false
     ))
     PartialAttributesText(
-        text = "今日は天気がいいですね。明日も晴れるといいです。",
+        text = stringResource(R.string.partial_attributes_test_今日は天気がいいですね_明日も晴れるといいです),
         partialAttributes = listOf(
             PartialAttribute.fromJsonRange(
                 range = "天気",
-                text = "今日は天気がいいですね。明日も晴れるといいです。",
+                text = stringResource(R.string.partial_attributes_test_今日は天気がいいですね_明日も晴れるといいです),
                 fontColor = "dark_red",
                 fontSize = 20,
                 fontWeight = "bold",
                 onClick = null
             )!!,
             PartialAttribute.fromJsonRange(
-                range = stringResource(R.string.partial_attributes_test_),
-                text = "今日は天気がいいですね。明日も晴れるといいです。",
+                range = stringResource(R.string.partial_attributes_test_晴れる),
+                text = stringResource(R.string.partial_attributes_test_今日は天気がいいですね_明日も晴れるといいです),
                 fontColor = "dark_blue",
                 underline = true,
                 onClick = null
             )!!
         ),
         modifier = Modifier.padding(bottom = 20.dp),
-        style = TextStyle(fontFamily = resolved_text330.family, fontWeight = resolved_text330.weight, fontSize = (resolved_text330.size ?: TextUnit.Unspecified), fontStyle = (resolved_text330.style ?: FontStyle.Normal))
+        style = LocalTextStyle.current.copy(fontFamily = (resolved_text6.family ?: LocalTextStyle.current.fontFamily), fontWeight = (resolved_text6.weight ?: LocalTextStyle.current.fontWeight), fontSize = (resolved_text6.size ?: LocalTextStyle.current.fontSize), fontStyle = (resolved_text6.style ?: LocalTextStyle.current.fontStyle))
     )
+}
+
+@Composable
+private fun Section6(
+    data: PartialAttributesTestData,
+    viewModel: PartialAttributesTestViewModel,
+    modifier: Modifier
+) {
+    val safeAreaConfig = LocalSafeAreaConfig.current
+    val edges = mutableListOf("all").apply {
+        if (safeAreaConfig.ignoreBottom) {
+            remove("bottom")
+            if (contains("all")) { remove("all"); addAll(listOf("top", "start", "end")) }
+        }
+        if (safeAreaConfig.ignoreTop) {
+            remove("top")
+            if (contains("all")) { remove("all"); addAll(listOf("bottom", "start", "end")) }
+        }
+    }.distinct()
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .background(colorResource(R.color.white))
+            .then(if (edges.contains("all")) Modifier.systemBarsPadding() else Modifier)
+            .then(if (!edges.contains("all") && edges.contains("top")) Modifier.statusBarsPadding() else Modifier)
+            .then(if (!edges.contains("all") && edges.contains("bottom")) Modifier.navigationBarsPadding() else Modifier)
+            .imePadding()
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .imePadding()
+        ) {
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(16.dp)
+            ) {
+                Section0(data, viewModel)
+                Section1(data, viewModel)
+                Section2(data, viewModel)
+                Section3(data, viewModel)
+                Section4(data, viewModel)
+                Section5(data, viewModel)
+            }
+            }
+        }
+    }
 }
 // >>> RESPONSIVE_HELPERS_END
