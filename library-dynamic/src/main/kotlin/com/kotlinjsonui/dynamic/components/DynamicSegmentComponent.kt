@@ -46,6 +46,21 @@ import androidx.compose.ui.platform.LocalContext
  */
 class DynamicSegmentComponent {
     companion object {
+        /**
+         * The data key this component is bound to.
+         *
+         * `bind` is the common two-way spelling for this component's primary
+         * value, and it holds an `AttrValue<Any>` — so the old
+         * `a.common.bind as? String` matched nothing and this fallback
+         * returned null for every layout that used it. Kotlin 2.4 reports
+         * that cast as one that can never succeed; before the bump the
+         * branch was simply dead. CheckBox and Switch read the same row
+         * correctly, and that is the shape restored here.
+         */
+        internal fun bindingVariableOf(a: SegmentAttributes): String? =
+            TypedAttrs.binding(a.selectedIndex)
+                ?: TypedAttrs.binding(a.common.bind)
+
         /** Segment-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "selectedIndex", "bind", "items", "enabled",
@@ -70,8 +85,7 @@ class DynamicSegmentComponent {
             )
 
             // Parse binding variable for selected index
-            val bindingVariable = TypedAttrs.binding(a.selectedIndex)
-                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
+            val bindingVariable = bindingVariableOf(a)
 
             // Get selected index
             val currentIndex = when {

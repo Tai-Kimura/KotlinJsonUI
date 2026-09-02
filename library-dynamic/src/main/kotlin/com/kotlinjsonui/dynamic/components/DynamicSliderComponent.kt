@@ -39,6 +39,21 @@ import kotlin.math.roundToInt
  */
 class DynamicSliderComponent {
     companion object {
+        /**
+         * The data key this component is bound to.
+         *
+         * `bind` is the common two-way spelling for this component's primary
+         * value, and it holds an `AttrValue<Any>` — so the old
+         * `a.common.bind as? String` matched nothing and this fallback
+         * returned null for every layout that used it. Kotlin 2.4 reports
+         * that cast as one that can never succeed; before the bump the
+         * branch was simply dead. CheckBox and Switch read the same row
+         * correctly, and that is the shape restored here.
+         */
+        internal fun bindingVariableOf(a: SliderAttributes): String? =
+            TypedAttrs.binding(a.value)
+                ?: TypedAttrs.binding(a.common.bind)
+
         /** Slider-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "value", "bind", "enabled",
@@ -63,8 +78,7 @@ class DynamicSliderComponent {
             )
 
             // Parse binding variable from value or bind
-            val bindingVariable = TypedAttrs.binding(a.value)
-                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
+            val bindingVariable = bindingVariableOf(a)
 
             // Parse min/max: the typed fields carry canonical minimum/maximum
             // plus the minimumValue/minValue (maximumValue/maxValue) alias

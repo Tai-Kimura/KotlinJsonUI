@@ -68,8 +68,7 @@ class DynamicProgressComponent {
             val hasValue = progressAttr != null || hasValueAttr || a.common.bind != null
 
             // Parse binding variable from bind, canonical progress, or legacy value
-            val bindingVariable = extractBindingVariable(a.common.bind as? String)
-                ?: progressAttr?.bindingExpressionOrNull()
+            val bindingVariable = bindingVariableOf(a)
                 ?: extractBindingVariable(TypedAttrs.undeclared(json, "value")?.asString)
 
             // Resolve progress value (coerced to 0..1)
@@ -156,6 +155,21 @@ class DynamicProgressComponent {
                 }
             }
         }
+
+        /**
+         * The data key this component is bound to.
+         *
+         * `bind` is the common two-way spelling for this component's primary
+         * value, and it holds an `AttrValue<Any>` — so the old
+         * `a.common.bind as? String` matched nothing and this fallback
+         * returned null for every layout that used it. Kotlin 2.4 reports
+         * that cast as one that can never succeed; before the bump the
+         * branch was simply dead. CheckBox and Switch read the same row
+         * correctly, and that is the shape restored here.
+         */
+        internal fun bindingVariableOf(a: ProgressAttributes): String? =
+            TypedAttrs.binding(a.common.bind)
+                ?: a.progress?.bindingExpressionOrNull()
 
         private fun extractBindingVariable(value: String?): String? {
             if (value == null) return null

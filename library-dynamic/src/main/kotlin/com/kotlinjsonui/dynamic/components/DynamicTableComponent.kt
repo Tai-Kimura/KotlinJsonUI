@@ -62,7 +62,7 @@ class DynamicTableComponent {
 
             // Parse data binding for items ('bind' first, then 'items') —
             // canonical whole-value resolution (flat-first, dot paths).
-            val bindRaw = a.common.bind as? String
+            val bindRaw = TypedAttrs.raw(a.common.bind) as? String
             val itemsRaw = TypedAttrs.raw(a.items) as? String
             val itemsExpr = sequenceOf(bindRaw, itemsRaw)
                 .filterNotNull()

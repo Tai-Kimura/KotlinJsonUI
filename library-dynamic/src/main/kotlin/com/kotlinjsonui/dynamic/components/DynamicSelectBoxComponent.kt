@@ -82,7 +82,16 @@ class DynamicSelectBoxComponent {
         internal fun bindingVariableOf(a: SelectBoxAttributes): String? =
             TypedAttrs.binding(a.selectedItem)
                 ?: TypedAttrs.binding(a.selectedValue)
-                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
+                ?: TypedAttrs.binding(a.common.bind)
+
+        /**
+         * Same row, the date-picker variant's precedence: `selectedDate`
+         * first, then `selectedItem`, then the common `bind`.
+         */
+        internal fun dateBindingVariableOf(a: SelectBoxAttributes): String? =
+            TypedAttrs.binding(a.selectedDate)
+                ?: TypedAttrs.binding(a.selectedItem)
+                ?: TypedAttrs.binding(a.common.bind)
 
         /**
          * What the closed box shows: the bound value if there is one, else the
@@ -309,9 +318,7 @@ class DynamicSelectBoxComponent {
             val context = LocalContext.current
 
             // Parse binding variable: selectedDate > selectedItem > bind
-            val bindingVariable = TypedAttrs.binding(a.selectedDate)
-                ?: TypedAttrs.binding(a.selectedItem)
-                ?: (a.common.bind as? String)?.let { ModifierBuilder.extractBindingProperty(it) }
+            val bindingVariable = dateBindingVariableOf(a)
 
             // Get current value
             val currentValue = if (bindingVariable != null) {
