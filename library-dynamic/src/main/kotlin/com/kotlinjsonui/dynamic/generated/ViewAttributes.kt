@@ -11,9 +11,9 @@ package com.kotlinjsonui.dynamic.generated
 data class ViewAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Child component(s) */
+    /** Child component(s). A single component node (object) is accepted as a one-element array. */
     val child: List<Any?>? = null,
-    /** Child components (alias for child) */
+    /** Child components (alias for child). A single component node (object) is accepted as a one-element array. */
     val children: List<Any?>? = null,
     /** Layout direction */
     val direction: AttrEnum<Direction>? = null,

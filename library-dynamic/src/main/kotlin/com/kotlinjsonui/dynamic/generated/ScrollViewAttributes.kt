@@ -12,9 +12,9 @@ data class ScrollViewAttributes(
     val common: CommonAttributes,
     /** Enable bounce effect */
     val bounces: Boolean? = null,
-    /** Child component(s) */
+    /** Child component(s). A single component node (object) is accepted as a one-element array. */
     val child: List<Any?>? = null,
-    /** Child components */
+    /** Child components. A single component node (object) is accepted as a one-element array. */
     val children: List<Any?>? = null,
     /** Content inset adjustment */
     val contentInsetAdjustmentBehavior: AttrEnum<ContentInsetAdjustmentBehavior>? = null,
