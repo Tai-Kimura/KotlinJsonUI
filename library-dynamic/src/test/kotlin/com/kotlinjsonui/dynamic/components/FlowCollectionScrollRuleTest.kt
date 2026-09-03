@@ -93,6 +93,32 @@ class FlowCollectionScrollRuleTest {
         )
     }
 
+    /**
+     * 51-E (attribute_semantics.clipToBounds, 2026-08-07): `clipToBounds`
+     * defaults to false everywhere — absent means no clip. FlowRow does not
+     * lay out the rows past its max height, which the modifier-chain rollout
+     * could not reach; so the FlowRow is measured unbounded and aligned over
+     * the box (wrapContentHeight, unbounded — FlowRow's `overflow` parameter
+     * is deprecated in the resolved foundation-layout), and the declared
+     * `clipToBounds: true` keeps its opt-in `.clipToBounds()` in the chain.
+     */
+    @Test
+    fun `the FlowRow lays its overflow out — clipping is the declaration's to decide`() {
+        val all = lines()
+        val start = all.indexOfFirst { it.startsWith("private fun renderFlowLayout") }
+        assertTrue("renderFlowLayout not found", start >= 0)
+        val call = all.subList(start, all.size).indexOf("FlowRow(")
+        assertTrue("no FlowRow( in renderFlowLayout", call >= 0)
+        val args = all.subList(start + call, start + call + 20)
+        assertTrue(
+            "FlowRow in renderFlowLayout is not measured unbounded:\n${args.joinToString("\n")}",
+            args.any { it == "modifier = modifier.wrapContentHeight(Alignment.Top, unbounded = true)," }
+        )
+        // Not the deprecated route: the overload that takes `overflow` warns,
+        // and this repo's CI tolerates no compiler warning.
+        assertFalse(args.joinToString("\n"), args.any { "FlowRowOverflow" in it })
+    }
+
     @Test
     fun `the height reads sit before the flow branch, not after it`() {
         // They were declared after the flow `return`; hoisting them is what

@@ -804,7 +804,21 @@ class DynamicCollectionComponent {
             }
 
             FlowRow(
-                modifier = modifier,
+                // `clipToBounds` defaults to false on every component (SSoT
+                // common.clipToBounds; attribute_semantics 51-E, 2026-08-07:
+                // absent means no clip, and hit testing follows clipping).
+                // FlowRow does not lay out the rows that exceed its max
+                // height — a lazy:"none" flow in a fixed-height box drew
+                // three rows and nothing below, while iOS and web drew all
+                // six past the box. Measuring it without regard for the
+                // incoming max height and aligning the result over that
+                // space (wrapContentHeight, unbounded) is what "overflow
+                // visible" is in this toolkit; FlowRow's own `overflow`
+                // parameter says the same but is deprecated in the resolved
+                // foundation-layout. The modifier chain applies
+                // `.clipToBounds()` only when declared true, so that
+                // declaration is now the one that decides.
+                modifier = modifier.wrapContentHeight(Alignment.Top, unbounded = true),
                 horizontalArrangement = Arrangement.spacedBy(horizontalSpacing, arrangement.let {
                     when (flowAlignment) {
                         "center" -> Alignment.CenterHorizontally
