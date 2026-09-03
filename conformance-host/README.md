@@ -43,6 +43,16 @@ $ANDROID_HOME/platform-tools/adb wait-for-device
 
 # 1..4. Sync fixtures, install, instrument (crash-resume), all in one:
 CONFORMANCE_DIR=/path/to/conformance ./conformance-host/scripts/run_conformance.sh --fresh
+```
+
+Preflight (the script stops here, by name, before touching the device):
+- several emulators attached and `ANDROID_SERIAL` unset → lists them; set one.
+- `timeout` must be coreutils (macOS: `brew install coreutils`). A wrapper whose
+  watchdog inherits stdout stalls every probe for its full budget (measured:
+  a 20-sample settle loop took 10 minutes); the script probes for that and
+  refuses. `CONFORMANCE_PREFLIGHT_ONLY=1` runs the checks and exits 0.
+
+```bash
 
 # 5. Pull results + screenshots into the suite dir
 CONFORMANCE_DIR=/path/to/conformance ./conformance-host/scripts/collect_results.sh

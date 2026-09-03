@@ -61,9 +61,57 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# 0. Preflight — fail fast, by name, on the two ways this script has been
+#    seen to sit silent for a quarter hour.
+#
+# (a) Device selection. `adb get-state` fails for "no device" AND for "more
+#     than one device/emulator" (adb refuses to pick), and the old message
+#     called both "no device". With several emulators up and ANDROID_SERIAL
+#     unset, every adb call in the run fails the same way — screen_hash then
+#     hashes EMPTY output, two identical empties look like "settled", and
+#     the run marches on against nothing. Name the devices and the cure.
+attached_devices() { "$ADB" devices 2>/dev/null | awk 'NR > 1 && $2 == "device" {print $1}'; }
 if ! "$ADB" get-state >/dev/null 2>&1; then
-  echo "error: no device/emulator connected (adb get-state failed)" >&2
+  devices="$(attached_devices | tr '\n' ' ')"
+  count="$(attached_devices | wc -l | tr -d '[:space:]')"
+  if [[ -n "${ANDROID_SERIAL:-}" ]]; then
+    echo "error: ANDROID_SERIAL=$ANDROID_SERIAL is not an attached device (attached: ${devices:-none})" >&2
+  elif [[ "$count" -gt 1 ]]; then
+    echo "error: $count devices attached and ANDROID_SERIAL is unset — adb will not pick one. Set ANDROID_SERIAL to one of: $devices" >&2
+  else
+    echo "error: no device/emulator connected (adb get-state failed)" >&2
+  fi
   exit 1
+fi
+echo "device: ${ANDROID_SERIAL:-$(attached_devices | head -1)} (attached: $(attached_devices | tr '\n' ' '))"
+
+# (b) The `timeout` wrapper. Every probe below is `$(timeout N adb ... | md5)`
+#     and relies on coreutils semantics: when the child exits, timeout exits
+#     and the pipe closes. A wrapper whose watchdog is a backgrounded
+#     `( sleep N; kill )` that INHERITS stdout keeps the pipe open until the
+#     sleep ends, so a screencap that answered in 0.3s costs the full N —
+#     measured 2026-09-03 on macOS with such a shim: 10s for `echo`, 5s per
+#     screen sample, 120s per adbsh read, and a "settle" loop of 20 samples
+#     that quietly took 10 minutes. Probe once with a 3s budget on a child
+#     that lives 0.3s (NOT `true`: a child that exits before the wrapper's
+#     watchdog has forked its sleep leaves no orphan, and the probe passes
+#     by a race — measured). Coreutils returns in 0.3s, the wrapper class
+#     in 3s, which a whole-second clock may read as 2.
+if ! command -v timeout >/dev/null 2>&1; then
+  echo "error: 'timeout' not found — install coreutils (macOS: brew install coreutils, then put gnubin on PATH)" >&2
+  exit 1
+fi
+probe_start=$(date +%s)
+probe_out="$(timeout 3 sleep 0.3 2>/dev/null | cat)"
+probe_elapsed=$(( $(date +%s) - probe_start ))
+if [[ $probe_elapsed -ge 2 ]]; then
+  echo "error: this 'timeout' ($(command -v timeout)) holds stdout open for its full budget (${probe_elapsed}s for 'timeout 3 sleep 0.3') — every probe in this run would stall for its timeout. Use coreutils timeout, or detach the wrapper's watchdog from stdout (>/dev/null 2>&1 </dev/null)." >&2
+  exit 1
+fi
+: "${probe_out}"
+if [[ "${CONFORMANCE_PREFLIGHT_ONLY:-0}" == "1" ]]; then
+  echo "preflight OK (CONFORMANCE_PREFLIGHT_ONLY=1, stopping here)"
+  exit 0
 fi
 
 # 1. Sync fixtures when a suite dir is provided
@@ -188,6 +236,7 @@ adbsh am start -n "$APP_PKG/.FixtureHostActivity" >/dev/null 2>&1 || \
   adbsh monkey -p "$APP_PKG" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 || true
 settle_prev=""
 settle_stable=0
+settle_start=$(date +%s)
 for _ in $(seq 1 20); do
   sleep 1
   settle_now="$(screen_hash)"
@@ -205,7 +254,10 @@ done
 if [[ $settle_stable -ge 2 ]]; then
   echo "screen settled"
 else
-  echo "warning: screen did not settle within 20s — taskbar may drift between runs" >&2
+  # Elapsed is printed because "20 samples" is only ~20s when each sample is
+  # instant; a slow sampler (see preflight (b)) or a device another run is
+  # driving makes the same line the entry to a much longer silence.
+  echo "warning: screen did not settle in 20 samples ($(( $(date +%s) - settle_start ))s) — taskbar may drift between runs; the demo-mode probe below samples up to 5x15 more" >&2
 fi
 
 # 3b-2. Now that the screen is quiet, PROVE the status bar froze (see the probe
