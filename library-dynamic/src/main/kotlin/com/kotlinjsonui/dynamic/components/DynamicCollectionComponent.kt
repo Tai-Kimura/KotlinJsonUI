@@ -87,6 +87,8 @@ class DynamicCollectionComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
+            // The address prefix every cell in this Collection is reached by.
+            val collectionId = json.get("id")?.takeIf { !it.isJsonNull }?.asString
             val a = rememberTypedAttrs(json) { m, canonicalOnly ->
                 CollectionAttributes.parse(m, canonicalOnly)
             }
@@ -335,7 +337,8 @@ class DynamicCollectionComponent {
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
-                    onItemAppear = onItemAppear
+                    onItemAppear = onItemAppear,
+                    collectionId = collectionId
                 )
                 return
             }
@@ -366,7 +369,8 @@ class DynamicCollectionComponent {
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
-                    onItemAppear = onItemAppear
+                    onItemAppear = onItemAppear,
+                    collectionId = collectionId
                 )
                 return
             }
@@ -388,7 +392,8 @@ class DynamicCollectionComponent {
                     contentPadding = contentPadding,
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
-                    onItemAppear = onItemAppear
+                    onItemAppear = onItemAppear,
+                    collectionId = collectionId
                 )
                 return
             }
@@ -410,7 +415,8 @@ class DynamicCollectionComponent {
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
-                    onItemAppear = onItemAppear
+                    onItemAppear = onItemAppear,
+                    collectionId = collectionId
                 )
                 return
             }
@@ -437,7 +443,8 @@ class DynamicCollectionComponent {
                     gravityAlignment = gravityAlignment,
                     scrollToFlow = scrollToFlow,
                     onItemAppear = onItemAppear,
-                    chrome = listChrome
+                    chrome = listChrome,
+                    collectionId = collectionId
                 )
                 return
             }
@@ -510,7 +517,8 @@ class DynamicCollectionComponent {
                         defaultColumns = defaultColumns,
                         gravityAlignment = gravityAlignment,
                         reverseLayout = reverseLayout,
-                        onItemAppear = onItemAppear
+                        onItemAppear = onItemAppear,
+                        collectionId = collectionId
                     )
                 }
             } else {
@@ -540,7 +548,8 @@ class DynamicCollectionComponent {
                         defaultColumns = defaultColumns,
                         gravityAlignment = gravityAlignment,
                         reverseLayout = reverseLayout,
-                        onItemAppear = onItemAppear
+                        onItemAppear = onItemAppear,
+                        collectionId = collectionId
                     )
                 }
             }
@@ -583,7 +592,8 @@ class DynamicCollectionComponent {
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
             gravityAlignment: Alignment,
-            onItemAppear: ((Int) -> Unit)? = null
+            onItemAppear: ((Int) -> Unit)? = null,
+            collectionId: String? = null,
         ) {
             // Calculate page count from data source
             val pageCount = when {
@@ -704,7 +714,7 @@ class DynamicCollectionComponent {
                     when {
                         pageItems.isNotEmpty() -> {
                             val pageItem = pageItems[pageIndex]
-                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data, onItemAppear)
+                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data, onItemAppear, collectionId = collectionId)
                         }
                         cellTemplate != null -> {
                             val cellData = data.toMutableMap().apply {
@@ -737,7 +747,8 @@ class DynamicCollectionComponent {
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
             gravityAlignment: Alignment,
-            onItemAppear: ((Int) -> Unit)? = null
+            onItemAppear: ((Int) -> Unit)? = null,
+            collectionId: String? = null,
         ) {
 
             val arrangement = when (flowAlignment) {
@@ -780,7 +791,7 @@ class DynamicCollectionComponent {
                                                     ),
                                                 contentAlignment = gravityAlignment
                                             ) {
-                                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear)
+                                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, collectionId = collectionId)
                                             }
                                         }
                                     }
@@ -829,7 +840,8 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null
         ,
-            chrome: ListChrome? = null
+            chrome: ListChrome? = null,
+            collectionId: String? = null,
         ) {
             Column(
                 modifier = modifier.then(Modifier.padding(contentPadding)),
@@ -859,7 +871,7 @@ class DynamicCollectionComponent {
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome)
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
                                         }
                                     }
                                 }
@@ -911,7 +923,8 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             scrollToFlow: SharedFlow<Int>?,
             onItemAppear: ((Int) -> Unit)? = null,
-            chrome: ListChrome? = null
+            chrome: ListChrome? = null,
+            collectionId: String? = null,
         ) {
             val listState = androidx.compose.foundation.lazy.rememberLazyListState()
             if (scrollToFlow != null) {
@@ -941,7 +954,8 @@ class DynamicCollectionComponent {
                                         ) {
                                             renderCellView(
                                                 cellViewName, cellData.data[cellIndex], cellIndex,
-                                                data, onItemAppear, chrome
+                                                data, onItemAppear, chrome,
+                                                collectionId = collectionId
                                             )
                                         }
                                     }
@@ -985,7 +999,8 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null
         ,
-            chrome: ListChrome? = null
+            chrome: ListChrome? = null,
+            collectionId: String? = null,
         ) {
             Row(
                 modifier = modifier.then(Modifier.padding(contentPadding)),
@@ -1006,7 +1021,7 @@ class DynamicCollectionComponent {
                                                 .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome)
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
                                         }
                                     }
                                 }
@@ -1045,7 +1060,8 @@ class DynamicCollectionComponent {
             defaultColumns: Int,
             gravityAlignment: Alignment,
             reverseLayout: Boolean = false,
-            onItemAppear: ((Int) -> Unit)? = null
+            onItemAppear: ((Int) -> Unit)? = null,
+            collectionId: String? = null,
         ) {
 
             when {
@@ -1135,7 +1151,7 @@ class DynamicCollectionComponent {
                                                 .animateItem(),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome)
+                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome, collectionId = collectionId)
                                         }
                                     }
                                 } else {
@@ -1159,7 +1175,7 @@ class DynamicCollectionComponent {
                                                 ),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, chrome)
+                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
                                         }
                                     }
                                 }
@@ -1251,11 +1267,41 @@ class DynamicCollectionComponent {
             index: Int,
             data: Map<String, Any>,
             onItemAppear: ((Int) -> Unit)? = null,
-            chrome: ListChrome? = null
+            chrome: ListChrome? = null,
+            collectionId: String? = null
         ) {
             ChromedCell(chrome) {
-                renderCellViewInner(cellClassName, item, index, data, onItemAppear)
+                renderCellViewInner(cellClassName, item, index, data, onItemAppear, collectionId)
             }
+        }
+
+        /// `{collectionId}_item_{index}` — the address `tapItem` and
+        /// `waitFor` resolve, and the spelling the static codegen emits.
+        /// Dynamic emitted nothing here, on any layout, so a fixture (which
+        /// always runs through Dynamic) could never check the contract the
+        /// codegen is expected to keep.
+        ///
+        /// Written into the cell root's `id` rather than wrapped in a tagged
+        /// Box: dynamic already turns a root `id` into a testTag, so this
+        /// adds no layout node — and a Box under FlowRow would take part in
+        /// measurement. Threading a modifier down instead would mean putting
+        /// one through all 35 component entry points, which is a different
+        /// change.
+        ///
+        /// The cell's own root id is replaced. That is already true on iOS —
+        /// the collection's outer identifier wins there too, measured on a
+        /// consumer face — so this makes the two faces agree rather than
+        /// introducing a new asymmetry. Headers and footers pass no
+        /// collectionId and keep their own ids.
+        private fun withCellAddress(
+            cellJson: JsonObject,
+            collectionId: String?,
+            index: Int
+        ): JsonObject {
+            if (collectionId.isNullOrEmpty() || index < 0) return cellJson
+            val copy = cellJson.deepCopy()
+            copy.addProperty("id", "${collectionId}_item_$index")
+            return copy
         }
 
         // Every cell render is a layout root on the dynamic face: it gets its
@@ -1276,7 +1322,8 @@ class DynamicCollectionComponent {
             item: Any?,
             index: Int,
             data: Map<String, Any>,
-            onItemAppear: ((Int) -> Unit)? = null
+            onItemAppear: ((Int) -> Unit)? = null,
+            collectionId: String? = null
         ) {
             // Call onItemAppear callback when this cell appears
             if (onItemAppear != null) {
@@ -1332,8 +1379,9 @@ class DynamicCollectionComponent {
                     }
                 }
 
-                // Render the cell view with item data
-                CellRoot(cellJson, cellData)
+                // Render the cell view with item data, addressed the way the
+                // test drivers address it.
+                CellRoot(withCellAddress(cellJson, collectionId, index), cellData)
             } else {
                 // Fallback - display error
                 Card(
