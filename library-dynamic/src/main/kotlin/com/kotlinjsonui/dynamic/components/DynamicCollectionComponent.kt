@@ -87,11 +87,15 @@ class DynamicCollectionComponent {
             data: Map<String, Any> = emptyMap()
         ) {
             val context = LocalContext.current
-            // The address prefix every cell in this Collection is reached by.
-            val collectionId = json.get("id")?.takeIf { !it.isJsonNull }?.asString
             val a = rememberTypedAttrs(json) { m, canonicalOnly ->
                 CollectionAttributes.parse(m, canonicalOnly)
             }
+            // The address prefix every cell in this Collection is reached by.
+            // Read through the typed attributes, not `json.get("id")` — the
+            // module's ComponentRawReadGateTest forbids a raw own-node read,
+            // and it is the same spelling this file already uses two lines
+            // down for logAutoTrackingMisconfiguration.
+            val collectionId = a.common.id
             UnappliedAttributes.check(
                 "Collection", json,
                 declared = CollectionAttributes.declaredAttributes,
