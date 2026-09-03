@@ -323,27 +323,71 @@ class DynamicCollectionComponent {
             val scrollToFlow = resolveScrollToFlow(a, data)
             val scrollAnchor = TypedAttrs.enumString(a.scrollAnchor) { it.json } ?: "bottom"
 
-            // FlowLayout mode
+            val heightStatic = TypedAttrs.static(a.common.height)
+            val heightIsWrapContent = heightStatic == DimensionValue.WrapContent
+            val widthIsWrapContent = TypedAttrs.static(a.common.width) == DimensionValue.WrapContent
+            // A numeric height or a maxHeight hands a scroll modifier a finite
+            // max whatever the parent does: the node is bounded by its own
+            // declaration. Anything else (matchParent, a bound height) is only
+            // bounded if the parent is.
+            val heightIsSelfBounded =
+                heightStatic is DimensionValue.Number || TypedAttrs.static(a.common.maxHeight) != null
+
+            // FlowLayout mode. Ruling (2026-09-03): with `lazy` in effect (LAZY or
+            // EAGER) a flow Collection scrolls vertically inside its own bounds;
+            // NONE only wraps and the parent scrolls. FlowRow is not a Lazy
+            // container, so this modifier is the only scroll it gets; without it
+            // the same JSON scrolled on iOS (SwiftJsonUI wraps the default-lazy
+            // flow in a ScrollView) and clipped or spilled here.
+            //
+            // "Its own bounds" is literal. A vertically scrollable node measured
+            // with an infinite max height throws, and that is what wrapContent
+            // gets — or matchParent under a LazyColumn cell or a scrolling
+            // sheet, a consumer shape the fixed-box corpus never held. So:
+            // wrapContent never scrolls (nothing to scroll inside; the parent
+            // does), a self-bounded height always may, and matchParent asks the
+            // parent's constraints at runtime. kjui's static emit applies the
+            // same rule minus the runtime arm (it cannot see the parent), so a
+            // matchParent flow under a finite parent scrolls here and not there
+            // — recorded as a parity residue, not hidden.
             if (isFlow) {
                 // 'flowAlignment' is an undeclared legacy runtime extra
                 val flowAlignment = TypedAttrs.undeclared(json, "flowAlignment")?.asString ?: "leading"
-                renderFlowLayout(
-                    sections = sections,
-                    collectionDataSource = collectionDataSource,
-                    cellClassName = cellClassName,
-                    cellTemplate = cellTemplate,
-                    cellIdProperty = cellIdProperty,
-                    data = data,
-                    modifier = modifier.then(Modifier.padding(contentPadding)),
-                    horizontalSpacing = columnSpacing,
-                    verticalSpacing = lineSpacing,
-                    flowAlignment = flowAlignment,
-                    cellWidth = cellWidth,
-                    cellHeight = cellHeight,
-                    gravityAlignment = gravityAlignment,
-                    onItemAppear = onItemAppear,
-                    collectionId = collectionId
-                )
+                val flowScrolls = collectionMode != CollectionStackMode.NONE && !heightIsWrapContent
+                val flow: @Composable (Modifier) -> Unit = { flowModifier ->
+                    renderFlowLayout(
+                        sections = sections,
+                        collectionDataSource = collectionDataSource,
+                        cellClassName = cellClassName,
+                        cellTemplate = cellTemplate,
+                        cellIdProperty = cellIdProperty,
+                        data = data,
+                        modifier = flowModifier.then(Modifier.padding(contentPadding)),
+                        horizontalSpacing = columnSpacing,
+                        verticalSpacing = lineSpacing,
+                        flowAlignment = flowAlignment,
+                        cellWidth = cellWidth,
+                        cellHeight = cellHeight,
+                        gravityAlignment = gravityAlignment,
+                        onItemAppear = onItemAppear,
+                        collectionId = collectionId
+                    )
+                }
+                when {
+                    !flowScrolls -> flow(modifier)
+                    heightIsSelfBounded -> flow(modifier.verticalScroll(rememberScrollState()))
+                    else -> BoxWithConstraints(modifier = modifier) {
+                        // The node's own modifiers (size, background, address) sit
+                        // on this box; the FlowRow fills it and scrolls only when
+                        // the box was given a finite height to fill.
+                        val inner = if (constraints.hasBoundedHeight) {
+                            Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                        } else {
+                            Modifier.fillMaxWidth()
+                        }
+                        flow(inner)
+                    }
+                }
                 return
             }
 
@@ -352,8 +396,6 @@ class DynamicCollectionComponent {
             // so the collection scrolls without virtualization. NONE skips the
             // scroll modifier entirely (parent must provide scroll). wrapContent
             // forces NONE-style rendering to avoid Compose's nested-Lazy crash.
-            val heightIsWrapContent = TypedAttrs.static(a.common.height) == DimensionValue.WrapContent
-            val widthIsWrapContent = TypedAttrs.static(a.common.width) == DimensionValue.WrapContent
             if (!lazy && isHorizontal) {
                 val rowModifier = if (collectionMode == CollectionStackMode.EAGER && !widthIsWrapContent) {
                     modifier.horizontalScroll(rememberScrollState())
