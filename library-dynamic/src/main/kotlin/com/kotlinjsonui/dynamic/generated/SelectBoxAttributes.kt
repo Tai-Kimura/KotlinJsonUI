@@ -38,7 +38,7 @@ data class SelectBoxAttributes(
     val inView: String? = null,
     /** Include prompt in binding */
     val includePromptWhenDataBinding: Boolean? = null,
-    /** List of items for normal picker (can be template variable) */
+    /** List of items for normal picker (can be template variable). Data (usually bound): entries are rendered as given and are NOT looked up in strings. */
     val items: AttrValue<List<Any?>>? = null,
     /** Label styling attributes */
     val labelAttributes: Map<String, Any?>? = null,

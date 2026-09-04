@@ -15,7 +15,7 @@ data class SegmentAttributes(
     val apportionsSegmentWidthsByContent: Boolean? = null,
     /** Label color of the UNSELECTED segments - hex string or color name from colors.json [aliases: normalColor] */
     val fontColor: String? = null,
-    /** Segment items array [required] */
+    /** Segment items array. Static labels; an entry may be a strings key, resolved at render time on every face. [required] */
     val items: List<Any?>? = null,
     /** Momentary selection mode */
     val momentary: Boolean? = null,
