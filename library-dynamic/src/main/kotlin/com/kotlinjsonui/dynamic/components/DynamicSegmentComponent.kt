@@ -23,9 +23,10 @@ import androidx.compose.ui.platform.LocalContext
  *
  * Supported JSON attributes:
  * - selectedIndex/bind: Integer or @{variable} for selected tab index
- * - items/segments: Array of segment titles or @{variable} for dynamic segments.
- *   Literal array items are resolved through string resources / bindings
- *   (ResourceResolver), matching the static codegen's process_text.
+ * - items: Array of segment titles. Elements are resolved through string
+ *   resources (ResourceResolver), matching the static codegen's process_text.
+ *   Not a binding: SSoT declares Segment.items as type "array" only. The
+ *   'segments' alias and the @{variable} form were both removed 2026-09-04.
  * - enabled: Boolean or @{variable} to enable/disable
  * - backgroundColor: Color for container (containerColor); defaults to
  *   Color.Transparent when unspecified (matching the static codegen)
@@ -215,38 +216,38 @@ class DynamicSegmentComponent {
             data: Map<String, Any>,
             context: Context?
         ): List<String> {
-            // 'items' accepts a @{binding} string in addition to the declared
-            // array shape, and array elements are stringified through gson —
-            // wider than the generated List<Any?> coercion, so read raw (see
-            // TypedAttrs.rawKey); 'segments' is an undeclared legacy runtime
-            // extra spelling.
+            // 'items' only, and only the declared array shape. Array elements
+            // are stringified through gson — wider than the generated
+            // List<Any?> coercion — so read raw (see TypedAttrs.rawKey).
+            //
+            // Two acceptances were removed (2026-09-04) to match the SSoT and
+            // the other faces:
+            //   * 'segments' was an undeclared alias read by this runtime
+            //     alone. It is absent from attribute_definitions.json, no
+            //     consumer layout used it (measured 0 across six faces), and
+            //     the extract vocabulary and kjui's codegen dropped it first,
+            //     so keeping it here meant a spelling that still rendered
+            //     while nothing collected its strings.
+            //   * a @{binding} string in place of the array. SSoT declares
+            //     Segment.items as type "array" with no binding, the iOS
+            //     dynamic runtime never accepted one, and the codegen stopped
+            //     accepting it in 1.8.39 — this was the last face still taking
+            //     a shape the contract does not describe.
             val segmentsElement = TypedAttrs.rawKey(json, "items")
-                ?: TypedAttrs.undeclared(json, "segments")
 
             return when {
                 segmentsElement == null -> emptyList()
                 segmentsElement.isJsonArray -> {
                     // Literal titles resolve like the static codegen's
-                    // process_text: string resource keys → localized values,
-                    // @{binding} expressions → data map values.
+                    // process_text: string resource keys → localized values.
+                    // Non-primitive elements (null, object) are dropped, which
+                    // is the same set 1.8.39's codegen keeps.
                     segmentsElement.asJsonArray.mapNotNull { element ->
                         when {
                             element.isJsonPrimitive ->
                                 ResourceResolver.resolveTextValue(element.asString, data, context)
                             else -> null
                         }
-                    }
-                }
-                segmentsElement.isJsonPrimitive && ModifierBuilder.isBinding(segmentsElement.asString) -> {
-                    val variable = ModifierBuilder.extractBindingProperty(segmentsElement.asString)
-                    if (variable != null) {
-                        when (val segments = data[variable]) {
-                            is List<*> -> segments.mapNotNull { it?.toString() }
-                            is Array<*> -> segments.mapNotNull { it?.toString() }
-                            else -> emptyList()
-                        }
-                    } else {
-                        emptyList()
                     }
                 }
                 else -> emptyList()

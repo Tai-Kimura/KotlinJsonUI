@@ -46,14 +46,37 @@ class SegmentResolutionTest {
         assertEquals(listOf("mode_same", "mode_different"), segments)
     }
 
+    // Inverted 2026-09-04. This example asserted that `items` accepts a
+    // whole-list @{binding}; it now asserts it does not. SSoT declares
+    // Segment.items as type "array" with no binding, the iOS dynamic runtime
+    // never accepted one, and kjui's codegen stopped in 1.8.39 — this runtime
+    // was the last face still taking a shape the contract does not describe.
     @Test
-    fun `whole-list binding items come from the data map verbatim`() {
+    fun `a whole-list binding is not an items array and yields nothing`() {
         val node = json("""{"type":"Segment","items":"@{tabs}"}""")
         val segments = DynamicSegmentComponent.parseSegments(
             node,
             mapOf("tabs" to listOf("A", "B")),
             context = null
         )
+        assertEquals(emptyList<String>(), segments)
+    }
+
+    // The undeclared 'segments' alias, removed in the same change. Reading it
+    // here while the extract vocabulary had already dropped it meant a layout
+    // that still rendered from strings nobody collected.
+    @Test
+    fun `the undeclared segments alias is not read`() {
+        val node = json("""{"type":"Segment","segments":["A","B"]}""")
+        val segments = DynamicSegmentComponent.parseSegments(node, emptyMap(), context = null)
+        assertEquals(emptyList<String>(), segments)
+    }
+
+    // Control for both removals: the declared shape is untouched.
+    @Test
+    fun `a literal items array is unaffected by the two removals`() {
+        val node = json("""{"type":"Segment","items":["A","B"]}""")
+        val segments = DynamicSegmentComponent.parseSegments(node, emptyMap(), context = null)
         assertEquals(listOf("A", "B"), segments)
     }
 
