@@ -69,7 +69,7 @@ dependencies {
     implementation(project(":library"))
 
     // Compose dependencies
-    implementation(platform("androidx.compose:compose-bom:2026.08.00"))
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3.adaptive:adaptive")
@@ -99,7 +99,7 @@ dependencies {
     // CoilNetworkFetcherTest: a local HTTP image server, so the "does a URL
     // image load at all" measurement needs no internet from the emulator.
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.08.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
