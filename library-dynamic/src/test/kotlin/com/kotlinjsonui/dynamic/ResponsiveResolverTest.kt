@@ -1,6 +1,7 @@
 package com.kotlinjsonui.dynamic
 
 import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -24,6 +25,41 @@ class ResponsiveResolverTest {
     @Test
     fun widthSizeClassKey_expanded() {
         assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(900, 1200)))
+    }
+
+    // ── the tier is a THRESHOLD, not an equality ──
+    //
+    // Compose 1.12's adaptive library adds L and XL width size classes and
+    // deprecates currentWindowAdaptiveInfo in favour of a V2 that reports
+    // them. Moving to V2 changes nothing here, and the reason is narrow:
+    // widthSizeClassKey asks isWidthAtLeastBreakpoint, so a width that V2
+    // classifies as L or XL still satisfies the EXPANDED lower bound and
+    // still lands on "regular". Written as `sizeClass == EXPANDED`, the same
+    // migration would have dropped every large window out of "regular"
+    // without a single test going red.
+    //
+    // This is a property the code happens to have rather than one anything
+    // was defending, so these three arms defend it. They read the SDK's own
+    // lower bound instead of 840, sit on both sides of it, and the third is
+    // in the L/XL territory V2 exists to name.
+
+    @Test
+    fun widthSizeClassKey_oneDpBelowExpandedIsStillMedium() {
+        val width = WIDTH_DP_EXPANDED_LOWER_BOUND - 1
+        assertEquals("medium", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(width, 1200)))
+    }
+
+    @Test
+    fun widthSizeClassKey_exactlyAtExpandedLowerBoundIsRegular() {
+        val width = WIDTH_DP_EXPANDED_LOWER_BOUND
+        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(width, 1200)))
+    }
+
+    @Test
+    fun widthSizeClassKey_farAboveExpandedIsStillRegular() {
+        // Three times the bound: what Compose 1.12 would call L or XL.
+        val width = WIDTH_DP_EXPANDED_LOWER_BOUND * 3
+        assertEquals("regular", ResponsiveResolver.widthSizeClassKey(WindowSizeClass(width, 1600)))
     }
 
     // ── resolveMatchingKeys ──

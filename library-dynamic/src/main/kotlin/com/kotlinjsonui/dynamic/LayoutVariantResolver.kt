@@ -1,6 +1,6 @@
 package com.kotlinjsonui.dynamic
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 
 /**
@@ -36,6 +36,6 @@ object LayoutVariantResolver {
  */
 @Composable
 fun currentSizeClassTier(): String {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     return ResponsiveResolver.widthSizeClassKey(windowSizeClass)
 }

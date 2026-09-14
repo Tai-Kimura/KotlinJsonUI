@@ -1,6 +1,6 @@
 package com.kotlinjsonui.dynamic
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.window.core.layout.WindowSizeClass
@@ -212,7 +212,7 @@ object ResponsiveResolver {
 @Composable
 fun resolveResponsiveNode(json: JsonObject): JsonObject {
     if (!json.has("responsive")) return json
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     return ResponsiveResolver.resolveNode(json, windowSizeClass, isWindowLandscape())
 }
 
@@ -223,7 +223,7 @@ fun resolveResponsiveNode(json: JsonObject): JsonObject {
  */
 @Composable
 fun resolveResponsiveTree(json: JsonObject): JsonObject {
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     return ResponsiveResolver.resolveTree(json, windowSizeClass, isWindowLandscape())
 }
 
