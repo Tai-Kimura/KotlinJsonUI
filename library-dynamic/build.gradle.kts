@@ -128,9 +128,25 @@ mavenPublishing {
     // failing Dokka step.
     configure(
         com.vanniktech.maven.publish.AndroidSingleVariantLibrary(
-            variant = "release",
-            sourcesJar = true,
-            publishJavadocJar = false
+            // The (String, Boolean, Boolean) constructor is deprecated in
+            // 0.37.0. The typed one takes (JavadocJar, SourcesJar, variant) —
+            // signature read from the plugin jar with javap, not guessed.
+            //
+            // Same meaning as `sourcesJar = true, publishJavadocJar = false`:
+            // real sources, and an EMPTY javadoc jar. Central requires a
+            // javadoc artifact to exist; Dokka fails on the sealed
+            // `EmbeddedEvent`, which is why it was never generated.
+            //
+            // ⚠️ `JavadocJar.None()`, NOT `.Empty()`. This file already
+            // registers its own `emptyJavadocJar` below and attaches it to
+            // the publication by hand; `.Empty()` makes the PLUGIN register a
+            // task of that same name and configuration fails outright
+            // ("Cannot add task 'emptyJavadocJar'"). `publishJavadocJar =
+            // false` meant exactly this: the plugin contributes nothing and
+            // the hand-rolled jar is the artifact.
+            javadocJar = com.vanniktech.maven.publish.JavadocJar.None(),
+            sourcesJar = com.vanniktech.maven.publish.SourcesJar.Sources(),
+            variant = "release"
         )
     )
     // Provide an empty javadoc.jar so Sonatype Central accepts the bundle.

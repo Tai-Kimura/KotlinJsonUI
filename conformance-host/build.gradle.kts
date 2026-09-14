@@ -11,11 +11,12 @@ android {
     // Codegen host sources (scripts/generate_codegen_host.rb, gitignored)
     // replace the committed fallback registry when present — exactly one
     // CodegenFixtureEntries per build.
-    sourceSets["main"].kotlin.srcDir(
+    // `srcDir` is deprecated in AGP 9; `directories` is the mutable set.
+    sourceSets["main"].kotlin.directories.add(
         if (file("src/codegen/kotlin").exists()) "src/codegen/kotlin" else "src/fallback/kotlin"
     )
     if (file("src/codegen/res").exists()) {
-        sourceSets["main"].res.srcDir("src/codegen/res")
+        sourceSets["main"].res.directories.add("src/codegen/res")
     }
     compileSdk = 37
 
