@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     // Needed by the vendored jsonui-test-runner driver models (@Serializable)
     id("org.jetbrains.kotlin.plugin.serialization")
@@ -18,7 +17,7 @@ android {
     if (file("src/codegen/res").exists()) {
         sourceSets["main"].res.srcDir("src/codegen/res")
     }
-    compileSdk = 36
+    compileSdk = 37
 
     // AAPT's default ignore pattern contains `<dir>_*`, which silently drops
     // any assets DIRECTORY starting with an underscore — i.e. the entire
@@ -32,7 +31,7 @@ android {
     defaultConfig {
         applicationId = "com.kotlinjsonui.conformance"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -75,7 +74,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.activity:activity-compose:1.10.1")
 
-    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
+    implementation(platform("androidx.compose:compose-bom:2026.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.runtime:runtime")

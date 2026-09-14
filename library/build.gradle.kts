@@ -1,6 +1,5 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
     id("signing")
@@ -10,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.kotlinjsonui"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -56,7 +55,7 @@ android {
     // composeOptions is no longer needed with Kotlin 2.0+ Compose plugin
     
     testOptions {
-        targetSdk = 36
+        targetSdk = 37
         unitTests.all {
             it.extensions.configure<JacocoTaskExtension> {
                 isIncludeNoLocationClasses = true
@@ -123,7 +122,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     
     // Jetpack Compose
-    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
+    implementation(platform("androidx.compose:compose-bom:2026.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
@@ -277,7 +276,7 @@ signing {
 
 // Configure vanniktech plugin for Central Portal
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
     
     coordinates("io.github.tai-kimura", "kotlinjsonui", project.findProperty("version") as String)

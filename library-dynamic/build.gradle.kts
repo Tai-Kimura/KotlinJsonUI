@@ -1,6 +1,5 @@
 plugins {
     id("com.android.library")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("maven-publish")
     id("signing")
@@ -9,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.kotlinjsonui.dynamic"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -53,7 +52,7 @@ dependencies {
     implementation(project(":library"))
 
     // Compose dependencies
-    implementation(platform("androidx.compose:compose-bom:2026.05.01"))
+    implementation(platform("androidx.compose:compose-bom:2026.08.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material3.adaptive:adaptive")
@@ -83,7 +82,7 @@ dependencies {
     // CoilNetworkFetcherTest: a local HTTP image server, so the "does a URL
     // image load at all" measurement needs no internet from the emulator.
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.05.01"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.08.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
@@ -100,7 +99,7 @@ signing {
 
 // Configure vanniktech plugin for Central Portal
 mavenPublishing {
-    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
+    publishToMavenCentral(automaticRelease = true)
     signAllPublications()
 
     // AGP 8.x + the bundled Dokka can't parse `PermittedSubclasses` (Java 17
