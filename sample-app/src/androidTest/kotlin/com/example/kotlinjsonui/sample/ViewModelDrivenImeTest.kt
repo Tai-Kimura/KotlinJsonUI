@@ -39,10 +39,21 @@ import java.io.FileInputStream
  * device, and the second separates "focus moved" from "keyboard shown". With
  * both of those green, a negative third arm is a result rather than a fault.
  *
- * The specimen is a TextView-derived screen on purpose: of the eight generated
- * screens carrying this wiring, seven get it from TextView and one from
- * TextField. Picking the TextField screen would measure the seventh of the
- * population that is easiest to think of.
+ * The specimen is text_view_hint_test because it is simple -- two wirings, no
+ * other TextFields in the way -- and NOT because of which component emitted it.
+ *
+ * An earlier version of this comment said seven of the eight screens are
+ * TextView-derived and picked one on those grounds. Both halves were wrong.
+ * Classifying by the generated composable does not work at all: textfield and
+ * textview emit the SAME names (CustomTextFieldWithMargins at :217 and :177,
+ * CustomTextField at :219 and :179), so the output cannot say which emitter ran.
+ * Read instead from the layout JSON's type for the id that carries the wiring,
+ * and sample-app comes out the other way round: 36 wirings, 30 TextField and 6
+ * TextView, with five screens pure TextField, two mixed and one pure TextView.
+ *
+ * It does not matter here regardless. Both emitters produce the identical
+ * LaunchedEffect/requestFocus/show shape, so nothing about target B changes with
+ * the emitter. The only requirement on a specimen is that it carries the wiring.
  *
  * Not run yet. The AVDs on this machine carry other lanes' conformance
  * baselines, so execution belongs to the conformance leg, which boots one once.
