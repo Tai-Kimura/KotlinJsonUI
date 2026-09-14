@@ -47,6 +47,23 @@ kotlin {
     }
 }
 
+// AGP 9 disables the release unit-test component by default, so
+// testReleaseUnitTest stops existing. Falling back to testDebugUnitTest would
+// silently change what the arms are about: library/src/main branches on
+// BuildConfig.DEBUG in two places (DynamicModeManager.kt:28 seeds
+// _isDynamicModeAvailable from it, DynamicModeToggle.kt:27 gates on it), and
+// DynamicModeManagerTest reads that seed. Under debug the default flips
+// false -> true and the suite would be asserting about a variant that is not
+// the one shipped. Keep the release component instead.
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) { variantBuilder ->
+        // The property lives on HasUnitTestBuilder; the beforeVariants lambda
+        // hands back the plain VariantBuilder, so it needs the narrowing cast.
+        (variantBuilder as com.android.build.api.variant.HasUnitTestBuilder)
+            .enableUnitTest = true
+    }
+}
+
 dependencies {
     // Depend on the core library
     implementation(project(":library"))

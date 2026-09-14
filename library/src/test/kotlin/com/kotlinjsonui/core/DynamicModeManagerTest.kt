@@ -1,10 +1,48 @@
 package com.kotlinjsonui.core
 
+import com.kotlinjsonui.BuildConfig
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 
 class DynamicModeManagerTest {
+
+    /**
+     * Boundary control for the AGP 9 migration.
+     *
+     * AGP 9 turns the release unit-test component off by default, so
+     * `testReleaseUnitTest` disappears unless it is switched back on in
+     * build.gradle.kts. The tempting fix is to point CI at
+     * `testDebugUnitTest` instead -- and nothing here would have gone red if
+     * we had, because no arm read this seed before. That silence is the
+     * hazard: `_isDynamicModeAvailable` is seeded from `BuildConfig.DEBUG`
+     * (DynamicModeManager.kt:28), so the swap flips it false -> true and the
+     * suite quietly starts describing a variant that is never shipped.
+     *
+     * This arm pins the wiring rather than the literal, so it is honest in
+     * both variants, and prints the side it ran on so the two sides can be
+     * read off one table:
+     *
+     *   release  BuildConfig.DEBUG=false  seed=false
+     *   debug    BuildConfig.DEBUG=true   seed=true
+     *
+     * A hard-coded `false` here would pass for the wrong reason in release
+     * and force a red in every local debug run, which is why the assertion
+     * is the equality and not the value.
+     */
+    @Test
+    fun `dynamic mode availability is seeded from the build variant`() {
+        val seed = DynamicModeManager.isDynamicModeAvailable.value
+        println(
+            "variant-boundary: BuildConfig.DEBUG=${BuildConfig.DEBUG} " +
+                "isDynamicModeAvailable=$seed"
+        )
+        assertEquals(
+            "the seed must track BuildConfig.DEBUG, not a hard-coded literal",
+            BuildConfig.DEBUG,
+            seed
+        )
+    }
 
     @Test
     fun `DynamicModeConfig holds correct values`() {
