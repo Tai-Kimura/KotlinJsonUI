@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.kotlinjsonui.dynamic.DynamicWebLoadSignal
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
@@ -129,7 +130,31 @@ class DynamicWebComponent {
                             }
                         }
 
-                        webViewClient = WebViewClient()
+                        // 🔻 A BARE `WebViewClient()` EMITS NO COMPLETION SIGNAL.
+                        // The class HAS `onPageFinished`; assigning the default
+                        // instance means nothing overrides it, so a host has
+                        // nothing to wait on and captures whatever the page
+                        // happened to paint. See `DynamicWebLoadSignal` for why
+                        // a green `control_diff` does not settle that question.
+                        //
+                        // ⚠️ The counters are inert until a conformance host
+                        // sets `DynamicWebLoadSignal.enabled`; a consumer's own
+                        // instrumentation sees no change.
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageStarted(
+                                view: WebView?,
+                                url: String?,
+                                favicon: android.graphics.Bitmap?
+                            ) {
+                                DynamicWebLoadSignal.onPageStarted()
+                                super.onPageStarted(view, url, favicon)
+                            }
+
+                            override fun onPageFinished(view: WebView?, url: String?) {
+                                super.onPageFinished(view, url)
+                                DynamicWebLoadSignal.onPageFinished()
+                            }
+                        }
 
                         if (javaScriptEnabled) {
                             webChromeClient = WebChromeClient()

@@ -11,6 +11,9 @@
 # Options:
 #   --fresh                 wipe on-device progress/results before running
 #   --filter assertable     run only assertable + alias fixtures
+#   --web-markers off       turn the WebView load signal OFF — the census's own
+#                           control. The suite must then FAIL with
+#                           markerAbsent == webFixturesRunnable.
 #   --max-attempts N        instrumentation restarts allowed after crashes (default 8)
 set -euo pipefail
 
@@ -48,6 +51,8 @@ DEVICE_OUT="/sdcard/Android/data/$APP_PKG/files/conformance"
 
 FRESH=0
 FILTER="all"
+WEB_MARKERS="on"
+INSTRUMENT_OUT="$(mktemp)"
 # A chopped fixture now costs up to 2 attempts (first dangle re-runs, second
 # dangles to error), and a slow runner legitimately needs several 20-min
 # attempts to cover the whole suite via resume — size the ceiling for both.
@@ -56,6 +61,13 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --fresh) FRESH=1; shift ;;
     --filter) FILTER="$2"; shift 2 ;;
+    # 🔻 THE CENSUS'S OWN CONTROL, KEPT AS A PERMANENT OPTION. `markerAbsent`
+    # claims to detect "the WebView load signal is gone"; with the markers on
+    # it is always 0, and a check nobody has watched fail is a claim. Run with
+    # `--web-markers off` and the suite must go RED with
+    # markerAbsent == webFixturesRunnable. A temporary edit would not survive
+    # to the next person who needs to ask.
+    --web-markers) WEB_MARKERS="$2"; shift 2 ;;
     --max-attempts) MAX_ATTEMPTS="$2"; shift 2 ;;
     *) echo "unknown option: $1" >&2; exit 1 ;;
   esac
@@ -370,11 +382,24 @@ while true; do
   # loop accumulates progress across attempts. 20 min per attempt still catches
   # a hung fixture / mid-run wedge without starving the resume loop.
   # On timeout (124) the loop re-probes liveness and resumes.
+  # 🔴 `|| true` IS DELIBERATE AND IT HIDES SUITE-LEVEL FAILURES. Swallowing
+  # the code is what lets the crash-resume loop retry, but the loop's success
+  # condition is "the results file exists" — not "the suite passed". A suite
+  # assertion that fires AFTER the results are written (the web-load census is
+  # exactly that) therefore leaves: results file present, every fixture status
+  # pass/skipped, and this script exiting 0. Measured 2026-09-15 with
+  # `--web-markers off`: `FAILURES!!! Tests run: 1, Failures: 1` on screen,
+  # markerAbsent=1 in the JSON, and rc=0 out of this script.
+  #
+  # The verdict of the LAST attempt is kept and re-raised after the loop, so
+  # resume still works (an early attempt may legitimately fail and a later one
+  # succeed) while a real failure stops being silent.
   timeout 1200 "$ADB" shell am instrument -w \
     -e conformanceFilter "$FILTER" \
+    -e conformanceWebMarkers "$WEB_MARKERS" \
     -e conformanceHostMode "${HOST_MODE:-dynamic}" \
     -e class "$APP_PKG.ConformanceSuiteTest" \
-    "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" || true
+    "$TEST_PKG/androidx.test.runner.AndroidJUnitRunner" 2>&1 | tee "$INSTRUMENT_OUT" || true
 
   # Fixture-progress marker: lets a post-mortem tell "slow but advancing"
   # (count grows across attempts — budget problem) from "wedged" (count
@@ -403,5 +428,24 @@ while true; do
     exit 1
   fi
 done
+
+# The last attempt's verdict, re-raised. `am instrument` prints `OK (N tests)`
+# on success and `FAILURES!!!` on failure; both are absent when the run never
+# reached a verdict at all, which is a third state and must not read as green.
+if [[ -s "$INSTRUMENT_OUT" ]] && grep -q 'FAILURES!!!' "$INSTRUMENT_OUT"; then
+  echo "error: the instrumentation suite FAILED on its last attempt." >&2
+  grep -E 'AssertionError|Tests run:|FAILURES!!!' "$INSTRUMENT_OUT" | head -10 >&2
+  echo "       (the results file exists and every fixture may read pass/skipped —" >&2
+  echo "        a suite-level assertion fires after the results are written)" >&2
+  rm -f "$INSTRUMENT_OUT"
+  exit 1
+fi
+if [[ ! -s "$INSTRUMENT_OUT" ]] || ! grep -qE '^OK \(|Tests run:' "$INSTRUMENT_OUT"; then
+  echo "error: the instrumentation produced no verdict line (neither OK nor FAILURES)." >&2
+  echo "       Not treating that as success." >&2
+  rm -f "$INSTRUMENT_OUT"
+  exit 1
+fi
+rm -f "$INSTRUMENT_OUT"
 
 echo "Done. Collect with: CONFORMANCE_DIR=... $SCRIPT_DIR/collect_results.sh"

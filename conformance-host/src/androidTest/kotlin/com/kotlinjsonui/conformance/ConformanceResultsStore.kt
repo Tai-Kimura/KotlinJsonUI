@@ -117,7 +117,14 @@ class ConformanceResultsStore(private val outputDir: File) {
         manifestHash: String,
         outcomes: Map<String, FixtureResult>,
         runnerName: String,
-        runnerVersion: String
+        runnerVersion: String,
+        /**
+         * Web load census, name -> count. Emitted under `webMarkers` because
+         * that is the key `jui conformance gate` already reads from the iOS
+         * face; a second spelling would make the gate's declared-host check
+         * silently miss this platform.
+         */
+        webMarkers: Map<String, Int> = emptyMap()
     ): File {
         val payload = buildJsonObject {
             put("platform", "android")
@@ -126,6 +133,11 @@ class ConformanceResultsStore(private val outputDir: File) {
                 put("name", runnerName)
                 put("version", runnerVersion)
             })
+            if (webMarkers.isNotEmpty()) {
+                put("webMarkers", buildJsonObject {
+                    webMarkers.forEach { (k, v) -> put(k, v) }
+                })
+            }
             put("results", buildJsonArray {
                 manifest.fixtures.forEach { fixture ->
                     val r = outcomes[fixture.id] ?: FixtureResult(

@@ -14,6 +14,8 @@ import com.jsonui.testrunner.runner.LoadedTest
 import com.jsonui.testrunner.runner.TestLoader
 import java.io.File
 import java.security.MessageDigest
+import com.kotlinjsonui.dynamic.DynamicWebLoadSignal
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,6 +59,14 @@ class ConformanceSuiteTest {
     // readyTag poll, not by this wait; it only lets the compositor settle
     // (stale drop shadows / mid-settle heights in screenshots).
     private val settleTimeoutMs = 1000L
+
+    /**
+     * How long to wait for a WebView to report a finished load. Generous on
+     * purpose: exceeding it is a NOTICE (`timedOut`), not a failure — the
+     * failure is `markerAbsent`, which means no load was ever observed and is
+     * a wiring fact that no timeout can fix.
+     */
+    private val webLoadTimeoutMs = 10000L
     private val actionExecutor = ActionExecutor(device, defaultTimeoutMs)
     private val assertionExecutor = AssertionExecutor(device, defaultTimeoutMs)
     private val testLoader = TestLoader()
@@ -91,11 +101,48 @@ class ConformanceSuiteTest {
         val outcomes = store.loadCompleted().toMutableMap()
         log("Resuming with ${outcomes.size}/${manifest.fixtures.size} outcomes already recorded")
 
+        // 🔻 A HOOK FOR THE CENSUS'S OWN CONTROL, ON BY DEFAULT. `markerAbsent`
+        // claims to detect "the load signal is gone", and a check nobody has
+        // ever watched fail is a claim, not a gate. Conservation does not
+        // cover this: a predicate that always answered "settled" would satisfy
+        // runnable == reachedCapture == the bucket sum AND return
+        // markerAbsent == 0 — which is precisely the iOS defect
+        // (`if webPending.exists`, evaluated instantly, never waiting). The
+        // same census, on the neighbouring face, has already failed this way
+        // once.
+        //
+        // Run with `-e conformanceWebMarkers off` and the suite must go RED
+        // with markerAbsent == runnable. If that run stays green, a green run
+        // with the flag on means nothing.
+        val webMarkersOff =
+            InstrumentationRegistry.getArguments().getString("conformanceWebMarkers") == "off"
+        DynamicWebLoadSignal.enabled = !webMarkersOff
+        log("Web load markers: ${if (webMarkersOff) "OFF (census control)" else "on"}")
+        // DECLARED, before the run touches anything: how many Web-hosted
+        // fixtures THIS INVOCATION is supposed to execute. A run whose
+        // `reachedCapture` falls short of it has a wiring problem, which is a
+        // different finding from "the page did not load".
+        //
+        // 🔻 DERIVED FROM `classifySkip`, THE SAME PREDICATE THE LOOP USES,
+        // not from a copy of its conditions. The first version re-listed
+        // platform/mode by hand and ignored the filter entirely, so any
+        // `--filter assertable` run — where every Web visual fixture is
+        // skipped by design — would have reported runnable=2 against
+        // reachedCapture=0 and failed the suite for doing exactly what it was
+        // asked to do. A parallel reimplementation of a gate's own condition
+        // is wrong the moment either side moves.
+        webLoadCensus.webFixturesRunnable = manifest.fixtures.count { f ->
+            f.host == "Web" && classifySkip(f, filter) == null
+        }
+
         try {
             var firstFixture = true
 
             for (fixture in manifest.fixtures) {
                 if (outcomes.containsKey(fixture.id)) continue
+                // Per fixture, so `startedCount` answers "did a load begin for
+                // THIS one" rather than "has any load ever begun".
+                DynamicWebLoadSignal.reset()
 
                 val skipped = classifySkip(fixture, filter)
                 if (skipped != null) {
@@ -122,11 +169,47 @@ class ConformanceSuiteTest {
             manifestHash = manifestHash,
             outcomes = outcomes,
             runnerName = "uiautomator",
-            runnerVersion = UIAUTOMATOR_VERSION
+            runnerVersion = UIAUTOMATOR_VERSION,
+            webMarkers = mapOf(
+                "webFixturesRunnable" to webLoadCensus.webFixturesRunnable,
+                "webFixturesReachedCapture" to webLoadCensus.webFixturesReachedCapture,
+                "alreadySettled" to webLoadCensus.alreadySettled,
+                "waitedThenSettled" to webLoadCensus.waitedThenSettled,
+                "timedOut" to webLoadCensus.timedOut,
+                "markerAbsent" to webLoadCensus.markerAbsent
+            )
         )
         val summary = outcomes.values.groupingBy { it.status }.eachCount()
         log("Suite finished: $summary -> ${resultsFile.name}")
+        log("Web load census: $webLoadCensus")
         assertTrue("results file missing", resultsFile.isFile)
+
+        // 🔻 CONSERVATION FIRST. Each of the three below rules out a way the
+        // census could be green while measuring nothing, and the last one only
+        // means something once they hold.
+        val bucketed = webLoadCensus.alreadySettled + webLoadCensus.waitedThenSettled +
+            webLoadCensus.timedOut + webLoadCensus.markerAbsent
+        assertEquals(
+            "Web fixtures declared by the manifest were not all reached: " +
+                "runnable=${webLoadCensus.webFixturesRunnable} " +
+                "reachedCapture=${webLoadCensus.webFixturesReachedCapture}. " +
+                "That is a wiring fact, not a loading one",
+            webLoadCensus.webFixturesRunnable,
+            webLoadCensus.webFixturesReachedCapture
+        )
+        assertEquals(
+            "census buckets do not add up: $bucketed bucketed vs " +
+                "${webLoadCensus.webFixturesReachedCapture} reached capture",
+            webLoadCensus.webFixturesReachedCapture,
+            bucketed
+        )
+        assertEquals(
+            "${webLoadCensus.markerAbsent} Web fixture(s) reached capture with no load " +
+                "ever observed — the signal is not wired, so the screenshot was taken " +
+                "at an uncontrolled moment (census: $webLoadCensus)",
+            0,
+            webLoadCensus.markerAbsent
+        )
     }
 
     /** Returns a skipped result when this host must not execute the fixture. */
@@ -262,6 +345,16 @@ class ConformanceSuiteTest {
         // single committed frame does not.
         if (fixture.clazz == "visual") {
             waitForPresented(fixture.id, readyTimeout)
+            // 🔻 A `WebView` IS IN THE HIERARCHY BEFORE IT HAS PAINTED, so the
+            // frame-committed signal above is satisfied while the page is
+            // still loading. Keyed on the manifest's DECLARED host rather than
+            // on any transient state: the iOS host's first version detected a
+            // "pending" marker that was already gone by the first query on a
+            // local load, and reported a false 0 of 2 on a run whose pixels
+            // were byte-identical to the baseline.
+            if (fixture.host == "Web") {
+                settleWebLoad(webLoadTimeoutMs, webLoadCensus)
+            }
             device.waitForIdle(settleTimeoutMs)
             Thread.sleep(150)
         }
@@ -361,6 +454,8 @@ class ConformanceSuiteTest {
     }
 
     /** In-process layout signal (FixtureHost.renderedIds) — a11y-independent. */
+    private val webLoadCensus = WebLoadCensus()
+
     private fun waitForRendered(fixtureId: String, timeoutMs: Long): Boolean {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
@@ -380,6 +475,53 @@ class ConformanceSuiteTest {
      * gate, so a host that somehow never draws degrades to the old timing
      * rather than erroring the whole visual class.
      */
+    /**
+     * How many Web fixtures reached capture, and what the load signal said.
+     *
+     * 🔻 THE DENOMINATOR IS `webFixturesReachedCapture`, NOT the bucket. A
+     * `markerAbsent` of 2 does not distinguish "two fixtures reached capture
+     * and neither signalled" from "nothing reached capture at all" — and the
+     * second is what a mis-wired census produces, which is the likelier
+     * failure on the run that introduces one. So `runnable` (declared by the
+     * manifest) and `reachedCapture` (observed by the run) are both recorded,
+     * and the four buckets are required to sum to the second.
+     */
+    private data class WebLoadCensus(
+        var webFixturesRunnable: Int = 0,
+        var webFixturesReachedCapture: Int = 0,
+        var alreadySettled: Int = 0,
+        var waitedThenSettled: Int = 0,
+        var timedOut: Int = 0,
+        var markerAbsent: Int = 0
+    )
+
+    /**
+     * Wait for this fixture's WebView to report a finished load.
+     *
+     * The counters are reset immediately before the fixture renders, so
+     * `startedCount` says whether a load began at all. That separates "the
+     * page is still loading" (timedOut) from "no load was ever observed"
+     * (markerAbsent) — the second means the signal is not wired, which no
+     * amount of waiting fixes and which a single bucket would hide.
+     */
+    private fun settleWebLoad(timeoutMs: Long, census: WebLoadCensus) {
+        census.webFixturesReachedCapture += 1
+        if (DynamicWebLoadSignal.finishedCount >= 1) {
+            census.alreadySettled += 1
+            return
+        }
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            if (DynamicWebLoadSignal.finishedCount >= 1) {
+                census.waitedThenSettled += 1
+                return
+            }
+            Thread.sleep(25)
+        }
+        if (DynamicWebLoadSignal.startedCount >= 1) census.timedOut += 1
+        else census.markerAbsent += 1
+    }
+
     private fun waitForPresented(fixtureId: String, timeoutMs: Long): Boolean {
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {

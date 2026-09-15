@@ -19,7 +19,15 @@ data class ManifestFixture(
     /** raw `mode` value: null, a string, or a list of strings */
     val modes: List<String>?,
     val layout: String,
-    val test: String
+    val test: String,
+    /**
+     * The component that HOSTS this fixture, which is not the same as the
+     * component under test. `__control/Web` has `component == "__control"`
+     * and `host == "Web"`, so keying on the component misses every control.
+     * The iOS host measured that: host=="Web" gives 5 fixtures where
+     * component=="Web" gives 4.
+     */
+    val host: String?
 ) {
     val isAlias: Boolean get() = aliasOf != null
 
@@ -46,7 +54,8 @@ data class ConformanceManifest(
                     platforms = o.getValue("platforms").jsonArray.map { it.jsonPrimitive.content },
                     modes = parseModes(o["mode"]),
                     layout = o.getValue("layout").jsonPrimitive.content,
-                    test = o.getValue("test").jsonPrimitive.content
+                    test = o.getValue("test").jsonPrimitive.content,
+                    host = o["host"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content
                 )
             }
             return ConformanceManifest(fixtures)
