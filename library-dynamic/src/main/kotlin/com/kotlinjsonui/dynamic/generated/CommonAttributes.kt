@@ -102,6 +102,8 @@ data class CommonAttributes(
     val events: Map<String, Any?>? = null,
     /** Frame configuration with width/height */
     val frame: Map<String, Any?>? = null,
+    /** Liquid Glass. true for the default treatment, or an object {style: regular|clear|identity, tint: color, interactive: bool, shape: capsule|rect|circle|rounded(N)}. Declared on common rather than per component because ios.md names View, Button, TextField and Label followed by 'etc' - an open list, and a per-component declaration would make the set of components the acceptance population, so every reading of 'etc' becomes a gap. mode carries BOTH uikit and swiftui because the attribute has two implementations, .glassEffect() on SwiftUI and UIGlassEffect on UIKit; this is the first declaration in the file to pair those two, though five declarations already use an array for mode and both readers accept one (kjui Array(attr_def['mode']), jui isinstance(raw, list)). Leaving mode off would not have meant 'both' - an absent mode means NO restriction at all (kjui attribute_validator_core.rb mode_compatible? returns true when the key is missing), which would let the attribute read as available in modes it has no implementation for. [accepts: boolean | object] */
+    val glass: Any? = null,
     /** Content gravity/alignment. A single value names ONE axis; the axis it does not name falls to the container default (top vertically, start horizontally), so in LTR `left` and `top` both resolve to (start, top) and render identically. Use the array form to name both axes. Full ruling in attribute_semantics.json -> gravityDefaults; do not restate it in toolchain comments. [accepts: string | array] */
     val gravity: Any? = null,
     /** Height (number, 'matchParent', 'wrapContent') - binding supported. Not required if weight is specified. [required] */
@@ -457,6 +459,7 @@ data class CommonAttributes(
             "endMargin",
             "events",
             "frame",
+            "glass",
             "gravity",
             "height",
             "heightRaw",
@@ -622,6 +625,7 @@ data class CommonAttributes(
             endMargin = AttrCoerce.attrValue(AttrCoerce.lookup(json, "endMargin")) { AttrCoerce.number(it) },
             events = AttrCoerce.obj(AttrCoerce.lookup(json, "events")),
             frame = AttrCoerce.obj(AttrCoerce.lookup(json, "frame")),
+            glass = AttrCoerce.lookup(json, "glass"),
             gravity = AttrCoerce.lookup(json, "gravity"),
             height = AttrCoerce.attrValue(AttrCoerce.lookup(json, "height")) { DimensionValue.parse(it, "common.height") },
             heightRaw = AttrCoerce.string(AttrCoerce.lookup(json, "heightRaw")),
