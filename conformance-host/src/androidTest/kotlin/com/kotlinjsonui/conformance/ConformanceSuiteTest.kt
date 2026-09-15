@@ -14,7 +14,7 @@ import com.jsonui.testrunner.runner.LoadedTest
 import com.jsonui.testrunner.runner.TestLoader
 import java.io.File
 import java.security.MessageDigest
-import com.kotlinjsonui.dynamic.DynamicWebLoadSignal
+import com.kotlinjsonui.core.WebLoadSignal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -116,7 +116,7 @@ class ConformanceSuiteTest {
         // with the flag on means nothing.
         val webMarkersOff =
             InstrumentationRegistry.getArguments().getString("conformanceWebMarkers") == "off"
-        DynamicWebLoadSignal.enabled = !webMarkersOff
+        WebLoadSignal.enabled = !webMarkersOff
         log("Web load markers: ${if (webMarkersOff) "OFF (census control)" else "on"}")
         // DECLARED, before the run touches anything: how many Web-hosted
         // fixtures THIS INVOCATION is supposed to execute. A run whose
@@ -142,7 +142,7 @@ class ConformanceSuiteTest {
                 if (outcomes.containsKey(fixture.id)) continue
                 // Per fixture, so `startedCount` answers "did a load begin for
                 // THIS one" rather than "has any load ever begun".
-                DynamicWebLoadSignal.reset()
+                WebLoadSignal.reset()
 
                 val skipped = classifySkip(fixture, filter)
                 if (skipped != null) {
@@ -524,19 +524,19 @@ class ConformanceSuiteTest {
      */
     private fun settleWebLoad(timeoutMs: Long, census: WebLoadCensus) {
         census.webFixturesReachedCapture += 1
-        if (DynamicWebLoadSignal.finishedCount >= 1) {
+        if (WebLoadSignal.finishedCount >= 1) {
             census.alreadySettled += 1
             return
         }
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
-            if (DynamicWebLoadSignal.finishedCount >= 1) {
+            if (WebLoadSignal.finishedCount >= 1) {
                 census.waitedThenSettled += 1
                 return
             }
             Thread.sleep(25)
         }
-        if (DynamicWebLoadSignal.startedCount >= 1) census.timedOut += 1
+        if (WebLoadSignal.startedCount >= 1) census.timedOut += 1
         else census.markerAbsent += 1
     }
 

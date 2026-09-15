@@ -1,63 +1,36 @@
 package com.kotlinjsonui.dynamic
 
-import java.util.concurrent.atomic.AtomicInteger
+import com.kotlinjsonui.core.WebLoadSignal
 
 /**
- * Whether the WebViews this library creates have finished loading.
+ * Compatibility face of [WebLoadSignal], which now lives in `library`.
  *
- * 🔻 WHY THIS EXISTS. A `WebView` is in the hierarchy the instant it is made,
- * so a conformance host whose only gate before a screenshot is "the fixture's
- * screen is on" captures whatever the page happens to have painted by then.
- * The capture time is not controlled — and BOTH SIDES of that race have been
- * seen in committed baselines on the iOS face: one bake caught
- * `Web/html__static` blank, an earlier one caught its control blank and hashed
- * all zeroes.
+ * 🔻 WHY IT MOVED. This object could only ever be reported to from the dynamic
+ * module, so the codegen face — whose WebView is emitted into the CONSUMER's
+ * module by `kjui build` — had no way to reach it, and was never wired.
+ * Measured 2026-09-16 (conformance-mobile run 34987243780): in one run, on one
+ * emulator image, the dynamic leg reported `markerAbsent=0` and the codegen leg
+ * `markerAbsent=2`.
  *
- * ⚠️ AND `control_diff` IS GREEN THROUGH IT. A race satisfies "the fixture
- * differs from its control" for the wrong reason, so a green control-diff job
- * says nothing about whether the page painted. That inference was made twice
- * about the android face on 2026-09-15 and is wrong both times; the note in
- * SwiftJsonUI's `WebView.swift` had already recorded it.
- *
- * 🔻 NOT AN ACCESSIBILITY MARKER, unlike the iOS side. The android
- * conformance host already reads in-process signals (`FixtureHost.renderedIds`
- * / `presentedIds`) precisely because they are a11y-independent, and a Compose
- * `testTag` on a wrapper merges semantics onto the content underneath it —
- * which is the exact failure the iOS host hit and wrote down. The host and the
- * app under test share a process here, so a counter is both simpler and safer.
- *
- * ⚠️ OFF UNLESS ASKED. A consumer's own instrumentation must not see its
- * counters move, so nothing is recorded until a host sets [enabled].
+ * Every member below forwards, so a host that sets `enabled` here turns the
+ * signal on for BOTH paths. New code should use [WebLoadSignal] directly.
  */
+@Deprecated(
+    "Use com.kotlinjsonui.core.WebLoadSignal — it covers the codegen path too",
+    ReplaceWith("WebLoadSignal", "com.kotlinjsonui.core.WebLoadSignal")
+)
 object DynamicWebLoadSignal {
-    /** Set by a conformance host before the run. Off in production. */
-    @Volatile
     @JvmStatic
-    var enabled: Boolean = false
+    var enabled: Boolean
+        get() = WebLoadSignal.enabled
+        set(value) { WebLoadSignal.enabled = value }
 
-    private val started = AtomicInteger(0)
-    private val finished = AtomicInteger(0)
-
-    /** Loads begun since the last [reset]. */
     @JvmStatic
-    val startedCount: Int get() = started.get()
+    val startedCount: Int get() = WebLoadSignal.startedCount
 
-    /** Loads that reached `onPageFinished` since the last [reset]. */
     @JvmStatic
-    val finishedCount: Int get() = finished.get()
+    val finishedCount: Int get() = WebLoadSignal.finishedCount
 
-    /** Called by the host between fixtures, so each fixture is judged alone. */
     @JvmStatic
-    fun reset() {
-        started.set(0)
-        finished.set(0)
-    }
-
-    internal fun onPageStarted() {
-        if (enabled) started.incrementAndGet()
-    }
-
-    internal fun onPageFinished() {
-        if (enabled) finished.incrementAndGet()
-    }
+    fun reset() = WebLoadSignal.reset()
 }
