@@ -189,13 +189,31 @@ class ConformanceSuiteTest {
         // means something once they hold.
         val bucketed = webLoadCensus.alreadySettled + webLoadCensus.waitedThenSettled +
             webLoadCensus.timedOut + webLoadCensus.markerAbsent
-        assertEquals(
-            "Web fixtures declared by the manifest were not all reached: " +
-                "runnable=${webLoadCensus.webFixturesRunnable} " +
-                "reachedCapture=${webLoadCensus.webFixturesReachedCapture}. " +
-                "That is a wiring fact, not a loading one",
-            webLoadCensus.webFixturesRunnable,
-            webLoadCensus.webFixturesReachedCapture
+        // 🔴 NOT EQUALITY, AND THE OWNER OF THE OTHER FACE SAID SO FIRST.
+        // SwiftJsonUI's census declares `webFixturesRunnable` "Informational …
+        // not the denominator", because a fixture that errors before its
+        // screen comes up never reaches the check. This host has a second
+        // reason on top of that: the crash-resume loop skips fixtures already
+        // in `progress.jsonl` (`if (outcomes.containsKey(fixture.id))
+        // continue`) while `webFixturesRunnable` is counted from the manifest
+        // and knows nothing about them — so ANY run that retried once would
+        // have failed an equality assertion with everything working.
+        //
+        // What is left here is the direction, which cannot be violated
+        // innocently: reaching capture more times than the run had fixtures to
+        // run would mean the counter is being incremented from somewhere else.
+        //
+        // 🔻 THE POPULATION CHECK IS NOT HERE AND CANNOT BE. Both numbers on
+        // this line are derived from the set THIS RUN decided to execute, so
+        // a fixture that left the corpus shrinks them together and the
+        // comparison stays true. `jui conformance gate` compares
+        // `webFixturesRunnable` against the manifest's declaration, which is
+        // the only number outside the run.
+        assertTrue(
+            "reachedCapture=${webLoadCensus.webFixturesReachedCapture} exceeds " +
+                "runnable=${webLoadCensus.webFixturesRunnable} — the capture counter is " +
+                "being incremented outside the loop that owns it",
+            webLoadCensus.webFixturesReachedCapture <= webLoadCensus.webFixturesRunnable
         )
         assertEquals(
             "census buckets do not add up: $bucketed bucketed vs " +
