@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
+import com.kotlinjsonui.components.SelectBoxCaret
 import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
@@ -40,6 +42,10 @@ import androidx.compose.ui.platform.LocalContext
  * - fontSize: Float font size
  * - font: Font weight string (bold, semibold, medium, light, thin)
  * - cancelButtonBackgroundColor/cancelButtonTextColor: Cancel button colors
+ * - caretAttributes: {src, width, height, tintColor, background, rightMargin}
+ *   — the closed select draws its own caret when the object is present;
+ *   absent keeps the native arrow (SSoT SelectBox.caretAttributes, cross-platform
+ *   since jsonui-cli 1.8.101)
  * - onValueChange: @{handler} for change callback
  * - Modifiers: testTag, margins, size, alpha, clickable (alignment/weight are
  *   applied by the parent container). background/borderColor/cornerRadius are
@@ -52,6 +58,26 @@ import androidx.compose.ui.platform.LocalContext
  * node itself is only passed wholesale to the shared ModifierBuilder
  * pipeline and to the raw items/options lookup.
  */
+/**
+ * The raw keys of `caretAttributes`, or null when the object is absent
+ * (the native arrow stays, and the picture does not move).
+ *
+ * Pure — the drawable and the colours are resolved by the composable,
+ * because `painterResource` needs a composition and hex parsing needs
+ * Android. Numbers arrive as Double through the attr map and are dp
+ * integers on the library surface (`cornerRadius` is the precedent).
+ * A key of the wrong type is read as absent, not as zero.
+ */
+internal data class SelectBoxCaretSpec(
+    val src: String?,
+    val width: Int?,
+    val height: Int?,
+    val tintColor: String?,
+    val background: String?,
+    /** Absent: 0 — flush against the trailing edge, the UIKit contract. */
+    val rightMargin: Int
+)
+
 class DynamicSelectBoxComponent {
     companion object {
         /** SelectBox-specific attributes this component applies (see UnappliedAttributes). */
@@ -136,10 +162,23 @@ class DynamicSelectBoxComponent {
         internal fun labelNumber(a: SelectBoxAttributes, key: String): Double? =
             ResourceResolver.nestedNumber(a.labelAttributes, key)
 
+        internal fun caretSpecOf(a: SelectBoxAttributes): SelectBoxCaretSpec? {
+            val bag = a.caretAttributes ?: return null
+            return SelectBoxCaretSpec(
+                src = ResourceResolver.nestedString(bag, "src")?.takeIf { it.isNotBlank() },
+                width = ResourceResolver.nestedNumber(bag, "width")?.toInt(),
+                height = ResourceResolver.nestedNumber(bag, "height")?.toInt(),
+                tintColor = ResourceResolver.nestedString(bag, "tintColor"),
+                background = ResourceResolver.nestedString(bag, "background"),
+                rightMargin = ResourceResolver.nestedNumber(bag, "rightMargin")?.toInt() ?: 0
+            )
+        }
+
         private val APPLIED: Set<String> = setOf(
             "selectItemType", "selectedItem", "selectedDate", "bind",
             "items", "enabled", "prompt", "hint", "placeholder",
             "fontColor", "hintColor", "fontSize", "font", "labelAttributes",
+            "caretAttributes",
             "datePickerMode", "datePickerStyle", "dateStringFormat",
             "minuteInterval", "minimumDate", "maximumDate",
             "onValueChange", "onValueChanged"
@@ -276,6 +315,24 @@ class DynamicSelectBoxComponent {
             // the content). Fallback mirrors the composable default.
             val contentPadding = ModifierBuilder.parseContentPadding(json, data)
 
+            // caretAttributes → the library's SelectBoxCaret. `src` resolves as
+            // a drawable name (Image's path: resolveDrawable, 0 = not found →
+            // the default glyph, reported by UnresolvedResource in debug
+            // builds); colours go through the same parser as the field's.
+            // The Date branch never reads this — a date picker has no
+            // closed-state caret (SSoT).
+            val caret = caretSpecOf(a)?.let { spec ->
+                val resId = spec.src?.let { ResourceResolver.resolveDrawable(it, data, context) } ?: 0
+                SelectBoxCaret(
+                    painter = if (resId != 0) painterResource(id = resId) else null,
+                    width = spec.width,
+                    height = spec.height,
+                    tintColor = ColorParser.parseColorStringWithBinding(spec.tintColor, data, context),
+                    background = ColorParser.parseColorStringWithBinding(spec.background, data, context),
+                    rightMargin = spec.rightMargin
+                )
+            }
+
             SelectBox(
                 value = selectedValue,
                 onValueChange = onValueChange,
@@ -303,7 +360,8 @@ class DynamicSelectBoxComponent {
                 cancelButtonBackgroundColor = cancelButtonBackgroundColor
                     ?: Configuration.SelectBox.defaultSheetBackgroundColor,
                 cancelButtonTextColor = cancelButtonTextColor
-                    ?: Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor
+                    ?: Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
+                caret = caret
             )
         }
 
