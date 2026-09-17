@@ -18,15 +18,99 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.IntrinsicMeasurable
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.launch
+
+/**
+ * The closed select's caret, when the layout styles it (`SelectBox.caretAttributes`,
+ * shared/core/attribute_definitions.json — a cross-platform object since
+ * jsonui-cli 1.8.101; it was UIKit-only before).
+ *
+ * Absent (`caret = null`, the default): the component keeps drawing the
+ * native `ic_arrow_drop_down` inside the content padding, exactly the picture
+ * it drew before the parameter existed, so existing layouts do not move.
+ *
+ * Present: the component draws the caret itself — a box of [width] x [height]
+ * dp filled with [background], the glyph ([painter], or the default drop-down
+ * arrow when null) tinted with [tintColor], placed [rightMargin] dp from the
+ * select's trailing edge (0 = flush against the edge, the UIKit contract this
+ * object came from). The native indicator is not drawn.
+ *
+ * Both faces resolve `src` to a [Painter] before calling: the codegen emits
+ * `painterResource(R.drawable.<name>)`, dynamic mode goes through
+ * `ResourceResolver.resolveDrawable` — the same split Image uses.
+ */
+data class SelectBoxCaret(
+    /** The caret image. Null draws the default drop-down glyph. */
+    val painter: Painter? = null,
+    /** Caret box width in dp. Null: the default glyph's 24dp. */
+    val width: Int? = null,
+    /** Caret box height in dp. Null: the default glyph's 24dp. */
+    val height: Int? = null,
+    /**
+     * Glyph tint. Null keeps the tint the native arrow had (the text color)
+     * for the default glyph, and draws a supplied [painter] untinted.
+     */
+    val tintColor: Color? = null,
+    /** Fill of the caret's own box (width x height), not of the select. */
+    val background: Color? = null,
+    /** Distance from the select's trailing edge to the caret's trailing edge, dp. */
+    val rightMargin: Int = 0
+)
+
+/** The default drop-down glyph is a 24dp vector (res/drawable/ic_arrow_drop_down.xml). */
+internal const val DEFAULT_CARET_GLYPH_DP = 24
+
+/**
+ * How far the closed-state text must stop short of the row's end so it never
+ * runs under a self-drawn caret. The caret is positioned from the select's
+ * edge (not inside the content padding), so the reserve is the caret's
+ * footprint minus whatever end inset the content padding already provides;
+ * never negative.
+ */
+internal fun caretTextReserve(caretWidth: Dp, rightMargin: Dp, endInset: Dp): Dp =
+    (caretWidth + rightMargin - endInset).coerceAtLeast(0.dp)
+
+/**
+ * The self-drawn caret. [defaultTint] is what the native arrow used on this
+ * overload, so a caret object without `tintColor` keeps that colour.
+ */
+@Composable
+private fun SelectBoxCaretIndicator(
+    caret: SelectBoxCaret,
+    defaultTint: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .padding(end = caret.rightMargin.dp)
+            .size(
+                width = (caret.width ?: DEFAULT_CARET_GLYPH_DP).dp,
+                height = (caret.height ?: DEFAULT_CARET_GLYPH_DP).dp
+            )
+            .background(caret.background ?: Color.Transparent),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painter = caret.painter ?: painterResource(R.drawable.ic_arrow_drop_down),
+            contentDescription = "Dropdown",
+            tint = caret.tintColor ?: if (caret.painter == null) defaultTint else Color.Unspecified,
+            // The box IS the declared size; the glyph fills it (Icon's own
+            // 24dp default would leave a 32x32 box with a 24dp arrow inside).
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
 
 /**
  * A reusable SelectBox component for KotlinJsonUI
@@ -37,6 +121,7 @@ import kotlinx.coroutines.launch
  * @param modifier Modifier for the component
  * @param placeholder Optional placeholder text when no value is selected
  * @param enabled Whether the component is enabled
+ * @param caret The closed select's caret when the layout styles it; null keeps the native arrow
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,13 +143,23 @@ fun SelectBox(
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
     cancelButtonBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
-    cancelButtonTextColor: Color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor
+    cancelButtonTextColor: Color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
+    caret: SelectBoxCaret? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true  // Always expand to full height
     )
     val scope = rememberCoroutineScope()
+    // A self-drawn caret sits outside the content padding (positioned from
+    // the select's edge), so the text reserves its footprint explicitly.
+    val textEndReserve = if (caret != null) {
+        caretTextReserve(
+            caretWidth = (caret.width ?: DEFAULT_CARET_GLYPH_DP).dp,
+            rightMargin = caret.rightMargin.dp,
+            endInset = contentPadding.calculateEndPadding(LocalLayoutDirection.current)
+        )
+    } else 0.dp
     
     // Custom SelectBox field that looks like OutlinedTextField
     Box(
@@ -95,12 +190,22 @@ fun SelectBox(
                 color = if (value.isNotEmpty()) textColor else hintColor,
                 fontSize = fontSize.sp,
                 fontWeight = fontWeight,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).padding(end = textEndReserve)
             )
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_drop_down),
-                contentDescription = "Dropdown",
-                tint = textColor
+            if (caret == null) {
+                // No caretAttributes: the native indicator, unchanged.
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_drop_down),
+                    contentDescription = "Dropdown",
+                    tint = textColor
+                )
+            }
+        }
+        if (caret != null) {
+            SelectBoxCaretIndicator(
+                caret = caret,
+                defaultTint = textColor,
+                modifier = Modifier.align(Alignment.CenterEnd)
             )
         }
     }
@@ -293,6 +398,7 @@ fun SelectBox(
  * @param modifier Modifier for the component
  * @param placeholder Optional placeholder text
  * @param enabled Whether the component is enabled
+ * @param caret The closed select's caret when the layout styles it; null keeps the native arrow
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -304,12 +410,22 @@ fun <T> SelectBox(
     placeholder: String? = null,
     enabled: Boolean = true,
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
-    sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor
+    sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
+    caret: SelectBoxCaret? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     val displayText = options.find { it.value == value }?.label ?: ""
+    // Same caret contract as the String overload (this overload's row inset
+    // is a fixed 16dp) — one face, not a split.
+    val textEndReserve = if (caret != null) {
+        caretTextReserve(
+            caretWidth = (caret.width ?: DEFAULT_CARET_GLYPH_DP).dp,
+            rightMargin = caret.rightMargin.dp,
+            endInset = 16.dp
+        )
+    } else 0.dp
     
     // Custom SelectBox field that looks like OutlinedTextField
     Surface(
@@ -322,26 +438,37 @@ fun <T> SelectBox(
             color = if (enabled) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outline.copy(alpha = 0.38f)
         )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = displayText.ifEmpty { placeholder ?: "" },
-                color = if (displayText.isNotEmpty()) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_drop_down),
-                contentDescription = "Dropdown",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Box {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = displayText.ifEmpty { placeholder ?: "" },
+                    color = if (displayText.isNotEmpty()) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    modifier = Modifier.weight(1f).padding(end = textEndReserve)
+                )
+                if (caret == null) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_drop_down),
+                        contentDescription = "Dropdown",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (caret != null) {
+                SelectBoxCaretIndicator(
+                    caret = caret,
+                    defaultTint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                )
+            }
         }
     }
     
