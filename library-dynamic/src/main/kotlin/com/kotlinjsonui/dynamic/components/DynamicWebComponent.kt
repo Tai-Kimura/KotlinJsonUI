@@ -168,6 +168,8 @@ class DynamicWebComponent {
                         bgColor?.let { setBackgroundColor(it.toArgb()) }
 
                         if (currentUrl.isNotEmpty()) {
+                            // Recorded so the first `update` is a no-op.
+                            tag = currentUrl
                             loadUrl(currentUrl)
                         } else if (html != null) {
                             loadDataWithBaseURL(null, html, "text/html", "utf-8", null)
@@ -175,8 +177,15 @@ class DynamicWebComponent {
                     }
                 },
                 update = { webView ->
-                    // Reload URL if binding value changed
-                    if (currentUrl.isNotEmpty() && webView.url != currentUrl) {
+                    // Reload only when the url moved since the last LOAD.
+                    // This compared against `webView.url`, which follows
+                    // redirects: once a page redirected, the two never matched
+                    // and every recomposition reloaded it. The last loaded url
+                    // lives on the view's `tag` — the kjui codegen's shape for
+                    // both Web and WebView (jsonui-cli 1.8.103 / 1.8.105), and
+                    // SwiftJsonUI's `lastLoadedURL`.
+                    if (shouldReload(webView.tag, currentUrl)) {
+                        webView.tag = currentUrl
                         webView.loadUrl(currentUrl)
                     }
                 },
@@ -184,6 +193,15 @@ class DynamicWebComponent {
             )
             }
         }
+
+        /**
+         * Whether `update` should load [url] into a view whose last loaded url
+         * is [lastLoaded] (the view's `tag`). Empty is "nothing to load" — the
+         * html branch, or a binding that has not arrived yet; once it arrives
+         * the tag (still null) differs and the page loads.
+         */
+        internal fun shouldReload(lastLoaded: Any?, url: String): Boolean =
+            url.isNotEmpty() && lastLoaded != url
 
         /** Web-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
