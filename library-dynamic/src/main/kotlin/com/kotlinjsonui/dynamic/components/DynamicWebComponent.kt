@@ -5,6 +5,7 @@ import com.kotlinjsonui.core.KjuiWebViewClient
 import android.annotation.SuppressLint
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
@@ -116,6 +117,23 @@ class DynamicWebComponent {
                 currentUrl = url
             }
 
+            // 🔻 THE ID LIVES ON A COMPOSE NODE, NOT ON THE AndroidView. A
+            // testTag on the AndroidView's own modifier is never projected as
+            // a UiAutomator resource-id: the holder exposes the real
+            // android.webkit.WebView, whose resource-id is empty, and the
+            // Compose semantics beside it are not what the accessibility
+            // tree shows (bar face, 2026-09-17: `class="android.webkit.WebView"
+            // resource-id=""` while the screen marker on a Compose node was
+            // found). So an id wraps the view in a Box that carries the whole
+            // modifier chain — tag, margins, size, alpha, clip — and the
+            // AndroidView fills the Box. Measured on conf_ci: the Box node
+            // carries `resource-id="<id>"` and the WebView is its child.
+            // Same shape as the kjui codegen (web_component.rb /
+            // webview_component.rb) so the parity host sees one picture.
+            // Without an id nothing is wrapped and the tree is what it was.
+            val hasId = a.common.id != null
+            val viewModifier = if (hasId) Modifier.fillMaxSize() else modifier
+            Box(modifier = if (hasId) modifier else Modifier) {
             // Create WebView
             AndroidView(
                 factory = { ctx ->
@@ -162,8 +180,9 @@ class DynamicWebComponent {
                         webView.loadUrl(currentUrl)
                     }
                 },
-                modifier = modifier
+                modifier = viewModifier
             )
+            }
         }
 
         /** Web-specific attributes this component applies (see UnappliedAttributes). */
