@@ -7,6 +7,7 @@ import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -161,5 +162,73 @@ class SelectBoxSelectionTest {
         )
         assertEquals("2026-01-01", TypedAttrs.string(a.minimumDate, emptyMap()))
         assertEquals("2026-12-31", TypedAttrs.string(a.maximumDate, emptyMap()))
+    }
+
+    // ── selectedIndex as the bound key ───────────────────────────────
+    //
+    // A bound selectedIndex was read for the seed but was not a binding
+    // candidate: nothing was written back, and its onValueChange handler got
+    // the item String where the kjui codegen and SwiftJsonUI hand it the Int
+    // index — so an `(Int) -> Unit` handler threw inside resolveEventHandler's
+    // catch and the pick was silently lost
+    // (jui-selectbox-onvaluechange-argument-differs-between-sjui-and-kjui).
+
+    @Test
+    fun aBoundSelectedIndexIsTheDataKeyWrittenBackTo() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}"}""")
+        assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(a))
+        assertTrue(DynamicSelectBoxComponent.isIndexBinding(a))
+    }
+
+    @Test
+    fun anItemBindingOutranksABoundSelectedIndex() {
+        val a = attrs(
+            """{"type":"SelectBox","items":["One","Two"],"selectedItem":"@{chosen}","selectedIndex":"@{idx}"}"""
+        )
+        assertEquals("chosen", DynamicSelectBoxComponent.bindingVariableOf(a))
+        assertFalse(DynamicSelectBoxComponent.isIndexBinding(a))
+    }
+
+    @Test
+    fun aBoundSelectedIndexOutranksBind() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}","bind":"@{b}"}""")
+        assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(a))
+    }
+
+    @Test
+    fun anIndexBindingWritesAndHandsOverTheIndexNotTheItem() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedIndex":"@{idx}"}""")
+        val payload = DynamicSelectBoxComponent.selectionPayload(a, listOf("One", "Two"), "Two")
+        assertEquals(1, payload)
+        assertTrue(payload is Int)
+    }
+
+    @Test
+    fun anItemBindingWritesAndHandsOverTheItem() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedItem":"@{chosen}"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.selectionPayload(a, listOf("One", "Two"), "Two"))
+    }
+
+    @Test
+    fun aBoundSelectedIndexShowsTheItemItNamesNeverItsNumber() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedIndex":"@{idx}"}""")
+        val options = listOf("One", "Two")
+        assertEquals("Two", DynamicSelectBoxComponent.boundSelection(a, mapOf("idx" to 1), options))
+        assertEquals("One", DynamicSelectBoxComponent.boundSelection(a, mapOf("idx" to 0), options))
+        assertNull(DynamicSelectBoxComponent.boundSelection(a, mapOf("idx" to 7), options))
+        // the seed path agrees: a bound index never surfaces as "1"
+        assertEquals("", DynamicSelectBoxComponent.initialSelection(a, mapOf("idx" to 1)))
+    }
+
+    @Test
+    fun anItemBindingShowsTheBoundString() {
+        val a = attrs("""{"type":"SelectBox","items":"@{items}","selectedItem":"@{chosen}"}""")
+        assertEquals("Two", DynamicSelectBoxComponent.boundSelection(a, mapOf("chosen" to "Two"), listOf("One", "Two")))
+    }
+
+    @Test
+    fun noBindingHasNoBoundSelection() {
+        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":1}""")
+        assertNull(DynamicSelectBoxComponent.boundSelection(a, emptyMap(), listOf("One", "Two")))
     }
 }

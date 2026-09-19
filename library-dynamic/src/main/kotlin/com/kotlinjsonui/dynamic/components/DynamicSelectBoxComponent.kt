@@ -99,16 +99,55 @@ class DynamicSelectBoxComponent {
 
         /**
          * The data key this box reads and writes: `selectedItem` >
-         * `selectedValue` > `bind`.
+         * `selectedValue` > `selectedIndex` > `bind` — the codegen's order
+         * (selectbox_component.rb).
          *
          * `selectedValue` is declared two-way and was NOT a candidate, so a
          * bound one fell through to the literal seed and the closed box drew
          * `@{boundSelectedValue}` verbatim.
+         *
+         * `selectedIndex` was not a candidate either: a bound index was read
+         * for the seed but never written back, and its handler got the item
+         * String where the codegen and SwiftJsonUI pass the Int index.
          */
         internal fun bindingVariableOf(a: SelectBoxAttributes): String? =
             TypedAttrs.binding(a.selectedItem)
                 ?: TypedAttrs.binding(a.selectedValue)
+                ?: TypedAttrs.binding(a.selectedIndex)
                 ?: TypedAttrs.binding(a.common.bind)
+
+        /** The bound key is `selectedIndex` — an Int slot — because no item-valued binding outranks it. */
+        internal fun isIndexBinding(a: SelectBoxAttributes): Boolean =
+            TypedAttrs.binding(a.selectedItem) == null &&
+                TypedAttrs.binding(a.selectedValue) == null &&
+                TypedAttrs.binding(a.selectedIndex) != null
+
+        /**
+         * The item the bound value names, for the closed box: the data String
+         * of an item binding, `options[index]` of an index binding (never the
+         * number itself), null without a binding.
+         */
+        internal fun boundSelection(
+            a: SelectBoxAttributes,
+            data: Map<String, Any>,
+            options: List<String>
+        ): String? {
+            val key = bindingVariableOf(a) ?: return null
+            return if (isIndexBinding(a)) {
+                (data[key] as? Number)?.toInt()?.let { options.getOrNull(it) }
+            } else {
+                data[key]?.toString()
+            }
+        }
+
+        /**
+         * What a pick writes back AND hands the onValueChange handler — one
+         * value, the new value of the selection binding: the Int index of
+         * the picked item for an index binding (what the kjui codegen and
+         * SwiftJsonUI's `.onChange(of:)` pass), the item String otherwise.
+         */
+        internal fun selectionPayload(a: SelectBoxAttributes, options: List<String>, newValue: String): Any =
+            if (isIndexBinding(a)) options.indexOf(newValue) else newValue
 
         /**
          * Same row, the date-picker variant's precedence: `selectedDate`
@@ -129,7 +168,11 @@ class DynamicSelectBoxComponent {
          */
         internal fun initialSelection(a: SelectBoxAttributes, data: Map<String, Any>): String {
             val bindingVariable = bindingVariableOf(a)
-            val current = if (bindingVariable != null) data[bindingVariable]?.toString() ?: "" else ""
+            // An index binding's data value is a number; the seed below
+            // resolves it through TypedAttrs.int to the item it names.
+            val current = if (bindingVariable != null && !isIndexBinding(a)) {
+                data[bindingVariable]?.toString() ?: ""
+            } else ""
             // `selectedItem` is declared `["string","binding"]`, so its STATIC
             // face is a seed exactly like `selectedValue`'s — but only the
             // bound face was ever read (via bindingVariableOf), so a literal
@@ -175,7 +218,8 @@ class DynamicSelectBoxComponent {
         }
 
         private val APPLIED: Set<String> = setOf(
-            "selectItemType", "selectedItem", "selectedDate", "bind",
+            "selectItemType", "selectedItem", "selectedValue", "selectedIndex",
+            "selectedDate", "bind",
             "items", "enabled", "prompt", "hint", "placeholder",
             "fontColor", "hintColor", "fontSize", "font", "labelAttributes",
             "caretAttributes",
@@ -219,23 +263,21 @@ class DynamicSelectBoxComponent {
         ) {
             val context = LocalContext.current
 
+            // Parse options (before the selection: an index binding names one)
+            val options = parseOptions(json, data)
+
             val bindingVariable = bindingVariableOf(a)
-            val currentValue = if (bindingVariable != null) {
-                data[bindingVariable]?.toString() ?: ""
-            } else ""
+            val currentValue = boundSelection(a, data, options) ?: ""
 
             var selectedValue by remember(currentValue, bindingVariable, data) {
-                mutableStateOf(initialSelection(a, data))
+                mutableStateOf(currentValue.ifEmpty { initialSelection(a, data) })
             }
 
             LaunchedEffect(data, bindingVariable) {
                 if (bindingVariable != null) {
-                    selectedValue = data[bindingVariable]?.toString() ?: ""
+                    selectedValue = boundSelection(a, data, options) ?: ""
                 }
             }
-
-            // Parse options
-            val options = parseOptions(json, data)
 
             // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
             val isEnabled = when {
@@ -289,11 +331,18 @@ class DynamicSelectBoxComponent {
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 
+                // The writeback and the handler carry the SAME value: the Int
+                // index for an index binding, the item String otherwise.
+                // Handing the item String to an `(Int) -> Unit` handler was
+                // a ClassCastException that resolveEventHandler's catch
+                // turned into silence.
+                val payload = selectionPayload(a, options, newValue)
+
                 // Update bound variable
                 if (bindingVariable != null) {
                     @Suppress("UNCHECKED_CAST")
                     (data["updateData"] as? (Map<String, Any>) -> Unit)
-                        ?.invoke(mapOf(bindingVariable to newValue))
+                        ?.invoke(mapOf(bindingVariable to payload))
                 }
 
                 // Call onValueChange handler if specified
@@ -301,7 +350,7 @@ class DynamicSelectBoxComponent {
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
                     ?: TypedAttrs.raw(a.onValueChanged) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
-                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, payload)
                 }
             }
 
