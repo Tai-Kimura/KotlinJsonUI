@@ -50,7 +50,7 @@ data class SelectBoxAttributes(
     val minuteInterval: Double? = null,
     /** Allow multiple selection */
     val multiple: Boolean? = null,
-    /** Value change handler - binding only (@{functionName}) */
+    /** Value change handler - binding only (@{functionName}). The handler receives the new value of the selection binding, the same on every platform: with selectedIndex bound it is the Int index (declare ((Int) -> Void)?, or ((String, Int) -> Void)? for viewId + index); with selectedItem / selectedValue bound it is the String item (declare ((String, String) -> Void)? for viewId + item). A lone (String) parameter is read as the viewId, not the item. (() -> Void)? receives nothing and the ViewModel reads the bound value back. */
     val onValueChange: AttrValue<Any>? = null,
     /** Value change handler (alias for onValueChange) - binding only (@{functionName}) */
     val onValueChanged: AttrValue<Any>? = null,
