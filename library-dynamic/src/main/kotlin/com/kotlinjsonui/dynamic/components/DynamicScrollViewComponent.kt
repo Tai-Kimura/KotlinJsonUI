@@ -1,6 +1,10 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
@@ -35,9 +39,20 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  */
 class DynamicScrollViewComponent {
     companion object {
+        /** The SSoT default of `keyboardAvoidancePadding`; absent means 20, not 0. */
+        const val DEFAULT_KEYBOARD_CLEARANCE_DP = 20
+
+        /**
+         * `keyboardAvoidancePadding` in dp, or the SSoT default when the
+         * layout does not declare it — the same rule the codegen applies, so
+         * one layout renders the same clearance both ways.
+         */
+        internal fun keyboardClearanceDp(a: ScrollViewAttributes): Int =
+            a.keyboardAvoidancePadding?.toInt() ?: DEFAULT_KEYBOARD_CLEARANCE_DP
+
         /** ScrollView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "keyboardAvoidance", "scrollEnabled", "orientation", "defaultScrollAnchor"
+            "keyboardAvoidance", "keyboardAvoidancePadding", "scrollEnabled", "orientation", "defaultScrollAnchor"
         )
 
         @Composable
@@ -65,6 +80,16 @@ class DynamicScrollViewComponent {
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
             if (keyboardAvoidance) {
                 modifier = modifier.imePadding()
+                // `keyboardAvoidancePadding` (SSoT: number, default 20): while
+                // the IME is up the scrollable's viewport ends this far above
+                // it, so bringIntoView — which stops a focused field at the
+                // viewport edge — leaves the clearance. After imePadding and
+                // on the scrollable itself, the same emit the codegen makes
+                // (scrollview_component.rb); a padding inside the content
+                // would only add scrollable space. Reported 2026-09-22.
+                val clearance = keyboardClearanceDp(a)
+                val imeUp = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+                modifier = modifier.padding(bottom = if (imeUp) clearance.dp else 0.dp)
             }
 
             // scrollEnabled - controls whether user can scroll

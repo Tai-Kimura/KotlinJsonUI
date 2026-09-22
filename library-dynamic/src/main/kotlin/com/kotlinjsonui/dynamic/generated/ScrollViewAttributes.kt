@@ -32,6 +32,8 @@ data class ScrollViewAttributes(
     val indicatorStyle: String? = null,
     /** Enable keyboard avoidance */
     val keyboardAvoidance: Boolean? = null,
+    /** Clearance, in points/dp, that a focused text field keeps from the ScrollView's VISIBLE bottom edge while the soft keyboard is up. The edge is whatever bounds the scroll area at that moment: the top of a fixed footer laid out below the ScrollView, or the keyboard itself when the ScrollView meets it directly. Default 20 (the platform keyboard-avoidance default; absent means 20, not 0). iOS: KeyboardAvoidanceConfiguration.additionalPadding, applied as a bottom safe-area inset while the keyboard is visible. Android: bottom padding on the scrollable after imePadding() while the IME is visible, so bringIntoView stops that far above it. Ignored when keyboardAvoidance is false. Web: not applicable (no soft-keyboard avoidance in the web renderer). [default: 20] */
+    val keyboardAvoidancePadding: Double? = null,
     /** How scrolling dismisses the soft keyboard. Default 'none': scrolling never dismisses (keyboard stays). 'interactive': dragging down over the keyboard dismisses it interactively. 'onDrag': any scroll dismisses immediately. Value names follow UIKit UIScrollView.keyboardDismissMode; SwiftUI mode maps to scrollDismissesKeyboard(.never/.interactively/.immediately). iOS-effective; other platforms currently ignore it. */
     val keyboardDismissMode: AttrEnum<KeyboardDismissMode>? = null,
     /** Maximum zoom scale (binding supported) */
@@ -164,6 +166,7 @@ data class ScrollViewAttributes(
             "horizontalScroll",
             "indicatorStyle",
             "keyboardAvoidance",
+            "keyboardAvoidancePadding",
             "keyboardDismissMode",
             "maxZoom",
             "minZoom",
@@ -207,6 +210,7 @@ data class ScrollViewAttributes(
             horizontalScroll = AttrCoerce.boolean(AttrCoerce.lookup(json, "horizontalScroll")),
             indicatorStyle = AttrCoerce.string(AttrCoerce.lookup(json, "indicatorStyle")),
             keyboardAvoidance = AttrCoerce.boolean(AttrCoerce.lookup(json, "keyboardAvoidance")),
+            keyboardAvoidancePadding = AttrCoerce.number(AttrCoerce.lookup(json, "keyboardAvoidancePadding")),
             keyboardDismissMode = parseKeyboardDismissMode(AttrCoerce.lookup(json, "keyboardDismissMode")),
             maxZoom = AttrCoerce.attrValue(AttrCoerce.lookup(json, "maxZoom")) { AttrCoerce.number(it) },
             minZoom = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minZoom")) { AttrCoerce.number(it) },
