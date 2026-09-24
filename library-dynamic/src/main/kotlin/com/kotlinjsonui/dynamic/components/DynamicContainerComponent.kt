@@ -549,7 +549,14 @@ class DynamicContainerComponent {
             }
         }
 
-        private fun parseBoxContentAlignment(json: JsonObject): Alignment {
+        /**
+         * The Box's contentAlignment. An axis the gravity does not name takes
+         * the container default (jsonui-cli shared/core/attribute_semantics.json
+         * -> gravityDefaults). Until 2026-09-24 a single value centred the axis it
+         * did not name — `top` gave TopCenter, `left` CenterStart — while the
+         * ios runtime and both codegens drew it at the leading/top corner.
+         */
+        internal fun parseBoxContentAlignment(json: JsonObject): Alignment {
             val flags = ModifierBuilder.resolvedAlignFlags(json)
             val vBoth = flags.alignTop && flags.alignBottom
             val hBoth = flags.alignLeft && flags.alignRight
@@ -565,10 +572,10 @@ class DynamicContainerComponent {
                 flags.alignLeft && flags.centerV -> Alignment.CenterStart
                 flags.alignRight && flags.centerV -> Alignment.CenterEnd
                 flags.centerH && flags.centerV -> Alignment.Center
-                flags.alignTop -> Alignment.TopCenter
-                flags.alignBottom -> Alignment.BottomCenter
-                flags.alignLeft -> Alignment.CenterStart
-                flags.alignRight -> Alignment.CenterEnd
+                flags.alignTop -> Alignment.TopStart
+                flags.alignBottom -> Alignment.BottomStart
+                flags.alignLeft -> Alignment.TopStart
+                flags.alignRight -> Alignment.TopEnd
                 flags.centerH -> Alignment.TopCenter
                 flags.centerV -> Alignment.CenterStart
                 else -> Alignment.TopStart
