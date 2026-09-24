@@ -42,6 +42,13 @@ import org.junit.runner.RunWith
  * so the number FOLLOWS the attribute, and the absent case, so the default
  * is 20 and not 0.
  *
+ * 🚨 The field's bottom is read UNCLIPPED (`positionInRoot + size`). Until
+ * 2.40.0 it was `boundsInRoot`, clipped by the ScrollView at the edge being
+ * measured, and the follow kept the CARET clear rather than the field: a
+ * 48dp field reached past the edge and still read as the padding. The
+ * TextField at 96dp and the TextView at 140dp are here because only a
+ * change of height separates the caret from the field.
+ *
  * ⚠️ Needs a software keyboard: an emulator with a hardware keyboard
  * attached shows no IME and the arm cannot measure (it says so).
  */
@@ -51,7 +58,7 @@ class DynamicKeyboardClearanceTest {
     @get:Rule
     val rule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
-    private fun layout(padding: Int?, before: Int = 14): String {
+    private fun layout(padding: Int?, before: Int = 14, field: String = FIELD_48): String {
         val attr = if (padding == null) "" else "\"keyboardAvoidancePadding\": $padding,"
         val filler = (0 until before).joinToString(",") {
             """{"type":"Label","id":"filler_$it","text":"filler $it","height":60}"""
@@ -66,7 +73,7 @@ class DynamicKeyboardClearanceTest {
               "child": [
                 { "type": "View", "orientation": "vertical", "width": "matchParent", "child": [
                   $filler,
-                  { "type": "TextField", "id": "probe_field", "hint": "probe", "width": "matchParent", "height": 48 },
+                  $field,
                   $after
                 ] }
               ]
@@ -74,14 +81,14 @@ class DynamicKeyboardClearanceTest {
         """.trimIndent()
     }
 
-    /** (field bottom, ime top) in px, both in the root's coordinate space. */
-    private fun measure(padding: Int?): Pair<Float, Float> {
+    /** (field bottom, ime top) in px, both in the root's coordinate space; the bottom unclipped. */
+    private fun measure(padding: Int?, field: String = FIELD_48): Pair<Float, Float> {
         var imeBottomPx = 0
         rule.setContent {
             val density = LocalDensity.current
             imeBottomPx = WindowInsets.ime.getBottom(density)
             DynamicRuntimeScope(emptyMap()) { effectiveData ->
-                DynamicView(json = JsonParser.parseString(layout(padding)).asJsonObject, data = effectiveData)
+                DynamicView(json = JsonParser.parseString(layout(padding, field = field)).asJsonObject, data = effectiveData)
             }
         }
         rule.onNodeWithTag("probe_field").assertIsDisplayed()
@@ -90,21 +97,39 @@ class DynamicKeyboardClearanceTest {
         rule.waitUntil(timeoutMillis = 5_000) { imeBottomPx > 0 }
         Thread.sleep(800)
         rule.waitForIdle()
-        val bounds = rule.onNodeWithTag("probe_field").fetchSemanticsNode().boundsInRoot
+        val node = rule.onNodeWithTag("probe_field").fetchSemanticsNode()
+        val fieldBottom = node.positionInRoot.y + node.size.height   // boundsInRoot is clipped
         val rootBottom = rule.onRoot().fetchSemanticsNode().boundsInRoot.bottom
         val imeTop = rootBottom - imeBottomPx
-        println("KEYBOARD_CLEARANCE android padding=$padding fieldBottom=${bounds.bottom} imeTop=$imeTop " +
-            "clearancePx=${imeTop - bounds.bottom} ime=$imeBottomPx root=$rootBottom")
-        return bounds.bottom to imeTop
+        println("KEYBOARD_CLEARANCE android padding=$padding fieldBottom=$fieldBottom " +
+            "clippedBottom=${node.boundsInRoot.bottom} imeTop=$imeTop " +
+            "clearancePx=${imeTop - fieldBottom} ime=$imeBottomPx root=$rootBottom height=${node.size.height}")
+        return fieldBottom to imeTop
     }
 
-    private fun clearanceDp(padding: Int?): Float {
-        val (bottom, top) = measure(padding)
+    private fun clearanceDp(padding: Int?, field: String = FIELD_48): Float {
+        val (bottom, top) = measure(padding, field)
         assertTrue("no IME appeared — a hardware keyboard is attached?", top < 100_000f)
         return (top - bottom) / rule.density.density
     }
 
     // One setContent per test (the rule allows one), so one padding per arm.
+
+    private companion object {
+        const val FIELD_48 = """{ "type": "TextField", "id": "probe_field", "hint": "probe", "width": "matchParent", "height": 48 }"""
+        const val FIELD_96 = """{ "type": "TextField", "id": "probe_field", "hint": "probe", "width": "matchParent", "height": 96 }"""
+        const val TEXTVIEW_140 = """{ "type": "TextView", "id": "probe_field", "hint": "probe", "width": "matchParent", "height": 140 }"""
+    }
+
+    @Test
+    fun aTallerTextFieldStopsItsBottomAtTheClearanceToo() {
+        assertEquals("TextField 96dp, padding 20", 20f, clearanceDp(20, FIELD_96), 3f)
+    }
+
+    @Test
+    fun aTextViewStopsItsBottomAtTheClearance() {
+        assertEquals("TextView 140dp, padding 20", 20f, clearanceDp(20, TEXTVIEW_140), 3f)
+    }
 
     @Test
     fun aFocusedFieldStopsTheDeclaredClearanceAboveTheIme() {
@@ -171,10 +196,11 @@ class DynamicKeyboardClearanceTest {
         rule.waitUntil(timeoutMillis = 5_000) { imeBottomPx > 0 }
         Thread.sleep(1_000)
         rule.waitForIdle()
-        val bounds = rule.onNodeWithTag("probe_field").fetchSemanticsNode().boundsInRoot
+        val node = rule.onNodeWithTag("probe_field").fetchSemanticsNode()
+        val fieldBottom = node.positionInRoot.y + node.size.height   // boundsInRoot is clipped
         val rootBottom = rule.onRoot().fetchSemanticsNode().boundsInRoot.bottom
-        val clearance = (rootBottom - imeBottomPx - bounds.bottom) / rule.density.density
-        println("KEYBOARD_CLEARANCE android follow hiddenBy=$hiddenBy fieldBottom=${bounds.bottom} imeTop=${rootBottom - imeBottomPx} clearanceDp=$clearance")
+        val clearance = (rootBottom - imeBottomPx - fieldBottom) / rule.density.density
+        println("KEYBOARD_CLEARANCE android follow hiddenBy=$hiddenBy fieldBottom=$fieldBottom clippedBottom=${node.boundsInRoot.bottom} imeTop=${rootBottom - imeBottomPx} clearanceDp=$clearance")
         assertEquals("brought up to the clearance", 20f, clearance, 3f)
     }
 }

@@ -57,6 +57,14 @@ import org.junit.runner.RunWith
  * `clearanceDp` above that, so a field stopping at the viewport's edge
  * reads as `clearanceDp` in [clearanceDp].
  *
+ * 🚨 The field's bottom is read UNCLIPPED (`positionInRoot + size`). Until
+ * 2.40.0 [clearanceDp] read `boundsInRoot`, which the list clips at exactly
+ * the edge being measured: a field reaching 15.6dp past it (the follow kept
+ * the caret clear, not the field) read as 20dp, and all four arms were
+ * green on the defect. Heights other than 48dp are in
+ * KeyboardAvoidanceFieldBottomTest — the caret and the field only give
+ * different answers when the height changes.
+ *
  * ⚠️ THE CONTROL ARM ASSERTS A DEFECT. `clippedRaw` runs the 2.37.0 emit
  * (viewport half only, follow left to Compose) in the one shape where
  * Compose's own tracking is inert by its documented precondition — the
@@ -139,13 +147,15 @@ class KeyboardAvoidanceFollowTest {
         rule.waitForIdle()
     }
 
-    /** Field bottom against the LazyColumn's outer bottom, in dp; the IME must be up. */
+    /** Field bottom (unclipped) against the LazyColumn's outer bottom, in dp; the IME must be up. */
     private fun clearanceDp(label: String): Float {
         assertTrue("no IME appeared — a hardware keyboard is attached?", imePx > 0)
-        val field = rule.onNodeWithTag(FIELD).fetchSemanticsNode().boundsInRoot
+        val node = rule.onNodeWithTag(FIELD).fetchSemanticsNode()
+        val fieldBottom = node.positionInRoot.y + node.size.height   // boundsInRoot is clipped
         val scroll = rule.onNodeWithTag(SCROLL).fetchSemanticsNode().boundsInRoot
-        val dp = (scroll.bottom - field.bottom) / rule.density.density
-        println("KEYBOARD_FOLLOW $label fieldBottom=${field.bottom} scrollBottom=${scroll.bottom} ime=$imePx clearanceDp=$dp")
+        val dp = (scroll.bottom - fieldBottom) / rule.density.density
+        println("KEYBOARD_FOLLOW $label fieldBottom=$fieldBottom clippedBottom=${node.boundsInRoot.bottom} " +
+            "scrollBottom=${scroll.bottom} ime=$imePx clearanceDp=$dp")
         return dp
     }
 

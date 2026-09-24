@@ -65,8 +65,12 @@ fun CustomTextField(
     // Interaction source for decoration box
     val interactionSource = remember { MutableInteractionSource() }
 
-    // Create focus modifier
-    val focusModifier = modifier.onFocusChanged { focusState ->
+    // Create focus modifier. `keyboardAvoidanceField()` makes this field —
+    // after the caller's size and margins, so its own box — what a
+    // `keyboardAvoidance` list keeps above the IME. Without it the list keeps
+    // the caret clear and lets the rest of the field run past the edge
+    // (KeyboardAvoidance.kt).
+    val focusModifier = modifier.keyboardAvoidanceField().onFocusChanged { focusState ->
         if (focusState.isFocused && !isFocused) {
             onFocus?.invoke()
             if (!hasStartedEditing) {
