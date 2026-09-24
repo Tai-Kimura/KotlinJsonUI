@@ -16,6 +16,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusTargetModifierNode
 import androidx.compose.ui.focus.Focusability
@@ -23,6 +26,7 @@ import androidx.compose.ui.focus.getFocusedRect
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.node.DelegatingNode
 import androidx.compose.ui.node.LayoutAwareModifierNode
@@ -130,9 +134,20 @@ class KeyboardAvoidanceFieldBottomTest {
         val caretHeightDp: Float,
     )
 
-    private fun measure(kind: Field, heightDp: Int, fillerCount: Int = 12): Reading {
+    /** The list's height with the IME down, in dp — measured once, on the first layout. */
+    private var viewportDp by mutableStateOf(0f)
+    private var fillers by mutableStateOf(-1)
+
+    /**
+     * [fillerCount] null puts the field's top at least 40dp above the fold
+     * of this device's list ([fillersToTheFold]: 13 on phone_ci, 11 on
+     * conf_ci; the literal was 12) — so it is on screen for the tap and under
+     * the IME after it, on a landscape tablet too.
+     */
+    private fun measure(kind: Field, heightDp: Int, fillerCount: Int? = null): Reading {
         rule.setContent {
             imePx = WindowInsets.ime.getBottom(LocalDensity.current)
+            val density = LocalDensity.current.density
             val listState = rememberLazyListState()
             Column(
                 modifier = Modifier.fillMaxSize().then(RootFocusedRectElement())
@@ -141,11 +156,12 @@ class KeyboardAvoidanceFieldBottomTest {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.testTag(SCROLL).fillMaxWidth().weight(1f)
+                        .onSizeChanged { if (viewportDp == 0f) viewportDp = it.height / density }
                         .keyboardAvoidance(listState, CLEARANCE)
                 ) {
                     item {
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            repeat(fillerCount) { i -> Text("filler $i", modifier = Modifier.fillMaxWidth().height(60.dp)) }
+                        if (fillers >= 0) Column(modifier = Modifier.fillMaxWidth()) {
+                            repeat(fillers) { i -> Text("filler $i", modifier = Modifier.fillMaxWidth().height(60.dp)) }
                             FieldUnderTest(kind, heightDp)
                             repeat(12) { i -> Text("after $i", modifier = Modifier.fillMaxWidth().height(60.dp)) }
                         }
@@ -154,6 +170,9 @@ class KeyboardAvoidanceFieldBottomTest {
                 Box(modifier = Modifier.fillMaxWidth().height(56.dp).background(Color.LightGray))
             }
         }
+        rule.waitForIdle()
+        assertTrue("the list was never measured", viewportDp > 0f)
+        rule.runOnIdle { fillers = fillerCount ?: fillersToTheFold(viewportDp) }
         rule.waitForIdle()
         rule.onNodeWithTag(FIELD).performClick()
         rule.waitUntil(timeoutMillis = 5_000) { imePx > 0 }
@@ -175,7 +194,7 @@ class KeyboardAvoidanceFieldBottomTest {
             caretHeightDp = caret.height / d,
         )
         println(
-            "KBAV_FIELD kind=$kind h=${heightDp}dp ime=$imePx scroll=[${scroll.top}..${scroll.bottom}] " +
+            "KBAV_FIELD kind=$kind h=${heightDp}dp viewportDp=$viewportDp fillers=$fillers ime=$imePx scroll=[${scroll.top}..${scroll.bottom}] " +
                 "field=[${node.positionInRoot.y}..$fieldBottom] clippedBottom=${node.boundsInRoot.bottom} caret=$caret " +
                 "fieldClearanceDp=${r.fieldClearanceDp} caretClearanceDp=${r.caretClearanceDp} " +
                 "caretTopDp=${r.caretTopBelowViewportTopDp} caretHeightDp=${r.caretHeightDp}"

@@ -19,8 +19,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -29,6 +33,7 @@ import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -74,6 +79,14 @@ import org.junit.runner.RunWith
  * control goes red and says the discriminator is gone, rather than the
  * library arm passing for a reason that is not the library.
  *
+ * The filler counts are measured, not literals: [fillersToTheFold] puts the
+ * field's top at least 40dp above the fold of THIS device's list (13 fillers
+ * on phone_ci, 11 on conf_ci), and the other shapes are offsets from that —
+ * one filler further takes its top near or past the fold, two further is the
+ * form the partly-hidden arm scrolls. The literal counts put the field's
+ * centre on the fold of a landscape tablet, where every arm failed alike on
+ * the fix and on the version before it.
+ *
  * ⚠️ Needs a software keyboard on the device. The measured emulator (API
  * 35, 1080x2400, LatinIME) followed in EVERY tap shape through the built-in
  * tracking alone; the user's device did not, and which variable differs
@@ -92,8 +105,14 @@ class KeyboardAvoidanceFollowTest {
         const val TOLERANCE_DP = 3f
     }
 
+    /** The list's height with the IME down, in dp — measured once, on the first layout. */
+    private var viewportDp by mutableStateOf(0f)
+    /** Fillers above (and below) the field; -1 until [viewportDp] is known. */
+    private var fillerCount by mutableStateOf(-1)
+
     @Composable
-    private fun Form(listState: LazyListState, fillerCount: Int, useLibrary: Boolean) {
+    private fun Form(listState: LazyListState, useLibrary: Boolean) {
+        val density = LocalDensity.current.density
         Column(modifier = Modifier.fillMaxSize().background(Color.White).systemBarsPadding().imePadding()) {
             LazyColumn(
                 state = listState,
@@ -101,6 +120,7 @@ class KeyboardAvoidanceFollowTest {
                     .testTag(SCROLL)
                     .fillMaxWidth()
                     .weight(1f)
+                    .onSizeChanged { if (viewportDp == 0f) viewportDp = it.height / density }
                     .then(
                         if (useLibrary) Modifier.keyboardAvoidance(listState, CLEARANCE)
                         else Modifier // the 2.37.0 emit, verbatim: the viewport half only
@@ -109,7 +129,7 @@ class KeyboardAvoidanceFollowTest {
                     )
             ) {
                 item {
-                    Column(modifier = Modifier.fillMaxWidth()) {
+                    if (fillerCount >= 0) Column(modifier = Modifier.fillMaxWidth()) {
                         repeat(fillerCount) { i -> Text("filler $i", modifier = Modifier.fillMaxWidth().height(60.dp)) }
                         CustomTextField(
                             state = rememberTextFieldState(),
@@ -127,14 +147,19 @@ class KeyboardAvoidanceFollowTest {
     private var imePx = 0
     private var listState: LazyListState? = null
 
-    private fun content(fillerCount: Int, useLibrary: Boolean) {
+    /** [pastTheFold] fillers beyond the count that puts the field 40dp above the fold. */
+    private fun content(pastTheFold: Int, useLibrary: Boolean) {
         rule.setContent {
             imePx = WindowInsets.ime.getBottom(LocalDensity.current)
             val st = rememberLazyListState()
             listState = st
-            Form(st, fillerCount, useLibrary)
+            Form(st, useLibrary)
         }
         rule.waitForIdle()
+        assertTrue("the list was never measured", viewportDp > 0f)
+        rule.runOnIdle { fillerCount = fillersToTheFold(viewportDp) + pastTheFold }
+        rule.waitForIdle()
+        println("KEYBOARD_FOLLOW viewportDp=$viewportDp fillers=$fillerCount")
     }
 
     private fun ime(show: Boolean) {
@@ -173,11 +198,17 @@ class KeyboardAvoidanceFollowTest {
      * IME again with the field still focused.
      */
     private fun focusThenClip(clipDp: Int = 24) {
+        // Onto the screen first: one filler past the fold leaves the field's
+        // centre on the fold itself, where a tap lands on nothing (measured on
+        // a landscape tablet, 2026-09-25). Only the FOCUS is taken here; the
+        // shape is made below, from the top of the list.
+        rule.onNodeWithTag(FIELD).performScrollTo()
+        rule.waitForIdle()
         tap()
         ime(show = false)
         val d = rule.density.density
-        // Back to the top, where the 13-filler form puts the field's bottom
-        // BELOW the viewport's bottom; then forward by the exact amount that
+        // Back to the top, where one filler past the fold puts the field's
+        // bottom BELOW the viewport's bottom; then forward by the exact amount that
         // leaves `clipDp` of it hidden. Two steps because a backward scroll
         // clamps at the top (the first draft asked for one backward scroll
         // and got a fully visible field, and a control that followed).
@@ -201,18 +232,18 @@ class KeyboardAvoidanceFollowTest {
 
     @Test
     fun aTappedFieldStopsTheClearanceAboveTheVisibleBottom() {
-        content(fillerCount = 12, useLibrary = true)   // fully visible before the tap
+        content(pastTheFold = 0, useLibrary = true)   // 40dp above the fold before the tap
         tap()
         assertEquals(CLEARANCE.toFloat(), clearanceDp("tap fully-visible"), TOLERANCE_DP)
     }
 
     @Test
     fun aTappedFieldThatWasPartlyHiddenStopsThereToo() {
-        content(fillerCount = 14, useLibrary = true)
+        content(pastTheFold = 2, useLibrary = true)
         // Field below the fold: bring it to 24dp of its 48 showing, then tap.
         val d = rule.density.density
         val scroll = rule.onNodeWithTag(SCROLL).fetchSemanticsNode().boundsInRoot
-        val fieldBottomInItem = (14 * 60 + 48) * d
+        val fieldBottomInItem = (fillerCount * 60 + 48) * d
         rule.runOnIdle { runBlocking { listState!!.scrollToItem(0, (fieldBottomInItem - scroll.height - 24 * d).toInt()) } }
         rule.waitForIdle()
         tap()
@@ -221,7 +252,7 @@ class KeyboardAvoidanceFollowTest {
 
     @Test
     fun clippedRaw_theControl_compose_alone_leaves_the_field_under_the_keyboard() {
-        content(fillerCount = 13, useLibrary = false)
+        content(pastTheFold = 1, useLibrary = false)
         focusThenClip()
         val field = rule.onNodeWithTag(FIELD).fetchSemanticsNode().boundsInRoot
         val scroll = rule.onNodeWithTag(SCROLL).fetchSemanticsNode().boundsInRoot
@@ -233,7 +264,7 @@ class KeyboardAvoidanceFollowTest {
 
     @Test
     fun clippedLibrary_theFollowBringsTheFieldUp() {
-        content(fillerCount = 13, useLibrary = true)
+        content(pastTheFold = 1, useLibrary = true)
         focusThenClip()
         assertEquals(CLEARANCE.toFloat(), clearanceDp("clipped library"), TOLERANCE_DP)
     }

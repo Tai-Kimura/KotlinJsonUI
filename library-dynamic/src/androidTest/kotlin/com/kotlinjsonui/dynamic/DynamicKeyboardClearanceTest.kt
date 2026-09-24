@@ -1,7 +1,14 @@
 package com.kotlinjsonui.dynamic
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -49,6 +56,12 @@ import org.junit.runner.RunWith
  * TextField at 96dp and the TextView at 140dp are here because only a
  * change of height separates the caret from the field.
  *
+ * The fillers above the field are counted from the screen's own height
+ * ([fillersToTheFold]): the field's top 40dp above the fold. A literal 14 was
+ * written against a portrait phone and put the field off the screen of a
+ * landscape tablet, where these arms failed "probe_field is not displayed"
+ * on the fix and on the version before it alike (2026-09-25).
+ *
  * ⚠️ Needs a software keyboard: an emulator with a hardware keyboard
  * attached shows no IME and the arm cannot measure (it says so).
  */
@@ -81,16 +94,30 @@ class DynamicKeyboardClearanceTest {
         """.trimIndent()
     }
 
+    /** The content's height with the IME down, in dp — measured once, before the layout is built. */
+    private var viewportDp by mutableStateOf(0f)
+
+    /** Fillers of 60dp that put the field's top [aboveFoldDp] above the fold. */
+    private fun fillersToTheFold(viewportDp: Float, aboveFoldDp: Int = 40): Int =
+        kotlin.math.floor((viewportDp - aboveFoldDp) / 60f).toInt().coerceAtLeast(0)
+
     /** (field bottom, ime top) in px, both in the root's coordinate space; the bottom unclipped. */
     private fun measure(padding: Int?, field: String = FIELD_48): Pair<Float, Float> {
         var imeBottomPx = 0
         rule.setContent {
             val density = LocalDensity.current
             imeBottomPx = WindowInsets.ime.getBottom(density)
-            DynamicRuntimeScope(emptyMap()) { effectiveData ->
-                DynamicView(json = JsonParser.parseString(layout(padding, field = field)).asJsonObject, data = effectiveData)
+            Box(Modifier.fillMaxSize().onSizeChanged {
+                if (viewportDp == 0f) viewportDp = it.height / density.density
+            }) {
+                if (viewportDp > 0f) DynamicRuntimeScope(emptyMap()) { effectiveData ->
+                    val json = layout(padding, before = fillersToTheFold(viewportDp), field = field)
+                    DynamicView(json = JsonParser.parseString(json).asJsonObject, data = effectiveData)
+                }
             }
         }
+        rule.waitForIdle()
+        println("KEYBOARD_CLEARANCE viewportDp=$viewportDp fillers=${fillersToTheFold(viewportDp)}")
         rule.onNodeWithTag("probe_field").assertIsDisplayed()
         rule.onNodeWithTag("probe_field").performClick()
         // Let the IME animate in and the bring-into-view scroll settle.
