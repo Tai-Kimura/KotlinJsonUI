@@ -244,6 +244,9 @@ class DynamicButtonComponent {
             // long-press gesture fires the handler and consumes the events so
             // a long press never also triggers onClick.
             modifier = ModifierBuilder.applyLongPressable(modifier, json, data)
+            // userInteractionEnabled stops the button (this chain runs no
+            // buildModifier, whose clickable stage applies it elsewhere)
+            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
 
             Button(
                 onClick = onClick,
@@ -344,7 +347,9 @@ class DynamicButtonComponent {
             isLoading: Boolean,
             setLoading: (Boolean) -> Unit
         ): () -> Unit = {
-            if (!isLoading) {
+            // common.canTap gates the handler's call; the button stays a
+            // button and is not disabled (that is `enabled`'s).
+            if (!isLoading && ModifierBuilder.tapGateOpen(json, data)) {
                 val methodName = resolveClickMethodName(a)
                 methodName?.let { name ->
                     val handler = data[name]

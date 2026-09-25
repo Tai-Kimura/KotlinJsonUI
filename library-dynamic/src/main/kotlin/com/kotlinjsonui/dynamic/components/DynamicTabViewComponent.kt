@@ -26,6 +26,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.TabViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
@@ -170,6 +171,9 @@ class DynamicTabViewComponent {
 
             // Create TabView using Scaffold with NavigationBar
             Scaffold(
+                // userInteractionEnabled stops the tab view and what is in it;
+                // this component runs no buildModifier.
+                modifier = ModifierBuilder.applyInteractionBlocker(Modifier, json, data),
                 bottomBar = {
                     NavigationBar(
                         containerColor = tabBarBackground ?: NavigationBarDefaults.containerColor

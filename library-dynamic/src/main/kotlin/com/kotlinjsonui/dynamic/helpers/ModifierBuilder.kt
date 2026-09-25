@@ -656,17 +656,22 @@ object ModifierBuilder {
         // "Array must have size 1" for [] and for two handlers, and took the
         // whole screen down.
         val handlers = TapAccessibility.clickHandlers(json)
-        if (handlers.isNotEmpty()) {
+        // common.canTap is the Compose tap gate (attribute_definitions.json):
+        // absent, no gate; false (or a binding resolving false) and there is
+        // no click — nor Role.Button — while `enabled` alone decides whether
+        // the click is enabled. The two were one `clickable(enabled = enabled
+        // && canTap)`, and Compose's clickable marks a node `disabled()` while
+        // it is not enabled: a view whose tap was merely gated — a Switch still
+        // switching under it — read as disabled (measured on an API 35
+        // emulator, AccessibilityNodeInfo.isEnabled), where iOS reads it as
+        // enabled. kjui's codegen attaches the click the same way.
+        if (handlers.isNotEmpty() && tapGateOpen(json, data)) {
             val viewId = json.get("id")?.asString
             // TalkBack is told it is a button where the shared rule says so
             // (TapAccessibility): not where the tappable is a control already
             // or holds one.
-            // common.canTap is the Compose tap gate (attribute_definitions.json),
-            // the `enabled && canTap` kjui's codegen emits: absent, no gate;
-            // false (or a binding resolving false) shuts the tap. It used to be
-            // unread here, so `canTap: false` still clicked.
             result = result.clickable(
-                enabled = enabled != false && resolveFlag(json, "canTap", data) != false,
+                enabled = enabled != false,
                 role = if (TapAccessibility.isButton(json)) Role.Button else null
             ) {
                 handlers.forEach { resolveEventHandler(it, data, viewId) }
@@ -680,8 +685,42 @@ object ModifierBuilder {
         if (enabled == false) {
             result = result.semantics { disabled() }
         }
-        return result
+        return applyInteractionBlocker(result, json, data)
     }
+
+    /**
+     * common.userInteractionEnabled: false (or a binding resolving false)
+     * stops the node and what is in it — its click, its children's, a
+     * control's own operation. Compose has no allowsHitTesting, so the
+     * events are consumed in the Initial pass, before any child or any
+     * Main-pass handler sees them: kjui's codegen emits the same
+     * (build_interaction_blocker). It was decoded and never read here.
+     */
+    fun applyInteractionBlocker(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        if (!interactionBlocked(json, data)) return modifier
+        return modifier.pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                }
+            }
+        }
+    }
+
+    /** `userInteractionEnabled` is false, or a binding resolving false. */
+    fun interactionBlocked(json: JsonObject, data: Map<String, Any>): Boolean =
+        resolveFlag(json, "userInteractionEnabled", data) == false
+
+    /**
+     * A node's own long press, pan and pinch are shut: `userInteractionEnabled`
+     * or `enabled` is false (or a binding resolving false). Either stops every
+     * handler of the node — the tap rule reads the same (a disabled long press
+     * does not operate) — and the three detectors read neither: they fired
+     * under both (measured, API 35 emulator, conformance-host
+     * InteractionGateProbeTest). kjui's codegen: gesture_gate.
+     */
+    fun gesturesShut(json: JsonObject, data: Map<String, Any>): Boolean =
+        interactionBlocked(json, data) || resolveEnabled(json, data) == false
 
     /**
      * common.enabled — resolved value, or null when the attribute is absent.
@@ -691,6 +730,16 @@ object ModifierBuilder {
      */
     private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? =
         resolveFlag(json, "enabled", data)
+
+    /**
+     * common.canTap, the tap gate: open unless it is `false` or a binding
+     * resolving false. It stops the onClick / onclick handler's call and
+     * nothing else — a component that calls that handler itself (Button's
+     * action, Toggle's fallback) asks here; its own operation (a check, a
+     * selection) is `enabled`'s.
+     */
+    fun tapGateOpen(json: JsonObject, data: Map<String, Any>): Boolean =
+        resolveFlag(json, "canTap", data) != false
 
     /** A boolean-or-binding flag, or null when absent or unresolved. */
     private fun resolveFlag(json: JsonObject, key: String, data: Map<String, Any>): Boolean? {
@@ -727,6 +776,10 @@ object ModifierBuilder {
         data: Map<String, Any>
     ): Modifier {
         val handler = json.get("onLongPress")?.asString ?: return modifier
+        // The detector watches the Initial pass from outside the blocker and
+        // the clickable, so neither stopped it: a node whose gestures are
+        // shut gets no long press (gesturesShut).
+        if (gesturesShut(json, data)) return modifier
         val viewId = json.get("id")?.asString
         return modifier.pointerInput(handler, data) {
             awaitEachGesture {
@@ -774,6 +827,7 @@ object ModifierBuilder {
         data: Map<String, Any>
     ): Modifier {
         val handler = json.get("onPan")?.asString ?: return modifier
+        if (gesturesShut(json, data)) return modifier
         val viewId = json.get("id")?.asString
         return modifier.pointerInput(handler, data) {
             var total = Offset.Zero
@@ -804,6 +858,7 @@ object ModifierBuilder {
         data: Map<String, Any>
     ): Modifier {
         val handler = json.get("onPinch")?.asString ?: return modifier
+        if (gesturesShut(json, data)) return modifier
         val viewId = json.get("id")?.asString
         return modifier.pointerInput(handler, data) {
             awaitEachGesture {

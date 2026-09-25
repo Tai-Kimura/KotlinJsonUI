@@ -111,6 +111,9 @@ class DynamicSafeAreaViewComponent {
             // Build modifier manually: special ordering required for SafeAreaView
             // background must go BEFORE systemBarsPadding so it extends to screen edges
             var modifier = ModifierBuilder.applyTestTag(Modifier, json)
+            // userInteractionEnabled stops this node and what is in it (this chain
+            // runs no buildModifier, whose clickable stage applies it elsewhere)
+            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true, data)
             // offset goes here rather than "before alpha" like the other
             // hand-rolled chains: this one has no alpha step and deliberately
