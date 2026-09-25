@@ -27,6 +27,7 @@
 
 require 'fileutils'
 require 'json'
+require_relative 'codegen_build_dir'
 
 host_dir = File.expand_path('..', __dir__)
 conformance_dir = ENV['CONFORMANCE_DIR'] or abort 'error: CONFORMANCE_DIR is not set'
@@ -38,9 +39,11 @@ manifest_path = File.join(conformance_dir, 'manifest.json')
 abort "error: manifest not found: #{manifest_path}" unless File.file?(manifest_path)
 manifest = JSON.parse(File.read(manifest_path))
 
-build_dir = ENV['CONFORMANCE_CODEGEN_BUILD_DIR'] || '/tmp/jsonui-codegen-android-staging'
+# A directory of this run's own (codegen_build_dir.rb): it was one fixed
+# /tmp path, and two runs at once emptied each other's.
+build_dir, owned_build_dir = CodegenBuildDir.for_run
+at_exit { FileUtils.rm_rf(build_dir) if owned_build_dir }
 codegen_src = File.join(host_dir, 'src', 'codegen', 'kotlin')
-FileUtils.rm_rf(build_dir)
 FileUtils.rm_rf(codegen_src)
 # Consumer-shaped staging: the color extraction writes
 # assets/Layouts/Resources/colors.json at the DEFAULT layouts path
