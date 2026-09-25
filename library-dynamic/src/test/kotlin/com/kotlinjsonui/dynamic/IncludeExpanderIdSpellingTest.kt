@@ -3,8 +3,11 @@ package com.kotlinjsonui.dynamic
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import java.io.FileNotFoundException
+import java.io.InputStream
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
@@ -24,7 +27,7 @@ import org.junit.Test
  *   against jsonui-cli f45a0cfc — sjui_tools and kjui_tools gave
  *   byte-identical output. Nested partials sit at the layouts root, so the
  *   codegen's directory-relative lookup and this runtime's root lookup read
- *   the same files (the path rule is pinned separately, [candidatePaths]).
+ *   the same files (the lookup rule has its own arms, at the end).
  * A transcription is not a compile: if the codegen's answer moves, these do
  * not follow by themselves — regenerate them from the Ruby.
  */
@@ -410,36 +413,33 @@ class IncludeExpanderIdSpellingTest {
     @Test
     fun theSamePartialTwiceGivesTheSameIdsTwice() = assertMatchesTheCodegen("6_same_partial_twice")
 
-    // --- Where an included layout is looked up (pinned as it is) -------------
+    // --- Where an included layout is looked up: the layouts root only --------
 
-    /**
-     * Always from the layouts ROOT, never from the including file's directory
-     * — measured across six faces as the form that resolves consumers' nested
-     * includes (measured 2026-09-25); the codegen's directory-relative lookup
-     * is the one being changed. A path with `/` is one root-relative lookup.
-     */
+    /** A bare name and a path are each ONE root-relative lookup. */
     @Test
-    fun aPathIsLookedUpFromTheLayoutsRoot() {
-        val listDir: (String) -> Array<String>? = { error("a path is not searched: $it") }
-        assertEquals(listOf("Layouts/section/u8_inner.json"), IncludeExpander.candidatePaths("section/u8_inner", listDir))
+    fun aNameIsLookedUpAtTheLayoutsRootOnly() {
+        assertEquals(listOf("Layouts/u8_inner.json"), IncludeExpander.candidatePaths("u8_inner"))
+        assertEquals(listOf("Layouts/section/u8_inner.json"), IncludeExpander.candidatePaths("section/u8_inner"))
     }
 
     /**
-     * A bare name: the root, then every first-level directory — which the
-     * SwiftUI runtime does NOT do (it looks at the root only), a difference
-     * pinned here as it is and left to the owner of the path rule.
+     * Through the real read loop, over a tree where the file exists ONLY in a
+     * first-level directory: the bare name finds nothing (this used to fall
+     * back to that directory — the one reader of these layouts that did),
+     * while the root-relative path to the same file finds it. The second
+     * half is the arm's own control: the file is readable, so the first
+     * half's null is the lookup rule and not a missing file.
      */
     @Test
-    fun aBareNameIsTheRootThenEachFirstLevelDirectory() {
-        val tree = mapOf(
-            "Layouts" to arrayOf("section", "other", "top.json"),
-            "Layouts/section" to arrayOf("u8_inner.json"),
-            "Layouts/other" to arrayOf("x.json"),
-            "Layouts/top.json" to arrayOf(),
-        )
-        assertEquals(
-            listOf("Layouts/u8_inner.json", "Layouts/section/u8_inner.json", "Layouts/other/u8_inner.json"),
-            IncludeExpander.candidatePaths("u8_inner") { tree[it] },
-        )
+    fun aFileOnlyInAFirstLevelDirectoryIsNotFoundByItsBareName() {
+        val files = mapOf("Layouts/section/u8_inner.json" to """{"type":"Label","id":"inner_label"}""")
+        val opened = mutableListOf<String>()
+        val open: (String) -> InputStream = { path ->
+            opened += path
+            files[path]?.byteInputStream() ?: throw FileNotFoundException(path)
+        }
+        assertNull(IncludeExpander.readLayout("u8_inner", open))
+        assertEquals(listOf("Layouts/u8_inner.json"), opened)
+        assertEquals("inner_label", IncludeExpander.readLayout("section/u8_inner", open)?.get("id")?.asString)
     }
 }

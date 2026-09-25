@@ -6,6 +6,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
+import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.regex.Pattern
 
@@ -278,33 +279,32 @@ object IncludeExpander {
     }
 
     /**
-     * Where [loadLayoutFile] looks for an included layout, in order. Always
-     * from the LAYOUTS ROOT — never from the including file's directory:
-     * a name with a `/` is one root-relative path; a bare name is the root,
-     * then each first-level directory under it ([listDir] of "Layouts").
-     * Split out so the rule is pinned by a JVM test; the codegen resolves
-     * from the including file's directory, and that is the side being
-     * changed (include-child-ids-are-spelled-differently-on-each-platform).
+     * Where an included layout is looked for: the LAYOUTS ROOT, and nothing
+     * else — `Layouts/<name>.json`, whether the name is bare or a path. It
+     * is never resolved from the including file's directory, and a bare name
+     * is not searched for in subdirectories either.
+     *
+     * The second of those is a change: a bare name used to fall back to every
+     * first-level directory under Layouts, which no other reader of the same
+     * layouts does — the normalizer (`layouts_dir / f"{include}.json"`), the
+     * codegen (`File.join(layouts_root, …)`), the web output and the SwiftUI
+     * runtime all look at the root only, so the same layout could resolve to
+     * a file here that exists nowhere for them. Ruled root-only on
+     * 2026-09-25 (include-child-ids-are-spelled-differently-on-each-platform);
+     * the consumers' includes measured that day all carry a path, so no
+     * include that resolved before stops resolving.
      */
-    internal fun candidatePaths(layoutName: String, listDir: (String) -> Array<String>?): List<String> {
-        val paths = mutableListOf("Layouts/$layoutName.json")
-        if (!layoutName.contains("/")) {
-            val dirs = try { listDir("Layouts") } catch (e: Exception) { null } ?: return paths
-            for (item in dirs) {
-                val sub = try { listDir("Layouts/$item") } catch (e: Exception) { null }
-                if (sub != null && sub.isNotEmpty()) paths.add("Layouts/$item/$layoutName.json")
-            }
-        }
-        return paths
-    }
+    internal fun candidatePaths(layoutName: String): List<String> = listOf("Layouts/$layoutName.json")
 
     /**
-     * Load a layout file from assets
+     * Reads an included layout through [open] (an asset opener in
+     * production). Split out so the lookup is exercised on the JVM with the
+     * real loop, not only by its list of paths.
      */
-    private fun loadLayoutFile(ctx: Context, layoutName: String): JsonObject? {
-        for (path in candidatePaths(layoutName) { ctx.assets.list(it) }) {
+    internal fun readLayout(layoutName: String, open: (String) -> InputStream): JsonObject? {
+        for (path in candidatePaths(layoutName)) {
             try {
-                ctx.assets.open(path).use { inputStream ->
+                open(path).use { inputStream ->
                     InputStreamReader(inputStream).use { reader ->
                         return JsonParser.parseReader(reader).asJsonObject
                     }
@@ -315,4 +315,10 @@ object IncludeExpander {
         }
         return null
     }
+
+    /**
+     * Load a layout file from assets
+     */
+    private fun loadLayoutFile(ctx: Context, layoutName: String): JsonObject? =
+        readLayout(layoutName) { ctx.assets.open(it) }
 }
