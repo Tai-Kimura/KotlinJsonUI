@@ -1,8 +1,8 @@
-// Pasted from what `kjui build` (kjui_tools of jsonui-cli rel/v1.8.121 = 24f7fad0) emits for
-// DynamicStateProbeView's static layout (SwiftJsonUI ConformanceHost) — ticket
-// static-valued-controls-do-not-change-on-a-users-tap. Changed from the output: the package
+// Pasted from what `kjui build` emits for the static layouts of StaticValuedControlsProbeTest —
+// kjui_tools of jsonui-cli triage/static-valued-controls 46b7d599 (on rel/v1.8.121 = 32785ce8): a static value seeds the control's own state (ticket
+// static-valued-controls-do-not-change-on-a-users-tap). Changed from the output: the package
 // (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.staticvalued) and the unused
-// `import com.kotlinjsonui.probe.R`; nothing else.
+// `import com.kotlinjsonui.probe.R`.
 package com.kotlinjsonui.conformance.staticvalued
 
 import androidx.compose.foundation.background
@@ -19,7 +19,9 @@ import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -93,21 +95,8 @@ fun StaticControlsGeneratedView(
             }
         } else {
             // Static Mode - use generated code
-            Column(
-            modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Section0(data, viewModel)
-            Section1(data, viewModel)
-            Section2(data, viewModel)
-            Section3(data, viewModel)
-            Section4(data, viewModel)
-            Section5(data, viewModel)
-            Section6(data, viewModel)
-            Section7(data, viewModel)
-            Section8(data, viewModel)
-            Section9(data, viewModel)
-            Section10(data, viewModel)
+            CompositionLocalProvider(LocalRadioGroupSelections provides remember { mutableStateMapOf<String, String>() }) {
+        Section10(data, viewModel, modifier)
         }    }
         // Requires KotlinJsonUI >= 2.15.1 (screen marker)
         ScreenMarker("static_controls")
@@ -117,158 +106,7 @@ fun StaticControlsGeneratedView(
 
 // >>> RESPONSIVE_HELPERS_START
 @Composable
-private fun Section0(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Switch(
-        checked = false,
-        onCheckedChange = { },
-        modifier = Modifier
-            .testTag("sw")
-            .semantics { testTagsAsResourceId = true }
-    )
-}
-
-@Composable
 private fun Section1(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Switch(
-        checked = false,
-        onCheckedChange = { },
-        modifier = Modifier
-            .testTag("tg")
-            .semantics { testTagsAsResourceId = true }
-    )
-}
-
-@Composable
-private fun Section2(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .testTag("cb")
-            .semantics { testTagsAsResourceId = true }
-    ) {
-        Checkbox(
-            checked = false,
-            onCheckedChange = { }
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("cbl")
-    }
-}
-
-@Composable
-private fun Section3(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Column(
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                }
-        ) {
-            RadioButton(
-                selected = "ra" == "ra",
-                onClick = {
-                }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("ra", color = Color.Black)
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                }
-        ) {
-            RadioButton(
-                selected = "ra" == "rb",
-                onClick = {
-                }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("rb", color = Color.Black)
-        }
-    }
-}
-
-@Composable
-private fun Section4(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(
-            selected = data.selectedGrp == "rg1" || data.selectedGrp.isEmpty(),
-            onClick = { viewModel.updateData(mapOf("selectedGrp" to "rg1")) }
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("rg1", color = Color.Black)
-    }
-}
-
-@Composable
-private fun Section5(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(
-            selected = data.selectedGrp == "rg2",
-            onClick = { viewModel.updateData(mapOf("selectedGrp" to "rg2")) }
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("rg2", color = Color.Black)
-    }
-}
-
-@Composable
-private fun Section6(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Segment(
-        selectedTabIndex = 0,
-        containerColor = Color.Transparent,
-        modifier = Modifier
-            .testTag("seg")
-            .semantics { testTagsAsResourceId = true }
-    ) {
-        Tab(
-            selected = true,
-            onClick = {
-                // Static selected index
-            },
-            text = { Text("sx") }
-        )
-        Tab(
-            selected = false,
-            onClick = {
-                // Static selected index
-            },
-            text = { Text("sy") }
-        )
-    }
-}
-
-@Composable
-private fun Section7_1(
     data: StaticControlsData,
     viewModel: StaticControlsViewModel
 ) {
@@ -333,64 +171,233 @@ private fun Section7_1(
 }
 
 @Composable
+private fun Section2(
+    data: StaticControlsData,
+    viewModel: StaticControlsViewModel
+) {
+    val radioGroups = LocalRadioGroupSelections.current
+    RadioButton(
+        selected = radioGroups["grp"] == "rg1" || radioGroups["grp"] == null,
+        onClick = { radioGroups["grp"] = "rg1" }
+    )
+}
+
+@Composable
+private fun Section3(
+    data: StaticControlsData,
+    viewModel: StaticControlsViewModel
+) {
+    Spacer(modifier = Modifier.width(8.dp))
+}
+
+@Composable
+private fun Section4(
+    data: StaticControlsData,
+    viewModel: StaticControlsViewModel
+) {
+    Text("rg1", color = Color.Black)
+}
+
+@Composable
+private fun Section5(
+    data: StaticControlsData,
+    viewModel: StaticControlsViewModel
+) {
+    val radioGroups = LocalRadioGroupSelections.current
+    RadioButton(
+        selected = radioGroups["grp"] == "rg2",
+        onClick = { radioGroups["grp"] = "rg2" }
+    )
+}
+
+@Composable
+private fun Section6(
+    data: StaticControlsData,
+    viewModel: StaticControlsViewModel
+) {
+    Spacer(modifier = Modifier.width(8.dp))
+}
+
+@Composable
 private fun Section7(
     data: StaticControlsData,
     viewModel: StaticControlsViewModel
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .requiredHeight(130.dp)
-    ) {
-        // TabView with NavigationBar
-        Section7_1(data, viewModel)
-    }
-}
-
-@Composable
-private fun Section8(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    Slider(
-        value = 0.2f,
-        onValueChange = { },
-        valueRange = 0f..1f,
-        modifier = Modifier
-            .testTag("sl")
-            .semantics { testTagsAsResourceId = true }
-    )
-}
-
-@Composable
-private fun Section9(
-    data: StaticControlsData,
-    viewModel: StaticControlsViewModel
-) {
-    SelectBox(
-        value = "pp",
-        onValueChange = { },
-        options = listOf("pp", "qq"),
-        modifier = Modifier
-            .testTag("sb")
-            .semantics { testTagsAsResourceId = true }
-            .requiredHeight(40.dp)
-    )
+    Text("rg2", color = Color.Black)
 }
 
 @Composable
 private fun Section10(
     data: StaticControlsData,
-    viewModel: StaticControlsViewModel
+    viewModel: StaticControlsViewModel,
+    modifier: Modifier
 ) {
-    SelectBox(
-        value = "pp",
-        onValueChange = { },
-        options = listOf("pp", "qq"),
-        modifier = Modifier
-            .testTag("sbi")
-            .semantics { testTagsAsResourceId = true }
-            .requiredHeight(40.dp)
-    )
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        run {
+            var seeded by remember { mutableStateOf(false) }
+            Switch(
+                checked = seeded,
+                onCheckedChange = { seeded = it },
+                modifier = Modifier
+                    .testTag("sw")
+                    .semantics { testTagsAsResourceId = true }
+            )
+        }
+        run {
+            var seeded by remember { mutableStateOf(false) }
+            Switch(
+                checked = seeded,
+                onCheckedChange = { seeded = it },
+                modifier = Modifier
+                    .testTag("tg")
+                    .semantics { testTagsAsResourceId = true }
+            )
+        }
+        run {
+            var seeded by remember { mutableStateOf(false) }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .testTag("cb")
+                    .semantics { testTagsAsResourceId = true }
+            ) {
+                Checkbox(
+                    checked = seeded,
+                    onCheckedChange = { seeded = it }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("cbl")
+            }
+        }
+        run {
+            var seeded by remember { mutableStateOf("ra") }
+            Column(
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            seeded = "ra"
+                        }
+                ) {
+                    RadioButton(
+                        selected = seeded == "ra",
+                        onClick = {
+                            seeded = "ra"
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("ra", color = Color.Black)
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            seeded = "rb"
+                        }
+                ) {
+                    RadioButton(
+                        selected = seeded == "rb",
+                        onClick = {
+                            seeded = "rb"
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("rb", color = Color.Black)
+                }
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Section2(data, viewModel)
+            Section3(data, viewModel)
+            Section4(data, viewModel)
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Section5(data, viewModel)
+            Section6(data, viewModel)
+            Section7(data, viewModel)
+        }
+        run {
+            var seeded by remember { mutableStateOf(0) }
+            Segment(
+                selectedTabIndex = seeded,
+                containerColor = Color.Transparent,
+                modifier = Modifier
+                    .testTag("seg")
+                    .semantics { testTagsAsResourceId = true }
+            ) {
+                Tab(
+                    selected = (seeded == 0),
+                    onClick = {
+                        seeded = 0
+                    },
+                    text = { Text("sx") }
+                )
+                Tab(
+                    selected = (seeded == 1),
+                    onClick = {
+                        seeded = 1
+                    },
+                    text = { Text("sy") }
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .requiredHeight(130.dp)
+        ) {
+            // TabView with NavigationBar
+            Section1(data, viewModel)
+        }
+        run {
+            var seeded by remember { mutableStateOf(0.2f) }
+            Slider(
+                value = seeded,
+                onValueChange = { seeded = it },
+                valueRange = 0f..1f,
+                modifier = Modifier
+                    .testTag("sl")
+                    .semantics { testTagsAsResourceId = true }
+            )
+        }
+        run {
+            var seeded by remember { mutableStateOf("pp") }
+            SelectBox(
+                value = seeded,
+                onValueChange = { seeded = it },
+                options = listOf("pp", "qq"),
+                modifier = Modifier
+                    .testTag("sb")
+                    .semantics { testTagsAsResourceId = true }
+                    .requiredHeight(40.dp)
+            )
+        }
+        run {
+            var seeded by remember { mutableStateOf("pp") }
+            SelectBox(
+                value = seeded,
+                onValueChange = { seeded = it },
+                options = listOf("pp", "qq"),
+                modifier = Modifier
+                    .testTag("sbi")
+                    .semantics { testTagsAsResourceId = true }
+                    .requiredHeight(40.dp)
+            )
+        }
+    }
 }
+
+// Each unbound group of single Radios in this view: group name -> the chosen item
+// (absent until the user chooses — the checked item shows until then).
+private val LocalRadioGroupSelections = compositionLocalOf<MutableMap<String, String>> { mutableStateMapOf() }
 // >>> RESPONSIVE_HELPERS_END

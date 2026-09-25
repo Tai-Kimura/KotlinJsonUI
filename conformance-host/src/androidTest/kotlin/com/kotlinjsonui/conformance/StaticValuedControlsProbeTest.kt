@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -105,15 +106,24 @@ class StaticValuedControlsProbeTest {
           {"type": "TextField", "id": "tf", "height": 40, "text": "t0"},
           {"type": "TextView", "id": "tv", "height": 60, "text": "v0"},
           {"type": "SelectBox", "id": "sbv", "height": 40, "items": ["pp", "qq"], "selectedValue": "pp"},
-          {"type": "SelectBox", "id": "sbd", "height": 40, "selectItemType": "Date", "datePickerMode": "date", "dateStringFormat": "yyyy-MM-dd", "selectedDate": "2026-01-02"}
+          {"type": "SelectBox", "id": "sbd", "height": 40, "selectItemType": "Date", "datePickerMode": "date", "dateStringFormat": "yyyy-MM-dd", "selectedDate": "2026-01-02"},
+          {"type": "Slider", "id": "sln", "minimumValue": -2, "maximumValue": 1}
         ]}
     """.trimIndent()
 
     private val groups = linkedMapOf(
         "controls" to listOf("sw", "tg", "cb", "rv", "rg", "seg", "tab", "sl", "sb", "sbi"),
-        "inputs" to listOf("tf", "tv", "sbv", "sbd"),
+        "inputs" to listOf("tf", "tv", "sbv", "sbd", "sln"),
     )
     private var group = "controls"
+
+    /** What each control shows before the user touches it — the static value — where its node says. */
+    private val declaredReading = mapOf(
+        "sw" to "checked=false", "tg" to "checked=false", "cb" to "checked=false",
+        "seg" to "sy.selected=false", "tab" to "tb.selected=false", "sb" to "texts=pp", "sbi" to "texts=pp",
+        "tf" to "texts=t0", "tv" to "texts=v0", "sbv" to "texts=pp", "sbd" to "texts=2026-01-02",
+        "sln" to "value=-2.000 of -2..1",
+    )
     private val controls get() = groups.getValue(group)
 
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
@@ -125,7 +135,11 @@ class StaticValuedControlsProbeTest {
         device.waitForIdle()
     }
 
+    /** Bumped after the choice: the screen recomposes with something that concerns no control. */
+    private val tick = mutableStateOf(0)
+
     private fun launch(path: String): ActivityScenario<FixtureHostActivity> {
+        tick.value = 0
         val scenario = ActivityScenario.launch(FixtureHostActivity::class.java)
         scenario.onActivity { activity ->
             DynamicModeManager.setDynamicModeEnabled(activity, false)
@@ -134,21 +148,25 @@ class StaticValuedControlsProbeTest {
                 Column(Modifier.padding(top = 40.dp).semantics { testTagsAsResourceId = true }) {
                     if (path == "codegen") {
                         val app = ApplicationProvider.getApplicationContext<Application>()
+                        // A new modifier makes the generated view run again —
+                        // the unrelated change; a test tag moves no pixel.
+                        val t = tick.value
+                        val unrelated = if (t == 0) Modifier else Modifier.testTag("unrelated$t")
                         if (group == "inputs") {
                             val vm = remember { StaticInputsViewModel(app) }
                             val data by vm.data.collectAsState()
-                            StaticInputsGeneratedView(data = data, viewModel = vm)
+                            StaticInputsGeneratedView(data = data, viewModel = vm, modifier = unrelated)
                         } else {
                             val vm = remember { StaticControlsViewModel(app) }
                             val data by vm.data.collectAsState()
-                            StaticControlsGeneratedView(data = data, viewModel = vm)
+                            StaticControlsGeneratedView(data = data, viewModel = vm, modifier = unrelated)
                         }
                     } else {
                         // As a screen wires it: `updateData` writes into the data
                         // (a group of single Radios keeps its selection there).
                         val state = remember { mutableStateOf<Map<String, Any>>(emptyMap()) }
                         val write = remember { { m: Map<String, Any> -> state.value = state.value + m } }
-                        DynamicView(json = json, data = state.value + ("updateData" to write))
+                        DynamicView(json = json, data = state.value + ("updateData" to write) + ("unrelated" to tick.value))
                     }
                 }
             }
@@ -203,11 +221,25 @@ class StaticValuedControlsProbeTest {
             "sw", "tg", "cb" -> checkable(id)
             "seg" -> "sy.selected=${device.findObject(By.text("sy"))?.let { selectedUp(it) }}"
             "tab" -> "tb.selected=${device.findObjects(By.text("tb")).maxByOrNull { it.visibleBounds.top }?.let { selectedUp(it) }}"
+            // A slider's value, from the node's range (a fresh node, not a cached one).
+            "sln" -> rangeOf(id)
             "sb", "sbi", "sbv", "sbd", "tf", "tv" -> device.findObject(By.res(id))?.let { o ->
                 "texts=" + (listOfNotNull(o.text) + o.findObjects(By.textStartsWith("")).mapNotNull { it.text }).distinct().joinToString("/")
             } ?: "no-node"
             else -> "-"
         }
+    }
+
+    private fun rangeOf(res: String): String {
+        fun find(n: android.view.accessibility.AccessibilityNodeInfo?): android.view.accessibility.AccessibilityNodeInfo? {
+            if (n == null) return null
+            n.refresh()
+            if (n.rangeInfo != null && (n.viewIdResourceName?.endsWith(res) == true || n.parent?.viewIdResourceName?.endsWith(res) == true)) return n
+            for (i in 0 until n.childCount) find(n.getChild(i))?.let { return it }
+            return null
+        }
+        val r = find(InstrumentationRegistry.getInstrumentation().uiAutomation.rootInActiveWindow)?.rangeInfo ?: return "no-range"
+        return "value=${"%.3f".format(r.current)} of ${"%.0f".format(r.min)}..${"%.0f".format(r.max)}"
     }
 
     /** A tab's text sits inside the node that carries its selection. */
@@ -284,6 +316,9 @@ class StaticValuedControlsProbeTest {
 
     /** The sheets first, then the TextView and the TextField (a typed key each); back puts the keyboard away. */
     private fun chooseInputs() {
+        // The slider with no value: a tap at 30% of its track.
+        device.findObject(By.res("sln"))?.visibleBounds?.let { r -> device.click(r.left + (r.width() * 0.3).toInt(), r.centerY()) }
+        settle()
         device.findObject(By.res("sbv"))?.click()
         device.wait(Until.findObjects(By.text("qq")), 5_000)?.maxByOrNull { it.visibleBounds.top }?.click()
         settle()
@@ -321,26 +356,41 @@ class StaticValuedControlsProbeTest {
         val declared = read()
         choose()
         val chosen = read()
+        tick.value = 1
+        val afterUnrelated = read()
         val changed = linkedMapOf<String, Boolean>()
         for (id in controls) {
             val d = diff(declared, chosen, id)
             // A text input's caret can move pixels on its own: an input is judged by its text.
-            changed[id] = if (group == "inputs") declared.nodes[id] != chosen.nodes[id] && chosen.nodes[id] != "no-node" else d > 16
+            changed[id] = if (group == "inputs") declared.nodes[id] != chosen.nodes[id] && chosen.nodes[id] !in setOf("no-node", "no-range") else d > 16
+            // It started at the static value (a dropped seed starts elsewhere).
+            declaredReading[id]?.let { want -> if (declared.nodes[id] != want) unseeded += "$path $id: ${declared.nodes[id]}" }
+            // After the unrelated change the control still shows the choice.
+            val kept = if (group == "inputs") afterUnrelated.nodes[id] == chosen.nodes[id] else diff(chosen, afterUnrelated, id) in 0..16
+            if (changed.getValue(id) && !kept) lost += "$path $id"
             println("STATICVALUED $group $path $id tap_pixels=$d node ${declared.nodes[id]} -> ${chosen.nodes[id]}" +
-                (if (changed.getValue(id)) "" else " TAP_DID_NOT_CHANGE_IT"))
+                (if (changed.getValue(id)) "" else " TAP_DID_NOT_CHANGE_IT") +
+                " | after_an_unrelated_change=${if (kept) "kept" else "LOST"} node ${afterUnrelated.nodes[id]}")
         }
         scenario.close()
         return changed
     }
 
+    private val lost = mutableListOf<String>()
+    private val unseeded = mutableListOf<String>()
+
     private fun check(group: String) {
         this.group = group
+        lost.clear()
+        unseeded.clear()
         val dynamic = run("dynamic")
         val codegen = run("codegen")
         // The dynamic path is the positive control for the taps themselves.
         for ((id, moved) in dynamic) assertTrue("$group dynamic $id: the tap reached and moved it (positive control)", moved)
         val stuck = codegen.filterValues { !it }.keys
         assertTrue("$group codegen: a tap moves every static-valued control; did not: $stuck", stuck.isEmpty())
+        assertTrue("$group: a choice survives an unrelated change; lost: $lost", lost.isEmpty())
+        assertTrue("$group: every control starts at its static value; did not: $unseeded", unseeded.isEmpty())
     }
 
     @Test

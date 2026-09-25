@@ -1,8 +1,8 @@
-// Pasted from what `kjui build` (kjui_tools of jsonui-cli rel/v1.8.121 = 32785ce8) emits for
-// the static inputs layout of StaticValuedControlsProbeTest — ticket
-// static-valued-controls-do-not-change-on-a-users-tap. Changed from the output: the package
+// Pasted from what `kjui build` emits for the static layouts of StaticValuedControlsProbeTest —
+// kjui_tools of jsonui-cli triage/static-valued-controls 46b7d599 (on rel/v1.8.121 = 32785ce8): a static value seeds the control's own state (ticket
+// static-valued-controls-do-not-change-on-a-users-tap). Changed from the output: the package
 // (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.staticvalued) and the unused
-// `import com.kotlinjsonui.probe.R`; nothing else.
+// `import com.kotlinjsonui.probe.R`.
 package com.kotlinjsonui.conformance.staticvalued
 
 import androidx.compose.foundation.background
@@ -17,7 +17,10 @@ import androidx.compose.material3.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -128,26 +131,43 @@ fun StaticInputsGeneratedView(
                 maxLines = Int.MAX_VALUE,
                 singleLine = false
             )
-            SelectBox(
-                value = "pp",
-                onValueChange = { },
-                options = listOf("pp", "qq"),
-                modifier = Modifier
-                    .testTag("sbv")
-                    .semantics { testTagsAsResourceId = true }
-                    .requiredHeight(40.dp)
-            )
-            DateSelectBox(
-                value = "2026-01-02",
-                onValueChange = { },
-                datePickerMode = "date",
-                dateFormat = "yyyy-MM-dd",
-                modifier = Modifier
-                    .testTag("sbd")
-                    .semantics { testTagsAsResourceId = true }
-                    .fillMaxWidth()
-                    .requiredHeight(40.dp)
-            )
+            run {
+                var seeded by remember { mutableStateOf("pp") }
+                SelectBox(
+                    value = seeded,
+                    onValueChange = { seeded = it },
+                    options = listOf("pp", "qq"),
+                    modifier = Modifier
+                        .testTag("sbv")
+                        .semantics { testTagsAsResourceId = true }
+                        .requiredHeight(40.dp)
+                )
+            }
+            run {
+                var seeded by remember { mutableStateOf("2026-01-02") }
+                DateSelectBox(
+                    value = seeded,
+                    onValueChange = { seeded = it },
+                    datePickerMode = "date",
+                    dateFormat = "yyyy-MM-dd",
+                    modifier = Modifier
+                        .testTag("sbd")
+                        .semantics { testTagsAsResourceId = true }
+                        .fillMaxWidth()
+                        .requiredHeight(40.dp)
+                )
+            }
+            run {
+                var seeded by remember { mutableStateOf(-2f) }
+                Slider(
+                    value = seeded,
+                    onValueChange = { seeded = it },
+                    valueRange = -2f..1f,
+                    modifier = Modifier
+                        .testTag("sln")
+                        .semantics { testTagsAsResourceId = true }
+                )
+            }
         }    }
         // Requires KotlinJsonUI >= 2.15.1 (screen marker)
         ScreenMarker("static_inputs")
