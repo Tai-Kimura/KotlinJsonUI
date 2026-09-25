@@ -69,25 +69,31 @@ class DynamicIndicatorComponent {
             // "large"); structural keys stay raw.
             val style = json.get("style")?.asString ?: "medium"
 
-            // Build base modifier with testTag first
+            // The standard stages in their standard order. The chain put the
+            // margins after the style's size — inside it, where they pad —
+            // read no declared width / height, and applied no shadow,
+            // background, radius or border, all of which the SSoT declares on
+            // every type (`common`).
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
-
-            // Apply size based on style (before other modifiers, matching Ruby order)
-            when (style) {
-                "large" -> modifier = modifier.size(48.dp)
-                "small" -> modifier = modifier.size(16.dp)
-                else -> {
-                    // Check for custom size attribute (undeclared legacy
-                    // runtime extra)
-                    ResourceResolver.resolveFloat(json, "size", data)?.let { customSize ->
-                        modifier = modifier.size(customSize.dp)
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
+            // The declared width / height, as on every component; without
+            // them, the style's size.
+            if (a.common.width != null || a.common.height != null) {
+                modifier = ModifierBuilder.applySize(modifier, json, data = data)
+            } else {
+                when (style) {
+                    "large" -> modifier = modifier.size(48.dp)
+                    "small" -> modifier = modifier.size(16.dp)
+                    else -> {
+                        // Check for custom size attribute (undeclared legacy
+                        // runtime extra)
+                        ResourceResolver.resolveFloat(json, "size", data)?.let { customSize ->
+                            modifier = modifier.size(customSize.dp)
+                        }
                     }
                 }
             }
-
-            // Continue modifier chain: margins -> alpha -> clickable -> padding -> alignment -> weight
-            modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // offset sits after size and before alpha, the same slot
             // buildModifier uses — outside background/shadow so the
             // decoration moves with the view, inside margins so siblings
@@ -95,6 +101,8 @@ class DynamicIndicatorComponent {
             // it needed the line of its own (51-C's warning, measured).
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            modifier = ModifierBuilder.applyShadow(modifier, json, data)
+            modifier = ModifierBuilder.applyBackground(modifier, json, data, context)
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
             modifier = ModifierBuilder.applyPadding(modifier, json, data)
             modifier = ModifierBuilder.applyAlignment(modifier, json, parentType, data)

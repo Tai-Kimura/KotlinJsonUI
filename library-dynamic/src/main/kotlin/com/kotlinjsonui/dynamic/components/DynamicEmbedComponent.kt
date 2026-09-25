@@ -17,6 +17,7 @@ import com.kotlinjsonui.dynamic.currentSizeClassTier
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.EmbedAttributes
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.embed.EmbedContainer
 import com.kotlinjsonui.embed.EmbedIsolatedNavigation
@@ -94,6 +95,11 @@ class DynamicEmbedComponent {
             // JsonElement types (asNumber) — see class KDoc.
             val resolvedParams = resolveParams(TypedAttrs.rawKey(json, "params"), data)
             val eventBridge = buildEventBridge(a.events, data)
+            // The common stages, as on every component. The container was
+            // given no modifier, so an Embed applied none of them — not its
+            // id, size or margins, which kjui's codegen emits — while it
+            // declared them applied (COMMON_APPLIED).
+            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
 
             if (navigationMode == EmbedNavigationMode.Isolated) {
                 EmbedContainer(
@@ -107,7 +113,8 @@ class DynamicEmbedComponent {
                             params = entry.params
                         )
                     },
-                    eventBridge = eventBridge
+                    eventBridge = eventBridge,
+                    modifier = modifier
                 ) { _ ->
                     EmbeddedScreenContent(screenName = screenName, params = resolvedParams)
                 }
@@ -116,7 +123,8 @@ class DynamicEmbedComponent {
                     embedId = embedId,
                     params = resolvedParams,
                     navigationMode = navigationMode,
-                    eventBridge = eventBridge
+                    eventBridge = eventBridge,
+                    modifier = modifier
                 ) { _ ->
                     EmbeddedScreenContent(screenName = screenName, params = resolvedParams)
                 }

@@ -1,6 +1,5 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,6 @@ import com.kotlinjsonui.dynamic.components.DynamicContainerComponent.Companion.r
 import com.kotlinjsonui.dynamic.generated.SafeAreaViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.SafeAreaEdges
-import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import androidx.compose.ui.platform.LocalContext
 
@@ -103,37 +101,32 @@ class DynamicSafeAreaViewComponent {
             // Parse orientation for child layout (null means Box/ZStack)
             val orientation = TypedAttrs.enumString(a.orientation) { it.json }
 
-            // Parse background color (supports @{binding})
-            val backgroundColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.common.background), data, context
-            )
-
-            // Build modifier manually: special ordering required for SafeAreaView
-            // background must go BEFORE systemBarsPadding so it extends to screen edges
+            // The standard stages in their standard order, except that the
+            // background — and the clickable after it — go BEFORE the
+            // system-bar padding, so they reach the screen edges. This chain
+            // is built by hand for that one inversion; it applied no alpha,
+            // shadow, radius, border or click, which the SSoT declares on
+            // every type (`common`).
+            // applyClickable also applies userInteractionEnabled and the
+            // node's long press, pan and pinch, as on every component.
             var modifier = ModifierBuilder.applyTestTag(Modifier, json)
-            // userInteractionEnabled stops this node and what is in it (this chain
-            // runs no buildModifier, whose clickable stage applies it elsewhere)
-            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
+            // margins outside the size, as on every component: after it, as
+            // this chain had them, they padded the inside of the view and the
+            // view took no more room (measured: 111x53 with and without).
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true, data)
-            // offset goes here rather than "before alpha" like the other
-            // hand-rolled chains: this one has no alpha step and deliberately
-            // inverts the usual order (background before the padding steps so
-            // it reaches the screen edges). The invariant that actually matters
-            // is unchanged — offset must sit OUTSIDE the background so the
-            // background moves with the view, and after size.
+            // offset after size and OUTSIDE the background, so the
+            // background moves with the view — as in the standard order.
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
-
-            // Apply background color BEFORE systemBarsPadding so it extends to screen edges
-            backgroundColor?.let {
-                modifier = modifier.background(it)
-            }
+            modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            modifier = ModifierBuilder.applyShadow(modifier, json, data)
+            modifier = ModifierBuilder.applyBackground(modifier, json, data, context)
+            modifier = ModifierBuilder.applyClickable(modifier, json, data)
 
             // Apply safe area padding based on edges (after background)
             modifier = SafeAreaEdges.apply(modifier, edges)
             modifier = SafeAreaEdges.applyKeyboard(modifier, ignoreKeyboard)
 
-            // Apply additional margins and padding
-            modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
             // Get children - support both 'child' and 'children'

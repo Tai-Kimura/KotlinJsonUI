@@ -185,17 +185,23 @@ class DynamicTextViewComponent {
             val hasMargins = hasMarginAttributes(json)
 
             if (hasMargins) {
-                // Box modifier with margins and weight
+                // The standard stages, split: the margins and what follows
+                // them on the box, the size and paddings on the field. The
+                // box wraps the field, so what follows the margins covers the
+                // field. offset was not applied on this branch at all, and
+                // shadow and the click on neither; applyClickable also
+                // applies `enabled`, userInteractionEnabled and the node's
+                // long press, pan and pinch, as on every component.
                 var boxModifier: Modifier = Modifier
                 boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
-                // userInteractionEnabled stops this node and what is in it (this chain
-                // runs no buildModifier, whose clickable stage applies it elsewhere)
-                boxModifier = ModifierBuilder.applyInteractionBlocker(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
+                boxModifier = ModifierBuilder.applyOffset(boxModifier, json, data)
+                boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
+                boxModifier = ModifierBuilder.applyShadow(boxModifier, json, data, ownShape = shape)
+                boxModifier = ModifierBuilder.applyClickable(boxModifier, json, data)
 
                 // TextField modifier with size (default fillMaxWidth + 120dp height)
                 var textFieldModifier = buildTextViewSizeModifier(json, a)
-                textFieldModifier = ModifierBuilder.applyAlpha(textFieldModifier, json, data)
                 textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json, data)
 
                 CustomTextFieldWithMargins(
@@ -224,9 +230,6 @@ class DynamicTextViewComponent {
                 // Regular modifier with size (default fillMaxWidth + 120dp height)
                 var modifier = buildTextViewSizeModifier(json, a)
                 modifier = ModifierBuilder.applyTestTag(modifier, json)
-                // userInteractionEnabled stops this node and what is in it (this chain
-                // runs no buildModifier, whose clickable stage applies it elsewhere)
-                modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
                 // offset sits after size and before alpha, the same slot
                 // buildModifier uses — outside background/shadow so the
                 // decoration moves with the view, inside margins so siblings
@@ -234,6 +237,13 @@ class DynamicTextViewComponent {
                 // it needed the line of its own (51-C's warning, measured).
                 modifier = ModifierBuilder.applyOffset(modifier, json, data)
                 modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+                // shadow and the click, which this chain did not apply;
+                // applyClickable also applies `enabled`,
+                // userInteractionEnabled and the node's long press, pan and
+                // pinch, as on every component. The background, radius and
+                // border are the field's own parameters.
+                modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = shape)
+                modifier = ModifierBuilder.applyClickable(modifier, json, data)
                 modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
                 CustomTextField(

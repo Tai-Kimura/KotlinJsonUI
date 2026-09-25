@@ -241,12 +241,15 @@ class DynamicTextFieldComponent {
             val onFocusHandler = a.onFocus ?: a.onBeginEditing
             val onBlurHandler = a.onBlur ?: a.onEndEditing
 
-            // Build common modifier
+            // Build common modifier. The standard stages in their standard
+            // order; the background, radius, border and paddings are the
+            // field's own parameters (below), so this chain stops at the
+            // clickable. It applied no shadow and no click, which the SSoT
+            // declares on every type (`common`); applyClickable also applies
+            // `enabled`, userInteractionEnabled and the node's long press,
+            // pan and pinch, as on every component.
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
-            // userInteractionEnabled stops this node and what is in it (this chain
-            // runs no buildModifier, whose clickable stage applies it elsewhere)
-            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, data = data)
             if (isHidden) {
@@ -260,6 +263,8 @@ class DynamicTextFieldComponent {
                 modifier = ModifierBuilder.applyOffset(modifier, json, data)
                 modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             }
+            modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = shape)
+            modifier = ModifierBuilder.applyClickable(modifier, json, data)
             if (fieldId != null) {
                 modifier = modifier
                     .focusRequester(focusRequester)
@@ -276,17 +281,22 @@ class DynamicTextFieldComponent {
             }
 
             if (hasMarginAttributes(json)) {
+                // The same stages, split: the margins and what follows them on
+                // the box, the size on the field. The box wraps the field, so
+                // what follows the margins covers the field. offset was not
+                // applied on this branch at all — a TextField with margins
+                // and offsetX did not move.
                 var boxModifier: Modifier = Modifier
                 boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
-                // userInteractionEnabled stops this node and what is in it (this chain
-                // runs no buildModifier, whose clickable stage applies it elsewhere)
-                boxModifier = ModifierBuilder.applyInteractionBlocker(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
                 if (isHidden) {
                     boxModifier = boxModifier.alpha(0f)
                 } else {
+                    boxModifier = ModifierBuilder.applyOffset(boxModifier, json, data)
                     boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
                 }
+                boxModifier = ModifierBuilder.applyShadow(boxModifier, json, data, ownShape = shape)
+                boxModifier = ModifierBuilder.applyClickable(boxModifier, json, data)
 
                 var textFieldModifier: Modifier = Modifier
                 textFieldModifier = ModifierBuilder.applySize(textFieldModifier, json, data = data)

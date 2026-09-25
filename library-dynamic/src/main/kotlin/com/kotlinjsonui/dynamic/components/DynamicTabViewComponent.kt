@@ -74,6 +74,7 @@ class DynamicTabViewComponent {
                 applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
                 context = LocalContext.current
             )
+            val context = LocalContext.current
 
             // tabs is structural-ish: an array of nested tab objects whose
             // per-tab keys (title/icon/view/badge, badge as a raw
@@ -165,9 +166,20 @@ class DynamicTabViewComponent {
 
             // Create TabView using Scaffold with NavigationBar
             Scaffold(
-                // userInteractionEnabled stops the tab view and what is in it;
-                // this component runs no buildModifier.
-                modifier = ModifierBuilder.applyInteractionBlocker(Modifier, json, data),
+                // The standard stages, as on every component: it applied only
+                // userInteractionEnabled — no id, size, margins, background,
+                // click, or any other stage the SSoT declares on every type
+                // (`common`). The id tags the tab view itself; its items keep
+                // their own `<id>_tab_<n>` tags.
+                modifier = ModifierBuilder.buildModifier(json, data, context = context),
+                // The scaffold paints its container over the modifier's
+                // background: with a declared background it paints none, so
+                // the background shows.
+                containerColor = if (a.common.background != null) {
+                    Color.Transparent
+                } else {
+                    MaterialTheme.colorScheme.background
+                },
                 bottomBar = {
                     NavigationBar(
                         containerColor = tabBarBackground ?: NavigationBarDefaults.containerColor
