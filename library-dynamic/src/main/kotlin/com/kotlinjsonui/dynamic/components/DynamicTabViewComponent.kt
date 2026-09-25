@@ -10,6 +10,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -180,12 +182,33 @@ class DynamicTabViewComponent {
                                 tabItem.icon
                             }
 
+                            // What the badge shows (null: none), decided once for
+                            // the icon and for the item's semantics.
+                            val badgeValue = getBadgeValue(tabItem.badge, data)
+                            // Material3's NavigationBarItem clears the icon slot's
+                            // semantics — the badge inside it — when
+                            // `label != null && (alwaysShowLabel || selected)`. Then
+                            // the badge reaches a screen reader only as the item's
+                            // stateDescription. Without a label the slot keeps it,
+                            // and a stateDescription would say it twice (measured on
+                            // an emulator, 2026-09-25). alwaysShowLabel is passed
+                            // below so the condition reads what the item is given.
+                            val alwaysShowLabel = true
+                            val iconSemanticsCleared = showLabels && (alwaysShowLabel || isSelected)
+
                             NavigationBarItem(
-                                modifier = if (tabViewId != null) {
+                                modifier = (if (tabViewId != null) {
                                     Modifier.testTag("${tabViewId}_tab_${tabItem.index}")
                                 } else {
                                     Modifier
-                                },
+                                }).then(
+                                    if (badgeValue != null && iconSemanticsCleared) {
+                                        Modifier.semantics { stateDescription = badgeValue }
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
+                                alwaysShowLabel = alwaysShowLabel,
                                 selected = isSelected,
                                 onClick = {
                                     if (selectedTab != tabItem.index) {
@@ -209,7 +232,6 @@ class DynamicTabViewComponent {
                                     }
                                 },
                                 icon = {
-                                    val badgeValue = getBadgeValue(tabItem.badge, data)
                                     if (badgeValue != null) {
                                         BadgedBox(badge = { Badge { Text(badgeValue) } }) {
                                             TabIcon(
