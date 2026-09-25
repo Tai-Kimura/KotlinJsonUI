@@ -7,9 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LayoutInfo
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -79,6 +81,17 @@ class CommonStageFamilyProbe {
         "IconLabel" to """, "text": "t"""",
         "TextView" to """, "text": "@{t}"""",
         "Triangle" to "",
+    )
+
+    /**
+     * What a component needs to show content its paddings can move, where
+     * [types] draws none: a TextField / TextView bound to an empty string
+     * draws no text, a SelectBox with nothing selected no label.
+     */
+    private val effectExtra: Map<String, String> = mapOf(
+        "TextField" to """, "text": "Wg"""",
+        "TextView" to """, "text": "Wg"""",
+        "SelectBox" to """, "items": ["a", "b"], "hint": "Wg"""",
     )
 
     private val stages: List<Pair<String, String>> = listOf(
@@ -159,6 +172,42 @@ class CommonStageFamilyProbe {
             rule.waitForIdle()
             taps - before
         } catch (e: Throwable) { println("STAGE_ERROR click $j ${e.javaClass.simpleName}"); null }
+        fun capture(j: String): ImageBitmap? = try {
+            json = j
+            rule.waitForIdle()
+            rule.onNodeWithTag("root").captureToImage()
+        } catch (e: Throwable) { println("STAGE_ERROR capture $j ${e.javaClass.simpleName}"); null }
+        // Pixels that differ; -1 when the two differ in size.
+        fun diff(a: ImageBitmap?, b: ImageBitmap?): Int? {
+            if (a == null || b == null) return null
+            if (a.width != b.width || a.height != b.height) return -1
+            val pa = a.toPixelMap(); val pb = b.toPixelMap()
+            var n = 0
+            for (x in 0 until a.width) for (y in 0 until a.height) if (pa[x, y] != pb[x, y]) n++
+            return n
+        }
+        fun color(j: String, r: Int, g: Int, b: Int): Int? = capture(j)?.toPixelMap()?.let { px ->
+            var n = 0
+            for (x in 0 until px.width) for (y in 0 until px.height) {
+                val c = px[x, y]
+                if (kotlin.math.abs(c.red - r / 255f) < 0.03f && kotlin.math.abs(c.green - g / 255f) < 0.03f &&
+                    kotlin.math.abs(c.blue - b / 255f) < 0.03f) n++
+            }
+            n
+        }
+        fun tagged(j: String): Boolean? = try {
+            json = j
+            rule.waitForIdle()
+            rule.onAllNodesWithTag("n", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()
+        } catch (e: Throwable) { println("STAGE_ERROR tag $j ${e.javaClass.simpleName}"); null }
+        // The root's size in dp, as WxH.
+        fun rootDp(j: String): String? = try {
+            json = j
+            rule.waitForIdle()
+            val size = rule.onNodeWithTag("root").fetchSemanticsNode().size
+            val d = rule.density.density
+            "${Math.round(size.width / d)}x${Math.round(size.height / d)}"
+        } catch (e: Throwable) { println("STAGE_ERROR size $j ${e.javaClass.simpleName}"); null }
         for ((type, extra) in types) {
             val base = measure("{\"type\": \"$type\"$extra}") ?: continue
             val b0 = blue("{\"type\": \"$type\"$extra}")
@@ -171,6 +220,26 @@ class CommonStageFamilyProbe {
             val r1 = blue("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"background\": \"#3366CC\", \"cornerRadius\": 20}")
             val d1 = clicks("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"onClick\": \"@{onTap}\", \"enabled\": false}")
             println("STAGE_EFFECT $type background_px=$b0->$b1 radius_px=$r1 click_calls=$c1 disabled_calls=$d1")
+            // The other stages by their effect too, for a component that takes
+            // one as a parameter of its own (a TextField's paddings are its
+            // content padding): on a node of a fixed 200 x 60, the pixels
+            // that change when the stage is added. The control is the same
+            // node drawn twice, with another node drawn between.
+            val fx = effectExtra[type] ?: extra
+            val node = "{\"type\": \"$type\"$fx, \"width\": 200, \"height\": 60"
+            val base0 = capture("$node}")
+            capture("{\"type\": \"View\"}")
+            val ctrl = diff(base0, capture("$node}"))
+            val alphaD = diff(base0, capture("$node, \"alpha\": 0.5}"))
+            val offsetD = diff(base0, capture("$node, \"offsetX\": 30}"))
+            val paddingD = diff(base0, capture("$node, \"paddings\": [0, 0, 0, 30]}"))
+            val red = color("$node, \"borderColor\": \"#FF0000\", \"borderWidth\": 2}", 0xFF, 0x00, 0x00)
+            val redBare = color("$node}", 0xFF, 0x00, 0x00)
+            val tag = tagged("{\"type\": \"$type\"$extra, \"id\": \"n\"}")
+            val size = rootDp("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53}")
+            val margins = rootDp("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"margins\": [7, 7, 7, 7]}")
+            val uie = clicks("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"onClick\": \"@{onTap}\", \"userInteractionEnabled\": false}")
+            println("STAGE_EFFECT2 $type ctrl_diff=$ctrl tag=$tag size=$size margins=$margins alpha_diff=$alphaD offset_diff=$offsetD padding_diff=$paddingD border_red=$redBare->$red uie_calls=$uie")
             println("STAGE_BASE $type ${base.toSortedMap()}")
             val measured = mutableMapOf<String, Map<String, Int>>()
             for ((stage, attrs) in stages) {
