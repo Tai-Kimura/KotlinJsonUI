@@ -25,6 +25,8 @@ import androidx.test.uiautomator.Until
 import com.google.gson.JsonParser
 import com.kotlinjsonui.conformance.staticvalued.StaticControlsGeneratedView
 import com.kotlinjsonui.conformance.staticvalued.StaticControlsViewModel
+import com.kotlinjsonui.conformance.staticvalued.StaticInputsGeneratedView
+import com.kotlinjsonui.conformance.staticvalued.StaticInputsViewModel
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.dynamic.DynamicView
 import org.junit.Assert.assertTrue
@@ -57,10 +59,17 @@ import org.junit.runner.RunWith
  * `updateData` writes into the data — since a group of single Radios keeps its
  * selection there.
  *
+ * A second screen (`inputs`) holds the rest of what attribute_definitions.json
+ * declares two-way: a TextField and a TextView (a typed key), a SelectBox by
+ * selectedValue and one by date (the compact calendar's day, then its confirm).
+ * An input is judged by its text — a caret moves pixels on its own.
+ *
  * Measured 2026-09-26 (emulator-5598 conf_ci API 35, rel/2.42.0 329f5d6,
- * kjui_tools of jsonui-cli rel/v1.8.121): dynamic, all ten moved; codegen, only
- * the TabView moved — the rest are emitted with fixed values and `{ }`
- * callbacks, and the Radio group's `updateData` has no branch for its key.
+ * kjui_tools of jsonui-cli rel/v1.8.121): dynamic, all fourteen moved — though
+ * its date SelectBox does not start at the static date (empty; the calendar opens
+ * on today); codegen, the TabView, the TextField and the TextView moved — the rest
+ * are emitted with fixed values and `{ }` callbacks, and the Radio group's
+ * `updateData` has no branch for its key.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -90,7 +99,22 @@ class StaticValuedControlsProbeTest {
         ]}
     """.trimIndent()
 
-    private val controls = listOf("sw", "tg", "cb", "rv", "rg", "seg", "tab", "sl", "sb", "sbi")
+    /** The text inputs and the other two SelectBox spellings — a second screen. */
+    private val inputsLayout = """
+        {"type": "View", "orientation": "vertical", "spacing": 8, "width": "matchParent", "child": [
+          {"type": "TextField", "id": "tf", "height": 40, "text": "t0"},
+          {"type": "TextView", "id": "tv", "height": 60, "text": "v0"},
+          {"type": "SelectBox", "id": "sbv", "height": 40, "items": ["pp", "qq"], "selectedValue": "pp"},
+          {"type": "SelectBox", "id": "sbd", "height": 40, "selectItemType": "Date", "datePickerMode": "date", "dateStringFormat": "yyyy-MM-dd", "selectedDate": "2026-01-02"}
+        ]}
+    """.trimIndent()
+
+    private val groups = linkedMapOf(
+        "controls" to listOf("sw", "tg", "cb", "rv", "rg", "seg", "tab", "sl", "sb", "sbi"),
+        "inputs" to listOf("tf", "tv", "sbv", "sbd"),
+    )
+    private var group = "controls"
+    private val controls get() = groups.getValue(group)
 
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val density get() = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
@@ -105,13 +129,20 @@ class StaticValuedControlsProbeTest {
         val scenario = ActivityScenario.launch(FixtureHostActivity::class.java)
         scenario.onActivity { activity ->
             DynamicModeManager.setDynamicModeEnabled(activity, false)
-            val json = JsonParser.parseString(layout).asJsonObject
+            val json = JsonParser.parseString(if (group == "inputs") inputsLayout else layout).asJsonObject
             activity.setContent {
                 Column(Modifier.padding(top = 40.dp).semantics { testTagsAsResourceId = true }) {
                     if (path == "codegen") {
-                        val vm = remember { StaticControlsViewModel(ApplicationProvider.getApplicationContext<Application>()) }
-                        val data by vm.data.collectAsState()
-                        StaticControlsGeneratedView(data = data, viewModel = vm)
+                        val app = ApplicationProvider.getApplicationContext<Application>()
+                        if (group == "inputs") {
+                            val vm = remember { StaticInputsViewModel(app) }
+                            val data by vm.data.collectAsState()
+                            StaticInputsGeneratedView(data = data, viewModel = vm)
+                        } else {
+                            val vm = remember { StaticControlsViewModel(app) }
+                            val data by vm.data.collectAsState()
+                            StaticControlsGeneratedView(data = data, viewModel = vm)
+                        }
                     } else {
                         // As a screen wires it: `updateData` writes into the data
                         // (a group of single Radios keeps its selection there).
@@ -122,7 +153,7 @@ class StaticValuedControlsProbeTest {
                 }
             }
         }
-        device.wait(Until.hasObject(By.text("rg2")), 10_000)
+        device.wait(Until.hasObject(By.res(if (group == "inputs") "sbd" else "sb")), 10_000)
         settle()
         return scenario
     }
@@ -140,6 +171,10 @@ class StaticValuedControlsProbeTest {
             return Rect(0, minOf(ra.top, rb.top), width, maxOf(ra.bottom, rb.bottom))
         }
         val out = linkedMapOf<String, Rect>()
+        if (group == "inputs") {
+            for (id in controls) device.findObject(By.res(id))?.visibleBounds?.let { out[id] = it }
+            return out
+        }
         for (id in listOf("sw", "tg", "cb", "seg", "sl", "sb", "sbi")) {
             device.findObject(By.res(id))?.visibleBounds?.let { out[id] = it }
         }
@@ -168,7 +203,7 @@ class StaticValuedControlsProbeTest {
             "sw", "tg", "cb" -> checkable(id)
             "seg" -> "sy.selected=${device.findObject(By.text("sy"))?.let { selectedUp(it) }}"
             "tab" -> "tb.selected=${device.findObjects(By.text("tb")).maxByOrNull { it.visibleBounds.top }?.let { selectedUp(it) }}"
-            "sb", "sbi" -> device.findObject(By.res(id))?.let { o ->
+            "sb", "sbi", "sbv", "sbd", "tf", "tv" -> device.findObject(By.res(id))?.let { o ->
                 "texts=" + (listOfNotNull(o.text) + o.findObjects(By.textStartsWith("")).mapNotNull { it.text }).distinct().joinToString("/")
             } ?: "no-node"
             else -> "-"
@@ -222,6 +257,7 @@ class StaticValuedControlsProbeTest {
     }
 
     private fun choose() {
+        if (group == "inputs") { chooseInputs(); return }
         for (id in listOf("sw", "tg")) { device.findObject(By.res(id))?.click(); settle() }
         device.findObject(By.res("cb"))?.let { o -> (if (o.isCheckable) o else o.findObject(By.checkable(true)) ?: o).click() }
         settle()
@@ -246,6 +282,40 @@ class StaticValuedControlsProbeTest {
         }
     }
 
+    /** The sheets first, then the TextView and the TextField (a typed key each); back puts the keyboard away. */
+    private fun chooseInputs() {
+        device.findObject(By.res("sbv"))?.click()
+        device.wait(Until.findObjects(By.text("qq")), 5_000)?.maxByOrNull { it.visibleBounds.top }?.click()
+        settle()
+        device.findObject(By.res("sbd"))?.click()
+        settle()
+        // The compact style's calendar: a day's tap sets the date and closes the sheet.
+        val texts = device.findObjects(By.textStartsWith("")).mapNotNull { it.text }.filter { it.isNotBlank() }
+        println("STATICVALUED $group sbd_sheet texts=${texts.take(60)}")
+        // A day cell reads "Saturday, January 3, 2026": the 3rd of whatever month it opened
+        // on, then the sheet's confirm button (kjui_x7q_done).
+        device.findObjects(By.textContains(" 3, 20")).maxByOrNull { it.visibleBounds.top }?.click()
+        settle()
+        device.findObject(By.res("kjui_x7q_done"))?.click()
+        settle()
+        if (device.findObject(By.res("tv")) == null || device.hasObject(By.textContains("2026年")) || device.hasObject(By.text("日付を選択"))) {
+            println("STATICVALUED $group sbd_sheet still open — closed with back")
+            device.pressBack(); settle()
+        }
+        for (id in listOf("tv", "tf")) {
+            device.findObject(By.res(id))?.click()
+            settle()
+            val focused = device.findObject(By.focused(true))
+            println("STATICVALUED $group focus $id focused=${focused?.resourceName} editable=${focused?.className}")
+            device.executeShellCommand("input text x")
+            settle()
+        }
+        // Back puts a shown keyboard away; with none shown it would close the screen.
+        if (device.executeShellCommand("dumpsys input_method").contains("mInputShown=true")) {
+            device.pressBack(); settle()
+        }
+    }
+
     private fun run(path: String): Map<String, Boolean> {
         val scenario = launch(path)
         val declared = read()
@@ -254,21 +324,28 @@ class StaticValuedControlsProbeTest {
         val changed = linkedMapOf<String, Boolean>()
         for (id in controls) {
             val d = diff(declared, chosen, id)
-            changed[id] = d > 16
-            println("STATICVALUED $path $id tap_pixels=$d node ${declared.nodes[id]} -> ${chosen.nodes[id]}" +
-                (if (d > 16) "" else " TAP_DID_NOT_CHANGE_IT"))
+            // A text input's caret can move pixels on its own: an input is judged by its text.
+            changed[id] = if (group == "inputs") declared.nodes[id] != chosen.nodes[id] && chosen.nodes[id] != "no-node" else d > 16
+            println("STATICVALUED $group $path $id tap_pixels=$d node ${declared.nodes[id]} -> ${chosen.nodes[id]}" +
+                (if (changed.getValue(id)) "" else " TAP_DID_NOT_CHANGE_IT"))
         }
         scenario.close()
         return changed
     }
 
-    @Test
-    fun a_static_value_is_where_a_control_starts_and_the_user_changes_it() {
+    private fun check(group: String) {
+        this.group = group
         val dynamic = run("dynamic")
         val codegen = run("codegen")
         // The dynamic path is the positive control for the taps themselves.
-        for ((id, moved) in dynamic) assertTrue("dynamic $id: the tap reached and moved it (positive control)", moved)
+        for ((id, moved) in dynamic) assertTrue("$group dynamic $id: the tap reached and moved it (positive control)", moved)
         val stuck = codegen.filterValues { !it }.keys
-        assertTrue("codegen: a tap moves every static-valued control; did not: $stuck", stuck.isEmpty())
+        assertTrue("$group codegen: a tap moves every static-valued control; did not: $stuck", stuck.isEmpty())
     }
+
+    @Test
+    fun a_static_value_is_where_a_control_starts_and_the_user_changes_it() = check("controls")
+
+    @Test
+    fun a_static_text_or_selection_is_where_an_input_starts_and_the_user_changes_it() = check("inputs")
 }
