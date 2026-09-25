@@ -54,7 +54,7 @@ class DataSectionDefaultsTest {
         assertEquals("Osaka", DataBindingContext.resolveString("@{profile.address.city}", effective))
         assertEquals(
             34.7,
-            DataBindingContext.resolveNumber("@{profile.address.geo.lat}", effective)!!.toDouble(),
+            DataBindingContext.resolveNumber("@{profile.address.geo.lat}", effective)!!,
             1e-9
         )
     }
@@ -70,7 +70,7 @@ class DataSectionDefaultsTest {
         assertEquals("green", DataBindingContext.resolveString("@{tags[1]}", effective))
         assertEquals(
             20.0,
-            DataBindingContext.resolveNumber("@{profile.scores[1]}", effective)!!.toDouble(),
+            DataBindingContext.resolveNumber("@{profile.scores[1]}", effective)!!,
             1e-9
         )
         // Out-of-range index stays unresolved (no crash, no fallback value)

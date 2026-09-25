@@ -159,7 +159,7 @@ class EmbedContainerTest {
         val parentFactory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return Object() as T
+                return Any() as T
             }
         }
         val owner = EmbedViewModelStoreOwner(parentFactory, CreationExtras.Empty)
@@ -295,7 +295,10 @@ class EmbedContainerTest {
         val nav = EmbedNavigator()
         val custom = EmbedIsolatedNavigation.Custom(nav)
         assertSame(nav, custom.navigator)
-        assertTrue(EmbedIsolatedNavigation.Automatic is EmbedIsolatedNavigation)
+        // Automatic is one of the sealed type's cases: the assignment is the
+        // check (it compiles only if so); `is` on it would always be true.
+        val automatic: EmbedIsolatedNavigation = EmbedIsolatedNavigation.Automatic
+        assertTrue(automatic !is EmbedIsolatedNavigation.Custom)
     }
 
     // ── EmbedNavigatorRegistry (host-side imperative lookup, 2.12.0) ──
