@@ -47,15 +47,20 @@ class CustomComponentShadowProbe {
     @Test
     fun whichRegisteredTypesReachTheHandler() {
         val asked = mutableListOf<String>()
-        Configuration.customComponentHandler = { type, _, _ ->
-            asked += type
-            Text("custom $type")
-            true
-        }
         // ProgressBar / WebView / Scroll are spellings apps use; ProbeCustomType
         // is a type no built-in case takes (the control: it must reach the
-        // handler).
+        // handler). The handler takes only these — an app's registry answers
+        // false for what it did not register.
         val types = listOf("ProgressBar", "WebView", "Scroll", "ProbeCustomType")
+        Configuration.customComponentHandler = { type, _, _ ->
+            if (type in types) {
+                asked += type
+                Text("custom $type")
+                true
+            } else {
+                false
+            }
+        }
         val json = "{\"type\": \"View\", \"child\": [" + types.joinToString(",") {
             if (it == "WebView") "{\"type\": \"$it\", \"url\": \"data:text/html,probe\"}" else "{\"type\": \"$it\"}"
         } + "]}"
