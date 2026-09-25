@@ -60,9 +60,40 @@ object TapAccessibility {
     private fun type(node: JsonObject): String? =
         node.get("type")?.takeIf { it.isJsonPrimitive }?.asString
 
+    private val BINDING = Regex("""@\{(.*)\}""", RegexOption.DOT_MATCHES_ALL)
+
+    /**
+     * A handler names a method that is not blank: a binding's inside
+     * (`@{onOpen}`), a bare selector, or each string of an `onclick` array.
+     * `""`, `"   "`, `"@{}"`, `[]` and `[""]` name none, so they are no tap
+     * (jsonui-cli shared/core/tap_accessibility.rb `handler?`; blank is
+     * Unicode white space, a full-width space too). They used to attach a
+     * click that called nothing and took the click from the view around it.
+     */
+    fun namesAMethod(value: String): Boolean =
+        (BINDING.matchEntire(value)?.groupValues?.get(1) ?: value).isNotBlank()
+
+    /** The elements of a handler value that name a method, in the order written. */
+    fun handlerValues(e: JsonElement?): List<String> = when {
+        e == null || e.isJsonNull -> emptyList()
+        e.isJsonArray -> e.asJsonArray
+            .filter { it.isJsonPrimitive && it.asJsonPrimitive.isString }
+            .map { it.asString }
+            .filter(::namesAMethod)
+        e.isJsonPrimitive && e.asJsonPrimitive.isString -> listOf(e.asString).filter(::namesAMethod)
+        else -> emptyList()
+    }
+
+    /**
+     * What a click calls: onClick's handler when it names one (it wins when
+     * both are declared), else each named element of onclick, in order.
+     */
+    fun clickHandlers(node: JsonObject): List<String> =
+        handlerValues(node.get("onClick")).ifEmpty { handlerValues(node.get("onclick")) }
+
     /** A tap the Dynamic runtime attaches: a handler, not statically disabled, not gated shut. */
     fun isTappable(node: JsonObject): Boolean =
-        !disabled(node) && !gatedShut(node) && (present(node.get("onClick")) || present(node.get("onclick")))
+        !disabled(node) && !gatedShut(node) && clickHandlers(node).isNotEmpty()
 
     /** `canTap: false`, the Compose tap gate. */
     private fun gatedShut(node: JsonObject): Boolean {
@@ -93,7 +124,7 @@ object TapAccessibility {
         val ranges = node.get("partialAttributes")
         if (ranges == null || !ranges.isJsonArray) return false
         return ranges.asJsonArray.any { r ->
-            r.isJsonObject && (present(r.asJsonObject.get("onClick")) || present(r.asJsonObject.get("onclick")))
+            r.isJsonObject && clickHandlers(r.asJsonObject).isNotEmpty()
         }
     }
 

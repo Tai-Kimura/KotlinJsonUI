@@ -650,8 +650,13 @@ object ModifierBuilder {
         result = applyPannable(result, json, data)
         result = applyPinchable(result, json, data)
         val enabled = resolveEnabled(json, data)
-        val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString
-        if (handler != null) {
+        // Only names (TapAccessibility.clickHandlers): an empty or blank
+        // handler is no click, a blank element of an `onclick` array is not
+        // called, and the array is read as one — `asString` on it threw
+        // "Array must have size 1" for [] and for two handlers, and took the
+        // whole screen down.
+        val handlers = TapAccessibility.clickHandlers(json)
+        if (handlers.isNotEmpty()) {
             val viewId = json.get("id")?.asString
             // TalkBack is told it is a button where the shared rule says so
             // (TapAccessibility): not where the tappable is a control already
@@ -664,7 +669,7 @@ object ModifierBuilder {
                 enabled = enabled != false && resolveFlag(json, "canTap", data) != false,
                 role = if (TapAccessibility.isButton(json)) Role.Button else null
             ) {
-                resolveEventHandler(handler, data, viewId)
+                handlers.forEach { resolveEventHandler(it, data, viewId) }
             }
         }
         // `common.enabled` must be readable from the a11y tree (that is what a
