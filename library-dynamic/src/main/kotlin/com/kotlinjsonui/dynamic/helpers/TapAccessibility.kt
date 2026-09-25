@@ -49,9 +49,6 @@ object TapAccessibility {
         return t in interactive || t !in known
     }
 
-    private fun present(e: JsonElement?): Boolean =
-        e != null && !e.isJsonNull && !(e.isJsonPrimitive && e.asJsonPrimitive.isString && e.asString.isEmpty())
-
     private fun disabled(node: JsonObject): Boolean {
         val e = node.get("enabled") ?: return false
         return e.isJsonPrimitive && e.asJsonPrimitive.isBoolean && !e.asBoolean
@@ -135,8 +132,16 @@ object TapAccessibility {
      * handler either.
      */
     fun isOperable(node: JsonObject): Boolean =
-        isInteractiveType(type(node)) || isTappable(node) ||
-            (!disabled(node) && present(node.get("onLongPress"))) || isLinkedText(node)
+        isInteractiveType(type(node)) || isTappable(node) || hasLongPress(node) || isLinkedText(node)
+
+    /**
+     * A long press a user can perform: a handler (`handlerValues` — an empty or
+     * blank one names no method, as for a tap), on a view not statically
+     * disabled. `canTap` gates the tap, not the long press. It read "any
+     * value" before, so a blank long press counted.
+     */
+    fun hasLongPress(node: JsonObject): Boolean =
+        !disabled(node) && handlerValues(node.get("onLongPress")).isNotEmpty()
 
     fun holdsAControl(node: JsonObject): Boolean =
         children(node).any { isOperable(it) || holdsAControl(it) }
