@@ -51,6 +51,12 @@ internal object DataDefaultValue {
     }
 
     /**
+     * Whether a class's default is text read by its spelling: a String and a
+     * String? alike (the code generators read both since 1.8.121).
+     */
+    fun isText(className: String?): Boolean = className?.trim().let { it == "String" || it == "String?" }
+
+    /**
      * A class's value when the layout gives this platform none: the
      * vocabulary `jui g project` writes a spec's types with — "" / 0 / 0.0 /
      * false / [] — and null (no value) for an optional or any other class.
