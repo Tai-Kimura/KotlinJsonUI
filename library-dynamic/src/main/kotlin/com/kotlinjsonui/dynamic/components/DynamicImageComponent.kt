@@ -1,6 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
@@ -82,8 +83,29 @@ class DynamicImageComponent {
                 }
             }
 
-            // Nothing to render if resource not found
-            if (resourceId == 0) return
+            // Build modifier using composite builder
+            // Order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
+            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
+
+            // Handle "size" attribute for square dimensions (not covered by
+            // buildModifier; undeclared legacy runtime extra)
+            TypedAttrs.undeclared(json, "size")?.let { sizeElement ->
+                if (sizeElement.isJsonPrimitive && sizeElement.asJsonPrimitive.isNumber) {
+                    val s = sizeElement.asFloat
+                    modifier = modifier.size(s.dp)
+                }
+            }
+
+            // A resource that is not found draws no image, and the node still
+            // takes its place and its stages — its size, background, border,
+            // id and tap. It returned here, before any of them, so the whole
+            // node vanished (measured: none of the 13 stages applied, testTag
+            // and clickable included).
+            if (resourceId == 0) {
+                ModifierBuilder.ApplyLifecycleEffects(json, data)
+                Box(modifier = modifier)
+                return
+            }
 
             // What TalkBack reads (ImageAccessibility, the codegen's rule):
             // the alt, nothing for a decorative image, and its id for an
@@ -119,19 +141,6 @@ class DynamicImageComponent {
             // `opacity` (49-E), folded onto the canonical row by the generated
             // parser — one read.
             val alpha = TypedAttrs.float(a.common.opacity, data) ?: 1f
-
-            // Build modifier using composite builder
-            // Order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
-            var modifier = ModifierBuilder.buildModifier(json, data, context = context)
-
-            // Handle "size" attribute for square dimensions (not covered by
-            // buildModifier; undeclared legacy runtime extra)
-            TypedAttrs.undeclared(json, "size")?.let { sizeElement ->
-                if (sizeElement.isJsonPrimitive && sizeElement.asJsonPrimitive.isNumber) {
-                    val s = sizeElement.asFloat
-                    modifier = modifier.size(s.dp)
-                }
-            }
 
             // Lifecycle effects
             ModifierBuilder.ApplyLifecycleEffects(json, data)
