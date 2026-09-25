@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.KjuiWebLoadState
 import com.kotlinjsonui.core.KjuiWebViewClient
 
 import android.annotation.SuppressLint
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.toArgb
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.WebAttributes
@@ -37,6 +39,8 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  *
  * Supported JSON attributes:
  * - url: String URL or @{binding} for web page
+ * - onLoadFailed: @{handler} called on a main-frame load failure
+ * - reloadToken: @{value} — each change reloads the url (or html)
  * - background: String color for WebView background (matches SwiftJsonUI)
  * - javaScriptEnabled: Boolean (default: true)
  * - userAgent: String custom user agent
@@ -81,6 +85,15 @@ class DynamicWebComponent {
             val html = if (TypedAttrs.rawString(a.url) == null) {
                 a.html?.let { ResourceResolver.resolveTextValue(it, data, context) }
             } else null
+
+            // onLoadFailed / reloadToken — binding-only on both, as in the
+            // codegen (kjui_tools Helpers::WebLoadState): a bare string names
+            // nothing. Absent, `update` does exactly what it did before.
+            val onLoadFailedHandler = (TypedAttrs.raw(a.onLoadFailed) as? String)
+                ?.takeIf { ModifierBuilder.isBinding(it) }
+            val reloadTokenBinding = (TypedAttrs.raw(a.reloadToken) as? String)
+                ?.takeIf { ModifierBuilder.isBinding(it) }
+            val reloadToken = reloadTokenBinding?.let { DataBindingContext.evaluateExpression(it, data) }
 
             // Parse WebView settings ('javaScriptEnabled', 'userAgent' and
             // 'allowZoom' are undeclared legacy runtime extras — kept on the
@@ -184,6 +197,24 @@ class DynamicWebComponent {
                     // lives on the view's `tag` — the kjui codegen's shape for
                     // both Web and WebView (jsonui-cli 1.8.103 / 1.8.105), and
                     // SwiftJsonUI's `lastLoadedURL`.
+                    if (onLoadFailedHandler != null || reloadTokenBinding != null) {
+                        val loadState = KjuiWebLoadState.of(webView)
+                        loadState.onLoadFailed = onLoadFailedHandler?.let { handler ->
+                            { ModifierBuilder.resolveEventHandler(handler, data) }
+                        }
+                        // A reload repeats the factory's own load. For a url
+                        // it only forgets the last load, so the follow below
+                        // loads once — a token moving with the url costs one
+                        // load, not a second that cancels the first (the
+                        // codegen and SwiftJsonUI's updateUIView agree).
+                        if (reloadTokenBinding != null && loadState.reloadTokenChanged(reloadToken)) {
+                            if (currentUrl.isNotEmpty()) {
+                                webView.tag = null
+                            } else if (html != null) {
+                                webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null)
+                            }
+                        }
+                    }
                     if (shouldReload(webView.tag, currentUrl)) {
                         webView.tag = currentUrl
                         webView.loadUrl(currentUrl)
@@ -205,7 +236,7 @@ class DynamicWebComponent {
 
         /** Web-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "url", "html"
+            "url", "html", "onLoadFailed", "reloadToken"
         )
     }
 }

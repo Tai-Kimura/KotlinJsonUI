@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- View.setTag(key, …) needs a resource id as its key. KjuiWebLoadState
+         is kept on the WebView under this one. -->
+    <item name="kjui_web_load_state" type="id" />
+</resources>
