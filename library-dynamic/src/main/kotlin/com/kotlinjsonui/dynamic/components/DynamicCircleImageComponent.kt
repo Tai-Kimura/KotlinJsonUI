@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -104,20 +105,35 @@ class DynamicCircleImageComponent {
             // 'size' is an undeclared legacy runtime extra)
             val size = TypedAttrs.undeclared(json, "size")?.asFloat ?: 48f
 
-            // Build modifier in the order specified by the Ruby reference:
-            // testTag -> size -> clip(CircleShape) -> border(CircleShape) -> background(CircleShape) -> margins -> alpha -> clickable -> padding -> weight -> alignment
+            // The standard stages in their standard order, in a circle:
+            // testTag → margins → size → offset → alpha → shadow(circle) →
+            // clip(circle) → clip(cornerRadius) → border(circle) →
+            // background(circle) → clickable → padding.
+            // The chain put the margins after the size — inside it, where
+            // they padded (measured: the view stayed 48x48) — and the offset
+            // after the background, so the circle stayed and only the image
+            // moved; it read no declared width / height, and applied no
+            // shadow or radius.
             var modifier: Modifier = Modifier
-
-            // 1. testTag
             modifier = ModifierBuilder.applyTestTag(modifier, json)
-
-            // 2. size
-            modifier = modifier.size(size.dp)
-
-            // 3. clip(CircleShape) - always circular
+            modifier = ModifierBuilder.applyMargins(modifier, json, data)
+            // The declared width / height, as on every component; without
+            // them, the legacy `size`.
+            modifier = if (a.common.width != null || a.common.height != null) {
+                ModifierBuilder.applySize(modifier, json, data = data)
+            } else {
+                modifier.size(size.dp)
+            }
+            modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = CircleShape)
             modifier = modifier.clip(CircleShape)
+            // cornerRadius applies as declared, inside the circle, so the
+            // image stays a circle (ruled 2026-09-26: no exception for circles).
+            TypedAttrs.float(a.common.cornerRadius, data)?.let {
+                modifier = modifier.clip(RoundedCornerShape(it.dp))
+            }
 
-            // 4. border(CircleShape)
             val borderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.borderColor), data, context
             )
@@ -132,29 +148,13 @@ class DynamicCircleImageComponent {
                 }
             }
 
-            // 5. background(CircleShape)
             ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.background), data, context
             )?.let { bgColor ->
                 modifier = modifier.background(bgColor, CircleShape)
             }
 
-            // 6. margins
-            modifier = ModifierBuilder.applyMargins(modifier, json, data)
-
-            // 7. alpha
-            // offset sits after size and before alpha, the same slot
-            // buildModifier uses — outside background/shadow so the
-            // decoration moves with the view, inside margins so siblings
-            // do not. This chain does not call buildModifier, which is why
-            // it needed the line of its own (51-C's warning, measured).
-            modifier = ModifierBuilder.applyOffset(modifier, json, data)
-            modifier = ModifierBuilder.applyAlpha(modifier, json, data)
-
-            // 8. clickable
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
-
-            // 9. padding
             modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
             // Lifecycle effects
