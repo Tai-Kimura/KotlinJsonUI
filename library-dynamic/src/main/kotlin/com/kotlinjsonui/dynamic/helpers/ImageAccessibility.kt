@@ -31,7 +31,10 @@ object ImageAccessibility {
     /** The canonical spelling first, then the declared aliases. */
     val ALT_KEYS = listOf("alt", "accessibilityLabel", "contentDescription")
 
-    /** What a screen-reader user activates: a tap and a long press. */
+    /**
+     * The keys a screen-reader action is written on: a tap and a long press.
+     * Whether one operates is the tap rule's to say (`isTappable`).
+     */
     val TAP_KEYS = listOf("onClick", "onclick", "onLongPress")
 
     /** Text that names a control it sits in (on an image, hint / placeholder name an image). */
@@ -40,7 +43,14 @@ object ImageAccessibility {
     fun isImage(node: JsonObject): Boolean =
         node.get("type")?.takeIf { it.isJsonPrimitive }?.asString?.lowercase() in IMAGE_TYPES
 
-    fun isTappable(node: JsonObject): Boolean = TAP_KEYS.any { node.has(it) }
+    /**
+     * Whether a node operates something a screen-reader user can activate — a
+     * tap or a long press — as the tap rule judges it (TapAccessibility). It
+     * read the handler key before, so an image with an empty onClick,
+     * `enabled: false` or `canTap: false` was a control.
+     */
+    fun isTappable(node: JsonObject): Boolean =
+        TapAccessibility.isTappable(node) || TapAccessibility.hasLongPress(node)
 
     /** The image's alt as written, or null when it declares none (JSON null counts as none). */
     fun alt(node: JsonObject): String? {
