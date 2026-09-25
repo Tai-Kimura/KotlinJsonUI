@@ -160,23 +160,56 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Compile (release, all warnings)
+      # The warning gate IS this compile failing: every Kotlin warning is an
+      # error here (.github/ci/kotlin-warnings-as-errors.gradle, CI only), in
+      # main and test sources alike. 2.9.3 and the brush-up after it cleared
+      # the main sources; the test sources' 4 were cleared on 2026-09-25.
+      #
+      # It used to grep `^w: ` in this log. Under `--warning-mode all` a Kotlin
+      # warning prints as `Problem found: Kotlin compiler warning …` instead,
+      # so that grep passed a build with a warning in main (measured
+      # 2026-09-25) — a count keyed on the log's form went silently blind.
+      - name: Compile (release, main and test sources, every Kotlin warning an error)
         run: |
-          ./gradlew :library:compileReleaseKotlin :library-dynamic:compileReleaseKotlin \
+          bash .github/ci/compile-kotlin.sh compile.log \
+            :library:compileReleaseKotlin :library-dynamic:compileReleaseKotlin \
             :sample-app:compileDevDebugKotlin \
-            --warning-mode all --rerun-tasks 2>&1 | tee compile.log
-      - name: Warning gate (zero tolerated)
-        # 2.9.3 removed every deprecation warning and the follow-up brush-up
-        # removed the remaining named-parameter / unchecked-cast warnings.
-        # Fail if ANY Kotlin compiler warning comes back.
+            :library:compileReleaseUnitTestKotlin :library-dynamic:compileReleaseUnitTestKotlin \
+            --rerun-tasks
+      # Every run proves the step above can fail: the same script, handed a
+      # probe, must fail and name it — a warning in main (sample-app), one in
+      # test (library-dynamic), and a compile error (its pipeline keeps
+      # gradle's exit code). The probes are copied in and always removed.
+      - name: Warning gate — positive controls (a warning in main, one in test, a compile error)
         run: |
-          if grep -E "^w: " compile.log; then
-            echo "::error::compiler warnings reintroduced (see above)"
-            exit 1
+          set -euo pipefail
+          main=sample-app/src/main/kotlin/com/kotlinjsonui/ciprobe
+          test=library-dynamic/src/test/kotlin/com/kotlinjsonui/ciprobe
+          cleanup() { rm -rf "$main" "$test"; }
+          trap cleanup EXIT
+          fail() { echo "::error::$1"; exit 1; }
+          mkdir -p "$main" "$test"
+          cp .github/ci/probes/WarningProbeMain.kt "$main/"
+          cp .github/ci/probes/WarningProbeTest.kt "$test/"
+          if bash .github/ci/compile-kotlin.sh probe-warnings.log \
+              :sample-app:compileDevDebugKotlin :library-dynamic:compileReleaseUnitTestKotlin; then
+            fail "the compile passed a warning in main and one in test: the gate is off"
           fi
-          echo "warning gate: OK"
+          for f in WarningProbeMain.kt WarningProbeTest.kt; do
+            grep -q "$f" probe-warnings.log || fail "the failed compile did not name $f"
+          done
+          cleanup
+          mkdir -p "$main"
+          cp .github/ci/probes/CompileErrorProbe.kt "$main/"
+          if bash .github/ci/compile-kotlin.sh probe-error.log :sample-app:compileDevDebugKotlin; then
+            fail "the compile script passed a compile error: its pipeline lost gradle's exit code"
+          fi
+          grep -q CompileErrorProbe.kt probe-error.log || fail "the failed compile did not name CompileErrorProbe.kt"
+          echo "warning gate: the compile failed on each probe (2 warnings, 1 compile error) and named it"
+      # The same init script, so the compile tasks match the step above and
+      # are not compiled a second time.
       - name: Unit tests
-        run: ./gradlew :library:testReleaseUnitTest :library-dynamic:testReleaseUnitTest
+        run: ./gradlew -I .github/ci/kotlin-warnings-as-errors.gradle :library:testReleaseUnitTest :library-dynamic:testReleaseUnitTest
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4
