@@ -80,6 +80,32 @@ class StringDefaultVectorsTest {
         assertEquals(wrong.joinToString("\n"), emptyList<String>(), wrong)
     }
 
+    // The code generators' sentence (jsonui-cli, measured 2026-09-26 on
+    // kjui), less the layout: one wording for the notice on every face.
+    @Test
+    fun theWarningIsTheGeneratorsSentence() {
+        assertEquals(
+            "data 'mode' defaultValue is given for swift, typescript but not kotlin — kotlin gets the String default \"\"",
+            DataDefaultValue.missingPlatformWarning("mode", listOf("swift", "typescript"), "String")
+        )
+        assertEquals(
+            "data 'n' defaultValue is given for swift but not kotlin — kotlin gets the Int default 0",
+            DataDefaultValue.missingPlatformWarning("n", listOf("swift"), "Int")
+        )
+        assertEquals(
+            "data 'd' defaultValue is given for swift but not kotlin — kotlin gets the Double default 0.0",
+            DataDefaultValue.missingPlatformWarning("d", listOf("swift"), "Double")
+        )
+        assertEquals(
+            "data 'o' defaultValue is given for swift but not kotlin — kotlin gets nil",
+            DataDefaultValue.missingPlatformWarning("o", listOf("swift"), "String?")
+        )
+        assertEquals(
+            "data 'c' defaultValue is given for swift but not kotlin — kotlin gets no default (Color has no vocabulary value)",
+            DataDefaultValue.missingPlatformWarning("c", listOf("swift"), "Color")
+        )
+    }
+
     // The branch this replaced dropped every String holding `(` or `)` as if
     // it were a constructor; a constructor default of another class is still
     // not a value here.

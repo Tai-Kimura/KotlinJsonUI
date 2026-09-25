@@ -306,7 +306,10 @@ internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>):
             if (defaultValue == null) {
                 // Written per platform with no `kotlin` entry: the class's
                 // vocabulary value, as the generated Data model has it.
-                Log.w("DynamicView", "data '$name' defaultValue is given for ${declared.asJsonObject.keySet().joinToString()} but not kotlin")
+                Log.w(
+                    "DynamicView",
+                    DataDefaultValue.missingPlatformWarning(name, declared.asJsonObject.keySet().toList(), className)
+                )
                 DataDefaultValue.vocabulary(className)?.let { defaults[name] = it }
                 return@forEach
             }

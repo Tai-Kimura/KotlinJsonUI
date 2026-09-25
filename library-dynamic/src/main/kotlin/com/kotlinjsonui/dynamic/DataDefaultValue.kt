@@ -72,6 +72,30 @@ internal object DataDefaultValue {
     }
 
     /**
+     * The warning for a value written per platform that names no `kotlin`:
+     * the code generators' sentence (TypeConverterCore
+     * #default_for_missing_platform) without the layout, which dynamic mode
+     * does not know. [given] in the order the layout writes it.
+     */
+    fun missingPlatformWarning(name: String, given: List<String>, className: String?): String {
+        val value = vocabulary(className)
+        val answer = when {
+            className?.trim()?.endsWith("?") == true -> "nil"
+            value != null && className != null -> "the $className default ${literal(value)}"
+            else -> "no default (${className ?: ""} has no vocabulary value)"
+        }
+        return "data '$name' defaultValue is given for ${given.joinToString(", ")} " +
+            "but not $LANGUAGE — $LANGUAGE gets $answer"
+    }
+
+    /** A vocabulary value as the generators print it (Ruby's inspect). */
+    private fun literal(value: Any): String = when (value) {
+        is String -> "\"$value\""
+        is List<*> -> if (value.isEmpty()) "[]" else value.toString()
+        else -> value.toString()
+    }
+
+    /**
      * The text a String default's spelling means:
      *   bare (canonical)  the text as written
      *   ''                empty
