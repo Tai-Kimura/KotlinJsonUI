@@ -21,6 +21,9 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ImageAttributes
 import com.kotlinjsonui.dynamic.processDataBinding
+import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.dashedBorder
@@ -57,7 +60,7 @@ class DynamicCircleImageComponent {
     companion object {
         /** CircleImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "src", "errorImage"
+            "src", "errorImage", "alt"
         )
 
         @Composable
@@ -88,10 +91,14 @@ class DynamicCircleImageComponent {
             val resolvedSource = processDataBinding(rawSource, data)
             val isNetworkImage = hasUrl || resolvedSource.startsWith("http")
 
-            // Parse content description ('contentDescription' is an
-            // undeclared legacy runtime extra)
-            val contentDescription =
-                TypedAttrs.undeclared(json, "contentDescription")?.asString ?: "Profile Image"
+            // What TalkBack reads (ImageAccessibility, the codegen's rule):
+            // the alt, nothing for a decorative image, and "Profile Image" for an
+            // image that operates a control and has no alt.
+            val contentDescription = ImageAccessibility.contentDescription(
+                ImageAccessibility.role(json, LocalImageTappable.current),
+                { ResourceResolver.resolveTextValue(ImageAccessibility.alt(json).orEmpty(), data, context) },
+                legacy = "Profile Image"
+            )
 
             // Parse size (default 48dp for circular images;
             // 'size' is an undeclared legacy runtime extra)

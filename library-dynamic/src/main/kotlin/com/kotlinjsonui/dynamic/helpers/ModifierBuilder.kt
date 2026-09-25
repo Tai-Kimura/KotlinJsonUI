@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationExceptio
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -649,11 +650,26 @@ object ModifierBuilder {
         result = applyPannable(result, json, data)
         result = applyPinchable(result, json, data)
         val enabled = resolveEnabled(json, data)
-        val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString
-        if (handler != null) {
+        // Only names (TapAccessibility.clickHandlers): an empty or blank
+        // handler is no click, a blank element of an `onclick` array is not
+        // called, and the array is read as one — `asString` on it threw
+        // "Array must have size 1" for [] and for two handlers, and took the
+        // whole screen down.
+        val handlers = TapAccessibility.clickHandlers(json)
+        if (handlers.isNotEmpty()) {
             val viewId = json.get("id")?.asString
-            result = result.clickable(enabled = enabled != false) {
-                resolveEventHandler(handler, data, viewId)
+            // TalkBack is told it is a button where the shared rule says so
+            // (TapAccessibility): not where the tappable is a control already
+            // or holds one.
+            // common.canTap is the Compose tap gate (attribute_definitions.json),
+            // the `enabled && canTap` kjui's codegen emits: absent, no gate;
+            // false (or a binding resolving false) shuts the tap. It used to be
+            // unread here, so `canTap: false` still clicked.
+            result = result.clickable(
+                enabled = enabled != false && resolveFlag(json, "canTap", data) != false,
+                role = if (TapAccessibility.isButton(json)) Role.Button else null
+            ) {
+                handlers.forEach { resolveEventHandler(it, data, viewId) }
             }
         }
         // `common.enabled` must be readable from the a11y tree (that is what a
@@ -673,8 +689,12 @@ object ModifierBuilder {
      * value context via DataBindingContext); an unresolved binding falls back
      * to the attribute default (enabled).
      */
-    private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? {
-        val raw = json.get("enabled") ?: return null
+    private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? =
+        resolveFlag(json, "enabled", data)
+
+    /** A boolean-or-binding flag, or null when absent or unresolved. */
+    private fun resolveFlag(json: JsonObject, key: String, data: Map<String, Any>): Boolean? {
+        val raw = json.get(key) ?: return null
         if (!raw.isJsonPrimitive) return null
         val p = raw.asJsonPrimitive
         if (p.isBoolean) return p.asBoolean

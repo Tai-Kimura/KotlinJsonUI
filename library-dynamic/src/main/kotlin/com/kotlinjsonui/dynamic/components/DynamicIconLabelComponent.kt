@@ -180,7 +180,9 @@ class DynamicIconLabelComponent {
                 if (iconResId != 0) {
                     Image(
                         painter = painterResource(id = iconResId),
-                        contentDescription = TypedAttrs.undeclared(json, "contentDescription")?.asString ?: "",
+                        // The label beside it names the control, so the icon is
+                        // decorative (null; "" is still an unnamed image to TalkBack).
+                        contentDescription = TypedAttrs.undeclared(json, "contentDescription")?.asString,
                         modifier = Modifier.size(width = iconSizeW.dp, height = iconSizeH.dp),
                         colorFilter = iconTintColor?.let { ColorFilter.tint(it) }
                     )

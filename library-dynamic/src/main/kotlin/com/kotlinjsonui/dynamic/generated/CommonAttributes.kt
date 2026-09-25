@@ -64,7 +64,7 @@ data class CommonAttributes(
     val bottomMargin: AttrValue<Double>? = null,
     /** Bottom padding (alias for paddingBottom, binding supported) */
     val bottomPadding: AttrValue<Double>? = null,
-    /** Whether component is tappable (binding supported) */
+    /** SwiftUI / Compose: a gate on the tap — false (or a binding that resolves false) turns onClick / onclick off; absent, there is no gate and the handler alone makes the tap. UIKit: whether the view shows its pressed state (tapBackgroundColor, an image's highlight filter); the tap itself comes from onclick either way. */
     val canTap: AttrValue<Boolean>? = null,
     /** Center horizontally in parent (binding supported) */
     val centerHorizontal: AttrValue<Boolean>? = null,

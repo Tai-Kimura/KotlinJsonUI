@@ -26,6 +26,8 @@ import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.dynamic.components.*
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
 
@@ -206,15 +208,23 @@ private fun DynamicViewContent(
     // (clearAndSetSemantics) — it must NOT collapse. hidden stays
     // reactive: resolveHidden re-reads the data map on every
     // composition, so binding changes re-resolve on recomposition.
+    // A node with a tap handler is the nearest tappable for every image
+    // composed inside it (ImageAccessibility.role).
+    val render: @Composable () -> Unit = if (ImageAccessibility.isTappable(responsiveJson)) {
+        { CompositionLocalProvider(LocalImageTappable provides responsiveJson) { renderComponent() } }
+    } else {
+        renderComponent
+    }
+
     if (hidden == true || !visibility.isNullOrEmpty()) {
         VisibilityWrapper(
             visibility = visibility,
             hidden = hidden
         ) {
-            renderComponent()
+            render()
         }
     } else {
-        renderComponent()
+        render()
     }
 }
 

@@ -15,6 +15,8 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ImageAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -33,7 +35,7 @@ class DynamicImageComponent {
     companion object {
         /** Image-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage"
+            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage", "alt"
         )
 
         @Composable
@@ -83,11 +85,14 @@ class DynamicImageComponent {
             // Nothing to render if resource not found
             if (resourceId == 0) return
 
-            // Content description ('contentDescription' is an undeclared
-            // legacy runtime extra)
-            val contentDescription = TypedAttrs.undeclared(json, "contentDescription")?.asString
-                ?: a.common.id
-                ?: ""
+            // What TalkBack reads (ImageAccessibility, the codegen's rule):
+            // the alt, nothing for a decorative image, and its id for an
+            // image that operates a control and has no alt.
+            val contentDescription = ImageAccessibility.contentDescription(
+                ImageAccessibility.role(json, LocalImageTappable.current),
+                { ResourceResolver.resolveTextValue(ImageAccessibility.alt(json).orEmpty(), data, context) },
+                legacy = a.common.id ?: ""
+            )
 
             // ContentScale mapping (case-insensitive)
             val modeLower =
