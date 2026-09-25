@@ -228,7 +228,7 @@ class DynamicButtonComponent {
                 }
             }
 
-            // Modifier: only testTag, margins, size, weight, alpha (not padding – handled by contentPadding)
+            // Modifier: testTag, margins, size, offset, alpha, shadow (not padding – handled by contentPadding)
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
@@ -240,6 +240,9 @@ class DynamicButtonComponent {
             // it needed the line of its own (51-C's warning, measured).
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            // shadow, which the SSoT declares on every type (`common`) and
+            // this chain did not apply — cast in the button's own shape.
+            modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = shape)
             // onLongPress: Button's native onClick handles taps; the outer
             // long-press gesture fires the handler and consumes the events so
             // a long press never also triggers onClick.

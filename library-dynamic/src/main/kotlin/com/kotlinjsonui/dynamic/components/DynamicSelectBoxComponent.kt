@@ -2,7 +2,9 @@ package com.kotlinjsonui.dynamic.components
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -357,7 +359,7 @@ class DynamicSelectBoxComponent {
             // Build modifier (default fill width). SelectBox draws its own
             // background/border/corner shape from the composable parameters,
             // so the modifier chain must not re-apply them.
-            val modifier = buildSelfDrawnModifier(json, data)
+            val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp))
 
             // paddings/padding become contentPadding (never a .padding()
             // modifier, which would inset the self-drawn border instead of
@@ -514,7 +516,7 @@ class DynamicSelectBoxComponent {
             // Build modifier (default fill width for date pickers).
             // DateSelectBox also draws its own background/border/corner
             // shape, so the modifier chain must not re-apply them.
-            val modifier = buildSelfDrawnModifier(json, data)
+            val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp))
 
             DateSelectBox(
                 value = selectedDate,
@@ -539,20 +541,25 @@ class DynamicSelectBoxComponent {
         // ── Helpers ──
 
         /**
-         * Modifier chain for a component that draws its own decoration.
-         * Mirrors the static selectbox_component.rb chain — testTag,
-         * margins, size, alpha, clickable — and deliberately omits:
+         * Modifier chain for a component that draws its own decoration —
+         * testTag, margins, size, offset, alpha, shadow, clickable — which
+         * deliberately omits:
          *
-         * - shadow / background (clip + border + background color): the
-         *   composable renders border/background/corner shape from its own
-         *   parameters; re-applying them on the modifier draws the frame
-         *   twice (outer modifier frame + inner self-drawn frame),
+         * - background (clip + border + background color): the composable
+         *   renders border/background/corner shape from its own parameters;
+         *   re-applying them on the modifier draws the frame twice (outer
+         *   modifier frame + inner self-drawn frame),
          * - padding: content padding is a composable parameter
          *   (see [ModifierBuilder.parseContentPadding]).
+         *
+         * The shadow draws no frame, only the shade outside the view: it is
+         * cast in [ownShape], the corner the composable draws itself. It was
+         * omitted with the frame, and the SSoT declares it on every type.
          */
         internal fun buildSelfDrawnModifier(
             json: JsonObject,
-            data: Map<String, Any>
+            data: Map<String, Any>,
+            ownShape: Shape? = null
         ): Modifier {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
@@ -565,6 +572,7 @@ class DynamicSelectBoxComponent {
             // it needed the line of its own (51-C's warning, measured).
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
+            modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape)
             modifier = ModifierBuilder.applyClickable(modifier, json, data)
             return modifier
         }
