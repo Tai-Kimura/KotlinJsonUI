@@ -60,9 +60,15 @@ object TapAccessibility {
     private fun type(node: JsonObject): String? =
         node.get("type")?.takeIf { it.isJsonPrimitive }?.asString
 
-    /** A tap the Dynamic runtime attaches: a handler, not statically disabled. */
+    /** A tap the Dynamic runtime attaches: a handler, not statically disabled, not gated shut. */
     fun isTappable(node: JsonObject): Boolean =
-        !disabled(node) && (present(node.get("onClick")) || present(node.get("onclick")))
+        !disabled(node) && !gatedShut(node) && (present(node.get("onClick")) || present(node.get("onclick")))
+
+    /** `canTap: false`, the Compose tap gate. */
+    private fun gatedShut(node: JsonObject): Boolean {
+        val e = node.get("canTap") ?: return false
+        return e.isJsonPrimitive && e.asJsonPrimitive.isBoolean && !e.asBoolean
+    }
 
     fun children(node: JsonObject): List<JsonObject> =
         listOf("child", "children").flatMap { key ->

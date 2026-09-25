@@ -69,6 +69,10 @@ import org.junit.runner.RunWith
  * children, these rows go red: then Android containers ARE announced, and
  * the docs that say they are not must change with this table.
  *
+ * canTap (common.canTap, the Compose tap gate): dyn_gate (onClick, canTap:
+ * false) was enabled — the gate ignored — on 2cc81f3, and is disabled
+ * after; dyn_image_nogate (onClick, no canTap) taps before and after.
+ *
  * The content starts 80dp down: at y=0 the first row sat under the status
  * bar, its title was not visible to the user, and UiAutomator's By.res did
  * not find it (the node was in the tree: visibleToUser=false, bounds
@@ -85,6 +89,10 @@ class TapRoleProbeTest {
       {"type": "View", "id": "dyn_row", "orientation": "vertical", "onClick": "@{onProbe}", "child": [
         {"type": "Label", "id": "row_title", "text": "Row title"},
         {"type": "Label", "id": "row_sub", "text": "Row sub"}
+      ]},
+      {"type": "Image", "id": "dyn_image_nogate", "srcName": "conformance_sample", "width": 40, "height": 40, "onClick": "@{onProbe}"},
+      {"type": "View", "id": "dyn_gate", "canTap": false, "onClick": "@{onProbe}", "child": [
+        {"type": "Label", "id": "gate_title", "text": "Gated shut"}
       ]},
       {"type": "View", "id": "dyn_switch_row", "orientation": "horizontal", "onClick": "@{onProbe}", "child": [
         {"type": "Label", "id": "sw_title", "text": "Switch row"},
@@ -138,6 +146,8 @@ class TapRoleProbeTest {
             "dyn_image" to button, "dyn_label" to button,
             "dyn_row" to view,                 // the rule's `combine`: Compose keeps View
             "row_title" to text, "row_sub" to text,
+            "dyn_image_nogate" to button,      // no canTap: no gate, the handler alone taps
+            "dyn_gate" to view, "gate_title" to text,   // canTap: false: gated shut, no role
             "dyn_switch_row" to view, "sw_title" to text, "dyn_sw" to view,
         )
         val ids = expected.keys.toList()
@@ -146,7 +156,7 @@ class TapRoleProbeTest {
         for (id in ids) {
             val n = nodes[id]
             val role = n?.extras?.getCharSequence("AccessibilityNodeInfo.roleDescription")
-            println("TAPROLE id=$id byRes=${device.findObjects(By.res(id)).size} node=${n != null} " +
+            println("TAPROLE id=$id enabled=${n?.isEnabled} byRes=${device.findObjects(By.res(id)).size} node=${n != null} " +
                 "class=${n?.className} role=$role clickable=${n?.isClickable} " +
                 "checkable=${n?.isCheckable} checked=${n?.isChecked} text='${n?.text}' desc='${n?.contentDescription}' " +
                 "visibleToUser=${n?.isVisibleToUser} bounds=${n?.let { val r = android.graphics.Rect(); it.getBoundsInScreen(r); r.toShortString() }}")
@@ -162,6 +172,10 @@ class TapRoleProbeTest {
             assertEquals("$id: class", expected[id], nodes[id]?.className?.toString())
         }
         assertTrue("dyn_sw is checkable", nodes["dyn_sw"]?.isCheckable == true)
+        // common.canTap: false is the Compose tap gate (kjui emits
+        // clickable(enabled = false)); the Dynamic runtime reads it too.
+        assertEquals("dyn_gate is gated shut", false, nodes["dyn_gate"]?.isEnabled)
+        assertEquals("dyn_image_nogate taps", true, nodes["dyn_image_nogate"]?.isEnabled)
         assertEquals("the Switch inside a tappable row toggles on its own", false to true, before to after)
         scenario.close()
     }

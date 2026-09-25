@@ -656,8 +656,12 @@ object ModifierBuilder {
             // TalkBack is told it is a button where the shared rule says so
             // (TapAccessibility): not where the tappable is a control already
             // or holds one.
+            // common.canTap is the Compose tap gate (attribute_definitions.json),
+            // the `enabled && canTap` kjui's codegen emits: absent, no gate;
+            // false (or a binding resolving false) shuts the tap. It used to be
+            // unread here, so `canTap: false` still clicked.
             result = result.clickable(
-                enabled = enabled != false,
+                enabled = enabled != false && resolveFlag(json, "canTap", data) != false,
                 role = if (TapAccessibility.isButton(json)) Role.Button else null
             ) {
                 resolveEventHandler(handler, data, viewId)
@@ -680,8 +684,12 @@ object ModifierBuilder {
      * value context via DataBindingContext); an unresolved binding falls back
      * to the attribute default (enabled).
      */
-    private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? {
-        val raw = json.get("enabled") ?: return null
+    private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? =
+        resolveFlag(json, "enabled", data)
+
+    /** A boolean-or-binding flag, or null when absent or unresolved. */
+    private fun resolveFlag(json: JsonObject, key: String, data: Map<String, Any>): Boolean? {
+        val raw = json.get(key) ?: return null
         if (!raw.isJsonPrimitive) return null
         val p = raw.asJsonPrimitive
         if (p.isBoolean) return p.asBoolean
