@@ -244,6 +244,9 @@ class DynamicButtonComponent {
             // long-press gesture fires the handler and consumes the events so
             // a long press never also triggers onClick.
             modifier = ModifierBuilder.applyLongPressable(modifier, json, data)
+            // userInteractionEnabled stops the button (this chain runs no
+            // buildModifier, whose clickable stage applies it elsewhere)
+            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
 
             Button(
                 onClick = onClick,

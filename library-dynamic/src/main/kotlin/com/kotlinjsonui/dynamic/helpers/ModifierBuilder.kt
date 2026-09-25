@@ -685,8 +685,42 @@ object ModifierBuilder {
         if (enabled == false) {
             result = result.semantics { disabled() }
         }
-        return result
+        return applyInteractionBlocker(result, json, data)
     }
+
+    /**
+     * common.userInteractionEnabled: false (or a binding resolving false)
+     * stops the node and what is in it — its click, its children's, a
+     * control's own operation. Compose has no allowsHitTesting, so the
+     * events are consumed in the Initial pass, before any child or any
+     * Main-pass handler sees them: kjui's codegen emits the same
+     * (build_interaction_blocker). It was decoded and never read here.
+     */
+    fun applyInteractionBlocker(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        if (!interactionBlocked(json, data)) return modifier
+        return modifier.pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    awaitPointerEvent(PointerEventPass.Initial).changes.forEach { it.consume() }
+                }
+            }
+        }
+    }
+
+    /** `userInteractionEnabled` is false, or a binding resolving false. */
+    fun interactionBlocked(json: JsonObject, data: Map<String, Any>): Boolean =
+        resolveFlag(json, "userInteractionEnabled", data) == false
+
+    /**
+     * A node's own long press, pan and pinch are shut: `userInteractionEnabled`
+     * or `enabled` is false (or a binding resolving false). Either stops every
+     * handler of the node — the tap rule reads the same (a disabled long press
+     * does not operate) — and the three detectors read neither: they fired
+     * under both (measured, API 35 emulator, conformance-host
+     * InteractionGateProbeTest). kjui's codegen: gesture_gate.
+     */
+    fun gesturesShut(json: JsonObject, data: Map<String, Any>): Boolean =
+        interactionBlocked(json, data) || resolveEnabled(json, data) == false
 
     /**
      * common.enabled — resolved value, or null when the attribute is absent.
@@ -742,6 +776,10 @@ object ModifierBuilder {
         data: Map<String, Any>
     ): Modifier {
         val handler = json.get("onLongPress")?.asString ?: return modifier
+        // The detector watches the Initial pass from outside the blocker and
+        // the clickable, so neither stopped it: a node whose gestures are
+        // shut gets no long press (gesturesShut).
+        if (gesturesShut(json, data)) return modifier
         val viewId = json.get("id")?.asString
         return modifier.pointerInput(handler, data) {
             awaitEachGesture {
@@ -789,6 +827,7 @@ object ModifierBuilder {
         data: Map<String, Any>
     ): Modifier {
         val handler = json.get("onPan")?.asString ?: return modifier
+        if (gesturesShut(json, data)) return modifier
         val viewId = json.get("id")?.asString
         return modifier.pointerInput(handler, data) {
             var total = Offset.Zero
@@ -819,6 +858,7 @@ object ModifierBuilder {
         data: Map<String, Any>
     ): Modifier {
         val handler = json.get("onPinch")?.asString ?: return modifier
+        if (gesturesShut(json, data)) return modifier
         val viewId = json.get("id")?.asString
         return modifier.pointerInput(handler, data) {
             awaitEachGesture {

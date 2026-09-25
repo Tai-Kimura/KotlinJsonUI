@@ -244,6 +244,9 @@ class DynamicTextFieldComponent {
             // Build common modifier
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyTestTag(modifier, json)
+            // userInteractionEnabled stops this node and what is in it (this chain
+            // runs no buildModifier, whose clickable stage applies it elsewhere)
+            modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, data = data)
             if (isHidden) {
@@ -275,6 +278,9 @@ class DynamicTextFieldComponent {
             if (hasMarginAttributes(json)) {
                 var boxModifier: Modifier = Modifier
                 boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
+                // userInteractionEnabled stops this node and what is in it (this chain
+                // runs no buildModifier, whose clickable stage applies it elsewhere)
+                boxModifier = ModifierBuilder.applyInteractionBlocker(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
                 if (isHidden) {
                     boxModifier = boxModifier.alpha(0f)

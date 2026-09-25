@@ -188,6 +188,9 @@ class DynamicTextViewComponent {
                 // Box modifier with margins and weight
                 var boxModifier: Modifier = Modifier
                 boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
+                // userInteractionEnabled stops this node and what is in it (this chain
+                // runs no buildModifier, whose clickable stage applies it elsewhere)
+                boxModifier = ModifierBuilder.applyInteractionBlocker(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
 
                 // TextField modifier with size (default fillMaxWidth + 120dp height)
@@ -221,6 +224,9 @@ class DynamicTextViewComponent {
                 // Regular modifier with size (default fillMaxWidth + 120dp height)
                 var modifier = buildTextViewSizeModifier(json, a)
                 modifier = ModifierBuilder.applyTestTag(modifier, json)
+                // userInteractionEnabled stops this node and what is in it (this chain
+                // runs no buildModifier, whose clickable stage applies it elsewhere)
+                modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
                 // offset sits after size and before alpha, the same slot
                 // buildModifier uses — outside background/shadow so the
                 // decoration moves with the view, inside margins so siblings
