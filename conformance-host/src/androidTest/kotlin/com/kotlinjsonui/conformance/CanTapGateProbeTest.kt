@@ -295,8 +295,17 @@ class CanTapGateProbeTest {
         }
     }
 
+    /**
+     * Every node by its id, each REFRESHED: a node walked down from
+     * `rootInActiveWindow` can come from the accessibility cache and carry a
+     * state the screen no longer shows. Read without refresh, three TabViews
+     * here said their second tab was not selected when findObject, a refreshed
+     * node and the screenshot all said it was (2026-09-26 —
+     * kjui-dynamic-tabview-loses-its-selection, withdrawn for that reason).
+     */
     private fun collect(node: AccessibilityNodeInfo?, out: MutableMap<String, AccessibilityNodeInfo>) {
         if (node == null) return
+        node.refresh()
         node.viewIdResourceName?.let { out.putIfAbsent(it.substringAfterLast('/'), node) }
         for (i in 0 until node.childCount) collect(node.getChild(i), out)
     }
@@ -365,9 +374,8 @@ class CanTapGateProbeTest {
         // A TabView: its content (10 dp above the bar — the content is
         // some 70 dp tall here, and 40 dp above landed on the Segment row),
         // where the layout's onClick would be; then its second tab, its own
-        // operation, read right after the tap: three of the four lost the
-        // selection again before the end of the run, the parent (4edb7a1)
-        // alike — recorded at the end, not asserted.
+        // operation, read right after the tap; also read at the end, not
+        // asserted.
         val tabSwitched = mutableMapOf<String, Boolean?>()
         for (g in gates) {
             val t0 = device.findObject(By.res("dyn_tab_${g}_tab_0"))

@@ -99,15 +99,13 @@ class DynamicSwitchComponent {
             val checked = resolveCheckedState(a, data, bindingVariable)
 
             // State for the switch
-            var checkedState by remember(checked, bindingVariable, data) {
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
                 mutableStateOf(checked)
-            }
-
-            // Update checked state when data changes
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    checkedState = (data[bindingVariable] as? Boolean) ?: false
-                }
             }
 
             // Enabled state (supports @{binding}; Switch declares its own row)
@@ -176,15 +174,13 @@ class DynamicSwitchComponent {
             val checked = resolveCheckedState(a, data, bindingVariable)
 
             // State for the switch
-            var checkedState by remember(checked, bindingVariable, data) {
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var checkedState by remember(checked, bindingVariable) {
                 mutableStateOf(checked)
-            }
-
-            // Update checked state when data changes
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    checkedState = (data[bindingVariable] as? Boolean) ?: false
-                }
             }
 
             // Build onCheckedChange handler

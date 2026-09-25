@@ -269,14 +269,15 @@ class DynamicSelectBoxComponent {
             val bindingVariable = bindingVariableOf(a)
             val currentValue = boundSelection(a, data, options) ?: ""
 
-            var selectedValue by remember(currentValue, bindingVariable, data) {
-                mutableStateOf(currentValue.ifEmpty { initialSelection(a, data) })
-            }
-
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    selectedValue = boundSelection(a, data, options) ?: ""
-                }
+            // The bound selection, or with none the static seed (initialSelection).
+            val seed = currentValue.ifEmpty { initialSelection(a, data) }
+            // Keyed on the value this control declares — its binding's value, or the
+            // static seed — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var selectedValue by remember(seed, bindingVariable) {
+                mutableStateOf(seed)
             }
 
             // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
@@ -432,14 +433,13 @@ class DynamicSelectBoxComponent {
                 data[bindingVariable]?.toString() ?: ""
             } else ""
 
-            var selectedDate by remember(currentValue, bindingVariable, data) {
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var selectedDate by remember(currentValue, bindingVariable) {
                 mutableStateOf(currentValue)
-            }
-
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    selectedDate = data[bindingVariable]?.toString() ?: ""
-                }
             }
 
             // Parse date picker attributes ('dateFormat' is an undeclared

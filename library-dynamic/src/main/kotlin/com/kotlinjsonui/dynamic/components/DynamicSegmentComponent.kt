@@ -100,19 +100,13 @@ class DynamicSegmentComponent {
                 else -> TypedAttrs.int(a.selectedIndex, data) ?: 0
             }
 
-            var selectedIndex by remember(currentIndex, bindingVariable, data) {
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var selectedIndex by remember(currentIndex, bindingVariable) {
                 mutableStateOf(currentIndex)
-            }
-
-            // Update value when data changes
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    selectedIndex = when (val boundValue = data[bindingVariable]) {
-                        is Number -> boundValue.toInt()
-                        is String -> boundValue.toIntOrNull() ?: 0
-                        else -> 0
-                    }
-                }
             }
 
             // Parse segments (literal items resolve through string resources)
