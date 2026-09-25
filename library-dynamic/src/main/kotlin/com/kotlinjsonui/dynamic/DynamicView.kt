@@ -138,9 +138,18 @@ private fun DynamicViewContent(
     }
     val hidden = resolveHidden(responsiveJson, effectiveData)
 
-    // Render the appropriate component based on type
+    // Render the appropriate component based on type.
+    //
+    // A type the app registered as its own component (customComponentHandler,
+    // the generated DynamicComponentRegistry) is taken before the built-in
+    // cases, as kjui's codegen takes the app's converter before its own. It
+    // was asked only for a type no built-in case took, so an app's own
+    // component named like a built-in or one of its spellings — an app's
+    // ProgressBar — was drawn in Debug as the built-in Progress while the
+    // release build drew the app's (measured: the handler was not called).
     val renderComponent: @Composable () -> Unit = {
-        when (type.lowercase()) {
+        val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
+        if (!handledByApp) when (type.lowercase()) {
             "text", "label" -> DynamicTextComponent.create(responsiveJson, effectiveData)
             // EditText (Android) and Input (web) are canonical aliases of TextField
             // in attribute_definitions.json
@@ -180,10 +189,8 @@ private fun DynamicViewContent(
             "textview" -> DynamicTextViewComponent.create(responsiveJson, effectiveData)
             "triangle" -> DynamicTriangleComponent.create(responsiveJson, effectiveData)
             else -> {
-                // First, try custom component handler
-                val handled = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
-
-                if (!handled) {
+                // The app's handler was asked first, above.
+                run {
                     // Unknown component type
                     val error = IllegalArgumentException("Unknown component type: $type")
                     onError?.invoke(error)
