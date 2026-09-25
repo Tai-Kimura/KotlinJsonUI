@@ -10,8 +10,8 @@ package com.kotlinjsonui.dynamic.generated
 data class NetworkImageAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
-    /** Alt text for accessibility */
-    val alt: String? = null,
+    /** What screen readers say for the image (VoiceOver, TalkBack, web alt): a strings.json key or text, localized like `text`, or a binding. "" marks the image decorative (skipped). With no alt the image is decorative too, unless it operates a control (a tap handler on the image, or the only content of a tappable with no text): then it keeps the id / asset name each platform read before, and the build names it (INFO). Decorative is the default, so give every image that carries meaning (a logo, a photo, an icon that is the only content of a button) an alt. [aliases: accessibilityLabel, contentDescription] */
+    val alt: AttrValue<String>? = null,
     /** Cache policy */
     val cachePolicy: String? = null,
     /** Content mode (binding supported) */
@@ -123,7 +123,9 @@ data class NetworkImageAttributes(
          * their own entry and are not redirected.
          */
         val aliasMap: Map<String, String> = mapOf(
+            "accessibilityLabel" to "alt",
             "alpha" to "opacity",
+            "contentDescription" to "alt",
             "source" to "url",
         )
 
@@ -137,7 +139,7 @@ data class NetworkImageAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): NetworkImageAttributes = NetworkImageAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
-            alt = AttrCoerce.string(AttrCoerce.lookup(json, "alt")),
+            alt = AttrCoerce.attrValue(AttrCoerce.lookup(json, "alt", listOf("accessibilityLabel", "contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
             cachePolicy = AttrCoerce.string(AttrCoerce.lookup(json, "cachePolicy")),
             contentMode = AttrCoerce.attrValue(AttrCoerce.lookup(json, "contentMode")) { parseContentMode(it) },
             defaultImage = AttrCoerce.string(AttrCoerce.lookup(json, "defaultImage")),

@@ -18,6 +18,8 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -55,7 +57,7 @@ class DynamicNetworkImageComponent {
         /** NetworkImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "url", "src", "contentMode", "hint", "placeholder", "errorImage",
-            "loadingImage", "defaultImage"
+            "loadingImage", "defaultImage", "alt"
         )
 
         @Composable
@@ -83,12 +85,14 @@ class DynamicNetworkImageComponent {
             val imageUrl = processDataBinding(rawUrl, data)
 
             // ── Content description ──
-            // ('contentDescription' is an undeclared legacy runtime extra)
-            val contentDescription = (
-                TypedAttrs.undeclared(json, "contentDescription")?.asString
-                    ?.let { ResourceResolver.resolveTextValue(it, data, context) }
-                    ?: ""
-                ).ifEmpty { "Image" }
+            // What TalkBack reads (ImageAccessibility, the codegen's rule):
+            // the alt, nothing for a decorative image, and "Image" for an
+            // image that operates a control and has no alt.
+            val contentDescription = ImageAccessibility.contentDescription(
+                ImageAccessibility.role(json, LocalImageTappable.current),
+                { ResourceResolver.resolveTextValue(ImageAccessibility.alt(json).orEmpty(), data, context) },
+                legacy = "Image"
+            )
 
             // ── Content scale (case-insensitive; static-only legacy read) ──
             val modeLower =
