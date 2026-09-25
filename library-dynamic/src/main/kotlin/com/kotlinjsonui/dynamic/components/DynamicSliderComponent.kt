@@ -109,19 +109,13 @@ class DynamicSliderComponent {
             }.coerceIn(minValue, maxValue)
 
             // State for slider value
-            var sliderValue by remember(currentValue, bindingVariable, data) {
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var sliderValue by remember(currentValue, bindingVariable) {
                 mutableStateOf(currentValue)
-            }
-
-            // Update value when data changes
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    sliderValue = when (val boundValue = data[bindingVariable]) {
-                        is Number -> boundValue.toFloat().coerceIn(minValue, maxValue)
-                        is String -> boundValue.toFloatOrNull()?.coerceIn(minValue, maxValue) ?: minValue
-                        else -> minValue
-                    }
-                }
             }
 
             // Parse enabled state (supports @{binding})

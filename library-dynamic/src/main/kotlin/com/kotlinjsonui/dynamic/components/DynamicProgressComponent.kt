@@ -89,19 +89,13 @@ class DynamicProgressComponent {
             }.coerceIn(0f, 1f)
 
             // State for the progress value
-            var progress by remember(progressValue, bindingVariable, data) {
+            // Keyed on the value this control declares — its binding's value, or the
+            // static one — and not on `data`: every unrelated data change handed a new
+            // map and reset what the user had chosen (ticket
+            // kjui-dynamic-stateful-components-reset-on-unrelated-data). A bound value that changes
+            // still resets it: the view model's word wins.
+            var progress by remember(progressValue, bindingVariable) {
                 mutableStateOf(progressValue)
-            }
-
-            // Update value when data changes
-            LaunchedEffect(data, bindingVariable) {
-                if (bindingVariable != null) {
-                    progress = when (val boundValue = data[bindingVariable]) {
-                        is Number -> boundValue.toFloat().coerceIn(0f, 1f)
-                        is String -> boundValue.toFloatOrNull()?.coerceIn(0f, 1f) ?: 0f
-                        else -> 0f
-                    }
-                }
             }
 
             // Parse style (only used for indeterminate) — the legacy
