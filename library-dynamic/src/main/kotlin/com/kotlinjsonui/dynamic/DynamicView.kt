@@ -298,7 +298,18 @@ internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>):
             if (data.containsKey(name)) return@forEach
             // First section wins (root-level over legacy child) — SJUI parity.
             if (defaults.containsKey(name)) return@forEach
-            val defaultValue = obj.get("defaultValue") ?: return@forEach
+            val declared = obj.get("defaultValue") ?: return@forEach
+            val className = DataDefaultValue.className(obj.get("class"))
+            // The value for this platform (DataDefaultValue — the code
+            // generators' reading, measured against the shared vectors).
+            val defaultValue = DataDefaultValue.select(declared)
+            if (defaultValue == null) {
+                // Written per platform with no `kotlin` entry: the class's
+                // vocabulary value, as the generated Data model has it.
+                Log.w("DynamicView", "data '$name' defaultValue is given for ${declared.asJsonObject.keySet().joinToString()} but not kotlin")
+                DataDefaultValue.vocabulary(className)?.let { defaults[name] = it }
+                return@forEach
+            }
             when {
                 defaultValue.isJsonPrimitive -> {
                     val p = defaultValue.asJsonPrimitive
@@ -307,8 +318,13 @@ internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>):
                         p.isNumber -> defaults[name] = p.asNumber
                         p.isString -> {
                             val s = p.asString
-                            // Skip complex default values (e.g., "CollectionDataSource()")
-                            if (!s.contains("(") && !s.contains(")")) {
+                            if (className == "String") {
+                                // The layout's spelling ('' / "…" / '…' / bare).
+                                defaults[name] = DataDefaultValue.text(s)
+                            } else if (className?.trim() == "String?" || (!s.contains("(") && !s.contains(")"))) {
+                                // Skip complex default values (e.g.,
+                                // "CollectionDataSource()") — a String's
+                                // `(` is text.
                                 defaults[name] = s
                             }
                         }

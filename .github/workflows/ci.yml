@@ -122,6 +122,8 @@ jobs:
                "shared/core/image_accessibility_vectors.json"),
               ("library-dynamic/src/test/resources/tap_accessibility_vectors.json",
                "shared/core/tap_accessibility_vectors.json"),
+              ("library-dynamic/src/test/resources/string_default_vectors.json",
+               "shared/core/string_default_vectors.json"),
           ]
           # Same three exit codes as the step above: 0 compared and agreed,
           # 1 compared and diverged, 2 could not compare.
