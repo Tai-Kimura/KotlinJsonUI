@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationExceptio
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -652,7 +653,13 @@ object ModifierBuilder {
         val handler = json.get("onClick")?.asString ?: json.get("onclick")?.asString
         if (handler != null) {
             val viewId = json.get("id")?.asString
-            result = result.clickable(enabled = enabled != false) {
+            // TalkBack is told it is a button where the shared rule says so
+            // (TapAccessibility): not where the tappable is a control already
+            // or holds one.
+            result = result.clickable(
+                enabled = enabled != false,
+                role = if (TapAccessibility.isButton(json)) Role.Button else null
+            ) {
                 resolveEventHandler(handler, data, viewId)
             }
         }
