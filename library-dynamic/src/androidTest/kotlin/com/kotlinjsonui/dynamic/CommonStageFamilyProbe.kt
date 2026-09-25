@@ -97,6 +97,8 @@ class CommonStageFamilyProbe {
         "padding" to """, "paddings": [5, 5, 5, 5]""",
     )
 
+    private val against = mapOf("cornerRadius" to "background", "enabled" to "clickable")
+
     private fun children(node: Any): List<Any> {
         val m = node.javaClass.methods.firstOrNull { it.name.startsWith("getChildren") && it.parameterCount == 0 }
             ?: return emptyList()
@@ -162,13 +164,26 @@ class CommonStageFamilyProbe {
             val b0 = blue("{\"type\": \"$type\"$extra}")
             val b1 = blue("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"background\": \"#3366CC\"}")
             val c1 = clicks("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"onClick\": \"@{onTap}\"}")
-            println("STAGE_EFFECT $type background_px=$b0->$b1 click_calls=$c1")
+            // A radius and enabled: false change a parameter of an element the
+            // background or onClick already added, which the element count
+            // cannot see: the corners cut from the background, and the calls a
+            // click makes under enabled: false.
+            val r1 = blue("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"background\": \"#3366CC\", \"cornerRadius\": 20}")
+            val d1 = clicks("{\"type\": \"$type\"$extra, \"width\": 111, \"height\": 53, \"onClick\": \"@{onTap}\", \"enabled\": false}")
+            println("STAGE_EFFECT $type background_px=$b0->$b1 radius_px=$r1 click_calls=$c1 disabled_calls=$d1")
             println("STAGE_BASE $type ${base.toSortedMap()}")
+            val measured = mutableMapOf<String, Map<String, Int>>()
             for ((stage, attrs) in stages) {
                 val with = measure("{\"type\": \"$type\"$extra$attrs}") ?: continue
+                measured[stage] = with
                 val added = with.flatMap { (k, v) -> List(maxOf(0, v - (base[k] ?: 0))) { k } }.sorted()
                 val removed = base.flatMap { (k, v) -> List(maxOf(0, v - (with[k] ?: 0))) { k } }.sorted()
                 println("STAGE $type $stage +$added -$removed")
+                // cornerRadius adds to background, enabled to clickable: against
+                // the bare node, the background or onClick alone would count.
+                val ref = against[stage]?.let { measured[it] } ?: continue
+                val over = with.flatMap { (k, v) -> List(maxOf(0, v - (ref[k] ?: 0))) { k } }.sorted()
+                println("STAGE_OVER $type $stage over ${against[stage]} +$over")
             }
         }
     }
