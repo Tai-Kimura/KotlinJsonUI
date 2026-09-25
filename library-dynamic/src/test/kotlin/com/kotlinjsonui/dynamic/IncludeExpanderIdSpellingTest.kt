@@ -8,6 +8,7 @@ import java.io.InputStream
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -16,12 +17,12 @@ import org.junit.Test
  * it is the one the codegen writes. These arms hold the Dynamic
  * [IncludeExpander] to the codegen's answers.
  *
- * WHERE THE EXPECTED VALUES COME FROM — both are machine output, pasted:
- * - [camelCaseTable]: the snake→camel table, from running sjui_tools
- *   include_expander.rb:14/23 and kjui_tools include_expander.rb:16/25 under
- *   ruby 2.6.10 (the two agreed on every row). Compared by script with
- *   jsonui-cli shared/core/camel_case_vectors.json at 7bc802c4: identical in
- *   order and value. Vendor that file instead once it is released.
+ * WHERE THE EXPECTED VALUES COME FROM — both are machine output:
+ * - the snake→camel table is jsonui-cli shared/core/camel_case_vectors.json,
+ *   copied byte-identical into src/test/resources (CI's vendored-attr-guard
+ *   compares the copy with the file at the pinned jsonui-cli ref). jsonui-cli
+ *   wrote it by running sjui_tools and kjui_tools' include_expander.rb
+ *   (`to_camel_case`, `combine_with_prefix`), which agree on every row.
  * - [expectedJson]: the ids, data names and bindings that the codegen's
  *   `process_includes` produces for [specimensJson], run under ruby 3.2.2
  *   against jsonui-cli f45a0cfc — sjui_tools and kjui_tools gave
@@ -40,35 +41,32 @@ class IncludeExpanderIdSpellingTest {
 
     // --- The two functions, row by row (the snake→camel table) ---------------------------
 
-    /** (input, to_camel_case, combine_with_prefix("hero", input)) */
-    private val camelCaseTable = listOf(
-        Triple("email_verify_view", "emailVerifyView", "heroEmailVerifyView"),
-        Triple("header1_title_label", "header1TitleLabel", "heroHeader1TitleLabel"),
-        Triple("verify_2FA_form", "verify2faForm", "heroVerify2faForm"),
-        Triple("clear_URL_button", "clearUrlButton", "heroClearUrlButton"),
-        Triple("info_URL", "infoUrl", "heroInfoUrl"),
-        Triple("URL_field", "URLField", "heroURLField"),
-        Triple("iOS_version", "iOSVersion", "heroIOSVersion"),
-        Triple("item_2", "item2", "heroItem2"),
-        Triple("step2_done", "step2Done", "heroStep2Done"),
-        Triple("a__b", "aB", "heroAB"),
-        Triple("trailing_", "trailing", "heroTrailing"),
-        Triple("_leading", "Leading", "heroLeading"),
-        Triple("alreadyCamel", "alreadyCamel", "heroAlreadyCamel"),
-        Triple("single", "single", "heroSingle"),
-    )
+    /** camel = to_camel_case(input); combined = combine_with_prefix(prefix, input). */
+    private val camelCaseVectors: JsonObject by lazy {
+        val stream = requireNotNull(
+            javaClass.classLoader?.getResourceAsStream("camel_case_vectors.json")
+        ) { "camel_case_vectors.json missing from test resources" }
+        stream.reader(Charsets.UTF_8).use { JsonParser.parseReader(it).asJsonObject }
+    }
+
+    private val camelCaseRows: List<JsonObject>
+        get() = camelCaseVectors.getAsJsonArray("cases").map { it.asJsonObject }
+            .also { assertTrue("camel_case_vectors.json has no cases", it.isNotEmpty()) }
 
     @Test
     fun toCamelCaseAnswersAsTheCodegenDoes() {
-        for ((input, camel, _) in camelCaseTable) {
-            assertEquals(input, camel, IncludeExpander.toCamelCase(input))
+        for (row in camelCaseRows) {
+            val input = row.get("input").asString
+            assertEquals(input, row.get("camel").asString, IncludeExpander.toCamelCase(input))
         }
     }
 
     @Test
     fun combineWithPrefixAnswersAsTheCodegenDoes() {
-        for ((input, _, combined) in camelCaseTable) {
-            assertEquals(input, combined, IncludeExpander.combineWithPrefix("hero", input))
+        val prefix = camelCaseVectors.get("prefix").asString
+        for (row in camelCaseRows) {
+            val input = row.get("input").asString
+            assertEquals(input, row.get("combined").asString, IncludeExpander.combineWithPrefix(prefix, input))
         }
     }
 
