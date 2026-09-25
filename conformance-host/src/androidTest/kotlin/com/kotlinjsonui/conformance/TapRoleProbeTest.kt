@@ -1,0 +1,137 @@
+package com.kotlinjsonui.conformance
+
+import android.view.accessibility.AccessibilityNodeInfo
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.test.core.app.ActivityScenario
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import com.google.gson.JsonParser
+import com.kotlinjsonui.dynamic.DynamicView
+import org.junit.Assume
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/**
+ * What the accessibility tree says of a tappable — NOT part of the
+ * conformance suite, and skipped unless requested:
+ *
+ *   adb shell am instrument -w \
+ *     -e class com.kotlinjsonui.conformance.TapRoleProbeTest \
+ *     -e tapRoleProbe 1 \
+ *     com.kotlinjsonui.conformance.test/androidx.test.runner.AndroidJUnitRunner
+ *
+ * Prints one TAPROLE line per node (className, roleDescription, clickable,
+ * text / content-desc, and how many nodes By.res finds under that id), then
+ * taps the Switch inside a tappable row and prints whether it toggled. The
+ * DynamicView rows go through the library as built; the gen_* rows are the
+ * kjui codegen shape written by hand, with and without `role = Role.Button`.
+ * Measured before and after the tap-button change (jsonui-cli
+ * shared/core/tap_accessibility.rb), API 35 emulator, 2026-09-25:
+ *
+ *   node             before                      after
+ *   dyn_image        android.widget.ImageView    android.widget.Button
+ *   dyn_label        android.widget.TextView     android.widget.Button
+ *   dyn_row          android.view.View           android.view.View
+ *   gen_row_role     android.view.View           android.view.View   (role written explicitly)
+ *   row_title / sub  By.res 1 each               By.res 1 each
+ *   dyn_sw           its own node, toggles       its own node, toggles
+ *
+ * `role = Role.Button` reaches the node's class only on a node with no
+ * children: a tappable container with children keeps android.view.View —
+ * the hand-written codegen shape with the role spelled out does the same, so
+ * it is Compose, not the rule. The children stay separate nodes under their
+ * resource-ids (a test still finds them), and a Switch inside a tappable row
+ * stays its own operable node. roleDescription was null on every node. What
+ * TalkBack speaks was not measured.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@RunWith(AndroidJUnit4::class)
+class TapRoleProbeTest {
+
+    private val layout = """
+    {"type": "View", "orientation": "vertical", "child": [
+      {"type": "Image", "id": "dyn_image", "srcName": "conformance_sample", "width": 40, "height": 40, "canTap": true, "onClick": "@{onProbe}"},
+      {"type": "Label", "id": "dyn_label", "text": "Label tap", "onClick": "@{onProbe}"},
+      {"type": "View", "id": "dyn_row", "orientation": "vertical", "onClick": "@{onProbe}", "child": [
+        {"type": "Label", "id": "row_title", "text": "Row title"},
+        {"type": "Label", "id": "row_sub", "text": "Row sub"}
+      ]},
+      {"type": "View", "id": "dyn_switch_row", "orientation": "horizontal", "onClick": "@{onProbe}", "child": [
+        {"type": "Label", "id": "sw_title", "text": "Switch row"},
+        {"type": "Switch", "id": "dyn_sw"}
+      ]}
+    ]}
+    """
+
+    @Before
+    fun skipUnlessRequested() {
+        val enabled = InstrumentationRegistry.getArguments().getString("tapRoleProbe") == "1"
+        Assume.assumeTrue("set -e tapRoleProbe 1 to run the tap-role probe", enabled)
+    }
+
+    private fun collect(node: AccessibilityNodeInfo?, out: MutableMap<String, AccessibilityNodeInfo>) {
+        if (node == null) return
+        node.viewIdResourceName?.let { out.putIfAbsent(it.substringAfterLast('/'), node) }
+        for (i in 0 until node.childCount) collect(node.getChild(i), out)
+    }
+
+    @Test
+    fun whatTheTreeSaysOfEachTap() {
+        val scenario = ActivityScenario.launch(FixtureHostActivity::class.java)
+        scenario.onActivity { activity ->
+            activity.setContent {
+                Column(Modifier.semantics { testTagsAsResourceId = true }) {
+                    Column(Modifier.testTag("gen_row_norole").clickable { }) {
+                        Text("Gen plain title", Modifier.testTag("gen_plain_title"))
+                        Text("Gen plain sub", Modifier.testTag("gen_plain_sub"))
+                    }
+                    Column(Modifier.testTag("gen_row_role").clickable(role = Role.Button) { }) {
+                        Text("Gen role title", Modifier.testTag("gen_role_title"))
+                        Text("Gen role sub", Modifier.testTag("gen_role_sub"))
+                    }
+                    DynamicView(
+                        json = JsonParser.parseString(layout).asJsonObject,
+                        data = mapOf("onProbe" to { })
+                    )
+                }
+            }
+        }
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        device.wait(Until.hasObject(By.res("dyn_row")), 10_000)
+        val ids = listOf(
+            "gen_row_norole", "gen_plain_title", "gen_plain_sub",
+            "gen_row_role", "gen_role_title", "gen_role_sub",
+            "dyn_image", "dyn_label", "dyn_row", "row_title", "row_sub",
+            "dyn_switch_row", "sw_title", "dyn_sw",
+        )
+        val nodes = mutableMapOf<String, AccessibilityNodeInfo>()
+        collect(InstrumentationRegistry.getInstrumentation().uiAutomation.rootInActiveWindow, nodes)
+        for (id in ids) {
+            val n = nodes[id]
+            val role = n?.extras?.getCharSequence("AccessibilityNodeInfo.roleDescription")
+            println("TAPROLE id=$id byRes=${device.findObjects(By.res(id)).size} node=${n != null} " +
+                "class=${n?.className} role=$role clickable=${n?.isClickable} " +
+                "checkable=${n?.isCheckable} checked=${n?.isChecked} text='${n?.text}' desc='${n?.contentDescription}'")
+        }
+        val sw = device.findObject(By.res("dyn_sw"))
+        val before = sw?.isChecked
+        sw?.click()
+        device.waitForIdle()
+        val after = device.findObject(By.res("dyn_sw"))?.isChecked
+        println("TAPROLE switch_toggle found=${sw != null} before=$before after=$after")
+        scenario.close()
+    }
+}
