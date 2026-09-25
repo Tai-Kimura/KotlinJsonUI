@@ -77,4 +77,27 @@ class CustomComponentFirstTest {
         val rootAsks = all.count { it == "View" }
         for (t in types) assertEquals("$t asked as often as the root", rootAsks, all.count { it == t })
     }
+
+    @Test
+    fun theAppIsGivenTheNodeAsWrittenBeforeAnySynonymIsResolved() {
+        // HStack is a synonym (drawn as a View with orientation horizontal).
+        // Registered by the app, it is the app's: asked with the type and
+        // attributes as written, not the ones the synonym table would draw.
+        var given: JsonObject? = null
+        Configuration.customComponentHandler = { type, json, _ ->
+            if (type == "HStack") {
+                given = json
+                Text("app $type")
+                true
+            } else {
+                false
+            }
+        }
+        val json = "{\"type\": \"View\", \"child\": [{\"type\": \"HStack\", \"child\": []}]}"
+        rule.setContent { DynamicView(json = JsonParser.parseString(json).asJsonObject, data = emptyMap()) }
+        rule.waitForIdle()
+        val node = given ?: throw AssertionError("the app's HStack was not asked for")
+        assertEquals("HStack", node.get("type").asString)
+        assertEquals(null, node.get("orientation"))
+    }
 }

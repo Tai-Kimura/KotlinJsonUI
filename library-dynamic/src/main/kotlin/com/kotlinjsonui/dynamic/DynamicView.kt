@@ -149,45 +149,47 @@ private fun DynamicViewContent(
     // release build drew the app's (measured: the handler was not called).
     val renderComponent: @Composable () -> Unit = {
         val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
-        if (!handledByApp) when (type.lowercase()) {
-            "text", "label" -> DynamicTextComponent.create(responsiveJson, effectiveData)
-            // EditText (Android) and Input (web) are canonical aliases of TextField
-            // in attribute_definitions.json
-            "textfield", "edittext", "input" -> DynamicTextFieldComponent.create(responsiveJson, effectiveData)
-            "button" -> DynamicButtonComponent.create(responsiveJson, effectiveData)
-            "image" -> DynamicImageComponent.create(responsiveJson, effectiveData)
-            "networkimage" -> DynamicNetworkImageComponent.create(responsiveJson, effectiveData)
-            "circleimage" -> DynamicCircleImageComponent.create(responsiveJson, effectiveData)
-            "switch" -> DynamicSwitchComponent.create(responsiveJson, effectiveData)
-            // CheckBox is primary, Check is alias for backward compatibility
-            "checkbox", "check" -> DynamicCheckBoxComponent.create(responsiveJson, effectiveData)
-            "radio" -> DynamicRadioComponent.create(responsiveJson, effectiveData)
-            "slider" -> DynamicSliderComponent.create(responsiveJson, effectiveData)
-            "progress", "progressbar" -> DynamicProgressComponent.create(responsiveJson, effectiveData)
-            "indicator" -> DynamicIndicatorComponent.create(responsiveJson, effectiveData)
-            "selectbox", "spinner" -> DynamicSelectBoxComponent.create(responsiveJson, effectiveData)
-            "segment", "tablayout" -> DynamicSegmentComponent.create(responsiveJson, effectiveData)
-            "toggle" -> DynamicToggleComponent.create(responsiveJson, effectiveData)
-            "scrollview", "scroll" -> DynamicScrollViewComponent.create(responsiveJson, effectiveData)
-            "hstack", "row" -> DynamicHStackComponent.create(responsiveJson, effectiveData)
-            "vstack", "column" -> DynamicVStackComponent.create(responsiveJson, effectiveData)
-            "zstack", "box" -> DynamicZStackComponent.create(responsiveJson, effectiveData)
-            "container", "view" -> DynamicContainerComponent.create(responsiveJson, effectiveData)
-            "safeareaview" -> DynamicSafeAreaViewComponent.create(responsiveJson, effectiveData)
-            "constraintlayout" -> DynamicConstraintLayoutComponent.create(responsiveJson, effectiveData)
-            "collection", "collectionview", "recyclerview", "grid", "lazygrid" -> DynamicCollectionComponent.create(responsiveJson, effectiveData)
-            "table", "listview" -> DynamicTableComponent.create(responsiveJson, effectiveData)
-            "webview" -> DynamicWebViewComponent.create(responsiveJson, effectiveData)
-            "web" -> DynamicWebComponent.create(responsiveJson, effectiveData)
-            "tabview" -> DynamicTabViewComponent.create(responsiveJson, effectiveData)
-            "embed" -> DynamicEmbedComponent.create(responsiveJson, effectiveData)
-            "gradientview" -> DynamicGradientViewComponent.create(responsiveJson, effectiveData)
-            "circleview" -> DynamicCircleViewComponent.create(responsiveJson, effectiveData)
-            // "Blur" is the canonical section name in attribute_definitions.json
-            "blurview", "blur" -> DynamicBlurViewComponent.create(responsiveJson, effectiveData)
-            "iconlabel" -> DynamicIconLabelComponent.create(responsiveJson, effectiveData)
-            "textview" -> DynamicTextViewComponent.create(responsiveJson, effectiveData)
-            "triangle" -> DynamicTriangleComponent.create(responsiveJson, effectiveData)
+        // A synonym spelling (HStack, ProgressBar, WebView, …) is drawn as its
+        // type, from the vendored type-synonym table — after the app was asked,
+        // with the node as written, so an app's own component under a
+        // synonym's name stays the app's. The cases below are declared types
+        // only; they held synonym spellings of their own, which drifted from
+        // the table and from SwiftJsonUI's.
+        val drawn = if (handledByApp) responsiveJson else TypeSynonyms.canonicalize(responsiveJson, context)
+        val drawnType = drawn.get("type").asString
+        if (!handledByApp) when (drawnType.lowercase()) {
+            "label" -> DynamicTextComponent.create(drawn, effectiveData)
+            // EditText (Android) and Input (web) are declared sections that
+            // point at TextField (`_alias_of`)
+            "textfield", "edittext", "input" -> DynamicTextFieldComponent.create(drawn, effectiveData)
+            "button" -> DynamicButtonComponent.create(drawn, effectiveData)
+            "image" -> DynamicImageComponent.create(drawn, effectiveData)
+            "networkimage" -> DynamicNetworkImageComponent.create(drawn, effectiveData)
+            // CircleImage / CircleImageView are Image synonyms drawn as
+            // CircleImage (`render_as`)
+            "circleimage" -> DynamicCircleImageComponent.create(drawn, effectiveData)
+            "switch" -> DynamicSwitchComponent.create(drawn, effectiveData)
+            // Check is a declared section pointing at CheckBox (`_alias_of`)
+            "checkbox", "check" -> DynamicCheckBoxComponent.create(drawn, effectiveData)
+            "radio" -> DynamicRadioComponent.create(drawn, effectiveData)
+            "slider" -> DynamicSliderComponent.create(drawn, effectiveData)
+            "progress" -> DynamicProgressComponent.create(drawn, effectiveData)
+            "indicator" -> DynamicIndicatorComponent.create(drawn, effectiveData)
+            "selectbox" -> DynamicSelectBoxComponent.create(drawn, effectiveData)
+            "segment" -> DynamicSegmentComponent.create(drawn, effectiveData)
+            "toggle" -> DynamicToggleComponent.create(drawn, effectiveData)
+            "scrollview" -> DynamicScrollViewComponent.create(drawn, effectiveData)
+            "view" -> DynamicContainerComponent.create(drawn, effectiveData)
+            "safeareaview" -> DynamicSafeAreaViewComponent.create(drawn, effectiveData)
+            "collection" -> DynamicCollectionComponent.create(drawn, effectiveData)
+            "web" -> DynamicWebComponent.create(drawn, effectiveData)
+            "tabview" -> DynamicTabViewComponent.create(drawn, effectiveData)
+            "embed" -> DynamicEmbedComponent.create(drawn, effectiveData)
+            "gradientview" -> DynamicGradientViewComponent.create(drawn, effectiveData)
+            "circleview" -> DynamicCircleViewComponent.create(drawn, effectiveData)
+            "blur" -> DynamicBlurViewComponent.create(drawn, effectiveData)
+            "iconlabel" -> DynamicIconLabelComponent.create(drawn, effectiveData)
+            "textview" -> DynamicTextViewComponent.create(drawn, effectiveData)
             else -> {
                 // The app's handler was asked first, above.
                 run {

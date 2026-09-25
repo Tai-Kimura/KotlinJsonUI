@@ -124,6 +124,10 @@ jobs:
                "shared/core/tap_accessibility_vectors.json"),
               ("library-dynamic/src/test/resources/string_default_vectors.json",
                "shared/core/string_default_vectors.json"),
+              # Not a fixture: the table DynamicView draws type synonyms
+              # with (TypeSynonyms), shipped in the AAR.
+              ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/type_synonyms.json",
+               "shared/core/type_synonyms.json"),
           ]
           # Same three exit codes as the step above: 0 compared and agreed,
           # 1 compared and diverged, 2 could not compare.

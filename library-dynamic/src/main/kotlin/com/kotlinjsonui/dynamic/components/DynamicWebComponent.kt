@@ -34,8 +34,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * Attribute access goes through the generated [WebAttributes] extraction
  * (typed, alias-aware, L1-marker-aware) via the [TypedAttrs] bridge; the
  * node itself is only passed wholesale to the shared ModifierBuilder
- * pipeline. `DynamicWebViewComponent` delegates here and only changes the
- * [UnappliedAttributes] label to "WebView".
+ * pipeline. `WebView` is a synonym of Web (TypeSynonyms) and draws here.
  *
  * Supported JSON attributes:
  * - url: String URL or @{binding} for web page
