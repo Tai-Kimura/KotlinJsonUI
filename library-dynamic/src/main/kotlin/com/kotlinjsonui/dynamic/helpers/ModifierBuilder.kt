@@ -656,17 +656,22 @@ object ModifierBuilder {
         // "Array must have size 1" for [] and for two handlers, and took the
         // whole screen down.
         val handlers = TapAccessibility.clickHandlers(json)
-        if (handlers.isNotEmpty()) {
+        // common.canTap is the Compose tap gate (attribute_definitions.json):
+        // absent, no gate; false (or a binding resolving false) and there is
+        // no click — nor Role.Button — while `enabled` alone decides whether
+        // the click is enabled. The two were one `clickable(enabled = enabled
+        // && canTap)`, and Compose's clickable marks a node `disabled()` while
+        // it is not enabled: a view whose tap was merely gated — a Switch still
+        // switching under it — read as disabled (measured on an API 35
+        // emulator, AccessibilityNodeInfo.isEnabled), where iOS reads it as
+        // enabled. kjui's codegen attaches the click the same way.
+        if (handlers.isNotEmpty() && tapGateOpen(json, data)) {
             val viewId = json.get("id")?.asString
             // TalkBack is told it is a button where the shared rule says so
             // (TapAccessibility): not where the tappable is a control already
             // or holds one.
-            // common.canTap is the Compose tap gate (attribute_definitions.json),
-            // the `enabled && canTap` kjui's codegen emits: absent, no gate;
-            // false (or a binding resolving false) shuts the tap. It used to be
-            // unread here, so `canTap: false` still clicked.
             result = result.clickable(
-                enabled = enabled != false && resolveFlag(json, "canTap", data) != false,
+                enabled = enabled != false,
                 role = if (TapAccessibility.isButton(json)) Role.Button else null
             ) {
                 handlers.forEach { resolveEventHandler(it, data, viewId) }
@@ -691,6 +696,16 @@ object ModifierBuilder {
      */
     private fun resolveEnabled(json: JsonObject, data: Map<String, Any>): Boolean? =
         resolveFlag(json, "enabled", data)
+
+    /**
+     * common.canTap, the tap gate: open unless it is `false` or a binding
+     * resolving false. It stops the onClick / onclick handler's call and
+     * nothing else — a component that calls that handler itself (Button's
+     * action, Toggle's fallback) asks here; its own operation (a check, a
+     * selection) is `enabled`'s.
+     */
+    fun tapGateOpen(json: JsonObject, data: Map<String, Any>): Boolean =
+        resolveFlag(json, "canTap", data) != false
 
     /** A boolean-or-binding flag, or null when absent or unresolved. */
     private fun resolveFlag(json: JsonObject, key: String, data: Map<String, Any>): Boolean? {

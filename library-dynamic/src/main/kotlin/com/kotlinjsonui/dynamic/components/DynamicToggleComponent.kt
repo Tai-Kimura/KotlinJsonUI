@@ -122,10 +122,13 @@ class DynamicToggleComponent {
 
                 // Call the declared change callback (like Switch; `onToggle` is
                 // an alias spelling of `onValueChange` since 49-E and folds onto
-                // the canonical row), falling back to legacy onclick/onClick
+                // the canonical row), falling back to legacy onclick/onClick —
+                // which common.canTap gates: the switch still switches.
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
-                    ?: a.common.onclick as? String
-                    ?: TypedAttrs.raw(a.common.onClick) as? String
+                    ?: (if (ModifierBuilder.tapGateOpen(json, data)) {
+                        a.common.onclick as? String
+                            ?: TypedAttrs.raw(a.common.onClick) as? String
+                    } else null)
                 if (handler != null) {
                     val viewId = a.common.id ?: "toggle"
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)

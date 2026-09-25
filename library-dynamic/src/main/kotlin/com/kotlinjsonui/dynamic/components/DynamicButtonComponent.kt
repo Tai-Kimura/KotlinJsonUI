@@ -344,7 +344,9 @@ class DynamicButtonComponent {
             isLoading: Boolean,
             setLoading: (Boolean) -> Unit
         ): () -> Unit = {
-            if (!isLoading) {
+            // common.canTap gates the handler's call; the button stays a
+            // button and is not disabled (that is `enabled`'s).
+            if (!isLoading && ModifierBuilder.tapGateOpen(json, data)) {
                 val methodName = resolveClickMethodName(a)
                 methodName?.let { name ->
                     val handler = data[name]
