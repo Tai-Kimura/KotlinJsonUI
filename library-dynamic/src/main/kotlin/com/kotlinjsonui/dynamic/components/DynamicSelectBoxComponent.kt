@@ -430,10 +430,13 @@ class DynamicSelectBoxComponent {
             // Parse binding variable: selectedDate > selectedItem > bind
             val bindingVariable = dateBindingVariableOf(a)
 
-            // Get current value
+            // Get current value. Unbound, the static date is where the box
+            // starts (ticket static-valued-controls-do-not-change-on-a-users-tap:
+            // a literal selectedDate was dropped — the box drew empty and the
+            // calendar opened on today), as initialSelection seeds the list box.
             val currentValue = if (bindingVariable != null) {
                 data[bindingVariable]?.toString() ?: ""
-            } else ""
+            } else TypedAttrs.static(a.selectedDate) ?: TypedAttrs.static(a.selectedItem) ?: ""
 
             // Keyed on the value this control declares — its binding's value, or the
             // static one — and not on `data`: every unrelated data change handed a new
