@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationException
@@ -436,15 +437,24 @@ object ModifierBuilder {
         return modifier
     }
 
-    /** build_shadow: shadow attribute → dropShadow */
+    /**
+     * build_shadow: shadow attribute → dropShadow.
+     *
+     * [ownShape] is the shape a component draws itself in when that is not
+     * the node's cornerRadius — a Button's default pill, a TextField's
+     * default radius, a circle. The shadow is cast in it, not in a rectangle
+     * under a rounded view.
+     */
     fun applyShadow(
         modifier: Modifier,
         json: JsonObject,
-        data: Map<String, Any> = emptyMap()
+        data: Map<String, Any> = emptyMap(),
+        ownShape: Shape? = null
     ): Modifier {
         val shadowElement = json.get("shadow") ?: return modifier
         val cornerRadius = dimen(json.get("cornerRadius"), data)
-        val shape = if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
+        val shape = ownShape
+            ?: if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
 
         return when {
             shadowElement.isJsonPrimitive && shadowElement.asJsonPrimitive.isString -> {
