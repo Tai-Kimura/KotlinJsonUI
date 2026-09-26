@@ -18,6 +18,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ToggleAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
@@ -50,6 +51,22 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  */
 class DynamicToggleComponent {
     companion object {
+        /** The data key the state is bound to: the legacy `data` attribute. */
+        internal fun bindingVariableOf(json: JsonObject): String? {
+            val dataAttr = json.get("data")?.takeIf { it.isJsonPrimitive }?.asString ?: return null
+            return ModifierBuilder.extractBindingProperty("@{$dataAttr}")
+                ?: ModifierBuilder.extractBindingProperty(dataAttr)
+                ?: dataAttr
+        }
+
+        /** The state: the bound value, else `isOn`. */
+        internal fun checkedOf(a: ToggleAttributes, data: Map<String, Any>, bindingVariable: String?): Boolean =
+            when {
+                bindingVariable != null -> (data[bindingVariable] as? Boolean) ?: false
+                a.isOn != null -> TypedAttrs.boolean(a.isOn, data) ?: false
+                else -> false
+            }
+
         /** Toggle-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "isOn", "enabled", "tintColor", "labelAttributes", "labelPosition",
@@ -76,18 +93,8 @@ class DynamicToggleComponent {
             // Parse checked state: 'data' attribute (@{var}) or 'isOn' (boolean).
             // 'data' is a structural key the legacy Toggle reuses as a binding
             // string — kept as a raw node read.
-            val dataAttr = json.get("data")?.asString
-            val bindingVariable = if (dataAttr != null) {
-                ModifierBuilder.extractBindingProperty("@{$dataAttr}")
-                    ?: ModifierBuilder.extractBindingProperty(dataAttr)
-                    ?: dataAttr
-            } else null
-
-            val checked = when {
-                bindingVariable != null -> (data[bindingVariable] as? Boolean) ?: false
-                a.isOn != null -> TypedAttrs.boolean(a.isOn, data) ?: false
-                else -> false
-            }
+            val bindingVariable = bindingVariableOf(json)
+            val checked = checkedOf(a, data, bindingVariable)
 
             // State for the toggle
             // Keyed on the value this control declares — its binding's value, or the
@@ -132,7 +139,7 @@ class DynamicToggleComponent {
                 // do. common.canTap gates it; the switch still switches.
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
                 if (handler != null) {
-                    val viewId = a.common.id ?: "toggle"
+                    val viewId = LayoutPath.viewId(json)
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
                 onClick?.invoke()

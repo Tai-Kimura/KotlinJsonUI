@@ -103,7 +103,6 @@ class DynamicImageComponent {
             // node vanished (measured: none of the 13 stages applied, testTag
             // and clickable included).
             if (resourceId == 0) {
-                ModifierBuilder.ApplyLifecycleEffects(json, data)
                 Box(modifier = modifier)
                 return
             }
@@ -128,9 +127,6 @@ class DynamicImageComponent {
             // `opacity` (49-E), folded onto the canonical row by the generated
             // parser — one read.
             val alpha = TypedAttrs.float(a.common.opacity, data) ?: 1f
-
-            // Lifecycle effects
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             // renderingMode — `template` means "take the tint, ignore the
             // asset's own colours" (ColorFilter here, `.renderingMode(.template)`

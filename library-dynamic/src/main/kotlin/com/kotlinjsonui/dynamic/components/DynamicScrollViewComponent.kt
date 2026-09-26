@@ -64,8 +64,6 @@ class DynamicScrollViewComponent {
                 context = context
             )
 
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
-
             // Determine scroll direction
             val isHorizontal = determineScrollDirection(json, a)
 

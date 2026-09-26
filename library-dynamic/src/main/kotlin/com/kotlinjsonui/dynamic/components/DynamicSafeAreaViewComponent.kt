@@ -76,9 +76,6 @@ class DynamicSafeAreaViewComponent {
             // Get parent SafeAreaConfig (e.g., from TabView)
             val safeAreaConfig = LocalSafeAreaConfig.current
 
-            // Apply lifecycle effects first
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
-
             // Parse edges to apply safe area padding
             // 'edges' is an undeclared legacy runtime extra (canonical
             // spelling is safeAreaInsetPositions); legacy priority order kept

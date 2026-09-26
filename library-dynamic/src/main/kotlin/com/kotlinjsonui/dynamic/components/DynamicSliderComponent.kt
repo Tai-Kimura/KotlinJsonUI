@@ -8,6 +8,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SliderAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -50,6 +51,24 @@ class DynamicSliderComponent {
          * branch was simply dead. CheckBox and Switch read the same row
          * correctly, and that is the shape restored here.
          */
+        /** The value drawn: the bound value, else `value`, else the minimum; within the range. */
+        internal fun valueOf(
+            a: SliderAttributes,
+            data: Map<String, Any>,
+            bindingVariable: String?,
+            minValue: Float,
+            maxValue: Float
+        ): Float = when {
+            bindingVariable != null -> {
+                when (val boundValue = data[bindingVariable]) {
+                    is Number -> boundValue.toFloat()
+                    is String -> boundValue.toFloatOrNull() ?: minValue
+                    else -> minValue
+                }
+            }
+            else -> TypedAttrs.float(a.value, data) ?: minValue
+        }.coerceIn(minValue, maxValue)
+
         internal fun bindingVariableOf(a: SliderAttributes): String? =
             TypedAttrs.binding(a.value)
                 ?: TypedAttrs.binding(a.common.bind)
@@ -97,16 +116,7 @@ class DynamicSliderComponent {
                 ?: 1f
 
             // Resolve current value
-            val currentValue = when {
-                bindingVariable != null -> {
-                    when (val boundValue = data[bindingVariable]) {
-                        is Number -> boundValue.toFloat()
-                        is String -> boundValue.toFloatOrNull() ?: minValue
-                        else -> minValue
-                    }
-                }
-                else -> TypedAttrs.float(a.value, data) ?: minValue
-            }.coerceIn(minValue, maxValue)
+            val currentValue = valueOf(a, data, bindingVariable, minValue, maxValue)
 
             // State for slider value
             // Keyed on the value this control declares — its binding's value, or the
@@ -130,7 +140,7 @@ class DynamicSliderComponent {
             } ?: 0
 
             // Handle value change: update binding + call onValueChange handler
-            val viewId = a.common.id ?: "slider"
+            val viewId = LayoutPath.viewId(json)
             val onValueChange: (Float) -> Unit = { newValue ->
                 sliderValue = newValue
 

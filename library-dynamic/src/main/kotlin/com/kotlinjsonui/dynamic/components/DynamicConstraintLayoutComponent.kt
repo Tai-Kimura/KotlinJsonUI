@@ -78,9 +78,6 @@ class DynamicConstraintLayoutComponent {
                 context = context
             )
 
-            // Apply lifecycle effects first
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
-
             // Get children - support both 'child' and 'children'
             val childrenArray: JsonArray = when {
                 json.has("children") && json.get("children").isJsonArray ->

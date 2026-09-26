@@ -161,7 +161,6 @@ class DynamicCircleImageComponent {
 
             // Lifecycle effects
             if (ModifierBuilder.hasLifecycleEvents(json)) {
-                ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
             // contentMode, read as Image reads it (a binding resolves) and

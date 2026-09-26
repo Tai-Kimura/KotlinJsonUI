@@ -9,6 +9,7 @@ import com.kotlinjsonui.components.Segment
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -60,6 +61,19 @@ class DynamicSegmentComponent {
          * branch was simply dead. CheckBox and Switch read the same row
          * correctly, and that is the shape restored here.
          */
+        /** The selected index: the bound value, else `selectedIndex`, else 0. */
+        internal fun selectedIndexOf(a: SegmentAttributes, data: Map<String, Any>, bindingVariable: String?): Int =
+            when {
+                bindingVariable != null -> {
+                    when (val boundValue = data[bindingVariable]) {
+                        is Number -> boundValue.toInt()
+                        is String -> boundValue.toIntOrNull() ?: 0
+                        else -> 0
+                    }
+                }
+                else -> TypedAttrs.int(a.selectedIndex, data) ?: 0
+            }
+
         internal fun bindingVariableOf(a: SegmentAttributes): String? =
             TypedAttrs.binding(a.selectedIndex)
                 ?: TypedAttrs.binding(a.common.bind)
@@ -105,16 +119,7 @@ class DynamicSegmentComponent {
             val bindingVariable = bindingVariableOf(a)
 
             // Get selected index
-            val currentIndex = when {
-                bindingVariable != null -> {
-                    when (val boundValue = data[bindingVariable]) {
-                        is Number -> boundValue.toInt()
-                        is String -> boundValue.toIntOrNull() ?: 0
-                        else -> 0
-                    }
-                }
-                else -> TypedAttrs.int(a.selectedIndex, data) ?: 0
-            }
+            val currentIndex = selectedIndexOf(a, data, bindingVariable)
 
             // Keyed on the value this control declares — its binding's value, or the
             // static one — and not on `data`: every unrelated data change handed a new
@@ -162,7 +167,7 @@ class DynamicSegmentComponent {
             )
 
             // Handle tab click with binding update + event handler
-            val viewId = a.common.id ?: "segment"
+            val viewId = LayoutPath.viewId(json)
             // The declared onClick, called from the tab's selection after it —
             // the Segment's own operation; no outer `.clickable` calls it
             // (ModifierBuilder.onClickFromOperation).
