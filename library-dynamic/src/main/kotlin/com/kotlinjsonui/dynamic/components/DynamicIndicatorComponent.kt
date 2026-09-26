@@ -23,9 +23,10 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * Reference: indicator_component.rb in kjui_tools.
  *
  * Supported JSON attributes:
- * - style: "linear" | "small" | "medium" | "large" for indicator style
+ * - indicatorStyle: "small" | "medium" | "large" | "linear" (declared; the
+ *   legacy `style` / `size` spellings are folded by the layout normalizer —
+ *   `style` into indicatorStyle, `size` into width / height — and not read here)
  * - animating: Boolean or @{variable} to control visibility (wraps in if-condition)
- * - size: Number for custom size (when style is not large/small)
  * - color: String hex color for indicator
  * - trackColor: String hex color for track (linear only)
  * - strokeWidth: Float width for circular stroke
@@ -37,8 +38,24 @@ class DynamicIndicatorComponent {
     companion object {
         /** Indicator-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "color"
+            "color", "indicatorStyle"
         )
+
+        /**
+         * The declared `indicatorStyle`, or `medium`. It read `style` — the
+         * style-file key — which a normalized layout no longer carries for an
+         * Indicator (jui's normalizer folds it into indicatorStyle, jsonui-cli
+         * ea985526), so every Indicator drew medium and circular.
+         */
+        internal fun styleOf(a: IndicatorAttributes): String =
+            TypedAttrs.enumString(a.indicatorStyle) { it.json } ?: "medium"
+
+        /** The spinner's size for a style that has one of its own (kjui STYLE_SIZES). */
+        internal fun styleSizeDp(style: String): Int? = when (style) {
+            "small" -> 16
+            "large" -> 48
+            else -> null
+        }
 
         @Composable
         fun create(
@@ -64,10 +81,7 @@ class DynamicIndicatorComponent {
             // Only show indicator if animating is true
             if (!isAnimating) return
 
-            // Parse style — the structural 'style' key doubles as the legacy
-            // indicator style spelling ("linear" | "small" | "medium" |
-            // "large"); structural keys stay raw.
-            val style = json.get("style")?.asString ?: "medium"
+            val style = styleOf(a)
 
             // The standard stages in their standard order. The chain put the
             // margins after the style's size — inside it, where they pad —
@@ -78,21 +92,12 @@ class DynamicIndicatorComponent {
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // The declared width / height, as on every component; without
-            // them, the style's size.
+            // them, the style's size. The undeclared `size` is not read: the
+            // normalizer folds it into width / height.
             if (a.common.width != null || a.common.height != null) {
                 modifier = ModifierBuilder.applySize(modifier, json, data = data)
             } else {
-                when (style) {
-                    "large" -> modifier = modifier.size(48.dp)
-                    "small" -> modifier = modifier.size(16.dp)
-                    else -> {
-                        // Check for custom size attribute (undeclared legacy
-                        // runtime extra)
-                        ResourceResolver.resolveFloat(json, "size", data)?.let { customSize ->
-                            modifier = modifier.size(customSize.dp)
-                        }
-                    }
-                }
+                styleSizeDp(style)?.let { modifier = modifier.size(it.dp) }
             }
             // offset sits after size and before alpha, the same slot
             // buildModifier uses — outside background/shadow so the
