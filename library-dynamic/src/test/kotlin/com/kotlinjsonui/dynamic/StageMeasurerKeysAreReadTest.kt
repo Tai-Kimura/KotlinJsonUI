@@ -17,7 +17,7 @@ import java.io.File
  * Read from the sources, mechanically:
  * - the harness entries: StageMeasurer.kt's TYPES / EFFECT_EXTRA literals;
  * - the component: TypeSynonyms' drawn-as type (the vendored table), then
- *   DynamicView.kt's dispatch;
+ *   DynamicView.kt's dispatch, matched as spelled (type names are case-sensitive);
  * - what it reads: its APPLIED set (what UnappliedAttributes checks), its
  *   literal raw reads (TypedAttrs.undeclared / rawKey, json.get / has), and
  *   UnappliedAttributes.COMMON_APPLIED / STRUCTURAL_KEYS.
@@ -45,8 +45,8 @@ class StageMeasurerKeysAreReadTest {
 
     private val dispatch: Map<String, String> by lazy {
         val dv = File(src, "main/kotlin/com/kotlinjsonui/dynamic/DynamicView.kt").readText()
-        Regex("^\\s*((?:\"[a-z]+\",?\\s*)+)->\\s*(Dynamic\\w+)\\.create", RegexOption.MULTILINE).findAll(dv)
-            .flatMap { m -> Regex("\"([a-z]+)\"").findAll(m.groupValues[1]).map { it.groupValues[1] to m.groupValues[2] } }
+        Regex("^\\s*((?:\"[A-Za-z]+\",?\\s*)+)->\\s*(Dynamic\\w+)\\.create", RegexOption.MULTILINE).findAll(dv)
+            .flatMap { m -> Regex("\"([A-Za-z]+)\"").findAll(m.groupValues[1]).map { it.groupValues[1] to m.groupValues[2] } }
             .toMap()
     }
 
@@ -69,7 +69,7 @@ class StageMeasurerKeysAreReadTest {
 
     /** `type key` for every harness key the dispatched component does not read. */
     private fun unread(harness: List<Pair<String, Set<String>>>): List<String> = harness.flatMap { (type, keys) ->
-        val component = dispatch[drawnAs(type).lowercase()]
+        val component = dispatch[drawnAs(type)]
         keys.filter { component == null || it !in reads(component) }
             .map { "$type $it${if (component == null) " (no component)" else " ($component)"}" }
     }
