@@ -39,7 +39,18 @@ class ComponentRawReadGateTest {
         val pattern = Regex("""json\.(?:get|has|getAsJsonObject|getAsJsonArray)\("([A-Za-z_]+)"\)""")
         val violations = mutableListOf<String>()
 
-        componentsDir.listFiles { f -> f.extension == "kt" }!!.sorted().forEach { file ->
+        // The scan reads every component DynamicView dispatches to: a list
+        // that read nothing (the files moved, a filter that matched none)
+        // would find no violation and pass.
+        val files = componentsDir.listFiles { f -> f.extension == "kt" }!!.sorted()
+        val dispatched = Regex("""(Dynamic\w+Component)\.create\(""")
+            .findAll(File("src/main/kotlin/com/kotlinjsonui/dynamic/DynamicView.kt").readText())
+            .map { it.groupValues[1] }.toSet()
+        assertTrue("too few dispatched components read (${dispatched.size})", dispatched.size >= 27)
+        val missing = dispatched - files.map { it.nameWithoutExtension }.toSet()
+        assertTrue("dispatched components the scan does not read: $missing", missing.isEmpty())
+
+        files.forEach { file ->
             file.readLines().forEachIndexed { i, line ->
                 // A doc comment that quotes the anti-pattern is the clearest
                 // way to explain why a read moved to the typed row — and this
