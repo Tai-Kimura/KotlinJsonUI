@@ -17,6 +17,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -142,14 +143,133 @@ class DynamicSelectBoxComponent {
             }
         }
 
+        /** The item the closed box starts on: the bound selection, or with none the static seed. */
+        internal fun selectionOf(a: SelectBoxAttributes, data: Map<String, Any>, options: List<String>): String =
+            (boundSelection(a, data, options) ?: "").ifEmpty { initialSelection(a, data) }
+
+        /** The date the box starts on: the bound value, else the static `selectedDate` / `selectedItem`. */
+        internal fun dateSelectionOf(a: SelectBoxAttributes, data: Map<String, Any>, bindingVariable: String?): String =
+            if (bindingVariable != null) {
+                data[bindingVariable]?.toString() ?: ""
+            } else TypedAttrs.static(a.selectedDate) ?: TypedAttrs.static(a.selectedItem) ?: ""
+
         /**
-         * What a pick writes back AND hands the onValueChange handler — one
-         * value, the new value of the selection binding: the Int index of
-         * the picked item for an index binding (what the kjui codegen and
-         * SwiftJsonUI's `.onChange(of:)` pass), the item String otherwise.
+         * What a pick writes back — the new value of the selection binding:
+         * the Int index of the picked item for an index binding, the item
+         * String otherwise. The onValueChange handler is offered it first
+         * (callValueChange).
          */
         internal fun selectionPayload(a: SelectBoxAttributes, options: List<String>, newValue: String): Any =
             if (isIndexBinding(a)) options.indexOf(newValue) else newValue
+
+        /** The sentence for a date box's handler that asks for an index (the shared validator's, kjui's comment). */
+        internal const val DATE_PICK_HAS_NO_INDEX =
+            "a date SelectBox has no index: declare onValueChange as (String) or (String, String)"
+
+        /** Test hook: receives every date-handler message emitted. */
+        internal var dateHandlerWarningSink: ((String) -> Unit)? = null
+        private val dateHandlerWarned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+        /**
+         * onValueChange, called as the handler is declared (ruling ③, the
+         * kjui codegen's `value_change_call`): `()` with nothing; a lone
+         * `(String)` with the picked ITEM, whatever the binding; `(Int)` with
+         * its index; `(String, String)` with the viewId and the item;
+         * `(String, Int)` with the viewId and the index. The index is
+         * `indexOf` — an item's first index, -1 for the prompt — also where
+         * no index binding computed it.
+         *
+         * Kotlin erases a closure's parameter types, so the handler is
+         * offered the binding's own value first (the index for an index
+         * binding, else the item — any other declared type, `(Any)` or
+         * `(String, Any)`, takes that, as the codegen's reading does) and
+         * then the other. An argument of the wrong type fails at the
+         * closure's entry cast, before its body runs, so no handler runs
+         * twice. It was handed only the binding's value: a lone `(String)`
+         * under an index binding, or an `(Int)` without one, got the wrong
+         * type, and resolveEventHandler's catch turned the
+         * ClassCastException into silence.
+         *
+         * [index] null is a date: no index is offered. Returns false when
+         * the handler refused every argument it was offered.
+         */
+        @Suppress("UNCHECKED_CAST")
+        internal fun callValueChange(fn: Any, viewId: String, item: String, index: Int?, indexFirst: Boolean): Boolean {
+            val values: List<Any> = when {
+                index == null -> listOf(item)
+                indexFirst -> listOf(index, item)
+                else -> listOf(item, index)
+            }
+            for (value in values) {
+                try {
+                    when (fn) {
+                        is Function0<*> -> fn()
+                        is Function1<*, *> -> (fn as (Any?) -> Any?)(value)
+                        is Function2<*, *, *> -> (fn as (Any?, Any?) -> Any?)(viewId, value)
+                        else -> return false
+                    }
+                    return true
+                } catch (_: ClassCastException) {
+                    continue
+                } catch (_: Exception) {
+                    // the handler's own failure: it was called
+                    return true
+                }
+            }
+            return false
+        }
+
+        /**
+         * A date SelectBox's handler that refused the date — declared
+         * `(Int)` or `(String, Int)`: a date has no index, so it is not
+         * called, and a debuggable build names it once per box and handler
+         * (the kjui codegen writes the same sentence in a comment where the
+         * call would be; the shared validator warns). A handler that throws
+         * ClassCastException from its own body reads the same.
+         */
+        internal fun reportDateHandler(viewId: String, handler: String, context: android.content.Context?) {
+            if (!com.kotlinjsonui.dynamic.DebugDiagnostics.isAppDebuggable(context)) return
+            if (!dateHandlerWarned.add("$viewId:$handler")) return
+            val message = "SelectBox.onValueChange $handler is not called: $DATE_PICK_HAS_NO_INDEX"
+            dateHandlerWarningSink?.invoke(message)
+            android.util.Log.w("DynamicSelectBox", message)
+        }
+
+        /** A list box's pick: onValueChange called as its handler is declared, the index `indexOf` the item. */
+        internal fun pickHandlerCall(
+            a: SelectBoxAttributes,
+            data: Map<String, Any>,
+            viewId: String,
+            options: List<String>,
+            newValue: String
+        ) {
+            val name = valueChangeHandler(a) ?: return
+            val fn = data[name] ?: return
+            callValueChange(fn, viewId, newValue, options.indexOf(newValue), indexFirst = isIndexBinding(a))
+        }
+
+        /** A date box's pick: onValueChange with the date; a handler that takes an index is not called, and is named. */
+        internal fun datePickHandlerCall(
+            a: SelectBoxAttributes,
+            data: Map<String, Any>,
+            viewId: String,
+            newValue: String,
+            context: android.content.Context?
+        ) {
+            val name = valueChangeHandler(a) ?: return
+            val fn = data[name] ?: return
+            if (!callValueChange(fn, viewId, newValue, index = null, indexFirst = false)) {
+                reportDateHandler(viewId, name, context)
+            }
+        }
+
+        /** The handler's name, `@{x}` → `x`; null without a binding. onValueChanged is the declared alias spelling. */
+        private fun valueChangeHandler(a: SelectBoxAttributes): String? {
+            val handler = TypedAttrs.raw(a.onValueChange) as? String
+                ?: TypedAttrs.raw(a.onValueChanged) as? String
+                ?: return null
+            return if (ModifierBuilder.isBinding(handler)) ModifierBuilder.extractBindingProperty(handler) else null
+        }
 
         /**
          * Same row, the date-picker variant's precedence: `selectedDate`
@@ -269,10 +389,9 @@ class DynamicSelectBoxComponent {
             val options = parseOptions(json, data)
 
             val bindingVariable = bindingVariableOf(a)
-            val currentValue = boundSelection(a, data, options) ?: ""
 
             // The bound selection, or with none the static seed (initialSelection).
-            val seed = currentValue.ifEmpty { initialSelection(a, data) }
+            val seed = selectionOf(a, data, options)
             // Keyed on the value this control declares — its binding's value, or the
             // static seed — and not on `data`: every unrelated data change handed a new
             // map and reset what the user had chosen (ticket
@@ -330,7 +449,7 @@ class DynamicSelectBoxComponent {
             )
 
             // Handle value change
-            val viewId = a.common.id ?: "selectbox"
+            val viewId = LayoutPath.viewId(json)
             // The declared onClick, called after the selection — the SelectBox's
             // own operation; no outer `.clickable` calls it
             // (ModifierBuilder.onClickFromOperation).
@@ -338,11 +457,9 @@ class DynamicSelectBoxComponent {
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 
-                // The writeback and the handler carry the SAME value: the Int
-                // index for an index binding, the item String otherwise.
-                // Handing the item String to an `(Int) -> Unit` handler was
-                // a ClassCastException that resolveEventHandler's catch
-                // turned into silence.
+                // The writeback: the Int index for an index binding, the item
+                // String otherwise. The handler takes what it is declared to
+                // take (callValueChange).
                 val payload = selectionPayload(a, options, newValue)
 
                 // Update bound variable
@@ -352,13 +469,8 @@ class DynamicSelectBoxComponent {
                         ?.invoke(mapOf(bindingVariable to payload))
                 }
 
-                // Call onValueChange handler if specified
-                // (onValueChanged is the declared alias spelling)
-                val handler = TypedAttrs.raw(a.onValueChange) as? String
-                    ?: TypedAttrs.raw(a.onValueChanged) as? String
-                if (handler != null && ModifierBuilder.isBinding(handler)) {
-                    ModifierBuilder.resolveEventHandler(handler, data, viewId, payload)
-                }
+                // onValueChange, as its handler is declared (callValueChange)
+                pickHandlerCall(a, data, viewId, options, newValue)
                 onClick?.invoke()
             }
 
@@ -439,9 +551,7 @@ class DynamicSelectBoxComponent {
             // starts (ticket static-valued-controls-do-not-change-on-a-users-tap:
             // a literal selectedDate was dropped — the box drew empty and the
             // calendar opened on today), as initialSelection seeds the list box.
-            val currentValue = if (bindingVariable != null) {
-                data[bindingVariable]?.toString() ?: ""
-            } else TypedAttrs.static(a.selectedDate) ?: TypedAttrs.static(a.selectedItem) ?: ""
+            val currentValue = dateSelectionOf(a, data, bindingVariable)
 
             // Keyed on the value this control declares — its binding's value, or the
             // static one — and not on `data`: every unrelated data change handed a new
@@ -501,7 +611,7 @@ class DynamicSelectBoxComponent {
             val cornerRadius = TypedAttrs.int(a.common.cornerRadius, data) ?: 8
 
             // Handle value change
-            val viewId = a.common.id ?: "selectbox"
+            val viewId = LayoutPath.viewId(json)
             // The declared onClick, called after the selection — the SelectBox's
             // own operation; no outer `.clickable` calls it
             // (ModifierBuilder.onClickFromOperation).
@@ -516,13 +626,9 @@ class DynamicSelectBoxComponent {
                         ?.invoke(mapOf(bindingVariable to newValue))
                 }
 
-                // Call onValueChange handler if specified
-                // (onValueChanged is the declared alias spelling)
-                val handler = TypedAttrs.raw(a.onValueChange) as? String
-                    ?: TypedAttrs.raw(a.onValueChanged) as? String
-                if (handler != null && ModifierBuilder.isBinding(handler)) {
-                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
-                }
+                // onValueChange with the date; one declared to take an index
+                // is not called and is named (reportDateHandler)
+                datePickHandlerCall(a, data, viewId, newValue, context)
                 onClick?.invoke()
             }
 
@@ -596,7 +702,7 @@ class DynamicSelectBoxComponent {
             return modifier
         }
 
-        private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<String> {
+        internal fun parseOptions(json: JsonObject, data: Map<String, Any>): List<String> {
             // 'items' accepts a @{binding} string in addition to the declared
             // array shape, and primitive elements are stringified through
             // gson — wider than the generated List<Any?> coercion, so read

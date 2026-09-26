@@ -51,8 +51,6 @@ class DynamicGradientViewComponent {
             json: JsonObject,
             data: Map<String, Any> = emptyMap()
         ) {
-            // Apply lifecycle effects first
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             val context = LocalContext.current
             val a = rememberTypedAttrs(json) { m, canonicalOnly ->

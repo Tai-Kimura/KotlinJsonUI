@@ -22,6 +22,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.WebAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -59,8 +60,6 @@ class DynamicWebComponent {
             data: Map<String, Any> = emptyMap(),
             componentType: String = "Web"
         ) {
-            // Apply lifecycle effects first
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             val context = LocalContext.current
             val a = rememberTypedAttrs(json) { m, canonicalOnly ->
@@ -199,7 +198,7 @@ class DynamicWebComponent {
                     if (onLoadFailedHandler != null || reloadTokenBinding != null) {
                         val loadState = KjuiWebLoadState.of(webView)
                         loadState.onLoadFailed = onLoadFailedHandler?.let { handler ->
-                            { ModifierBuilder.resolveEventHandler(handler, data) }
+                            { ModifierBuilder.resolveEventHandler(handler, data, LayoutPath.viewId(json)) }
                         }
                         // A reload repeats the factory's own load. For a url
                         // it only forgets the last load, so the follow below

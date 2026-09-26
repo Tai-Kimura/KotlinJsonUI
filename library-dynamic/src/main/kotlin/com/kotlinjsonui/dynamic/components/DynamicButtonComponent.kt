@@ -38,6 +38,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ButtonAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import kotlinx.coroutines.CoroutineScope
@@ -96,7 +97,7 @@ class DynamicButtonComponent {
             }
 
             // Click handler
-            val viewId = a.common.id ?: "button"
+            val viewId = LayoutPath.viewId(json)
             val onClick: () -> Unit = buildClickHandler(json, a, data, viewId, isLoading) { loading ->
                 isLoading = loading
             }

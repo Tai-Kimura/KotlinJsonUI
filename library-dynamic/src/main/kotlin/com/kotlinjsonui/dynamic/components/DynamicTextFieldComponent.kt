@@ -37,6 +37,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.TextFieldAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 
@@ -97,7 +98,7 @@ class DynamicTextFieldComponent {
             val singleLine = maxLines == 1
 
             // TextFieldState with data binding sync
-            val viewId = a.common.id ?: "textfield"
+            val viewId = LayoutPath.viewId(json)
             val textFieldState = rememberTextFieldState(initialText = initialText)
 
             // Sync external → state (e.g. ViewModel clears text)
@@ -279,10 +280,10 @@ class DynamicTextFieldComponent {
                         val wasFocused = hasFocus
                         hasFocus = focusState.isFocused
                         if (focusState.isFocused && !wasFocused) {
-                            onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                            onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
                         }
                         if (!focusState.isFocused && wasFocused) {
-                            onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                            onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
                         }
                     }
             }
@@ -321,10 +322,10 @@ class DynamicTextFieldComponent {
                             val wasFocused = hasFocus
                             hasFocus = focusState.isFocused
                             if (focusState.isFocused && !wasFocused) {
-                                onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                                onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
                             }
                             if (!focusState.isFocused && wasFocused) {
-                                onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data) }
+                                onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
                             }
                         }
                 }
