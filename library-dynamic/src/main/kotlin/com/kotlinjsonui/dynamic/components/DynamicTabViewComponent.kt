@@ -54,6 +54,21 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  */
 class DynamicTabViewComponent {
     companion object {
+        /** The tabs as drawn: each tab's title, icons, badge and the layout it names (`view`). A tab's `child` is not read. */
+        internal fun tabItemsOf(tabsArray: com.google.gson.JsonArray): List<TabItemData> =
+            tabsArray.mapIndexed { index, item ->
+                val itemObj = item.asJsonObject
+                TabItemData(
+                    index = index,
+                    title = itemObj.get("title")?.asString ?: "Tab ${index + 1}",
+                    icon = itemObj.get("icon")?.asString ?: "circle",
+                    selectedIcon = itemObj.get("selectedIcon")?.asString,
+                    iconType = itemObj.get("iconType")?.asString ?: "system",
+                    badge = itemObj.get("badge"),
+                    view = itemObj.get("view")?.asString
+                )
+            }
+
         /** TabView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "tabs", "selectedIndex", "onValueChange", "onTabChange",
@@ -158,18 +173,7 @@ class DynamicTabViewComponent {
             val tabsEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build tab items data
-            val tabItems = tabsArray.mapIndexed { index, item ->
-                val itemObj = item.asJsonObject
-                TabItemData(
-                    index = index,
-                    title = itemObj.get("title")?.asString ?: "Tab ${index + 1}",
-                    icon = itemObj.get("icon")?.asString ?: "circle",
-                    selectedIcon = itemObj.get("selectedIcon")?.asString,
-                    iconType = itemObj.get("iconType")?.asString ?: "system",
-                    badge = itemObj.get("badge"),
-                    view = itemObj.get("view")?.asString
-                )
-            }
+            val tabItems = tabItemsOf(tabsArray)
 
             // Create TabView using Scaffold with NavigationBar
             Scaffold(
@@ -331,7 +335,7 @@ class DynamicTabViewComponent {
             }
         }
 
-        private data class TabItemData(
+        internal data class TabItemData(
             val index: Int,
             val title: String,
             val icon: String,

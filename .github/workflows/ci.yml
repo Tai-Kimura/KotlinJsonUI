@@ -126,6 +126,10 @@ jobs:
                "shared/core/string_default_vectors.json"),
               ("library-dynamic/src/test/resources/layout_path_vectors.json",
                "shared/core/layout_path_vectors.json"),
+              ("library-dynamic/src/test/resources/bind_fold_vectors.json",
+               "shared/core/bind_fold_vectors.json"),
+              ("library-dynamic/src/test/resources/unknown_component_type_vectors.json",
+               "shared/core/unknown_component_type_vectors.json"),
               # The declared image default (semantics.image.defaultContentMode)
               # ImageContentScaleDefaultTest binds the no-contentMode drawing to.
               ("library-dynamic/src/test/resources/attribute_semantics.json",
