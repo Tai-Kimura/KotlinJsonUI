@@ -1,0 +1,9 @@
+{
+  "type": "View",
+  "id": "nested_probe_cell_root",
+  "width": "matchParent",
+  "height": "wrapContent",
+  "child": [
+    { "type": "Label", "id": "nested_probe_cell_label", "text": "nested two levels" }
+  ]
+}
