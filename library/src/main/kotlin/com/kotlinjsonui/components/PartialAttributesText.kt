@@ -175,23 +175,8 @@ private fun PartialAttributesTextImpl(
                     // Handle out of bounds
                 }
 
-                // Attach the click handler directly; styling stays on the
-                // SpanStyles above (styles = null avoids double styling).
-                attr.onClick?.let { onClick ->
-                    try {
-                        addLink(
-                            LinkAnnotation.Clickable(
-                                tag = "CLICKABLE",
-                                styles = null,
-                                linkInteractionListener = { onClick() }
-                            ),
-                            start = start,
-                            end = end
-                        )
-                    } catch (e: Exception) {
-                        // Handle out of bounds
-                    }
-                }
+                // A range's handler is its hit-target's
+                // (PartialTextWithRangeHitTargets), not a LinkAnnotation's.
             }
         }
     }
@@ -252,22 +237,7 @@ private fun LinkablePartialAttributesText(
                     // Handle out of bounds
                 }
 
-                // Attach the click handler directly (see PartialAttributesTextImpl)
-                attr.onClick?.let { onClick ->
-                    try {
-                        addLink(
-                            LinkAnnotation.Clickable(
-                                tag = "PARTIAL_CLICKABLE",
-                                styles = null,
-                                linkInteractionListener = { onClick() }
-                            ),
-                            start = start,
-                            end = end
-                        )
-                    } catch (e: Exception) {
-                        // Handle out of bounds
-                    }
-                }
+                // A range's handler is its hit-target's (see PartialAttributesTextImpl).
             }
         }
 
@@ -355,14 +325,20 @@ private fun LinkablePartialAttributesText(
  * Renders the annotated text and, for every clickable partial attribute, an
  * invisible hit-target sized to the range's real glyph rectangle.
  *
- * Why: a LinkAnnotation range is NOT exposed to the accessibility tree as its
- * own node (measured 2026-07-10: the label is a single childless TextView node
- * to UiAutomator), so UI tests — and TalkBack users outside the links menu —
- * cannot target the range. iOS exposes the same range as a real a11y link
- * element; these hit-targets restore that parity. Each target carries the
- * range's text as contentDescription and fires the range's onClick, so
- * `tap { id, text }` in jsonui-test resolves to the actual glyph rect instead
- * of a proportional estimate.
+ * Why: UI tests — and TalkBack users outside the links menu — target a range
+ * by its text. Each target carries the range's text as contentDescription and
+ * fires the range's onClick, so `tap { id, text }` in jsonui-test (its Android
+ * driver finds `By.desc(rangeText).clickable(true)`) resolves to the actual
+ * glyph rect instead of a proportional estimate. iOS exposes the same range as
+ * a real a11y link element.
+ *
+ * The target is the range's ONLY tappable: the range adds no LinkAnnotation.
+ * It did, and Compose now exposes a LinkAnnotation as a semantics node of its
+ * own, so a range was two TalkBack nodes with the same action; and Material 3's
+ * Text drew the LinkAnnotation in the theme's primary colour over the range's
+ * own style, so a declared fontColor lost (both measured on an API 35
+ * emulator; 4f rulings, jsonui-cli 1.9.0). Without it, a range draws its
+ * SpanStyle — its declaration — operable or stopped alike.
  *
  * The root [Layout] carries the caller's [modifier] (testTag / size / weight
  * semantics stay on one node, geometry identical to Text(modifier)); the text
