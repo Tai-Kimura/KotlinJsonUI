@@ -783,20 +783,25 @@ class DynamicTextComponent {
 
         /**
          * Resolve click handler for partial attributes.
-         * onclick (lowercase) → selector format (string only)
-         * onClick (camelCase) → binding format only (@{functionName})
+         * onClick (camelCase) → binding format only (@{functionName}) — the
+         * canonical spelling;
+         * onclick (lowercase) → selector format (string only) — its alias.
+         * Both are read, and the canonical one wins when both are written
+         * (4f ruling, jsonui-cli 1.9.0: every path reads both, as the
+         * normalizer folds the alias).
          */
+        internal fun partialHandlerName(attr: Map<*, *>): String? {
+            val onClick = (attr["onClick"] as? String)?.takeIf { it.isNotBlank() }
+            val onclick = (attr["onclick"] as? String)?.takeIf { it.isNotBlank() }
+            return onClick?.let { ModifierBuilder.extractBindingProperty(it) }
+                ?: onclick?.takeUnless { it.contains("@{") }
+        }
+
         private fun resolvePartialClickHandler(
             attr: Map<*, *>,
             data: Map<String, Any>
         ): (() -> Unit)? {
-            val onclick = attr["onclick"] as? String
-            val onClick = attr["onClick"] as? String
-            val methodName = when {
-                onclick != null -> if (!onclick.contains("@{")) onclick else null
-                onClick != null -> ModifierBuilder.extractBindingProperty(onClick)
-                else -> null
-            } ?: return null
+            val methodName = partialHandlerName(attr) ?: return null
 
             val handler = data[methodName] ?: return null
             return if (handler is Function<*>) {
