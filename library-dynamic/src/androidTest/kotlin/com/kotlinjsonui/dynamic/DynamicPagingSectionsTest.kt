@@ -5,6 +5,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.JsonObject
@@ -80,6 +81,22 @@ class DynamicPagingSectionsTest {
         assertEquals(listOf("a1"), drawnAt(two, items, 1))
         assertEquals(listOf("b0"), drawnAt(two, items, 2))
         assertEquals(listOf("b1"), drawnAt(two, items, 3))
+    }
+
+    /**
+     * A page's address, `<id>_item_<n>`, counts across the sections as the
+     * page does (4f ruling 2026-09-26, round 7): section 2's first page is
+     * `pager_item_2`. It was `pager_item_0` — its index in its section — and
+     * the first section's first page answered the same address.
+     */
+    @Test
+    fun aPageIsAddressedByItsPlaceAmongAllThePages() {
+        val items = source(listOf("a0", "a1"), listOf("b0", "b1"))
+        val two = """, "sections": [{"cell": "$cell"}, {"cell": "$cell"}]"""
+        assertEquals(listOf("b0"), drawnAt(two, items, 2))
+        val tagged = rule.onAllNodesWithTag("pager_item_2", useUnmergedTree = true).fetchSemanticsNodes()
+        assertEquals("one node answers pager_item_2", 1, tagged.size)
+        assertEquals(0f, tagged.single().positionInRoot.x, 1f)
     }
 
     @Test

@@ -792,7 +792,12 @@ class DynamicCollectionComponent {
                     when {
                         pageItems.isNotEmpty() -> {
                             val pageItem = pageItems[pageIndex]
-                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data, onItemAppear, collectionId = collectionId)
+                            // The page's place among all the pages: its address
+                            // (`<id>_item_<n>`) and its onItemAppear index count
+                            // across the sections, as the codegen pager's page and
+                            // SwiftJsonUI's do (4f ruling 2026-09-26, round 7).
+                            // They restarted per section until then.
+                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageIndex, data, onItemAppear, collectionId = collectionId)
                         }
                     }
                 }
