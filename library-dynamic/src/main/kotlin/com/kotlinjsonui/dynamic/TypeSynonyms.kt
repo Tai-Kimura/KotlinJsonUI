@@ -84,6 +84,21 @@ object TypeSynonyms {
     private fun builtInType(type: String): String = drawnAs(type).let { JsonUIComponentAliases.canonical[it] ?: it }
 
     /**
+     * The spelling [written] means when case is ignored, or null — what names
+     * an unknown type offers ("did you mean", [UnknownComponentType]). Type
+     * names are their SSoT spellings, case-sensitive (jsonui-cli 1.9.0).
+     * Looked for among [known] (the types the caller draws), the app's types
+     * ([Configuration.customComponentTypes]), the table's synonyms and the
+     * declared alias sections; never [written] itself. jsonui-cli's
+     * TypeSynonyms.case_only_match is the same function for the codegen.
+     */
+    fun caseOnlyMatch(written: String, known: Collection<String> = emptyList()): String? {
+        val pool = known + Configuration.customComponentTypes + entries.keys.sorted() +
+            JsonUIComponentAliases.canonical.keys.sorted()
+        return pool.firstOrNull { it != written && it.equals(written, ignoreCase = true) }
+    }
+
+    /**
      * The app's handler drew [type] ([Configuration.customComponentHandler]
      * answered `true`). When [Configuration.customComponentTypes] does not
      * name it, what classifies the node reads it as the built-in its spelling
