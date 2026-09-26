@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases
 import java.io.InputStreamReader
 
 /**
@@ -58,6 +59,19 @@ object TypeSynonyms {
 
     /** The type [type] is drawn as: its synonym's target, or itself. */
     fun drawnAs(type: String): String = entries[type.lowercase()]?.drawnAs ?: type
+
+    /**
+     * The type a node spelled [type] is drawn as: its synonym's target, then
+     * a declared alias section's canonical one ([JsonUIComponentAliases]).
+     * What classifies a node by its type asks this, so that it agrees with
+     * the dispatch; a list to compare it with holds drawn types only.
+     * jsonui-cli's shared/core/type_synonyms.rb `drawn_type` is the same
+     * rule for the codegen, which also reads an app's own spelling as
+     * written. The app's component here is a handler that draws
+     * ([Configuration.customComponentHandler]), with no list of the
+     * spellings it takes, so this cannot ask it.
+     */
+    fun drawnType(type: String): String = drawnAs(type).let { JsonUIComponentAliases.canonicalFor(it) ?: it }
 
     /**
      * [node] as drawn. For a synonym, a copy whose `type` is what it is drawn

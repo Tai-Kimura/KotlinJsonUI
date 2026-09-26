@@ -2,6 +2,7 @@ package com.kotlinjsonui.dynamic.helpers
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypeSynonyms
 
 /**
  * Whether TalkBack is told a tappable is a button — the rule jsonui-cli's sjui /
@@ -51,10 +52,17 @@ object TapAccessibility {
 
     private val interactive = INTERACTIVE_TYPES.map { it.lowercase() }.toSet()
     private val known = KNOWN_TYPES.map { it.lowercase() }.toSet()
-    private val TEXT_TYPES = setOf("label", "text")
+    private val TEXT_TYPES = setOf("label") // drawn types only (a Text is drawn as a Label)
 
+    /**
+     * Asked of the type the node is drawn as ([TypeSynonyms.drawnType]): an
+     * HStack is a View, a Textarea a TextView. Read as written, a synonym the
+     * lists do not hold counted as a custom component (operable), so the
+     * tappable around it was not flattened where the same layout spelled
+     * canonically was.
+     */
     fun isInteractiveType(type: String?): Boolean {
-        val t = type?.lowercase() ?: return true
+        val t = type?.let { TypeSynonyms.drawnType(it) }?.lowercase() ?: return true
         return t in interactive || t !in known
     }
 
@@ -148,7 +156,7 @@ object TapAccessibility {
 
     /** A Label with links of its own: `linkable` (true or bound), or a tappable range. */
     fun isLinkedText(node: JsonObject): Boolean {
-        if (type(node)?.lowercase() !in TEXT_TYPES) return false
+        if (type(node)?.let { TypeSynonyms.drawnType(it) }?.lowercase() !in TEXT_TYPES) return false
         val linkable = node.get("linkable")
         if (linkable != null && linkable.isJsonPrimitive) {
             val p = linkable.asJsonPrimitive
