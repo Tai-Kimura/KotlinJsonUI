@@ -271,7 +271,8 @@ class DynamicRadioComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable ('bind' is a common declared row)
+            // The group's selection: its bound selectedValue (a lone `bind`
+            // arrives as it, BindFold)
             val bindingVariable = bindingVariableOf(a)
 
             // Get selected value from data
@@ -698,18 +699,13 @@ class DynamicRadioComponent {
         }
 
         /**
-         * The data key this component is bound to.
-         *
-         * `bind` is the common two-way spelling for this component's primary
-         * value, and it holds an `AttrValue<Any>` — so the old
-         * `a.common.bind as? String` matched nothing and this fallback
-         * returned null for every layout that used it. Kotlin 2.4 reports
-         * that cast as one that can never succeed; before the bump the
-         * branch was simply dead. CheckBox and Switch read the same row
-         * correctly, and that is the shape restored here.
+         * The data key the options group is bound to: a bound `selectedValue`
+         * (SSoT common.bind primaryValue, Radio [selectedValue]; a lone `bind`
+         * arrives as it, BindFold). It read `bind`, where the items group and
+         * the single Radio read selectedValue.
          */
         internal fun bindingVariableOf(a: RadioAttributes): String? =
-            TypedAttrs.binding(a.common.bind)
+            TypedAttrs.binding(a.selectedValue)
 
         private fun extractBindingVariable(value: String?): String? {
             if (value == null) return null

@@ -82,12 +82,11 @@ object LayoutPath {
      * (Toggle → Switch, EditText → TextField, Check → CheckBox); a synonym as
      * its `render_as`, else its canonical section (Picker → SelectBox,
      * Text → Label, CircleImage → CircleImage); any other spelling as written.
-     * Matched case-insensitively, as DynamicView dispatches (a lowercase
-     * `checkbox` draws a CheckBox here; the codegen, which dispatches by the
-     * exact spelling, names it as written).
+     * Matched as written, as DynamicView dispatches and the codegen names it
+     * (type names are case-sensitive).
      */
     fun drawnType(type: String): String =
-        com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases.canonicalFor(type)
+        com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases.canonical[type]
             ?: com.kotlinjsonui.dynamic.TypeSynonyms.drawnAs(type)
 
     /**

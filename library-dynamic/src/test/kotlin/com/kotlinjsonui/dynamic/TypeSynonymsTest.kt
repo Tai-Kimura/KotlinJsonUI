@@ -27,18 +27,19 @@ class TypeSynonymsTest {
     @Test
     fun `every entry of the vendored file is read`() {
         assertTrue("the vendored file lists no synonyms", onDisk.size() >= 40)
-        assertEquals(onDisk.keySet().map { it.lowercase() }.toSet(), TypeSynonyms.entries.keys)
+        assertEquals(onDisk.keySet(), TypeSynonyms.entries.keys)
         for ((spelling, value) in onDisk.entrySet()) {
-            val entry = TypeSynonyms.entries.getValue(spelling.lowercase())
+            val entry = TypeSynonyms.entries.getValue(spelling)
             assertEquals(spelling, value.asJsonObject.get("canonical").asString, entry.canonical)
             assertEquals(spelling, value.asJsonObject.get("render_as")?.asString, entry.renderAs)
         }
     }
 
     @Test
-    fun `a synonym is drawn as its target, whatever its case, and anything else as itself`() {
+    fun `a synonym is drawn as its target, as it is spelled, and anything else as itself`() {
         assertEquals("Progress", TypeSynonyms.drawnAs("ProgressBar"))
-        assertEquals("Progress", TypeSynonyms.drawnAs("progressbar"))
+        // type names are case-sensitive (4f's ruling, jsonui-cli 1.9.0)
+        assertEquals("progressbar", TypeSynonyms.drawnAs("progressbar"))
         // render_as: drawn by the converter it names, not the canonical one
         assertEquals("CircleImage", TypeSynonyms.drawnAs("CircleImageView"))
         assertEquals("Label", TypeSynonyms.drawnAs("Label"))
@@ -56,7 +57,10 @@ class TypeSynonymsTest {
         assertEquals("View", drawn.get("type").asString)
         assertEquals("horizontal", drawn.get("orientation").asString)
         assertEquals("h", drawn.get("id").asString)
-        assertEquals("vertical", TypeSynonyms.canonicalize(node("""{"type": "column"}""")).get("orientation").asString)
+        assertEquals("vertical", TypeSynonyms.canonicalize(node("""{"type": "Column"}""")).get("orientation").asString)
+        // another case is not the synonym: the node is left as it is
+        val lower = node("""{"type": "column"}""")
+        assertTrue(TypeSynonyms.canonicalize(lower) === lower)
         // ZStack / Box mean a View without orientation: nothing is added
         assertFalse(TypeSynonyms.canonicalize(node("""{"type": "ZStack"}""")).has("orientation"))
         assertEquals("CircleImage", TypeSynonyms.canonicalize(node("""{"type": "CircleImageView"}""")).get("type").asString)
