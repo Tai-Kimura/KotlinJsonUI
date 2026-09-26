@@ -331,6 +331,10 @@ class DynamicSelectBoxComponent {
 
             // Handle value change
             val viewId = a.common.id ?: "selectbox"
+            // The declared onClick, called after the selection — the SelectBox's
+            // own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 
@@ -355,6 +359,7 @@ class DynamicSelectBoxComponent {
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, payload)
                 }
+                onClick?.invoke()
             }
 
             // Build modifier (default fill width). SelectBox draws its own
@@ -497,6 +502,10 @@ class DynamicSelectBoxComponent {
 
             // Handle value change
             val viewId = a.common.id ?: "selectbox"
+            // The declared onClick, called after the selection — the SelectBox's
+            // own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedDate = newValue
 
@@ -514,6 +523,7 @@ class DynamicSelectBoxComponent {
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
+                onClick?.invoke()
             }
 
             // Build modifier (default fill width for date pickers).
@@ -545,7 +555,8 @@ class DynamicSelectBoxComponent {
 
         /**
          * Modifier chain for a component that draws its own decoration —
-         * testTag, margins, size, offset, alpha, shadow, clickable — which
+         * testTag, margins, size, offset, alpha, shadow, the control's
+         * clickable stage (ModifierBuilder.applyControlClickable) — which
          * deliberately omits:
          *
          * - background (clip + border + background color): the composable
@@ -576,7 +587,12 @@ class DynamicSelectBoxComponent {
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape)
-            modifier = ModifierBuilder.applyClickable(modifier, json, data)
+            // A control's clickable stage: the gestures and the blocker, no
+            // outer click (onClick is called after the selection), and
+            // `enabled` is on this node — the composable's own clickable.
+            modifier = ModifierBuilder.applyControlClickable(
+                modifier, json, data, ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
             return modifier
         }
 

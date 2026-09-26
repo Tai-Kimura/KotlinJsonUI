@@ -699,6 +699,61 @@ object ModifierBuilder {
     }
 
     /**
+     * How a control takes the clickable stage (applyControlClickable): the
+     * control's own `enabled` lands on the node that carries the tag
+     * (ENABLED_ON_NODE — a bare Switch, a Slider, a SelectBox, a text field),
+     * or a wrapper carries the tag and the control inside it the `enabled`
+     * (WRAPPER — a labelled Row, a Segment's TabRow, a Radio's Row / Column,
+     * a text field's margin Box), so the wrapper takes `disabled()` for a UI
+     * test to read.
+     */
+    enum class ControlTap { ENABLED_ON_NODE, WRAPPER }
+
+    /**
+     * The clickable stage of a control whose tap is its own operation —
+     * Switch / Toggle, CheckBox, Radio, Segment, Slider, SelectBox, TextField,
+     * TextView. The node's long press, pan and pinch and its
+     * userInteractionEnabled blocker, as applyClickable applies them; NO
+     * `.clickable`: on the control's node an outer clickable's OnClick action
+     * replaces the control's own (Compose applies a node's semantics
+     * innermost first and a later action replaces an earlier one), so
+     * TalkBack's double tap ran the handler and did not operate the control,
+     * while a touch operated it and never reached the handler. The control
+     * calls onClick from its own operation instead (onClickFromOperation) —
+     * kjui's codegen does the same (ModifierBuilder.operation_click_call,
+     * jsonui-cli 62e15706). `disabled()` only for a WRAPPER.
+     */
+    fun applyControlClickable(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>,
+        control: ControlTap
+    ): Modifier {
+        var result = applyLongPressable(modifier, json, data)
+        result = applyPannable(result, json, data)
+        result = applyPinchable(result, json, data)
+        if (control == ControlTap.WRAPPER && resolveEnabled(json, data) == false) {
+            result = result.semantics { disabled() }
+        }
+        return applyInteractionBlocker(result, json, data)
+    }
+
+    /**
+     * The declared onClick / onclick of a CONTROL, to call from the control's
+     * own operation after its own update (a toggle, a selection, the end of a
+     * slide) — or null when there is no handler or canTap is shut. `enabled`
+     * is the control's own parameter, so a disabled control neither operates
+     * nor calls. The tap rule gives these types the shape `none`: a control
+     * already, left as it was.
+     */
+    fun onClickFromOperation(json: JsonObject, data: Map<String, Any>): (() -> Unit)? {
+        val handlers = TapAccessibility.clickHandlers(json)
+        if (handlers.isEmpty() || !tapGateOpen(json, data)) return null
+        val viewId = json.get("id")?.asString
+        return { handlers.forEach { resolveEventHandler(it, data, viewId) } }
+    }
+
+    /**
      * common.userInteractionEnabled: false (or a binding resolving false)
      * stops the node and what is in it — its click, its children's, a
      * control's own operation. Compose has no allowsHitTesting, so the
@@ -1416,15 +1471,25 @@ object ModifierBuilder {
         Stage("padding") { m, json, data, _, _ -> applyPadding(m, json, data) },
     )
 
+    /**
+     * `control`: the node is a control whose tap is its own operation — its
+     * clickable stage is applyControlClickable (no `.clickable`), and the
+     * component calls onClickFromOperation from that operation.
+     */
     fun buildModifier(
         json: JsonObject,
         data: Map<String, Any>,
         parentType: String? = null,
         context: Context? = null,
-        defaultFillMaxWidth: Boolean = false
+        defaultFillMaxWidth: Boolean = false,
+        control: ControlTap? = null
     ): Modifier {
         return standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
-            stage.apply(modifier, json, data, context, defaultFillMaxWidth)
+            if (control != null && stage.name == "clickable") {
+                applyControlClickable(modifier, json, data, control)
+            } else {
+                stage.apply(modifier, json, data, context, defaultFillMaxWidth)
+            }
         }
     }
 

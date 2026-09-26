@@ -132,12 +132,16 @@ class DynamicCheckBoxComponent {
                 ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
-            // Build modifier: testTag, margins, alpha, padding, alignment, weight
-            val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (no outer click — onClick is called from
+            // onCheckedChange), and `enabled` is the Checkbox's own, on this node.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
 
             // Colors: checkColor -> checkedColor, uncheckedColor -> uncheckedColor
             val colors = buildCheckboxColors(json, a, data, context)
@@ -183,7 +187,7 @@ class DynamicCheckBoxComponent {
                 ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
@@ -193,7 +197,13 @@ class DynamicCheckBoxComponent {
             // row is toggleable (standard labeled-checkbox pattern): a tap
             // anywhere on the row — including the label, which is where the
             // row's center lands for UI-test drivers — toggles the value.
-            val rowModifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+            // The clickable stage is a control's: the Row's own toggleable
+            // carries the operation and `enabled` on the tagged node, and
+            // onClick is called from onCheckedChange — no outer click above the
+            // toggleable to take its action (ControlTap.ENABLED_ON_NODE).
+            val rowModifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
                 .toggleable(
                     value = checkedState,
                     enabled = isEnabled,
@@ -305,7 +315,7 @@ class DynamicCheckBoxComponent {
                 ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
@@ -320,8 +330,12 @@ class DynamicCheckBoxComponent {
             val iconRes = ResourceResolver.resolveDrawable(iconName, data, context)
             val selectedIconRes = ResourceResolver.resolveDrawable(selectedIconName, data, context)
 
-            // Build modifier: testTag, margins, alpha, padding, alignment
-            val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from onCheckedChange), and `enabled` is the
+            // IconToggleButton's own, on this node.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
 
             IconToggleButton(
                 checked = checkedState,
@@ -436,33 +450,42 @@ class DynamicCheckBoxComponent {
          * Updates bound variable via data["updateData"] and calls onValueChange handler.
          */
         private fun buildOnCheckedChange(
+            json: JsonObject,
             a: CheckBoxAttributes,
             data: Map<String, Any>,
             bindingVariable: String?,
             updateState: (Boolean) -> Unit
-        ): (Boolean) -> Unit = { newValue ->
-            updateState(newValue)
+        ): (Boolean) -> Unit {
+            // The declared onClick, called last — after the state, the bound
+            // value and onValueChange: the check is the CheckBox's own
+            // operation and calls it; no outer `.clickable` does
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+            return { newValue ->
+                updateState(newValue)
 
-            // Update bound variable via data["updateData"]
-            if (bindingVariable != null) {
-                val updateData = data["updateData"]
-                if (updateData is Function<*>) {
-                    try {
-                        @Suppress("UNCHECKED_CAST")
-                        (updateData as (Map<String, Any>) -> Unit)(
-                            mapOf(bindingVariable to newValue)
-                        )
-                    } catch (_: Exception) {
-                        // Update function doesn't match expected signature
+                // Update bound variable via data["updateData"]
+                if (bindingVariable != null) {
+                    val updateData = data["updateData"]
+                    if (updateData is Function<*>) {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            (updateData as (Map<String, Any>) -> Unit)(
+                                mapOf(bindingVariable to newValue)
+                            )
+                        } catch (_: Exception) {
+                            // Update function doesn't match expected signature
+                        }
                     }
                 }
-            }
 
-            // Call onValueChange handler (binding format only)
-            val handler = TypedAttrs.raw(a.onValueChange) as? String
-            if (handler != null && ModifierBuilder.isBinding(handler)) {
-                val viewId = a.common.id ?: "checkbox"
-                ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                // Call onValueChange handler (binding format only)
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    val viewId = a.common.id ?: "checkbox"
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+                onClick?.invoke()
             }
         }
     }

@@ -198,7 +198,14 @@ class DynamicTextViewComponent {
                 boxModifier = ModifierBuilder.applyOffset(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyShadow(boxModifier, json, data, ownShape = shape)
-                boxModifier = ModifierBuilder.applyClickable(boxModifier, json, data)
+                // A text field's clickable stage is a control's: the gestures and the
+                // blocker, no outer click. Its own tap focuses it, and an outer
+                // clickable took that action from TalkBack; iOS attaches no tap to
+                // a text field and kjui's codegen calls no onClick on one (the tap
+                // rule's shape is `none`). The Box carries the tag, the field inside it `enabled`.
+                boxModifier = ModifierBuilder.applyControlClickable(
+                    boxModifier, json, data, ModifierBuilder.ControlTap.WRAPPER
+                )
 
                 // TextField modifier with size (default fillMaxWidth + 120dp height)
                 var textFieldModifier = buildTextViewSizeModifier(json, a)
@@ -243,7 +250,14 @@ class DynamicTextViewComponent {
                 // pinch, as on every component. The background, radius and
                 // border are the field's own parameters.
                 modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = shape)
-                modifier = ModifierBuilder.applyClickable(modifier, json, data)
+                // A text field's clickable stage is a control's: the gestures and the
+                // blocker, no outer click. Its own tap focuses it, and an outer
+                // clickable took that action from TalkBack; iOS attaches no tap to
+                // a text field and kjui's codegen calls no onClick on one (the tap
+                // rule's shape is `none`). The field carries `enabled` on this node.
+                modifier = ModifierBuilder.applyControlClickable(
+                    modifier, json, data, ModifierBuilder.ControlTap.ENABLED_ON_NODE
+                )
                 modifier = ModifierBuilder.applyPadding(modifier, json, data)
 
                 CustomTextField(

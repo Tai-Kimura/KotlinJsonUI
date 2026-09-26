@@ -124,6 +124,8 @@ jobs:
                "shared/core/tap_accessibility_vectors.json"),
               ("library-dynamic/src/test/resources/string_default_vectors.json",
                "shared/core/string_default_vectors.json"),
+              ("library-dynamic/src/test/resources/layout_path_vectors.json",
+               "shared/core/layout_path_vectors.json"),
               # Not a fixture: the table DynamicView draws type synonyms
               # with (TypeSynonyms), shipped in the AAR.
               ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/type_synonyms.json",

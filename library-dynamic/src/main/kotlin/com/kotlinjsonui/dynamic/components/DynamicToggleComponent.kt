@@ -99,6 +99,12 @@ class DynamicToggleComponent {
                 mutableStateOf(checked)
             }
 
+            // The declared onClick / onclick, called last from the toggle's own
+            // operation — after the state, the bound value and onValueChange —
+            // and gated by canTap (ModifierBuilder.onClickFromOperation). No
+            // outer `.clickable` calls it any more.
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+
             // Build onCheckedChange handler
             val onCheckedChange: (Boolean) -> Unit = { newValue ->
                 checkedState = newValue
@@ -120,17 +126,16 @@ class DynamicToggleComponent {
 
                 // Call the declared change callback (like Switch; `onToggle` is
                 // an alias spelling of `onValueChange` since 49-E and folds onto
-                // the canonical row), falling back to legacy onclick/onClick —
-                // which common.canTap gates: the switch still switches.
+                // the canonical row). onClick / onclick is no longer its
+                // fallback: it is called on its own, after it, whether or not
+                // onValueChange is declared — as the Switch and kjui's codegen
+                // do. common.canTap gates it; the switch still switches.
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
-                    ?: (if (ModifierBuilder.tapGateOpen(json, data)) {
-                        a.common.onclick as? String
-                            ?: TypedAttrs.raw(a.common.onClick) as? String
-                    } else null)
                 if (handler != null) {
                     val viewId = a.common.id ?: "toggle"
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
+                onClick?.invoke()
             }
 
             // Enabled state (supports @{binding}; Toggle declares its own row) —
@@ -138,8 +143,13 @@ class DynamicToggleComponent {
             val isEnabled = TypedAttrs.boolean(a.enabled, data)
                 ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
-            // Build modifier: testTag, margins, alpha, padding, alignment, weight
-            val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (no outer click — onClick is called from
+            // onCheckedChange). `enabled` is the Switch's own; the labelled Row
+            // mirrors it below.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
 
             // Colors: tintColor -> checkedThumbColor + checkedTrackColor (0.5f alpha)
             //         backgroundColor -> uncheckedTrackColor

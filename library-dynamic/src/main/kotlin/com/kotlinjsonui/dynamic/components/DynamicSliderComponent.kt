@@ -174,15 +174,23 @@ class DynamicSliderComponent {
                 SliderDefaults.colors()
             }
 
-            // Build modifier: testTag, margins, size, alpha, clickable, padding
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (no outer click — onClick is called when the value
+            // change finishes), and `enabled` is the Slider's own, on this node.
             val modifier = ModifierBuilder.buildModifier(
-                json, data, context = context, defaultFillMaxWidth = true
+                json, data, context = context, defaultFillMaxWidth = true,
+                control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
             )
+            // The declared onClick, called when the value change finishes — the
+            // Slider's own operation (ModifierBuilder.onClickFromOperation), as
+            // kjui's codegen emits it (onValueChangeFinished).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
 
             // Create the Slider
             Slider(
                 value = sliderValue,
                 onValueChange = onValueChange,
+                onValueChangeFinished = onClick,
                 valueRange = minValue..maxValue,
                 steps = steps,
                 modifier = modifier,
