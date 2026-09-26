@@ -120,7 +120,6 @@ class DynamicCircleViewComponent {
 
             // Lifecycle effects
             if (ModifierBuilder.hasLifecycleEvents(json)) {
-                ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
             // Render Box with children

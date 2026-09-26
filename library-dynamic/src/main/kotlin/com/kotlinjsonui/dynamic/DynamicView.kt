@@ -29,9 +29,9 @@ import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
-import com.kotlinjsonui.dynamic.helpers.LocalInteractionStopped
+import com.kotlinjsonui.core.LocalInteractionStopped
+import com.kotlinjsonui.dynamic.helpers.InteractionMarking
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.TapAccessibility
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
 
@@ -118,8 +118,7 @@ private fun DynamicViewContent(
     // key kjui's codegen writes): its click, its Role.Button and the image
     // rule read it as no tap.
     val stoppedAround = LocalInteractionStopped.current
-    val resolvedJson = resolveResponsiveNode(styledJson)
-    val responsiveJson = if (stoppedAround) TapAccessibility.markStopped(resolvedJson) else resolvedJson
+    val responsiveJson = InteractionMarking.nodeAsDrawn(resolveResponsiveNode(styledJson), stoppedAround)
 
     // Check if this is a data element (should be skipped)
     if (responsiveJson.has("data") && !responsiveJson.has("type")) {
@@ -165,6 +164,16 @@ private fun DynamicViewContent(
     // ProgressBar — was drawn in Debug as the built-in Progress while the
     // release build drew the app's (measured: the handler was not called).
     val renderComponent: @Composable () -> Unit = {
+        // onAppear / onDisappear: called when the view enters / leaves the
+        // tree it is drawn in, on every type and on an app's own component —
+        // here, inside the visibility wrapper below, so a `gone` view (not
+        // in the tree) does not call them and an `invisible` one does. Each
+        // component applied them itself: 13 of the 27 types dispatched below
+        // did not (Button, CheckBox, Embed, Label, Radio, Segment, SelectBox,
+        // Slider, Switch, TabView, TextField, TextView, Toggle), nor did an
+        // app's component, and a View drawn as a ConstraintLayout registered
+        // them twice.
+        ModifierBuilder.ApplyLifecycleEffects(responsiveJson, effectiveData)
         val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
         // A synonym spelling (HStack, ProgressBar, WebView, …) is drawn as its
         // type, from the vendored type-synonym table — after the app was asked,
@@ -239,7 +248,7 @@ private fun DynamicViewContent(
     // A node whose userInteractionEnabled is false, or a binding resolving
     // false, stops everything composed inside it (TapAccessibility).
     val stopping: @Composable () -> Unit =
-        if (!stoppedAround && ModifierBuilder.interactionBlocked(responsiveJson, effectiveData)) {
+        if (InteractionMarking.stopsWhatItComposes(responsiveJson, effectiveData, stoppedAround)) {
             { CompositionLocalProvider(LocalInteractionStopped provides true) { renderComponent() } }
         } else {
             renderComponent
@@ -444,8 +453,11 @@ fun DynamicViews(
     data: Map<String, Any> = emptyMap(),
     onError: ((Exception) -> Unit)? = null
 ) {
-    components.forEach { component ->
-        DynamicView(component, data, onError)
+    // Each entry named as a root's child (LayoutPath.listEntry: `0_<i>`);
+    // they were all `0`.
+    components.forEachIndexed { index, component ->
+        val entry = remember(component, index) { LayoutPath.listEntry(component, index) }
+        DynamicView(entry, data, onError)
     }
 }
 

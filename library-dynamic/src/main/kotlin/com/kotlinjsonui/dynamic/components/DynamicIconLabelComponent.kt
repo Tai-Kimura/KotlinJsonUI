@@ -88,7 +88,6 @@ class DynamicIconLabelComponent {
 
             // Lifecycle effects
             if (ModifierBuilder.hasLifecycleEvents(json)) {
-                ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
             // Parse icon resource — the declared rows are icon_on/icon_off,

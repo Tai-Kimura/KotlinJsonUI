@@ -57,6 +57,58 @@ object LayoutPath {
         return path
     }
 
+    /**
+     * A handler's viewId: the node's `id`, else its drawn type with the first
+     * letter lowercased and its position — `switch_0_1`, `selectBox_0_3`
+     * (jsonui-cli shared/core/layout_path.rb `view_id`, held to the same
+     * table: layout_path_vectors.json `view_id_cases`). A Radio item's
+     * `radio_<path>` is the same form. The handlers were handed a kind word
+     * (`switch`, `selectbox`, …) or, on the click / gesture / lifecycle
+     * paths, the id or nothing — so two id-less nodes handed theirs the same
+     * viewId, and an id-less `(String)` handler was not called at all.
+     */
+    fun viewId(node: JsonObject): String {
+        // Any written id wins, "" too (the shared rule, and SwiftJsonUI's)
+        val id = node.get("id")
+        if (id != null && id.isJsonPrimitive) return id.asString
+        val type = drawnType(node.get("type")?.takeIf { it.isJsonPrimitive }?.asString ?: "")
+        val head = type.take(1).lowercase() + type.drop(1)
+        return "${head}_${of(node)}"
+    }
+
+    /**
+     * The type a spelling is drawn as, by the codegen's rule (layout_path.rb
+     * `drawn_type`): a declared alias section draws as the section it names
+     * (Toggle → Switch, EditText → TextField, Check → CheckBox); a synonym as
+     * its `render_as`, else its canonical section (Picker → SelectBox,
+     * Text → Label, CircleImage → CircleImage); any other spelling as written.
+     * Matched case-insensitively, as DynamicView dispatches (a lowercase
+     * `checkbox` draws a CheckBox here; the codegen, which dispatches by the
+     * exact spelling, names it as written).
+     */
+    fun drawnType(type: String): String =
+        com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases.canonicalFor(type)
+            ?: com.kotlinjsonui.dynamic.TypeSynonyms.drawnAs(type)
+
+    /**
+     * The [index]-th of a list of roots (DynamicViews), read as the child
+     * list of a root: `0_<index>`, the name the codegen gives a root's
+     * children — the use DynamicViews is documented for, a container's
+     * contents. Every entry was `0`, so the siblings' id-less nodes shared
+     * their viewIds and Radio groups. An entry a parent already stamped keeps
+     * its stamp. Returns a copy (the caller's object is not stamped: drawn
+     * alone later, it is a root, `0`). A single root — DynamicView(json),
+     * SwiftJsonUI's DynamicView(component:) — is `0` on both runtimes;
+     * SwiftJsonUI has no list-of-roots entry.
+     */
+    fun listEntry(node: JsonObject, index: Int): JsonObject {
+        if (node.has(KEY)) return node
+        val copy = JsonObject()
+        for ((key, value) in node.entrySet()) copy.add(key, value)
+        copy.addProperty(KEY, "0_$index")
+        return copy
+    }
+
     /** The list positions count over: `child` then `children`, every entry, object or not. */
     fun children(node: JsonObject): List<JsonElement> =
         listOf("child", "children").flatMap { key ->
