@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.LocalInteractionStopped
 import kotlin.math.roundToInt
 
 data class PartialAttribute(
@@ -102,7 +103,9 @@ data class PartialAttribute(
  * with an OnClick action, which TalkBack's double tap calls through the
  * blocker (measured, API 35 emulator, LinkSpanUnderOuterClickableProbe).
  * kjui's codegen passes it from the flag (jsonui-cli 1.9.0), as does the
- * dynamic Label.
+ * dynamic Label. Inside a stop handed down at run time
+ * ([LocalInteractionStopped] — a Collection's cell, an Embed's screen, a tab's
+ * view under a stopping node) the links stop too, whatever is passed.
  */
 @Composable
 fun PartialAttributesText(
@@ -113,14 +116,15 @@ fun PartialAttributesText(
     style: TextStyle = LocalTextStyle.current,
     linksEnabled: Boolean = true
 ) {
-    val ranges = if (linksEnabled) partialAttributes else partialAttributes.map { it.copy(onClick = null) }
+    val operable = linksEnabled && !LocalInteractionStopped.current
+    val ranges = if (operable) partialAttributes else partialAttributes.map { it.copy(onClick = null) }
     if (linkable) {
         LinkablePartialAttributesText(
             text = text,
             partialAttributes = ranges,
             modifier = modifier,
             style = style,
-            linksEnabled = linksEnabled
+            linksEnabled = operable
         )
     } else {
         PartialAttributesTextImpl(

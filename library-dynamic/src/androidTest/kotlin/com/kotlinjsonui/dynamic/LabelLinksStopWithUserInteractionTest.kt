@@ -37,6 +37,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.JsonParser
 import com.kotlinjsonui.components.PartialAttribute
 import com.kotlinjsonui.components.PartialAttributesText
+import com.kotlinjsonui.core.LocalInteractionStopped
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -189,10 +190,26 @@ class LabelLinksStopWithUserInteractionTest {
             drawn += rule.onNodeWithTag("t").captureToImage()
             got += "url linksEnabled=$enabled" to operate(urlText, "example.com")
         }
+        // A stop handed down at run time (a cell or an Embed's screen under a
+        // stopping node — LocalInteractionStopped) stops the links with
+        // linksEnabled left at its default.
+        show(partialText) {
+            CompositionLocalProvider(LocalInteractionStopped provides true) {
+                PartialAttributesText(partialText, ranges(), style = style, modifier = Modifier.testTag("t").width(widthDp.dp))
+            }
+        }
+        got += "range under a handed-down stop" to operate(partialText, "Terms")
+        show(urlText) {
+            CompositionLocalProvider(LocalInteractionStopped provides true) {
+                PartialAttributesText(urlText, linkable = true, style = style, modifier = Modifier.testTag("t").width(widthDp.dp))
+            }
+        }
+        got += "url under a handed-down stop" to operate(urlText, "example.com")
         assertEquals(
             listOf(
                 "range linksEnabled=true" to (1 to 2), "url linksEnabled=true" to (1 to 1),
-                "range linksEnabled=false" to (0 to 0), "url linksEnabled=false" to (0 to 0)
+                "range linksEnabled=false" to (0 to 0), "url linksEnabled=false" to (0 to 0),
+                "range under a handed-down stop" to (0 to 0), "url under a handed-down stop" to (0 to 0)
             ),
             got
         )
