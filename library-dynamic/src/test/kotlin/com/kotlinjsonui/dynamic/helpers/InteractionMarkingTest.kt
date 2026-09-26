@@ -109,4 +109,26 @@ class InteractionMarkingTest {
             assertFalse(t, TapAccessibility.isControl(t))
         }
     }
+
+    /**
+     * The nodes inside a stopped control a user operates on their own — a
+     * Radio's rows and RadioButtons, a Segment's Tabs, a CheckBox's Checkbox
+     * — read `disabled()` as the control's root does
+     * (ModifierBuilder.stoppedItem): under the control's own flag, a bound
+     * one that is false, or the mark of a stop around it; nothing otherwise.
+     * What the semantics do on a device is A11yActivationInsideAStopProbe's
+     * (androidTest, aStoppedWrapperControlsItemsReadDisabled).
+     */
+    @Test
+    fun aStoppedControlsItemsReadDisabledAndNothingElseDoes() {
+        val segment = node("""{"type": "Segment", "id": "s", "items": ["a", "b"]}""")
+        assertSame(androidx.compose.ui.Modifier, ModifierBuilder.stoppedItem(segment, emptyMap()))
+        val own = node("""{"type": "Segment", "id": "s", "items": ["a", "b"], "userInteractionEnabled": false}""")
+        assertTrue(ModifierBuilder.stoppedItem(own, emptyMap()) !== androidx.compose.ui.Modifier)
+        val bound = node("""{"type": "Segment", "id": "s", "items": ["a", "b"], "userInteractionEnabled": "@{u}"}""")
+        assertTrue(ModifierBuilder.stoppedItem(bound, mapOf("u" to false)) !== androidx.compose.ui.Modifier)
+        assertSame(androidx.compose.ui.Modifier, ModifierBuilder.stoppedItem(bound, mapOf("u" to true)))
+        val marked = InteractionMarking.nodeAsDrawn(segment, stoppedAround = true)
+        assertTrue(ModifierBuilder.stoppedItem(marked, emptyMap()) !== androidx.compose.ui.Modifier)
+    }
 }

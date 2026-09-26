@@ -761,6 +761,20 @@ object ModifierBuilder {
     }
 
     /**
+     * For a node inside a control that a user operates on its own — a
+     * Radio's rows and RadioButtons, a Segment's Tabs, a CheckBox's Checkbox:
+     * `disabled()` while the control is stopped (applyStoppedControl's
+     * condition), else nothing. The control's root reads disabled on its own
+     * node only; each of these is a node with its own click action, which a
+     * screen reader reached and read as enabled (4f's ruling, jsonui-cli
+     * 1.9.0: a stopped control does not say it is operable, down to its
+     * items). What it writes is already dropped (InteractionMarking
+     * .dataAsDrawn). Nothing drawn changes.
+     */
+    fun stoppedItem(json: JsonObject, data: Map<String, Any>): Modifier =
+        if (TapAccessibility.stoppedAround(json) || interactionBlocked(json, data)) Modifier.semantics { disabled() } else Modifier
+
+    /**
      * The declared onClick / onclick of a CONTROL, to call from the control's
      * own operation after its own update (a toggle, a selection, the end of a
      * slide) — or null when there is no handler or canTap is shut. `enabled`

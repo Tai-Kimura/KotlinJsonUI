@@ -229,9 +229,11 @@ class DynamicCheckBoxComponent {
                     // iconSize scales the default glyph via the size modifier
                     // (mirrors checkbox_component.rb — no separate glyph to
                     // size on a Material Checkbox).
-                    modifier = a.iconSize?.let {
+                    // The box is a node of its own: it reads the stop too
+                    // (stoppedItem).
+                    modifier = (a.iconSize?.let {
                         Modifier.size(it.toInt().dp)
-                    } ?: Modifier,
+                    } ?: Modifier).then(ModifierBuilder.stoppedItem(json, data)),
                     // The labeled path dropped the color skin entirely —
                     // uncheckedColor/checkedColor never reached the box
                     // every text-bearing fixture renders (33 cross-effect).
