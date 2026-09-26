@@ -30,6 +30,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.LabelAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.TapAccessibility
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
@@ -299,7 +300,8 @@ class DynamicTextComponent {
                 text = text,
                 linkable = true,
                 modifier = modifier,
-                style = style
+                style = style,
+                linksEnabled = linksEnabled(json, data)
             )
         }
 
@@ -361,11 +363,26 @@ class DynamicTextComponent {
                 text = text,
                 partialAttributes = partialAttributes,
                 modifier = modifier,
-                style = style
+                style = style,
+                linksEnabled = linksEnabled(json, data)
             )
         }
 
         // ── Helpers ──
+
+        /**
+         * Whether the Label's links — its tappable ranges and the links
+         * `linkable` detects — are operable: not when its own
+         * `userInteractionEnabled` is false or a binding resolving false, nor
+         * inside a view whose flag is (DynamicView marks what it composes
+         * there, TapAccessibility.STOPPED_KEY). The tap rule stops a node and
+         * everything in it, link spans included, and the pointer blocker alone
+         * left each link's own semantics action to TalkBack (measured, API 35
+         * emulator, LinkSpanUnderOuterClickableProbe). kjui's codegen passes
+         * the same flag (jsonui-cli 1.9.0).
+         */
+        internal fun linksEnabled(json: JsonObject, data: Map<String, Any>): Boolean =
+            !ModifierBuilder.interactionBlocked(json, data) && !TapAccessibility.stoppedAround(json)
 
         /** Label-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(

@@ -92,6 +92,17 @@ data class PartialAttribute(
 /**
  * PartialAttributesText with linkable support.
  * When linkable is true, automatically detects URLs, emails, and phone numbers and makes them clickable.
+ *
+ * [linksEnabled] false draws every link as it draws it — the range styles, a
+ * detected link's colour and underline — and makes none of them operable:
+ * no LinkAnnotation, no range hit-target. `userInteractionEnabled: false` on
+ * the Label or on a view around it stops its links as it stops every tap (the
+ * tap rule, jsonui-cli shared/core/tap_accessibility.rb), and a pointer
+ * blocker is not enough for that: each link is a semantics node of its own
+ * with an OnClick action, which TalkBack's double tap calls through the
+ * blocker (measured, API 35 emulator, LinkSpanUnderOuterClickableProbe).
+ * kjui's codegen passes it from the flag (jsonui-cli 1.9.0), as does the
+ * dynamic Label.
  */
 @Composable
 fun PartialAttributesText(
@@ -99,19 +110,22 @@ fun PartialAttributesText(
     partialAttributes: List<PartialAttribute> = emptyList(),
     linkable: Boolean = false,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
+    linksEnabled: Boolean = true
 ) {
+    val ranges = if (linksEnabled) partialAttributes else partialAttributes.map { it.copy(onClick = null) }
     if (linkable) {
         LinkablePartialAttributesText(
             text = text,
-            partialAttributes = partialAttributes,
+            partialAttributes = ranges,
             modifier = modifier,
-            style = style
+            style = style,
+            linksEnabled = linksEnabled
         )
     } else {
         PartialAttributesTextImpl(
             text = text,
-            partialAttributes = partialAttributes,
+            partialAttributes = ranges,
             modifier = modifier,
             style = style
         )
@@ -192,7 +206,8 @@ private fun LinkablePartialAttributesText(
     text: String,
     partialAttributes: List<PartialAttribute>,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
+    linksEnabled: Boolean = true
 ) {
     val context = LocalContext.current
 
@@ -255,7 +270,7 @@ private fun LinkablePartialAttributesText(
         // Then, detect and link URLs. LinkAnnotation.Url with no listener opens
         // the URL via the platform default handler (ACTION_VIEW equivalent).
         urlPattern.findAll(text).forEach { match ->
-            addLink(
+            if (linksEnabled) addLink(
                 LinkAnnotation.Url(match.value),
                 start = match.range.first,
                 end = match.range.last + 1
@@ -272,7 +287,7 @@ private fun LinkablePartialAttributesText(
 
         // Detect and link emails
         emailPattern.findAll(text).forEach { match ->
-            addLink(
+            if (linksEnabled) addLink(
                 LinkAnnotation.Clickable(
                     tag = "EMAIL",
                     styles = null,
@@ -298,7 +313,7 @@ private fun LinkablePartialAttributesText(
 
         // Detect and link phone numbers
         phonePattern.findAll(text).forEach { match ->
-            addLink(
+            if (linksEnabled) addLink(
                 LinkAnnotation.Clickable(
                     tag = "PHONE",
                     styles = null,
