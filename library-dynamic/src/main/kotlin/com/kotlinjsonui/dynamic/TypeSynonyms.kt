@@ -46,8 +46,9 @@ object TypeSynonyms {
     }
 
     /**
-     * Spelling → entry, keyed lowercase: DynamicView matches types
-     * case-insensitively, and so does this.
+     * Spelling → entry, as written: type names are case-sensitive (4f's
+     * ruling, jsonui-cli 1.9.0; the codegens match them so). It was keyed
+     * lowercase, as DynamicView's dispatch then was.
      */
     val entries: Map<String, Entry> by lazy { load() }
 
@@ -57,7 +58,7 @@ object TypeSynonyms {
     private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     /** The type [type] is drawn as: its synonym's target, or itself. */
-    fun drawnAs(type: String): String = entries[type.lowercase()]?.drawnAs ?: type
+    fun drawnAs(type: String): String = entries[type]?.drawnAs ?: type
 
     /**
      * [node] as drawn. For a synonym, a copy whose `type` is what it is drawn
@@ -68,7 +69,7 @@ object TypeSynonyms {
      */
     fun canonicalize(node: JsonObject, context: android.content.Context? = null): JsonObject {
         val type = node.get("type")?.takeIf { it.isJsonPrimitive }?.asString ?: return node
-        val entry = entries[type.lowercase()] ?: return node
+        val entry = entries[type] ?: return node
         val drawn = JsonObject()
         for ((key, value) in node.entrySet()) drawn.add(key, value)
         drawn.addProperty("type", entry.drawnAs)
@@ -108,7 +109,7 @@ object TypeSynonyms {
             val implied = entry.entrySet()
                 .filter { (key, _) -> key != "canonical" && key != "render_as" }
                 .associate { (key, v) -> key to v }
-            spelling.lowercase() to Entry(canonical, renderAs, implied)
+            spelling to Entry(canonical, renderAs, implied)
         }
     }
 }

@@ -183,50 +183,56 @@ private fun DynamicViewContent(
         // the table and from SwiftJsonUI's.
         val drawn = if (handledByApp) responsiveJson else TypeSynonyms.canonicalize(responsiveJson, context)
         val drawnType = drawn.get("type").asString
-        if (!handledByApp) when (drawnType.lowercase()) {
-            "label" -> DynamicTextComponent.create(drawn, effectiveData)
+        if (!handledByApp) when (drawnType) {
+            "Label" -> DynamicTextComponent.create(drawn, effectiveData)
             // EditText (Android) and Input (web) are declared sections that
             // point at TextField (`_alias_of`)
-            "textfield", "edittext", "input" -> DynamicTextFieldComponent.create(drawn, effectiveData)
-            "button" -> DynamicButtonComponent.create(drawn, effectiveData)
-            "image" -> DynamicImageComponent.create(drawn, effectiveData)
-            "networkimage" -> DynamicNetworkImageComponent.create(drawn, effectiveData)
+            "TextField", "EditText", "Input" -> DynamicTextFieldComponent.create(drawn, effectiveData)
+            "Button" -> DynamicButtonComponent.create(drawn, effectiveData)
+            "Image" -> DynamicImageComponent.create(drawn, effectiveData)
+            "NetworkImage" -> DynamicNetworkImageComponent.create(drawn, effectiveData)
             // CircleImage / CircleImageView are Image synonyms drawn as
             // CircleImage (`render_as`)
-            "circleimage" -> DynamicCircleImageComponent.create(drawn, effectiveData)
-            "switch" -> DynamicSwitchComponent.create(drawn, effectiveData)
+            "CircleImage" -> DynamicCircleImageComponent.create(drawn, effectiveData)
+            "Switch" -> DynamicSwitchComponent.create(drawn, effectiveData)
             // Check is a declared section pointing at CheckBox (`_alias_of`)
-            "checkbox", "check" -> DynamicCheckBoxComponent.create(drawn, effectiveData)
-            "radio" -> DynamicRadioComponent.create(drawn, effectiveData)
-            "slider" -> DynamicSliderComponent.create(drawn, effectiveData)
-            "progress" -> DynamicProgressComponent.create(drawn, effectiveData)
-            "indicator" -> DynamicIndicatorComponent.create(drawn, effectiveData)
-            "selectbox" -> DynamicSelectBoxComponent.create(drawn, effectiveData)
-            "segment" -> DynamicSegmentComponent.create(drawn, effectiveData)
-            "toggle" -> DynamicToggleComponent.create(drawn, effectiveData)
-            "scrollview" -> DynamicScrollViewComponent.create(drawn, effectiveData)
-            "view" -> DynamicContainerComponent.create(drawn, effectiveData)
-            "safeareaview" -> DynamicSafeAreaViewComponent.create(drawn, effectiveData)
-            "collection" -> DynamicCollectionComponent.create(drawn, effectiveData)
-            "web" -> DynamicWebComponent.create(drawn, effectiveData)
-            "tabview" -> DynamicTabViewComponent.create(drawn, effectiveData)
-            "embed" -> DynamicEmbedComponent.create(drawn, effectiveData)
-            "gradientview" -> DynamicGradientViewComponent.create(drawn, effectiveData)
-            "circleview" -> DynamicCircleViewComponent.create(drawn, effectiveData)
-            "blur" -> DynamicBlurViewComponent.create(drawn, effectiveData)
-            "iconlabel" -> DynamicIconLabelComponent.create(drawn, effectiveData)
-            "textview" -> DynamicTextViewComponent.create(drawn, effectiveData)
+            "CheckBox", "Check" -> DynamicCheckBoxComponent.create(drawn, effectiveData)
+            "Radio" -> DynamicRadioComponent.create(drawn, effectiveData)
+            "Slider" -> DynamicSliderComponent.create(drawn, effectiveData)
+            "Progress" -> DynamicProgressComponent.create(drawn, effectiveData)
+            "Indicator" -> DynamicIndicatorComponent.create(drawn, effectiveData)
+            "SelectBox" -> DynamicSelectBoxComponent.create(drawn, effectiveData)
+            "Segment" -> DynamicSegmentComponent.create(drawn, effectiveData)
+            "Toggle" -> DynamicToggleComponent.create(drawn, effectiveData)
+            "ScrollView" -> DynamicScrollViewComponent.create(drawn, effectiveData)
+            "View" -> DynamicContainerComponent.create(drawn, effectiveData)
+            "SafeAreaView" -> DynamicSafeAreaViewComponent.create(drawn, effectiveData)
+            "Collection" -> DynamicCollectionComponent.create(drawn, effectiveData)
+            "Web" -> DynamicWebComponent.create(drawn, effectiveData)
+            "TabView" -> DynamicTabViewComponent.create(drawn, effectiveData)
+            "Embed" -> DynamicEmbedComponent.create(drawn, effectiveData)
+            "GradientView" -> DynamicGradientViewComponent.create(drawn, effectiveData)
+            "CircleView" -> DynamicCircleViewComponent.create(drawn, effectiveData)
+            "Blur" -> DynamicBlurViewComponent.create(drawn, effectiveData)
+            "IconLabel" -> DynamicIconLabelComponent.create(drawn, effectiveData)
+            "TextView" -> DynamicTextViewComponent.create(drawn, effectiveData)
             else -> {
                 // The app's handler was asked first, above.
                 run {
-                    // Unknown component type
-                    val error = IllegalArgumentException("Unknown component type: $type")
+                    // A type this runtime cannot draw: named as written, with
+                    // the declared spelling when it differs only in case
+                    // (UnknownComponentType — the sentence jsonui-cli's
+                    // validator and codegen say). Types are matched as
+                    // written: a lowercase `switch` was drawn as a Switch here
+                    // and by SwiftJsonUI, and as nothing by the codegen.
+                    val message = UnknownComponentType.message(type, BUILT_IN_TYPES + TypeSynonyms.entries.keys)
+                    val error = IllegalArgumentException(message)
                     onError?.invoke(error)
 
                     // Log error in debug mode
                     if (Configuration.showErrorsInDebug) {
-                        Log.w("DynamicView", "Unknown component type: $type")
-                        ErrorComponent("Unknown component type: $type")
+                        Log.w("DynamicView", message)
+                        ErrorComponent(message)
                     } else if (Configuration.fallbackComponent != null) {
                         // Use custom fallback component if configured
                         Configuration.fallbackComponent?.invoke(responsiveJson, effectiveData)
@@ -270,6 +276,18 @@ private fun DynamicViewContent(
         render()
     }
 }
+
+/**
+ * The types DynamicView draws itself, as the SSoT spells them — the cases of
+ * its dispatch (DynamicViewDispatchTest holds the two together). A type is
+ * matched as written; an app's own component is asked first.
+ */
+internal val BUILT_IN_TYPES: Set<String> = setOf(
+    "Label", "TextField", "EditText", "Input", "Button", "Image", "NetworkImage", "CircleImage",
+    "Switch", "CheckBox", "Check", "Radio", "Slider", "Progress", "Indicator", "SelectBox",
+    "Segment", "Toggle", "ScrollView", "View", "SafeAreaView", "Collection", "Web", "TabView",
+    "Embed", "GradientView", "CircleView", "Blur", "IconLabel", "TextView",
+)
 
 /**
  * Resolve the 'hidden' attribute with data binding support.

@@ -50,7 +50,7 @@ class TypeSynonymsDrawTest {
         ).asJsonObject.getAsJsonObject("synonyms")
         val differ = mutableListOf<String>()
         for ((spelling, _) in raw.entrySet()) {
-            val entry = entries.getValue(spelling.lowercase())
+            val entry = entries.getValue(spelling)
             val target = entry.drawnAs
             val x = extra[target] ?: error("no drawing extra for $target")
             val implied = entry.implied.entries.joinToString("") { (k, v) -> ", \"$k\": $v" }
