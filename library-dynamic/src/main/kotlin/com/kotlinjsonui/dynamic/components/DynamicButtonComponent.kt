@@ -250,6 +250,7 @@ class DynamicButtonComponent {
             modifier = ModifierBuilder.applyLongPressable(modifier, json, data)
             // userInteractionEnabled stops the button (this chain runs no
             // buildModifier, whose clickable stage applies it elsewhere)
+            modifier = ModifierBuilder.applyStoppedControl(modifier, json, data)
             modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
 
             Button(

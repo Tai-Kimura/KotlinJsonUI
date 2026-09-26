@@ -736,7 +736,28 @@ object ModifierBuilder {
         if (control == ControlTap.WRAPPER && resolveEnabled(json, data) == false) {
             result = result.semantics { disabled() }
         }
+        result = applyStoppedControl(result, json, data)
         return applyInteractionBlocker(result, json, data)
+    }
+
+    /**
+     * A control a stop holds — its own `userInteractionEnabled` false (or a
+     * binding resolving false), or the mark of a stop around it
+     * (TapAccessibility.STOPPED_KEY) — reads `disabled()`: Compose's
+     * accessibility delegate performs no action on a disabled node (click,
+     * set text, set progress; AndroidComposeViewAccessibilityDelegateCompat
+     * .performActionHelper returns false after the focus actions, read in
+     * compose-ui 1.12.0), and TalkBack says it is disabled. The pointer
+     * blocker kept a touch out and nothing else: TalkBack's click is not a
+     * touch. Nothing drawn changes (the semantics draw nothing; `enabled =
+     * false` would grey the control). What the control writes is dropped
+     * too (InteractionMarking.dataAsDrawn), for a key press and a wrapped
+     * control's inner node.
+     */
+    fun applyStoppedControl(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        if (!TapAccessibility.isControl(json.get("type")?.takeIf { it.isJsonPrimitive }?.asString)) return modifier
+        if (!TapAccessibility.stoppedAround(json) && !interactionBlocked(json, data)) return modifier
+        return modifier.semantics { disabled() }
     }
 
     /**
