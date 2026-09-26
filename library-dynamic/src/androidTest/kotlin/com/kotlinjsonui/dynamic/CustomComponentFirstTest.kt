@@ -100,4 +100,25 @@ class CustomComponentFirstTest {
         assertEquals("HStack", node.get("type").asString)
         assertEquals(null, node.get("orientation"))
     }
+
+    @Test
+    fun aTypeTheHandlerDrawsIsSaidOnceUnlessTheAppListsIt() {
+        // Configuration.customComponentTypes names what the handler draws, so
+        // that the node's viewId and tap role read it as the app's. A type the
+        // handler draws that the list does not name is said once per type;
+        // a listed one is not. (Spellings used by this test only: the
+        // once-per-type memory lasts for the process.)
+        val savedTypes = Configuration.customComponentTypes
+        val warnings = mutableListOf<String>()
+        TypeSynonyms.warningSink = { warnings += it }
+        try {
+            Configuration.customComponentTypes = setOf("Scroll")
+            asked(setOf("Scroll", "WebView"), listOf("Scroll", "WebView"))
+            assertEquals(warnings.toString(), 1, warnings.count { it.startsWith("Custom component 'WebView'") })
+            assertEquals(warnings.toString(), 0, warnings.count { it.startsWith("Custom component 'Scroll'") })
+        } finally {
+            Configuration.customComponentTypes = savedTypes
+            TypeSynonyms.warningSink = null
+        }
+    }
 }

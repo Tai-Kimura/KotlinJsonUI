@@ -97,6 +97,23 @@ object Configuration {
      * Should return true if the component was handled, false otherwise
      */
     var customComponentHandler: (@Composable (String, JsonObject, Map<String, Any>) -> Boolean)? = null
+
+    /**
+     * The component types [customComponentHandler] draws — the spellings it
+     * answers `true` for. A type named here is read as written by what
+     * classifies a node by its type (its viewId, its tap role, its image
+     * role), as the app draws it, before any built-in or synonym reading —
+     * as kjui's codegen reads the app's converters first.
+     *
+     * The DynamicComponentInitializer that `jui g converter` generates sets
+     * it from DynamicComponentRegistry. **If you write the handler by hand,
+     * add each type it draws here too.** A type the handler draws that is
+     * not named here is read as the built-in its spelling names (an app's
+     * ProgressBar as the built-in Progress), and a debuggable build says so
+     * once per type.
+     */
+    var customComponentTypes: Set<String> = emptySet()
+
     // Global color defaults (all mutable for app customization)
     object Colors {
         var background = Color.White

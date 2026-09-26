@@ -174,7 +174,13 @@ private fun DynamicViewContent(
         // app's component, and a View drawn as a ConstraintLayout registered
         // them twice.
         ModifierBuilder.ApplyLifecycleEffects(responsiveJson, effectiveData)
+        // This node's entry: buildModifier marks it (AppComponentStages).
+        AppComponentStages.begin()
         val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
+        // Said once per type when the handler drew a type the app did not
+        // name in Configuration.customComponentTypes: what classifies the
+        // node (its viewId, its tap role) then reads it as the built-in.
+        if (handledByApp) TypeSynonyms.noteDrawnByApp(type, context)
         // A synonym spelling (HStack, ProgressBar, WebView, …) is drawn as its
         // type, from the vendored type-synonym table — after the app was asked,
         // with the node as written, so an app's own component under a
@@ -240,6 +246,8 @@ private fun DynamicViewContent(
                 }
             }
         }
+        // The app's component drawn without buildModifier is said once per type.
+        AppComponentStages.end(type, responsiveJson, handledByApp, context)
     }
 
     // Apply visibility/hidden wrapper if either attribute resolved.

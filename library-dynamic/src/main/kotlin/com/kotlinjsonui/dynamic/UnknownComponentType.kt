@@ -16,9 +16,11 @@ object UnknownComponentType {
 
     /** The sentence for [written], given the types the runtime draws. */
     fun message(written: String, known: Collection<String>): String {
-        // (not the type itself: a type known by a definition that nothing
-        // draws is not offered as its own spelling)
-        val canonical = known.firstOrNull { it != written && it.equals(written, ignoreCase = true) }
+        // TypeSynonyms.caseOnlyMatch: the one place a candidate is looked
+        // for — among [known], the app's types, the synonyms and the alias
+        // sections; never the type itself (a type known by a definition that
+        // nothing draws is not offered as its own spelling).
+        val canonical = TypeSynonyms.caseOnlyMatch(written, known)
         val base = TEMPLATE.format(written)
         return if (canonical != null) base + HINT.format(canonical) else base
     }

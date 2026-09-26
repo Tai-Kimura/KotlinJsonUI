@@ -4,6 +4,7 @@ import androidx.compose.runtime.compositionLocalOf
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.TypeSynonyms
 
 /**
  * What TalkBack reads for an image — the rule jsonui-cli's codegen applies
@@ -26,7 +27,13 @@ object ImageAccessibility {
     enum class Role { LABEL, DECORATIVE, CONTROL }
 
     /** Image, its type aliases (component_metadata.json) and NetworkImage. */
-    private val IMAGE_TYPES = setOf("image", "circleimage", "circleimageview", "imageview", "img", "networkimage")
+    /**
+     * The types an image is drawn as (lowercase). A node is an image when the
+     * type it is drawn as ([TypeSynonyms.drawnType]) is one of them: Img,
+     * ImageView, AsyncImage, NetworkImageView, CircleImageView and every other
+     * spelling the table gives them.
+     */
+    private val IMAGE_TYPES = setOf("image", "circleimage", "networkimage")
 
     /** The canonical spelling first, then the declared aliases. */
     val ALT_KEYS = listOf("alt", "accessibilityLabel", "contentDescription")
@@ -41,7 +48,7 @@ object ImageAccessibility {
     val TEXT_KEYS = listOf("text", "hint", "placeholder", "label", "prompt")
 
     fun isImage(node: JsonObject): Boolean =
-        node.get("type")?.takeIf { it.isJsonPrimitive }?.asString?.lowercase() in IMAGE_TYPES
+        node.get("type")?.takeIf { it.isJsonPrimitive }?.asString?.let { TypeSynonyms.drawnType(it) }?.lowercase() in IMAGE_TYPES
 
     /**
      * Whether a node operates something a screen-reader user can activate — a

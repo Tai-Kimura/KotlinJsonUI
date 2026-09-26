@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.AppComponentStages
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
 
@@ -1488,6 +1489,12 @@ object ModifierBuilder {
      * `control`: the node is a control whose tap is its own operation — its
      * clickable stage is applyControlClickable (no `.clickable`), and the
      * component calls onClickFromOperation from that operation.
+     *
+     * `handles`: node attributes the component applies itself — an `onClick`
+     * or `onLongPress` it passes to its own composable, an `alpha` it applies
+     * — read here as if the node did not set them, so they are not applied a
+     * second time. Empty (the default): every stage, as before. kjui's codegen
+     * leaves the same ones to an app's converter that calls them itself.
      */
     fun buildModifier(
         json: JsonObject,
@@ -1495,13 +1502,19 @@ object ModifierBuilder {
         parentType: String? = null,
         context: Context? = null,
         defaultFillMaxWidth: Boolean = false,
-        control: ControlTap? = null
+        control: ControlTap? = null,
+        handles: Set<String> = emptySet()
     ): Modifier {
+        // The node being drawn got its common stages (AppComponentStages).
+        AppComponentStages.markApplied()
+        val node = if (handles.isEmpty()) json else JsonObject().also { copy ->
+            for ((key, value) in json.entrySet()) if (key !in handles) copy.add(key, value)
+        }
         return standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
             if (control != null && stage.name == "clickable") {
-                applyControlClickable(modifier, json, data, control)
+                applyControlClickable(modifier, node, data, control)
             } else {
-                stage.apply(modifier, json, data, context, defaultFillMaxWidth)
+                stage.apply(modifier, node, data, context, defaultFillMaxWidth)
             }
         }
     }
