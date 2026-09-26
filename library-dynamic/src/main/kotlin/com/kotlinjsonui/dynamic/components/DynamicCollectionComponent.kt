@@ -763,7 +763,7 @@ class DynamicCollectionComponent {
                     val items = mutableListOf<PageItem>()
                     sections.forEachIndexed { sectionIndex, sectionElement ->
                         val sectionObj = sectionElement.asJsonObject
-                        val cellViewName = sectionObj.get("cell")?.asString
+                        val cellViewName = sectionViewName(sectionObj, "cell")
 
                         collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
                             section.cells?.let { cellData ->
@@ -859,7 +859,7 @@ class DynamicCollectionComponent {
                     sections != null && collectionDataSource != null -> {
                         sections.forEachIndexed { sectionIndex, sectionJson ->
                             val sectionObj = sectionJson.asJsonObject
-                            val cellViewName = sectionObj.get("cell")?.asString
+                            val cellViewName = sectionViewName(sectionObj, "cell")
 
                             collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
                                 section.cells?.let { cellData ->
@@ -925,7 +925,7 @@ class DynamicCollectionComponent {
                 when {
                     sections != null && collectionDataSource != null -> {
                         val sectionObjs = sections.map { it.asJsonObject }
-                        fun cellNameOf(s: Int): String? = sectionObjs.getOrNull(s)?.get("cell")?.asString
+                        fun cellNameOf(s: Int): String? = sectionObjs.getOrNull(s)?.let { sectionViewName(it, "cell") }
                         val gridRows = nonLazyGridRows(
                             cellCounts = sectionObjs.indices.map { collectionDataSource.sections.getOrNull(it)?.cells?.data?.size ?: 0 },
                             sectionColumns = sectionObjs.map { it.get("columns")?.asInt ?: defaultColumns },
@@ -935,7 +935,7 @@ class DynamicCollectionComponent {
                             val sectionObj = sectionElement.asJsonObject
 
                             // Header
-                            val headerViewName = sectionObj.get("header")?.asString
+                            val headerViewName = sectionViewName(sectionObj, "header")
                             if (headerViewName != null) {
                                 collectionDataSource.sections.getOrNull(sectionIndex)?.header?.let { headerData ->
                                     renderCellView(headerViewName, headerData.data, 0, data)
@@ -985,7 +985,7 @@ class DynamicCollectionComponent {
                             }
 
                             // Footer
-                            val footerViewName = sectionObj.get("footer")?.asString
+                            val footerViewName = sectionViewName(sectionObj, "footer")
                             if (footerViewName != null) {
                                 collectionDataSource.sections.getOrNull(sectionIndex)?.footer?.let { footerData ->
                                     renderCellView(footerViewName, footerData.data, 0, data)
@@ -1039,7 +1039,7 @@ class DynamicCollectionComponent {
                     sections != null && collectionDataSource != null -> {
                         sections.forEachIndexed { sectionIndex, sectionElement ->
                             val sectionObj = sectionElement.asJsonObject
-                            val cellViewName = sectionObj.get("cell")?.asString
+                            val cellViewName = sectionViewName(sectionObj, "cell")
                             collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
                                 section.cells?.let { cellData ->
                                     items(cellData.data.size) { cellIndex ->
@@ -1095,7 +1095,7 @@ class DynamicCollectionComponent {
                     sections != null && collectionDataSource != null -> {
                         sections.forEachIndexed { sectionIndex, sectionElement ->
                             val sectionObj = sectionElement.asJsonObject
-                            val cellViewName = sectionObj.get("cell")?.asString
+                            val cellViewName = sectionViewName(sectionObj, "cell")
 
                             // `columns` on a horizontal Collection is its lanes, and
                             // a section's own `columns` its block's (4f ruling,
@@ -1255,9 +1255,9 @@ class DynamicCollectionComponent {
                     } else null
                     orderedSections.forEachIndexed { orderIndex, (sectionIndex, sectionJson) ->
                         val sectionObj = sectionJson.asJsonObject
-                        val cellViewName = sectionObj.get("cell")?.asString
-                        val headerViewName = sectionObj.get("header")?.asString
-                        val footerViewName = sectionObj.get("footer")?.asString
+                        val cellViewName = sectionViewName(sectionObj, "cell")
+                        val headerViewName = sectionViewName(sectionObj, "header")
+                        val footerViewName = sectionViewName(sectionObj, "footer")
                         val sectionColumns = sectionObj.get("columns")?.asInt ?: defaultColumns
 
                         // Calculate span for items in this section
@@ -1561,6 +1561,36 @@ class DynamicCollectionComponent {
             is Map<*, *> -> entry["className"] as? String
             else -> null
         }?.takeIf { it.isNotEmpty() }
+
+        /**
+         * A section's `cell` / `header` / `footer`: the name of the layout it
+         * draws (declared a string). A node written there instead — an inline
+         * cell, which is not declared — is not drawn, and a debuggable build
+         * names it once per key. Every read of the three went through
+         * `sectionObj.get(key)?.asString`, which Gson throws on for a
+         * JsonObject, a JsonArray and a JSON null (measured:
+         * UnsupportedOperationException), so the whole Collection failed to
+         * compose. A number is read as its text, as asString read it.
+         */
+        internal fun sectionViewName(section: JsonObject, key: String): String? {
+            val value = section.get(key) ?: return null
+            if (value.isJsonPrimitive) return value.asString
+            if (value.isJsonObject || value.isJsonArray) {
+                val message = "Collection section $key is a node, not the name of a layout " +
+                    "(inline cells are not declared): not drawn"
+                if (com.kotlinjsonui.dynamic.DebugDiagnostics.isAppDebuggable(null) &&
+                    inlineSectionWarned.add(key)
+                ) {
+                    inlineSectionSink?.invoke(message)
+                    android.util.Log.w("DynamicCollection", message)
+                }
+            }
+            return null
+        }
+
+        /** Test hook: receives every inline-section message. */
+        internal var inlineSectionSink: ((String) -> Unit)? = null
+        private val inlineSectionWarned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
         internal fun cellPlan(a: CollectionAttributes, sections: JsonArray?, boundSource: CollectionDataSource?): CellPlan {
             val hasSections = sections != null && sections.size() > 0
