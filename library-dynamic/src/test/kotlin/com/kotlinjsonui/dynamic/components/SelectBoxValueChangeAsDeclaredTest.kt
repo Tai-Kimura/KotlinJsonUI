@@ -138,6 +138,30 @@ class SelectBoxValueChangeAsDeclaredTest {
         assertEquals(listOf(sentence, sentence), warnings)
     }
 
+    /**
+     * A Date SelectBox's value is its selectedDate (4f's ruling, jsonui-cli
+     * 1.9.0): selectedItem was read after it, bound and static, and
+     * selectedValue / selectedIndex never were — none of the three is read
+     * now. A lone bind still stands for selectedDate.
+     */
+    @Test
+    fun aDateBoxReadsItsValueFromSelectedDateAlone() {
+        val data = mapOf<String, Any>("day" to "2026-09-26", "other" to "2026-01-01", "idx" to 3)
+        fun read(json: String): Pair<String?, String> {
+            val a = attrs(json)
+            val key = DynamicSelectBoxComponent.dateBindingVariableOf(a)
+            return key to DynamicSelectBoxComponent.dateSelectionOf(a, data, key)
+        }
+        val date = """"type": "SelectBox", "selectItemType": "Date""""
+        for (other in listOf(""""selectedItem": "@{other}"""", """"selectedValue": "@{other}"""", """"selectedIndex": "@{idx}"""",
+                             """"selectedItem": "2026-01-01"""", """"selectedValue": "2026-01-01"""")) {
+            assertEquals(other, null to "", read("{$date, $other}"))
+            assertEquals(other, "day" to "2026-09-26", read("""{$date, $other, "selectedDate": "@{day}"}"""))
+        }
+        assertEquals("day" to "2026-09-26", read("""{$date, "bind": "@{day}"}"""))
+        assertEquals(null to "2026-02-02", read("""{$date, "selectedDate": "2026-02-02", "selectedItem": "2026-01-01"}"""))
+    }
+
     @Test
     fun aReleaseBuildNamesNothing() {
         DebugDiagnostics.enabledOverride = false
