@@ -44,7 +44,7 @@ data class CommonAttributes(
     val aspectWidth: AttrValue<Double>? = null,
     /** Background color - hex string (#RRGGBB or #RRGGBBAA) or color name from colors.json (can be data binding). `backgroundColor` folds here: the genuine layout reads of that spelling all chain with `background` (kjui blurview_component.rb:42 `background || backgroundColor`, kjui segment_component.rb:55 `backgroundColor || background`, rjui blur_converter.rb:58 and circle_view_converter.rb:55). Note the two kjui sites read the pair in OPPOSITE order, so a layout setting both drew two different colours until the normalizer began folding them — the same defect shape as CheckBox's accent chain (plan 51-E). When a `gradient` is also declared on the same view, the GRADIENT wins and this is the fallback fill — not a layer underneath it. Full ruling in attribute_semantics.json -> backgroundFill; do not restate it in toolchain comments. */
     val background: AttrValue<String>? = null,
-    /** Two-way binding for the component's primary value — Switch/Check isOn, Slider value, Segment selectedIndex, SelectBox selectedValue, Progress progress, Table items. An alternative spelling to each component's own value attribute, which takes precedence when both are set. [binding: two-way] */
+    /** Two-way binding for the component's primary value — Switch/Check isOn, Slider value, Segment selectedIndex, SelectBox selectedValue, Progress progress. An alternative spelling to each component's own value attribute, which takes precedence when both are set. Not a Collection's data source (Table is a Collection): that is `items`, and the validator says so. [binding: two-way] */
     val bind: AttrValue<Any>? = null,
     /** Legacy UIKit KVC binding: names the data property a view is bound to (SJUIViewCreator sets view.binding / view.bindingSet, and UIKit's Binding class pushes values through it). The object form is also the pre-@{} Table data source ({"data": "@{items}"}). Superseded by '@{...}' in the attribute value itself — use `bind` or the component's own value attribute instead. [accepts: string | object] */
     val binding: Any? = null,
@@ -208,11 +208,11 @@ data class CommonAttributes(
     val offsetX: AttrValue<Double>? = null,
     /** Vertical offset applied after layout, in pt / dp / px. Measurement and sibling placement are unchanged — the layout is computed first and the offset moves only this view. Its INTERACTIVE region moves with it: an offset control is tappable where it is drawn, which is what rules out a draw-only translation. Absolute, not RTL-mirroring, like leftMargin/rightMargin rather than startMargin/endMargin. Pairs with offsetX; either one alone implies 0 for the other. Full ruling (including the android primitive) in attribute_semantics.json -> offset. */
     val offsetY: AttrValue<Double>? = null,
-    /** Lifecycle callback when view appears (SwiftUI/Compose only) */
+    /** Lifecycle callback when view appears (SwiftUI/Compose only). The handler's name (e.g. "screenAppeared"); written as a binding (`@{screenAppeared}`) or with UIKit's sender mark (`screenAppeared:`, which means nothing in SwiftUI or Compose) it is read as the same name, as the other event handlers are. Called as its declared closure type asks: `()` with nothing, `(String)` with the viewId. */
     val onAppear: String? = null,
     /** Click handler (camelCase) - binding only (@{functionName}) */
     val onClick: AttrValue<Any>? = null,
-    /** Lifecycle callback when view disappears (SwiftUI/Compose only) */
+    /** Lifecycle callback when view disappears (SwiftUI/Compose only). The handler's name (e.g. "screenDisappeared"); written as a binding (`@{screenDisappeared}`) or with UIKit's sender mark (`screenDisappeared:`, which means nothing in SwiftUI or Compose) it is read as the same name, as the other event handlers are. Called as its declared closure type asks: `()` with nothing, `(String)` with the viewId. */
     val onDisappear: String? = null,
     /** Long press gesture handler (camelCase) - binding only (@{functionName}) [binding: one-way] */
     val onLongPress: AttrValue<Any>? = null,
@@ -276,8 +276,8 @@ data class CommonAttributes(
     val topMargin: AttrValue<Double>? = null,
     /** Top padding (alias for paddingTop, binding supported) */
     val topPadding: AttrValue<Double>? = null,
-    /** Touch disable mode */
-    val touchDisabledState: String? = null,
+    /** The hit-test mode of SJUIView (UIKit). none — as usual; onlyMe — the view itself lets a touch through to what is behind it, its subviews still take theirs; viewsWithoutTouchEnabled — only subviews with isUserInteractionEnabled take a touch; viewsWithoutInList — only the subviews whose id is in touchEnabledViewIds do. SwiftUI, Compose and web do not read it: to stop a view and everything in it, use userInteractionEnabled: false. */
+    val touchDisabledState: AttrEnum<TouchDisabledState>? = null,
     /** IDs of enabled views */
     val touchEnabledViewIds: List<Any?>? = null,
     /** Component type [required] */
@@ -384,6 +384,24 @@ data class CommonAttributes(
                 "thin", "systemthinmaterial" -> THIN
                 "thick", "systemthickmaterial" -> THICK
                 "chrome", "systemchromematerial" -> CHROME
+                else -> null
+            }
+        }
+    }
+
+    enum class TouchDisabledState(val json: String) {
+        NONE("none"),
+        ONLY_ME("onlyMe"),
+        VIEWS_WITHOUT_TOUCH_ENABLED("viewsWithoutTouchEnabled"),
+        VIEWS_WITHOUT_IN_LIST("viewsWithoutInList");
+
+        companion object {
+            /** Case-insensitive match against the declared values. */
+            fun from(raw: String): TouchDisabledState? = when (raw.lowercase()) {
+                "none" -> NONE
+                "onlyme" -> ONLY_ME
+                "viewswithouttouchenabled" -> VIEWS_WITHOUT_TOUCH_ENABLED
+                "viewswithoutinlist" -> VIEWS_WITHOUT_IN_LIST
                 else -> null
             }
         }
@@ -712,7 +730,7 @@ data class CommonAttributes(
             toView = AttrCoerce.string(AttrCoerce.lookup(json, "toView")),
             topMargin = AttrCoerce.attrValue(AttrCoerce.lookup(json, "topMargin")) { AttrCoerce.number(it) },
             topPadding = AttrCoerce.attrValue(AttrCoerce.lookup(json, "topPadding")) { AttrCoerce.number(it) },
-            touchDisabledState = AttrCoerce.string(AttrCoerce.lookup(json, "touchDisabledState")),
+            touchDisabledState = parseTouchDisabledState(AttrCoerce.lookup(json, "touchDisabledState")),
             touchEnabledViewIds = AttrCoerce.array(AttrCoerce.lookup(json, "touchEnabledViewIds")),
             type = AttrCoerce.string(AttrCoerce.lookup(json, "type")),
             userInteractionEnabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "userInteractionEnabled")) { AttrCoerce.boolean(it) },
@@ -758,6 +776,15 @@ data class CommonAttributes(
                 EffectStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
             AttrWarnings.emit("common.effectStyle: unknown enum value '$raw'")
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseTouchDisabledState(raw: Any?): AttrEnum<TouchDisabledState>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                TouchDisabledState.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            AttrWarnings.emit("common.touchDisabledState: unknown enum value '$raw'")
             return AttrEnum.Unknown(raw)
         }
 

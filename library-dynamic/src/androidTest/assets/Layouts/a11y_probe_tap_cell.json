@@ -1,0 +1,7 @@
+{
+  "type": "View",
+  "id": "dynCell",
+  "child": [
+    { "type": "Label", "id": "dynCellLbl", "text": "@{title}", "onClick": "@{onRow}" }
+  ]
+}
