@@ -783,9 +783,15 @@ object ModifierBuilder {
      * does not operate) — and the three detectors read neither: they fired
      * under both (measured, API 35 emulator, conformance-host
      * InteractionGateProbeTest). kjui's codegen: gesture_gate.
+     *
+     * And the mark of a node around it that stops interaction
+     * (TapAccessibility.STOPPED_KEY): the detectors take their first down in
+     * the Initial pass without requiring it unconsumed, so the blocker of a
+     * node around them did not stop them (read, not measured on a device).
      */
     fun gesturesShut(json: JsonObject, data: Map<String, Any>): Boolean =
-        interactionBlocked(json, data) || resolveEnabled(json, data) == false
+        interactionBlocked(json, data) || resolveEnabled(json, data) == false ||
+            TapAccessibility.stoppedAround(json)
 
     /**
      * common.enabled — resolved value, or null when the attribute is absent.
