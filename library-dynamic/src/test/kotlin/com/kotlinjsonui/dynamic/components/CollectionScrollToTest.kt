@@ -1,0 +1,115 @@
+package com.kotlinjsonui.dynamic.components
+
+import com.google.gson.JsonParser
+import com.kotlinjsonui.data.CollectionDataSection
+import com.kotlinjsonui.data.CollectionDataSource
+import com.kotlinjsonui.dynamic.components.DynamicCollectionComponent.Companion.ScrollSection
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+/**
+ * What a Collection's `scrollTo` names across sections (4f ruling
+ * 2026-09-27; jsonui-cli 1.9.0, the SSoT's Collection.scrollTo): an Int is
+ * a CELL counted across the drawn sections in section order — a header or
+ * footer item, and the grid's row break, is not counted; a String with
+ * cellIdProperty is the first cell, in section order, whose key it is. A
+ * String that is no cell's key is read, as before 1.9.0, as the lazy item
+ * index (the Kotlin paths' own reading, the SSoT says why).
+ *
+ * Until 1.9.0 this renderer read only a `SharedFlow<Int>` and scrolled to
+ * that lazy item: headers, footers and breaks counted, a plain value never
+ * scrolled. What is pinned here is the arithmetic, over the sections as the
+ * grid emits them (emittedScrollSections); the scroll is pinned on a device
+ * (DynamicCollectionScrollToTest).
+ */
+class CollectionScrollToTest {
+
+    private fun cells(vararg keys: String) = keys.map { mapOf<String, Any>("key" to it) }
+
+    /** Section A: header, a0…a4 (k0…k4), footer; section B: header, b0…b7 (k3, x1…x7). */
+    private val a = cells("k0", "k1", "k2", "k3", "k4")
+    private val b = cells("k3", "x1", "x2", "x3", "x4", "x5", "x6", "x7")
+    private val list = listOf(
+        ScrollSection(0, breakBefore = false, header = true, cells = a, footer = true),
+        ScrollSection(1, breakBefore = false, header = true, cells = b, footer = false),
+    )
+
+    private fun item(value: Any?, sections: List<ScrollSection> = list, key: String? = null, leading: Int = 0) =
+        DynamicCollectionComponent.scrollItemIndex(value, sections, key, leading)
+
+    // Items: H a0 a1 a2 a3 a4 F H b0 b1 … — item 6 is F, item 3 a2.
+    @Test
+    fun anIntIsACellCountedAcrossTheSections() {
+        assertEquals(1, item(0))
+        assertEquals(4, item(3))
+        assertEquals(9, item(6))      // b1
+        assertEquals(15, item(12))    // b7, the last cell
+        assertNull(item(13))          // no 14th cell
+        assertEquals(9, item(6L))     // any number
+        assertEquals(9, item("6"))    // a String without cellIdProperty: digits
+        assertEquals(9, item("6#1727"))
+        assertNull(item(""))
+        assertNull(item("six"))
+    }
+
+    @Test
+    fun aKeyIsTheFirstCellInSectionOrderThatHasIt() {
+        assertEquals(4, item("k3", key = "key"))   // a3, not b0
+        assertEquals(10, item("x2", key = "key"))  // b2
+        assertEquals(2, item("k1", key = "key"))
+        // No cell's key: the lazy item index, as before 1.9.0.
+        assertEquals(0, item("0#1727", key = "key"))
+        assertNull(item("nothing", key = "key"))
+        // An enriched cellId is the key when there is one.
+        val enriched = listOf(ScrollSection(0, false, false, listOf(mapOf("key" to "k0", "cellId" to "k0_x")), false))
+        assertEquals(0, item("k0_x", enriched, key = "key"))
+        assertNull(item("k0", enriched, key = "key"))
+    }
+
+    /** Emitted in reverse (reverseLayout): section B's items come first; the cells are still counted A then B. */
+    @Test
+    fun reversedEmissionCountsCellsInSectionOrder() {
+        val reversed = list.reversed()
+        // Items: H b0 … b7 H a0 … a4 F
+        assertEquals(10, item(0, reversed))   // a0
+        assertEquals(2, item(6, reversed))    // b1
+    }
+
+    /** A grid's row break (an empty item) is not a cell; the legacy header item leads. */
+    @Test
+    fun aRowBreakAndALeadingHeaderAreNotCells() {
+        val grid = listOf(
+            ScrollSection(0, breakBefore = false, header = true, cells = a, footer = false),
+            ScrollSection(1, breakBefore = true, header = false, cells = b, footer = false),
+        )
+        // Items: H a0 … a4 _ b0 …
+        assertEquals(8, item(6, grid))
+        assertEquals(9, item(6, grid, leading = 1))
+    }
+
+    /** The grid's sections as generateCollectionItems emits them, row breaks from sectionBreakSpans. */
+    @Test
+    fun theGridsSectionsAsEmitted() {
+        val declared = JsonParser.parseString(
+            """[{"cell": "c", "header": "h"}, {"cell": "c"}]"""
+        ).asJsonArray
+        val source = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(
+                    header = CollectionDataSection.HeaderFooterData("h", emptyMap()),
+                    cells = CollectionDataSection.CellData("c", a)
+                ),
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", b)),
+            )
+        )
+        val emitted = DynamicCollectionComponent.emittedScrollSections(declared, source, 2, 2, reverseLayout = false, breakRowsBetweenSections = true)
+        // a0 … a4 leave a row part filled: a break before section B.
+        assertEquals(listOf(false, true), emitted.map { it.breakBefore })
+        assertEquals(listOf(true, false), emitted.map { it.header })
+        assertEquals(8, item(6, emitted))
+        val reversed = DynamicCollectionComponent.emittedScrollSections(declared, source, 2, 2, reverseLayout = true, breakRowsBetweenSections = true)
+        assertEquals(listOf(1, 0), reversed.map { it.section })
+        assertEquals(1, item(6, reversed))  // b1: B first, its cells from item 0
+    }
+}
