@@ -2,6 +2,7 @@ package com.kotlinjsonui.dynamic
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.helpers.TapAccessibility
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -35,6 +36,35 @@ class TapAccessibilityVectorsTest {
     fun theTypeListsAreTheTablesDeclaration() {
         assertEquals(vectors.getAsJsonArray("interactive_types").map { it.asString }, TapAccessibility.INTERACTIVE_TYPES.sorted())
         assertEquals(vectors.getAsJsonArray("known_types").map { it.asString }, TapAccessibility.KNOWN_TYPES.sorted())
+    }
+
+    /**
+     * Which nodes are controls (`controls`): [TapAccessibility.isControl]
+     * answers each case as jsonui-cli's `control?` does, the app's own
+     * spellings registered as the case says
+     * ([com.kotlinjsonui.core.Configuration.customComponentTypes], as an app's
+     * initializer hands them over).
+     */
+    @Test
+    fun everyControlCaseIsAnsweredAsTheTableGives() {
+        val controls = vectors.getAsJsonObject("controls")
+        assertEquals(
+            controls.getAsJsonArray("stop_container_types").map { it.asString },
+            TapAccessibility.STOP_CONTAINER_TYPES.sorted()
+        )
+        val cases = controls.getAsJsonArray("cases").map { it.asJsonObject }
+        assertEquals(setOf(true, false), cases.map { it.get("control").asBoolean }.toSet())
+        val saved = Configuration.customComponentTypes
+        try {
+            for (case in cases) {
+                val type = case.get("type").asString
+                val apps = case.getAsJsonArray("app_types")?.map { it.asString }.orEmpty()
+                Configuration.customComponentTypes = apps.toSet()
+                assertEquals("$type, app types $apps", case.get("control").asBoolean, TapAccessibility.isControl(type))
+            }
+        } finally {
+            Configuration.customComponentTypes = saved
+        }
     }
 
     @Test

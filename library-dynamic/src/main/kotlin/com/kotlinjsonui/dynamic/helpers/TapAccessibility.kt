@@ -2,6 +2,7 @@ package com.kotlinjsonui.dynamic.helpers
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.TypeSynonyms
 
 /**
@@ -67,20 +68,29 @@ object TapAccessibility {
     }
 
     /**
-     * The interactive types that hold the operated things rather than being
-     * one (jsonui-cli shared/core/tap_accessibility.rb STOP_CONTAINER_TYPES).
+     * The interactive types, as drawn, that hold the operated things rather
+     * than being one (jsonui-cli shared/core/tap_accessibility.rb
+     * STOP_CONTAINER_TYPES, and the vectors' `controls.stop_container_types`).
+     * A Table, a TableView or a RecyclerView is drawn as a Collection, so the
+     * drawn type is never one of them.
      */
-    private val STOP_CONTAINERS = setOf("tabview", "scrollview", "collection", "table", "tableview", "recyclerview", "web", "embed")
+    val STOP_CONTAINER_TYPES = listOf("Collection", "Embed", "ScrollView", "TabView", "Web")
+    private val STOP_CONTAINERS = STOP_CONTAINER_TYPES.map { it.lowercase() }.toSet()
 
     /**
      * A control a stop holds — operated where it is, not a container
      * (jsonui-cli shared/core/tap_accessibility.rb `control?`): the stop takes
      * its operation without a tap on it — TalkBack's click on its node too
      * (ModifierBuilder.applyStoppedControl, InteractionMarking.dataAsDrawn).
-     * Asked of the type it is drawn as, as [isInteractiveType] is.
+     * Asked of the type it is drawn as, as [isInteractiveType] is. An app's
+     * own component is none, whatever it spells (4f's ruling, jsonui-cli
+     * 1.9.0): it carries its own role — and [INTERACTIVE_TYPES] holds alias
+     * spellings as written (Toggle, Table), which a registered type draws as
+     * written.
      */
     fun isControl(type: String?): Boolean {
-        val t = type?.let { TypeSynonyms.drawnType(it) }?.lowercase() ?: return false
+        if (type == null || type in Configuration.customComponentTypes) return false
+        val t = TypeSynonyms.drawnType(type).lowercase()
         return t in interactive && t !in STOP_CONTAINERS
     }
 
@@ -218,12 +228,30 @@ object TapAccessibility {
             handlerValues(node.get("onLongPress")).isNotEmpty()
 
     /**
+     * The keys the tools write on a node that the layout did not: the
+     * position stamp and the rule's own marks (jsonui-cli
+     * shared/core/tap_accessibility.rb WRITTEN_STAMPS).
+     */
+    private val WRITTEN_STAMPS = setOf("_layoutPath", "_tapShape", STOPPED_KEY, "_tapGates")
+
+    /** A data-only element — `data` the only key the layout wrote — declares the data and draws nothing (jsonui-cli `data_only?`). */
+    fun isDataOnly(node: JsonObject): Boolean = node.keySet().minus(WRITTEN_STAMPS) == setOf("data")
+
+    /**
+     * The children a node draws: the shapes do not count a data-only one
+     * (jsonui-cli `drawn_children`). It read as a child of unknown type, a
+     * control, and a Label with onClick whose only child declared its data
+     * was no button (4f's ruling, jsonui-cli 1.9.0).
+     */
+    fun drawnChildren(node: JsonObject): List<JsonObject> = children(node).filterNot { isDataOnly(it) }
+
+    /**
      * Something inside [node] a user can operate on its own. [stopped]: a node
      * around the child has `userInteractionEnabled: false`, so its own tap is
      * none (its type still says whether it is a control).
      */
     fun holdsAControl(node: JsonObject, stopped: Boolean = false): Boolean =
-        children(node).any {
+        drawnChildren(node).any {
             val inner = stopped || stops(it)
             isOperable(it, inner) || holdsAControl(it, inner)
         }
@@ -232,7 +260,7 @@ object TapAccessibility {
     fun shape(node: JsonObject): Shape? {
         if (!isTappable(node)) return null
         if (isInteractiveType(type(node))) return Shape.NONE
-        if (children(node).isEmpty()) return Shape.BUTTON
+        if (drawnChildren(node).isEmpty()) return Shape.BUTTON
         if (holdsAControl(node)) return Shape.NONE
         return Shape.COMBINE
     }

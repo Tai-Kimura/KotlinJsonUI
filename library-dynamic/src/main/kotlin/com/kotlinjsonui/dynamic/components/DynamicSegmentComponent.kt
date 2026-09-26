@@ -185,6 +185,9 @@ class DynamicSegmentComponent {
             ) {
                 segments.forEachIndexed { index, segment ->
                     Tab(
+                        // Each tab is a node of its own: it reads the stop
+                        // too (stoppedItem).
+                        modifier = ModifierBuilder.stoppedItem(json, data),
                         selected = selectedIndex == index,
                         enabled = isEnabled,
                         onClick = {
