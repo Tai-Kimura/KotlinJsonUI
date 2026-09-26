@@ -9,7 +9,12 @@
       "paging": true,
       "height": 120,
       "currentPage": "@{currentPage}",
-      "cell": { "type": "Label", "text": "page" }
+      "items": "@{items}",
+      "sections": [
+        {
+          "cell": "collection_probe_page_cell"
+        }
+      ]
     },
     {
       "type": "Label",

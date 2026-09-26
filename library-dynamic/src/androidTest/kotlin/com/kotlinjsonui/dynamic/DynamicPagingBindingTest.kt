@@ -39,7 +39,8 @@ class DynamicPagingBindingTest {
               "paging": true,
               "height": 120,
               "currentPage": "@{currentPage}",
-              "cell": { "type": "Label", "text": "page" }
+              "items": "@{items}",
+              "sections": [{ "cell": "collection_probe_page_cell" }]
             },
             {
               "type": "Label",
@@ -55,7 +56,10 @@ class DynamicPagingBindingTest {
         var upstreamPage by mutableStateOf(0)
 
         rule.setContent {
-            val data = mapOf<String, Any>("currentPage" to upstreamPage)
+            val data = mapOf<String, Any>(
+                "currentPage" to upstreamPage,
+                "items" to probeItems(10, "collection_probe_page_cell")
+            )
             DynamicRuntimeScope(data) { effectiveData ->
                 DynamicView(
                     json = JsonParser.parseString(layoutJson).asJsonObject,

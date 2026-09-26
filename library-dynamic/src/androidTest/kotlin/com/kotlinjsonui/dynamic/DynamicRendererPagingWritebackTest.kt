@@ -33,7 +33,10 @@ class DynamicRendererPagingWritebackTest {
         rule.setContent {
             RenderDynamicView(
                 layoutName = "paging_writeback_probe",
-                data = mapOf<String, Any>("currentPage" to 0)
+                data = mapOf<String, Any>(
+                    "currentPage" to 0,
+                    "items" to probeItems(10, "collection_probe_page_cell")
+                )
             )
         }
 
