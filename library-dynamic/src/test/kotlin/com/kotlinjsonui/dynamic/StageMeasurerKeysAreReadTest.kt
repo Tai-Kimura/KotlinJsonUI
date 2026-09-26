@@ -11,8 +11,9 @@ import java.io.File
  * (its TYPES and EFFECT_EXTRA, androidTest) is one the component DynamicView
  * dispatches that type to reads. A key it does not read measures nothing:
  * the harness drew CircleImage with `srcName`, which DynamicCircleImageComponent
- * does not read (it reads src / source / url), so every CircleImage stage was
- * measured on an image that was never there — the fallback Box.
+ * did not read then (it read src / source / url), so every CircleImage stage was
+ * measured on an image that was never there — the fallback Box. (From
+ * jsonui-cli 1.9.0 it reads Image's source, srcName included.)
  *
  * Read from the sources, mechanically:
  * - the harness entries: StageMeasurer.kt's TYPES / EFFECT_EXTRA literals;
@@ -82,13 +83,22 @@ class StageMeasurerKeysAreReadTest {
         assertEquals("keys the harness passes that the component does not read", emptyList<String>(), unread(harness))
     }
 
-    /** The detector's controls: a key a component reads, and one it does not. */
+    /**
+     * The detector's controls: a key a component reads, and one it does not.
+     * CircleImage's unread key was `srcName` until it read Image's source
+     * (jsonui-cli 1.9.0); `renderingMode` is one it still does not apply.
+     */
     @Test
     fun theDetectorTellsAReadKeyFromAnUnreadOne() {
-        assertEquals(emptyList<String>(), unread(listOf("Image" to setOf("srcName"), "CircleImage" to setOf("src"))))
         assertEquals(
-            listOf("CircleImage srcName (DynamicCircleImageComponent)", "HStack nosuchkey (DynamicContainerComponent)"),
-            unread(listOf("CircleImage" to setOf("srcName"), "HStack" to setOf("nosuchkey")))
+            emptyList<String>(),
+            // One key per entry: a two-string setOf(…) here is this class's
+            // setOf(source, name), which answers an empty set.
+            unread(listOf("Image" to setOf("srcName"), "CircleImage" to setOf("src"), "CircleImage" to setOf("srcName")))
+        )
+        assertEquals(
+            listOf("CircleImage renderingMode (DynamicCircleImageComponent)", "HStack nosuchkey (DynamicContainerComponent)"),
+            unread(listOf("CircleImage" to setOf("renderingMode"), "HStack" to setOf("nosuchkey")))
         )
     }
 }

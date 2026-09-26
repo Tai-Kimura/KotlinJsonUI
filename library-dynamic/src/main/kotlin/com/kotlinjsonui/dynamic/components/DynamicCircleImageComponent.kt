@@ -13,14 +13,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import android.content.Context
+import android.util.Log
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.DebugDiagnostics
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ImageAttributes
-import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
 import com.kotlinjsonui.dynamic.helpers.ImageContentScale
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -33,24 +32,28 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic CircleImage Component Converter
- * Converts JSON to circular Image/AsyncImage composable at runtime
+ * Converts JSON to a circular Image composable at runtime
  *
  * Supported JSON attributes (matching Ruby implementation):
- * - source/src/url: String image source (local resource or URL) or @{variable}
+ * - srcName/src: a local image NAME or @{variable}, read as Image reads it
+ *   (DynamicImageComponent.rawSource / resourceId). A URL belongs to
+ *   NetworkImage (see [CircleImageSource]).
  * - size: Number size for both width and height (default 48)
  * - borderWidth: Float border width
  * - borderColor: String hex color for border
  * - borderStyle: "solid" | "dashed" | "dotted"
  * - background: String hex color for background (when image doesn't load)
- * - errorImage: String resource name for error image (network images only)
+ * - errorImage / loadingImage: fallback image names, as on Image
  * - contentDescription: String description for accessibility
  * - padding/paddings: Number or Array for padding
  * - margins: Array or individual margin properties
  * - alpha/opacity: Float opacity value (0-1), supports @{binding}
  * - onClick/onclick: String event handler name
  *
- * Note: Automatically determines if it's a network or local image.
- * Network detection: has 'url' key OR source/src starts with "http".
+ * A CircleImage is an Image spelling and its src is a local image name (the
+ * SSoT's Image.src; 4f's ruling, jsonui-cli 1.9.0). It loaded a src beginning
+ * "http" from the network, and read the undeclared `url` / `source` the same
+ * way — leniency outside the declaration that no other path had.
  * contentMode as on Image (ImageContentScale), default fit — a CircleImage is
  * an Image spelling (type_synonyms.json render_as) and draws as iOS and web
  * draw it. It cropped for every mode (4f ruling, 2026-09-26).
@@ -63,7 +66,7 @@ class DynamicCircleImageComponent {
     companion object {
         /** CircleImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "src", "contentMode", "errorImage", "alt"
+            "srcName", "src", "contentMode", "errorImage", "loadingImage", "alt"
         )
 
         @Composable
@@ -82,17 +85,15 @@ class DynamicCircleImageComponent {
                 context = context
             )
 
-            // Determine if network image: has 'url' key OR source starts with "http"
-            // ('url' and 'source' are undeclared legacy runtime extras on
-            // CircleImage — Image declares only src/srcName)
-            val urlElement = TypedAttrs.undeclared(json, "url")
-            val hasUrl = urlElement != null
-            val rawSource = urlElement?.asString
-                ?: TypedAttrs.undeclared(json, "source")?.asString
-                ?: TypedAttrs.rawString(a.src)
-                ?: ""
-            val resolvedSource = processDataBinding(rawSource, data)
-            val isNetworkImage = hasUrl || resolvedSource.startsWith("http")
+            // The drawable, as Image reads it: a local name, a binding
+            // resolved first. A URL there draws what an unresolved name
+            // draws, and a debuggable build names it once.
+            CircleImageSource.nameUrl(
+                ResourceResolver.drawableName(DynamicImageComponent.rawSource(json, a), data), context
+            )
+            val resourceId = DynamicImageComponent.resourceId(json, a) {
+                ResourceResolver.resolveDrawable(it, data, context)
+            }
 
             // What TalkBack reads (ImageAccessibility, the codegen's rule):
             // the alt, nothing for a decorative image, and "Profile Image" for an
@@ -170,56 +171,53 @@ class DynamicCircleImageComponent {
             val contentScale = ImageContentScale.scale(mode)
             val contentAlignment = ImageContentScale.alignment(mode)
 
-            // Render the appropriate image component
-            if (isNetworkImage) {
-                // Error image for network images
-                val errorImageName = a.errorImage
-                val errorResId = errorImageName?.let { name ->
-                    val cleanName = name.replace(".png", "").replace(".jpg", "")
-                        .replace("-", "_").lowercase()
-                    context.resources.getIdentifier(cleanName, "drawable", context.packageName)
-                }?.takeIf { it != 0 }
-
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(resolvedSource)
-                        .crossfade(true)
-                        .build(),
+            // A resource that is not found draws no image, and the node still
+            // takes its place and its stages, as on Image.
+            if (resourceId != 0) {
+                Image(
+                    painter = painterResource(id = resourceId),
                     contentDescription = contentDescription,
                     contentScale = contentScale,
                     alignment = contentAlignment,
-                    error = errorResId?.let { painterResource(it) },
                     modifier = modifier
                 )
             } else {
-                // Local image: clean name (.png/.jpg removed, - -> _, lowercase)
-                val resourceName = resolvedSource
-                    .replace(".png", "")
-                    .replace(".jpg", "")
-                    .replace("-", "_")
-                    .lowercase()
-
-                val resourceId = if (resourceName.isNotEmpty()) {
-                    context.resources.getIdentifier(
-                        resourceName,
-                        "drawable",
-                        context.packageName
-                    )
-                } else 0
-
-                if (resourceId != 0) {
-                    Image(
-                        painter = painterResource(id = resourceId),
-                        contentDescription = contentDescription,
-                        contentScale = contentScale,
-                        alignment = contentAlignment,
-                        modifier = modifier
-                    )
-                } else {
-                    // Fallback: show background color only if resource not found
-                    Box(modifier = modifier)
-                }
+                Box(modifier = modifier)
             }
         }
     }
+}
+
+/**
+ * A CircleImage's src is a local image name; a URL belongs to NetworkImage
+ * (the SSoT's Image.src, 4f's ruling, jsonui-cli 1.9.0). The component loaded a
+ * src beginning "http" from the network; it now reads Image's source, so a URL
+ * draws what an unresolved name draws — nothing — and a debuggable build says
+ * why, once. A URL is a value with a scheme and "://" (`https://…`,
+ * `file://…`); a drawable NAME beginning "http" (`http_badge`) is not one —
+ * the old test read it as a URL and loaded it from the network.
+ */
+internal object CircleImageSource {
+    private const val TAG = "JsonUICircleImage"
+    const val MESSAGE = "CircleImage src is a local image name; a URL belongs to NetworkImage"
+
+    /** Test hook: receives every emitted warning message. */
+    var warningSink: ((String) -> Unit)? = null
+
+    private val named = java.util.concurrent.atomic.AtomicBoolean(false)
+    private val URL = Regex("^[A-Za-z][A-Za-z0-9+.-]*://")
+
+    fun looksLikeUrl(value: String?): Boolean = value != null && URL.containsMatchIn(value.trim())
+
+    /** Names a URL the source resolved to, once per process, in a debuggable build. */
+    fun nameUrl(resolvedSource: String?, context: Context?) {
+        if (!looksLikeUrl(resolvedSource)) return
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        if (!named.compareAndSet(false, true)) return
+        val message = "$MESSAGE: '$resolvedSource'"
+        warningSink?.invoke(message)
+        Log.w(TAG, message)
+    }
+
+    internal fun resetForTest() = named.set(false)
 }
