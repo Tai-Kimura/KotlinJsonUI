@@ -676,7 +676,7 @@ object ModifierBuilder {
         // emulator, AccessibilityNodeInfo.isEnabled), where iOS reads it as
         // enabled. kjui's codegen attaches the click the same way.
         if (handlers.isNotEmpty() && tapGateOpen(json, data)) {
-            val viewId = json.get("id")?.asString
+            val viewId = LayoutPath.viewId(json)
             // TalkBack is told it is a button where the shared rule says so
             // (TapAccessibility): not where the tappable is a control already
             // or holds one.
@@ -749,7 +749,7 @@ object ModifierBuilder {
     fun onClickFromOperation(json: JsonObject, data: Map<String, Any>): (() -> Unit)? {
         val handlers = TapAccessibility.clickHandlers(json)
         if (handlers.isEmpty() || !tapGateOpen(json, data)) return null
-        val viewId = json.get("id")?.asString
+        val viewId = LayoutPath.viewId(json)
         return { handlers.forEach { resolveEventHandler(it, data, viewId) } }
     }
 
@@ -783,9 +783,15 @@ object ModifierBuilder {
      * does not operate) — and the three detectors read neither: they fired
      * under both (measured, API 35 emulator, conformance-host
      * InteractionGateProbeTest). kjui's codegen: gesture_gate.
+     *
+     * And the mark of a node around it that stops interaction
+     * (TapAccessibility.STOPPED_KEY): the detectors take their first down in
+     * the Initial pass without requiring it unconsumed, so the blocker of a
+     * node around them did not stop them (read, not measured on a device).
      */
     fun gesturesShut(json: JsonObject, data: Map<String, Any>): Boolean =
-        interactionBlocked(json, data) || resolveEnabled(json, data) == false
+        interactionBlocked(json, data) || resolveEnabled(json, data) == false ||
+            TapAccessibility.stoppedAround(json)
 
     /**
      * common.enabled — resolved value, or null when the attribute is absent.
@@ -852,7 +858,7 @@ object ModifierBuilder {
         // the clickable, so neither stopped it: a node whose gestures are
         // shut gets no long press (gesturesShut).
         if (gesturesShut(json, data)) return modifier
-        val viewId = json.get("id")?.asString
+        val viewId = LayoutPath.viewId(json)
         return modifier.pointerInput(handler, data) {
             awaitEachGesture {
                 awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
@@ -900,7 +906,7 @@ object ModifierBuilder {
     ): Modifier {
         val handler = json.get("onPan")?.asString ?: return modifier
         if (gesturesShut(json, data)) return modifier
-        val viewId = json.get("id")?.asString
+        val viewId = LayoutPath.viewId(json)
         return modifier.pointerInput(handler, data) {
             var total = Offset.Zero
             detectDragGestures(
@@ -931,7 +937,7 @@ object ModifierBuilder {
     ): Modifier {
         val handler = json.get("onPinch")?.asString ?: return modifier
         if (gesturesShut(json, data)) return modifier
-        val viewId = json.get("id")?.asString
+        val viewId = LayoutPath.viewId(json)
         return modifier.pointerInput(handler, data) {
             awaitEachGesture {
                 awaitFirstDown(requireUnconsumed = false)
@@ -1508,23 +1514,29 @@ object ModifierBuilder {
     @Suppress("UNCHECKED_CAST")
     @Composable
     fun ApplyLifecycleEffects(json: JsonObject, data: Map<String, Any>) {
-        json.get("onAppear")?.asString?.let { handler ->
-            val clean = handler.replace(":", "")
-            LaunchedEffect(Unit) {
-                (data[clean] as? (() -> Unit))?.invoke()
-                    ?: (data[handler] as? (() -> Unit))?.invoke()
-            }
+        val viewId = LayoutPath.viewId(json)
+        lifecycleHandlerName(json.get("onAppear"))?.let { name ->
+            LaunchedEffect(Unit) { resolveEventHandler(name, data, viewId) }
         }
-
-        json.get("onDisappear")?.asString?.let { handler ->
-            val clean = handler.replace(":", "")
+        lifecycleHandlerName(json.get("onDisappear"))?.let { name ->
             DisposableEffect(Unit) {
-                onDispose {
-                    (data[clean] as? (() -> Unit))?.invoke()
-                        ?: (data[handler] as? (() -> Unit))?.invoke()
-                }
+                onDispose { resolveEventHandler(name, data, viewId) }
             }
         }
+    }
+
+    /**
+     * A lifecycle handler's name: `x`, `@{x}` and `x:` are all `x`. Only the
+     * `:` was stripped, so `@{x}` looked up `data["@{x}"]` and was never
+     * called. The handler is then called as its closure is declared
+     * (resolveEventHandler): `()` with nothing, `(String)` with the viewId —
+     * it was only ever tried as `() -> Unit`.
+     */
+    internal fun lifecycleHandlerName(element: com.google.gson.JsonElement?): String? {
+        if (element == null || !element.isJsonPrimitive) return null
+        val raw = element.asString.trim()
+        val name = (extractBindingProperty(raw) ?: raw).replace(":", "").trim()
+        return name.ifEmpty { null }
     }
 
     fun hasLifecycleEvents(json: JsonObject): Boolean {

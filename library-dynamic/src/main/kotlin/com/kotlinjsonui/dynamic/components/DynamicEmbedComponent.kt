@@ -17,6 +17,7 @@ import com.kotlinjsonui.dynamic.currentSizeClassTier
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.EmbedAttributes
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.embed.EmbedContainer
@@ -78,7 +79,11 @@ class DynamicEmbedComponent {
                 return
             }
 
-            val embedId = a.common.id ?: "embed"
+            // The embed slot's key (EmbedContainer: unique within the parent — it
+            // keys the slot's ViewModelStore): the id, else the node's position
+            // (LayoutPath.viewId). Every id-less Embed was `embed` and shared one
+            // slot's view models (the kjui codegen names it the same way).
+            val embedId = LayoutPath.viewId(json)
             // Version-skew guard: an unknown navigationMode means the layout
             // was authored against a newer attribute vocabulary than this
             // runtime. Never silently degrade to delegate — surface it.

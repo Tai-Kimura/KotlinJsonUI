@@ -29,6 +29,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.TextViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -140,7 +141,7 @@ class DynamicTextViewComponent {
             val contentPadding = buildContainerInset(a.containerInset ?: a.edgeInset)
 
             // TextFieldState sync with data binding
-            val viewId = a.common.id ?: "textview"
+            val viewId = LayoutPath.viewId(json)
 
             LaunchedEffect(initialText) {
                 if (textFieldState.text.toString() != initialText) {

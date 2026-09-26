@@ -127,9 +127,6 @@ class DynamicIndicatorComponent {
             // runtime extra)
             val strokeWidth = ResourceResolver.resolveFloat(json, "strokeWidth", data)?.dp
 
-            // Lifecycle effects
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
-
             // Create the appropriate indicator
             if (style == "linear") {
                 LinearProgressIndicator(

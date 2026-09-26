@@ -150,6 +150,62 @@ class LayoutPathVectorsTest {
         assertTrue(DynamicRadioComponent.itemIsSelected(a, DynamicRadioComponent.itemId(a, nested), written))
     }
 
+    // --- the viewId a node's handlers are handed ----------------------------
+
+    /**
+     * `view_id_cases`: the node's id, else its drawn type lower-first and its
+     * position — the name the kjui codegen hands the same node's handlers
+     * (kjui spec/compose/view_id_by_position_spec.rb runs this table against
+     * JsonUIShared::LayoutPath.view_id).
+     */
+    @Test
+    fun everyViewIdCaseGetsTheNameTheTableGives() {
+        val cases = vectors.getAsJsonArray("view_id_cases").map { it.asJsonObject }
+        assertTrue("the table has fewer view_id cases than it did (5)", cases.size >= 5)
+        var compared = 0
+        for (case in cases) {
+            val got = mutableMapOf<String, String>()
+            fun walk(node: JsonObject) {
+                LayoutPath.enter(node)
+                node.get("_label")?.let { got[it.asString] = LayoutPath.viewId(node) }
+                LayoutPath.children(node).filter { it.isJsonObject }.forEach { walk(it.asJsonObject) }
+            }
+            walk(case.getAsJsonObject("layout").deepCopy())
+            val expected = case.getAsJsonObject("expect").entrySet().associate { it.key to it.value.asString }
+            assertEquals(case.get("name").asString, expected, got.filterKeys { it in expected })
+            compared += expected.size
+        }
+        assertTrue("too few labelled nodes compared ($compared)", compared >= 20)
+    }
+
+    @Test
+    fun anEmptyIdIsStillTheId_asTheSharedRuleAndSwiftJsonUIRead() {
+        assertEquals("", LayoutPath.viewId(json("""{"type": "Switch", "id": ""}""")))
+        assertEquals("switch_0", LayoutPath.viewId(json("""{"type": "Switch", "id": null}""")))
+    }
+
+    /**
+     * DynamicViews(components): the list read as a root's child list, each
+     * entry `0_<i>` — they were all `0`, so two lists entries' id-less nodes
+     * shared viewIds (and Radio groups). An entry a parent stamped keeps its
+     * stamp; the caller's object is not stamped.
+     */
+    @Test
+    fun aListOfRootsNamesEachEntryAsARootsChild() {
+        val a = json("""{"type": "Switch"}""")
+        val b = json("""{"type": "View", "child": [{"type": "Switch"}]}""")
+        val entries = listOf(a, b).mapIndexed { i, node -> LayoutPath.listEntry(node, i) }
+        assertEquals(listOf("switch_0_0", "view_0_1"), entries.map { LayoutPath.viewId(it) })
+        LayoutPath.enter(entries[1])
+        assertEquals("switch_0_1_0", LayoutPath.viewId(entries[1].getAsJsonArray("child")[0].asJsonObject))
+        assertTrue("the caller's object was stamped", !a.has(LayoutPath.KEY))
+        assertEquals("switch_0", LayoutPath.viewId(a))
+
+        val stamped = json("""{"type": "Switch", "_layoutPath": "0_3_1"}""")
+        assertTrue(LayoutPath.listEntry(stamped, 0) === stamped)
+        assertEquals("switch_0_3_1", LayoutPath.viewId(LayoutPath.listEntry(stamped, 0)))
+    }
+
     // --- where the runtime takes it -----------------------------------------
 
     private fun source(path: String): String {

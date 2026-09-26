@@ -103,7 +103,6 @@ class DynamicCollectionComponent {
                 applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
                 context = context
             )
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             // `onItemAppear` is a DECLARED row again (49-E `3a48d11`): it was
             // `type: "callback"` — the only one in the SSoT — and attr-codegen
