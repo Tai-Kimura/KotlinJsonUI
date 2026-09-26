@@ -31,6 +31,7 @@ import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.core.LocalInteractionStopped
 import com.kotlinjsonui.dynamic.helpers.InteractionMarking
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
 
