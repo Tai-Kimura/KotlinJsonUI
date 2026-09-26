@@ -128,6 +128,8 @@ jobs:
               # with (TypeSynonyms), shipped in the AAR.
               ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/type_synonyms.json",
                "shared/core/type_synonyms.json"),
+              ("library-dynamic/src/androidTest/resources/component_metadata.json",
+               "shared/core/component_metadata.json"),
           ]
           # Same three exit codes as the step above: 0 compared and agreed,
           # 1 compared and diverged, 2 could not compare.
