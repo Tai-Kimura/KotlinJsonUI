@@ -145,7 +145,7 @@ private fun DynamicViewContent(
     if (type.isNullOrEmpty()) {
         val error = IllegalArgumentException("JSON must have a 'type' field")
         onError?.invoke(error)
-        if (Configuration.showErrorsInDebug) {
+        if (ErrorDisplay.showsErrors(context)) {
             ErrorComponent("Missing 'type' field in JSON")
         }
         return
@@ -238,13 +238,14 @@ private fun DynamicViewContent(
                     val error = IllegalArgumentException(message)
                     onError?.invoke(error)
 
-                    // Log error in debug mode
-                    if (Configuration.showErrorsInDebug) {
-                        Log.w("DynamicView", message)
-                        ErrorComponent(message)
-                    } else if (Configuration.fallbackComponent != null) {
-                        // Use custom fallback component if configured
-                        Configuration.fallbackComponent?.invoke(responsiveJson, effectiveData)
+                    // Named always; drawn as ErrorDisplay says: the error
+                    // view in a debuggable app that asks for it, else the
+                    // app's fallback, else nothing.
+                    Log.w("DynamicView", message)
+                    when (ErrorDisplay.forUnknownType(context)) {
+                        ErrorDisplay.Draw.ERROR_VIEW -> ErrorComponent(message)
+                        ErrorDisplay.Draw.FALLBACK -> Configuration.fallbackComponent?.invoke(responsiveJson, effectiveData)
+                        ErrorDisplay.Draw.NOTHING -> Unit
                     }
                 }
             }
