@@ -81,10 +81,15 @@ class DynamicCollectionLegacyShapeTest {
         }
     }
 
+    /**
+     * 4f ruling (2026-09-26, round 6): paging draws the class-list shape as
+     * one section, a page per cell — it drew no cell (DynamicPagingSectionsTest
+     * reads the pages).
+     */
     @Test
-    fun pagingDrawsNoCellWithoutSections() {
+    fun pagingDrawsTheCellsWithoutSections() {
         show(cellClass + """, "layout": "horizontal", "paging": true""", mapOf("items" to probeItems(3, cell)))
-        assertEquals(0, count("row0"))
+        assertEquals(1, count("row0"))
     }
 
     @Test
