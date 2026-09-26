@@ -38,6 +38,8 @@ import androidx.compose.ui.platform.LocalContext
  * - tintColor/selectedSegmentTintColor: Color for the SELECTED segment's
  *   background (the indicator); indicatorColor is the explicit spelling
  * - onValueChange: @{handler} for selection change callback (receives index)
+ * - valueChange: the selector spelling (a bare method name) — the callback
+ *   where no onValueChange is declared
  * - Modifiers: testTag, margins, size, alpha, padding, weight
  *
  * Attribute access goes through the generated [SegmentAttributes]
@@ -66,8 +68,22 @@ class DynamicSegmentComponent {
         private val APPLIED: Set<String> = setOf(
             "selectedIndex", "bind", "items", "enabled",
             "fontColor", "selectedFontColor", "tintColor",
-            "onValueChange"
+            "onValueChange", "valueChange"
         )
+
+        /**
+         * The data's name for a `valueChange` selector: camelCased as the code
+         * generators name it (`seg_changed` → `segChanged`: kjui's
+         * camelize_selector, sjui's to_camel_case). Null for none, a blank
+         * one, or a binding — that is onValueChange's spelling.
+         */
+        internal fun valueChangeSelector(value: String?): String? {
+            if (value == null || value.isBlank() || ModifierBuilder.isBinding(value)) return null
+            val parts = value.split("_")
+            return parts.first() + parts.drop(1).joinToString("") { part ->
+                part.take(1).uppercase() + part.drop(1).lowercase()
+            }
+        }
 
         @Composable
         fun create(
@@ -176,10 +192,20 @@ class DynamicSegmentComponent {
                                     ?.invoke(mapOf(bindingVariable to index))
                             }
 
-                            // Call onValueChange handler if specified
+                            // Call onValueChange handler if specified — or,
+                            // where none is declared, `valueChange`, the
+                            // selector spelling (Segment's own attribute in the
+                            // definitions, no platform named): kjui build, sjui
+                            // build and rjui call it so; this runtime read it
+                            // not at all, so a debug build did not call what the
+                            // release build called (4f's ruling).
                             val handler = TypedAttrs.raw(a.onValueChange) as? String
                             if (handler != null && ModifierBuilder.isBinding(handler)) {
                                 ModifierBuilder.resolveEventHandler(handler, data, viewId, index)
+                            } else {
+                                valueChangeSelector(a.valueChange)?.let {
+                                    ModifierBuilder.resolveEventHandler(it, data, viewId, index)
+                                }
                             }
                             onClick?.invoke()
                         },

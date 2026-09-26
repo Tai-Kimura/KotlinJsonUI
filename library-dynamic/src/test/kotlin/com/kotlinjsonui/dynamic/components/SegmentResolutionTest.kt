@@ -105,4 +105,23 @@ class SegmentResolutionTest {
             )
         )
     }
+
+    // ── valueChange: the selector's name ──
+
+    /**
+     * Segment.valueChange names a method as the code generators name it
+     * (kjui's camelize_selector, sjui's to_camel_case: the first word as it
+     * is, each later one capitalized); a binding is onValueChange's spelling,
+     * and a blank one names nothing.
+     */
+    @Test
+    fun `a valueChange selector is named as the generators name it`() {
+        assertEquals("segChanged", DynamicSegmentComponent.valueChangeSelector("seg_changed"))
+        assertEquals("onSegvuV", DynamicSegmentComponent.valueChangeSelector("onSegvuV"))
+        assertEquals("fooBarBaz", DynamicSegmentComponent.valueChangeSelector("foo_BAR_baz"))
+        assertEquals("aB", DynamicSegmentComponent.valueChangeSelector("a__b"))
+        assertEquals(null, DynamicSegmentComponent.valueChangeSelector("@{changed}"))
+        assertEquals(null, DynamicSegmentComponent.valueChangeSelector("  "))
+        assertEquals(null, DynamicSegmentComponent.valueChangeSelector(null))
+    }
 }
