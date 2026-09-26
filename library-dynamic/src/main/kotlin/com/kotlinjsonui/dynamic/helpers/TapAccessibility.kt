@@ -1,6 +1,5 @@
 package com.kotlinjsonui.dynamic.helpers
 
-import androidx.compose.runtime.compositionLocalOf
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 
@@ -170,16 +169,20 @@ object TapAccessibility {
      * handler either.
      */
     fun isOperable(node: JsonObject, stopped: Boolean = false): Boolean =
-        isInteractiveType(type(node)) || (!stopped && isTappable(node)) || hasLongPress(node) || isLinkedText(node)
+        isInteractiveType(type(node)) || (!stopped && isTappable(node)) || hasLongPress(node, stopped) ||
+            isLinkedText(node)
 
     /**
      * A long press a user can perform: a handler (`handlerValues` — an empty or
      * blank one names no method, as for a tap), on a view not statically
      * disabled. `canTap` gates the tap, not the long press. It read "any
-     * value" before, so a blank long press counted.
+     * value" before, so a blank long press counted. `userInteractionEnabled`
+     * stops it as it stops a tap: false on the node, the mark of a node around
+     * it ([STOPPED_KEY]), or [stopped]. A bound flag still presses.
      */
-    fun hasLongPress(node: JsonObject): Boolean =
-        !disabled(node) && handlerValues(node.get("onLongPress")).isNotEmpty()
+    fun hasLongPress(node: JsonObject, stopped: Boolean = false): Boolean =
+        !stopped && !stops(node) && !stoppedAround(node) && !disabled(node) &&
+            handlerValues(node.get("onLongPress")).isNotEmpty()
 
     /**
      * Something inside [node] a user can operate on its own. [stopped]: a node
@@ -206,9 +209,4 @@ object TapAccessibility {
         shape(node).let { it == Shape.BUTTON || it == Shape.COMBINE }
 }
 
-/**
- * True inside a node whose `userInteractionEnabled` is false or a binding
- * resolving false: DynamicView provides it around what such a node renders,
- * and marks each node composed under it with [TapAccessibility.STOPPED_KEY].
- */
-val LocalInteractionStopped = compositionLocalOf { false }
+

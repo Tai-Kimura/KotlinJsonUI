@@ -29,9 +29,9 @@ import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
-import com.kotlinjsonui.dynamic.helpers.LocalInteractionStopped
+import com.kotlinjsonui.core.LocalInteractionStopped
+import com.kotlinjsonui.dynamic.helpers.InteractionMarking
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
-import com.kotlinjsonui.dynamic.helpers.TapAccessibility
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
 
@@ -118,8 +118,7 @@ private fun DynamicViewContent(
     // key kjui's codegen writes): its click, its Role.Button and the image
     // rule read it as no tap.
     val stoppedAround = LocalInteractionStopped.current
-    val resolvedJson = resolveResponsiveNode(styledJson)
-    val responsiveJson = if (stoppedAround) TapAccessibility.markStopped(resolvedJson) else resolvedJson
+    val responsiveJson = InteractionMarking.nodeAsDrawn(resolveResponsiveNode(styledJson), stoppedAround)
 
     // Check if this is a data element (should be skipped)
     if (responsiveJson.has("data") && !responsiveJson.has("type")) {
@@ -249,7 +248,7 @@ private fun DynamicViewContent(
     // A node whose userInteractionEnabled is false, or a binding resolving
     // false, stops everything composed inside it (TapAccessibility).
     val stopping: @Composable () -> Unit =
-        if (!stoppedAround && ModifierBuilder.interactionBlocked(responsiveJson, effectiveData)) {
+        if (InteractionMarking.stopsWhatItComposes(responsiveJson, effectiveData, stoppedAround)) {
             { CompositionLocalProvider(LocalInteractionStopped provides true) { renderComponent() } }
         } else {
             renderComponent
