@@ -86,10 +86,11 @@ import org.junit.runner.RunWith
  * counts what that moved (handler calls, or Switch value writes).
  *
  * Left: what `kjui build` emits for the two layouts below — kjui_tools of
- * jsonui-cli 4476d6d0 with this branch's changes (jsonui-cli 1.9.0 in
- * progress), ComposeBuilder over a layouts directory holding both, as
- * build_file calls it — the probe's body and the cell's body pasted
- * unchanged (AxCodegen, AxCellGeneratedView). The cell's View / Data /
+ * jsonui-cli support4f/tap-rule-uie-round4 (on aea0a0a4; jsonui-cli 1.9.0 in
+ * progress: a control a stop holds reads disabled() and writes nothing),
+ * ComposeBuilder over a layouts directory holding both, as build_file calls
+ * it — the probe's body and the cell's body pasted unchanged (AxCodegen,
+ * AxCellGeneratedView). The cell's View / Data /
  * ViewModel are the shapes `kjui g collection` writes (cell_generator.rb),
  * with the updateData case for onRow. The rows:
  * - no stop (the controls): a Label with onClick, a Button, a Switch;
@@ -131,10 +132,11 @@ import org.junit.runner.RunWith
  * of androidTest assets Layouts/a11y_probe_tap_cell.json (a Label with
  * onClick).
  *
- * Right, not emitted: three candidate fixes on a Switch inside a stop drawn
- * as the codegen draws `userInteractionEnabled: false` — semantics
- * `disabled()`, `Switch(enabled = false)`, and `clearAndSetSemantics` around
- * it — and whether each draws as the Switch emitted today.
+ * Right, not emitted: the candidate fixes the emit chose from, on a Switch
+ * inside a stop drawn as the codegen draws `userInteractionEnabled: false` —
+ * semantics `disabled()` (what the emit now carries), `Switch(enabled =
+ * false)`, and `clearAndSetSemantics` around it — and how each draws against
+ * the Switch no stop holds, in pixels.
  *
  * Three runs: the bound stop open, closed, open again. Expected, per the
  * rule (attribute_definitions.json: the flag stops the view and everything
@@ -270,7 +272,8 @@ class A11yActivationInsideAStopProbe {
                 onClick = { },
                 modifier = Modifier
                     .testTag("cgBtnInFalse")
-                    .semantics { testTagsAsResourceId = true },
+                    .semantics { testTagsAsResourceId = true }
+                    .semantics { disabled() },
                 shape = RoundedCornerShape(Configuration.Button.defaultCornerRadius.dp),
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -309,10 +312,11 @@ class A11yActivationInsideAStopProbe {
             }
             Switch(
                 checked = data.swInFalse,
-                onCheckedChange = { newValue -> viewModel.updateData(mapOf("swInFalse" to newValue)) },
+                onCheckedChange = { newValue -> if (false) viewModel.updateData(mapOf("swInFalse" to newValue)) },
                 modifier = Modifier
                     .testTag("cgSwInFalse")
                     .semantics { testTagsAsResourceId = true }
+                    .semantics { disabled() }
             )
         }
         CompositionLocalProvider(LocalInteractionStopped provides (LocalInteractionStopped.current || !(data.gateOpen ?: false))) {
@@ -335,7 +339,8 @@ class A11yActivationInsideAStopProbe {
                     onClick = { if ((data.gateOpen ?: false)) { data.onBtnInBound?.invoke() } },
                     modifier = Modifier
                         .testTag("cgBtnInBound")
-                        .semantics { testTagsAsResourceId = true },
+                        .semantics { testTagsAsResourceId = true }
+                        .then(if (!((data.gateOpen ?: false))) Modifier.semantics { disabled() } else Modifier),
                     shape = RoundedCornerShape(Configuration.Button.defaultCornerRadius.dp),
                     contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -376,10 +381,11 @@ class A11yActivationInsideAStopProbe {
                 }
                 Switch(
                     checked = data.swInBound,
-                    onCheckedChange = { newValue -> viewModel.updateData(mapOf("swInBound" to newValue)) },
+                    onCheckedChange = { newValue -> if ((data.gateOpen ?: false)) viewModel.updateData(mapOf("swInBound" to newValue)) },
                     modifier = Modifier
                         .testTag("cgSwInBound")
                         .semantics { testTagsAsResourceId = true }
+                        .then(if (!((data.gateOpen ?: false))) Modifier.semantics { disabled() } else Modifier)
                 )
                 val section0 = data.rows?.sections?.getOrNull(0)
                 val cellData0 = section0?.cells
@@ -431,6 +437,7 @@ class A11yActivationInsideAStopProbe {
             modifier = Modifier
                 .testTag("cgBtnSelfFalse")
                 .semantics { testTagsAsResourceId = true }
+                .semantics { disabled() }
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -451,10 +458,11 @@ class A11yActivationInsideAStopProbe {
         }
         Switch(
             checked = data.swSelfFalse,
-            onCheckedChange = { newValue -> viewModel.updateData(mapOf("swSelfFalse" to newValue)) },
+            onCheckedChange = { newValue -> if (false) viewModel.updateData(mapOf("swSelfFalse" to newValue)) },
             modifier = Modifier
                 .testTag("cgSwSelfFalse")
                 .semantics { testTagsAsResourceId = true }
+                .semantics { disabled() }
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -544,6 +552,34 @@ class A11yActivationInsideAStopProbe {
         }
     }
 
+    private fun pixelDifference(a: Bitmap?, b: Bitmap?): String {
+        if (a == null || b == null) return "missing"
+        if (kotlin.math.abs(a.width - b.width) > 3 || kotlin.math.abs(a.height - b.height) > 3) {
+            return "size ${a.width}x${a.height} vs ${b.width}x${b.height}"
+        }
+        val w = minOf(a.width, b.width)
+        val h = minOf(a.height, b.height)
+        var best = Int.MAX_VALUE
+        var bestLargest = 0
+        for (ax in 0..(a.width - w)) for (ay in 0..(a.height - h)) for (bx in 0..(b.width - w)) for (by in 0..(b.height - h)) {
+            var over = 0
+            var largest = 0
+            for (y in 0 until h) for (x in 0 until w) {
+                val p = a.getPixel(x + ax, y + ay)
+                val q = b.getPixel(x + bx, y + by)
+                val d = maxOf(
+                    kotlin.math.abs(((p shr 16) and 0xFF) - ((q shr 16) and 0xFF)),
+                    kotlin.math.abs(((p shr 8) and 0xFF) - ((q shr 8) and 0xFF)),
+                    kotlin.math.abs((p and 0xFF) - (q and 0xFF))
+                )
+                largest = maxOf(largest, d)
+                if (d > 24) over++
+            }
+            if (over < best) { best = over; bestLargest = largest }
+        }
+        return "${a.width}x${a.height} vs ${b.width}x${b.height}, pixels over 24: $best largest $bestLargest"
+    }
+
     private fun collect(node: AccessibilityNodeInfo?, out: MutableMap<String, MutableList<AccessibilityNodeInfo>>) {
         if (node == null) return
         node.viewIdResourceName?.let { out.getOrPut(it.substringAfterLast('/')) { mutableListOf() }.add(node) }
@@ -610,10 +646,15 @@ class A11yActivationInsideAStopProbe {
         fun image(tag: String): Bitmap? = runCatching {
             rule.onNode(hasTestTag(tag), useUnmergedTree = true).captureToImage().asAndroidBitmap()
         }.getOrNull()
+        // In pixels: how many differ by more than 24 (of 255) in a channel,
+        // the two laid on each other at the offset of the best agreement
+        // (a node's bounds round a pixel apart from place to place). The
+        // stopped Switch as emitted against the one no stop holds says what
+        // the stop draws; `enabled = false` is the control that greys.
         val plain = image("cgSwPlain")
-        for (tag in listOf("cgSwInFalse", "fixSemDisabledSw", "fixEnabledFalseSw", "fixClearSw")) {
-            val other = image(tag)
-            println("A11Y_PROBE visual $tag drawn as cgSwPlain: ${plain != null && other != null && plain.sameAs(other)} (found ${other != null})")
+        for (tag in listOf("cgSwInFalse", "cgSwInBound", "cgSwSelfFalse", "dynSwInFalse", "dynSwSelfFalse",
+                "fixSemDisabledSw", "fixEnabledFalseSw", "fixClearSw")) {
+            println("A11Y_PROBE visual $tag against cgSwPlain: ${pixelDifference(plain, image(tag))}")
         }
 
         val mismatches = mutableListOf<String>()

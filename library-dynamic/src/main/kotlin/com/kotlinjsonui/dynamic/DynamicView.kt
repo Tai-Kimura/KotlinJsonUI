@@ -129,7 +129,10 @@ private fun DynamicViewContent(
     // Apply data section defaults from child elements
     // data sections define defaultValues that should be used when the property
     // is not already present in the data map (e.g., visibility defaults to "gone")
-    val effectiveData = applyDataSectionDefaults(responsiveJson, data)
+    // A control a stop holds writes nothing (InteractionMarking.dataAsDrawn).
+    val effectiveData = InteractionMarking.dataAsDrawn(
+        responsiveJson, applyDataSectionDefaults(responsiveJson, data), stoppedAround
+    )
 
     // Validate JSON has required type field
     val type = try {

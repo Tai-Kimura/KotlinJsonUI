@@ -22,4 +22,22 @@ object InteractionMarking {
 
     fun stopsWhatItComposes(json: JsonObject, data: Map<String, Any>, stoppedAround: Boolean): Boolean =
         !stoppedAround && ModifierBuilder.interactionBlocked(json, data)
+
+    /**
+     * A control a stop holds (TapAccessibility.isControl) — the stop around
+     * it, or its own flag — writes nothing: `updateData`, which every control
+     * writes its value through, is a no-op for it. Its node reads disabled
+     * (ModifierBuilder.applyStoppedControl), which stops TalkBack's actions on
+     * that node; this stops the rest — a key press on a focused control, and
+     * the inner node of a wrapped one (a Radio's item, a Segment's tab).
+     */
+    fun dataAsDrawn(json: JsonObject, data: Map<String, Any>, stoppedAround: Boolean): Map<String, Any> {
+        val type = json.get("type")?.takeIf { it.isJsonPrimitive }?.asString
+        if (!TapAccessibility.isControl(type)) return data
+        if (!stoppedAround && !ModifierBuilder.interactionBlocked(json, data)) return data
+        return data + (UPDATE_DATA to DROP_WRITES)
+    }
+
+    private const val UPDATE_DATA = "updateData"
+    private val DROP_WRITES: (Map<String, Any>) -> Unit = { }
 }

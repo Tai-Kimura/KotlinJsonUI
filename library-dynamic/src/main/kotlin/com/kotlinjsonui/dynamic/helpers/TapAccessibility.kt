@@ -66,6 +66,24 @@ object TapAccessibility {
         return t in interactive || t !in known
     }
 
+    /**
+     * The interactive types that hold the operated things rather than being
+     * one (jsonui-cli shared/core/tap_accessibility.rb STOP_CONTAINER_TYPES).
+     */
+    private val STOP_CONTAINERS = setOf("tabview", "scrollview", "collection", "table", "tableview", "recyclerview", "web", "embed")
+
+    /**
+     * A control a stop holds — operated where it is, not a container
+     * (jsonui-cli shared/core/tap_accessibility.rb `control?`): the stop takes
+     * its operation without a tap on it — TalkBack's click on its node too
+     * (ModifierBuilder.applyStoppedControl, InteractionMarking.dataAsDrawn).
+     * Asked of the type it is drawn as, as [isInteractiveType] is.
+     */
+    fun isControl(type: String?): Boolean {
+        val t = type?.let { TypeSynonyms.drawnType(it) }?.lowercase() ?: return false
+        return t in interactive && t !in STOP_CONTAINERS
+    }
+
     private fun disabled(node: JsonObject): Boolean {
         val e = node.get("enabled") ?: return false
         return e.isJsonPrimitive && e.asJsonPrimitive.isBoolean && !e.asBoolean

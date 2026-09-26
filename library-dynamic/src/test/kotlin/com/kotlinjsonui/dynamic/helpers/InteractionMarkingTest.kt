@@ -69,4 +69,44 @@ class InteractionMarkingTest {
         assertFalse(label.has(TapAccessibility.STOPPED_KEY))
         assertEquals("Open", InteractionMarking.nodeAsDrawn(label, true).get("text").asString)
     }
+
+    /**
+     * A control a stop holds writes nothing: `updateData`, which every
+     * control writes its value through, is a no-op for it — inside a stop
+     * (the local), or under its own flag false or bound false. Beside no stop,
+     * and for what is not a control (a View, a container), the data is the
+     * data as given (the same map).
+     */
+    @Test
+    fun aControlAStopHoldsWritesNothing() {
+        var writes = 0
+        val data: Map<String, Any> = mapOf("updateData" to { _: Map<String, Any> -> writes++ }, "u" to false)
+        @Suppress("UNCHECKED_CAST")
+        fun write(d: Map<String, Any>) = (d["updateData"] as (Map<String, Any>) -> Unit)(mapOf("on" to true))
+        val switch = node("""{"type": "Switch", "id": "s", "isOn": "@{on}"}""")
+
+        write(InteractionMarking.dataAsDrawn(switch, data, stoppedAround = true))
+        write(InteractionMarking.dataAsDrawn(node("""{"type": "Switch", "userInteractionEnabled": false}"""), data, stoppedAround = false))
+        write(InteractionMarking.dataAsDrawn(node("""{"type": "Slider", "userInteractionEnabled": "@{u}"}"""), data, stoppedAround = false))
+        assertEquals(0, writes)
+
+        assertSame(data, InteractionMarking.dataAsDrawn(switch, data, stoppedAround = false))
+        assertSame(data, InteractionMarking.dataAsDrawn(node("""{"type": "View"}"""), data, stoppedAround = true))
+        assertSame(data, InteractionMarking.dataAsDrawn(node("""{"type": "Collection"}"""), data, stoppedAround = true))
+        val open = data + ("u" to true)
+        assertSame(open, InteractionMarking.dataAsDrawn(node("""{"type": "Switch", "userInteractionEnabled": "@{u}"}"""), open, stoppedAround = false))
+        write(InteractionMarking.dataAsDrawn(switch, data, stoppedAround = false))
+        assertEquals(1, writes)
+    }
+
+    /** The controls and the containers, as the rule's `control?` reads them. */
+    @Test
+    fun aControlIsAnInteractiveTypeOperatedWhereItIs() {
+        for (t in listOf("Switch", "Toggle", "CheckBox", "Radio", "Segment", "Slider", "SelectBox", "TextField", "TextView", "Button")) {
+            assertTrue(t, TapAccessibility.isControl(t))
+        }
+        for (t in listOf("TabView", "ScrollView", "Collection", "TableView", "Web", "Embed", "View", "Label", "AppCard")) {
+            assertFalse(t, TapAccessibility.isControl(t))
+        }
+    }
 }
