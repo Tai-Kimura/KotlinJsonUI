@@ -218,12 +218,30 @@ object TapAccessibility {
             handlerValues(node.get("onLongPress")).isNotEmpty()
 
     /**
+     * The keys the tools write on a node that the layout did not: the
+     * position stamp and the rule's own marks (jsonui-cli
+     * shared/core/tap_accessibility.rb WRITTEN_STAMPS).
+     */
+    private val WRITTEN_STAMPS = setOf("_layoutPath", "_tapShape", STOPPED_KEY, "_tapGates")
+
+    /** A data-only element — `data` the only key the layout wrote — declares the data and draws nothing (jsonui-cli `data_only?`). */
+    fun isDataOnly(node: JsonObject): Boolean = node.keySet().minus(WRITTEN_STAMPS) == setOf("data")
+
+    /**
+     * The children a node draws: the shapes do not count a data-only one
+     * (jsonui-cli `drawn_children`). It read as a child of unknown type, a
+     * control, and a Label with onClick whose only child declared its data
+     * was no button (4f's ruling, jsonui-cli 1.9.0).
+     */
+    fun drawnChildren(node: JsonObject): List<JsonObject> = children(node).filterNot { isDataOnly(it) }
+
+    /**
      * Something inside [node] a user can operate on its own. [stopped]: a node
      * around the child has `userInteractionEnabled: false`, so its own tap is
      * none (its type still says whether it is a control).
      */
     fun holdsAControl(node: JsonObject, stopped: Boolean = false): Boolean =
-        children(node).any {
+        drawnChildren(node).any {
             val inner = stopped || stops(it)
             isOperable(it, inner) || holdsAControl(it, inner)
         }
@@ -232,7 +250,7 @@ object TapAccessibility {
     fun shape(node: JsonObject): Shape? {
         if (!isTappable(node)) return null
         if (isInteractiveType(type(node))) return Shape.NONE
-        if (children(node).isEmpty()) return Shape.BUTTON
+        if (drawnChildren(node).isEmpty()) return Shape.BUTTON
         if (holdsAControl(node)) return Shape.NONE
         return Shape.COMBINE
     }
