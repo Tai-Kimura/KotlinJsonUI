@@ -783,18 +783,22 @@ class DynamicTextComponent {
 
         /**
          * Resolve click handler for partial attributes.
-         * onClick (camelCase) → binding format only (@{functionName}) — the
-         * canonical spelling;
-         * onclick (lowercase) → selector format (string only) — its alias.
-         * Both are read, and the canonical one wins when both are written
-         * (4f ruling, jsonui-cli 1.9.0: every path reads both, as the
-         * normalizer folds the alias).
+         * `onClick` is the canonical spelling and `onclick` its alias; each
+         * holds a binding (`@{functionName}`) or the method's name. From
+         * jsonui-cli 1.9.0 the normalizer folds `onclick` into `onClick`, and
+         * `jui build` distributes the folded (L1) layouts, so this reads a
+         * name in onClick too — a raw layout's `onclick` the same way.
+         * onClick first; a value that names no method, or is neither a
+         * binding nor a name (`"@{a} b"`), passes to the next spelling
+         * (jsonui-cli shared/core/tap_accessibility.rb `range_handler`).
          */
         internal fun partialHandlerName(attr: Map<*, *>): String? {
-            val onClick = (attr["onClick"] as? String)?.takeIf { it.isNotBlank() }
-            val onclick = (attr["onclick"] as? String)?.takeIf { it.isNotBlank() }
-            return onClick?.let { ModifierBuilder.extractBindingProperty(it) }
-                ?: onclick?.takeUnless { it.contains("@{") }
+            for (key in listOf("onClick", "onclick")) {
+                val value = (attr[key] as? String)?.takeIf { TapAccessibility.namesAMethod(it) } ?: continue
+                ModifierBuilder.extractBindingProperty(value)?.let { return it }
+                if (!value.startsWith("@{")) return value
+            }
+            return null
         }
 
         private fun resolvePartialClickHandler(
