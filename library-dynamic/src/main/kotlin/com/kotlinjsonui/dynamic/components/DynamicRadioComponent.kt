@@ -18,6 +18,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.RadioAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -142,6 +143,17 @@ class DynamicRadioComponent {
          */
         internal fun itemValue(a: RadioAttributes, id: String): String =
             a.value?.toString() ?: id
+
+        /**
+         * The item's id: the declared one, or its position in the layout
+         * ([LayoutPath], stamped by DynamicView) — the codegen's
+         * `radio_<path>` (kjui_tools radio_component.rb). It was
+         * `radio_<the clock>`, a new name on every composition: an id-less
+         * item wrote one name on selection and asked for another when drawn,
+         * so it never read selected.
+         */
+        internal fun itemId(a: RadioAttributes, json: JsonObject): String =
+            a.common.id ?: "radio_${LayoutPath.of(json)}"
 
         /**
          * Selected state for a single radio row.
@@ -374,7 +386,7 @@ class DynamicRadioComponent {
             data: Map<String, Any>
         ) {
             val context = LocalContext.current
-            val id = a.common.id ?: "radio_${System.currentTimeMillis()}"
+            val id = itemId(a, json)
             // Resolve the binding / string-resource name — the raw spelling
             // used to reach the label unchanged, so a bound row drew the
             // characters `@{expr}` on screen (smoke run: Radio/text__binding

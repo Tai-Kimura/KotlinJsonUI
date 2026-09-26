@@ -27,6 +27,7 @@ import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.dynamic.components.*
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
@@ -98,6 +99,12 @@ private fun DynamicViewContent(
         DynamicView(expandedJson, data, onError)
         return
     }
+
+    // Each child's position in the layout (LayoutPath) — the name of a node
+    // the layout gives none (a Radio item's value). Taken here, on the
+    // include-expanded, style-merged node, before the responsive resolution
+    // copies it: the tree the codegen stamps.
+    LayoutPath.enter(styledJson)
 
     // Resolve responsive overrides based on current WindowSizeClass and orientation.
     // This merges matching responsive attributes into the node and removes the
