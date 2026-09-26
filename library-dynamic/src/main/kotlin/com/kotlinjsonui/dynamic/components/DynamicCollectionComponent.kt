@@ -164,13 +164,10 @@ class DynamicCollectionComponent {
             }
             val lazy = collectionMode == CollectionStackMode.LAZY
 
-            // Legacy: Extract cellClasses, headerClasses, footerClasses
-            val cellClasses = extractStringList(a.cellClasses)
-            val headerClasses = extractStringList(a.headerClasses)
-            val footerClasses = extractStringList(a.footerClasses)
-
-            // Get first cell class name for primary cell type
-            val cellClassName = cellClasses.firstOrNull()
+            // A section with no `cell` of its own falls back to the first
+            // cellClass (sectioned shape; unchanged). The shape with no
+            // `sections` is read by cellPlan below.
+            val cellClassName = extractStringList(a.cellClasses).firstOrNull()
 
             // Parse cellIdProperty for data-based identity
             val cellIdProperty = a.cellIdProperty
@@ -188,13 +185,18 @@ class DynamicCollectionComponent {
                     DataBindingContext.evaluateExpression(expr, data).takeIf { it !== expr }
                 }
 
-            // Get collection data source if sections are defined
-            val collectionDataSource = if (sections != null) {
+            // The data source and, per route, the section configs the cells
+            // are drawn from — `sections` as declared, or the legacy shape
+            // (no `sections`, cellClasses / headerClasses / footerClasses)
+            // read the way sjui's codegen draws it. See cellPlan.
+            val plan = cellPlan(
+                a, sections,
                 (itemsBoundValue as? CollectionDataSource)?.reconfigured(
                     cellIdProperty = cellIdProperty,
                     autoChangeTrackingId = autoChangeTrackingId
                 )
-            } else null
+            )
+            val collectionDataSource = plan.dataSource
 
             // Parse grid configuration with default columns
             val defaultColumns = TypedAttrs.int(a.columns, data) ?: 1
@@ -368,7 +370,7 @@ class DynamicCollectionComponent {
                 val flowScrolls = collectionMode != CollectionStackMode.NONE && !heightIsWrapContent
                 val flow: @Composable (Modifier) -> Unit = { flowModifier ->
                     renderFlowLayout(
-                        sections = sections,
+                        sections = plan.sectionsFor(CellRoute.FLOW),
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
                         cellIdProperty = cellIdProperty,
@@ -415,7 +417,7 @@ class DynamicCollectionComponent {
                 }
                 renderNonLazyRow(
                     chrome = listChrome,
-                    sections = sections,
+                    sections = plan.sectionsFor(CellRoute.NON_LAZY_ROW),
                     collectionDataSource = collectionDataSource,
                     cellIdProperty = cellIdProperty,
                     data = data,
@@ -438,7 +440,9 @@ class DynamicCollectionComponent {
                 }
                 renderNonLazy(
                     chrome = listChrome,
-                    sections = sections,
+                    sections = plan.sectionsFor(CellRoute.NON_LAZY_COLUMN),
+                    legacyHeader = plan.headerFor(CellRoute.NON_LAZY_COLUMN),
+                    legacyFooter = plan.footerFor(CellRoute.NON_LAZY_COLUMN),
                     collectionDataSource = collectionDataSource,
                     cellIdProperty = cellIdProperty,
                     data = data,
@@ -458,7 +462,7 @@ class DynamicCollectionComponent {
             if (isHorizontal && isPaging) {
                 renderPagingHorizontal(
                     a = a,
-                    sections = sections,
+                    sections = plan.sectionsFor(CellRoute.PAGING),
                     collectionDataSource = collectionDataSource,
                     cellClassName = cellClassName,
                     cellIdProperty = cellIdProperty,
@@ -484,7 +488,7 @@ class DynamicCollectionComponent {
             // horizontal grids keep the grid path below.
             if (isHorizontal && gridColumns == 1) {
                 renderLazyRowSingleLane(
-                    sections = sections,
+                    sections = plan.sectionsFor(CellRoute.LAZY_ROW),
                     collectionDataSource = collectionDataSource,
                     cellIdProperty = cellIdProperty,
                     data = data,
@@ -557,7 +561,7 @@ class DynamicCollectionComponent {
                     horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing)
                 ) {
                     generateCollectionItems(
-                        sections = sections,
+                        sections = plan.sectionsFor(CellRoute.LAZY_HORIZONTAL_GRID),
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
                         cellIdProperty = cellIdProperty,
@@ -585,8 +589,19 @@ class DynamicCollectionComponent {
                     verticalArrangement = Arrangement.spacedBy(lineSpacing),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)
                 ) {
+                    // The legacy shape's headerClasses / footerClasses: once,
+                    // without data, full width before and after the cells —
+                    // sjui's List / grid. Every data section's cells share
+                    // this one grid (sjui's legacy grid is one LazyVGrid).
+                    plan.headerFor(CellRoute.LAZY_VERTICAL_GRID)?.let { name ->
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                renderCellView(name, emptyMap<String, Any>(), -1, data)
+                            }
+                        }
+                    }
                     generateCollectionItems(
-                        sections = sections,
+                        sections = plan.sectionsFor(CellRoute.LAZY_VERTICAL_GRID),
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
                         cellIdProperty = cellIdProperty,
@@ -601,6 +616,13 @@ class DynamicCollectionComponent {
                         onItemAppear = onItemAppear,
                         collectionId = collectionId
                     )
+                    plan.footerFor(CellRoute.LAZY_VERTICAL_GRID)?.let { name ->
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                renderCellView(name, emptyMap<String, Any>(), -1, data)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -865,6 +887,8 @@ class DynamicCollectionComponent {
         @Composable
         private fun renderNonLazy(
             sections: JsonArray?,
+            legacyHeader: String? = null,
+            legacyFooter: String? = null,
             collectionDataSource: CollectionDataSource?,
             cellIdProperty: String?,
             data: Map<String, Any>,
@@ -882,6 +906,9 @@ class DynamicCollectionComponent {
                 modifier = modifier.then(Modifier.padding(contentPadding)),
                 verticalArrangement = Arrangement.spacedBy(lineSpacing)
             ) {
+                // The legacy shape's headerClasses: once, without data,
+                // before the cells (sjui's non-lazy stack); its footer after.
+                legacyHeader?.let { renderCellView(it, emptyMap<String, Any>(), -1, data) }
                 when {
                     sections != null && collectionDataSource != null -> {
                         sections.forEachIndexed { sectionIndex, sectionElement ->
@@ -922,6 +949,7 @@ class DynamicCollectionComponent {
                         }
                     }
                 }
+                legacyFooter?.let { renderCellView(it, emptyMap<String, Any>(), -1, data) }
             }
         }
 
@@ -1207,6 +1235,84 @@ class DynamicCollectionComponent {
         /** Typed replacement for the legacy JsonArray string extraction. */
         private fun extractStringList(values: List<Any?>?): List<String> =
             values.orEmpty().filterIsInstance<String>()
+
+        /** The routes a Collection is drawn by, as [cellPlan] tells them apart. */
+        internal enum class CellRoute {
+            FLOW, NON_LAZY_ROW, NON_LAZY_COLUMN, PAGING, LAZY_ROW, LAZY_HORIZONTAL_GRID, LAZY_VERTICAL_GRID
+        }
+
+        /**
+         * What each route draws its cells from. With `sections`, the declared
+         * ones, on every route, as before. Without — the legacy shape, the
+         * cells / header / footer named on the Collection itself — sjui's
+         * codegen table (4f ruling, 2026-09-26; SwiftJsonUI's Dynamic reads
+         * it the same way):
+         *
+         * - a single cellClass draws every data section on the vertical
+         *   routes (sjui's List and grid, one grid for all of them), the
+         *   first data section on the horizontal and flow routes, nothing on
+         *   paging (which reads declared sections only, on every face);
+         * - several cellClasses name no cell (the build refuses that layout);
+         * - headerClasses / footerClasses are drawn once, without data, on
+         *   the vertical routes only — not horizontal, flow or paging;
+         * - with no items source the legacy shape still draws its container,
+         *   header and footer (the codegen emits them whatever `items` says):
+         *   an empty source stands in. A Collection that declares neither
+         *   keeps no source, as before.
+         *
+         * Until this, a Collection without `sections` had no data source at
+         * all, so its cellClasses drew nothing, and headerClasses /
+         * footerClasses were read into locals nothing used.
+         */
+        internal class CellPlan(
+            private val declaredSections: JsonArray?,
+            val dataSource: CollectionDataSource?,
+            val legacyCell: String?,
+            val legacyHeader: String?,
+            val legacyFooter: String?,
+        ) {
+            private val hasSections = declaredSections != null && declaredSections.size() > 0
+
+            fun sectionsFor(route: CellRoute): JsonArray? {
+                if (hasSections || route == CellRoute.PAGING) return declaredSections
+                val cell = legacyCell ?: return if (dataSource != null) JsonArray() else declaredSections
+                val count = when (route) {
+                    CellRoute.FLOW, CellRoute.NON_LAZY_ROW, CellRoute.LAZY_ROW, CellRoute.LAZY_HORIZONTAL_GRID ->
+                        minOf(1, dataSource?.sections?.size ?: 0)
+                    else -> dataSource?.sections?.size ?: 0
+                }
+                return JsonArray().apply {
+                    repeat(count) { add(JsonObject().apply { addProperty("cell", cell) }) }
+                }
+            }
+
+            private fun drawsEdges(route: CellRoute) =
+                route == CellRoute.NON_LAZY_COLUMN || route == CellRoute.LAZY_VERTICAL_GRID
+
+            fun headerFor(route: CellRoute): String? = legacyHeader?.takeIf { drawsEdges(route) }
+            fun footerFor(route: CellRoute): String? = legacyFooter?.takeIf { drawsEdges(route) }
+        }
+
+        /** A cellClasses / headerClasses / footerClasses entry: a name, or `{"className": …}`. */
+        internal fun declaredClassName(entry: Any?): String? = when (entry) {
+            is String -> entry
+            is Map<*, *> -> entry["className"] as? String
+            else -> null
+        }?.takeIf { it.isNotEmpty() }
+
+        internal fun cellPlan(a: CollectionAttributes, sections: JsonArray?, boundSource: CollectionDataSource?): CellPlan {
+            val hasSections = sections != null && sections.size() > 0
+            val legacyCell = if (hasSections) null else a.cellClasses?.singleOrNull()?.let(::declaredClassName)
+            val legacyHeader = if (hasSections) null else a.headerClasses?.firstOrNull()?.let(::declaredClassName)
+            val legacyFooter = if (hasSections) null else a.footerClasses?.firstOrNull()?.let(::declaredClassName)
+            val isLegacyShape = legacyCell != null || legacyHeader != null || legacyFooter != null
+            val dataSource = when {
+                isLegacyShape -> boundSource ?: CollectionDataSource()
+                sections != null -> boundSource
+                else -> null
+            }
+            return CellPlan(sections, dataSource, legacyCell, legacyHeader, legacyFooter)
+        }
 
         /**
          * `listStyle` chrome + `hideSeparator` (51-E). The chrome wraps each
