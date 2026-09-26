@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -249,16 +251,15 @@ class DynamicCollectionComponent {
                 ?: 0f
             val lineSpacing = (a.lineSpacing?.toFloat() ?: defaultSpacing).dp
             val columnSpacing = (a.columnSpacing?.toFloat() ?: defaultSpacing).dp
-            // For a HORIZONTAL collection both spacing spellings act along
-            // the scroll axis, lineSpacing first: minimumLineSpacing
-            // separates the "lines" perpendicular to the scroll, which ARE
-            // the columns when the scroll runs horizontally. The codegen
-            // face emits exactly this fold (collection_component.rb
-            // `h_spacing = line_spacing || column_spacing`) while this path
-            // read only columnSpacing — a lineSpacing-declared carousel
-            // rendered its cells touching, dynamic face only (a downstream chip carousel, 2026-08-10).
+            // A HORIZONTAL collection — every one, a single lane, its lanes
+            // and its pages — has one rule (4f ruling, 2026-09-26; SwiftJsonUI
+            // reads the same): along the scroll axis lineSpacing, else
+            // itemSpacing; between lanes columnSpacing, else itemSpacing. See
+            // horizontalSpacing. The scroll axis read lineSpacing, else
+            // columnSpacing, else itemSpacing, and the lanes were not spaced.
+            val horizontal = horizontalSpacing(a, defaultSpacing)
             val scrollAxisSpacing = if (isHorizontal) {
-                (a.lineSpacing?.toFloat() ?: a.columnSpacing?.toFloat() ?: defaultSpacing).dp
+                horizontal.alongScroll.dp
             } else {
                 columnSpacing
             }
@@ -423,6 +424,8 @@ class DynamicCollectionComponent {
                     data = data,
                     modifier = rowModifier,
                     columnSpacing = scrollAxisSpacing,
+                    laneSpacing = horizontal.betweenLanes.dp,
+                    defaultColumns = defaultColumns,
                     contentPadding = contentPadding,
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
@@ -472,7 +475,7 @@ class DynamicCollectionComponent {
                     data = data,
                     modifier = modifier,
                     contentPadding = contentPadding,
-                    pageSpacing = columnSpacing,
+                    pageSpacing = scrollAxisSpacing,
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
@@ -560,11 +563,15 @@ class DynamicCollectionComponent {
                     reverseLayout = reverseLayout,
                     userScrollEnabled = scrollEnabled,
                     contentPadding = contentPadding,
-                    verticalArrangement = Arrangement.spacedBy(0.dp) /* canon: codegen emits no cross-axis arrangement for horizontal (collection_component.rb:326) */,
+                    verticalArrangement = Arrangement.spacedBy(horizontal.betweenLanes.dp) /* between lanes: columnSpacing, else itemSpacing */,
                     horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing)
                 ) {
                     generateCollectionItems(
                         sections = plan.sectionsFor(CellRoute.LAZY_HORIZONTAL_GRID),
+                        // Each declared section starts a new column (4f
+                        // ruling, 2026-09-26), as it starts a new row on the
+                        // vertical grid: the same arithmetic, in lanes.
+                        breakRowsBetweenSections = plan.hasDeclaredSections,
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
                         cellIdProperty = cellIdProperty,
@@ -649,7 +656,7 @@ class DynamicCollectionComponent {
          *
          * Supports:
          * - onPageChanged: @{callback} binding for page change notification
-         * - pageSpacing: spacing between pages (from columnSpacing/itemSpacing)
+         * - pageSpacing: spacing between pages (the horizontal rule: lineSpacing, else itemSpacing)
          * - contentPadding: padding around the pager
          */
         @Suppress("UNCHECKED_CAST")
@@ -1070,6 +1077,8 @@ class DynamicCollectionComponent {
             data: Map<String, Any>,
             modifier: Modifier,
             columnSpacing: androidx.compose.ui.unit.Dp,
+            laneSpacing: androidx.compose.ui.unit.Dp = 0.dp,
+            defaultColumns: Int = 1,
             contentPadding: PaddingValues,
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
@@ -1089,8 +1098,40 @@ class DynamicCollectionComponent {
                             val sectionObj = sectionElement.asJsonObject
                             val cellViewName = sectionObj.get("cell")?.asString
 
+                            // `columns` on a horizontal Collection is its lanes, and
+                            // a section's own `columns` its block's (4f ruling,
+                            // 2026-09-26) — as the lazy route's
+                            // LazyHorizontalGrid draws them. This route drew one
+                            // Row whatever `columns` said. Each section is a
+                            // block of its own, so it starts a new column.
+                            val lanes = maxOf(1, sectionObj.get("columns")?.asInt ?: defaultColumns)
                             collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
                                 section.cells?.let { cellData ->
+                                    if (lanes > 1) {
+                                        LaneGrid(lanes = lanes, laneSpacing = laneSpacing, columnSpacing = columnSpacing) {
+                                            cellData.data.forEachIndexed { cellIndex, item ->
+                                                // The lazy route's grid cell: a declared size binds
+                                                // (anchored, clipped); otherwise the cell fills its lane.
+                                                Box(
+                                                    modifier = Modifier
+                                                        .then(
+                                                            if (cellWidth != null || cellHeight != null) {
+                                                                Modifier.wrapContentSize(align = Alignment.TopStart)
+                                                            } else Modifier
+                                                        )
+                                                        .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                                                        .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
+                                                        .then(
+                                                            if (cellWidth != null || cellHeight != null) Modifier.clipToBounds()
+                                                            else Modifier.fillMaxSize()
+                                                        ),
+                                                    contentAlignment = gravityAlignment
+                                                ) {
+                                                    renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                                }
+                                            }
+                                        }
+                                    } else {
                                     cellData.data.forEachIndexed { cellIndex, item ->
                                         Box(
                                             modifier = Modifier
@@ -1101,10 +1142,54 @@ class DynamicCollectionComponent {
                                             renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
                                         }
                                     }
+                                    }
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+
+        /**
+         * A horizontal section block of [lanes] lanes, for the routes that do
+         * not scroll lazily (eager, lazy:none): cells fill a column top to
+         * bottom, then the next — LazyHorizontalGrid's order. With a bounded
+         * height each lane is an equal share of it, as GridCells.Fixed gives
+         * the lazy route; unbounded, a lane is as tall as its tallest cell.
+         * A column is as wide as its widest cell. See [laneGridPlacement].
+         */
+        @Composable
+        private fun LaneGrid(
+            lanes: Int,
+            laneSpacing: androidx.compose.ui.unit.Dp,
+            columnSpacing: androidx.compose.ui.unit.Dp,
+            content: @Composable () -> Unit
+        ) {
+            Layout(content = content) { measurables, constraints ->
+                val laneSpacingPx = laneSpacing.roundToPx()
+                val columnSpacingPx = columnSpacing.roundToPx()
+                val laneHeight = if (constraints.hasBoundedHeight) {
+                    ((constraints.maxHeight - laneSpacingPx * (lanes - 1)) / lanes).coerceAtLeast(0)
+                } else null
+                val cellConstraints = Constraints(
+                    minHeight = laneHeight ?: 0,
+                    maxHeight = laneHeight ?: Constraints.Infinity
+                )
+                val placeables = measurables.map { it.measure(cellConstraints) }
+                val placement = laneGridPlacement(
+                    widths = placeables.map { it.width },
+                    heights = placeables.map { it.height },
+                    lanes = lanes,
+                    laneSpacing = laneSpacingPx,
+                    columnSpacing = columnSpacingPx,
+                    laneHeight = laneHeight
+                )
+                layout(
+                    placement.width.coerceIn(constraints.minWidth, constraints.maxWidth),
+                    placement.height.coerceIn(constraints.minHeight, constraints.maxHeight)
+                ) {
+                    placeables.forEachIndexed { i, placeable -> placeable.place(placement.x[i], placement.y[i]) }
                 }
             }
         }
@@ -1149,7 +1234,9 @@ class DynamicCollectionComponent {
                     // one LazyVerticalGrid, whose items fill the current row
                     // across a section boundary, so an empty item takes the
                     // rest of a part-filled row first — in that row, so no
-                    // row and no line spacing is added. A header (full span)
+                    // row and no line spacing is added. On the horizontal
+                    // grid the same holds in lanes: a section starts a new
+                    // column. A header (full span)
                     // already starts one. The legacy shape's stand-in
                     // sections stay one grid, as sjui's legacy grid is.
                     val breakSpans = if (breakRowsBetweenSections) {
@@ -1365,6 +1452,65 @@ class DynamicCollectionComponent {
 
             fun headerFor(route: CellRoute): String? = legacyHeader?.takeIf { drawsEdges(route) }
             fun footerFor(route: CellRoute): String? = legacyFooter?.takeIf { drawsEdges(route) }
+        }
+
+        /**
+         * Spacing on a horizontal Collection (4f ruling, 2026-09-26): along
+         * the scroll axis lineSpacing, else itemSpacing; between lanes
+         * columnSpacing, else itemSpacing. The SSoT words them for a vertical
+         * grid ("Spacing between rows" / "Spacing between columns"); they
+         * were declared from UIKit's flow layout (lineSpacing ->
+         * minimumLineSpacing, columnSpacing -> minimumInteritemSpacing), in
+         * which a horizontally scrolling grid's lines are its columns.
+         * [defaultSpacing] is itemSpacing (then the legacy `spacing` extra).
+         */
+        internal data class HorizontalSpacing(val betweenLanes: Float, val alongScroll: Float)
+
+        internal fun horizontalSpacing(a: CollectionAttributes, defaultSpacing: Float): HorizontalSpacing =
+            HorizontalSpacing(
+                betweenLanes = a.columnSpacing?.toFloat() ?: defaultSpacing,
+                alongScroll = a.lineSpacing?.toFloat() ?: defaultSpacing
+            )
+
+        /** Where each cell of a horizontal lane block goes, and the block's size. */
+        internal data class LanePlacement(val x: List<Int>, val y: List<Int>, val width: Int, val height: Int)
+
+        /**
+         * Column-major placement of cells in [lanes] lanes: cell i in column
+         * i / lanes, lane i % lanes. A column is as wide as its widest cell;
+         * a lane is [laneHeight] tall when the height is bounded, else as tall
+         * as its tallest cell. [columnSpacing] between columns (the scroll
+         * axis), [laneSpacing] between lanes.
+         */
+        internal fun laneGridPlacement(
+            widths: List<Int>,
+            heights: List<Int>,
+            lanes: Int,
+            laneSpacing: Int,
+            columnSpacing: Int,
+            laneHeight: Int?
+        ): LanePlacement {
+            val n = widths.size
+            if (n == 0) return LanePlacement(emptyList(), emptyList(), 0, 0)
+            val l = maxOf(1, lanes)
+            val columns = (n + l - 1) / l
+            val columnWidths = IntArray(columns)
+            for (i in 0 until n) columnWidths[i / l] = maxOf(columnWidths[i / l], widths[i])
+            val laneHeights = IntArray(l) { laneHeight ?: 0 }
+            if (laneHeight == null) for (i in 0 until n) laneHeights[i % l] = maxOf(laneHeights[i % l], heights[i])
+            val columnX = IntArray(columns)
+            var x = 0
+            for (c in 0 until columns) {
+                columnX[c] = x
+                x += columnWidths[c] + if (c < columns - 1) columnSpacing else 0
+            }
+            val laneY = IntArray(l)
+            var y = 0
+            for (r in 0 until l) {
+                laneY[r] = y
+                y += laneHeights[r] + if (r < l - 1) laneSpacing else 0
+            }
+            return LanePlacement(List(n) { columnX[it / l] }, List(n) { laneY[it % l] }, x, y)
         }
 
         /** What a section puts into the vertical grid, for [sectionBreakSpans]. */

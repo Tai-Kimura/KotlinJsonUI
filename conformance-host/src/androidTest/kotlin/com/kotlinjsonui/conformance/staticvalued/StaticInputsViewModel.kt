@@ -1,5 +1,5 @@
 // Pasted from what `kjui build` emits for the static layouts of StaticValuedControlsProbeTest —
-// kjui_tools of jsonui-cli triage/static-valued-controls 46b7d599 (on rel/v1.8.121 = 32785ce8): a static value seeds the control's own state (ticket
+// kjui_tools of jsonui-cli triage/selectbox-item-binding 43e735a3 (rel/v1.8.121 = 621d3136 merged in): a static value seeds the control's own state (ticket
 // static-valued-controls-do-not-change-on-a-users-tap). Changed from the output: the package
 // (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.staticvalued) and the unused
 // `import com.kotlinjsonui.probe.R`.
