@@ -77,18 +77,18 @@ object LayoutPath {
     }
 
     /**
-     * The type a spelling is drawn as, by the codegen's rule (layout_path.rb
-     * `drawn_type`): a declared alias section draws as the section it names
-     * (Toggle → Switch, EditText → TextField, Check → CheckBox); a synonym as
-     * its `render_as`, else its canonical section (Picker → SelectBox,
-     * Text → Label, CircleImage → CircleImage); any other spelling as written.
-     * Matched case-insensitively, as DynamicView dispatches (a lowercase
-     * `checkbox` draws a CheckBox here; the codegen, which dispatches by the
-     * exact spelling, names it as written).
+     * The type a spelling is drawn as — TypeSynonyms.drawnType, the rule every
+     * classifier here reads, and the codegen's (layout_path.rb reads
+     * TypeSynonyms.drawn_type): a type the app draws itself
+     * (Configuration.customComponentTypes) as written; else a synonym as its
+     * `render_as` or canonical section (Picker → SelectBox, Text → Label,
+     * CircleImage → CircleImage), then a declared alias section as the
+     * section it names (Toggle → Switch, EditText → TextField). It kept a
+     * copy of the rule without the app's types, so an app's own ProgressBar
+     * was named `progress_<path>` here and `progressBar_<path>` by the
+     * codegen.
      */
-    fun drawnType(type: String): String =
-        com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases.canonicalFor(type)
-            ?: com.kotlinjsonui.dynamic.TypeSynonyms.drawnAs(type)
+    fun drawnType(type: String): String = com.kotlinjsonui.dynamic.TypeSynonyms.drawnType(type)
 
     /**
      * The [index]-th of a list of roots (DynamicViews), read as the child

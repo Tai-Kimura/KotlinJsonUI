@@ -175,6 +175,10 @@ private fun DynamicViewContent(
         // them twice.
         ModifierBuilder.ApplyLifecycleEffects(responsiveJson, effectiveData)
         val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
+        // Said once per type when the handler drew a type the app did not
+        // name in Configuration.customComponentTypes: what classifies the
+        // node (its viewId, its tap role) then reads it as the built-in.
+        if (handledByApp) TypeSynonyms.noteDrawnByApp(type, context)
         // A synonym spelling (HStack, ProgressBar, WebView, …) is drawn as its
         // type, from the vendored type-synonym table — after the app was asked,
         // with the node as written, so an app's own component under a

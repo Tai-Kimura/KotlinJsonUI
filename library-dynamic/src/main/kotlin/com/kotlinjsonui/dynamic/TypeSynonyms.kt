@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases
 import java.io.InputStreamReader
 
@@ -24,7 +25,8 @@ import java.io.InputStreamReader
  *
  * A type the app registers as its own component is asked for before this
  * (DynamicView asks Configuration.customComponentHandler with the node as
- * written) and is never rewritten.
+ * written) and is never rewritten; what classifies a node reads the app's
+ * types from Configuration.customComponentTypes ([drawnType]).
  *
  * The file ships inside the library. When it cannot be read, the first
  * lookup throws, naming the resource: drawing every synonym spelling as an
@@ -61,17 +63,39 @@ object TypeSynonyms {
     fun drawnAs(type: String): String = entries[type.lowercase()]?.drawnAs ?: type
 
     /**
-     * The type a node spelled [type] is drawn as: its synonym's target, then
-     * a declared alias section's canonical one ([JsonUIComponentAliases]).
-     * What classifies a node by its type asks this, so that it agrees with
-     * the dispatch; a list to compare it with holds drawn types only.
-     * jsonui-cli's shared/core/type_synonyms.rb `drawn_type` is the same
-     * rule for the codegen, which also reads an app's own spelling as
-     * written. The app's component here is a handler that draws
-     * ([Configuration.customComponentHandler]), with no list of the
-     * spellings it takes, so this cannot ask it.
+     * The type a node spelled [type] is drawn as: a type the app draws itself
+     * ([Configuration.customComponentTypes]) as written; else its synonym's
+     * target, then a declared alias section's canonical one
+     * ([JsonUIComponentAliases]). What classifies a node by its type asks
+     * this, so that it agrees with the dispatch — its viewId (LayoutPath),
+     * its tap and image roles; a list to compare it with holds drawn types
+     * only. jsonui-cli's shared/core/type_synonyms.rb `drawn_type` is the
+     * same rule for the codegen, whose app types are its converters.
      */
-    fun drawnType(type: String): String = drawnAs(type).let { JsonUIComponentAliases.canonicalFor(it) ?: it }
+    fun drawnType(type: String): String =
+        if (type in Configuration.customComponentTypes) type else builtInType(type)
+
+    /** [type] read without the app's types: its synonym's target, then its alias section's canonical one. */
+    private fun builtInType(type: String): String = drawnAs(type).let { JsonUIComponentAliases.canonicalFor(it) ?: it }
+
+    /**
+     * The app's handler drew [type] ([Configuration.customComponentHandler]
+     * answered `true`). When [Configuration.customComponentTypes] does not
+     * name it, what classifies the node reads it as the built-in its spelling
+     * names, not as the app's — said once per type (logged by a debuggable
+     * build), with the way to fix it. A handler written by hand, not
+     * generated, is how the two part.
+     */
+    fun noteDrawnByApp(type: String, context: android.content.Context? = null) {
+        if (type in Configuration.customComponentTypes || !warned.add("app:$type")) return
+        val builtIn = builtInType(type)
+        val follows = if (builtIn != type) " — its viewId and tap role follow the built-in '$builtIn'" else ""
+        val message = "Custom component '$type' was drawn by the app but is not in " +
+            "Configuration.customComponentTypes$follows. Run `jui g converter $type` again, " +
+            "or add '$type' to Configuration.customComponentTypes."
+        warningSink?.invoke(message)
+        if (DebugDiagnostics.isAppDebuggable(context)) Log.w(TAG, message)
+    }
 
     /**
      * [node] as drawn. For a synonym, a copy whose `type` is what it is drawn
