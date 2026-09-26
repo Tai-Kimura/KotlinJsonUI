@@ -66,9 +66,12 @@ class FlowCollectionScrollRuleTest {
         val definition = lines().let { it.subList(it.indexOf(bounded), it.indexOf(bounded) + 2) }.joinToString(" ")
         assertTrue(definition, "DimensionValue.Number" in definition)
         assertTrue(definition, "a.common.maxHeight" in definition)
+        // The flow's own ScrollState (it scrolls to a scrollTo cell since
+        // jsonui-cli 1.9.0, round 11), the content's place recorded.
+        assertEquals("heightIsSelfBounded -> flow(modifier.then(scrolled))", flowBranch().line("heightIsSelfBounded ->"))
         assertEquals(
-            "heightIsSelfBounded -> flow(modifier.verticalScroll(rememberScrollState()))",
-            flowBranch().line("heightIsSelfBounded ->")
+            "val scrolled = Modifier.verticalScroll(flowScroll).onGloballyPositioned { flowTargets.content = it }",
+            flowBranch().line("val scrolled =")
         )
     }
 
@@ -78,11 +81,12 @@ class FlowCollectionScrollRuleTest {
         assertTrue(branch.joinToString("\n"), branch.any { it.startsWith("else -> BoxWithConstraints(modifier = modifier)") })
         val ask = branch.line("val inner = if (constraints.hasBoundedHeight)")
         val scrolled = branch.indexOf(ask) + 1
-        assertEquals("Modifier.fillMaxSize().verticalScroll(rememberScrollState())", branch[scrolled])
+        assertEquals("Modifier.fillMaxSize().then(scrolled)", branch[scrolled])
         // The infinite-parent arm is the crash shape: it must carry no scroll.
         val unbounded = branch.subList(scrolled + 1, branch.size).line("Modifier.fillMaxWidth()")
         assertFalse(unbounded, "verticalScroll" in unbounded)
-        assertEquals(2, branch.count { "verticalScroll(rememberScrollState())" in it })
+        assertEquals(2, branch.count { "then(scrolled)" in it })
+        assertEquals(1, branch.count { "verticalScroll(" in it })
     }
 
     @Test

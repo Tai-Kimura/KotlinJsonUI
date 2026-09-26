@@ -153,13 +153,17 @@ class CollectionDeclaredRowsTest {
     fun everyScrollToCallAsksScrollAnimated() {
         val lines = code()
         assertTrue(lines.joinToString("\n"), lines.contains("val scrollAnimated = a.scrollAnimated != false"))
-        val scrolls = lines.filter { "animateScrollToItem(" in it }
-        assertEquals("the grid's three anchor arms and the single-lane row", 4, scrolls.size)
+        // Since jsonui-cli 1.9.0 (round 11) the lazy scrolls go through
+        // scrollToAnchored (grid, row), which takes `animated`, and the flow
+        // and the pager scroll too; the pager's currentPage leg is its own.
+        val scrolls = lines.filter { ("animateScrollTo" in it) && "currentPage" !in it && "animateScrollToPage(target)" !in it }
+        assertEquals("the two scrollToAnchored helpers, the flow and the pager", 4, scrolls.size)
         for (line in scrolls) {
-            assertTrue(line, "if (scrollAnimated)" in line)
+            assertTrue(line, "if (animated)" in line || "if (scrollAnimated)" in line || "if (a.scrollAnimated != false)" in line)
             val instant = line.substringAfter(" else ")
-            assertTrue(line, ".scrollToItem(" in instant && "animate" !in instant)
+            assertTrue(line, "scrollTo" in instant && "animate" !in instant)
         }
         assertTrue(lines.contains("scrollAnimated = scrollAnimated,"))
+        assertEquals(2, lines.count { "scrollToAnchored(index, scrollAnchor" in it && "scrollAnimated" in it })
     }
 }
