@@ -1,5 +1,5 @@
 // Pasted from what `kjui build` emits for the static layouts of StaticValuedControlsProbeTest —
-// kjui_tools of jsonui-cli triage/static-valued-controls 46b7d599 (on rel/v1.8.121 = 32785ce8): a static value seeds the control's own state (ticket
+// kjui_tools of jsonui-cli triage/selectbox-item-binding 43e735a3 (rel/v1.8.121 = 621d3136 merged in): a static value seeds the control's own state (ticket
 // static-valued-controls-do-not-change-on-a-users-tap). Changed from the output: the package
 // (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.staticvalued) and the unused
 // `import com.kotlinjsonui.probe.R`.
@@ -113,6 +113,9 @@ private fun Section1(
     var selectedTab by remember { mutableStateOf(0) }
 
     Scaffold(
+        modifier = Modifier
+            .testTag("tab")
+            .semantics { testTagsAsResourceId = true },
         bottomBar = {
             NavigationBar(
             ) {
@@ -275,6 +278,9 @@ private fun Section10(
         run {
             var seeded by remember { mutableStateOf("ra") }
             Column(
+                modifier = Modifier
+                    .testTag("rv")
+                    .semantics { testTagsAsResourceId = true }
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -314,6 +320,9 @@ private fun Section10(
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .testTag("rg1")
+                .semantics { testTagsAsResourceId = true }
         ) {
             Section2(data, viewModel)
             Section3(data, viewModel)
@@ -321,6 +330,9 @@ private fun Section10(
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .testTag("rg2")
+                .semantics { testTagsAsResourceId = true }
         ) {
             Section5(data, viewModel)
             Section6(data, viewModel)
