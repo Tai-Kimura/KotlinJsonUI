@@ -105,4 +105,75 @@ class DynamicCollectionFlowSectionsTest {
         }
         assertTrue(wrong.joinToString("\n"), wrong.isEmpty())
     }
+
+    /**
+     * A section's declared header and footer are rows of their own around its
+     * wrap (4f ruling 2026-09-26, round 7): the header above at the leading
+     * edge, the footer below, section 2's header under section 1's footer,
+     * each a line (6 dp) apart. The flow drew neither until then. Section 2's
+     * header is the title cell with "h2", so it reads apart from section 1's.
+     */
+    @Test
+    fun aSectionsHeaderAndFooterAreRowsAroundItsWrap() {
+        val edged = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(
+                    header = CollectionDataSection.HeaderFooterData("collection_probe_header", emptyMap()),
+                    cells = CollectionDataSection.CellData(cell, listOf("a0", "a1").map { mapOf("title" to it) }),
+                    footer = CollectionDataSection.HeaderFooterData("collection_probe_footer", emptyMap()),
+                ),
+                CollectionDataSection(
+                    header = CollectionDataSection.HeaderFooterData(cell, mapOf("title" to "h2")),
+                    cells = CollectionDataSection.CellData(cell, listOf(mapOf("title" to "b0"))),
+                ),
+            )
+        )
+        val wrong = mutableListOf<String>()
+        fun expect(what: String, want: Float, got: Float) {
+            if (kotlin.math.abs(want - got) > 0.5f) wrong += "$what: want $want dp, drew $got dp"
+        }
+        for (route in routes) {
+            val json = JsonParser.parseString(
+                """{"type": "Collection", "id": "chips", "layout": "flow", "width": 300, "items": "@{items}",
+                   "cellWidth": 40, "cellHeight": 20, "lineSpacing": 6,
+                   "sections": [{"cell": "$cell", "header": "collection_probe_header", "footer": "collection_probe_footer"},
+                                {"cell": "$cell", "header": "$cell"}] $route}"""
+            ).asJsonObject
+            if (!composed) {
+                rule.setContent { shown?.let { (j, d) -> key(j) { DynamicView(json = j, data = d) } } }
+                composed = true
+            }
+            rule.runOnIdle { shown = json to mapOf("items" to edged) }
+            rule.waitForIdle()
+            val nodes = listOf("headerProbe", "footerProbe", "h2").associateWith {
+                rule.onAllNodesWithText(it).fetchSemanticsNodes().singleOrNull()
+            }
+            if (nodes.values.any { it == null }) { wrong += "not drawn$route: ${nodes.filterValues { it == null }.keys}"; continue }
+            val header = nodes.getValue("headerProbe")!!; val footer = nodes.getValue("footerProbe")!!; val h2 = nodes.getValue("h2")!!
+            val (a0, a1, b0) = listOf(at("a0"), at("a1"), at("b0"))
+            expect("the header at the leading edge$route", dp(a0.x), dp(header.positionInRoot.x))
+            expect("header, then the wrap$route", 6f, dp(a0.y - (header.positionInRoot.y + header.size.height)))
+            expect("the cells share their line$route", dp(a0.y), dp(a1.y))
+            expect("the wrap, then the footer$route", 6f, dp(footer.positionInRoot.y - (a0.y + 20f * rule.density.density)))
+            expect("section 2's header under section 1's footer$route", 6f, dp(h2.positionInRoot.y - (footer.positionInRoot.y + footer.size.height)))
+            expect("section 2's wrap under its header$route", 6f, dp(b0.y - (h2.positionInRoot.y + h2.size.height)))
+        }
+        // One declared section with a header and footer: the same rows (the
+        // single-section flow is one FlowRow otherwise).
+        for (route in routes) {
+            val json = JsonParser.parseString(
+                """{"type": "Collection", "id": "chips", "layout": "flow", "width": 300, "items": "@{items}",
+                   "cellWidth": 40, "cellHeight": 20, "lineSpacing": 6,
+                   "sections": [{"cell": "$cell", "header": "collection_probe_header", "footer": "collection_probe_footer"}] $route}"""
+            ).asJsonObject
+            rule.runOnIdle { shown = json to mapOf("items" to edged) }
+            rule.waitForIdle()
+            val header = rule.onAllNodesWithText("headerProbe").fetchSemanticsNodes().singleOrNull()
+            val footer = rule.onAllNodesWithText("footerProbe").fetchSemanticsNodes().singleOrNull()
+            if (header == null || footer == null) { wrong += "one section, not drawn$route"; continue }
+            expect("one section: header, then the wrap$route", 6f, dp(at("a0").y - (header.positionInRoot.y + header.size.height)))
+            expect("one section: the wrap, then the footer$route", 6f, dp(footer.positionInRoot.y - (at("a0").y + 20f * rule.density.density)))
+        }
+        assertTrue(wrong.joinToString("\n"), wrong.isEmpty())
+    }
 }
