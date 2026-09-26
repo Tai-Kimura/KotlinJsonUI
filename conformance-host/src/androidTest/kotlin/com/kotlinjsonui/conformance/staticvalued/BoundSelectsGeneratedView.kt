@@ -1,4 +1,4 @@
-// Pasted from what `kjui build` (kjui_tools of jsonui-cli triage/static-valued-controls 46b7d599 on
+// Pasted from what `kjui build` (kjui_tools of jsonui-cli triage/selectbox-item-binding 640dd2f6, on
 // rel/v1.8.121) emits for four SelectBoxes bound to the data — selectedItem, selectedValue, selectedDate,
 // selectedIndex — for ticket selectbox-selected-item-binding-is-read-once. Changed from the output: the
 // package (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.staticvalued) and the unused
@@ -123,7 +123,8 @@ fun BoundSelectsGeneratedView(
             SelectBox(
                 value = listOf("pp", "qq").getOrElse(data.sbIdx) { "" },
                 onValueChange = { newValue ->
-                    viewModel.updateData(mapOf("sbIdx" to newValue))
+                    val index = listOf("pp", "qq").indexOf(newValue)
+                    viewModel.updateData(mapOf("sbIdx" to index))
                 },
                 options = listOf("pp", "qq"),
                 modifier = Modifier
