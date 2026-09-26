@@ -174,6 +174,8 @@ private fun DynamicViewContent(
         // app's component, and a View drawn as a ConstraintLayout registered
         // them twice.
         ModifierBuilder.ApplyLifecycleEffects(responsiveJson, effectiveData)
+        // This node's entry: buildModifier marks it (AppComponentStages).
+        AppComponentStages.begin()
         val handledByApp = Configuration.customComponentHandler?.invoke(type, responsiveJson, effectiveData) ?: false
         // Said once per type when the handler drew a type the app did not
         // name in Configuration.customComponentTypes: what classifies the
@@ -244,6 +246,8 @@ private fun DynamicViewContent(
                 }
             }
         }
+        // The app's component drawn without buildModifier is said once per type.
+        AppComponentStages.end(type, responsiveJson, handledByApp, context)
     }
 
     // Apply visibility/hidden wrapper if either attribute resolved.
