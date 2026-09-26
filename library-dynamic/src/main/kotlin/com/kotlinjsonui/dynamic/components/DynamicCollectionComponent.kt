@@ -193,11 +193,12 @@ class DynamicCollectionComponent {
             // read the way sjui's codegen draws it. See cellPlan.
             val plan = cellPlan(
                 a, sections,
-                (itemsBoundValue as? CollectionDataSource)?.reconfigured(
+                boundSource(a, sections, itemsBoundValue)?.reconfigured(
                     cellIdProperty = cellIdProperty,
                     autoChangeTrackingId = autoChangeTrackingId
                 )
             )
+            nameUndrawnCellClasses(a, sections)
             val collectionDataSource = plan.dataSource
 
             // Parse grid configuration with default columns
@@ -1563,6 +1564,42 @@ class DynamicCollectionComponent {
             else -> null
         }?.takeIf { it.isNotEmpty() }
 
+        /**
+         * The data source `items` binds. Collection.items is a
+         * CollectionDataSource or an array (attribute_definitions.json; 4f
+         * ruling, 2026-09-26): with no `sections` and a single declared cell,
+         * a list is ONE section of that cell, drawn on the routes a
+         * one-section data source takes. The codegens decide by the layout's
+         * data declaration; this renderer by the value's shape. A list was
+         * not a CollectionDataSource, so it drew no cell (measured on
+         * e33f493).
+         */
+        internal fun boundSource(a: CollectionAttributes, sections: JsonArray?, value: Any?): CollectionDataSource? {
+            if (value is CollectionDataSource) return value
+            if (value !is List<*> || (sections != null && sections.size() > 0)) return null
+            val cell = a.cellClasses?.singleOrNull()?.let(::declaredClassName) ?: return null
+            return CollectionDataSource(
+                sections = listOf(CollectionDataSection(cells = CollectionDataSection.CellData(cell, value.mapNotNull(::cellMap))))
+            )
+        }
+
+        /**
+         * One element of an `items` list as a cell's data: a map as it is,
+         * a generated Data class by its `toMap()` (what the codegen calls),
+         * anything else no cell.
+         */
+        internal fun cellMap(element: Any?): Map<String, Any>? {
+            val map = when (element) {
+                null -> return null
+                is Map<*, *> -> element
+                else -> element.javaClass.methods
+                    .firstOrNull { it.name == "toMap" && it.parameterCount == 0 }
+                    ?.invoke(element) as? Map<*, *>
+            } ?: return null
+            @Suppress("UNCHECKED_CAST")
+            return map.filter { (k, v) -> k is String && v != null } as Map<String, Any>
+        }
+
         internal fun cellPlan(a: CollectionAttributes, sections: JsonArray?, boundSource: CollectionDataSource?): CellPlan {
             val hasSections = sections != null && sections.size() > 0
             val legacyCell = if (hasSections) null else a.cellClasses?.singleOrNull()?.let(::declaredClassName)
@@ -1832,6 +1869,31 @@ class DynamicCollectionComponent {
         )
 
         private val loggedMisconfiguredCollections = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+        /** What this renderer has named, in order (read by the tests). */
+        internal val named = java.util.Collections.synchronizedList(mutableListOf<String>())
+        internal val loggedSeveralCellClasses = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+        /**
+         * Several cellClasses and no `sections`: the build refuses that
+         * layout (LayoutValidator check_collection, level error, "N
+         * cellClasses declared without sections"), and this renderer draws no
+         * cell for it — said once per Collection, since a Dynamic layout does
+         * not pass the build. It drew nothing and said nothing.
+         */
+        internal fun nameUndrawnCellClasses(a: CollectionAttributes, sections: JsonArray?) {
+            val count = a.cellClasses?.size ?: 0
+            if ((sections == null || sections.size() == 0) && count > 1) logSeveralCellClasses(a.common.id, count)
+        }
+
+        internal fun logSeveralCellClasses(componentId: String?, count: Int) {
+            val key = componentId ?: "(unnamed)"
+            if (!loggedSeveralCellClasses.add(key)) return
+            val sentence = "Collection (id=$key): $count cellClasses declared without sections — no cell is drawn. " +
+                "Fix: assign cells via sections[].cell, or declare a single cellClass."
+            named.add(sentence)
+            android.util.Log.w("DynamicCollectionComponent", sentence)
+        }
 
         private fun logAutoTrackingMisconfiguration(componentId: String?) {
             val key = componentId ?: "(unnamed)"
