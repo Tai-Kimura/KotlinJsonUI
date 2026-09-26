@@ -357,15 +357,19 @@ class DynamicRadioComponent {
                 json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
             )
 
+            // The rows and buttons inside read the stop too (stoppedItem).
+            val stopped = ModifierBuilder.stoppedItem(json, data)
             Column(modifier = modifier) {
                 options.forEach { (value, label) ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .then(stopped)
                             .clickable(enabled = isEnabled) { onValueChange(value) }
                     ) {
                         RadioButton(
+                            modifier = stopped,
                             selected = selectedValue == value,
                             onClick = { onValueChange(value) },
                             enabled = isEnabled,
@@ -436,9 +440,11 @@ class DynamicRadioComponent {
                 // a fixed 20dp, so a bare .size(N) just clips it. Scaling by
                 // N/20 inside the N-dp box draws it at the declared size
                 // (same emission as the kjui codegen icon_appearance_args).
-                val glyphModifier = a.iconSize?.let {
+                // The button inside reads the stop too (stoppedItem).
+                val stopped = ModifierBuilder.stoppedItem(json, data)
+                val glyphModifier = (a.iconSize?.let {
                     Modifier.size(it.dp).scale((it / 20.0).toFloat())
-                } ?: Modifier
+                } ?: Modifier).then(stopped)
 
                 when {
                     // Standard radio button (circle icons or no icons)
@@ -474,7 +480,8 @@ class DynamicRadioComponent {
                         Checkbox(
                             checked = isSelected,
                             onCheckedChange = { onSelect() },
-                            enabled = isEnabled
+                            enabled = isEnabled,
+                            modifier = stopped
                         )
                     }
                     // Custom icons
@@ -482,7 +489,7 @@ class DynamicRadioComponent {
                         val iconResId = mapIconResId(icon ?: "star")
                         val selectedIconResId = mapIconResId(selectedIcon ?: "star.fill")
 
-                        IconButton(onClick = onSelect, enabled = isEnabled) {
+                        IconButton(onClick = onSelect, enabled = isEnabled, modifier = stopped) {
                             Icon(
                                 painter = painterResource(if (isSelected) selectedIconResId else iconResId),
                                 contentDescription = text,
@@ -643,15 +650,19 @@ class DynamicRadioComponent {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Generate radio items
+                // Generate radio items. The rows and buttons read the stop
+                // too (stoppedItem).
+                val stopped = ModifierBuilder.stoppedItem(json, data)
                 items.forEach { item ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .then(stopped)
                             .clickable(enabled = isEnabled) { onValueChange(item) }
                     ) {
                         RadioButton(
+                            modifier = stopped,
                             selected = selectedValue == item,
                             onClick = { onValueChange(item) },
                             enabled = isEnabled

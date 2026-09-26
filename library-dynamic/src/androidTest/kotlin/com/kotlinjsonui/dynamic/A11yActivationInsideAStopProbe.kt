@@ -10,11 +10,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Tab
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -26,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -55,6 +61,7 @@ import com.google.gson.JsonParser
 import com.kotlinjsonui.components.CollectionStack
 import com.kotlinjsonui.components.CollectionStackAxis
 import com.kotlinjsonui.components.CollectionStackMode
+import com.kotlinjsonui.components.Segment
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.FontSpec
 import com.kotlinjsonui.core.LocalInteractionStopped
@@ -86,16 +93,19 @@ import org.junit.runner.RunWith
  * counts what that moved (handler calls, or Switch value writes).
  *
  * Left: what `kjui build` emits for the two layouts below — kjui_tools of
- * jsonui-cli support4f/tap-rule-uie-round4 (on aea0a0a4; jsonui-cli 1.9.0 in
- * progress: a control a stop holds reads disabled() and writes nothing),
+ * jsonui-cli support4f/tap-rule-uie-round5 (on b9d10daf; jsonui-cli 1.9.0 in
+ * progress: a control a stop holds reads disabled() and writes nothing, and
+ * so does each node inside it a user operates — a Segment's tabs, a Radio
+ * group's rows and RadioButtons),
  * ComposeBuilder over a layouts directory holding both, as build_file calls
  * it — the probe's body and the cell's body pasted unchanged (AxCodegen,
  * AxCellGeneratedView). The cell's View / Data /
  * ViewModel are the shapes `kjui g collection` writes (cell_generator.rb),
  * with the updateData case for onRow. The rows:
- * - no stop (the controls): a Label with onClick, a Button, a Switch;
+ * - no stop (the controls): a Label with onClick, a Button, a Switch, a
+ *   Segment and a Radio group (the wrapper controls);
  * - inside a View with `userInteractionEnabled: false`: a Button, a Label
- *   with onClick, a View with onClick, a Switch;
+ *   with onClick, a View with onClick, a Switch, a Segment, a Radio group;
  * - inside a View with `userInteractionEnabled: "@{gateOpen}"`: the same
  *   four, and a Collection whose cell has a Label with onClick (the cell is
  *   a layout the stop reaches: it reads LocalInteractionStopped);
@@ -105,11 +115,15 @@ import org.junit.runner.RunWith
  *       {"type": "Label", "id": "cgLblPlain", "text": "cgLblPlain", "onClick": "@{onLblPlain}"}
  *       {"type": "Button", "id": "cgBtnPlain", "text": "cgBtnPlain", "onClick": "@{onBtnPlain}"}
  *       {"type": "Switch", "id": "cgSwPlain", "isOn": "@{swPlain}"}
+ *       {"type": "Segment", "id": "cgSegPlain", "items": ["a", "b"], "selectedIndex": "@{segPlain}"}
+ *       {"type": "Radio", "id": "cgRadPlain", "items": ["a", "b"], "selectedValue": "@{radPlain}"}
  *       {"type": "View", "id": "cgParFalse", "orientation": "vertical", "spacing": 4, "userInteractionEnabled": false, "child": [
  *         {"type": "Button", "id": "cgBtnInFalse", "text": "cgBtnInFalse", "onClick": "@{onBtnInFalse}"}
  *         {"type": "Label", "id": "cgLblInFalse", "text": "cgLblInFalse", "onClick": "@{onLblInFalse}"}
  *         {"type": "View", "id": "cgViewInFalse", "width": 80, "height": 30, "background": "#3366CC", "onClick": "@{onViewInFalse}"}
  *         {"type": "Switch", "id": "cgSwInFalse", "isOn": "@{swInFalse}"}
+ *         {"type": "Segment", "id": "cgSegInFalse", "items": ["a", "b"], "selectedIndex": "@{segInFalse}"}
+ *         {"type": "Radio", "id": "cgRadInFalse", "items": ["a", "b"], "selectedValue": "@{radInFalse}"}
  *       ]}
  *       {"type": "View", "id": "cgParBound", "orientation": "vertical", "spacing": 4, "userInteractionEnabled": "@{gateOpen}", "child": [
  *         {"type": "Button", "id": "cgBtnInBound", "text": "cgBtnInBound", "onClick": "@{onBtnInBound}"}
@@ -143,7 +157,8 @@ import org.junit.runner.RunWith
  * in it): the rows with no stop move 1 in every run (the controls: the walk
  * reaches the node and the action operates it); inside a stop, or under the
  * flag of their own, 0; inside the bound stop, and every cell under it, 1
- * open and 0 closed. The candidate fixes are printed, not judged.
+ * open and 0 closed. The candidate fixes are printed, not judged. The
+ * wrapper controls' items: aStoppedWrapperControlsItemsReadDisabled.
  */
 @RunWith(AndroidJUnit4::class)
 class A11yActivationInsideAStopProbe {
@@ -178,6 +193,11 @@ class A11yActivationInsideAStopProbe {
         var swInFalse by mutableStateOf(false)
         var swInBound by mutableStateOf(false)
         var swSelfFalse by mutableStateOf(false)
+        // The wrapper controls: a Segment's tabs and a Radio group's items.
+        var segPlain by mutableStateOf(0)
+        var radPlain by mutableStateOf("a")
+        var segInFalse by mutableStateOf(0)
+        var radInFalse by mutableStateOf("a")
         val onLblPlain: (() -> Unit)? = { hit("cgLblPlain") }
         val onBtnPlain: (() -> Unit)? = { hit("cgBtnPlain") }
         val onBtnInFalse: (() -> Unit)? = { hit("cgBtnInFalse") }
@@ -190,17 +210,23 @@ class A11yActivationInsideAStopProbe {
         val rows: CollectionDataSource? = cellRows("cgCell")
     }
 
-    /** A Switch writes through updateData: each write counts as the row's. */
+    /**
+     * A Switch, a Segment's tab and a Radio's item write through updateData:
+     * each write counts as the row's.
+     */
     inner class AxProbeViewModel(private val data: AxProbeData) {
         fun updateData(m: Map<String, Any>) {
             for ((k, v) in m) {
                 hit("cg" + k.replaceFirstChar { it.uppercase() })
-                val on = v as Boolean
                 when (k) {
-                    "swPlain" -> data.swPlain = on
-                    "swInFalse" -> data.swInFalse = on
-                    "swInBound" -> data.swInBound = on
-                    "swSelfFalse" -> data.swSelfFalse = on
+                    "swPlain" -> data.swPlain = v as Boolean
+                    "swInFalse" -> data.swInFalse = v as Boolean
+                    "swInBound" -> data.swInBound = v as Boolean
+                    "swSelfFalse" -> data.swSelfFalse = v as Boolean
+                    "segPlain" -> data.segPlain = v as Int
+                    "segInFalse" -> data.segInFalse = v as Int
+                    "radPlain" -> data.radPlain = v as String
+                    "radInFalse" -> data.radInFalse = v as String
                 }
             }
         }
@@ -255,6 +281,68 @@ class A11yActivationInsideAStopProbe {
                 .testTag("cgSwPlain")
                 .semantics { testTagsAsResourceId = true }
         )
+        Segment(
+            selectedTabIndex = data.segPlain,
+            containerColor = Color.Transparent,
+            modifier = Modifier
+                .testTag("cgSegPlain")
+                .semantics { testTagsAsResourceId = true }
+        ) {
+            Tab(
+                selected = (data.segPlain == 0),
+                onClick = {
+                    viewModel.updateData(mapOf("segPlain" to 0))
+                },
+                text = { Text("a") }
+            )
+            Tab(
+                selected = (data.segPlain == 1),
+                onClick = {
+                    viewModel.updateData(mapOf("segPlain" to 1))
+                },
+                text = { Text("b") }
+            )
+        }
+        Column(
+            modifier = Modifier
+                .testTag("cgRadPlain")
+                .semantics { testTagsAsResourceId = true }
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        viewModel.updateData(mapOf("radPlain" to "a"))
+                    }
+            ) {
+                RadioButton(
+                    selected = data.radPlain == "a",
+                    onClick = {
+                        viewModel.updateData(mapOf("radPlain" to "a"))
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("a", color = Color.Black)
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        viewModel.updateData(mapOf("radPlain" to "b"))
+                    }
+            ) {
+                RadioButton(
+                    selected = data.radPlain == "b",
+                    onClick = {
+                        viewModel.updateData(mapOf("radPlain" to "b"))
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("b", color = Color.Black)
+            }
+        }
         Column(
             modifier = Modifier
                 .testTag("cgParFalse")
@@ -318,6 +406,74 @@ class A11yActivationInsideAStopProbe {
                     .semantics { testTagsAsResourceId = true }
                     .semantics { disabled() }
             )
+            Segment(
+                selectedTabIndex = data.segInFalse,
+                containerColor = Color.Transparent,
+                modifier = Modifier
+                    .testTag("cgSegInFalse")
+                    .semantics { testTagsAsResourceId = true }
+                    .semantics { disabled() }
+            ) {
+                Tab(
+                    modifier = Modifier.semantics { disabled() },
+                    selected = (data.segInFalse == 0),
+                    onClick = {
+                        if (false) viewModel.updateData(mapOf("segInFalse" to 0))
+                    },
+                    text = { Text("a") }
+                )
+                Tab(
+                    modifier = Modifier.semantics { disabled() },
+                    selected = (data.segInFalse == 1),
+                    onClick = {
+                        if (false) viewModel.updateData(mapOf("segInFalse" to 1))
+                    },
+                    text = { Text("b") }
+                )
+            }
+            Column(
+                modifier = Modifier
+                    .testTag("cgRadInFalse")
+                    .semantics { testTagsAsResourceId = true }
+                    .semantics { disabled() }
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { disabled() }.clickable {
+                            if (false) viewModel.updateData(mapOf("radInFalse" to "a"))
+                        }
+                ) {
+                    RadioButton(
+                        modifier = Modifier.semantics { disabled() },
+                        selected = data.radInFalse == "a",
+                        onClick = {
+                            if (false) viewModel.updateData(mapOf("radInFalse" to "a"))
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("a", color = Color.Black)
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { disabled() }.clickable {
+                            if (false) viewModel.updateData(mapOf("radInFalse" to "b"))
+                        }
+                ) {
+                    RadioButton(
+                        modifier = Modifier.semantics { disabled() },
+                        selected = data.radInFalse == "b",
+                        onClick = {
+                            if (false) viewModel.updateData(mapOf("radInFalse" to "b"))
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("b", color = Color.Black)
+                }
+            }
         }
         CompositionLocalProvider(LocalInteractionStopped provides (LocalInteractionStopped.current || !(data.gateOpen ?: false))) {
             Column(
@@ -482,13 +638,22 @@ class A11yActivationInsideAStopProbe {
     )
     private val synonyms = listOf("Collection", "TableView", "List", "ListView", "RecyclerView")
 
+    /**
+     * The wrapper controls (a Segment's tabs and a Radio group's items are
+     * nodes of their own inside the control): with no stop, and inside
+     * `false`.
+     */
+    private val wrapperRows = listOf("SegPlain", "RadPlain", "SegInFalse", "RadInFalse")
+
     private fun dynamicLayout(): String {
         fun kids(s: String, gate: String, more: String = "") =
             "{\"type\": \"View\", \"id\": \"dynPar$s\", \"orientation\": \"vertical\", \"userInteractionEnabled\": $gate, \"child\": [" +
                 "{\"type\": \"Button\", \"id\": \"dynBtnIn$s\", \"text\": \"dynBtnIn$s\", \"onClick\": \"@{on_dynBtnIn$s}\"}," +
                 "{\"type\": \"Label\", \"id\": \"dynLblIn$s\", \"text\": \"dynLblIn$s\", \"onClick\": \"@{on_dynLblIn$s}\"}," +
                 "{\"type\": \"View\", \"id\": \"dynViewIn$s\", \"width\": 80, \"height\": 30, \"background\": \"#3366CC\", \"onClick\": \"@{on_dynViewIn$s}\"}," +
-                "{\"type\": \"Switch\", \"id\": \"dynSwIn$s\", \"isOn\": \"@{dynSwIn$s}\"}$more]}"
+                "{\"type\": \"Switch\", \"id\": \"dynSwIn$s\", \"isOn\": \"@{dynSwIn$s}\"}$more" +
+                (if (s == "False") ",{\"type\": \"Segment\", \"id\": \"dynSegInFalse\", \"items\": [\"a\", \"b\"], \"selectedIndex\": \"@{dynSegInFalse}\"}," +
+                    "{\"type\": \"Radio\", \"id\": \"dynRadInFalse\", \"items\": [\"a\", \"b\"], \"selectedValue\": \"@{dynRadInFalse}\"}" else "") + "]}"
         val lists = synonyms.joinToString("") { t ->
             ",{\"type\": \"$t\", \"id\": \"dynList$t\", \"items\": \"@{rows_$t}\", \"width\": 200, \"height\": 40, " +
                 "\"layout\": \"horizontal\", \"sections\": [{\"cell\": \"a11y_probe_tap_cell\"}]}"
@@ -497,6 +662,8 @@ class A11yActivationInsideAStopProbe {
             "{\"type\": \"Label\", \"id\": \"dynLblPlain\", \"text\": \"dynLblPlain\", \"onClick\": \"@{on_dynLblPlain}\"}," +
             "{\"type\": \"Button\", \"id\": \"dynBtnPlain\", \"text\": \"dynBtnPlain\", \"onClick\": \"@{on_dynBtnPlain}\"}," +
             "{\"type\": \"Switch\", \"id\": \"dynSwPlain\", \"isOn\": \"@{dynSwPlain}\"}," +
+            "{\"type\": \"Segment\", \"id\": \"dynSegPlain\", \"items\": [\"a\", \"b\"], \"selectedIndex\": \"@{dynSegPlain}\"}," +
+            "{\"type\": \"Radio\", \"id\": \"dynRadPlain\", \"items\": [\"a\", \"b\"], \"selectedValue\": \"@{dynRadPlain}\"}," +
             kids("False", "false") + "," + kids("Bound", "\"@{gateOpen}\"", lists) + "," +
             "{\"type\": \"Button\", \"id\": \"dynBtnSelfFalse\", \"text\": \"dynBtnSelfFalse\", \"onClick\": \"@{on_dynBtnSelfFalse}\", \"userInteractionEnabled\": false}," +
             "{\"type\": \"Switch\", \"id\": \"dynSwSelfFalse\", \"isOn\": \"@{dynSwSelfFalse}\", \"userInteractionEnabled\": false}]}"
@@ -511,6 +678,8 @@ class A11yActivationInsideAStopProbe {
         // a Switch writes through updateData: each write counts as the row's
         data["updateData"] = { m: Map<String, Any> -> m.keys.forEach { hit(it) } }
         for (t in synonyms) data["rows_$t"] = dynamicRows.getValue(t)
+        // the wrapper controls' selections (a write counts through updateData)
+        for (row in wrapperRows) data["dyn$row"] = if (row.startsWith("Seg")) 0 else "a"
         return data
     }
 
@@ -696,6 +865,76 @@ class A11yActivationInsideAStopProbe {
         }
         for (m in mismatches) println("A11Y_PROBE MISMATCH $m")
         assertEquals("what a screen reader operated against what the stop allows", emptyList<String>(), mismatches)
+    }
+
+    /** Every node under [root] with a click action, in tree order. */
+    private fun clickables(root: AccessibilityNodeInfo?, out: MutableList<AccessibilityNodeInfo> = mutableListOf()): List<AccessibilityNodeInfo> {
+        if (root == null) return out
+        for (i in 0 until root.childCount) {
+            val child = root.getChild(i) ?: continue
+            if (child.actionList.any { it.id == AccessibilityNodeInfo.ACTION_CLICK }) out += child
+            clickables(child, out)
+        }
+        return out
+    }
+
+    /**
+     * A wrapper control's items inside a stop (4f's ruling, jsonui-cli 1.9.0:
+     * a stopped control does not say it is operable, down to its items). The
+     * control's root reads `disabled()`; each tab of a Segment and each row
+     * and RadioButton of a Radio group is a node of its own with a click
+     * action, which TalkBack reached. For each control, every node under it
+     * with ACTION_CLICK: whether it reads enabled, and what ACTION_CLICK on
+     * it moved (the control's writes). Expected: with no stop, every item
+     * enabled and each click writing (1 each); inside `false`, every item
+     * disabled and no click writing — and as many items as with no stop (a
+     * node the tree lost is not an item that reads disabled).
+     */
+    @Test
+    fun aStoppedWrapperControlsItemsReadDisabled() {
+        val data = AxProbeData()
+        val viewModel = AxProbeViewModel(data)
+        rule.setContent {
+            Row(
+                Modifier.padding(top = 24.dp).semantics { testTagsAsResourceId = true },
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                AxCodegen(data, viewModel)
+                DynamicView(json = JsonParser.parseString(dynamicLayout()).asJsonObject, data = dynamicData(true))
+            }
+        }
+        rule.waitForIdle()
+        val mismatches = mutableListOf<String>()
+        val itemCounts = mutableMapOf<String, Int>()
+        for (side in listOf("cg", "dyn")) {
+            for (row in wrapperRows) {
+                val name = "$side$row"
+                val items = clickables(find(name, null))
+                itemCounts[name] = items.size
+                items.forEachIndexed { i, node ->
+                    val before = calls(name)
+                    val performed = node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    rule.waitForIdle()
+                    val moved = calls(name) - before
+                    val label = (node.text ?: node.contentDescription ?: "").toString()
+                    println("A11Y_PROBE wrap $name#$i label=$label class=${node.className} enabled=${node.isEnabled} performed=$performed moved=$moved")
+                    if (row.endsWith("Plain") && (!node.isEnabled || moved != 1)) {
+                        mismatches += "$name#$i ($label): no stop, enabled=${node.isEnabled} moved=$moved, want enabled and 1"
+                    }
+                    if ("InFalse" in row && (node.isEnabled || moved != 0)) {
+                        mismatches += "$name#$i ($label): inside the stop, enabled=${node.isEnabled} moved=$moved, want disabled and 0"
+                    }
+                }
+            }
+            for (control in listOf("Seg", "Rad")) {
+                val plain = itemCounts["${side}${control}Plain"] ?: 0
+                val stopped = itemCounts["${side}${control}InFalse"] ?: 0
+                println("A11Y_PROBE wrap items ${side}$control: $plain with no stop, $stopped inside the stop")
+                if (plain == 0 || stopped != plain) mismatches += "${side}$control: $plain items with no stop, $stopped inside the stop"
+            }
+        }
+        for (m in mismatches) println("A11Y_PROBE MISMATCH $m")
+        assertEquals("what a stopped wrapper control's items read and do", emptyList<String>(), mismatches)
     }
 }
 

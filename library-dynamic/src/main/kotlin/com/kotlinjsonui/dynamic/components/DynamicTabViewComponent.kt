@@ -22,6 +22,7 @@ import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
 import com.kotlinjsonui.dynamic.SafeAreaConfig
 import com.kotlinjsonui.dynamic.DataBindingContext
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.TabViewAttributes
@@ -54,6 +55,33 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  */
 class DynamicTabViewComponent {
     companion object {
+        /**
+         * The tab-change handler, called with the new index as the data holds
+         * it: `(String, Int)` with the viewId first, `(Int)` with the index,
+         * `()` with nothing — kjui build calls it as its declaration says
+         * (ModifierBuilder.get_event_handler_invocation). Only `(Int) -> Unit`
+         * was called. The handler reference resolves flat-first, dot paths
+         * too. A function type is told apart by its arity (the parameter types
+         * are erased); a handler of another shape is skipped. null for none.
+         */
+        fun tabChangeCallback(raw: String?, data: Map<String, Any>, viewId: String): ((Int) -> Unit)? {
+            val expr = raw?.takeIf { it.startsWith("@{") && it.endsWith("}") } ?: return null
+            val fn = DataBindingContext.evaluateExpression(expr, data) ?: return null
+            if (fn !is Function<*>) return null
+            return { index ->
+                try {
+                    @Suppress("UNCHECKED_CAST")
+                    when (fn) {
+                        is Function2<*, *, *> -> (fn as (String, Int) -> Unit)(viewId, index)
+                        is Function1<*, *> -> (fn as (Int) -> Unit)(index)
+                        is Function0<*> -> (fn as () -> Unit)()
+                    }
+                } catch (_: ClassCastException) {
+                    // A handler of another shape: skipped, as resolveEventHandler skips one.
+                }
+            }
+        }
+
         /** The tabs as drawn: each tab's title, icons, badge and the layout it names (`view`). A tab's `child` is not read. */
         internal fun tabItemsOf(tabsArray: com.google.gson.JsonArray): List<TabItemData> =
             tabsArray.mapIndexed { index, item ->
@@ -109,14 +137,7 @@ class DynamicTabViewComponent {
             // layouts).
             val onTabChangeRaw = TypedAttrs.rawString(a.onValueChange)
 
-            @Suppress("UNCHECKED_CAST")
-            val onTabChangeCallback = onTabChangeRaw
-                ?.takeIf { it.startsWith("@{") && it.endsWith("}") }
-                ?.let { expr ->
-                    // Canonical value resolution of the handler reference
-                    // (flat-first, dot paths).
-                    DataBindingContext.evaluateExpression(expr, data) as? ((Int) -> Unit)
-                }
+            val onTabChangeCallback = tabChangeCallback(onTabChangeRaw, data, LayoutPath.viewId(json))
 
             // Get initial selected index
             val initialIndex = when {
