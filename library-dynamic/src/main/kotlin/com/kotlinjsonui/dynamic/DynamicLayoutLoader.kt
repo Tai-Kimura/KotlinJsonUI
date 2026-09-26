@@ -17,6 +17,9 @@ object DynamicLayoutLoader {
     private val layoutCache = mutableMapOf<String, JsonObject?>()
     private val rawLayoutCache = mutableMapOf<String, JsonObject?>()
     private val existsCache = mutableMapOf<String, Boolean>()
+    // assets/Layouts/ listings, by directory under Layouts/ ("" the root):
+    // assets are immutable at runtime.
+    private val listingCache = mutableMapOf<String, List<String>>()
 
     /**
      * Initialize the loader with an application context
@@ -29,8 +32,9 @@ object DynamicLayoutLoader {
     /**
      * Load a layout from assets/Layouts directory with include expansion.
      * Includes are expanded inline with ID prefix support.
-     * Supports both direct paths (e.g., "screens/detail_view") and simple names (e.g., "detail_view")
-     * For simple names, it will search in subdirectories if not found at root level
+     * Supports both direct paths (e.g., "screens/detail_view") and simple names (e.g., "detail_view").
+     * A name not found at its own path is searched for at any depth under Layouts/
+     * (LayoutAssetSearch states the rules).
      */
     fun loadLayout(layoutName: String): JsonObject? {
         // Return from cache if available
@@ -73,59 +77,45 @@ object DynamicLayoutLoader {
             // Not found at direct path, try searching in subdirectories
         }
 
-        // If the layoutName doesn't contain a path separator, search in subdirectories
-        if (!layoutName.contains("/")) {
-            return searchInSubdirectories(ctx, layoutName)
-        }
-
-        return null
+        return searchInSubdirectories(ctx, layoutName)
     }
 
     /**
-     * Search for a layout file in subdirectories of Layouts/
+     * Search for a layout file at any depth under Layouts/ (LayoutAssetSearch).
+     * Until 2.42.0 this looked one directory down, and only for a name without
+     * "/": a cell two directories deep did not load in Dynamic mode.
      */
     private fun searchInSubdirectories(ctx: Context, layoutName: String): JsonObject? {
+        val path = LayoutAssetSearch.find(layoutName) { dir -> listLayouts(ctx, dir) } ?: return null
         try {
-            // List all items in Layouts directory
-            val layoutsDir = ctx.assets.list("Layouts") ?: return null
-
-            for (item in layoutsDir) {
-                // Skip non-directories (files like styles.json, Resources folder, etc.)
-                try {
-                    val subItems = ctx.assets.list("Layouts/$item")
-                    if (subItems != null && subItems.isNotEmpty()) {
-                        // This is a directory, try to find the layout here
-                        val subPath = "Layouts/$item/$layoutName.json"
-                        try {
-                            ctx.assets.open(subPath).use { inputStream ->
-                                InputStreamReader(inputStream).use { reader ->
-                                    val json = JsonParser.parseReader(reader).asJsonObject
-                                    // Cache with the full path for future lookups
-                                    val fullPath = "$item/$layoutName"
-                                    rawLayoutCache[layoutName] = json
-                                    rawLayoutCache[fullPath] = json
-                                    return json.deepCopy()
-                                }
-                            }
-                        } catch (e: Exception) {
-                            // Not found in this subdirectory, continue searching
-                        }
-                    }
-                } catch (e: Exception) {
-                    // Not a directory or error accessing, skip
+            ctx.assets.open("Layouts/$path").use { inputStream ->
+                InputStreamReader(inputStream).use { reader ->
+                    val json = JsonParser.parseReader(reader).asJsonObject
+                    // Cache with the full path for future lookups
+                    rawLayoutCache[layoutName] = json
+                    rawLayoutCache[path.removeSuffix(".json")] = json
+                    return json.deepCopy()
                 }
             }
         } catch (e: Exception) {
-            // Error listing directories
+            return null
         }
-
-        return null
     }
 
+    /** The entries of Layouts/<dir> ("" the root), or none: a file or a missing path. */
+    private fun listLayouts(ctx: Context, dir: String): List<String> =
+        listingCache.getOrPut(dir) {
+            try {
+                ctx.assets.list(if (dir.isEmpty()) "Layouts" else "Layouts/$dir")?.toList() ?: emptyList()
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+
     /**
-     * True when a layout asset with this name exists (direct path or one
-     * subdirectory deep — the same lookup loadLayoutRaw performs). Cached:
-     * assets are immutable at runtime.
+     * True when a layout asset with this name exists (its own path, or found
+     * at any depth — the same lookup loadLayoutRaw performs). Cached: assets
+     * are immutable at runtime.
      */
     fun layoutExists(layoutName: String): Boolean {
         existsCache[layoutName]?.let { return it }
@@ -136,7 +126,7 @@ object DynamicLayoutLoader {
         val ctx = context ?: return false
 
         val exists = assetExists(ctx, "Layouts/$layoutName.json") ||
-            (!layoutName.contains("/") && subdirAssetExists(ctx, layoutName))
+            LayoutAssetSearch.find(layoutName) { dir -> listLayouts(ctx, dir) } != null
         existsCache[layoutName] = exists
         return exists
     }
@@ -163,18 +153,6 @@ object DynamicLayoutLoader {
         }
     }
 
-    private fun subdirAssetExists(ctx: Context, layoutName: String): Boolean {
-        try {
-            val layoutsDir = context?.assets?.list("Layouts") ?: return false
-            for (item in layoutsDir) {
-                if (assetExists(ctx, "Layouts/$item/$layoutName.json")) return true
-            }
-        } catch (e: Exception) {
-            // Error listing directories
-        }
-        return false
-    }
-
     /**
      * Clear all layout caches (both expanded and raw)
      */
@@ -182,6 +160,7 @@ object DynamicLayoutLoader {
         layoutCache.clear()
         rawLayoutCache.clear()
         existsCache.clear()
+        listingCache.clear()
     }
 
     /**
