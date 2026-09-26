@@ -164,7 +164,6 @@ class DynamicNetworkImageComponent {
 
             // ── Lifecycle effects ──
             if (ModifierBuilder.hasLifecycleEvents(json)) {
-                ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
             // ── AsyncImage ──

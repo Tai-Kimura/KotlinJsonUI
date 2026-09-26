@@ -68,25 +68,10 @@ class DynamicProgressComponent {
             val hasValue = progressAttr != null || hasValueAttr || a.common.bind != null
 
             // Parse binding variable from bind, canonical progress, or legacy value
-            val bindingVariable = bindingVariableOf(a)
-                ?: extractBindingVariable(TypedAttrs.undeclared(json, "value")?.asString)
+            val bindingVariable = progressBindingOf(json, a)
 
             // Resolve progress value (coerced to 0..1)
-            val progressValue = when {
-                bindingVariable != null -> {
-                    when (val boundValue = data[bindingVariable]) {
-                        is Number -> boundValue.toFloat()
-                        is String -> boundValue.toFloatOrNull() ?: 0f
-                        else -> 0f
-                    }
-                }
-                progressAttr != null -> (progressAttr.valueOrNull() ?: 0.0).toFloat()
-                hasValueAttr -> {
-                    // undeclared legacy runtime extra
-                    ResourceResolver.resolveFloat(json, "value", data, 0f) ?: 0f
-                }
-                else -> 0f
-            }.coerceIn(0f, 1f)
+            val progressValue = progressValueOf(json, a, data, bindingVariable)
 
             // State for the progress value
             // Keyed on the value this control declares — its binding's value, or the
@@ -117,9 +102,6 @@ class DynamicProgressComponent {
 
             // Build modifier: testTag -> margins -> size -> alpha -> clickable -> padding -> weight
             val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
-
-            // Lifecycle effects
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
 
             when {
                 hasValue -> {
@@ -161,6 +143,33 @@ class DynamicProgressComponent {
          * branch was simply dead. CheckBox and Switch read the same row
          * correctly, and that is the shape restored here.
          */
+        /** The data key: bindingVariableOf, else the legacy `value`'s binding. */
+        internal fun progressBindingOf(json: JsonObject, a: ProgressAttributes): String? =
+            bindingVariableOf(a)
+                ?: extractBindingVariable(TypedAttrs.undeclared(json, "value")?.asString)
+
+        /** The progress drawn (0..1): the bound value, else `progress`, else the legacy `value`, else 0. */
+        internal fun progressValueOf(
+            json: JsonObject,
+            a: ProgressAttributes,
+            data: Map<String, Any>,
+            bindingVariable: String?
+        ): Float = when {
+            bindingVariable != null -> {
+                when (val boundValue = data[bindingVariable]) {
+                    is Number -> boundValue.toFloat()
+                    is String -> boundValue.toFloatOrNull() ?: 0f
+                    else -> 0f
+                }
+            }
+            a.progress != null -> (a.progress.valueOrNull() ?: 0.0).toFloat()
+            TypedAttrs.undeclared(json, "value") != null -> {
+                // undeclared legacy runtime extra
+                ResourceResolver.resolveFloat(json, "value", data, 0f) ?: 0f
+            }
+            else -> 0f
+        }.coerceIn(0f, 1f)
+
         internal fun bindingVariableOf(a: ProgressAttributes): String? =
             TypedAttrs.binding(a.common.bind)
                 ?: a.progress?.bindingExpressionOrNull()

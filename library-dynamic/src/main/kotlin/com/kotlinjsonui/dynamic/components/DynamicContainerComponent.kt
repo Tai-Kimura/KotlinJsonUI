@@ -67,9 +67,6 @@ class DynamicContainerComponent {
                 context = context
             )
 
-            // Lifecycle effects
-            ModifierBuilder.ApplyLifecycleEffects(json, data)
-
             // Check for relative positioning → delegate to ConstraintLayout
             val children = getChildren(json)
             if (hasRelativePositioning(children)) {

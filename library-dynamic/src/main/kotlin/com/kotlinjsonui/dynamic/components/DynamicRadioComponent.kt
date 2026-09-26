@@ -329,7 +329,7 @@ class DynamicRadioComponent {
             val onClick = ModifierBuilder.onClickFromOperation(json, data)
 
             // Handle value change
-            val viewId = a.common.id ?: "radio"
+            val viewId = LayoutPath.viewId(json)
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
 

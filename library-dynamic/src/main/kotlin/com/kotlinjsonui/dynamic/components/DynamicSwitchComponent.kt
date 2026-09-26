@@ -16,6 +16,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SwitchAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -293,7 +294,7 @@ class DynamicSwitchComponent {
          * Priority: isOn > value > checked > bind (all standalone declared
          * rows — not an SSoT alias group, so the priority order is kept).
          */
-        private fun resolveBindingVariable(a: SwitchAttributes): String? {
+        internal fun resolveBindingVariable(a: SwitchAttributes): String? {
             // Check isOn, value, checked in priority order
             val stateAttr = a.isOn ?: a.value ?: a.checked
             TypedAttrs.binding(stateAttr)?.let { return it }
@@ -309,7 +310,7 @@ class DynamicSwitchComponent {
         /**
          * Resolve the current checked state from JSON and data.
          */
-        private fun resolveCheckedState(
+        internal fun resolveCheckedState(
             a: SwitchAttributes,
             data: Map<String, Any>,
             bindingVariable: String?
@@ -361,7 +362,7 @@ class DynamicSwitchComponent {
                 // canonical row by the generated parser — one read.
                 val handler = TypedAttrs.raw(a.onValueChange) as? String
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
-                    val viewId = a.common.id ?: "switch"
+                    val viewId = LayoutPath.viewId(json)
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
                 onClick?.invoke()
