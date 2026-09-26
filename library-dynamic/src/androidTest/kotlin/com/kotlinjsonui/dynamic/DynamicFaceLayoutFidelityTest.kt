@@ -201,26 +201,30 @@ class DynamicFaceLayoutFidelityTest {
         // Self-calibrating: the cell inside the lazy lane must measure like
         // the identical label rendered standalone — a lane-stretch (the old
         // LazyHorizontalGrid semantics) breaks the equality.
+        //
+        // Measured on the CELLS (their `chips_item_<n>` nodes), not on their
+        // text. A drawn cell carries the item test tag on its root, outside
+        // its padding, and the label's text semantics merge into that tagged
+        // node — so the text node of a cell spans the padding and the 36dp
+        // minimum (72 px here) while the standalone label's text node sits
+        // inside its padding (52 px). Comparing the two text nodes compared a
+        // semantics boundary, not a size: red since 958584b moved this test
+        // from the node-level template to a sections cell (bisected
+        // 2026-09-26: green on 462d571; red on 8a1f51c, and red with
+        // 958584b's test on 958584b's parent's code — the drawn cells were
+        // 36dp tall and 8dp apart throughout).
         val ref = rule.onNodeWithTag("ref").fetchSemanticsNode()
-        val refTextH = rule.onAllNodesWithText("refCell").fetchSemanticsNodes().first().size.height
-        val nodes = rule.onAllNodesWithText("lazyCell")
-            .fetchSemanticsNodes()
-            .sortedBy { it.positionInRoot.x }
-        assertTrue("expected several cells, got ${nodes.size}", nodes.size >= 2)
-        assertEquals(
-            "in-lane cell text height must equal the standalone reference",
-            refTextH, nodes[0].size.height
-        )
+        val cells = (0 until 3).map { rule.onNodeWithTag("chips_item_$it").fetchSemanticsNode() }
         val refHDp = ref.size.height / density
         assertTrue("reference chip must be its declared 36dp, was ${refHDp}dp", abs(refHDp - 36f) <= 3f)
-        // Text nodes sit inside the cells' 16dp horizontal padding, so the
-        // text-to-text gap is padding + lineSpacing + padding = 40dp.
-        val gapPx = nodes[1].positionInRoot.x - (nodes[0].positionInRoot.x + nodes[0].size.width)
-        val gapDp = (gapPx / density).roundToInt()
-        assertEquals(
-            "text-to-text gap must be 16+8+16dp (cell padding + lineSpacing), was ${gapDp}dp",
-            40, gapDp
-        )
+        for ((i, cell) in cells.withIndex()) {
+            assertEquals("cell $i height must equal the standalone reference (not the 80dp lane)", ref.size.height, cell.size.height)
+        }
+        // Cells sit lineSpacing (8dp) apart along the scroll axis.
+        for (i in 0 until cells.size - 1) {
+            val gapPx = cells[i + 1].positionInRoot.x - (cells[i].positionInRoot.x + cells[i].size.width)
+            assertEquals("cell $i to ${i + 1}: lineSpacing 8dp, was ${gapPx / density}dp", 8, (gapPx / density).roundToInt())
+        }
     }
 
     @Test

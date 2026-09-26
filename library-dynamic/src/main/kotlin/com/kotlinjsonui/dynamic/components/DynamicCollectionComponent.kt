@@ -677,16 +677,36 @@ class DynamicCollectionComponent {
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
         ) {
-            // Calculate page count from data source
-            val pageCount = when {
+            // Build a flat list of (cellViewName, itemData, cellIndex) for all sections
+            data class PageItem(val cellViewName: String?, val itemData: Any?, val cellIndex: Int)
+
+            val pageItems: List<PageItem> = when {
                 sections != null && collectionDataSource != null -> {
-                    // Sum all cell counts across all sections
-                    collectionDataSource.sections.sumOf { section ->
-                        section.cells?.data?.size ?: 0
+                    val items = mutableListOf<PageItem>()
+                    sections.forEachIndexed { sectionIndex, sectionElement ->
+                        val sectionObj = sectionElement.asJsonObject
+                        val cellViewName = sectionViewName(sectionObj, "cell")
+
+                        collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
+                            section.cells?.let { cellData ->
+                                cellData.data.forEachIndexed { cellIndex, item ->
+                                    items.add(PageItem(cellViewName ?: cellClassName, item, cellIndex))
+                                }
+                            }
+                        }
                     }
+                    items
                 }
-                else -> 0
+                else -> emptyList()
             }
+
+            // One page per drawn cell (4f ruling, 2026-09-26, round 6): the page
+            // count is the pages built above. It summed every DATA section's
+            // cells while the pages came from the declared sections, so with
+            // more data sections than declared ones a page past them read
+            // past the end of pageItems (IndexOutOfBoundsException, measured
+            // on the device: DynamicPagingSectionsTest).
+            val pageCount = pageItems.size
 
             if (pageCount == 0) return
 
@@ -754,29 +774,6 @@ class DynamicCollectionComponent {
                         onPageChanged?.invoke(page)
                     }
                 }
-            }
-
-            // Build a flat list of (cellViewName, itemData, cellIndex) for all sections
-            data class PageItem(val cellViewName: String?, val itemData: Any?, val cellIndex: Int)
-
-            val pageItems: List<PageItem> = when {
-                sections != null && collectionDataSource != null -> {
-                    val items = mutableListOf<PageItem>()
-                    sections.forEachIndexed { sectionIndex, sectionElement ->
-                        val sectionObj = sectionElement.asJsonObject
-                        val cellViewName = sectionViewName(sectionObj, "cell")
-
-                        collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
-                            section.cells?.let { cellData ->
-                                cellData.data.forEachIndexed { cellIndex, item ->
-                                    items.add(PageItem(cellViewName ?: cellClassName, item, cellIndex))
-                                }
-                            }
-                        }
-                    }
-                    items
-                }
-                else -> emptyList()
             }
 
             HorizontalPager(
@@ -1432,8 +1429,9 @@ class DynamicCollectionComponent {
          *
          * - a single cellClass draws every data section on the vertical
          *   routes (sjui's List and grid, one grid for all of them), the
-         *   first data section on the horizontal and flow routes, nothing on
-         *   paging (which reads declared sections only, on every face);
+         *   first data section on the horizontal, flow and paging routes
+         *   (paging: 4f ruling, 2026-09-26, round 6 — it drew nothing until
+         *   then, on every face);
          * - several cellClasses name no cell (the build refuses that layout);
          * - headerClasses / footerClasses are drawn once, without data, on
          *   the vertical routes only — not horizontal, flow or paging;
@@ -1459,10 +1457,10 @@ class DynamicCollectionComponent {
             val hasDeclaredSections: Boolean get() = hasSections
 
             fun sectionsFor(route: CellRoute): JsonArray? {
-                if (hasSections || route == CellRoute.PAGING) return declaredSections
+                if (hasSections) return declaredSections
                 val cell = legacyCell ?: return if (dataSource != null) JsonArray() else declaredSections
                 val count = when (route) {
-                    CellRoute.FLOW, CellRoute.NON_LAZY_ROW, CellRoute.LAZY_ROW, CellRoute.LAZY_HORIZONTAL_GRID ->
+                    CellRoute.FLOW, CellRoute.NON_LAZY_ROW, CellRoute.LAZY_ROW, CellRoute.LAZY_HORIZONTAL_GRID, CellRoute.PAGING ->
                         minOf(1, dataSource?.sections?.size ?: 0)
                     else -> dataSource?.sections?.size ?: 0
                 }
