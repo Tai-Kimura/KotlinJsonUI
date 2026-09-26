@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -23,6 +22,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ImageAttributes
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.ImageContentScale
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -51,7 +51,9 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  *
  * Note: Automatically determines if it's a network or local image.
  * Network detection: has 'url' key OR source/src starts with "http".
- * ContentScale is always Crop for circular images.
+ * contentMode as on Image (ImageContentScale), default fit — a CircleImage is
+ * an Image spelling (type_synonyms.json render_as) and draws as iOS and web
+ * draw it. It cropped for every mode (4f ruling, 2026-09-26).
  *
  * CircleImage parses with the generated [ImageAttributes] extraction via
  * the [TypedAttrs] bridge; the node itself is only passed wholesale to
@@ -61,7 +63,7 @@ class DynamicCircleImageComponent {
     companion object {
         /** CircleImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "src", "errorImage", "alt"
+            "src", "contentMode", "errorImage", "alt"
         )
 
         @Composable
@@ -162,6 +164,13 @@ class DynamicCircleImageComponent {
                 ModifierBuilder.ApplyLifecycleEffects(json, data)
             }
 
+            // contentMode, read as Image reads it (a binding resolves) and
+            // drawn with Image's table: no contentMode draws the declared
+            // default, fit.
+            val mode = TypedAttrs.enumStringResolved(a.contentMode, data) { it.json }
+            val contentScale = ImageContentScale.scale(mode)
+            val contentAlignment = ImageContentScale.alignment(mode)
+
             // Render the appropriate image component
             if (isNetworkImage) {
                 // Error image for network images
@@ -178,7 +187,8 @@ class DynamicCircleImageComponent {
                         .crossfade(true)
                         .build(),
                     contentDescription = contentDescription,
-                    contentScale = ContentScale.Crop,
+                    contentScale = contentScale,
+                    alignment = contentAlignment,
                     error = errorResId?.let { painterResource(it) },
                     modifier = modifier
                 )
@@ -202,7 +212,8 @@ class DynamicCircleImageComponent {
                     Image(
                         painter = painterResource(id = resourceId),
                         contentDescription = contentDescription,
-                        contentScale = ContentScale.Crop,
+                        contentScale = contentScale,
+                        alignment = contentAlignment,
                         modifier = modifier
                     )
                 } else {

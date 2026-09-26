@@ -7,7 +7,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -17,6 +16,7 @@ import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ImageAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.ImageContentScale
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -29,7 +29,8 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  *
  * Source priority: srcName > src > defaultImage > text > "placeholder"
  * Binding: @{variable} resolves via data map then getIdentifier for drawable
- * ContentScale: aspectfill->Crop, aspectfit->Fit, fill/scaletofill->FillBounds, center->None
+ * ContentScale: ImageContentScale (aspectfill->Crop, fit/aspectfit->Fit, fill/scaletofill->FillBounds,
+ * positional->None; no contentMode -> Fit, the declared default)
  * Modifier order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
  */
 class DynamicImageComponent {
@@ -116,26 +117,12 @@ class DynamicImageComponent {
                 legacy = a.common.id ?: ""
             )
 
-            // ContentScale mapping (case-insensitive)
-            val modeLower =
-                TypedAttrs.enumStringResolved(a.contentMode, data) { it.json }?.lowercase()
-            val contentScale = when (modeLower) {
-                "aspectfill" -> ContentScale.Crop
-                "aspectfit" -> ContentScale.Fit
-                "fill", "scaletofill" -> ContentScale.FillBounds
-                // Positional modes draw unscaled (UIKit contentMode
-                // positions — 33 cross-effect: android dropped the
-                // directional four to fit).
-                "center", "top", "bottom", "left", "right" -> ContentScale.None
-                else -> ContentScale.Fit
-            }
-            val contentAlignment = when (modeLower) {
-                "top" -> androidx.compose.ui.Alignment.TopCenter
-                "bottom" -> androidx.compose.ui.Alignment.BottomCenter
-                "left" -> androidx.compose.ui.Alignment.CenterStart
-                "right" -> androidx.compose.ui.Alignment.CenterEnd
-                else -> androidx.compose.ui.Alignment.Center
-            }
+            // ContentScale and alignment (ImageContentScale: the one table
+            // Image, NetworkImage and CircleImage draw with; no contentMode
+            // draws the declared default, fit).
+            val mode = TypedAttrs.enumStringResolved(a.contentMode, data) { it.json }
+            val contentScale = ImageContentScale.scale(mode)
+            val contentAlignment = ImageContentScale.alignment(mode)
 
             // Alpha with binding support. `alpha` is an alias spelling of
             // `opacity` (49-E), folded onto the canonical row by the generated
