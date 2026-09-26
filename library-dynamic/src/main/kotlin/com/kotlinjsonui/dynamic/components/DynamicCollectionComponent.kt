@@ -792,7 +792,12 @@ class DynamicCollectionComponent {
                     when {
                         pageItems.isNotEmpty() -> {
                             val pageItem = pageItems[pageIndex]
-                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data, onItemAppear, collectionId = collectionId)
+                            // The page's place among all the pages: its address
+                            // (`<id>_item_<n>`) and its onItemAppear index count
+                            // across the sections, as the codegen pager's page and
+                            // SwiftJsonUI's do (4f ruling 2026-09-26, round 7).
+                            // They restarted per section until then.
+                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageIndex, data, onItemAppear, collectionId = collectionId)
                         }
                     }
                 }
@@ -887,17 +892,37 @@ class DynamicCollectionComponent {
             // FlowRow per section in a Column. One FlowRow held every section,
             // so section 2 continued section 1's last line (measured on the
             // lazy, lazy:none and wrapContent routes: DynamicCollectionFlowSectionsTest).
-            if (sectionObjs.size > 1) {
+            //
+            // A section's declared header and footer (4f ruling 2026-09-26,
+            // round 7) are rows of their own, full width, above and below the
+            // section's wrap — so a Collection that declares one takes the
+            // Column too; header, wrap and footer are spaced as the lines. The
+            // flow drew neither until then.
+            val sectionEdges = sectionObjs.any { sectionViewName(it, "header") != null || sectionViewName(it, "footer") != null }
+            if (sectionObjs.size > 1 || sectionEdges) {
                 Column(
                     modifier = overflowVisible,
                     verticalArrangement = Arrangement.spacedBy(verticalSpacing)
                 ) {
                     sectionObjs.forEachIndexed { sectionIndex, sectionObj ->
-                        FlowRow(
-                            horizontalArrangement = horizontalArrangement,
-                            verticalArrangement = Arrangement.spacedBy(verticalSpacing)
-                        ) {
-                            sectionCells(sectionIndex, sectionObj)
+                        val sectionData = collectionDataSource?.sections?.getOrNull(sectionIndex)
+                        sectionViewName(sectionObj, "header")?.let { name ->
+                            sectionData?.header?.let { edge ->
+                                Box(modifier = Modifier.fillMaxWidth()) { renderCellView(name, edge.data, -1, data) }
+                            }
+                        }
+                        if (sectionData?.cells != null && (sectionViewName(sectionObj, "cell") ?: cellClassName) != null) {
+                            FlowRow(
+                                horizontalArrangement = horizontalArrangement,
+                                verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+                            ) {
+                                sectionCells(sectionIndex, sectionObj)
+                            }
+                        }
+                        sectionViewName(sectionObj, "footer")?.let { name ->
+                            sectionData?.footer?.let { edge ->
+                                Box(modifier = Modifier.fillMaxWidth()) { renderCellView(name, edge.data, -1, data) }
+                            }
                         }
                     }
                 }
