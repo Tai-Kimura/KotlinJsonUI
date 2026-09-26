@@ -173,15 +173,8 @@ class DynamicFaceLayoutFidelityTest {
               "height": 80,
               "orientation": "horizontal",
               "lineSpacing": 8,
-              "cell": {
-                "type": "Label",
-                "width": "wrapContent",
-                "height": "wrapContent",
-                "minHeight": 36,
-                "paddings": [5, 16],
-                "text": "lazyCell",
-                "fontSize": 13
-              }
+              "items": "@{items}",
+              "sections": [{ "cell": "collection_probe_lazy_chip_cell" }]
             }
             """.trimIndent()
         ).asJsonObject
@@ -200,7 +193,7 @@ class DynamicFaceLayoutFidelityTest {
             density = androidx.compose.ui.platform.LocalDensity.current.density
             androidx.compose.foundation.layout.Column {
                 Box(Modifier.testTag("ref")) { DynamicView(json = refJson, data = emptyMap()) }
-                DynamicView(json = json, data = emptyMap())
+                DynamicView(json = json, data = mapOf("items" to probeItems(10, "collection_probe_lazy_chip_cell")))
             }
         }
         rule.waitForIdle()
@@ -242,13 +235,8 @@ class DynamicFaceLayoutFidelityTest {
               "orientation": "horizontal",
               "lazy": "none",
               "lineSpacing": 8,
-              "cell": {
-                "type": "Label",
-                "width": "wrapContent",
-                "height": "wrapContent",
-                "text": "cellX",
-                "fontSize": 13
-              }
+              "items": "@{items}",
+              "sections": [{ "cell": "collection_probe_chip_cell" }]
             }
             """.trimIndent()
         ).asJsonObject
@@ -256,7 +244,7 @@ class DynamicFaceLayoutFidelityTest {
         var density = 0f
         rule.setContent {
             density = androidx.compose.ui.platform.LocalDensity.current.density
-            DynamicView(json = json, data = emptyMap())
+            DynamicView(json = json, data = mapOf("items" to probeItems(10, "collection_probe_chip_cell")))
         }
         rule.waitForIdle()
 

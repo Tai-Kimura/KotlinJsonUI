@@ -22,9 +22,13 @@ import java.io.File
  */
 class ComponentRawReadGateTest {
 
+    // Not "cell": a Collection's node-level `cell` template was the one own-
+    // node read of it, and it is gone — the key is not declared and no
+    // codegen draws it (audit 2026-09-26). A section's `cell` is read off
+    // the section object, which this gate does not see.
     private val allowedKeys = setOf(
         "child", "children", "data", "shared_data", "include", "style",
-        "sections", "cell", "header", "footer", "type"
+        "sections", "header", "footer", "type"
     )
 
     @Test

@@ -65,7 +65,6 @@ import androidx.compose.runtime.snapshotFlow
  * - columnSpacing: Number for horizontal spacing between columns (minimumInteritemSpacing in iOS)
  * - cellHeight: Number for fixed cell height
  * - cellWidth: Number for fixed cell width (horizontal layout)
- * - cell: JsonObject template for custom cell layout (fallback)
  * - cellIdProperty: String property name to extract unique ID from cell data
  * - scrollTo: @{variable} binding to SharedFlow<Int> for programmatic scrolling
  * - scrollAnchor: "top" | "center" | "bottom" anchor point for scrollTo
@@ -219,8 +218,11 @@ class DynamicCollectionComponent {
 
             // Parse content padding. Tool writes one of:
             //   - contentPadding: number | [t, r, b, l]
-            //   - insets / contentInsets: number | array | "t|r|b|l" pipe-separated string
+            //   - insets: number | array | "t|r|b|l" pipe-separated string
             //   - insetHorizontal / insetVertical: separate axes
+            // Not `contentInsets`: it is declared for swift only (mode
+            // swiftui) and kjui's codegen does not draw it, so reading it
+            // here drew padding in Debug that the Release build does not.
             // A DECLARED numeric contentPadding/insets wins: the author named
             // an exact value, and `contentInsetAdjustmentBehavior` only says
             // "clear the system bars" — it cannot also mean "and discard the
@@ -285,8 +287,11 @@ class DynamicCollectionComponent {
             val cellHeight = TypedAttrs.undeclared(json, "cellHeight")?.asFloat?.dp
             val cellWidth = TypedAttrs.undeclared(json, "cellWidth")?.asFloat?.dp
 
-            // Get cell template (fallback if no cellClasses)
-            val cellTemplate = json.get("cell")?.asJsonObject
+            // No node-level `cell` template: it is not declared for Collection
+            // (the validators warn it as unknown) and no codegen draws it, so
+            // a Collection that relied on it drew ten template cells in Debug
+            // and none in Release. Cells come from `sections[].cell` with an
+            // `items` data source, as on every other path.
 
             // Parse gravity for item alignment
             // Box.contentAlignment uses Alignment (compound), not Alignment.Vertical/Horizontal
@@ -322,6 +327,13 @@ class DynamicCollectionComponent {
             // Parse scrollTo binding
             val scrollToFlow = resolveScrollToFlow(a, data)
             val scrollAnchor = TypedAttrs.enumString(a.scrollAnchor) { it.json } ?: "bottom"
+            // `scrollAnimated` (declared boolean, default true): false moves
+            // the list to the scrollTo target at once instead of animating —
+            // what both iOS faces do with it (sjui collection_converter.rb
+            // generate_scroll_reader_close; SwiftJsonUI's dynamic
+            // CollectionConverter). Every scroll here animated whatever it
+            // said.
+            val scrollAnimated = a.scrollAnimated != false
 
             val heightStatic = TypedAttrs.static(a.common.height)
             val heightIsWrapContent = heightStatic == DimensionValue.WrapContent
@@ -359,7 +371,6 @@ class DynamicCollectionComponent {
                         sections = sections,
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
-                        cellTemplate = cellTemplate,
                         cellIdProperty = cellIdProperty,
                         data = data,
                         modifier = flowModifier.then(Modifier.padding(contentPadding)),
@@ -406,7 +417,6 @@ class DynamicCollectionComponent {
                     chrome = listChrome,
                     sections = sections,
                     collectionDataSource = collectionDataSource,
-                    cellTemplate = cellTemplate,
                     cellIdProperty = cellIdProperty,
                     data = data,
                     modifier = rowModifier,
@@ -430,7 +440,6 @@ class DynamicCollectionComponent {
                     chrome = listChrome,
                     sections = sections,
                     collectionDataSource = collectionDataSource,
-                    cellTemplate = cellTemplate,
                     cellIdProperty = cellIdProperty,
                     data = data,
                     modifier = columnModifier,
@@ -452,7 +461,6 @@ class DynamicCollectionComponent {
                     sections = sections,
                     collectionDataSource = collectionDataSource,
                     cellClassName = cellClassName,
-                    cellTemplate = cellTemplate,
                     cellIdProperty = cellIdProperty,
                     data = data,
                     modifier = modifier,
@@ -478,7 +486,6 @@ class DynamicCollectionComponent {
                 renderLazyRowSingleLane(
                     sections = sections,
                     collectionDataSource = collectionDataSource,
-                    cellTemplate = cellTemplate,
                     cellIdProperty = cellIdProperty,
                     data = data,
                     modifier = modifier,
@@ -488,6 +495,7 @@ class DynamicCollectionComponent {
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
                     scrollToFlow = scrollToFlow,
+                    scrollAnimated = scrollAnimated,
                     onItemAppear = onItemAppear,
                     chrome = listChrome,
                     collectionId = collectionId
@@ -528,9 +536,9 @@ class DynamicCollectionComponent {
                 LaunchedEffect(scrollToFlow) {
                     scrollToFlow.collect { index ->
                         when (scrollAnchor) {
-                            "top" -> gridState.animateScrollToItem(index, 0)
-                            "center" -> gridState.animateScrollToItem(index)
-                            else -> gridState.animateScrollToItem(index)
+                            "top" -> if (scrollAnimated) gridState.animateScrollToItem(index, 0) else gridState.scrollToItem(index, 0)
+                            "center" -> if (scrollAnimated) gridState.animateScrollToItem(index) else gridState.scrollToItem(index)
+                            else -> if (scrollAnimated) gridState.animateScrollToItem(index) else gridState.scrollToItem(index)
                         }
                     }
                 }
@@ -552,13 +560,11 @@ class DynamicCollectionComponent {
                         sections = sections,
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
-                        cellTemplate = cellTemplate,
                         cellIdProperty = cellIdProperty,
                         data = data,
                         chrome = listChrome,
                         cellWidth = cellWidth,
                         cellHeight = cellHeight,
-                        isHorizontal = true,
                         gridColumns = gridColumns,
                         defaultColumns = defaultColumns,
                         gravityAlignment = gravityAlignment,
@@ -583,13 +589,11 @@ class DynamicCollectionComponent {
                         sections = sections,
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
-                        cellTemplate = cellTemplate,
                         cellIdProperty = cellIdProperty,
                         data = data,
                         chrome = listChrome,
                         cellWidth = cellWidth,
                         cellHeight = cellHeight,
-                        isHorizontal = false,
                         gridColumns = gridColumns,
                         defaultColumns = defaultColumns,
                         gravityAlignment = gravityAlignment,
@@ -629,7 +633,6 @@ class DynamicCollectionComponent {
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
             cellClassName: String?,
-            cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
             modifier: Modifier,
@@ -649,7 +652,6 @@ class DynamicCollectionComponent {
                         section.cells?.data?.size ?: 0
                     }
                 }
-                cellTemplate != null -> 10 // default for template mode
                 else -> 0
             }
 
@@ -762,12 +764,6 @@ class DynamicCollectionComponent {
                             val pageItem = pageItems[pageIndex]
                             renderCellView(pageItem.cellViewName, pageItem.itemData, pageItem.cellIndex, data, onItemAppear, collectionId = collectionId)
                         }
-                        cellTemplate != null -> {
-                            val cellData = data.toMutableMap().apply {
-                                put("index", pageIndex)
-                            }
-                            CellRoot(cellTemplate, cellData)
-                        }
                     }
                 }
             }
@@ -783,7 +779,6 @@ class DynamicCollectionComponent {
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
             cellClassName: String?,
-            cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
             modifier: Modifier,
@@ -859,25 +854,6 @@ class DynamicCollectionComponent {
                             }
                         }
                     }
-                    cellTemplate != null -> {
-                        repeat(10) { index ->
-                            Box(
-                                modifier = Modifier
-                                    .then(
-                                        if (cellWidth != null) Modifier.width(cellWidth) else Modifier
-                                    )
-                                    .then(
-                                        if (cellHeight != null) Modifier.height(cellHeight) else Modifier
-                                    ),
-                                contentAlignment = gravityAlignment
-                            ) {
-                                val cellData = data.toMutableMap().apply {
-                                    put("index", index)
-                                }
-                                CellRoot(cellTemplate, cellData)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -890,7 +866,6 @@ class DynamicCollectionComponent {
         private fun renderNonLazy(
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
-            cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
             modifier: Modifier,
@@ -946,19 +921,6 @@ class DynamicCollectionComponent {
                             }
                         }
                     }
-                    cellTemplate != null -> {
-                        repeat(10) { index ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
-                                contentAlignment = gravityAlignment
-                            ) {
-                                val cellData = data.toMutableMap().apply { put("index", index) }
-                                CellRoot(cellTemplate, cellData)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -972,7 +934,6 @@ class DynamicCollectionComponent {
         private fun renderLazyRowSingleLane(
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
-            cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
             modifier: Modifier,
@@ -982,6 +943,7 @@ class DynamicCollectionComponent {
             cellHeight: androidx.compose.ui.unit.Dp?,
             gravityAlignment: Alignment,
             scrollToFlow: SharedFlow<Int>?,
+            scrollAnimated: Boolean,
             onItemAppear: ((Int) -> Unit)? = null,
             chrome: ListChrome? = null,
             collectionId: String? = null,
@@ -989,7 +951,9 @@ class DynamicCollectionComponent {
             val listState = androidx.compose.foundation.lazy.rememberLazyListState()
             if (scrollToFlow != null) {
                 LaunchedEffect(scrollToFlow) {
-                    scrollToFlow.collect { index -> listState.animateScrollToItem(index) }
+                    scrollToFlow.collect { index ->
+                        if (scrollAnimated) listState.animateScrollToItem(index) else listState.scrollToItem(index)
+                    }
                 }
             }
             androidx.compose.foundation.lazy.LazyRow(
@@ -1023,19 +987,6 @@ class DynamicCollectionComponent {
                             }
                         }
                     }
-                    cellTemplate != null -> {
-                        items(10) { index ->
-                            Box(
-                                modifier = Modifier
-                                    .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
-                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
-                                contentAlignment = gravityAlignment
-                            ) {
-                                val cellData = data.toMutableMap().apply { put("index", index) }
-                                CellRoot(cellTemplate, cellData)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -1048,7 +999,6 @@ class DynamicCollectionComponent {
         private fun renderNonLazyRow(
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
-            cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
             modifier: Modifier,
@@ -1088,19 +1038,6 @@ class DynamicCollectionComponent {
                             }
                         }
                     }
-                    cellTemplate != null -> {
-                        repeat(10) { index ->
-                            Box(
-                                modifier = Modifier
-                                    .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
-                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
-                                contentAlignment = gravityAlignment
-                            ) {
-                                val cellData = data.toMutableMap().apply { put("index", index) }
-                                CellRoot(cellTemplate, cellData)
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -1109,13 +1046,11 @@ class DynamicCollectionComponent {
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
             cellClassName: String?,
-            cellTemplate: JsonObject?,
             cellIdProperty: String?,
             data: Map<String, Any>,
             chrome: ListChrome? = null,
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
-            isHorizontal: Boolean,
             gridColumns: Int,
             defaultColumns: Int,
             gravityAlignment: Alignment,
@@ -1253,29 +1188,8 @@ class DynamicCollectionComponent {
                         }
                     }
                 }
-                // If we have cell template
-                cellTemplate != null -> {
-                    // Use a default list of 10 items for template
-                    items(10) { index ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    if (isHorizontal && cellWidth != null) Modifier.width(cellWidth)
-                                    else if (!isHorizontal && cellHeight != null) Modifier.height(cellHeight)
-                                    else Modifier
-                                ),
-                            contentAlignment = gravityAlignment
-                        ) {
-                            val cellData = data.toMutableMap().apply {
-                                put("index", index)
-                            }
-                            CellRoot(cellTemplate, cellData)
-                        }
-                    }
-                }
-                // Declaration-faithful (2026-08-02 ruling): no cells/sections/
-                // template declared → nothing rendered. The old 10-item
+                // Declaration-faithful (2026-08-02 ruling): no cells/sections
+                // declared → nothing rendered. The old 10-item
                 // "Item $index" placeholder Cards were undeclared behavior
                 // (the container itself still renders with its declared
                 // size/background via the surrounding modifier chain).
@@ -1457,27 +1371,30 @@ class DynamicCollectionComponent {
 
         /**
          * Resolve Collection content padding from any of the tool-emitted
-         * attributes: `contentPadding`, `insets`, `contentInsets`,
+         * attributes: `contentPadding`, `insets`,
          * `insetHorizontal`/`insetVertical`. Accepted value forms:
          *   - number:              uniform dp
          *   - array of 4 numbers:  [top, end, bottom, start]
          *   - string "t|r|b|l":    pipe-separated; whitespace and commas also work
          */
-        /** Whether the author named an exact content padding of their own. */
-        private fun hasDeclaredContentPadding(a: CollectionAttributes, json: JsonObject): Boolean =
+        /**
+         * Whether the author named an exact content padding of their own.
+         * `contentInsets` is not one on this platform (declared swift only,
+         * not drawn by kjui's codegen): a layout carrying it is treated as
+         * the Release build treats it, as if it were absent.
+         */
+        internal fun hasDeclaredContentPadding(a: CollectionAttributes, json: JsonObject): Boolean =
             TypedAttrs.undeclared(json, "contentPadding") != null ||
-                TypedAttrs.rawKey(json, "insets") != null ||
-                TypedAttrs.rawKey(json, "contentInsets") != null
+                TypedAttrs.rawKey(json, "insets") != null
 
-        private fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject): PaddingValues {
-            // 'contentPadding' is an undeclared legacy runtime extra; 'insets' /
-            // 'contentInsets' are declared shape unions (number | array |
-            // pipe-separated string) — wider than a single typed value, so
-            // read raw (see TypedAttrs.rawKey).
+        internal fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject): PaddingValues {
+            // 'contentPadding' is an undeclared legacy runtime extra; 'insets'
+            // is a declared shape union (number | array | pipe-separated
+            // string) — wider than a single typed value, so read raw (see
+            // TypedAttrs.rawKey).
             listOf(
                 TypedAttrs.undeclared(json, "contentPadding"),
-                TypedAttrs.rawKey(json, "insets"),
-                TypedAttrs.rawKey(json, "contentInsets")
+                TypedAttrs.rawKey(json, "insets")
             ).forEach { element ->
                 if (element == null) return@forEach
                 when {
@@ -1525,15 +1442,23 @@ class DynamicCollectionComponent {
             }
         }
 
-        /** Collection-specific attributes this component applies (see UnappliedAttributes). */
-        private val APPLIED: Set<String> = setOf(
-            "autoChangeTrackingId", "cellClasses", "cellIdProperty",
-            "columnSpacing", "columns", "contentInsets", "currentPage",
+        /**
+         * Collection-specific attributes this component applies (see
+         * UnappliedAttributes). `horizontalScroll`, `cellWidth`,
+         * `cellHeight`, `hideSeparator` and `listStyle` are drawn above and
+         * were missing here, so a Debug build logged each as "not applied";
+         * `contentInsets` is no longer read (declared swift only), so a
+         * layout carrying it is now logged as it should be.
+         */
+        internal val APPLIED: Set<String> = setOf(
+            "autoChangeTrackingId", "cellClasses", "cellHeight", "cellIdProperty",
+            "cellWidth", "columnSpacing", "columns", "currentPage",
             "footerClasses",
-            "headerClasses", "insetHorizontal", "insetVertical", "insets",
-            "itemSpacing", "items", "layout", "lazy", "lineSpacing",
+            "headerClasses", "hideSeparator", "horizontalScroll",
+            "insetHorizontal", "insetVertical", "insets",
+            "itemSpacing", "items", "layout", "lazy", "lineSpacing", "listStyle",
             "onValueChange", "orientation", "paging", "reverseLayout",
-            "scrollAnchor", "defaultScrollAnchor", "scrollEnabled", "scrollTo",
+            "scrollAnchor", "scrollAnimated", "defaultScrollAnchor", "scrollEnabled", "scrollTo",
             "onItemAppear"
         )
 

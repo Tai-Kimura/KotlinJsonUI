@@ -1,0 +1,7 @@
+{
+  "type": "Label",
+  "width": "wrapContent",
+  "height": "wrapContent",
+  "text": "cellX",
+  "fontSize": 13
+}

@@ -1,0 +1,6 @@
+{
+  "type": "Label",
+  "width": "matchParent",
+  "height": 40,
+  "text": "@{title}"
+}

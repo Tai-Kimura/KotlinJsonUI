@@ -1,0 +1,9 @@
+{
+  "type": "Label",
+  "width": "wrapContent",
+  "height": "wrapContent",
+  "minHeight": 36,
+  "paddings": [5, 16],
+  "text": "lazyCell",
+  "fontSize": 13
+}
