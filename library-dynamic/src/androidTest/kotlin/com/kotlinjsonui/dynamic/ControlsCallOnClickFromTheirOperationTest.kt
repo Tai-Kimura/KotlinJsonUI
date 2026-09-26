@@ -129,8 +129,13 @@ class ControlsCallOnClickFromTheirOperationTest {
     private fun slider(tag: String): SemanticsNodeInteraction =
         rule.onNode(under(tag) and SemanticsMatcher.keyIsDefined(SemanticsActions.SetProgress), useUnmergedTree = true)
 
+    // The field is the node holding its EditableText. It was found by SetText,
+    // which BasicTextField defines only while the field is editable: a
+    // disabled field (`d`) has Disabled and EditableText and no SetText, so
+    // the `d` row found no node and both tests stopped there, on every commit
+    // since this test was added (measured on an API 35 emulator, 2026-09-27).
     private fun field(tag: String): SemanticsNodeInteraction =
-        rule.onNode(under(tag) and SemanticsMatcher.keyIsDefined(SemanticsActions.SetText), useUnmergedTree = true)
+        rule.onNode(under(tag) and SemanticsMatcher.keyIsDefined(SemanticsProperties.EditableText), useUnmergedTree = true)
 
     /** The node the user operates, for each kind. */
     private fun target(kind: String, tag: String): SemanticsNodeInteraction = when (kind) {

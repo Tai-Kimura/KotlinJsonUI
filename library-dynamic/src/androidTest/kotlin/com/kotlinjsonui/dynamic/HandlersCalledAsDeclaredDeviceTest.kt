@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -65,9 +66,17 @@ class HandlersCalledAsDeclaredDeviceTest {
             JsonParser.parseString("""{"type": "Switch", "testTag": "a", "onValueChange": "@{changed}"}""").asJsonObject,
             JsonParser.parseString("""{"type": "Switch", "testTag": "b", "onValueChange": "@{changed}"}""").asJsonObject,
         )
+        // In a Column, the container DynamicViews draws a list of roots into.
+        // Drawn straight into the test's content the two Switches lay on the
+        // same bounds (measured: both (0, 16, 104, 80)), so a touch on the
+        // first reached the second, drawn on top — [switch_0_1, switch_0_1].
         rule.setContent {
-            DynamicViews(components = entries, data = mapOf("changed" to { id: String, _: Boolean -> ids += id }))
+            Column {
+                DynamicViews(components = entries, data = mapOf("changed" to { id: String, _: Boolean -> ids += id }))
+            }
         }
+        val bounds = rule.onAllNodes(isToggleable(), useUnmergedTree = true).fetchSemanticsNodes().map { it.boundsInRoot }
+        assertEquals("two Switches, apart", false, bounds[0].overlaps(bounds[1]))
         rule.onAllNodes(isToggleable(), useUnmergedTree = true)[0].performClick()
         rule.onAllNodes(isToggleable(), useUnmergedTree = true)[1].performClick()
         rule.waitForIdle()

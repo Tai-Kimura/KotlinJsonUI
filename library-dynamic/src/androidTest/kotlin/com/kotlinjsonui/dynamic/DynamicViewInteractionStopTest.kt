@@ -2,6 +2,9 @@ package com.kotlinjsonui.dynamic
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -81,12 +84,24 @@ class DynamicViewInteractionStopTest {
         rule.onNodeWithTag("tap_beside", useUnmergedTree = true).assert(hasClick)
     }
 
+    // One composition whose data moves, as a screen's does: a test rule takes
+    // setContent once per test, and the second draw() threw ("has already set
+    // content") before the binding was read true.
     @Test
     fun aBindingHandsItDownWhileItIsFalse() {
-        val json = """{"type": "View", "userInteractionEnabled": "@{u}", "child": [${probe("in")}]}"""
-        draw(json, mapOf("u" to false))
+        val json = JsonParser.parseString(
+            """{"type": "View", "userInteractionEnabled": "@{u}", "child": [${probe("in")}]}"""
+        ).asJsonObject
+        var data by mutableStateOf<Map<String, Any>>(mapOf("u" to false))
+        seen.clear()
+        rule.setContent { DynamicView(json = json, data = data) }
+        rule.waitForIdle()
         assertEquals(true, seen["in"])
-        draw(json, mapOf("u" to true))
+        data = mapOf("u" to true)
+        rule.waitForIdle()
         assertEquals(false, seen["in"])
+        data = mapOf("u" to false)
+        rule.waitForIdle()
+        assertEquals(true, seen["in"])
     }
 }
