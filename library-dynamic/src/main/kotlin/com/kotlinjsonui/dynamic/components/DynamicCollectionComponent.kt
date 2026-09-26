@@ -824,69 +824,93 @@ class DynamicCollectionComponent {
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
         ) {
+            val horizontalArrangement = Arrangement.spacedBy(horizontalSpacing, when (flowAlignment) {
+                "center" -> Alignment.CenterHorizontally
+                "trailing", "end" -> Alignment.End
+                else -> Alignment.Start
+            })
 
-            val arrangement = when (flowAlignment) {
-                "center" -> Arrangement.Center
-                "trailing", "end" -> Arrangement.End
-                else -> Arrangement.Start
-            }
-
-            FlowRow(
-                // `clipToBounds` defaults to false on every component (SSoT
-                // common.clipToBounds; attribute_semantics 51-E, 2026-08-07:
-                // absent means no clip, and hit testing follows clipping).
-                // FlowRow does not lay out the rows that exceed its max
-                // height — a lazy:"none" flow in a fixed-height box drew
-                // three rows and nothing below, while iOS and web drew all
-                // six past the box. Measuring it without regard for the
-                // incoming max height and aligning the result over that
-                // space (wrapContentHeight, unbounded) is what "overflow
-                // visible" is in this toolkit; FlowRow's own `overflow`
-                // parameter says the same but is deprecated in the resolved
-                // foundation-layout. The modifier chain applies
-                // `.clipToBounds()` only when declared true, so that
-                // declaration is now the one that decides.
-                modifier = modifier.wrapContentHeight(Alignment.Top, unbounded = true),
-                horizontalArrangement = Arrangement.spacedBy(horizontalSpacing, arrangement.let {
-                    when (flowAlignment) {
-                        "center" -> Alignment.CenterHorizontally
-                        "trailing", "end" -> Alignment.End
-                        else -> Alignment.Start
-                    }
-                }),
-                verticalArrangement = Arrangement.spacedBy(verticalSpacing)
-            ) {
-                when {
-                    sections != null && collectionDataSource != null -> {
-                        sections.forEachIndexed { sectionIndex, sectionJson ->
-                            val sectionObj = sectionJson.asJsonObject
-                            val cellViewName = sectionViewName(sectionObj, "cell")
-
-                            collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
-                                section.cells?.let { cellData ->
-                                    cellData.data.forEachIndexed { cellIndex, item ->
-                                        val cellId = (item["cellId"] as? String)
-                                            ?: (cellIdProperty?.let { item[it] as? String })
-                                            ?: cellIndex.toString()
-                                        androidx.compose.runtime.key(cellId) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .then(
-                                                        if (cellWidth != null) Modifier.width(cellWidth) else Modifier
-                                                    )
-                                                    .then(
-                                                        if (cellHeight != null) Modifier.height(cellHeight) else Modifier
-                                                    ),
-                                                contentAlignment = gravityAlignment
-                                            ) {
-                                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, collectionId = collectionId)
-                                            }
-                                        }
-                                    }
-                                }
+            // One section's cells, each in its cell box, keyed by its cellId
+            // (else its index — unique within the section, which is now the
+            // scope the key lives in).
+            @Composable
+            fun FlowRowScope.sectionCells(sectionIndex: Int, sectionObj: JsonObject) {
+                val cellViewName = sectionViewName(sectionObj, "cell")
+                collectionDataSource?.sections?.getOrNull(sectionIndex)?.cells?.let { cellData ->
+                    cellData.data.forEachIndexed { cellIndex, item ->
+                        val cellId = (item["cellId"] as? String)
+                            ?: (cellIdProperty?.let { item[it] as? String })
+                            ?: cellIndex.toString()
+                        androidx.compose.runtime.key(cellId) {
+                            Box(
+                                modifier = Modifier
+                                    .then(
+                                        if (cellWidth != null) Modifier.width(cellWidth) else Modifier
+                                    )
+                                    .then(
+                                        if (cellHeight != null) Modifier.height(cellHeight) else Modifier
+                                    ),
+                                contentAlignment = gravityAlignment
+                            ) {
+                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, collectionId = collectionId)
                             }
                         }
                     }
+                }
+            }
+
+            // The declared sections that have a data section (a declared one
+            // with none draws nothing, and no block to space).
+            val sectionObjs = if (sections != null && collectionDataSource != null) {
+                sections.map { it.asJsonObject }.take(collectionDataSource.sections.size)
+            } else {
+                emptyList()
+            }
+
+            // `clipToBounds` defaults to false on every component (SSoT
+            // common.clipToBounds; attribute_semantics 51-E, 2026-08-07:
+            // absent means no clip, and hit testing follows clipping).
+            // FlowRow does not lay out the rows that exceed its max height —
+            // a lazy:"none" flow in a fixed-height box drew three rows and
+            // nothing below, while iOS and web drew all six past the box.
+            // Measuring it without regard for the incoming max height and
+            // aligning the result over that space (wrapContentHeight,
+            // unbounded) is what "overflow visible" is in this toolkit;
+            // FlowRow's own `overflow` parameter says the same but is
+            // deprecated in the resolved foundation-layout. The modifier chain
+            // applies `.clipToBounds()` only when declared true, so that
+            // declaration is now the one that decides.
+            val overflowVisible = modifier.wrapContentHeight(Alignment.Top, unbounded = true)
+
+            // A flow per section (4f ruling, 2026-09-26): with two or more
+            // sections, each section's cells wrap in a FlowRow of their own,
+            // one under the other, the blocks spaced as the lines
+            // (jsonui-cli attribute_semantics.json -> collectionSpacing) —
+            // sjui's FlowLayout per section in a VStack, kjui codegen's
+            // FlowRow per section in a Column. One FlowRow held every section,
+            // so section 2 continued section 1's last line (measured on the
+            // lazy, lazy:none and wrapContent routes: DynamicCollectionFlowSectionsTest).
+            if (sectionObjs.size > 1) {
+                Column(
+                    modifier = overflowVisible,
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+                ) {
+                    sectionObjs.forEachIndexed { sectionIndex, sectionObj ->
+                        FlowRow(
+                            horizontalArrangement = horizontalArrangement,
+                            verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+                        ) {
+                            sectionCells(sectionIndex, sectionObj)
+                        }
+                    }
+                }
+            } else {
+                FlowRow(
+                    modifier = overflowVisible,
+                    horizontalArrangement = horizontalArrangement,
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+                ) {
+                    sectionObjs.forEachIndexed { sectionIndex, sectionObj -> sectionCells(sectionIndex, sectionObj) }
                 }
             }
         }
