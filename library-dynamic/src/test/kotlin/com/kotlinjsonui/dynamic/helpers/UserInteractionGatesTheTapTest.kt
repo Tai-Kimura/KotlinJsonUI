@@ -53,6 +53,23 @@ class UserInteractionGatesTheTapTest {
         assertTrue(TapAccessibility.isButton(n))
     }
 
+    /**
+     * A Label's links are none under a stop (the Linkable Label ticket): the
+     * mark from a stop around it — a cell drawn under one — takes them, as
+     * the rule's `stopped` does for a node inside the same layout, and so
+     * does the Label's own flag, asked with no stop around (holdsAControl
+     * folds a child's flag into `stopped` before it asks, so the vectors do
+     * not reach that clause). A binding is the gate's to decide at run time.
+     */
+    @Test
+    fun aLinkedLabelMarkedAsInsideAStopOperatesNothing() {
+        val linked = """{"type": "Label", "id": "k", "text": "see https://example.com", "linkable": true"""
+        assertTrue(TapAccessibility.isOperable(node("$linked}")))
+        assertFalse(TapAccessibility.isOperable(TapAccessibility.markStopped(node("$linked}"))))
+        assertFalse(TapAccessibility.isOperable(node("$linked, \"userInteractionEnabled\": false}")))
+        assertTrue(TapAccessibility.isOperable(node("$linked, \"userInteractionEnabled\": \"@{u}\"}")))
+    }
+
     @Test
     fun aNodeMarkedAsInsideAStopHasNoTap() {
         val original = node(label)

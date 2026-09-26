@@ -170,7 +170,9 @@ object TapAccessibility {
      */
     fun isOperable(node: JsonObject, stopped: Boolean = false): Boolean =
         isInteractiveType(type(node)) || (!stopped && isTappable(node)) || hasLongPress(node, stopped) ||
-            isLinkedText(node)
+            // Links too: a stopped Label's link spans do not open (the
+            // Linkable Label ticket), so they are not operable under the flag.
+            (!stopped && !stops(node) && !stoppedAround(node) && isLinkedText(node))
 
     /**
      * A long press a user can perform: a handler (`handlerValues` — an empty or
