@@ -74,7 +74,7 @@ class DynamicFaceLayoutFidelityTest {
             ) {
             androidx.compose.foundation.layout.Column {
                 Box(Modifier.testTag("dyn")) { DynamicView(json = row, data = emptyMap()) }
-                // The codegen emit shape, verbatim (BusinessHourRowGeneratedView).
+                // The codegen emit shape, verbatim (the downstream row's GeneratedView).
                 Box(Modifier.testTag("gen")) {
                     androidx.compose.foundation.layout.Row(
                         modifier = Modifier.then(
