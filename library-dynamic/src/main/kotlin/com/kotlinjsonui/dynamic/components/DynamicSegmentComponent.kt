@@ -138,11 +138,19 @@ class DynamicSegmentComponent {
                 ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
                 ?: ColorParser.parseColorWithBinding(json, "selectedSegmentTintColor", data, context)
 
-            // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from each tab's selection), and the Segment
+            // carries the tag while each Tab carries `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
 
             // Handle tab click with binding update + event handler
             val viewId = a.common.id ?: "segment"
+            // The declared onClick, called from the tab's selection after it —
+            // the Segment's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
 
             // Create the Segment using the existing component
             Segment(
@@ -173,6 +181,7 @@ class DynamicSegmentComponent {
                             if (handler != null && ModifierBuilder.isBinding(handler)) {
                                 ModifierBuilder.resolveEventHandler(handler, data, viewId, index)
                             }
+                            onClick?.invoke()
                         },
                         text = {
                             Text(

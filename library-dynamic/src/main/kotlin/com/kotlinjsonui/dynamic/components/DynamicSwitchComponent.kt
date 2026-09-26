@@ -113,12 +113,16 @@ class DynamicSwitchComponent {
                 ?: TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
-            // Build modifier: testTag, margins, alpha, padding
-            val modifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (no outer click — onClick is called from
+            // onCheckedChange), and `enabled` is the Switch's own, on this node.
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.ENABLED_ON_NODE
+            )
 
             // Colors: onTintColor/tint/tintColor -> checkedTrackColor, thumbTintColor -> checkedThumbColor.
             // `trackTintColor` is the declared spelling for the track itself
@@ -184,12 +188,17 @@ class DynamicSwitchComponent {
             }
 
             // Build onCheckedChange handler
-            val onCheckedChange = buildOnCheckedChange(a, data, bindingVariable) { newValue ->
+            val onCheckedChange = buildOnCheckedChange(json, a, data, bindingVariable) { newValue ->
                 checkedState = newValue
             }
 
-            // Build modifier for Row container: testTag, margins, alpha, padding
-            val rowModifier = ModifierBuilder.buildModifier(json, data, parentType, context)
+            // Build modifier for the Row container: the standard stages; the
+            // clickable stage is a control's (onClick from onCheckedChange),
+            // and the Row carries the tag while the Switch inside it carries
+            // `enabled`, so the Row takes `disabled()` (WRAPPER).
+            val rowModifier = ModifierBuilder.buildModifier(
+                json, data, parentType, context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -319,35 +328,43 @@ class DynamicSwitchComponent {
          * Updates bound variable via data["updateData"] and calls onValueChange/onToggle handler.
          */
         private fun buildOnCheckedChange(
+            json: JsonObject,
             a: SwitchAttributes,
             data: Map<String, Any>,
             bindingVariable: String?,
             updateState: (Boolean) -> Unit
-        ): (Boolean) -> Unit = { newValue ->
-            updateState(newValue)
+        ): (Boolean) -> Unit {
+            // The declared onClick, called last — after the state, the bound
+            // value and onValueChange: the Switch's own operation calls it, no
+            // outer `.clickable` does (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+            return { newValue ->
+                updateState(newValue)
 
-            // Update bound variable via data["updateData"]
-            if (bindingVariable != null) {
-                val updateData = data["updateData"]
-                if (updateData is Function<*>) {
-                    try {
-                        @Suppress("UNCHECKED_CAST")
-                        (updateData as (Map<String, Any>) -> Unit)(
-                            mapOf(bindingVariable to newValue)
-                        )
-                    } catch (_: Exception) {
-                        // Update function doesn't match expected signature
+                // Update bound variable via data["updateData"]
+                if (bindingVariable != null) {
+                    val updateData = data["updateData"]
+                    if (updateData is Function<*>) {
+                        try {
+                            @Suppress("UNCHECKED_CAST")
+                            (updateData as (Map<String, Any>) -> Unit)(
+                                mapOf(bindingVariable to newValue)
+                            )
+                        } catch (_: Exception) {
+                            // Update function doesn't match expected signature
+                        }
                     }
                 }
-            }
 
-            // Call the change handler (binding format only). `onToggle` is an
-            // alias spelling of `onValueChange` (49-E), folded onto the
-            // canonical row by the generated parser — one read.
-            val handler = TypedAttrs.raw(a.onValueChange) as? String
-            if (handler != null && ModifierBuilder.isBinding(handler)) {
-                val viewId = a.common.id ?: "switch"
-                ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                // Call the change handler (binding format only). `onToggle` is an
+                // alias spelling of `onValueChange` (49-E), folded onto the
+                // canonical row by the generated parser — one read.
+                val handler = TypedAttrs.raw(a.onValueChange) as? String
+                if (handler != null && ModifierBuilder.isBinding(handler)) {
+                    val viewId = a.common.id ?: "switch"
+                    ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
+                }
+                onClick?.invoke()
             }
         }
     }

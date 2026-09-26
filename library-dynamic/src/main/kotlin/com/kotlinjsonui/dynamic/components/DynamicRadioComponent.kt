@@ -307,6 +307,15 @@ class DynamicRadioComponent {
                 RadioButtonDefaults.colors()
             }
 
+            // `enabled` is the Radio's own controls' parameter — each
+            // RadioButton and the row that selects it: a disabled Radio neither
+            // selects nor calls the declared onClick.
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // The declared onClick, called from the selection after it — the
+            // Radio's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+
             // Handle value change
             val viewId = a.common.id ?: "radio"
             val onValueChange: (String) -> Unit = { newValue ->
@@ -325,10 +334,15 @@ class DynamicRadioComponent {
                 if (handler != null && ModifierBuilder.isBinding(handler)) {
                     ModifierBuilder.resolveEventHandler(handler, data, viewId, newValue)
                 }
+                onClick?.invoke()
             }
 
-            // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from the selection), and the container carries
+            // the tag while the buttons inside carry `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
 
             Column(modifier = modifier) {
                 options.forEach { (value, label) ->
@@ -336,11 +350,12 @@ class DynamicRadioComponent {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onValueChange(value) }
+                            .clickable(enabled = isEnabled) { onValueChange(value) }
                     ) {
                         RadioButton(
                             selected = selectedValue == value,
                             onClick = { onValueChange(value) },
+                            enabled = isEnabled,
                             colors = colors
                         )
                         Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
@@ -368,9 +383,21 @@ class DynamicRadioComponent {
             val radioValue = itemValue(a, id)
             val selectedVar = selectedVarName(a.group ?: "default")
             val isSelected = itemIsSelected(a, id, data)
+            // `enabled` is the Radio's own controls' parameter — each
+            // RadioButton and the row that selects it: a disabled Radio neither
+            // selects nor calls the declared onClick.
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // The declared onClick, called from the selection after it — the
+            // Radio's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
 
-            // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from the selection), and the container carries
+            // the tag while the buttons inside carry `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -389,6 +416,7 @@ class DynamicRadioComponent {
                     if (selectionBinding != null) updates[selectionBinding] = radioValue
                     @Suppress("UNCHECKED_CAST")
                     (data["updateData"] as? (Map<String, Any>) -> Unit)?.invoke(updates)
+                    onClick?.invoke()
                 }
 
                 // iconSize sizes the GLYPH: Material draws its radio glyph at
@@ -417,6 +445,7 @@ class DynamicRadioComponent {
                         RadioButton(
                             selected = isSelected,
                             onClick = onSelect,
+                            enabled = isEnabled,
                             modifier = glyphModifier,
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = stdSelectedColor
@@ -431,7 +460,8 @@ class DynamicRadioComponent {
                             (selectedIcon == "checkmark.square.fill" || selectedIcon == null) -> {
                         Checkbox(
                             checked = isSelected,
-                            onCheckedChange = { onSelect() }
+                            onCheckedChange = { onSelect() },
+                            enabled = isEnabled
                         )
                     }
                     // Custom icons
@@ -439,7 +469,7 @@ class DynamicRadioComponent {
                         val iconResId = mapIconResId(icon ?: "star")
                         val selectedIconResId = mapIconResId(selectedIcon ?: "star.fill")
 
-                        IconButton(onClick = onSelect) {
+                        IconButton(onClick = onSelect, enabled = isEnabled) {
                             Icon(
                                 painter = painterResource(if (isSelected) selectedIconResId else iconResId),
                                 contentDescription = text,
@@ -475,6 +505,7 @@ class DynamicRadioComponent {
                         RadioButton(
                             selected = isSelected,
                             onClick = onSelect,
+                            enabled = isEnabled,
                             modifier = glyphModifier,
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = itemSelectedColor
@@ -555,6 +586,15 @@ class DynamicRadioComponent {
                 mutableStateOf(currentSelected)
             }
 
+            // `enabled` is the Radio's own controls' parameter — each
+            // RadioButton and the row that selects it: a disabled Radio neither
+            // selects nor calls the declared onClick.
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
+            // The declared onClick, called from the selection after it — the
+            // Radio's own operation; no outer `.clickable` calls it
+            // (ModifierBuilder.onClickFromOperation).
+            val onClick = ModifierBuilder.onClickFromOperation(json, data)
+
             // Handle value change
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
@@ -563,10 +603,15 @@ class DynamicRadioComponent {
                     (data["updateData"] as? (Map<String, Any>) -> Unit)
                         ?.invoke(mapOf(bindingVariable to newValue))
                 }
+                onClick?.invoke()
             }
 
-            // Build modifier
-            val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+            // Build modifier: the standard stages; the clickable stage is a
+            // control's (onClick from the selection), and the container carries
+            // the tag while the buttons inside carry `enabled` (WRAPPER).
+            val modifier = ModifierBuilder.buildModifier(
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+            )
 
             // Parse text color ('textColor' is an undeclared legacy runtime extra)
             val textColor = ColorParser.parseColorStringWithBinding(
@@ -591,11 +636,12 @@ class DynamicRadioComponent {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onValueChange(item) }
+                            .clickable(enabled = isEnabled) { onValueChange(item) }
                     ) {
                         RadioButton(
                             selected = selectedValue == item,
-                            onClick = { onValueChange(item) }
+                            onClick = { onValueChange(item) },
+                            enabled = isEnabled
                         )
                         Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
                         Text(text = item, color = textColor)
