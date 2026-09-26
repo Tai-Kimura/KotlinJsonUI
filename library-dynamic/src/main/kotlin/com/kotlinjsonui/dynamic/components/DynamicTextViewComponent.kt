@@ -100,15 +100,14 @@ class DynamicTextViewComponent {
                 TypedAttrs.string(a.fontFamily, data), fieldFontSpelling, context
             )
 
-            // Background colors (supports @{binding}); 'highlightBackground'
-            // is a declared common attribute for TextView (no Button-style
-            // tapBackground rewrite applies here)
-            val backgroundColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.common.background), data, context
-            ) ?: Configuration.TextField.defaultBackgroundColor
-            val highlightBackgroundColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.common.highlightBackground), data, context
-            ) ?: Configuration.TextField.defaultHighlightBackgroundColor
+            // The node's background, or null: CustomTextField then takes its
+            // own defaults, the focused one included — what kjui's codegen
+            // hands it (backgroundColor only when declared). highlightBackground
+            // is not the focused background (4f's ruling, jsonui-cli 1.9.0): it
+            // is the colour while `highlighted` holds, which only a View
+            // declares; it was read here as the focus colour, a meaning no
+            // other path gave it.
+            val backgroundColor = DynamicTextFieldComponent.fieldBackground(a.common, data, context)
 
             // Border color (supports @{binding})
             val borderColor = ColorParser.parseColorStringWithBinding(
@@ -219,7 +218,6 @@ class DynamicTextViewComponent {
                     placeholder = placeholder,
                     shape = shape,
                     backgroundColor = backgroundColor,
-                    highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
                     maxLines = maxLines,
@@ -267,7 +265,6 @@ class DynamicTextViewComponent {
                     placeholder = placeholder,
                     shape = shape,
                     backgroundColor = backgroundColor,
-                    highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
                     maxLines = maxLines,
@@ -290,7 +287,7 @@ class DynamicTextViewComponent {
         /** TextView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "text", "hint", "placeholder", "enabled", "editable", "fontSize", "fontColor",
-            "highlightBackground", "containerInset", "edgeInset", "keyboardType", "input",
+            "containerInset", "edgeInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",
             "font", "fontFamily", "hintFont"

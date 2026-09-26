@@ -174,12 +174,14 @@ class DynamicTextFieldComponent {
                 ?: ColorParser.parseColorStringWithBinding(
                     a.caretAttributes?.get("fontColor") as? String, data, context
                 )
-            val backgroundColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.common.background), data, context
-            ) ?: Configuration.TextField.defaultBackgroundColor
-            val highlightBackgroundColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.common.highlightBackground), data, context
-            ) ?: Configuration.TextField.defaultHighlightBackgroundColor
+            // The node's background, or null: CustomTextField then takes its
+            // own defaults, the focused one included — what kjui's codegen
+            // hands it (backgroundColor only when declared). highlightBackground
+            // is not the focused background (4f's ruling, jsonui-cli 1.9.0): it
+            // is the colour while `highlighted` holds, which only a View
+            // declares; it was read here as the focus colour, a meaning no
+            // other path gave it.
+            val backgroundColor = DynamicTextFieldComponent.fieldBackground(a.common, data, context)
             val borderColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.borderColor), data, context
             ) ?: Configuration.TextField.defaultBorderColor
@@ -341,7 +343,6 @@ class DynamicTextFieldComponent {
                     shape = shape,
                     contentPadding = contentPadding,
                     backgroundColor = backgroundColor,
-                    highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
                     isSecure = isSecure,
@@ -361,7 +362,6 @@ class DynamicTextFieldComponent {
                     shape = shape,
                     contentPadding = contentPadding,
                     backgroundColor = backgroundColor,
-                    highlightBackgroundColor = highlightBackgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
                     isSecure = isSecure,
@@ -374,6 +374,14 @@ class DynamicTextFieldComponent {
         }
 
         // ── Helpers ──
+
+        /** A text field's background: the node's, or null (CustomTextField's defaults). */
+        internal fun fieldBackground(
+            common: com.kotlinjsonui.dynamic.generated.CommonAttributes,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): androidx.compose.ui.graphics.Color? =
+            ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(common.background), data, context)
 
         /**
          * Two-way write-back target: canonically a single FLAT identifier
@@ -559,7 +567,7 @@ class DynamicTextFieldComponent {
             "onBeginEditing", "onBlur", "onEndEditing", "nextFocus",
             "fontSize", "textAlign", "borderStyle", "returnKeyType",
             "autocapitalizationType", "autocorrectionType",
-            "highlightBackground", "fieldPadding", "textPaddingLeft",
+            "fieldPadding", "textPaddingLeft",
             "placeholderColor", "tintColor", "caretAttributes",
             "font", "fontFamily"
         )
