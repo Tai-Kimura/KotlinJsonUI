@@ -47,7 +47,8 @@ class ComponentPlatformDeclarationTest {
             unknown.clear()
             json = "{\"type\": \"$type\"${extra[type] ?: ""}}"
             rule.waitForIdle()
-            return unknown.any { it == "Unknown component type: $type" }
+            // UnknownComponentType's sentence (it was "Unknown component type: <type>")
+            return unknown.any { it == UnknownComponentType.TEMPLATE.format(type) || it.startsWith(UnknownComponentType.TEMPLATE.format(type) + " —") }
         }
         // control: a type no case takes is reported
         assertTrue("an undeclared type was not reported", unknownFor("ProbeUndeclaredType"))
