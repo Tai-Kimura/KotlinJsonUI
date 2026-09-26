@@ -24,9 +24,11 @@ class TapAccessibilityVectorsTest {
         stream.reader(Charsets.UTF_8).use { JsonParser.parseReader(it).asJsonObject }
     }
 
-    private fun shapes(node: JsonObject, out: MutableMap<String, String?>) {
+    /** Each node inside one with `userInteractionEnabled: false` marked as DynamicView marks it. */
+    private fun shapes(raw: JsonObject, out: MutableMap<String, String?>, stopped: Boolean = false) {
+        val node = if (stopped) TapAccessibility.markStopped(raw) else raw
         node.get("id")?.takeIf { it.isJsonPrimitive }?.let { out[it.asString] = TapAccessibility.shape(node)?.name?.lowercase() }
-        TapAccessibility.children(node).forEach { shapes(it, out) }
+        TapAccessibility.children(node).forEach { shapes(it, out, stopped || TapAccessibility.stops(raw)) }
     }
 
     @Test

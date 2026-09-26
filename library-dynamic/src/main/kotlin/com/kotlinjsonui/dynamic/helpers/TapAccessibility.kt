@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.helpers
 
+import androidx.compose.runtime.compositionLocalOf
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 
@@ -17,6 +18,15 @@ import com.google.gson.JsonObject
  * with its own tap or long press, a Label with links) is left as it was — the
  * decision the iOS side makes, where a container over a control has no shape
  * that works.
+ *
+ * `userInteractionEnabled` stops the node and everything in it, and the rule
+ * reads it as it reads `canTap: false`: `false` makes the node and every node
+ * inside it no tap — no click, no role (a click the pointer blocker had stopped
+ * was still announced as a button, and TalkBack's double tap still called it).
+ * DynamicView marks a node inside one whose flag is false, or whose binding
+ * resolves false, with [STOPPED_KEY] (the key kjui's codegen writes); a
+ * binding on the node itself is resolved where the click is attached
+ * (ModifierBuilder.tapGateOpen). A control's own type still counts inside.
  *
  * Which types are operable is declared per type (`interactive`) in jsonui-cli's
  * `shared/core/component_metadata.json`; the two lists below are that
@@ -88,9 +98,37 @@ object TapAccessibility {
     fun clickHandlers(node: JsonObject): List<String> =
         handlerValues(node.get("onClick")).ifEmpty { handlerValues(node.get("onclick")) }
 
-    /** A tap the Dynamic runtime attaches: a handler, not statically disabled, not gated shut. */
+    /**
+     * A tap the Dynamic runtime attaches: a handler, not statically disabled,
+     * not gated shut, and not stopped — by the node's own
+     * `userInteractionEnabled: false`, or by a node around it ([STOPPED_KEY]).
+     */
     fun isTappable(node: JsonObject): Boolean =
-        !disabled(node) && !gatedShut(node) && clickHandlers(node).isNotEmpty()
+        !disabled(node) && !gatedShut(node) && !stops(node) && !stoppedAround(node) &&
+            clickHandlers(node).isNotEmpty()
+
+    /** On a node inside one that stops interaction: true (DynamicView writes it). */
+    const val STOPPED_KEY = "_tapStopped"
+
+    /** `userInteractionEnabled: false`: the node and everything in it take no interaction. */
+    fun stops(node: JsonObject): Boolean {
+        val e = node.get("userInteractionEnabled") ?: return false
+        return e.isJsonPrimitive && e.asJsonPrimitive.isBoolean && !e.asBoolean
+    }
+
+    /** A node around it stops interaction ([STOPPED_KEY]). */
+    fun stoppedAround(node: JsonObject): Boolean {
+        val e = node.get(STOPPED_KEY) ?: return false
+        return e.isJsonPrimitive && e.asJsonPrimitive.isBoolean && e.asBoolean
+    }
+
+    /** The node as it is, marked as inside one that stops interaction (a shallow copy). */
+    fun markStopped(node: JsonObject): JsonObject {
+        val copy = JsonObject()
+        node.entrySet().forEach { (key, value) -> copy.add(key, value) }
+        copy.addProperty(STOPPED_KEY, true)
+        return copy
+    }
 
     /** `canTap: false`, the Compose tap gate. */
     private fun gatedShut(node: JsonObject): Boolean {
@@ -131,8 +169,8 @@ object TapAccessibility {
      * handler is a long press is not a tap; `canTap` without onClick has no
      * handler either.
      */
-    fun isOperable(node: JsonObject): Boolean =
-        isInteractiveType(type(node)) || isTappable(node) || hasLongPress(node) || isLinkedText(node)
+    fun isOperable(node: JsonObject, stopped: Boolean = false): Boolean =
+        isInteractiveType(type(node)) || (!stopped && isTappable(node)) || hasLongPress(node) || isLinkedText(node)
 
     /**
      * A long press a user can perform: a handler (`handlerValues` — an empty or
@@ -143,9 +181,18 @@ object TapAccessibility {
     fun hasLongPress(node: JsonObject): Boolean =
         !disabled(node) && handlerValues(node.get("onLongPress")).isNotEmpty()
 
-    fun holdsAControl(node: JsonObject): Boolean =
-        children(node).any { isOperable(it) || holdsAControl(it) }
+    /**
+     * Something inside [node] a user can operate on its own. [stopped]: a node
+     * around the child has `userInteractionEnabled: false`, so its own tap is
+     * none (its type still says whether it is a control).
+     */
+    fun holdsAControl(node: JsonObject, stopped: Boolean = false): Boolean =
+        children(node).any {
+            val inner = stopped || stops(it)
+            isOperable(it, inner) || holdsAControl(it, inner)
+        }
 
+    /** The shape of one node, or null when it is not a tappable (a stopped one included). */
     fun shape(node: JsonObject): Shape? {
         if (!isTappable(node)) return null
         if (isInteractiveType(type(node))) return Shape.NONE
@@ -158,3 +205,10 @@ object TapAccessibility {
     fun isButton(node: JsonObject): Boolean =
         shape(node).let { it == Shape.BUTTON || it == Shape.COMBINE }
 }
+
+/**
+ * True inside a node whose `userInteractionEnabled` is false or a binding
+ * resolving false: DynamicView provides it around what such a node renders,
+ * and marks each node composed under it with [TapAccessibility.STOPPED_KEY].
+ */
+val LocalInteractionStopped = compositionLocalOf { false }

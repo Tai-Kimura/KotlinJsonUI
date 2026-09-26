@@ -802,9 +802,16 @@ object ModifierBuilder {
      * nothing else — a component that calls that handler itself (Button's
      * action, Toggle's fallback) asks here; its own operation (a check, a
      * selection) is `enabled`'s.
+     *
+     * `userInteractionEnabled` shuts it as canTap does (the tap rule,
+     * TapAccessibility): `false` or a binding resolving false on the node, or
+     * on a node around it (TapAccessibility.stoppedAround, which DynamicView
+     * marks). The pointer blocker stopped a touch there, while TalkBack's
+     * double tap called the click's action and announced it as a button.
      */
     fun tapGateOpen(json: JsonObject, data: Map<String, Any>): Boolean =
-        resolveFlag(json, "canTap", data) != false
+        resolveFlag(json, "canTap", data) != false && !interactionBlocked(json, data) &&
+            !TapAccessibility.stoppedAround(json)
 
     /** A boolean-or-binding flag, or null when absent or unresolved. */
     private fun resolveFlag(json: JsonObject, key: String, data: Map<String, Any>): Boolean? {

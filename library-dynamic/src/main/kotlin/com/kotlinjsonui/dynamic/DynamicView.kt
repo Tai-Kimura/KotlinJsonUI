@@ -29,6 +29,9 @@ import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
+import com.kotlinjsonui.dynamic.helpers.LocalInteractionStopped
+import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.TapAccessibility
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
 import androidx.compose.runtime.collectAsState
 
@@ -109,7 +112,14 @@ private fun DynamicViewContent(
     // Resolve responsive overrides based on current WindowSizeClass and orientation.
     // This merges matching responsive attributes into the node and removes the
     // "responsive" key, so downstream components see a flat attribute set.
-    val responsiveJson = resolveResponsiveNode(styledJson)
+    //
+    // Inside a node whose userInteractionEnabled is false (or a binding
+    // resolving false) the node is marked (TapAccessibility.STOPPED_KEY, the
+    // key kjui's codegen writes): its click, its Role.Button and the image
+    // rule read it as no tap.
+    val stoppedAround = LocalInteractionStopped.current
+    val resolvedJson = resolveResponsiveNode(styledJson)
+    val responsiveJson = if (stoppedAround) TapAccessibility.markStopped(resolvedJson) else resolvedJson
 
     // Check if this is a data element (should be skipped)
     if (responsiveJson.has("data") && !responsiveJson.has("type")) {
@@ -226,10 +236,18 @@ private fun DynamicViewContent(
     // composition, so binding changes re-resolve on recomposition.
     // A node with a tap handler is the nearest tappable for every image
     // composed inside it (ImageAccessibility.role).
+    // A node whose userInteractionEnabled is false, or a binding resolving
+    // false, stops everything composed inside it (TapAccessibility).
+    val stopping: @Composable () -> Unit =
+        if (!stoppedAround && ModifierBuilder.interactionBlocked(responsiveJson, effectiveData)) {
+            { CompositionLocalProvider(LocalInteractionStopped provides true) { renderComponent() } }
+        } else {
+            renderComponent
+        }
     val render: @Composable () -> Unit = if (ImageAccessibility.isTappable(responsiveJson)) {
-        { CompositionLocalProvider(LocalImageTappable provides responsiveJson) { renderComponent() } }
+        { CompositionLocalProvider(LocalImageTappable provides responsiveJson) { stopping() } }
     } else {
-        renderComponent
+        stopping
     }
 
     if (hidden == true || !visibility.isNullOrEmpty()) {
