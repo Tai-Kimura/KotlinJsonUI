@@ -40,6 +40,46 @@ class DynamicImageComponent {
             "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage", "alt"
         )
 
+        /**
+         * The Image family's source, a local drawable NAME (the SSoT's
+         * Image.src: "Image source name"; a URL belongs to NetworkImage):
+         * srcName > src > defaultImage > errorImage > loadingImage > text >
+         * "placeholder". A CircleImage is an Image spelling (type_synonyms.json
+         * `render_as`) and reads it here too.
+         *
+         * A STATIC Image has no in-flight state, so `loadingImage` can only
+         * mean fallback imagery here rather than a spinner — which is the
+         * same reason `errorImage` belongs in the chain. Both were declared
+         * on Image and read by neither Compose path until C put them in the
+         * codegen's chain (image_component.rb:12-20); this path still fell
+         * through to the literal `"placeholder"` drawable, which is why
+         * `Image_{errorImage,loadingImage}__static` sat at parity distance
+         * 10 across runs 3 and 4.
+         * ('defaultImage'/'text' are undeclared legacy extras on Image)
+         */
+        internal fun rawSource(json: JsonObject, a: ImageAttributes): String =
+            TypedAttrs.rawString(a.srcName)
+                ?: TypedAttrs.rawString(a.src)
+                ?: TypedAttrs.undeclared(json, "defaultImage")?.asString
+                ?: a.errorImage
+                ?: a.loadingImage
+                ?: TypedAttrs.undeclared(json, "text")?.asString
+                ?: "placeholder"
+
+        /**
+         * The drawable [rawSource] names, looked up by [resolve]
+         * (ResourceResolver.resolveDrawable: a binding resolves first); a
+         * bound source that resolves to nothing falls back to defaultImage.
+         * 0 is none.
+         */
+        internal fun resourceId(json: JsonObject, a: ImageAttributes, resolve: (String) -> Int): Int {
+            val rawSrc = rawSource(json, a)
+            val resourceId = resolve(rawSrc)
+            if (resourceId != 0 || !ModifierBuilder.isBinding(rawSrc)) return resourceId
+            val defaultImage = TypedAttrs.undeclared(json, "defaultImage")?.asString
+            return if (defaultImage != null && defaultImage != rawSrc) resolve(defaultImage) else 0
+        }
+
         @Composable
         fun create(json: JsonObject, data: Map<String, Any> = emptyMap()) {
             val context = LocalContext.current
@@ -53,36 +93,9 @@ class DynamicImageComponent {
                 context = context
             )
 
-            // Source priority: srcName > src > defaultImage > errorImage >
-            // loadingImage > text > "placeholder".
-            //
-            // A STATIC Image has no in-flight state, so `loadingImage` can only
-            // mean fallback imagery here rather than a spinner — which is the
-            // same reason `errorImage` belongs in the chain. Both were declared
-            // on Image and read by neither Compose path until C put them in the
-            // codegen's chain (image_component.rb:12-20); this path still fell
-            // through to the literal `"placeholder"` drawable, which is why
-            // `Image_{errorImage,loadingImage}__static` sat at parity distance
-            // 10 across runs 3 and 4.
-            // ('defaultImage'/'text' are undeclared legacy extras on Image)
-            val defaultImage = TypedAttrs.undeclared(json, "defaultImage")?.asString
-            val rawSrc = TypedAttrs.rawString(a.srcName)
-                ?: TypedAttrs.rawString(a.src)
-                ?: defaultImage
-                ?: a.errorImage
-                ?: a.loadingImage
-                ?: TypedAttrs.undeclared(json, "text")?.asString
-                ?: "placeholder"
-
-            // Resolve drawable resource ID (handles @{binding} internally)
-            var resourceId = ResourceResolver.resolveDrawable(rawSrc, data, context)
-
-            // Fallback to defaultImage when binding src resolves to 0
-            if (resourceId == 0 && ModifierBuilder.isBinding(rawSrc)) {
-                if (defaultImage != null && defaultImage != rawSrc) {
-                    resourceId = ResourceResolver.resolveDrawable(defaultImage, data, context)
-                }
-            }
+            // The drawable (rawSource / resourceId below; CircleImage reads it
+            // the same way).
+            val resourceId = resourceId(json, a) { ResourceResolver.resolveDrawable(it, data, context) }
 
             // Build modifier using composite builder
             // Order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding

@@ -80,6 +80,21 @@ object ResourceResolver {
     }
 
     /**
+     * The drawable NAME a value means: a binding — canonical whole-value
+     * string resolution (flat-first, dot paths, `?? default`) — resolves
+     * first; an unresolved binding, or no value, is null. [resolveDrawable]
+     * looks up this name, and CircleImage checks this name for a URL.
+     */
+    internal fun drawableName(value: String?, data: Map<String, Any>): String? {
+        if (value == null) return null
+        return if (value.startsWith("@{") && value.endsWith("}")) {
+            DataBindingContext.resolveString(value, data)
+        } else {
+            value
+        }
+    }
+
+    /**
      * process_drawable equivalent: resolve drawable resource ID.
      *
      * Resolution order:
@@ -92,15 +107,7 @@ object ResourceResolver {
         data: Map<String, Any>,
         context: Context
     ): Int {
-        if (value == null) return 0
-
-        // Binding — canonical whole-value string resolution (flat-first,
-        // dot paths, `?? default`); unresolved → 0 (no drawable)
-        val resolved = if (value.startsWith("@{") && value.endsWith("}")) {
-            DataBindingContext.resolveString(value, data) ?: return 0
-        } else {
-            value
-        }
+        val resolved = drawableName(value, data) ?: return 0
 
         val resId = context.resources.getIdentifier(resolved, "drawable", context.packageName)
         // 0 still comes back — the caller's behaviour and the consumer's
