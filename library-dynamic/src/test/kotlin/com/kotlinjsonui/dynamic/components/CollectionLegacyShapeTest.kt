@@ -77,10 +77,15 @@ class CollectionLegacyShapeTest {
         }
     }
 
+    /**
+     * 4f ruling (2026-09-26, round 6): paging draws the class-list shape as
+     * one section — the first data section — as the horizontal and flow
+     * routes do. It drew nothing (it read declared sections only).
+     */
     @Test
-    fun pagingDrawsNothingWithoutSections() {
+    fun pagingDrawsTheFirstDataSectionWithoutSections() {
         val p = plan("""{"type":"Collection","items":"@{items}","cellClasses":["probe_cell"]}""", threeSections)
-        assertNull(p.sectionsFor(CellRoute.PAGING))
+        assertEquals(listOf("probe_cell"), cells(p, CellRoute.PAGING))
     }
 
     @Test
@@ -144,7 +149,7 @@ class CollectionLegacyShapeTest {
         assertEquals(0, source!!.sections.size)
         assertEquals("probe_header", p.headerFor(CellRoute.LAZY_VERTICAL_GRID))
         assertEquals("probe_footer", p.footerFor(CellRoute.NON_LAZY_COLUMN))
-        for (route in CellRoute.values().filter { it != CellRoute.PAGING }) {
+        for (route in CellRoute.values()) {
             assertEquals(route.name, 0, p.sectionsFor(route)?.size())
         }
     }
@@ -190,7 +195,7 @@ class CollectionLegacyShapeTest {
         for (route in vertical + horizontalOrFlow) {
             assertEquals(route.name, listOf("probe_cell"), cells(p, route))
         }
-        assertNull("paging reads declared sections only", p.sectionsFor(CellRoute.PAGING))
+        assertEquals("paging: the list is one section", listOf("probe_cell"), cells(p, CellRoute.PAGING))
     }
 
     data class Row(val t: Int) {
