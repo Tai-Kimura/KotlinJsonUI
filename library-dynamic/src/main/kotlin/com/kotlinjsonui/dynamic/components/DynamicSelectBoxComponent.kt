@@ -147,11 +147,11 @@ class DynamicSelectBoxComponent {
         internal fun selectionOf(a: SelectBoxAttributes, data: Map<String, Any>, options: List<String>): String =
             (boundSelection(a, data, options) ?: "").ifEmpty { initialSelection(a, data) }
 
-        /** The date the box starts on: the bound value, else the static `selectedDate` / `selectedItem`. */
+        /** The date the box starts on: the bound value, else the static `selectedDate` (dateBindingVariableOf). */
         internal fun dateSelectionOf(a: SelectBoxAttributes, data: Map<String, Any>, bindingVariable: String?): String =
             if (bindingVariable != null) {
                 data[bindingVariable]?.toString() ?: ""
-            } else TypedAttrs.static(a.selectedDate) ?: TypedAttrs.static(a.selectedItem) ?: ""
+            } else TypedAttrs.static(a.selectedDate) ?: ""
 
         /**
          * What a pick writes back — the new value of the selection binding:
@@ -272,12 +272,15 @@ class DynamicSelectBoxComponent {
         }
 
         /**
-         * Same row, the date-picker variant's precedence: `selectedDate`
-         * first, then `selectedItem`, then the common `bind`.
+         * A Date SelectBox's value is its `selectedDate` (4f's ruling,
+         * jsonui-cli 1.9.0: SSoT common.bind primaryValue, by selectItemType),
+         * or a lone common `bind`, which stands for it. It fell back to
+         * `selectedItem`, which sjui and SwiftJsonUI never read; the shared
+         * validator names a Date box's selectedValue / selectedItem /
+         * selectedIndex.
          */
         internal fun dateBindingVariableOf(a: SelectBoxAttributes): String? =
             TypedAttrs.binding(a.selectedDate)
-                ?: TypedAttrs.binding(a.selectedItem)
                 ?: TypedAttrs.binding(a.common.bind)
 
         /**
@@ -544,7 +547,7 @@ class DynamicSelectBoxComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable: selectedDate > selectedItem > bind
+            // Parse binding variable: selectedDate, else a lone bind
             val bindingVariable = dateBindingVariableOf(a)
 
             // Get current value. Unbound, the static date is where the box
