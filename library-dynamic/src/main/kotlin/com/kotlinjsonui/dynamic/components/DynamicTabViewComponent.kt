@@ -149,6 +149,13 @@ class DynamicTabViewComponent {
 
             // Get TabView id for test automation
             val tabViewId = a.common.id
+            // `enabled` is the tab bar's own items' parameter: a disabled
+            // TabView does not switch tabs, and each item reads disabled for
+            // TalkBack. Only the Scaffold's semantics read it (buildModifier's
+            // disabled()), and a tab still switched (jsonui-cli
+            // kjui-dynamic-components-that-skip-the-common-modifiers, B7 — the
+            // kjui codegen passes the same `enabled` to NavigationBarItem).
+            val tabsEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Build tab items data
             val tabItems = tabsArray.mapIndexed { index, item ->
@@ -220,6 +227,7 @@ class DynamicTabViewComponent {
                                 ),
                                 alwaysShowLabel = alwaysShowLabel,
                                 selected = isSelected,
+                                enabled = tabsEnabled,
                                 onClick = {
                                     if (selectedTab != tabItem.index) {
                                         selectedTab = tabItem.index
