@@ -443,6 +443,9 @@ class DynamicCollectionComponent {
                     sections = plan.sectionsFor(CellRoute.NON_LAZY_COLUMN),
                     legacyHeader = plan.headerFor(CellRoute.NON_LAZY_COLUMN),
                     legacyFooter = plan.footerFor(CellRoute.NON_LAZY_COLUMN),
+                    oneGridForAllSections = !plan.hasDeclaredSections,
+                    defaultColumns = defaultColumns,
+                    columnSpacing = columnSpacing,
                     collectionDataSource = collectionDataSource,
                     cellIdProperty = cellIdProperty,
                     data = data,
@@ -602,6 +605,7 @@ class DynamicCollectionComponent {
                     }
                     generateCollectionItems(
                         sections = plan.sectionsFor(CellRoute.LAZY_VERTICAL_GRID),
+                        breakRowsBetweenSections = plan.hasDeclaredSections,
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
                         cellIdProperty = cellIdProperty,
@@ -889,6 +893,9 @@ class DynamicCollectionComponent {
             sections: JsonArray?,
             legacyHeader: String? = null,
             legacyFooter: String? = null,
+            oneGridForAllSections: Boolean = false,
+            defaultColumns: Int = 1,
+            columnSpacing: androidx.compose.ui.unit.Dp = 0.dp,
             collectionDataSource: CollectionDataSource?,
             cellIdProperty: String?,
             data: Map<String, Any>,
@@ -911,9 +918,15 @@ class DynamicCollectionComponent {
                 legacyHeader?.let { renderCellView(it, emptyMap<String, Any>(), -1, data) }
                 when {
                     sections != null && collectionDataSource != null -> {
+                        val sectionObjs = sections.map { it.asJsonObject }
+                        fun cellNameOf(s: Int): String? = sectionObjs.getOrNull(s)?.get("cell")?.asString
+                        val gridRows = nonLazyGridRows(
+                            cellCounts = sectionObjs.indices.map { collectionDataSource.sections.getOrNull(it)?.cells?.data?.size ?: 0 },
+                            sectionColumns = sectionObjs.map { it.get("columns")?.asInt ?: defaultColumns },
+                            oneGrid = oneGridForAllSections
+                        )
                         sections.forEachIndexed { sectionIndex, sectionElement ->
                             val sectionObj = sectionElement.asJsonObject
-                            val cellViewName = sectionObj.get("cell")?.asString
 
                             // Header
                             val headerViewName = sectionObj.get("header")?.asString
@@ -923,18 +936,44 @@ class DynamicCollectionComponent {
                                 }
                             }
 
-                            // Cells
-                            collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
-                                section.cells?.let { cellData ->
-                                    cellData.data.forEachIndexed { cellIndex, item ->
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
-                                            contentAlignment = gravityAlignment
-                                        ) {
-                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                            // Cells: a grid per section, rows of the section's
+                            // columns (4f ruling, 2026-09-26 — sjui's non-lazy
+                            // grid is a LazyVGrid per section; this was a
+                            // Column of one cell per row whatever `columns`
+                            // said). The legacy shape's stand-in sections are
+                            // ONE grid (sjui's legacy grid): every row is in
+                            // the first section's slot.
+                            val rowsHere = gridRows.getOrNull(sectionIndex).orEmpty()
+                            rowsHere.forEach { row ->
+                                if (row.columns == 1) {
+                                    val (s, cellIndex) = row.cells.single()
+                                    val item = collectionDataSource.sections[s].cells!!.data[cellIndex]
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                        contentAlignment = gravityAlignment
+                                    ) {
+                                        renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                    }
+                                } else {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(columnSpacing)
+                                    ) {
+                                        row.cells.forEach { (s, cellIndex) ->
+                                            val item = collectionDataSource.sections[s].cells!!.data[cellIndex]
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
+                                                contentAlignment = gravityAlignment
+                                            ) {
+                                                renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                            }
                                         }
+                                        // A short last row keeps the grid's column width.
+                                        repeat(row.columns - row.cells.size) { Spacer(Modifier.weight(1f)) }
                                     }
                                 }
                             }
@@ -1085,6 +1124,7 @@ class DynamicCollectionComponent {
             reverseLayout: Boolean = false,
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
+            breakRowsBetweenSections: Boolean = false,
         ) {
 
             when {
@@ -1103,7 +1143,31 @@ class DynamicCollectionComponent {
                     } else {
                         indexedSections
                     }
-                    orderedSections.forEach { (sectionIndex, sectionJson) ->
+                    // Declared sections are a grid each (4f ruling,
+                    // 2026-09-26; sjui's LazyVGrid per section): a section
+                    // after the first starts a new row. The sections share
+                    // one LazyVerticalGrid, whose items fill the current row
+                    // across a section boundary, so an empty item takes the
+                    // rest of a part-filled row first — in that row, so no
+                    // row and no line spacing is added. A header (full span)
+                    // already starts one. The legacy shape's stand-in
+                    // sections stay one grid, as sjui's legacy grid is.
+                    val breakSpans = if (breakRowsBetweenSections) {
+                        sectionBreakSpans(
+                            orderedSections.map { (sectionIndex, sectionJson) ->
+                                val obj = sectionJson.asJsonObject
+                                val section = collectionDataSource.sections.getOrNull(sectionIndex)
+                                SectionShape(
+                                    cells = section?.cells?.data?.size ?: 0,
+                                    itemSpan = gridColumns / (obj.get("columns")?.asInt ?: defaultColumns),
+                                    header = obj.get("header") != null && section?.header != null,
+                                    footer = obj.get("footer") != null && section?.footer != null
+                                )
+                            },
+                            gridColumns
+                        )
+                    } else null
+                    orderedSections.forEachIndexed { orderIndex, (sectionIndex, sectionJson) ->
                         val sectionObj = sectionJson.asJsonObject
                         val cellViewName = sectionObj.get("cell")?.asString
                         val headerViewName = sectionObj.get("header")?.asString
@@ -1112,6 +1176,13 @@ class DynamicCollectionComponent {
 
                         // Calculate span for items in this section
                         val itemSpan = gridColumns / sectionColumns
+
+                        val breakSpan = breakSpans?.get(orderIndex) ?: 0
+                        if (breakSpan > 0) {
+                            item(span = { GridItemSpan(breakSpan) }, contentType = "sectionBreak") {
+                                Spacer(Modifier)
+                            }
+                        }
 
                         collectionDataSource.sections.getOrNull(sectionIndex)?.let { section ->
                             // Render header if present
@@ -1273,6 +1344,9 @@ class DynamicCollectionComponent {
         ) {
             private val hasSections = declaredSections != null && declaredSections.size() > 0
 
+            /** True when the sections are the layout's own (not the legacy shape's stand-ins). */
+            val hasDeclaredSections: Boolean get() = hasSections
+
             fun sectionsFor(route: CellRoute): JsonArray? {
                 if (hasSections || route == CellRoute.PAGING) return declaredSections
                 val cell = legacyCell ?: return if (dataSource != null) JsonArray() else declaredSections
@@ -1291,6 +1365,49 @@ class DynamicCollectionComponent {
 
             fun headerFor(route: CellRoute): String? = legacyHeader?.takeIf { drawsEdges(route) }
             fun footerFor(route: CellRoute): String? = legacyFooter?.takeIf { drawsEdges(route) }
+        }
+
+        /** What a section puts into the vertical grid, for [sectionBreakSpans]. */
+        internal data class SectionShape(val cells: Int, val itemSpan: Int, val header: Boolean, val footer: Boolean)
+
+        /**
+         * Before each section, in drawing order, the span of an empty item
+         * that takes the rest of a part-filled row, so the section starts a
+         * row of its own; 0 where none is needed — the first section, a
+         * section after a full row or after a footer, a section that opens
+         * with its header (full span), a section that draws nothing. Every
+         * section starts at the beginning of a row, so it leaves
+         * `cells * itemSpan mod gridColumns` of its last row filled.
+         */
+        internal fun sectionBreakSpans(shapes: List<SectionShape>, gridColumns: Int): List<Int> {
+            var used = 0
+            return shapes.map { s ->
+                if (!s.header && !s.footer && s.cells == 0) return@map 0
+                val filler = if (!s.header && used != 0) gridColumns - used else 0
+                used = if (s.footer) 0 else (s.cells * s.itemSpan) % gridColumns
+                filler
+            }
+        }
+
+        /** One row of a non-lazy grid: its (section, cell) pairs, and the columns it is laid out in. */
+        internal data class GridRow(val cells: List<Pair<Int, Int>>, val columns: Int)
+
+        /**
+         * The non-lazy route's rows, per section: each section a grid of its
+         * own columns. With [oneGrid] (the legacy shape) every data
+         * section's cells are one grid in the first section's slot, in the
+         * first section's columns.
+         */
+        internal fun nonLazyGridRows(cellCounts: List<Int>, sectionColumns: List<Int>, oneGrid: Boolean): List<List<GridRow>> {
+            fun rows(cells: List<Pair<Int, Int>>, columns: Int): List<GridRow> {
+                val c = maxOf(1, columns)
+                return cells.chunked(c).map { GridRow(it, c) }
+            }
+            if (oneGrid) {
+                val all = cellCounts.flatMapIndexed { s, n -> (0 until n).map { s to it } }
+                return cellCounts.indices.map { s -> if (s == 0) rows(all, sectionColumns.firstOrNull() ?: 1) else emptyList() }
+            }
+            return cellCounts.mapIndexed { s, n -> rows((0 until n).map { s to it }, sectionColumns.getOrElse(s) { 1 }) }
         }
 
         /** A cellClasses / headerClasses / footerClasses entry: a name, or `{"className": …}`. */
