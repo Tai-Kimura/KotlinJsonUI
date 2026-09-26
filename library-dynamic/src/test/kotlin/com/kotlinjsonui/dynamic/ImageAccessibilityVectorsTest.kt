@@ -6,6 +6,7 @@ import com.kotlinjsonui.dynamic.generated.ImageAttributes
 import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility.Role
+import com.kotlinjsonui.dynamic.helpers.TapAccessibility
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -21,7 +22,9 @@ import org.junit.Test
  *
  * The walk hands each node the nearest tappable above it, the way DynamicView
  * provides [com.kotlinjsonui.dynamic.helpers.LocalImageTappable] around every
- * node with a tap handler.
+ * node with a tap handler, and marks each node inside one with
+ * `userInteractionEnabled: false` as DynamicView marks it
+ * (TapAccessibility.markStopped).
  */
 class ImageAccessibilityVectorsTest {
 
@@ -32,12 +35,13 @@ class ImageAccessibilityVectorsTest {
         stream.reader(Charsets.UTF_8).use { JsonParser.parseReader(it).asJsonObject }
     }
 
-    private fun roles(node: JsonObject, nearest: JsonObject?, out: MutableMap<String, String>) {
+    private fun roles(raw: JsonObject, nearest: JsonObject?, out: MutableMap<String, String>, stopped: Boolean = false) {
+        val node = if (stopped) TapAccessibility.markStopped(raw) else raw
         if (ImageAccessibility.isImage(node)) {
             out[node.get("id").asString] = ImageAccessibility.role(node, nearest).name.lowercase()
         }
         val inner = if (ImageAccessibility.isTappable(node)) node else nearest
-        ImageAccessibility.children(node).forEach { roles(it, inner, out) }
+        ImageAccessibility.children(node).forEach { roles(it, inner, out, stopped || TapAccessibility.stops(raw)) }
     }
 
     @Test
