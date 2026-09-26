@@ -163,4 +163,74 @@ class CollectionLegacyShapeTest {
         val p = plan("""{"type":"Collection","items":"@{items}","sections":[{"cell":"probe_cell"}]}""", null)
         assertNull(p.dataSource)
     }
+
+    // ── items bound to a list ────────────────────────────────────────
+    //
+    // Collection.items is a CollectionDataSource or an array
+    // (attribute_definitions.json; 4f ruling, 2026-09-26): with no `sections`
+    // a list is one section of the declared cell, on the routes a one-section
+    // data source takes. The codegens decide by the layout's data
+    // declaration; this renderer by the value's shape. Measured before the
+    // change (e33f493): a list was no CollectionDataSource, so no cell.
+
+    private val listJson = """{"type":"Collection","id":"c","items":"@{items}","cellClasses":["probe_cell"]}"""
+
+    private fun listPlan(value: Any?): DynamicCollectionComponent.Companion.CellPlan {
+        val (a, sections) = attrs(listJson)
+        return DynamicCollectionComponent.cellPlan(a, sections, DynamicCollectionComponent.boundSource(a, sections, value))
+    }
+
+    @Test
+    fun aListOfMapsIsOneSectionOfTheDeclaredCellOnEveryRouteButPaging() {
+        val p = listPlan(listOf(mapOf("t" to 0), mapOf("t" to 1), mapOf("t" to 2)))
+        val source = p.dataSource!!
+        assertEquals(1, source.sections.size)
+        assertEquals("probe_cell", source.sections[0].cells?.viewName)
+        assertEquals(listOf(0, 1, 2), source.sections[0].cells?.data?.map { it["t"] })
+        for (route in vertical + horizontalOrFlow) {
+            assertEquals(route.name, listOf("probe_cell"), cells(p, route))
+        }
+        assertNull("paging reads declared sections only", p.sectionsFor(CellRoute.PAGING))
+    }
+
+    data class Row(val t: Int) {
+        fun toMap(): MutableMap<String, Any> = mutableMapOf("t" to t)
+    }
+
+    /** A generated Data class's list — what the codegen reads with toMap(). */
+    @Test
+    fun aListOfDataClassesIsReadByTheirToMap() {
+        val source = listPlan(listOf(Row(0), Row(1))).dataSource!!
+        assertEquals(listOf(mapOf("t" to 0), mapOf("t" to 1)), source.sections[0].cells?.data)
+    }
+
+    @Test
+    fun aCollectionDataSourceIsReadAsItWasAndSectionsDeclaredDoNotReadAList() {
+        val (a, _) = attrs(listJson)
+        assertTrue(DynamicCollectionComponent.boundSource(a, null, threeSections) === threeSections)
+        val (sa, sections) = attrs("""{"type":"Collection","items":"@{items}","cellClasses":["probe_cell"],"sections":[{"cell":"probe_cell"}]}""")
+        assertNull(DynamicCollectionComponent.boundSource(sa, sections, listOf(mapOf("t" to 0))))
+    }
+
+    /**
+     * Several cellClasses over a list: no cell, as over a data source — and
+     * named, once per Collection: a Dynamic layout does not pass the build
+     * that refuses it. It drew nothing and said nothing.
+     */
+    @Test
+    fun severalCellClassesOverAListDrawNoCellAndAreNamed() {
+        DynamicCollectionComponent.named.clear()
+        DynamicCollectionComponent.loggedSeveralCellClasses.clear()
+        val (a, sections) = attrs("""{"type":"Collection","id":"c","items":"@{items}","cellClasses":["probe_cell","other_cell"]}""")
+        assertNull(DynamicCollectionComponent.boundSource(a, sections, listOf(mapOf("t" to 0))))
+        DynamicCollectionComponent.nameUndrawnCellClasses(a, sections)
+        DynamicCollectionComponent.nameUndrawnCellClasses(a, sections)
+        assertEquals(
+            listOf(
+                "Collection (id=c): 2 cellClasses declared without sections — no cell is drawn. " +
+                    "Fix: assign cells via sections[].cell, or declare a single cellClass."
+            ),
+            DynamicCollectionComponent.named.toList()
+        )
+    }
 }

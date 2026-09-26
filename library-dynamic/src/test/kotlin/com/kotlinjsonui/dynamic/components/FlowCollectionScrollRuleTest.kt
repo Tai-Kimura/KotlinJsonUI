@@ -107,16 +107,26 @@ class FlowCollectionScrollRuleTest {
         val all = lines()
         val start = all.indexOfFirst { it.startsWith("private fun renderFlowLayout") }
         assertTrue("renderFlowLayout not found", start >= 0)
-        val call = all.subList(start, all.size).indexOf("FlowRow(")
-        assertTrue("no FlowRow( in renderFlowLayout", call >= 0)
-        val args = all.subList(start + call, start + call + 20)
+        val next = all.subList(start + 1, all.size).indexOfFirst { it.startsWith("private fun ") }
+        val body = all.subList(start, if (next < 0) all.size else start + 1 + next)
+        // The flow's outer container is measured unbounded: the one FlowRow,
+        // or — with two or more sections, each its own wrap (4f ruling,
+        // 2026-09-26) — the Column that holds their FlowRows. Both take the
+        // node's modifier through `overflowVisible`; nothing else takes it.
         assertTrue(
-            "FlowRow in renderFlowLayout is not measured unbounded:\n${args.joinToString("\n")}",
-            args.any { it == "modifier = modifier.wrapContentHeight(Alignment.Top, unbounded = true)," }
+            "the node's modifier is not measured unbounded:\n${body.joinToString("\n")}",
+            body.any { it == "val overflowVisible = modifier.wrapContentHeight(Alignment.Top, unbounded = true)" }
         )
+        val outer = body.indices
+            .filter { body[it] == "FlowRow(" || body[it] == "Column(" }
+            .filter { i -> body.subList(i + 1, minOf(i + 3, body.size)).any { it == "modifier = overflowVisible," } }
+            .map { body[it] }
+        assertEquals(body.joinToString("\n"), listOf("Column(", "FlowRow("), outer.sorted())
+        assertEquals(body.joinToString("\n"), 2, body.count { it == "modifier = overflowVisible," })
+        assertFalse(body.joinToString("\n"), body.any { it.startsWith("modifier = modifier") })
         // Not the deprecated route: the overload that takes `overflow` warns,
         // and this repo's CI tolerates no compiler warning.
-        assertFalse(args.joinToString("\n"), args.any { "FlowRowOverflow" in it })
+        assertFalse(body.joinToString("\n"), body.any { "FlowRowOverflow" in it })
     }
 
     @Test
