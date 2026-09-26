@@ -143,7 +143,15 @@ object ConformanceStateRegistry {
         return CollectionDataSource(
             sections = sectionsArr.mapNotNull { el ->
                 val obj = el.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+                // A section's header / footer data (contract §4, jsonui-cli
+                // 1.9.0): the view is named by the node's own `sections`
+                // declaration, as for the cells. Dropped until then, so no
+                // fixture could draw a header here.
+                fun edge(key: String) = obj.get(key)?.takeIf { it.isJsonObject }?.asJsonObject
+                    ?.let { CollectionDataSection.HeaderFooterData(viewName = "", data = it.toPlainMap()) }
                 CollectionDataSection(
+                    header = edge("header"),
+                    footer = edge("footer"),
                     cells = CollectionDataSection.CellData(
                         viewName = obj.get("cell")?.takeIf { it.isJsonPrimitive }?.asString ?: "",
                         data = obj.get("cells")?.takeIf { it.isJsonArray }?.asJsonArray
