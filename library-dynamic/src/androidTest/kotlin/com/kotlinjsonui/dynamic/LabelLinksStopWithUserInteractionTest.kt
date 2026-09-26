@@ -105,8 +105,8 @@ class LabelLinksStopWithUserInteractionTest {
 
     /**
      * Calls from a touch on [piece], then from TalkBack's action on every link
-     * node. A tappable range is two nodes — its LinkAnnotation's and the
-     * library's hit-target — so an operable range answers 2 to the second.
+     * node. A tappable range is one node, the library's hit-target (it was
+     * two, with its LinkAnnotation's — LabelRangeOneNodeAndItsColorTest).
      */
     private fun operate(text: String, piece: String): Pair<Int, Int> {
         rule.onNodeWithTag("t", useUnmergedTree = true).performTouchInput { click(center(text, piece)) }
@@ -151,10 +151,10 @@ class LabelLinksStopWithUserInteractionTest {
         start()
         val cases = listOf(
             // name, text, json, piece, expected (touch, TalkBack)
-            listOf("range, no flag (control)", partialText, "$partial}", "Terms", 1 to 2),
+            listOf("range, no flag (control)", partialText, "$partial}", "Terms", 1 to 1),
             listOf("range, own false", partialText, "$partial, \"userInteractionEnabled\": false}", "Terms", 0 to 0),
             listOf("range, own binding false", partialText, "$partial, \"userInteractionEnabled\": \"@{shut}\"}", "Terms", 0 to 0),
-            listOf("range, own binding true (control)", partialText, "$partial, \"userInteractionEnabled\": \"@{open}\"}", "Terms", 1 to 2),
+            listOf("range, own binding true (control)", partialText, "$partial, \"userInteractionEnabled\": \"@{open}\"}", "Terms", 1 to 1),
             listOf("range, in a View with false", partialText,
                 """{"type": "View", "id": "p", "userInteractionEnabled": false, "child": [$partial}]}""", "Terms", 0 to 0),
             listOf("url, no flag (control)", urlText, "$linked}", "example.com", 1 to 1),
@@ -207,7 +207,7 @@ class LabelLinksStopWithUserInteractionTest {
         got += "url under a handed-down stop" to operate(urlText, "example.com")
         assertEquals(
             listOf(
-                "range linksEnabled=true" to (1 to 2), "url linksEnabled=true" to (1 to 1),
+                "range linksEnabled=true" to (1 to 1), "url linksEnabled=true" to (1 to 1),
                 "range linksEnabled=false" to (0 to 0), "url linksEnabled=false" to (0 to 0),
                 "range under a handed-down stop" to (0 to 0), "url under a handed-down stop" to (0 to 0)
             ),
@@ -216,18 +216,16 @@ class LabelLinksStopWithUserInteractionTest {
         // A stopped URL draws as the operable one does (its colour and
         // underline are the library's own span style).
         assertEquals("url: pixels that differ when stopped", "0", diff(drawn[1], drawn[3]))
-        // A stopped range draws as its declaration says — as the same range
-        // with no handler draws. An operable range does not: Material 3's
-        // Text draws a LinkAnnotation in the theme's primary colour over the
-        // range's own style (measured here, 2038 px in the range; a range
-        // declaring fontColor #FF0000 draws the primary colour while it has a
-        // handler — LinkSpanUnderOuterClickableProbe H). That is left for the
-        // ticket's ruling; this pins only the stopped side.
+        // A range draws as its declaration says — as the same range with no
+        // handler draws — stopped and operable alike. The operable one drew
+        // Material 3's LinkAnnotation colour (the theme's primary) over its
+        // own style until the range stopped adding a LinkAnnotation.
         show(partialText) {
             PartialAttributesText(partialText, listOfNotNull(PartialAttribute.fromJsonRange("Terms", partialText)),
                 style = style, modifier = Modifier.testTag("t").width(widthDp.dp))
         }
         val declared = rule.onNodeWithTag("t").captureToImage()
         assertEquals("range: stopped draws otherwise than its declaration", "0", diff(declared, drawn[2]))
+        assertEquals("range: operable draws otherwise than its declaration", "0", diff(declared, drawn[0]))
     }
 }
