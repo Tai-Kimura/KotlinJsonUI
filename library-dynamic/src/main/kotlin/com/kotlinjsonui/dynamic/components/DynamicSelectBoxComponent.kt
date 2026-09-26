@@ -263,6 +263,15 @@ class DynamicSelectBoxComponent {
             }
         }
 
+        /**
+         * A Date box: selectItemType "Date", as written — the SSoT enum is
+         * ["Normal", "Date"], and every path compares it so (the generated
+         * enum parse matches any case, so "date" drew a date picker here and a
+         * list on the codegens; the validator names any other value).
+         */
+        internal fun isDateBox(json: JsonObject): Boolean =
+            TypedAttrs.rawKey(json, "selectItemType")?.takeIf { it.isJsonPrimitive }?.asString == "Date"
+
         /** The handler's name, `@{x}` → `x`; null without a binding. onValueChanged is the declared alias spelling. */
         private fun valueChangeHandler(a: SelectBoxAttributes): String? {
             val handler = TypedAttrs.raw(a.onValueChange) as? String
@@ -368,8 +377,7 @@ class DynamicSelectBoxComponent {
                 context = LocalContext.current
             )
 
-            val isDatePicker =
-                TypedAttrs.enumString(a.selectItemType) { it.json } == "Date"
+            val isDatePicker = isDateBox(json)
 
             if (isDatePicker) {
                 createDatePicker(json, a, data)

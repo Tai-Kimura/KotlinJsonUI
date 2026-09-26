@@ -83,10 +83,11 @@ object LayoutPath {
      * (Configuration.customComponentTypes) as written; else a synonym as its
      * `render_as` or canonical section (Picker → SelectBox, Text → Label,
      * CircleImage → CircleImage), then a declared alias section as the
-     * section it names (Toggle → Switch, EditText → TextField). It kept a
-     * copy of the rule without the app's types, so an app's own ProgressBar
-     * was named `progress_<path>` here and `progressBar_<path>` by the
-     * codegen.
+     * section it names (Toggle → Switch, EditText → TextField). Matched as
+     * written, as DynamicView dispatches and the codegen names it (type names
+     * are case-sensitive). It kept a copy of the rule without the app's
+     * types, so an app's own ProgressBar was named `progress_<path>` here and
+     * `progressBar_<path>` by the codegen.
      */
     fun drawnType(type: String): String = com.kotlinjsonui.dynamic.TypeSynonyms.drawnType(type)
 

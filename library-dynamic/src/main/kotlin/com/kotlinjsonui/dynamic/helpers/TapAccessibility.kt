@@ -174,11 +174,14 @@ object TapAccessibility {
      * Operable inside a tappable: an interactive or unknown type, its own tap, a
      * long press (a screen-reader action), or links. A tappable whose only
      * handler is a long press is not a tap; `canTap` without onClick has no
-     * handler either.
+     * handler either. A Label's links stop with it: inside a node that stops
+     * interaction ([stopped], which counts the Label's own flag) they are no
+     * links (DynamicTextComponent.linksEnabled), so they do not count
+     * (jsonui-cli 1.9.0; shared/core/tap_accessibility.rb `operable?`).
      */
     fun isOperable(node: JsonObject, stopped: Boolean = false): Boolean =
         isInteractiveType(type(node)) || (!stopped && isTappable(node)) || hasLongPress(node, stopped) ||
-            isLinkedText(node)
+            (!stopped && isLinkedText(node))
 
     /**
      * A long press a user can perform: a handler (`handlerValues` — an empty or

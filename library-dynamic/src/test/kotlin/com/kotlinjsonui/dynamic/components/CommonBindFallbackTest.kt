@@ -34,10 +34,18 @@ class CommonBindFallbackTest {
         assertEquals("downloadProgress", DynamicProgressComponent.bindingVariableOf(a))
     }
 
+    /**
+     * Radio's options group is bound through its selectedValue (SSoT
+     * common.bind primaryValue, Radio [selectedValue]) — the items group and
+     * the single Radio read it; this path read `bind`. A lone `bind` arrives
+     * as selectedValue once DynamicView folds it.
+     */
     @Test
-    fun radioResolvesTheCommonBindRow() {
-        val a = parse("""{"type":"Radio","bind":"@{chosenPlan}"}""") { RadioAttributes.parse(it) }
+    fun radioOptionsAreBoundThroughSelectedValue() {
+        val a = parse("""{"type":"Radio","options":["a","b"],"selectedValue":"@{chosenPlan}"}""") { RadioAttributes.parse(it) }
         assertEquals("chosenPlan", DynamicRadioComponent.bindingVariableOf(a))
+        val bindOnly = parse("""{"type":"Radio","options":["a","b"],"bind":"@{chosenPlan}"}""") { RadioAttributes.parse(it) }
+        assertEquals(null, DynamicRadioComponent.bindingVariableOf(bindOnly))
     }
 
     @Test

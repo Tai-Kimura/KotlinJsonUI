@@ -49,8 +49,9 @@ object TypeSynonyms {
     }
 
     /**
-     * Spelling → entry, keyed lowercase: DynamicView matches types
-     * case-insensitively, and so does this.
+     * Spelling → entry, as written: type names are case-sensitive (4f's
+     * ruling, jsonui-cli 1.9.0; the codegens match them so). It was keyed
+     * lowercase, as DynamicView's dispatch then was.
      */
     val entries: Map<String, Entry> by lazy { load() }
 
@@ -60,7 +61,7 @@ object TypeSynonyms {
     private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     /** The type [type] is drawn as: its synonym's target, or itself. */
-    fun drawnAs(type: String): String = entries[type.lowercase()]?.drawnAs ?: type
+    fun drawnAs(type: String): String = entries[type]?.drawnAs ?: type
 
     /**
      * The type a node spelled [type] is drawn as: a type the app draws itself
@@ -75,8 +76,12 @@ object TypeSynonyms {
     fun drawnType(type: String): String =
         if (type in Configuration.customComponentTypes) type else builtInType(type)
 
-    /** [type] read without the app's types: its synonym's target, then its alias section's canonical one. */
-    private fun builtInType(type: String): String = drawnAs(type).let { JsonUIComponentAliases.canonicalFor(it) ?: it }
+    /**
+     * [type] read without the app's types: its synonym's target, then its
+     * alias section's canonical one — both matched as written (type names are
+     * case-sensitive, as DynamicView dispatches them).
+     */
+    private fun builtInType(type: String): String = drawnAs(type).let { JsonUIComponentAliases.canonical[it] ?: it }
 
     /**
      * The app's handler drew [type] ([Configuration.customComponentHandler]
@@ -106,7 +111,7 @@ object TypeSynonyms {
      */
     fun canonicalize(node: JsonObject, context: android.content.Context? = null): JsonObject {
         val type = node.get("type")?.takeIf { it.isJsonPrimitive }?.asString ?: return node
-        val entry = entries[type.lowercase()] ?: return node
+        val entry = entries[type] ?: return node
         val drawn = JsonObject()
         for ((key, value) in node.entrySet()) drawn.add(key, value)
         drawn.addProperty("type", entry.drawnAs)
@@ -146,7 +151,7 @@ object TypeSynonyms {
             val implied = entry.entrySet()
                 .filter { (key, _) -> key != "canonical" && key != "render_as" }
                 .associate { (key, v) -> key to v }
-            spelling.lowercase() to Entry(canonical, renderAs, implied)
+            spelling to Entry(canonical, renderAs, implied)
         }
     }
 }
