@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A 2:1 opaque red image: fit and crop draw it differently in a square
+     frame (CircleImageContentModeDrawsTest). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="100dp"
+    android:viewportWidth="200"
+    android:viewportHeight="100">
+    <path
+        android:fillColor="#FFFF0000"
+        android:pathData="M0,0h200v100h-200z" />
+</vector>

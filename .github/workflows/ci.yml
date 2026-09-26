@@ -126,6 +126,10 @@ jobs:
                "shared/core/string_default_vectors.json"),
               ("library-dynamic/src/test/resources/layout_path_vectors.json",
                "shared/core/layout_path_vectors.json"),
+              # The declared image default (semantics.image.defaultContentMode)
+              # ImageContentScaleDefaultTest binds the no-contentMode drawing to.
+              ("library-dynamic/src/test/resources/attribute_semantics.json",
+               "shared/core/attribute_semantics.json"),
               # Not a fixture: the table DynamicView draws type synonyms
               # with (TypeSynonyms), shipped in the AAR.
               ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/type_synonyms.json",

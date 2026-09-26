@@ -5,7 +5,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -19,6 +18,7 @@ import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
+import com.kotlinjsonui.dynamic.helpers.ImageContentScale
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
@@ -94,25 +94,12 @@ class DynamicNetworkImageComponent {
                 legacy = "Image"
             )
 
-            // ── Content scale (case-insensitive; static-only legacy read) ──
-            val modeLower =
-                TypedAttrs.staticEnumString(a.contentMode) { it.json }?.lowercase()
-            val contentScale = when (modeLower) {
-                "aspectfit" -> ContentScale.Fit
-                "aspectfill" -> ContentScale.Crop
-                "fill", "scaletofill" -> ContentScale.FillBounds
-                // Positional modes draw unscaled (UIKit contentMode
-                // positions).
-                "center", "top", "bottom", "left", "right" -> ContentScale.None
-                else -> ContentScale.Fit
-            }
-            val contentAlignment = when (modeLower) {
-                "top" -> androidx.compose.ui.Alignment.TopCenter
-                "bottom" -> androidx.compose.ui.Alignment.BottomCenter
-                "left" -> androidx.compose.ui.Alignment.CenterStart
-                "right" -> androidx.compose.ui.Alignment.CenterEnd
-                else -> androidx.compose.ui.Alignment.Center
-            }
+            // ── Content scale (static-only legacy read; ImageContentScale is
+            // the table Image and CircleImage draw with too — no contentMode
+            // draws the declared default, fit) ──
+            val mode = TypedAttrs.staticEnumString(a.contentMode) { it.json }
+            val contentScale = ImageContentScale.scale(mode)
+            val contentAlignment = ImageContentScale.alignment(mode)
 
             // ── Placeholder: hint > placeholder > loadingImage (the same
             // in-flight-image chain as the static converter,
