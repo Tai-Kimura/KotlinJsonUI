@@ -93,7 +93,20 @@ class BoundSelectBoxProbeTest {
     private fun pick() {
         for (id in listOf("sbi", "sbv", "sb")) {
             device.findObject(By.res(id))?.click()
-            device.wait(Until.findObjects(By.text("qq")), 5_000)?.maxByOrNull { it.visibleBounds.top }?.click()
+            // The menu is still being laid out right after the box opens: a
+            // node found then was replaced before its click
+            // (StaleObjectException, 2 runs in 3 on the codegen path, 11:30).
+            // Let it settle, and find the item again if it was replaced.
+            settle()
+            for (attempt in 1..3) {
+                try {
+                    device.wait(Until.findObjects(By.text("qq")), 5_000)?.maxByOrNull { it.visibleBounds.top }?.click()
+                    break
+                } catch (e: androidx.test.uiautomator.StaleObjectException) {
+                    println("BOUNDSELECT $id: the menu item was replaced before its click (attempt $attempt)")
+                    settle()
+                }
+            }
             settle()
         }
         device.findObject(By.res("sbd"))?.click()
