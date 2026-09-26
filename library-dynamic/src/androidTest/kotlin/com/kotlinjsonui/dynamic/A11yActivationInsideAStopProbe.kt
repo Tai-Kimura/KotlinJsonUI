@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
@@ -46,9 +48,12 @@ import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.TextUnit
@@ -170,6 +175,8 @@ class A11yActivationInsideAStopProbe {
         val enabled = InstrumentationRegistry.getArguments().getString("a11yActivationProbe") == "1"
         Assume.assumeTrue("opt-in: -Pandroid.testInstrumentationRunnerArguments.a11yActivationProbe=1", enabled)
     }
+
+    private val SIDES = "axSides"
 
     private val counts = ConcurrentHashMap<String, AtomicInteger>()
     private fun hit(k: String) { counts.getOrPut(k) { AtomicInteger() }.incrementAndGet() }
@@ -721,6 +728,43 @@ class A11yActivationInsideAStopProbe {
         }
     }
 
+    /**
+     * The codegen rows and the Dynamic rows side by side, each on half the
+     * width and each scrolled. They were drawn in a Row as they came: the
+     * emitted Radio's rows fill the width, so the codegen column took the
+     * whole screen and DynamicView was laid out in the 24 dp left of it — a
+     * column one glyph wide whose rows ran off the bottom — and each column
+     * is taller than a tablet in landscape (measured on an API 35 Pixel
+     * Tablet, 2026-09-27). A node off the screen is not in the tree an
+     * accessibility service walks: the Dynamic rows below the first three
+     * were "found false", and the rows a stop holds passed on moving 0. The
+     * walk scrolls each node into view first (reveal), as a screen reader
+     * scrolls to what it reads.
+     */
+    @Composable
+    private fun Sides(data: AxProbeData, viewModel: AxProbeViewModel, dyn: Map<String, Any>, extra: @Composable () -> Unit) {
+        Row(
+            Modifier.padding(top = 24.dp).testTag(SIDES).semantics { testTagsAsResourceId = true },
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) { AxCodegen(data, viewModel) }
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                DynamicView(json = JsonParser.parseString(dynamicLayout()).asJsonObject, data = dyn)
+            }
+            extra()
+        }
+    }
+
+    /** Scrolls the node [id] (under [scope] when given) into view. */
+    private fun reveal(id: String, scope: String?) {
+        runCatching {
+            if (scope != null) rule.onNode(hasTestTag(scope), useUnmergedTree = true).performScrollTo()
+            val matcher = if (scope == null) hasTestTag(id) else hasTestTag(id) and hasAnyAncestor(hasTestTag(scope))
+            rule.onNode(matcher, useUnmergedTree = true).performScrollTo()
+        }
+        rule.waitForIdle()
+    }
+
     private fun pixelDifference(a: Bitmap?, b: Bitmap?): String {
         if (a == null || b == null) return "missing"
         if (kotlin.math.abs(a.width - b.width) > 3 || kotlin.math.abs(a.height - b.height) > 3) {
@@ -755,19 +799,45 @@ class A11yActivationInsideAStopProbe {
         for (i in 0 until node.childCount) collect(node.getChild(i), out)
     }
 
+    /**
+     * The tree an accessibility service walks, read afresh: UiAutomation keeps
+     * a cache of the nodes it has read, and after a scroll it handed back the
+     * nodes where they stood before it for seconds (measured: a Dynamic row
+     * 400 px above where Compose had it, 3 s on). Cleared before each walk
+     * (UiAutomation.clearCache, API 34; the job runs API 35).
+     */
     private fun tree(): Map<String, MutableList<AccessibilityNodeInfo>> {
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
         repeat(50) {
+            if (android.os.Build.VERSION.SDK_INT >= 34) automation.clearCache()
             val out = mutableMapOf<String, MutableList<AccessibilityNodeInfo>>()
             collect(automation.rootInActiveWindow, out)
-            if (out.containsKey("cgSwPlain")) return out
+            if (out.containsKey(SIDES)) return out
             Thread.sleep(100)
         }
         return emptyMap()
     }
 
-    /** The node for [id], searched under the node [scope] when given. */
+    /**
+     * The node for [id] (under [scope] when given), waited for up to 3 s: a
+     * node scrolled into view a moment ago may not be in the tree yet.
+     */
     private fun find(id: String, scope: String?): AccessibilityNodeInfo? {
+        repeat(30) {
+            findOnce(id, scope)?.let { return it }
+            Thread.sleep(100)
+        }
+        return null
+    }
+
+    /** Where the window's origin is on the screen: the walk's bounds of the sides against Compose's (they never scroll). */
+    private fun windowOffset(): Pair<Float, Float> {
+        val want = rule.onNode(hasTestTag(SIDES), useUnmergedTree = true).fetchSemanticsNode().boundsInWindow
+        val at = tree()[SIDES]?.firstOrNull()?.let { screenBounds(it) } ?: return 0f to 0f
+        return (at.left - want.left) to (at.top - want.top)
+    }
+
+    private fun findOnce(id: String, scope: String?): AccessibilityNodeInfo? {
         val all = tree()
         if (scope == null) return all[id]?.firstOrNull()
         val root = all[scope]?.firstOrNull() ?: return null
@@ -797,22 +867,14 @@ class A11yActivationInsideAStopProbe {
         val data = AxProbeData()
         val viewModel = AxProbeViewModel(data)
         var dyn by mutableStateOf(dynamicData(true))
-        rule.setContent {
-            Row(
-                Modifier.padding(top = 24.dp).semantics { testTagsAsResourceId = true },
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                AxCodegen(data, viewModel)
-                DynamicView(json = JsonParser.parseString(dynamicLayout()).asJsonObject, data = dyn)
-                Fixes()
-            }
-        }
+        rule.setContent { Sides(data, viewModel, dyn) { Fixes() } }
         rule.waitForIdle()
 
         // how each candidate fix draws, against the Switch as emitted outside
         // a stop; the same Switch inside the stop as emitted is the
         // comparison's own control (the same pixels are expected there)
         fun image(tag: String): Bitmap? = runCatching {
+            reveal(tag, null)
             rule.onNode(hasTestTag(tag), useUnmergedTree = true).captureToImage().asAndroidBitmap()
         }.getOrNull()
         // In pixels: how many differ by more than 24 (of 255) in a channel,
@@ -842,7 +904,8 @@ class A11yActivationInsideAStopProbe {
                     val config = rule.onNode(matcher, useUnmergedTree = true).fetchSemanticsNode().config
                     "click=${SemanticsActions.OnClick in config} disabled=${SemanticsProperties.Disabled in config}"
                 }.getOrElse { "none" }
-                val node = find(t.id, t.scope)
+                reveal(t.id, t.scope)
+                val node = find(t.id, t.scope)?.also { it.refresh() }
                 val before = calls(t.name)
                 val returned = node?.performAction(AccessibilityNodeInfo.ACTION_CLICK) ?: false
                 rule.waitForIdle()
@@ -855,6 +918,8 @@ class A11yActivationInsideAStopProbe {
                         "clickAction=${node?.actionList?.any { it.id == AccessibilityNodeInfo.ACTION_CLICK }} $sem " +
                         "performed=$returned moved=$moved want=${expected ?: "-"}"
                 )
+                // A row the walk did not find is not a row that moved 0.
+                if (expected != null && node == null) mismatches += "run $run ${t.name}: no node"
                 if (expected != null && moved != expected) {
                     mismatches += "run $run ${t.name}: moved $moved (found ${node != null}, performed $returned), want $expected"
                 }
@@ -867,62 +932,125 @@ class A11yActivationInsideAStopProbe {
         assertEquals("what a screen reader operated against what the stop allows", emptyList<String>(), mismatches)
     }
 
-    /** Every node under [root] with a click action, in tree order. */
-    private fun clickables(root: AccessibilityNodeInfo?, out: MutableList<AccessibilityNodeInfo> = mutableListOf()): List<AccessibilityNodeInfo> {
-        if (root == null) return out
-        for (i in 0 until root.childCount) {
-            val child = root.getChild(i) ?: continue
-            if (child.actionList.any { it.id == AccessibilityNodeInfo.ACTION_CLICK }) out += child
-            clickables(child, out)
+    private fun descendants(node: AccessibilityNodeInfo?, out: MutableList<AccessibilityNodeInfo> = mutableListOf()): List<AccessibilityNodeInfo> {
+        if (node == null) return out
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            out += child
+            descendants(child, out)
         }
         return out
     }
+
+    private fun screenBounds(node: AccessibilityNodeInfo) = android.graphics.Rect().also { node.getBoundsInScreen(it) }
+
+    /**
+     * The items of the control [tag]: each node under it Compose gives a click
+     * action (SemanticsActions.OnClick, unmerged), paired with the node an
+     * accessibility service reaches for it — the node of the walk centred on
+     * it that holds its bounds, the smallest. They were
+     * the nodes under the control with ACTION_CLICK, which Compose leaves off
+     * a disabled node and off a selected Tab or RadioButton (measured): the
+     * items a stop disables were not counted at all — 0 inside the stop for
+     * every control, "as many as with no stop" unreachable — and with no stop
+     * a Segment counted 1 of its 2 tabs, a Radio 3 of its 2 rows and 2
+     * RadioButtons.
+     */
+    private fun items(tag: String): List<Pair<SemanticsNode, AccessibilityNodeInfo?>> {
+        reveal(tag, null)
+        val nodes = rule.onAllNodes(
+            hasAnyAncestor(hasTestTag(tag)) and SemanticsMatcher.keyIsDefined(SemanticsActions.OnClick),
+            useUnmergedTree = true
+        ).fetchSemanticsNodes()
+        var paired: List<Pair<SemanticsNode, AccessibilityNodeInfo?>> = nodes.map { it to null }
+        repeat(20) {
+            val root = find(tag, null) ?: return paired
+            val (dx, dy) = windowOffset()
+            val walk = descendants(root)
+            paired = nodes.map { n ->
+                val b = n.boundsInWindow
+                // The walk gives a node its touch bounds (a RadioButton's
+                // 20 dp glyph reads 48 dp there): the node centred on the
+                // item that holds it, the smallest (the first, in tree order).
+                n to walk.filter { a ->
+                    val ab = screenBounds(a)
+                    kotlin.math.abs(ab.exactCenterX() - (b.center.x + dx)) <= 1.5f &&
+                        kotlin.math.abs(ab.exactCenterY() - (b.center.y + dy)) <= 1.5f &&
+                        ab.left <= b.left + dx + 1.5f && ab.top <= b.top + dy + 1.5f &&
+                        ab.right >= b.right + dx - 1.5f && ab.bottom >= b.bottom + dy - 1.5f
+                }.minByOrNull { a -> screenBounds(a).let { it.width() * it.height() } }
+            }
+            if (paired.all { it.second != null }) return paired
+            Thread.sleep(100)
+        }
+        for ((n, a) in paired) if (a == null) println("A11Y_PROBE unpaired $tag item ${n.boundsInWindow}")
+        return paired
+    }
+
+    private fun selectedNow(item: SemanticsNode): Boolean =
+        rule.onNode(SemanticsMatcher("semantics id ${item.id}") { it.id == item.id }, useUnmergedTree = true)
+            .fetchSemanticsNode().config.getOrElseNullable(SemanticsProperties.Selected) { null } == true
 
     /**
      * A wrapper control's items inside a stop (4f's ruling, jsonui-cli 1.9.0:
      * a stopped control does not say it is operable, down to its items). The
      * control's root reads `disabled()`; each tab of a Segment and each row
      * and RadioButton of a Radio group is a node of its own with a click
-     * action, which TalkBack reached. For each control, every node under it
-     * with ACTION_CLICK: whether it reads enabled, and what ACTION_CLICK on
-     * it moved (the control's writes). Expected: with no stop, every item
-     * enabled and each click writing (1 each); inside `false`, every item
-     * disabled and no click writing — and as many items as with no stop (a
-     * node the tree lost is not an item that reads disabled).
+     * action, which TalkBack reached. For each control, each item (items():
+     * every node under it with a click action in its semantics — 2 tabs, or
+     * 2 rows and 2 RadioButtons): whether its accessibility node reads
+     * enabled, whether it offers ACTION_CLICK, and what ACTION_CLICK on it
+     * moved (the control's writes). Expected: with no stop, every item
+     * enabled, and each one not selected offering the click and writing 1;
+     * inside `false`, every item disabled, offering no click and writing
+     * nothing — and as many items as with no stop, more than 0 (a node the
+     * tree lost is not an item that reads disabled, and 0 items judge
+     * nothing).
      */
     @Test
     fun aStoppedWrapperControlsItemsReadDisabled() {
         val data = AxProbeData()
         val viewModel = AxProbeViewModel(data)
-        rule.setContent {
-            Row(
-                Modifier.padding(top = 24.dp).semantics { testTagsAsResourceId = true },
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                AxCodegen(data, viewModel)
-                DynamicView(json = JsonParser.parseString(dynamicLayout()).asJsonObject, data = dynamicData(true))
-            }
-        }
+        rule.setContent { Sides(data, viewModel, dynamicData(true)) {} }
         rule.waitForIdle()
         val mismatches = mutableListOf<String>()
         val itemCounts = mutableMapOf<String, Int>()
         for (side in listOf("cg", "dyn")) {
             for (row in wrapperRows) {
                 val name = "$side$row"
-                val items = clickables(find(name, null))
-                itemCounts[name] = items.size
-                items.forEachIndexed { i, node ->
+                val found = items(name)
+                itemCounts[name] = found.size
+                // Last to first: each item is clicked while it is not the
+                // chosen one (a click chooses it), so each is judged.
+                for ((i, pair) in found.withIndex().reversed()) {
+                    val (item, node) = pair
+                    if (node == null) {
+                        mismatches += "$name#$i: Compose declares an item the accessibility walk has no node for"
+                        continue
+                    }
+                    node.refresh()
+                    val selected = selectedNow(item)
+                    val offered = node.actionList.any { it.id == AccessibilityNodeInfo.ACTION_CLICK }
                     val before = calls(name)
                     val performed = node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     rule.waitForIdle()
                     val moved = calls(name) - before
                     val label = (node.text ?: node.contentDescription ?: "").toString()
-                    println("A11Y_PROBE wrap $name#$i label=$label class=${node.className} enabled=${node.isEnabled} performed=$performed moved=$moved")
-                    if (row.endsWith("Plain") && (!node.isEnabled || moved != 1)) {
-                        mismatches += "$name#$i ($label): no stop, enabled=${node.isEnabled} moved=$moved, want enabled and 1"
+                    println(
+                        "A11Y_PROBE wrap $name#$i label=$label class=${node.className} enabled=${node.isEnabled} " +
+                            "selected=$selected clickOffered=$offered performed=$performed moved=$moved"
+                    )
+                    // With no stop: the item is enabled, offers the click, and
+                    // the click operates it (Compose offers none on a selected
+                    // Tab or RadioButton: the order above keeps each one
+                    // unselected when it is clicked).
+                    if (row.endsWith("Plain") && (!node.isEnabled || selected || !offered || moved != 1)) {
+                        mismatches += "$name#$i ($label): no stop, enabled=${node.isEnabled} selected=$selected " +
+                            "clickOffered=$offered moved=$moved, want enabled, not selected, a click offered, and 1"
                     }
-                    if ("InFalse" in row && (node.isEnabled || moved != 0)) {
-                        mismatches += "$name#$i ($label): inside the stop, enabled=${node.isEnabled} moved=$moved, want disabled and 0"
+                    if ("InFalse" in row && (node.isEnabled || offered || moved != 0)) {
+                        mismatches += "$name#$i ($label): inside the stop, enabled=${node.isEnabled} clickOffered=$offered " +
+                            "moved=$moved, want disabled, no click offered, and 0"
                     }
                 }
             }
@@ -930,6 +1058,7 @@ class A11yActivationInsideAStopProbe {
                 val plain = itemCounts["${side}${control}Plain"] ?: 0
                 val stopped = itemCounts["${side}${control}InFalse"] ?: 0
                 println("A11Y_PROBE wrap items ${side}$control: $plain with no stop, $stopped inside the stop")
+                // 0 items judged nothing: every check above is per item.
                 if (plain == 0 || stopped != plain) mismatches += "${side}$control: $plain items with no stop, $stopped inside the stop"
             }
         }
