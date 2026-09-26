@@ -42,11 +42,12 @@ class Wave1bAttrsParseTest {
         )
         assertEquals("large", TypedAttrs.enumString(known.indicatorStyle) { it.json })
 
-        // "small" is not a declared enum value; the raw spelling passes through
+        // "huge" is not a declared enum value; the raw spelling passes through
+        // ("small" was the example until it was declared, jsonui-cli ea985526)
         val unknown = IndicatorAttributes.parse(
-            TypedAttrs.toAttrMap(obj("""{"type":"Indicator","indicatorStyle":"small"}"""))
+            TypedAttrs.toAttrMap(obj("""{"type":"Indicator","indicatorStyle":"huge"}"""))
         )
-        assertEquals("small", TypedAttrs.enumString(unknown.indicatorStyle) { it.json })
+        assertEquals("huge", TypedAttrs.enumString(unknown.indicatorStyle) { it.json })
     }
 
     // ── CircleView ──

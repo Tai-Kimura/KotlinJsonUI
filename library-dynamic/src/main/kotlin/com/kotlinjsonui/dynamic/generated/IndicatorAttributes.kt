@@ -16,18 +16,22 @@ data class IndicatorAttributes(
     val color: AttrValue<String>? = null,
     /** Hide when stopped. Decides SPACE: `true` collapses the stopped indicator out of the layout, `false` keeps it drawn AND laid out. Full ruling in attribute_semantics.json -> indicatorStopped. */
     val hidesWhenStopped: Boolean? = null,
-    /** Indicator style */
+    /** Indicator style: `small` / `medium` / `large` are the spinner's size (`medium` the platform's own) and `linear` a bar instead of a spinner. A declared width / height wins over the style's size. The legacy spellings `style` (naming one of these values) and `size` (a length) are folded by the layout normalizer, with a warning: `style` into this attribute, `size` into width and height. */
     val indicatorStyle: AttrEnum<IndicatorStyle>? = null,
 ) {
     enum class IndicatorStyle(val json: String) {
+        SMALL("small"),
         MEDIUM("medium"),
-        LARGE("large");
+        LARGE("large"),
+        LINEAR("linear");
 
         companion object {
             /** Case-insensitive match against the declared values. */
             fun from(raw: String): IndicatorStyle? = when (raw.lowercase()) {
+                "small" -> SMALL
                 "medium" -> MEDIUM
                 "large" -> LARGE
+                "linear" -> LINEAR
                 else -> null
             }
         }
