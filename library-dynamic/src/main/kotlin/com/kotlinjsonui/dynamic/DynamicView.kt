@@ -323,10 +323,11 @@ internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>):
                         p.isNumber -> defaults[name] = p.asNumber
                         p.isString -> {
                             val s = p.asString
-                            if (className == "String") {
-                                // The layout's spelling ('' / "…" / '…' / bare).
+                            if (DataDefaultValue.isText(className)) {
+                                // A String's or String?'s spelling ('' / "…" /
+                                // '…' / bare).
                                 defaults[name] = DataDefaultValue.text(s)
-                            } else if (className?.trim() == "String?" || (!s.contains("(") && !s.contains(")"))) {
+                            } else if (!s.contains("(") && !s.contains(")")) {
                                 // Skip complex default values (e.g.,
                                 // "CollectionDataSource()") — a String's
                                 // `(` is text.

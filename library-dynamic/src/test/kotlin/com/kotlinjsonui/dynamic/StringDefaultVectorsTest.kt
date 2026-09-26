@@ -26,11 +26,11 @@ class StringDefaultVectorsTest {
         stream.bufferedReader().use { JsonParser.parseString(it.readText()).asJsonObject }
     }
 
-    private fun merged(className: String, defaultValue: JsonElement): Map<String, Any> {
+    private fun merged(className: String, defaultValue: JsonElement?): Map<String, Any> {
         val entry = JsonObject().apply {
             addProperty("name", "probe")
             addProperty("class", className)
-            add("defaultValue", defaultValue)
+            if (defaultValue != null && !defaultValue.isJsonNull) add("defaultValue", defaultValue)
         }
         val node = JsonObject().apply {
             addProperty("type", "View")
@@ -63,6 +63,20 @@ class StringDefaultVectorsTest {
             val got = merged("String", row.get("spelling"))["probe"]
             val want = row.get("text").asString
             if (got == want) null else "${row.get("name").asString}: ${row.get("spelling")} read as $got, want $want"
+        }
+        assertEquals(wrong.joinToString("\n"), emptyList<String>(), wrong)
+    }
+
+    // A String? default reads as a String's, and none stays absent.
+    @Test
+    fun everyStringOptionalRowReadsAsItsTextOrStaysAbsent() {
+        val rows = vectors.getAsJsonArray("optionalStrings").map { it.asJsonObject }
+        assertTrue("the table has String? rows", rows.isNotEmpty())
+        val wrong = rows.mapNotNull { row ->
+            val data = merged("String?", row.get("spelling"))
+            val want = row.get("text")
+            val ok = if (want.isJsonNull) !data.containsKey("probe") else data["probe"] == want.asString
+            if (ok) null else "${row.get("name").asString}: ${row.get("spelling")} read as ${data["probe"]}, want $want"
         }
         assertEquals(wrong.joinToString("\n"), emptyList<String>(), wrong)
     }
