@@ -216,7 +216,10 @@ internal class StageMeasurer(private val rule: ComposeContentTestRule) {
             "Button" to """, "text": "t", "onClick": "@{onOther}"""",
             "Image" to """, "srcName": "ic_star_filled"""",
             "NetworkImage" to """, "url": "https://example.invalid/x.png"""",
-            "CircleImage" to """, "srcName": "ic_star_filled"""",
+            // CircleImage reads src / source / url, not srcName (the key it was
+            // handed here, so every stage was measured on the fallback Box —
+            // StageMeasurerKeysAreReadTest).
+            "CircleImage" to """, "src": "ic_star_filled"""",
             "Switch" to "",
             "CheckBox" to "",
             "Check" to "",
