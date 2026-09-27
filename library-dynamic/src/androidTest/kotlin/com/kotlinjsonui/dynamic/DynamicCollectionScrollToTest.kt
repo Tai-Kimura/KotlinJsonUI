@@ -750,4 +750,96 @@ class DynamicCollectionScrollToTest {
         }
         assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
     }
+
+    // ── round 16 (4f rulings 2026-09-27) ─────────────────────────────
+
+    /**
+     * A short vertical list with defaultScrollAnchor center sits in the
+     * middle, as iOS draws it (measured round 15: sjui codegen and SwiftJsonUI
+     * Dynamic), on the grid route and the EAGER Column, reversed or not; the
+     * `lazy: none` and wrapContent Columns do not move. It sat at the top (the
+     * bottom when reversed).
+     */
+    @Test
+    fun aShortColumnWithACenterAnchorSitsInTheMiddle() {
+        val routes = listOf("grid" to "", "grid reversed" to """, "reverseLayout": true""", "grid spaced" to """, "lineSpacing": 8""",
+            "eager" to """, "lazy": "eager"""", "eager reversed" to """, "lazy": "eager", "reverseLayout": true""",
+            "none" to """, "lazy": "none"""")
+        val drawn = mutableListOf<String>()
+        val wanted = mutableListOf<String>()
+        for ((route, extra) in routes) {
+            val json = JsonParser.parseString(
+                """{"type": "Collection", "id": "list", "items": "@{items}", "width": 200, "height": 200, "defaultScrollAnchor": "center",
+                    "sections": [{"cell": "$cell"}] $extra}"""
+            ).asJsonObject
+            show(json, mapOf("items" to twoCells))
+            val list = listBounds()
+            val s0 = bounds("s0") ?: error("$route: s0 is not drawn")
+            val s1 = bounds("s1") ?: error("$route: s1 is not drawn")
+            val top = minOf(s0.top, s1.top)
+            val bottom = maxOf(s0.bottom, s1.bottom)
+            drawn += "$route: " + when {
+                kotlin.math.abs(top - list.top) < 1f -> "top"
+                kotlin.math.abs(bottom - list.bottom) < 1f -> "bottom"
+                kotlin.math.abs((top + bottom) / 2 - list.center.y) < 1f -> "middle"
+                else -> "y ${top - list.top}..${bottom - list.top} of ${list.height}"
+            }
+            wanted += "$route: " + if (route == "none") "top" else "middle"
+        }
+        assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
+    }
+
+    /**
+     * CollectionStack's columns take columnContentAlignment: a short LAZY or
+     * EAGER column (reversed too) in its middle, with and without spacing;
+     * the NONE column, which does not scroll, at its top. Null keeps the top.
+     */
+    @Test
+    fun theStackColumnSitsWhereItsAlignmentSays() {
+        var mode by mutableStateOf(com.kotlinjsonui.components.CollectionStackMode.LAZY)
+        var alignment by mutableStateOf<androidx.compose.ui.Alignment.Vertical?>(null)
+        var spacing by mutableStateOf(0.dp)
+        var reversed by mutableStateOf(false)
+        rule.setContent {
+            com.kotlinjsonui.components.CollectionStack(
+                mode = mode,
+                modifier = Modifier.testTag("stack").width(100.dp).height(200.dp),
+                spacing = spacing,
+                reverseLayout = reversed,
+                columnContentAlignment = alignment,
+                lazyContent = { items(2) { Text("r$it", Modifier.height(20.dp)) } },
+                eagerContent = { repeat(2) { Text("r$it", Modifier.height(20.dp)) } }
+            )
+        }
+        val drawn = mutableListOf<String>()
+        val wanted = mutableListOf<String>()
+        for (m in com.kotlinjsonui.components.CollectionStackMode.values()) {
+            for (rev in listOf(false, true)) {
+                for (gap in listOf(0, 8)) {
+                    for ((name, a) in listOf("null" to null, "CenterVertically" to androidx.compose.ui.Alignment.CenterVertically)) {
+                        rule.runOnIdle { mode = m; reversed = rev; spacing = gap.dp; alignment = a }
+                        rule.waitForIdle()
+                        val list = listBounds("stack")
+                        val tops = listOf("r0", "r1").mapNotNull { bounds(it) }
+                        val top = tops.minOf { it.top }
+                        val bottom = tops.maxOf { it.bottom }
+                        drawn += "$m reversed $rev gap $gap $name: " + when {
+                            kotlin.math.abs(top - list.top) < 1f -> "top"
+                            kotlin.math.abs(bottom - list.bottom) < 1f -> "bottom"
+                            kotlin.math.abs((top + bottom) / 2 - list.center.y) < 1f -> "middle"
+                            else -> "y ${top - list.top}"
+                        }
+                        val none = m == com.kotlinjsonui.components.CollectionStackMode.NONE
+                        wanted += "$m reversed $rev gap $gap $name: " + when {
+                            none -> "top"
+                            a != null -> "middle"
+                            rev -> "bottom"
+                            else -> "top"
+                        }
+                    }
+                }
+            }
+        }
+        assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
+    }
 }

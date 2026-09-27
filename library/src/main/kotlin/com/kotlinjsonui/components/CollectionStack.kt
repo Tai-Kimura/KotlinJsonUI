@@ -100,6 +100,13 @@ enum class CollectionStackAxis {
  * where iOS draws such a list (4f ruling 2026-09-27, round 15; it sat at the
  * start). Null keeps the start, the end under [reverseLayout]. The NONE row
  * does not scroll and takes none, as iOS's does not.
+ *
+ * [columnContentAlignment]: the same along a vertical list — a Collection's
+ * defaultScrollAnchor center puts content shorter than the LAZY or EAGER
+ * container in its middle, as iOS draws it (4f ruling 2026-09-27, round 16;
+ * it sat at the top, the bottom when reversed). Null keeps the top, the
+ * bottom under [reverseLayout] or [contentAtBottom]; it wins over both. The
+ * NONE column takes none.
  */
 @Composable
 fun CollectionStack(
@@ -122,6 +129,7 @@ fun CollectionStack(
     eagerScrollState: ScrollState? = null,
     contentAtBottom: Boolean = false,
     rowContentAlignment: Alignment.Horizontal? = null,
+    columnContentAlignment: Alignment.Vertical? = null,
     lazyContent: LazyListScope.() -> Unit = {},
     eagerContent: @Composable () -> Unit = {}
 ) {
@@ -134,7 +142,8 @@ fun CollectionStack(
                 contentPadding = contentPadding,
                 reverseLayout = reverseLayout,
                 verticalArrangement = when {
-                    spacing > 0.dp -> Arrangement.spacedBy(spacing, if (reverseLayout || contentAtBottom) Alignment.Bottom else Alignment.Top)
+                    spacing > 0.dp -> Arrangement.spacedBy(spacing, columnContentAlignment ?: if (reverseLayout || contentAtBottom) Alignment.Bottom else Alignment.Top)
+                    columnContentAlignment != null -> Arrangement.aligned(columnContentAlignment)
                     reverseLayout || contentAtBottom -> Arrangement.Bottom
                     else -> Arrangement.Top
                 },
@@ -150,13 +159,15 @@ fun CollectionStack(
                     modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled, reverseScrolling = true)
                         .padding(contentPadding),
                     spacing = spacing,
-                    horizontalAlignment = horizontalAlignment
+                    horizontalAlignment = horizontalAlignment,
+                    verticalAlignment = columnContentAlignment ?: Alignment.Bottom
                 ) { eagerContent() }
             } else {
                 Column(
                     modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled).padding(contentPadding),
                     verticalArrangement = when {
-                        spacing > 0.dp -> Arrangement.spacedBy(spacing, if (contentAtBottom) Alignment.Bottom else Alignment.Top)
+                        spacing > 0.dp -> Arrangement.spacedBy(spacing, columnContentAlignment ?: if (contentAtBottom) Alignment.Bottom else Alignment.Top)
+                        columnContentAlignment != null -> Arrangement.aligned(columnContentAlignment)
                         contentAtBottom -> Arrangement.Bottom
                         else -> Arrangement.Top
                     },
@@ -237,12 +248,15 @@ fun CollectionStack(
  * reverseLayout (CollectionStack; KotlinJsonUI Dynamic's Column route), 4f
  * ruling 2026-09-27, round 13. A caller that emits its children in the order
  * a reversed lazy list's content emits them draws the same picture.
+ * [verticalAlignment]: where content shorter than its height sits — the
+ * bottom, or the middle for a center defaultScrollAnchor (round 16).
  */
 @Composable
 fun ReversedColumn(
     modifier: Modifier = Modifier,
     spacing: Dp = 0.dp,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    verticalAlignment: Alignment.Vertical = Alignment.Bottom,
     content: @Composable () -> Unit
 ) {
     Layout(content = content, modifier = modifier) { measurables, constraints ->
@@ -252,7 +266,7 @@ fun ReversedColumn(
         val contentHeight = placeables.sumOf { it.height } + gap * (placeables.size - 1).coerceAtLeast(0)
         val height = contentHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
         layout(width, height) {
-            var bottom = height
+            var bottom = if (contentHeight < height) verticalAlignment.align(contentHeight, height) + contentHeight else height
             placeables.forEach { placeable ->
                 placeable.place(horizontalAlignment.align(placeable.width, width, layoutDirection), bottom - placeable.height)
                 bottom -= placeable.height + gap

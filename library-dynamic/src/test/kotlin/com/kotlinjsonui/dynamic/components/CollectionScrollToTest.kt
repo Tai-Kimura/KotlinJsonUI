@@ -248,4 +248,18 @@ class CollectionScrollToTest {
             cases.map { (anchor, reverse) -> DynamicCollectionComponent.rowContentAlignment(anchor, reverse) }
         )
     }
+
+    /** A short vertical list: center the middle (round 16), bottom the bottom, else the top, the bottom when reversed. */
+    @Test
+    fun aShortColumnSitsWhereItsDefaultAnchorSays() {
+        val top = androidx.compose.ui.Alignment.Top
+        val bottom = androidx.compose.ui.Alignment.Bottom
+        val center = androidx.compose.ui.Alignment.CenterVertically
+        val cases = listOf(null to false, "top" to false, "bottom" to false, "center" to false,
+            null to true, "top" to true, "bottom" to true, "center" to true)
+        assertEquals(
+            listOf(top, top, bottom, center, bottom, bottom, bottom, center),
+            cases.map { (anchor, reverse) -> DynamicCollectionComponent.columnContentAlignment(anchor, reverse) }
+        )
+    }
 }

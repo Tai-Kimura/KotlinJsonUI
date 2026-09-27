@@ -243,19 +243,22 @@ class DynamicCollectionComponent {
             // Not `contentInsets`: it is declared for swift only (mode
             // swiftui) and kjui's codegen does not draw it, so reading it
             // here drew padding in Debug that the Release build does not.
-            // A DECLARED numeric contentPadding/insets wins: the author named
+            // A DECLARED contentPadding/insets wins: the author named
             // an exact value, and `contentInsetAdjustmentBehavior` only says
             // "clear the system bars" — it cannot also mean "and discard the
-            // number I wrote". Same precedence the codegen uses.
-            val declaredPadding = parseCollectionPadding(a, json)
-            val contentPadding = if (hasDeclaredContentPadding(a, json)) {
-                declaredPadding
-            } else {
-                ContentInsetBehavior.safeAreaPadding(
+            // number I wrote". Same precedence the codegen uses. Without one,
+            // insetHorizontal / insetVertical are ADDED to the safe area, as
+            // iOS adds them (ContentInsetBehavior.safeAreaPadding; 4f ruling
+            // 2026-09-27, round 16) — the safe area replaced them until
+            // jsonui-cli 1.9.0.
+            val contentPadding = declaredCollectionPadding(json)
+                ?: ContentInsetBehavior.safeAreaPadding(
                     a.contentInsetAdjustmentBehavior,
-                    horizontal = isHorizontal
-                ) ?: declaredPadding
-            }
+                    horizontal = isHorizontal,
+                    insetHorizontal = a.insetHorizontal?.toFloat(),
+                    insetVertical = a.insetVertical?.toFloat()
+                )
+                ?: parseCollectionPadding(a, json)
 
             // Parse spacing
             // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
@@ -581,7 +584,11 @@ class DynamicCollectionComponent {
                     reverseLayout = columnReversed,
                     // Short content with defaultScrollAnchor bottom sits at the bottom of
                     // the EAGER Column, as iOS draws it (round 14).
-                    contentAtBottom = collectionMode == CollectionStackMode.EAGER && !heightIsWrapContent && defaultAnchor == "bottom"
+                    // and in the middle for a center anchor (round 16), reversed or not;
+                    // the wrapContent and `lazy: none` Columns at the top.
+                    contentAlignment = if (collectionMode == CollectionStackMode.EAGER && !heightIsWrapContent) {
+                        columnContentAlignment(defaultAnchor, columnReversed)
+                    } else Alignment.Top
                 )
                 return
             }
@@ -753,7 +760,8 @@ class DynamicCollectionComponent {
                     // top until then (spacedBy aligns to the top).
                     // Not reversed, defaultScrollAnchor bottom puts short content at the
                     // bottom too, as iOS draws it (round 14).
-                    verticalArrangement = Arrangement.spacedBy(lineSpacing, if (reverseLayout || defaultAnchor == "bottom") Alignment.Bottom else Alignment.Top),
+                    // A center anchor puts it in the middle (columnContentAlignment, round 16).
+                    verticalArrangement = Arrangement.spacedBy(lineSpacing, columnContentAlignment(defaultAnchor, reverseLayout)),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)
                 ) {
                     // The legacy shape's headerClasses / footerClasses: once,
@@ -932,6 +940,19 @@ class DynamicCollectionComponent {
          * edge by the anchor (4f ruling 2026-09-27, round 15); every row here
          * sat at its start whatever the anchor said.
          */
+        /**
+         * The same along a vertical list: defaultScrollAnchor center — its
+         * middle, as iOS draws a short list (measured round 15; 4f ruling
+         * 2026-09-27, round 16); bottom — its bottom (round 14); otherwise its
+         * top, its bottom when reversed (round 13). A short list sat at the
+         * top (the bottom when reversed) for center until jsonui-cli 1.9.0.
+         */
+        internal fun columnContentAlignment(anchor: String?, reverse: Boolean): Alignment.Vertical = when {
+            anchor == "center" -> Alignment.CenterVertically
+            anchor == "bottom" || reverse -> Alignment.Bottom
+            else -> Alignment.Top
+        }
+
         internal fun rowContentAlignment(anchor: String?, reverse: Boolean): Alignment.Horizontal = when {
             anchor == "center" -> Alignment.CenterHorizontally
             anchor == "bottom" || reverse -> Alignment.End
@@ -1416,7 +1437,7 @@ class DynamicCollectionComponent {
             collectionId: String? = null,
             scrollTargets: FlowScrollTargets? = null,
             reverseLayout: Boolean = false,
-            contentAtBottom: Boolean = false,
+            contentAlignment: Alignment.Vertical = Alignment.Top,
         ) {
             // Under [reverseLayout] (the EAGER Column, round 13) the content is
             // emitted as the reversed lazy grid emits it — the sections last-first
@@ -1516,11 +1537,15 @@ class DynamicCollectionComponent {
                 legacyFooter?.let { renderCellView(it, emptyMap<String, Any>(), -1, data) }
             }
             if (reverseLayout) {
-                ReversedColumn(modifier = modifier.then(Modifier.padding(contentPadding)), spacing = lineSpacing) { content() }
+                ReversedColumn(
+                    modifier = modifier.then(Modifier.padding(contentPadding)),
+                    spacing = lineSpacing,
+                    verticalAlignment = contentAlignment
+                ) { content() }
             } else {
                 Column(
                     modifier = modifier.then(Modifier.padding(contentPadding)),
-                    verticalArrangement = Arrangement.spacedBy(lineSpacing, if (contentAtBottom) Alignment.Bottom else Alignment.Top)
+                    verticalArrangement = Arrangement.spacedBy(lineSpacing, contentAlignment)
                 ) { content() }
             }
         }
@@ -2532,51 +2557,23 @@ class DynamicCollectionComponent {
         }
 
         /**
-         * Resolve Collection content padding from any of the tool-emitted
-         * attributes: `contentPadding`, `insets`,
-         * `insetHorizontal`/`insetVertical`. Accepted value forms:
-         *   - number:              uniform dp
-         *   - array of 4 numbers:  [top, end, bottom, start]
-         *   - string "t|r|b|l":    pipe-separated; whitespace and commas also work
-         */
-        /**
-         * Whether the author named an exact content padding of their own.
-         * `contentInsets` is not one on this platform (declared swift only,
-         * not drawn by kjui's codegen): a layout carrying it is treated as
-         * the Release build treats it, as if it were absent.
+         * Whether the author named an exact content padding of their own — a
+         * `contentPadding` / `insets` value the reader takes
+         * (declaredCollectionPadding). `contentInsets` is not one on this
+         * platform (declared swift only, not drawn by kjui's codegen): a
+         * layout carrying it is treated as the Release build treats it, as if
+         * it were absent.
          */
         internal fun hasDeclaredContentPadding(a: CollectionAttributes, json: JsonObject): Boolean =
-            TypedAttrs.undeclared(json, "contentPadding") != null ||
-                TypedAttrs.rawKey(json, "insets") != null
+            declaredCollectionPadding(json) != null
 
+        /**
+         * Resolve Collection content padding from any of the tool-emitted
+         * attributes: `contentPadding`, `insets` (declaredCollectionPadding),
+         * else `insetHorizontal`/`insetVertical`, else none.
+         */
         internal fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject): PaddingValues {
-            // 'contentPadding' is an undeclared legacy runtime extra; 'insets'
-            // is a declared shape union (number | array | pipe-separated
-            // string) — wider than a single typed value, so read raw (see
-            // TypedAttrs.rawKey).
-            listOf(
-                TypedAttrs.undeclared(json, "contentPadding"),
-                TypedAttrs.rawKey(json, "insets")
-            ).forEach { element ->
-                if (element == null) return@forEach
-                when {
-                    element.isJsonPrimitive && element.asJsonPrimitive.isNumber ->
-                        return PaddingValues(element.asFloat.dp)
-                    element.isJsonPrimitive && element.asJsonPrimitive.isString ->
-                        parsePipeSeparatedPadding(element.asString)?.let { return it }
-                    element.isJsonArray -> {
-                        val array = element.asJsonArray
-                        if (array.size() == 4) {
-                            return PaddingValues(
-                                top = array[0].asFloat.dp,
-                                end = array[1].asFloat.dp,
-                                bottom = array[2].asFloat.dp,
-                                start = array[3].asFloat.dp
-                            )
-                        }
-                    }
-                }
-            }
+            declaredCollectionPadding(json)?.let { return it }
 
             if (a.insetHorizontal != null || a.insetVertical != null) {
                 val hInset = a.insetHorizontal?.toFloat() ?: 0f
@@ -2587,21 +2584,45 @@ class DynamicCollectionComponent {
             return PaddingValues(0.dp)
         }
 
-        private fun parsePipeSeparatedPadding(raw: String): PaddingValues? {
-            val nums = raw.split(Regex("[|\\s,]+"))
-                .filter { it.isNotEmpty() }
-                .mapNotNull { it.toFloatOrNull() }
-            return when (nums.size) {
-                1 -> PaddingValues(nums[0].dp)
-                2 -> PaddingValues(vertical = nums[0].dp, horizontal = nums[1].dp)
-                4 -> PaddingValues(
-                    top = nums[0].dp,
-                    end = nums[1].dp,
-                    bottom = nums[2].dp,
-                    start = nums[3].dp
-                )
-                else -> null
+        /**
+         * A `contentPadding` / `insets` value as the SSoT's Collection.insets
+         * declares it, or null: a number, or 1, 2 or 4 values — an array, or
+         * a string separated by `|` (whitespace and commas too) — read as
+         * `paddings` reads them: one, every side; two, [vertical, horizontal];
+         * four, [top, right, bottom, left] (right the end, left the start).
+         * kjui's codegen reads the same (content_padding_values). Until
+         * jsonui-cli 1.9.0 an array had to be four values, and kjui read four
+         * in another order and no string (4f ruling 2026-09-27, round 16).
+         * 'contentPadding' is an undeclared legacy runtime extra; 'insets' is
+         * a declared shape union, read raw (TypedAttrs.rawKey).
+         */
+        internal fun declaredCollectionPadding(json: JsonObject): PaddingValues? {
+            listOf(
+                TypedAttrs.undeclared(json, "contentPadding"),
+                TypedAttrs.rawKey(json, "insets")
+            ).forEach { element ->
+                if (element == null) return@forEach
+                val values: List<Float>? = when {
+                    element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> listOf(element.asFloat)
+                    element.isJsonPrimitive && element.asJsonPrimitive.isString ->
+                        element.asString.split(Regex("[|\\s,]+")).filter { it.isNotEmpty() }.mapNotNull { it.toFloatOrNull() }
+                    // A number, or a number written as a string; anything else
+                    // (a binding) is no value this reader takes.
+                    element.isJsonArray -> element.asJsonArray.map { item ->
+                        (if (item.isJsonPrimitive) item.asString.toFloatOrNull() else null) ?: return@forEach
+                    }
+                    else -> null
+                }
+                paddingOf(values)?.let { return it }
             }
+            return null
+        }
+
+        private fun paddingOf(values: List<Float>?): PaddingValues? = when (values?.size) {
+            1 -> PaddingValues(values[0].dp)
+            2 -> PaddingValues(vertical = values[0].dp, horizontal = values[1].dp)
+            4 -> PaddingValues(top = values[0].dp, end = values[1].dp, bottom = values[2].dp, start = values[3].dp)
+            else -> null
         }
 
         /**

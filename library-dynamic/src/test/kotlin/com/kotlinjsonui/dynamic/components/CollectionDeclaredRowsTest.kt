@@ -123,6 +123,33 @@ class CollectionDeclaredRowsTest {
         assertFalse(declaresPadding(json))
     }
 
+    /**
+     * insets is read as paddings is, in each form the SSoT declares (4f
+     * ruling 2026-09-27, round 16): 1, 2 or 4 values, an array or a string
+     * separated by `|`; four are [top, right, bottom, left], two [vertical,
+     * horizontal], one every side. Anything else declares nothing, and the
+     * safe area then applies. An array of one or two padded nothing, and a
+     * malformed value still counted as declared, until jsonui-cli 1.9.0.
+     */
+    @Test
+    fun insetsIsReadAsPaddingsIs() {
+        val forms = listOf(
+            "[8,6,4,2]" to listOf(8f, 6f, 4f, 2f),
+            "\"8|6|4|2\"" to listOf(8f, 6f, 4f, 2f),
+            "\"8|6\"" to listOf(8f, 6f, 8f, 6f),
+            "[8,6]" to listOf(8f, 6f, 8f, 6f),
+            "[5]" to listOf(5f, 5f, 5f, 5f),
+            "5" to listOf(5f, 5f, 5f, 5f),
+            "\"1|2|3\"" to listOf(0f, 0f, 0f, 0f),
+            "[1,2,3]" to listOf(0f, 0f, 0f, 0f),
+        )
+        assertEquals(forms.map { it.second }, forms.map { padding("""{"type":"Collection","insets":${it.first}}""") })
+        assertEquals(
+            listOf(true, true, true, true, true, true, false, false),
+            forms.map { declaresPadding("""{"type":"Collection","insets":${it.first}}""") }
+        )
+    }
+
     /** Control: `insets` — the cross-platform spelling — still pads, in the same call. */
     @Test
     fun insetsStillPads() {
