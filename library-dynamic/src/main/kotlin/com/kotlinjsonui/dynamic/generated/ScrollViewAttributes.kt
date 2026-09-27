@@ -64,12 +64,15 @@ data class ScrollViewAttributes(
         SCROLLABLE_AXES("scrollableAxes");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ContentInsetAdjustmentBehavior? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("never", "always", "automatic", "scrollableAxes")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ContentInsetAdjustmentBehavior? = when (raw) {
                 "never" -> NEVER
                 "always" -> ALWAYS
                 "automatic" -> AUTOMATIC
-                "scrollableaxes" -> SCROLLABLE_AXES
+                "scrollableAxes" -> SCROLLABLE_AXES
                 else -> null
             }
         }
@@ -81,8 +84,11 @@ data class ScrollViewAttributes(
         BOTTOM("bottom");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): DefaultScrollAnchor? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("top", "center", "bottom")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): DefaultScrollAnchor? = when (raw) {
                 "top" -> TOP
                 "center" -> CENTER
                 "bottom" -> BOTTOM
@@ -97,10 +103,13 @@ data class ScrollViewAttributes(
         INTERACTIVE("interactive");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): KeyboardDismissMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("none", "onDrag", "interactive")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): KeyboardDismissMode? = when (raw) {
                 "none" -> NONE
-                "ondrag" -> ON_DRAG
+                "onDrag" -> ON_DRAG
                 "interactive" -> INTERACTIVE
                 else -> null
             }
@@ -112,8 +121,11 @@ data class ScrollViewAttributes(
         VERTICAL("vertical");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Orientation? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("horizontal", "vertical")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL
                 else -> null
@@ -126,8 +138,11 @@ data class ScrollViewAttributes(
         SMOOTH("smooth");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ScrollBehavior? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("auto", "smooth")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ScrollBehavior? = when (raw) {
                 "auto" -> AUTO
                 "smooth" -> SMOOTH
                 else -> null
@@ -140,8 +155,11 @@ data class ScrollViewAttributes(
         WINDOW("window");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ScrollMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("inner", "window")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ScrollMode? = when (raw) {
                 "inner" -> INNER
                 "window" -> WINDOW
                 else -> null
@@ -229,7 +247,8 @@ data class ScrollViewAttributes(
             (raw as? String)?.let { s ->
                 ContentInsetAdjustmentBehavior.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("ScrollView.contentInsetAdjustmentBehavior: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ContentInsetAdjustmentBehavior.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("ScrollView.contentInsetAdjustmentBehavior: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -238,7 +257,8 @@ data class ScrollViewAttributes(
             (raw as? String)?.let { s ->
                 DefaultScrollAnchor.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("ScrollView.defaultScrollAnchor: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> DefaultScrollAnchor.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("ScrollView.defaultScrollAnchor: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -247,7 +267,8 @@ data class ScrollViewAttributes(
             (raw as? String)?.let { s ->
                 KeyboardDismissMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("ScrollView.keyboardDismissMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> KeyboardDismissMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("ScrollView.keyboardDismissMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -256,7 +277,8 @@ data class ScrollViewAttributes(
             (raw as? String)?.let { s ->
                 Orientation.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("ScrollView.orientation: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Orientation.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("ScrollView.orientation: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -265,7 +287,8 @@ data class ScrollViewAttributes(
             (raw as? String)?.let { s ->
                 ScrollBehavior.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("ScrollView.scrollBehavior: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ScrollBehavior.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("ScrollView.scrollBehavior: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -274,7 +297,8 @@ data class ScrollViewAttributes(
             (raw as? String)?.let { s ->
                 ScrollMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("ScrollView.scrollMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ScrollMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("ScrollView.scrollMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

@@ -37,8 +37,11 @@ data class ProgressAttributes(
         LARGE("large");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): IndicatorStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("medium", "large")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): IndicatorStyle? = when (raw) {
                 "medium" -> MEDIUM
                 "large" -> LARGE
                 else -> null
@@ -100,7 +103,8 @@ data class ProgressAttributes(
             (raw as? String)?.let { s ->
                 IndicatorStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Progress.indicatorStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> IndicatorStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Progress.indicatorStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

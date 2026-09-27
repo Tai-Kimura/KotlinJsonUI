@@ -29,6 +29,9 @@ class LabelAndButtonPlacementTest {
             """{"minHeight":36,"gravity":"center"}""" to Alignment.CenterVertically,
             """{"height":"wrapContent","gravity":"center"}""" to null,
             """{"gravity":"center"}""" to null,
+            // A gravity word is read as declared (the codegen's EnumSpelling):
+            // `Bottom` is none, so the middle, as with no gravity.
+            """{"height":56,"gravity":"Bottom"}""" to Alignment.CenterVertically,
         )
         assertEquals(cases.map { it.second }, cases.map { DynamicTextComponent.labelVerticalAlignment(obj(it.first)) })
     }
@@ -49,6 +52,8 @@ class LabelAndButtonPlacementTest {
             """{"width":32,"gravity":"left"}""" to null,
             """{"width":"wrapContent","gravity":"right"}""" to null,
             """{"gravity":"right"}""" to null,
+            // Read as declared: `Right` is no gravity word, so the start.
+            """{"width":32,"gravity":"Right"}""" to null,
         )
         assertEquals(cases.map { it.second }, cases.map { DynamicTextComponent.gravityTextAlign(obj(it.first)) })
     }

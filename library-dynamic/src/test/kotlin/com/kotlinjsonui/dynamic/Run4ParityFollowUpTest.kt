@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.components.DynamicNetworkImageComponent
 import com.kotlinjsonui.dynamic.components.DynamicRadioComponent
+import com.kotlinjsonui.dynamic.generated.CommonAttributes
 import com.kotlinjsonui.dynamic.generated.RadioAttributes
 import com.kotlinjsonui.dynamic.helpers.EffectStyleTable
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -30,6 +31,9 @@ class Run4ParityFollowUpTest {
 
     // ── effectStyle: 6 deviations ────────────────────────────────────
 
+    /** A plain node's materials: common declares all fourteen spellings. */
+    private val materials = CommonAttributes.EffectStyle.declaredSpellings
+
     @Test
     fun everyMaterialCarriesTheCodegensScrimAndRadius() {
         // effect_style_helper.rb SCRIM/BLUR_DP, value for value.
@@ -45,19 +49,19 @@ class Run4ParityFollowUpTest {
             Triple("Prominent", Color.White.copy(alpha = 0.9f), 12)
         )
         for ((name, scrim, dp) in expected) {
-            assertEquals("scrim for $name", scrim, EffectStyleTable.scrim(name))
-            assertEquals("blur dp for $name", dp, EffectStyleTable.blurDp(name))
+            assertEquals("scrim for $name", scrim, EffectStyleTable.scrim(name, materials))
+            assertEquals("blur dp for $name", dp, EffectStyleTable.blurDp(name, materials))
         }
     }
 
     @Test
     fun theSwiftUIAliasesNormaliseOntoTheirMaterial() {
         // The five `system*Material` spellings the codegen table carries.
-        assertEquals(EffectStyleTable.scrim("UltraThin"), EffectStyleTable.scrim("systemUltraThinMaterial"))
-        assertEquals(EffectStyleTable.scrim("Thin"), EffectStyleTable.scrim("systemThinMaterial"))
-        assertEquals(EffectStyleTable.scrim("Regular"), EffectStyleTable.scrim("systemMaterial"))
-        assertEquals(EffectStyleTable.scrim("Thick"), EffectStyleTable.scrim("systemThickMaterial"))
-        assertEquals(EffectStyleTable.scrim("Chrome"), EffectStyleTable.scrim("systemChromeMaterial"))
+        assertEquals(EffectStyleTable.scrim("UltraThin", materials), EffectStyleTable.scrim("systemUltraThinMaterial", materials))
+        assertEquals(EffectStyleTable.scrim("Thin", materials), EffectStyleTable.scrim("systemThinMaterial", materials))
+        assertEquals(EffectStyleTable.scrim("Regular", materials), EffectStyleTable.scrim("systemMaterial", materials))
+        assertEquals(EffectStyleTable.scrim("Thick", materials), EffectStyleTable.scrim("systemThickMaterial", materials))
+        assertEquals(EffectStyleTable.scrim("Chrome", materials), EffectStyleTable.scrim("systemChromeMaterial", materials))
     }
 
     @Test
@@ -67,16 +71,16 @@ class Run4ParityFollowUpTest {
         val scrims = listOf(
             "Light", "ExtraLight", "Dark", "UltraThin", "Thin",
             "Regular", "Thick", "Chrome", "Prominent"
-        ).map { EffectStyleTable.scrim(it) }
+        ).map { EffectStyleTable.scrim(it, materials) }
         assertEquals("two materials share a scrim", scrims.size, scrims.toSet().size)
     }
 
     @Test
     fun anUnknownMaterialFallsBackToRegularAndAnAbsentOneToNothing() {
-        assertEquals(EffectStyleTable.scrim("Regular"), EffectStyleTable.scrim("nonsense"))
-        assertNull(EffectStyleTable.scrim(null))
-        assertNull(EffectStyleTable.scrim("   "))
-        assertNull(EffectStyleTable.blurDp(null))
+        assertEquals(EffectStyleTable.scrim("Regular", materials), EffectStyleTable.scrim("nonsense", materials))
+        assertNull(EffectStyleTable.scrim(null, materials))
+        assertNull(EffectStyleTable.scrim("   ", materials))
+        assertNull(EffectStyleTable.blurDp(null, materials))
     }
 
     // ── heightWeight: 1 deviation (distance 61, the run's largest) ────

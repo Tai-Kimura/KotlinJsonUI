@@ -108,8 +108,11 @@ data class TextViewAttributes(
         DATETIME("datetime");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Input? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("default", "alphabet", "allphabet", "email", "number", "phone", "url", "password", "decimal", "signedDecimal", "date", "time", "datetime")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Input? = when (raw) {
                 "default" -> DEFAULT
                 "alphabet" -> ALPHABET
                 "allphabet" -> ALLPHABET
@@ -119,7 +122,7 @@ data class TextViewAttributes(
                 "url" -> URL
                 "password" -> PASSWORD
                 "decimal" -> DECIMAL
-                "signeddecimal" -> SIGNED_DECIMAL
+                "signedDecimal" -> SIGNED_DECIMAL
                 "date" -> DATE
                 "time" -> TIME
                 "datetime" -> DATETIME
@@ -141,17 +144,20 @@ data class TextViewAttributes(
         TWITTER("twitter");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): KeyboardType? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("default", "asciiCapable", "alphabet", "number", "numberPad", "decimal", "decimalPad", "phone", "phonePad", "email", "emailAddress", "URL", "webURL", "webSearch", "search", "namePhonePad", "twitter", "text", "numeric", "numbersAndPunctuation")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): KeyboardType? = when (raw) {
                 "default", "text" -> DEFAULT
-                "asciicapable", "alphabet" -> ASCII_CAPABLE
-                "number", "numberpad", "numbersandpunctuation" -> NUMBER
-                "decimal", "decimalpad" -> DECIMAL
-                "phone", "phonepad", "numeric" -> PHONE
-                "email", "emailaddress" -> EMAIL
-                "url", "weburl" -> URL
-                "websearch", "search" -> WEB_SEARCH
-                "namephonepad" -> NAME_PHONE_PAD
+                "asciiCapable", "alphabet" -> ASCII_CAPABLE
+                "number", "numberPad", "numbersAndPunctuation" -> NUMBER
+                "decimal", "decimalPad" -> DECIMAL
+                "phone", "phonePad", "numeric" -> PHONE
+                "email", "emailAddress" -> EMAIL
+                "URL", "webURL" -> URL
+                "webSearch", "search" -> WEB_SEARCH
+                "namePhonePad" -> NAME_PHONE_PAD
                 "twitter" -> TWITTER
                 else -> null
             }
@@ -167,14 +173,17 @@ data class TextViewAttributes(
         TAIL("Tail");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): LineBreakMode? = when (raw.lowercase()) {
-                "char" -> CHAR
-                "clip" -> CLIP
-                "word" -> WORD
-                "head" -> HEAD
-                "middle" -> MIDDLE
-                "tail" -> TAIL
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): LineBreakMode? = when (raw) {
+                "Char" -> CHAR
+                "Clip" -> CLIP
+                "Word" -> WORD
+                "Head" -> HEAD
+                "Middle" -> MIDDLE
+                "Tail" -> TAIL
                 else -> null
             }
         }
@@ -187,8 +196,11 @@ data class TextViewAttributes(
         VERTICAL("vertical");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Resize? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("none", "both", "horizontal", "vertical")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Resize? = when (raw) {
                 "none" -> NONE
                 "both" -> BOTH
                 "horizontal" -> HORIZONTAL
@@ -212,19 +224,22 @@ data class TextViewAttributes(
         GOOGLE("Google");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ReturnKeyType? = when (raw.lowercase()) {
-                "done" -> DONE
-                "go" -> GO
-                "next" -> NEXT
-                "return" -> RETURN
-                "search" -> SEARCH
-                "send" -> SEND
-                "continue" -> CONTINUE
-                "join" -> JOIN
-                "route" -> ROUTE
-                "yahoo" -> YAHOO
-                "google" -> GOOGLE
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Done", "Go", "Next", "Return", "Search", "Send", "Continue", "Join", "Route", "Yahoo", "Google")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ReturnKeyType? = when (raw) {
+                "Done" -> DONE
+                "Go" -> GO
+                "Next" -> NEXT
+                "Return" -> RETURN
+                "Search" -> SEARCH
+                "Send" -> SEND
+                "Continue" -> CONTINUE
+                "Join" -> JOIN
+                "Route" -> ROUTE
+                "Yahoo" -> YAHOO
+                "Google" -> GOOGLE
                 else -> null
             }
         }
@@ -236,11 +251,14 @@ data class TextViewAttributes(
         RIGHT("Right");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): TextAlign? = when (raw.lowercase()) {
-                "left" -> LEFT
-                "center" -> CENTER
-                "right" -> RIGHT
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Center", "Right", "left", "center", "right")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): TextAlign? = when (raw) {
+                "Left", "left" -> LEFT
+                "Center", "center" -> CENTER
+                "Right", "right" -> RIGHT
                 else -> null
             }
         }
@@ -360,7 +378,8 @@ data class TextViewAttributes(
             (raw as? String)?.let { s ->
                 Input.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("TextView.input: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Input.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("TextView.input: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -369,7 +388,8 @@ data class TextViewAttributes(
             (raw as? String)?.let { s ->
                 KeyboardType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("TextView.keyboardType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> KeyboardType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("TextView.keyboardType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -378,7 +398,8 @@ data class TextViewAttributes(
             (raw as? String)?.let { s ->
                 LineBreakMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("TextView.lineBreakMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> LineBreakMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("TextView.lineBreakMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -387,7 +408,8 @@ data class TextViewAttributes(
             (raw as? String)?.let { s ->
                 Resize.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("TextView.resize: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Resize.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("TextView.resize: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -396,7 +418,8 @@ data class TextViewAttributes(
             (raw as? String)?.let { s ->
                 ReturnKeyType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("TextView.returnKeyType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ReturnKeyType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("TextView.returnKeyType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -405,7 +428,8 @@ data class TextViewAttributes(
             (raw as? String)?.let { s ->
                 TextAlign.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("TextView.textAlign: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> TextAlign.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("TextView.textAlign: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

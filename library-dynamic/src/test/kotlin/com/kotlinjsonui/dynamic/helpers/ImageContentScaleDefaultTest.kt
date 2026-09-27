@@ -3,6 +3,8 @@ package com.kotlinjsonui.dynamic.helpers
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import com.google.gson.JsonParser
+import com.kotlinjsonui.dynamic.generated.ImageAttributes
+import com.kotlinjsonui.dynamic.generated.NetworkImageAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -32,17 +34,20 @@ class ImageContentScaleDefaultTest {
             .getAsJsonObject("semantics").getAsJsonObject("image").get("defaultContentMode").asString
     }
 
+    /** Image's own section's spellings (CircleImage validates as Image). */
+    private val image = ImageAttributes.ContentMode.declaredSpellings
+
     @Test
     fun noContentModeDrawsWhatTheDeclaredDefaultDraws() {
-        assertEquals("scale", ImageContentScale.scale(declared), ImageContentScale.scale(null))
-        assertEquals("alignment", ImageContentScale.alignment(declared), ImageContentScale.alignment(null))
+        assertEquals("scale", ImageContentScale.scale(declared, image), ImageContentScale.scale(null, image))
+        assertEquals("alignment", ImageContentScale.alignment(declared, image), ImageContentScale.alignment(null, image))
     }
 
     /** The control: the comparison above can tell two modes apart. */
     @Test
     fun anotherModeDrawsOtherwise() {
         val other = if (declared.equals("AspectFill", ignoreCase = true)) "fit" else "AspectFill"
-        assertNotEquals(ImageContentScale.scale(other), ImageContentScale.scale(null))
+        assertNotEquals(ImageContentScale.scale(other, image), ImageContentScale.scale(null, image))
     }
 
     /** The table itself — the same as kjui's codegen (content_scale_helper.rb). */
@@ -56,14 +61,35 @@ class ImageContentScaleDefaultTest {
             "top" to ContentScale.None, "bottom" to ContentScale.None,
             "left" to ContentScale.None, "right" to ContentScale.None,
         )
-        for ((spelling, scale) in expected) assertEquals(spelling, scale, ImageContentScale.scale(spelling))
+        for ((spelling, scale) in expected) assertEquals(spelling, scale, ImageContentScale.scale(spelling, image))
         val aligned = mapOf(
             "top" to Alignment.TopCenter, "bottom" to Alignment.BottomCenter,
             "left" to Alignment.CenterStart, "right" to Alignment.CenterEnd, "center" to Alignment.Center,
         )
         for ((spelling, alignment) in aligned) {
-            assertEquals(spelling, alignment, ImageContentScale.alignment(spelling))
+            assertEquals(spelling, alignment, ImageContentScale.alignment(spelling, image))
         }
+    }
+
+    /**
+     * A mode is its node's declared spelling, case and all (DeclaredSpelling,
+     * jsonui-cli 1.9.0). Both sides of each boundary: the declared spelling
+     * draws its mode, another case draws the default; and the node's own
+     * section decides — NetworkImage does not declare `ScaleToFill`, Image does.
+     */
+    @Test
+    fun aModeIsItsNodesDeclaredSpelling() {
+        val network = NetworkImageAttributes.ContentMode.declaredSpellings
+        assertEquals(ContentScale.Crop, ImageContentScale.scale("AspectFill", image))
+        assertEquals(ContentScale.Fit, ImageContentScale.scale("aspectFill", image))
+        assertEquals(ContentScale.Fit, ImageContentScale.scale("ASPECTFILL", image))
+        assertEquals(Alignment.TopCenter, ImageContentScale.alignment("Top", image))
+        assertEquals(Alignment.Center, ImageContentScale.alignment("TOP", image))
+        assertEquals(ContentScale.FillBounds, ImageContentScale.scale("ScaleToFill", image))
+        assertEquals(ContentScale.Fit, ImageContentScale.scale("ScaleToFill", network))
+        assertEquals(ContentScale.FillBounds, ImageContentScale.scale("fill", network))
+        assertEquals(Alignment.Center, ImageContentScale.alignment("Top", network))
+        assertEquals(Alignment.TopCenter, ImageContentScale.alignment("top", network))
     }
 
     /**
@@ -81,8 +107,11 @@ class ImageContentScaleDefaultTest {
             val code = file.readText()
                 .replace(Regex("""/\*[\s\S]*?\*/"""), "")
                 .lines().joinToString("\n") { it.substringBefore("//") }
-            assertTrue("$name does not draw with ImageContentScale.scale", code.contains("ImageContentScale.scale("))
-            assertTrue("$name does not align with ImageContentScale.alignment", code.contains("ImageContentScale.alignment("))
+            val section = if (name == "DynamicNetworkImageComponent") "NetworkImageAttributes" else "ImageAttributes"
+            assertTrue("$name does not draw with ImageContentScale.scale over $section's spellings",
+                code.contains("ImageContentScale.scale(mode, $section.ContentMode.declaredSpellings)"))
+            assertTrue("$name does not align with ImageContentScale.alignment over $section's spellings",
+                code.contains("ImageContentScale.alignment(mode, $section.ContentMode.declaredSpellings)"))
             assertEquals("$name names a ContentScale of its own", emptyList<String>(),
                 member.findAll(code).map { it.value }.toList())
         }

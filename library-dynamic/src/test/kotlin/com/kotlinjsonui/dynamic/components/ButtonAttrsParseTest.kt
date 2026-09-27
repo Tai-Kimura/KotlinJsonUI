@@ -32,7 +32,8 @@ class ButtonAttrsParseTest {
 
     @Test
     fun `textAlign passes undeclared spellings through`() {
-        // "start" is not a declared enum value; the legacy reader honored it
+        // "start" is not a declared enum value: the parse keeps it as written
+        // (and names it), and Button draws it as no alignment (DeclaredSpelling)
         val a = parse("""{"type":"Button","textAlign":"start"}""")
         assertEquals("start", TypedAttrs.enumString(a.textAlign) { it.json })
 

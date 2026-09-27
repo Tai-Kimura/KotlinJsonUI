@@ -15,6 +15,14 @@ class Wave1bAttrsParseTest {
 
     private fun obj(json: String) = JsonParser.parseString(json).asJsonObject
 
+    /** The warnings the generated parse says while [block] runs. */
+    private fun said(block: () -> Unit): List<String> {
+        val out = mutableListOf<String>()
+        com.kotlinjsonui.dynamic.generated.AttrWarnings.handler = { out += it }
+        try { block() } finally { com.kotlinjsonui.dynamic.generated.AttrWarnings.handler = null }
+        return out
+    }
+
     // ── Indicator ──
 
     @Test
@@ -36,11 +44,20 @@ class Wave1bAttrsParseTest {
     }
 
     @Test
-    fun `indicator indicatorStyle matches case-insensitively and passes unknown through`() {
+    fun `indicator indicatorStyle matches as declared and passes unknown through`() {
         val known = IndicatorAttributes.parse(
-            TypedAttrs.toAttrMap(obj("""{"type":"Indicator","indicatorStyle":"Large"}"""))
+            TypedAttrs.toAttrMap(obj("""{"type":"Indicator","indicatorStyle":"large"}"""))
         )
         assertEquals("large", TypedAttrs.enumString(known.indicatorStyle) { it.json })
+
+        // another case is not the declared spelling (jsonui-cli 1.9.0): passed
+        // through as written, and named with the declared one
+        lateinit var near: IndicatorAttributes
+        assertEquals(
+            listOf("Indicator.indicatorStyle: unknown enum value 'Large' — did you mean 'large'?"),
+            said { near = IndicatorAttributes.parse(TypedAttrs.toAttrMap(obj("""{"type":"Indicator","indicatorStyle":"Large"}"""))) },
+        )
+        assertEquals("Large", TypedAttrs.enumString(near.indicatorStyle) { it.json })
 
         // "huge" is not a declared enum value; the raw spelling passes through
         // ("small" was the example until it was declared, jsonui-cli ea985526)
@@ -101,11 +118,15 @@ class Wave1bAttrsParseTest {
     }
 
     @Test
-    fun `gradientview gradientDirection matches case-insensitively and passes unknown through`() {
+    fun `gradientview gradientDirection matches as declared and passes unknown through`() {
         val known = GradientViewAttributes.parse(
-            TypedAttrs.toAttrMap(obj("""{"type":"GradientView","gradientDirection":"vertical"}"""))
+            TypedAttrs.toAttrMap(obj("""{"type":"GradientView","gradientDirection":"Vertical"}"""))
         )
         assertEquals("Vertical", TypedAttrs.enumString(known.gradientDirection) { it.json })
+        val lower = GradientViewAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"GradientView","gradientDirection":"vertical"}"""))
+        )
+        assertEquals("vertical", TypedAttrs.enumString(lower.gradientDirection) { it.json })
 
         // "leftToRight" is not a declared enum value; the legacy reader honored it
         val unknown = GradientViewAttributes.parse(
@@ -117,13 +138,15 @@ class Wave1bAttrsParseTest {
     // ── Blur (both "Blur" and "BlurView" spellings parse with BlurAttributes) ──
 
     @Test
-    fun `blur effectStyle matches declared spellings case-insensitively`() {
+    fun `blur effectStyle matches declared spellings as written`() {
         val a = BlurAttributes.parse(
-            TypedAttrs.toAttrMap(obj("""{"type":"Blur","effectStyle":"light"}"""))
+            TypedAttrs.toAttrMap(obj("""{"type":"Blur","effectStyle":"Light"}"""))
         )
         assertEquals("Light", TypedAttrs.enumString(a.effectStyle) { it.json })
-        // the component lowercases before matching its overlay table
-        assertEquals("light", TypedAttrs.enumString(a.effectStyle) { it.json }?.lowercase())
+        val lower = BlurAttributes.parse(
+            TypedAttrs.toAttrMap(obj("""{"type":"Blur","effectStyle":"light"}"""))
+        )
+        assertEquals("light", TypedAttrs.enumString(lower.effectStyle) { it.json })
     }
 
     @Test

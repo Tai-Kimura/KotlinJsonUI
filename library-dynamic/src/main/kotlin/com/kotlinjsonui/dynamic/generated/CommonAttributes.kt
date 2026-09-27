@@ -44,7 +44,7 @@ data class CommonAttributes(
     val aspectWidth: AttrValue<Double>? = null,
     /** Background color - hex string (#RRGGBB or #RRGGBBAA) or color name from colors.json (can be data binding). `backgroundColor` folds here: the genuine layout reads of that spelling all chain with `background` (kjui blurview_component.rb:42 `background || backgroundColor`, kjui segment_component.rb:55 `backgroundColor || background`, rjui blur_converter.rb:58 and circle_view_converter.rb:55). Note the two kjui sites read the pair in OPPOSITE order, so a layout setting both drew two different colours until the normalizer began folding them — the same defect shape as CheckBox's accent chain (plan 51-E). When a `gradient` is also declared on the same view, the GRADIENT wins and this is the fallback fill — not a layer underneath it. Full ruling in attribute_semantics.json -> backgroundFill; do not restate it in toolchain comments. */
     val background: AttrValue<String>? = null,
-    /** Two-way binding for the component's primary value — Switch/Check isOn, Slider value, Segment selectedIndex, SelectBox selectedValue, Progress progress. An alternative spelling to each component's own value attribute, which takes precedence when both are set. Not a Collection's data source (Table is a Collection): that is `items`, and the validator says so. [binding: two-way] */
+    /** Two-way binding for the component's primary value — Switch/Check isOn, Slider value, Segment selectedIndex, SelectBox selectedValue (a Date SelectBox: selectedDate), Progress progress, Radio selectedValue, TextField/TextView text. An alternative spelling to each component's own value attribute, which takes precedence when both are set; it is folded on the node a renderer draws, after its style is merged and its responsive branch resolved (shared/core/bind_fold.rb), so a value a style gives counts as set. Not a Collection's data source (Table is a Collection): that is `items`, and the validator says so. `primaryValue` lists, per section, the attribute `bind` stands for (first) and the other spellings of that value: the layout normalizer rewrites a lone `bind` to the first, and drops `bind` with a warning when any of them is set. A section whose value depends on another attribute gives an object instead of a list: `by` names that attribute, `lists` the list for each of its values, and `whenAbsent` the value to take when it is not set (SelectBox by selectItemType: a Date SelectBox's value is selectedDate, and its selectedValue / selectedItem / selectedIndex are read by no path — the validator names each). [binding: two-way] */
     val bind: AttrValue<Any>? = null,
     /** Legacy UIKit KVC binding: names the data property a view is bound to (SJUIViewCreator sets view.binding / view.bindingSet, and UIKit's Binding class pushes values through it). The object form is also the pre-@{} Table data source ({"data": "@{items}"}). Superseded by '@{...}' in the attribute value itself — use `bind` or the component's own value attribute instead. [accepts: string | object] */
     val binding: Any? = null,
@@ -104,7 +104,7 @@ data class CommonAttributes(
     val frame: Map<String, Any?>? = null,
     /** Liquid Glass. true for the default treatment, or an object {style: regular|clear|identity, tint: color, interactive: bool, shape: capsule|rect|circle|rounded(N)}. Declared on common rather than per component because ios.md names View, Button, TextField and Label followed by 'etc' - an open list, and a per-component declaration would make the set of components the acceptance population, so every reading of 'etc' becomes a gap. mode carries BOTH uikit and swiftui because the attribute has two implementations, .glassEffect() on SwiftUI and UIGlassEffect on UIKit; this is the first declaration in the file to pair those two, though five declarations already use an array for mode and both readers accept one (kjui Array(attr_def['mode']), jui isinstance(raw, list)). Leaving mode off would not have meant 'both' - an absent mode means NO restriction at all (kjui attribute_validator_core.rb mode_compatible? returns true when the key is missing), which would let the attribute read as available in modes it has no implementation for. [accepts: boolean | object] */
     val glass: Any? = null,
-    /** Content gravity/alignment. A single value names ONE axis; the axis it does not name falls to the container default (top vertically, start horizontally), so in LTR `left` and `top` both resolve to (start, top) and render identically. Use the array form to name both axes. Full ruling in attribute_semantics.json -> gravityDefaults; do not restate it in toolchain comments. [accepts: string | array] */
+    /** Content gravity/alignment. A single value names ONE axis; the axis it does not name falls to the container default (top vertically, start horizontally), so in LTR `left` and `top` both resolve to (start, top) and render identically. Use the array form to name both axes. On a Button and a TextField textAlign owns the horizontal: their gravity positions the content on the vertical axis only (see their textAlign). On a Label textAlign places the text across when it is declared; gravity's horizontal part places it only when textAlign is not (see Label.textAlign). Full ruling in attribute_semantics.json -> gravityDefaults; do not restate it in toolchain comments. [accepts: string | array] */
     val gravity: Any? = null,
     /** Height (number, 'matchParent', 'wrapContent') - binding supported. Not required if weight is specified. [required] */
     val height: AttrValue<DimensionValue>? = null,
@@ -114,7 +114,7 @@ data class CommonAttributes(
     val heightWeight: AttrValue<Double>? = null,
     /** Whether the component is hidden: keeps its layout space but is not drawn and is hidden from accessibility (boolean shorthand for visibility:'invisible'; can be a data binding) */
     val hidden: AttrValue<Boolean>? = null,
-    /** Background color when highlighted - hex string or color name from colors.json (binding supported) */
+    /** Background color while `highlighted` is true (a View; drawn only with both declared). Not the pressed colour, which is tapBackground, and not a focused text field's background. On a Button it is the pressed colour (Button.highlightBackground). Hex string or color name from colors.json (binding supported) */
     val highlightBackground: AttrValue<String>? = null,
     /** Horizontal content hugging */
     val hugHorizontal: String? = null,
@@ -210,7 +210,7 @@ data class CommonAttributes(
     val offsetY: AttrValue<Double>? = null,
     /** Lifecycle callback when view appears (SwiftUI/Compose only). The handler's name (e.g. "screenAppeared"); written as a binding (`@{screenAppeared}`) or with UIKit's sender mark (`screenAppeared:`, which means nothing in SwiftUI or Compose) it is read as the same name, as the other event handlers are. Called as its declared closure type asks: `()` with nothing, `(String)` with the viewId. */
     val onAppear: String? = null,
-    /** Click handler (camelCase) - binding only (@{functionName}) */
+    /** Click handler (camelCase) - binding only (@{functionName}). On a type the SSoT does not declare (an app's own component) JsonUI gives the tap no screen-reader role; the component carries its own. */
     val onClick: AttrValue<Any>? = null,
     /** Lifecycle callback when view disappears (SwiftUI/Compose only). The handler's name (e.g. "screenDisappeared"); written as a binding (`@{screenDisappeared}`) or with UIKit's sender mark (`screenDisappeared:`, which means nothing in SwiftUI or Compose) it is read as the same name, as the other event handlers are. Called as its declared closure type asks: `()` with nothing, `(String)` with the viewId. */
     val onDisappear: String? = null,
@@ -264,7 +264,7 @@ data class CommonAttributes(
     val style: String? = null,
     /** View tag for identification (binding supported) */
     val tag: AttrValue<Double>? = null,
-    /** Background color when tapped - hex string or color name from colors.json (binding supported) */
+    /** Background color while pressed, on a node with a tap (onClick / onclick) and on a Button: it replaces the background until the press ends. On web a Button also shows it on hover (the web has hover; iOS and Android do not). A node without a tap draws nothing for it. Hex string or color name from colors.json (binding supported) */
     val tapBackground: AttrValue<String>? = null,
     /** Test ID for testing (data-testid) */
     val testId: String? = null,
@@ -311,17 +311,20 @@ data class CommonAttributes(
         BOTTOM_TRAILING("bottomTrailing");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Alignment? = when (raw.lowercase()) {
-                "topleading" -> TOP_LEADING
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("topLeading", "top", "topTrailing", "leading", "center", "trailing", "bottomLeading", "bottom", "bottomTrailing")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Alignment? = when (raw) {
+                "topLeading" -> TOP_LEADING
                 "top" -> TOP
-                "toptrailing" -> TOP_TRAILING
+                "topTrailing" -> TOP_TRAILING
                 "leading" -> LEADING
                 "center" -> CENTER
                 "trailing" -> TRAILING
-                "bottomleading" -> BOTTOM_LEADING
+                "bottomLeading" -> BOTTOM_LEADING
                 "bottom" -> BOTTOM
-                "bottomtrailing" -> BOTTOM_TRAILING
+                "bottomTrailing" -> BOTTOM_TRAILING
                 else -> null
             }
         }
@@ -333,8 +336,11 @@ data class CommonAttributes(
         DOTTED("dotted");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): BorderStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("solid", "dashed", "dotted")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): BorderStyle? = when (raw) {
                 "solid" -> SOLID
                 "dashed" -> DASHED
                 "dotted" -> DOTTED
@@ -350,12 +356,15 @@ data class CommonAttributes(
         EQUAL_CENTERING("equalCentering");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Distribution? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("fill", "fillEqually", "equalSpacing", "equalCentering")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Distribution? = when (raw) {
                 "fill" -> FILL
-                "fillequally" -> FILL_EQUALLY
-                "equalspacing" -> EQUAL_SPACING
-                "equalcentering" -> EQUAL_CENTERING
+                "fillEqually" -> FILL_EQUALLY
+                "equalSpacing" -> EQUAL_SPACING
+                "equalCentering" -> EQUAL_CENTERING
                 else -> null
             }
         }
@@ -373,17 +382,20 @@ data class CommonAttributes(
         CHROME("Chrome");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): EffectStyle? = when (raw.lowercase()) {
-                "light" -> LIGHT
-                "dark" -> DARK
-                "extralight" -> EXTRA_LIGHT
-                "regular", "systemmaterial" -> REGULAR
-                "prominent" -> PROMINENT
-                "ultrathin", "systemultrathinmaterial" -> ULTRA_THIN
-                "thin", "systemthinmaterial" -> THIN
-                "thick", "systemthickmaterial" -> THICK
-                "chrome", "systemchromematerial" -> CHROME
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Light", "Dark", "ExtraLight", "Regular", "Prominent", "UltraThin", "Thin", "Thick", "Chrome", "systemMaterial", "systemUltraThinMaterial", "systemThinMaterial", "systemThickMaterial", "systemChromeMaterial")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): EffectStyle? = when (raw) {
+                "Light" -> LIGHT
+                "Dark" -> DARK
+                "ExtraLight" -> EXTRA_LIGHT
+                "Regular", "systemMaterial" -> REGULAR
+                "Prominent" -> PROMINENT
+                "UltraThin", "systemUltraThinMaterial" -> ULTRA_THIN
+                "Thin", "systemThinMaterial" -> THIN
+                "Thick", "systemThickMaterial" -> THICK
+                "Chrome", "systemChromeMaterial" -> CHROME
                 else -> null
             }
         }
@@ -396,12 +408,15 @@ data class CommonAttributes(
         VIEWS_WITHOUT_IN_LIST("viewsWithoutInList");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): TouchDisabledState? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("none", "onlyMe", "viewsWithoutTouchEnabled", "viewsWithoutInList")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): TouchDisabledState? = when (raw) {
                 "none" -> NONE
-                "onlyme" -> ONLY_ME
-                "viewswithouttouchenabled" -> VIEWS_WITHOUT_TOUCH_ENABLED
-                "viewswithoutinlist" -> VIEWS_WITHOUT_IN_LIST
+                "onlyMe" -> ONLY_ME
+                "viewsWithoutTouchEnabled" -> VIEWS_WITHOUT_TOUCH_ENABLED
+                "viewsWithoutInList" -> VIEWS_WITHOUT_IN_LIST
                 else -> null
             }
         }
@@ -413,13 +428,39 @@ data class CommonAttributes(
         GONE("gone");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Visibility? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("visible", "invisible", "gone")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Visibility? = when (raw) {
                 "visible" -> VISIBLE
                 "invisible" -> INVISIBLE
                 "gone" -> GONE
                 else -> null
             }
+        }
+    }
+
+    object Gravity {
+        /** The spellings each value of `gravity` is declared as — it holds one or a list of them, so it has no enum type of its own — case-sensitive. */
+        val declaredSpellings: List<String> = listOf("top", "bottom", "centerVertical", "left", "right", "centerHorizontal", "center")
+    }
+
+    object ConfirmationDialog {
+        object TitleVisibility {
+            /** The spellings `confirmationDialog.titleVisibility` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("automatic", "visible", "hidden")
+        }
+    }
+
+    object Glass {
+        object Style {
+            /** The spellings `glass.style` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("regular", "clear", "identity")
+        }
+        object Shape {
+            /** The spellings `glass.shape` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("capsule", "circle", "rect")
         }
     }
 
@@ -748,7 +789,8 @@ data class CommonAttributes(
             (raw as? String)?.let { s ->
                 Alignment.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("common.alignment: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Alignment.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("common.alignment: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -757,7 +799,8 @@ data class CommonAttributes(
             (raw as? String)?.let { s ->
                 BorderStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("common.borderStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> BorderStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("common.borderStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -766,7 +809,8 @@ data class CommonAttributes(
             (raw as? String)?.let { s ->
                 Distribution.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("common.distribution: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Distribution.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("common.distribution: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -775,7 +819,8 @@ data class CommonAttributes(
             (raw as? String)?.let { s ->
                 EffectStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("common.effectStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> EffectStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("common.effectStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -784,7 +829,8 @@ data class CommonAttributes(
             (raw as? String)?.let { s ->
                 TouchDisabledState.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("common.touchDisabledState: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> TouchDisabledState.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("common.touchDisabledState: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -793,7 +839,8 @@ data class CommonAttributes(
             (raw as? String)?.let { s ->
                 Visibility.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("common.visibility: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Visibility.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("common.visibility: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

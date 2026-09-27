@@ -1,6 +1,5 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -16,30 +15,32 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
 
 /**
  * Dynamic Progress Component Converter
- * Converts JSON to ProgressBar/CircularProgressIndicator composable at runtime.
+ * Converts JSON to a LinearProgressIndicator composable at runtime.
  * Reference: progress_component.rb in kjui_tools.
  *
  * Attribute access goes through the generated [ProgressAttributes]
  * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
  * bridge; the node itself is only passed wholesale to the shared
  * ModifierBuilder pipeline. 'value' is an undeclared legacy runtime
- * extra on Progress, and 'style' rides on the structural style key.
+ * extra on Progress.
  *
  * Supported JSON attributes:
- * - value/bind: Float or @{variable} for progress value (0.0 to 1.0)
- * - style: "linear" | "circular" | "large" for indeterminate style
+ * - progress/value/bind: Float or @{variable} for progress value (0.0 to 1.0)
  * - progressTintColor: String hex color for progress color
  * - trackTintColor: String hex color for background track
  * - Modifiers: testTag, margins, size, alpha, clickable, padding, weight
  *
- * Note: If value/bind is present, always renders LinearProgressIndicator (determinate).
- *       If not present, style determines the indicator type (indeterminate).
+ * A Progress is a bar: determinate with a value, indeterminate without one.
+ * Progress declares no shape, and `style` is the style file's name
+ * (common.style), not a shape — a style named `circular` or `large` drew a
+ * spinner here while every other path drew a bar (kjui / sjui codegen,
+ * jsonui-cli 7007d2bb).
  */
 class DynamicProgressComponent {
     companion object {
         /** Progress-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "bind", "progress", "progressTintColor", "trackTintColor"
+            "progress", "progressTintColor", "trackTintColor"
         )
 
         @Composable
@@ -65,7 +66,7 @@ class DynamicProgressComponent {
             // (shared/core/attribute_semantics.json → progressValue).
             val progressAttr = a.progress
             val hasValueAttr = TypedAttrs.undeclared(json, "value") != null
-            val hasValue = progressAttr != null || hasValueAttr || a.common.bind != null
+            val hasValue = progressAttr != null || hasValueAttr
 
             // Parse binding variable from bind, canonical progress, or legacy value
             val bindingVariable = progressBindingOf(json, a)
@@ -82,11 +83,6 @@ class DynamicProgressComponent {
             var progress by remember(progressValue, bindingVariable) {
                 mutableStateOf(progressValue)
             }
-
-            // Parse style (only used for indeterminate) — the legacy
-            // indicator-style spelling rides on the structural 'style'
-            // key (style file name), so it stays a raw node read.
-            val style = json.get("style")?.asString ?: "linear"
 
             // Parse colors (supports @{binding})
             // progressTintColor is the specific spelling; plain tintColor is
@@ -114,35 +110,16 @@ class DynamicProgressComponent {
                     )
                 }
                 else -> {
-                    // Indeterminate: style determines component type
-                    if (style == "circular" || style == "large") {
-                        CircularProgressIndicator(
-                            modifier = modifier,
-                            color = progressColor ?: MaterialTheme.colorScheme.primary,
-                            trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    } else {
-                        LinearProgressIndicator(
-                            modifier = modifier,
-                            color = progressColor ?: MaterialTheme.colorScheme.primary,
-                            trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    }
+                    // Indeterminate: a bar, as the determinate one is
+                    LinearProgressIndicator(
+                        modifier = modifier,
+                        color = progressColor ?: MaterialTheme.colorScheme.primary,
+                        trackColor = trackColor ?: MaterialTheme.colorScheme.surfaceVariant
+                    )
                 }
             }
         }
 
-        /**
-         * The data key this component is bound to.
-         *
-         * `bind` is the common two-way spelling for this component's primary
-         * value, and it holds an `AttrValue<Any>` — so the old
-         * `a.common.bind as? String` matched nothing and this fallback
-         * returned null for every layout that used it. Kotlin 2.4 reports
-         * that cast as one that can never succeed; before the bump the
-         * branch was simply dead. CheckBox and Switch read the same row
-         * correctly, and that is the shape restored here.
-         */
         /** The data key: bindingVariableOf, else the legacy `value`'s binding. */
         internal fun progressBindingOf(json: JsonObject, a: ProgressAttributes): String? =
             bindingVariableOf(a)
@@ -170,9 +147,14 @@ class DynamicProgressComponent {
             else -> 0f
         }.coerceIn(0f, 1f)
 
+        /**
+         * The data key the progress is bound to: a bound `progress`. `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue). It
+         * was read before `progress`, so a `bind` beside a bound `progress`
+         * drew the other value.
+         */
         internal fun bindingVariableOf(a: ProgressAttributes): String? =
-            TypedAttrs.binding(a.common.bind)
-                ?: a.progress?.bindingExpressionOrNull()
+            a.progress?.bindingExpressionOrNull()
 
         private fun extractBindingVariable(value: String?): String? {
             if (value == null) return null

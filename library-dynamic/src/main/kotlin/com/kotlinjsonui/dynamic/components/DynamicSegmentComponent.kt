@@ -50,17 +50,6 @@ import androidx.compose.ui.platform.LocalContext
  */
 class DynamicSegmentComponent {
     companion object {
-        /**
-         * The data key this component is bound to.
-         *
-         * `bind` is the common two-way spelling for this component's primary
-         * value, and it holds an `AttrValue<Any>` — so the old
-         * `a.common.bind as? String` matched nothing and this fallback
-         * returned null for every layout that used it. Kotlin 2.4 reports
-         * that cast as one that can never succeed; before the bump the
-         * branch was simply dead. CheckBox and Switch read the same row
-         * correctly, and that is the shape restored here.
-         */
         /** The selected index: the bound value, else `selectedIndex`, else 0. */
         internal fun selectedIndexOf(a: SegmentAttributes, data: Map<String, Any>, bindingVariable: String?): Int =
             when {
@@ -74,13 +63,16 @@ class DynamicSegmentComponent {
                 else -> TypedAttrs.int(a.selectedIndex, data) ?: 0
             }
 
+        /**
+         * The data key the selection is bound to: a bound `selectedIndex`. `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue).
+         */
         internal fun bindingVariableOf(a: SegmentAttributes): String? =
             TypedAttrs.binding(a.selectedIndex)
-                ?: TypedAttrs.binding(a.common.bind)
 
         /** Segment-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "selectedIndex", "bind", "items", "enabled",
+            "selectedIndex", "items", "enabled",
             "fontColor", "selectedFontColor", "tintColor",
             "onValueChange", "valueChange"
         )

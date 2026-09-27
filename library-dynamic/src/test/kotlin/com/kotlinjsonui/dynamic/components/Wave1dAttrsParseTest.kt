@@ -170,9 +170,16 @@ class Wave1dAttrsParseTest {
         val static = NetworkImageAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"NetworkImage","contentMode":"aspectFill"}"""))
         )
+        // not NetworkImage's spelling (it declares "AspectFill"): the parse
+        // keeps it as written, and the drawing reads it as no mode
+        // (DeclaredSpelling — ImageContentScaleDefaultTest draws it)
+        assertEquals("aspectFill", TypedAttrs.staticEnumString(static.contentMode) { it.json })
         assertEquals(
-            "aspectfill",
-            TypedAttrs.staticEnumString(static.contentMode) { it.json }?.lowercase()
+            null,
+            com.kotlinjsonui.core.DeclaredSpelling.lowered(
+                TypedAttrs.staticEnumString(static.contentMode) { it.json },
+                NetworkImageAttributes.ContentMode.declaredSpellings
+            )
         )
 
         val bound = NetworkImageAttributes.parse(

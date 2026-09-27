@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.helpers
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 
@@ -24,7 +25,13 @@ import androidx.compose.ui.layout.ContentScale
  */
 internal object ImageContentScale {
 
-    fun scale(mode: String?): ContentScale = when (mode?.lowercase()) {
+    /**
+     * [mode] as declared ([declared]: the node's own section's
+     * `ContentMode.declaredSpellings` — Image, NetworkImage; CircleImage is
+     * an Image synonym): another case is no spelling of a mode, and draws the
+     * default (DeclaredSpelling, jsonui-cli 1.9.0).
+     */
+    fun scale(mode: String?, declared: Collection<String>): ContentScale = when (DeclaredSpelling.lowered(mode, declared)) {
         "fit", "aspectfit" -> ContentScale.Fit
         "aspectfill" -> ContentScale.Crop
         "fill", "scaletofill" -> ContentScale.FillBounds
@@ -33,7 +40,7 @@ internal object ImageContentScale {
         else -> ContentScale.Fit
     }
 
-    fun alignment(mode: String?): Alignment = when (mode?.lowercase()) {
+    fun alignment(mode: String?, declared: Collection<String>): Alignment = when (DeclaredSpelling.lowered(mode, declared)) {
         "top" -> Alignment.TopCenter
         "bottom" -> Alignment.BottomCenter
         "left" -> Alignment.CenterStart

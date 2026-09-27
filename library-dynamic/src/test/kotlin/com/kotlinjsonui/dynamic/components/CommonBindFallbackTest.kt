@@ -2,94 +2,75 @@ package com.kotlinjsonui.dynamic.components
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.kotlinjsonui.dynamic.BindFold
 import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.dynamic.generated.CheckBoxAttributes
 import com.kotlinjsonui.dynamic.generated.ProgressAttributes
 import com.kotlinjsonui.dynamic.generated.RadioAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
 import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import com.kotlinjsonui.dynamic.generated.SliderAttributes
+import com.kotlinjsonui.dynamic.generated.SwitchAttributes
+import com.kotlinjsonui.dynamic.generated.ToggleAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * `bind` is the common two-way spelling for a component's primary value, and
- * its KDoc names exactly these components. It never worked on any of them:
- * the row holds an `AttrValue<Any>`, and every one of these call sites read
- * it with `a.common.bind as? String`, a cast that cannot match — so the
- * fallback returned null and a layout that declared only `bind` silently
- * bound to nothing. Kotlin 2.4 called the cast impossible; before that the
- * branch was just dead.
- *
- * CheckBox and Switch escaped because they read the same row through
- * `TypedAttrs.raw(...)` first, which is the shape these now use.
+ * `bind` is the common two-way spelling for a component's primary value.
+ * DynamicView folds it into the attribute it stands for (BindFold, SSoT
+ * common.bind primaryValue) before the component reads the node, so each
+ * component is bound through its own value attribute: a lone `bind` reaches
+ * the key a component writes; beside the component's own value, it is gone.
+ * (Every one of these read `bind` itself, in its own order: `bind` won over a
+ * static own value, and on Progress over a bound one too.)
  */
 class CommonBindFallbackTest {
 
-    private inline fun <reified T> parse(json: String, parser: (Map<String, Any?>) -> T): T =
-        parser(TypedAttrs.toAttrMap(Gson().fromJson(json, JsonObject::class.java)))
+    private fun node(json: String): JsonObject = Gson().fromJson(json, JsonObject::class.java)
 
-    @Test
-    fun progressResolvesTheCommonBindRow() {
-        val a = parse("""{"type":"Progress","bind":"@{downloadProgress}"}""") { ProgressAttributes.parse(it) }
-        assertEquals("downloadProgress", DynamicProgressComponent.bindingVariableOf(a))
+    /** The node DynamicView hands the component: folded, as the drawn type. */
+    private inline fun <reified T> drawn(json: String, parser: (Map<String, Any?>) -> T): T {
+        val n = node(json)
+        return parser(TypedAttrs.toAttrMap(BindFold.fold(n, n.get("type").asString)))
     }
 
-    /**
-     * Radio's options group is bound through its selectedValue (SSoT
-     * common.bind primaryValue, Radio [selectedValue]) — the items group and
-     * the single Radio read it; this path read `bind`. A lone `bind` arrives
-     * as selectedValue once DynamicView folds it.
-     */
     @Test
-    fun radioOptionsAreBoundThroughSelectedValue() {
-        val a = parse("""{"type":"Radio","options":["a","b"],"selectedValue":"@{chosenPlan}"}""") { RadioAttributes.parse(it) }
+    fun aLoneBindIsTheKeyEachComponentWrites() {
+        assertEquals("on", DynamicSwitchComponent.resolveBindingVariable(drawn("""{"type":"Switch","bind":"@{on}"}""") { SwitchAttributes.parse(it) }))
+        assertEquals("c", DynamicCheckBoxComponent.resolveBindingVariable(drawn("""{"type":"CheckBox","bind":"@{c}"}""") { CheckBoxAttributes.parse(it) }))
+        assertEquals("c", DynamicCheckBoxComponent.resolveBindingVariable(drawn("""{"type":"Check","bind":"@{c}"}""") { CheckBoxAttributes.parse(it) }))
+        val toggle = node("""{"type":"Toggle","bind":"@{t}"}""")
+        val folded = BindFold.fold(toggle, "Toggle")
+        assertEquals("t", DynamicToggleComponent.bindingVariableOf(ToggleAttributes.parse(TypedAttrs.toAttrMap(folded))))
+        assertEquals("downloadProgress", DynamicProgressComponent.bindingVariableOf(drawn("""{"type":"Progress","bind":"@{downloadProgress}"}""") { ProgressAttributes.parse(it) }))
+        assertEquals("tabIndex", DynamicSegmentComponent.bindingVariableOf(drawn("""{"type":"Segment","bind":"@{tabIndex}"}""") { SegmentAttributes.parse(it) }))
+        assertEquals("volume", DynamicSliderComponent.bindingVariableOf(drawn("""{"type":"Slider","bind":"@{volume}"}""") { SliderAttributes.parse(it) }))
+        assertEquals("picked", DynamicSelectBoxComponent.bindingVariableOf(drawn("""{"type":"SelectBox","items":["a","b"],"bind":"@{picked}"}""") { SelectBoxAttributes.parse(it) }))
+        assertEquals("when", DynamicSelectBoxComponent.dateBindingVariableOf(drawn("""{"type":"SelectBox","selectItemType":"Date","bind":"@{when}"}""") { SelectBoxAttributes.parse(it) }))
+    }
+
+    @Test
+    fun aRadiosLoneBindIsItsSelectedValue() {
+        val a = drawn("""{"type":"Radio","options":["a","b"],"bind":"@{chosenPlan}"}""") { RadioAttributes.parse(it) }
         assertEquals("chosenPlan", DynamicRadioComponent.bindingVariableOf(a))
-        val bindOnly = parse("""{"type":"Radio","options":["a","b"],"bind":"@{chosenPlan}"}""") { RadioAttributes.parse(it) }
-        assertEquals(null, DynamicRadioComponent.bindingVariableOf(bindOnly))
+        // unfolded, the options group does not read bind
+        val raw = RadioAttributes.parse(TypedAttrs.toAttrMap(node("""{"type":"Radio","options":["a","b"],"bind":"@{chosenPlan}"}""")))
+        assertEquals(null, DynamicRadioComponent.bindingVariableOf(raw))
     }
 
-    @Test
-    fun segmentResolvesTheCommonBindRow() {
-        val a = parse("""{"type":"Segment","bind":"@{tabIndex}"}""") { SegmentAttributes.parse(it) }
-        assertEquals("tabIndex", DynamicSegmentComponent.bindingVariableOf(a))
-    }
-
-    @Test
-    fun sliderResolvesTheCommonBindRow() {
-        val a = parse("""{"type":"Slider","bind":"@{volume}"}""") { SliderAttributes.parse(it) }
-        assertEquals("volume", DynamicSliderComponent.bindingVariableOf(a))
-    }
-
-    @Test
-    fun selectBoxResolvesTheCommonBindRow() {
-        val a = parse("""{"type":"SelectBox","items":["a","b"],"bind":"@{picked}"}""") { SelectBoxAttributes.parse(it) }
-        assertEquals("picked", DynamicSelectBoxComponent.bindingVariableOf(a))
-    }
-
-    @Test
-    fun selectBoxDateVariantResolvesTheCommonBindRow() {
-        val a = parse("""{"type":"SelectBox","selectBoxType":"date","bind":"@{when}"}""") { SelectBoxAttributes.parse(it) }
-        assertEquals("when", DynamicSelectBoxComponent.dateBindingVariableOf(a))
-    }
-
-    /** The component's own attribute still wins over the common spelling. */
+    /** The component's own attribute wins over the common spelling — a static one too. */
     @Test
     fun theComponentsOwnAttributeTakesPrecedence() {
-        val slider = parse("""{"type":"Slider","value":"@{ownValue}","bind":"@{commonValue}"}""") {
-            SliderAttributes.parse(it)
-        }
-        assertEquals("ownValue", DynamicSliderComponent.bindingVariableOf(slider))
-
-        val segment = parse("""{"type":"Segment","selectedIndex":"@{ownIndex}","bind":"@{commonValue}"}""") {
-            SegmentAttributes.parse(it)
-        }
-        assertEquals("ownIndex", DynamicSegmentComponent.bindingVariableOf(segment))
+        assertEquals("ownValue", DynamicSliderComponent.bindingVariableOf(drawn("""{"type":"Slider","value":"@{ownValue}","bind":"@{commonValue}"}""") { SliderAttributes.parse(it) }))
+        assertEquals("ownIndex", DynamicSegmentComponent.bindingVariableOf(drawn("""{"type":"Segment","selectedIndex":"@{ownIndex}","bind":"@{commonValue}"}""") { SegmentAttributes.parse(it) }))
+        assertEquals("own", DynamicProgressComponent.bindingVariableOf(drawn("""{"type":"Progress","progress":"@{own}","bind":"@{commonValue}"}""") { ProgressAttributes.parse(it) }))
+        assertEquals(null, DynamicSwitchComponent.resolveBindingVariable(drawn("""{"type":"Switch","isOn":true,"bind":"@{commonValue}"}""") { SwitchAttributes.parse(it) }))
+        assertEquals(null, DynamicSliderComponent.bindingVariableOf(drawn("""{"type":"Slider","value":0.5,"bind":"@{commonValue}"}""") { SliderAttributes.parse(it) }))
     }
 
     /** A static `bind` is a value, not a binding, and names no data key. */
     @Test
     fun aStaticBindNamesNoVariable() {
-        val a = parse("""{"type":"Slider","bind":"notABinding"}""") { SliderAttributes.parse(it) }
-        assertEquals(null, DynamicSliderComponent.bindingVariableOf(a))
+        assertEquals(null, DynamicSliderComponent.bindingVariableOf(drawn("""{"type":"Slider","bind":"notABinding"}""") { SliderAttributes.parse(it) }))
     }
 }

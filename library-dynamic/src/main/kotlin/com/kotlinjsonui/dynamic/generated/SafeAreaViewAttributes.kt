@@ -33,12 +33,15 @@ data class SafeAreaViewAttributes(
         NONE("none");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Direction? = when (raw.lowercase()) {
-                "toptobottom" -> TOP_TO_BOTTOM
-                "bottomtotop" -> BOTTOM_TO_TOP
-                "lefttoright" -> LEFT_TO_RIGHT
-                "righttoleft" -> RIGHT_TO_LEFT
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("topToBottom", "bottomToTop", "leftToRight", "rightToLeft", "none")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Direction? = when (raw) {
+                "topToBottom" -> TOP_TO_BOTTOM
+                "bottomToTop" -> BOTTOM_TO_TOP
+                "leftToRight" -> LEFT_TO_RIGHT
+                "rightToLeft" -> RIGHT_TO_LEFT
                 "none" -> NONE
                 else -> null
             }
@@ -50,13 +53,21 @@ data class SafeAreaViewAttributes(
         VERTICAL("vertical");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Orientation? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("horizontal", "vertical")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL
                 else -> null
             }
         }
+    }
+
+    object SafeAreaInsetPositions {
+        /** The spellings each value of `safeAreaInsetPositions` is declared as — it holds one or a list of them, so it has no enum type of its own — case-sensitive. */
+        val declaredSpellings: List<String> = listOf("top", "bottom", "leading", "trailing", "vertical", "all")
     }
 
     companion object {
@@ -108,7 +119,8 @@ data class SafeAreaViewAttributes(
             (raw as? String)?.let { s ->
                 Direction.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("SafeAreaView.direction: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Direction.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("SafeAreaView.direction: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -117,7 +129,8 @@ data class SafeAreaViewAttributes(
             (raw as? String)?.let { s ->
                 Orientation.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("SafeAreaView.orientation: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Orientation.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("SafeAreaView.orientation: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

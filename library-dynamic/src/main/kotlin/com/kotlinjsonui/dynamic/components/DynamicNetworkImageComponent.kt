@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
@@ -98,8 +99,8 @@ class DynamicNetworkImageComponent {
             // the table Image and CircleImage draw with too — no contentMode
             // draws the declared default, fit) ──
             val mode = TypedAttrs.staticEnumString(a.contentMode) { it.json }
-            val contentScale = ImageContentScale.scale(mode)
-            val contentAlignment = ImageContentScale.alignment(mode)
+            val contentScale = ImageContentScale.scale(mode, NetworkImageAttributes.ContentMode.declaredSpellings)
+            val contentAlignment = ImageContentScale.alignment(mode, NetworkImageAttributes.ContentMode.declaredSpellings)
 
             // ── Placeholder: hint > placeholder > loadingImage (the same
             // in-flight-image chain as the static converter,
@@ -199,7 +200,7 @@ class DynamicNetworkImageComponent {
             // path ignored both spellings
             // (NetworkImage_renderingMode__template parity d=13, run
             // 31202080745).
-            val renderingMode = TypedAttrs.enumString(a.renderingMode) { it.json }?.lowercase()
+            val renderingMode = DeclaredSpelling.lowered(TypedAttrs.enumString(a.renderingMode) { it.json }, NetworkImageAttributes.RenderingMode.declaredSpellings)
             val tint = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.tintColor), data, context
             )

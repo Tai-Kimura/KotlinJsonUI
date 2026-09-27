@@ -126,16 +126,17 @@ class Wave2aAttrsParseTest {
     // ── SelectBox ──
 
     @Test
-    fun `selectbox selectItemType resolves to the declared spelling case-insensitively`() {
+    fun `selectbox selectItemType resolves to the declared spelling as written`() {
         val canonical = SelectBoxAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"SelectBox","selectItemType":"Date"}"""))
         )
         assertEquals("Date", TypedAttrs.enumString(canonical.selectItemType) { it.json })
 
+        // "date" is no spelling of Date (jsonui-cli 1.9.0): passed through as written
         val lower = SelectBoxAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"SelectBox","selectItemType":"date"}"""))
         )
-        assertEquals("Date", TypedAttrs.enumString(lower.selectItemType) { it.json })
+        assertEquals("date", TypedAttrs.enumString(lower.selectItemType) { it.json })
     }
 
     @Test

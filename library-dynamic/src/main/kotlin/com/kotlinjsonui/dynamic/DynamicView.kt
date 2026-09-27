@@ -86,6 +86,7 @@ private fun DynamicViewContent(
     ColorParser.init(context)
     DynamicLayoutLoader.init(context)
     IncludeExpander.init(context)
+    EnumSpellingWarnings.install(context)
 
     // Apply styles if a style attribute is present
     val styledJson = if (json.has("style")) {
@@ -190,7 +191,10 @@ private fun DynamicViewContent(
         // synonym's name stays the app's. The cases below are declared types
         // only; they held synonym spellings of their own, which drifted from
         // the table and from SwiftJsonUI's.
-        val drawn = if (handledByApp) responsiveJson else TypeSynonyms.canonicalize(responsiveJson, context)
+        val synonymous = if (handledByApp) responsiveJson else TypeSynonyms.canonicalize(responsiveJson, context)
+        // `bind` folded into the attribute it stands for (BindFold): no
+        // component reads `bind` for its value.
+        val drawn = if (handledByApp) synonymous else BindFold.fold(synonymous, synonymous.get("type").asString)
         val drawnType = drawn.get("type").asString
         if (!handledByApp) when (drawnType) {
             "Label" -> DynamicTextComponent.create(drawn, effectiveData)
@@ -234,7 +238,7 @@ private fun DynamicViewContent(
                     // validator and codegen say). Types are matched as
                     // written: a lowercase `switch` was drawn as a Switch here
                     // and by SwiftJsonUI, and as nothing by the codegen.
-                    val message = UnknownComponentType.message(type, BUILT_IN_TYPES + TypeSynonyms.entries.keys)
+                    val message = unknownTypeMessage(type)
                     val error = IllegalArgumentException(message)
                     onError?.invoke(error)
 
@@ -288,6 +292,14 @@ private fun DynamicViewContent(
         render()
     }
 }
+
+/**
+ * The sentence DynamicView names a type it cannot draw with: offered among
+ * what it draws and the type synonyms (and, in TypeSynonyms.caseOnlyMatch,
+ * the app's types and the alias sections) — the one search every path asks.
+ */
+internal fun unknownTypeMessage(type: String): String =
+    UnknownComponentType.message(type, BUILT_IN_TYPES + TypeSynonyms.entries.keys)
 
 /**
  * The types DynamicView draws itself, as the SSoT spells them — the cases of

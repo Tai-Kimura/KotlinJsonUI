@@ -102,8 +102,9 @@ class DynamicSelectBoxComponent {
 
         /**
          * The data key this box reads and writes: `selectedItem` >
-         * `selectedValue` > `selectedIndex` > `bind` — the codegen's order
-         * (selectbox_component.rb).
+         * `selectedValue` > `selectedIndex` — the codegen's order
+         * (selectbox_component.rb). `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue).
          *
          * `selectedValue` is declared two-way and was NOT a candidate, so a
          * bound one fell through to the literal seed and the closed box drew
@@ -117,7 +118,6 @@ class DynamicSelectBoxComponent {
             TypedAttrs.binding(a.selectedItem)
                 ?: TypedAttrs.binding(a.selectedValue)
                 ?: TypedAttrs.binding(a.selectedIndex)
-                ?: TypedAttrs.binding(a.common.bind)
 
         /** The bound key is `selectedIndex` — an Int slot — because no item-valued binding outranks it. */
         internal fun isIndexBinding(a: SelectBoxAttributes): Boolean =
@@ -283,14 +283,13 @@ class DynamicSelectBoxComponent {
         /**
          * A Date SelectBox's value is its `selectedDate` (4f's ruling,
          * jsonui-cli 1.9.0: SSoT common.bind primaryValue, by selectItemType),
-         * or a lone common `bind`, which stands for it. It fell back to
+         * (a lone `bind` arrives as it, BindFold). It fell back to
          * `selectedItem`, which sjui and SwiftJsonUI never read; the shared
          * validator names a Date box's selectedValue / selectedItem /
          * selectedIndex.
          */
         internal fun dateBindingVariableOf(a: SelectBoxAttributes): String? =
             TypedAttrs.binding(a.selectedDate)
-                ?: TypedAttrs.binding(a.common.bind)
 
         /**
          * What the closed box shows: the bound value if there is one, else the
@@ -353,7 +352,7 @@ class DynamicSelectBoxComponent {
 
         private val APPLIED: Set<String> = setOf(
             "selectItemType", "selectedItem", "selectedValue", "selectedIndex",
-            "selectedDate", "bind",
+            "selectedDate",
             "items", "enabled", "prompt", "hint", "placeholder",
             "fontColor", "hintColor", "fontSize", "font", "labelAttributes",
             "caretAttributes",
@@ -555,7 +554,7 @@ class DynamicSelectBoxComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable: selectedDate, else a lone bind
+            // Parse binding variable: selectedDate
             val bindingVariable = dateBindingVariableOf(a)
 
             // Get current value. Unbound, the static date is where the box

@@ -142,7 +142,7 @@ class SelectBoxValueChangeAsDeclaredTest {
      * A Date SelectBox's value is its selectedDate (4f's ruling, jsonui-cli
      * 1.9.0): selectedItem was read after it, bound and static, and
      * selectedValue / selectedIndex never were — none of the three is read
-     * now. A lone bind still stands for selectedDate.
+     * now. A lone bind arrives as selectedDate (BindFold).
      */
     @Test
     fun aDateBoxReadsItsValueFromSelectedDateAlone() {
@@ -158,7 +158,9 @@ class SelectBoxValueChangeAsDeclaredTest {
             assertEquals(other, null to "", read("{$date, $other}"))
             assertEquals(other, "day" to "2026-09-26", read("""{$date, $other, "selectedDate": "@{day}"}"""))
         }
-        assertEquals("day" to "2026-09-26", read("""{$date, "bind": "@{day}"}"""))
+        // a lone bind reaches the box as its selectedDate (DynamicView folds it, BindFold)
+        val lone = com.kotlinjsonui.dynamic.BindFold.fold(JsonParser.parseString("""{$date, "bind": "@{day}"}""").asJsonObject, "SelectBox")
+        assertEquals("day" to "2026-09-26", read(lone.toString()))
         assertEquals(null to "2026-02-02", read("""{$date, "selectedDate": "2026-02-02", "selectedItem": "2026-01-01"}"""))
     }
 

@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,7 +29,8 @@ fun CollectionCellChrome(
     hideSeparator: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val normalized = style?.lowercase() ?: "plain"
+    // As declared (DeclaredSpelling): "Grouped" is no spelling of grouped
+    val normalized = DeclaredSpelling.lowered(style, DeclaredSpelling.LIST_STYLE, "Collection.listStyle") ?: "plain"
     if (normalized == "plain" || normalized.isEmpty() ||
         normalized !in setOf("grouped", "insetgrouped", "sidebar")
     ) {

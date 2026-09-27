@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -133,8 +134,8 @@ class DynamicImageComponent {
             // Image, NetworkImage and CircleImage draw with; no contentMode
             // draws the declared default, fit).
             val mode = TypedAttrs.enumStringResolved(a.contentMode, data) { it.json }
-            val contentScale = ImageContentScale.scale(mode)
-            val contentAlignment = ImageContentScale.alignment(mode)
+            val contentScale = ImageContentScale.scale(mode, ImageAttributes.ContentMode.declaredSpellings)
+            val contentAlignment = ImageContentScale.alignment(mode, ImageAttributes.ContentMode.declaredSpellings)
 
             // Alpha with binding support. `alpha` is an alias spelling of
             // `opacity` (49-E), folded onto the canonical row by the generated
@@ -148,7 +149,7 @@ class DynamicImageComponent {
             // static converter's rendering_color_filter (image_component.rb)
             // — this path used to ignore renderingMode/tintColor entirely
             // (parity family kjui-dynamic-renderingmode).
-            val renderingMode = TypedAttrs.enumString(a.renderingMode) { it.json }?.lowercase()
+            val renderingMode = DeclaredSpelling.lowered(TypedAttrs.enumString(a.renderingMode) { it.json }, ImageAttributes.RenderingMode.declaredSpellings)
             val tint = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.tintColor), data, context
             )

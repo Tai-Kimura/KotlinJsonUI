@@ -50,7 +50,7 @@ data class SelectBoxAttributes(
     val minuteInterval: Double? = null,
     /** Allow multiple selection */
     val multiple: Boolean? = null,
-    /** Value change handler - binding only (@{functionName}). The handler receives the new value of the selection binding, the same on every platform: with selectedIndex bound it is the Int index (declare ((Int) -> Void)?, or ((String, Int) -> Void)? for viewId + index); with selectedItem / selectedValue bound it is the String item (declare ((String, String) -> Void)? for viewId + item). A lone (String) parameter is read as the viewId, not the item. (() -> Void)? receives nothing and the ViewModel reads the bound value back. */
+    /** Value change handler - binding only (@{functionName}). The handler receives the new value of the selection binding, the same on every platform: with selectedIndex bound it is the Int index (declare ((Int) -> Void)?, or ((String, Int) -> Void)? for viewId + index); with selectedItem / selectedValue bound it is the String item (declare ((String, String) -> Void)? for viewId + item). A lone (String) parameter is the selected item as a String, with selectedIndex bound too; the viewId comes only as the first of two parameters. (() -> Void)? receives nothing and the ViewModel reads the bound value back. */
     val onValueChange: AttrValue<Any>? = null,
     /** Value change handler (alias for onValueChange) - binding only (@{functionName}) */
     val onValueChanged: AttrValue<Any>? = null,
@@ -78,8 +78,11 @@ data class SelectBoxAttributes(
         DARK("dark");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ColorScheme? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("light", "dark")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ColorScheme? = when (raw) {
                 "light" -> LIGHT
                 "dark" -> DARK
                 else -> null
@@ -94,12 +97,15 @@ data class SelectBoxAttributes(
         COUNT_DOWN("countDown");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): DatePickerMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("date", "time", "datetime", "dateAndTime", "countDown")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): DatePickerMode? = when (raw) {
                 "date" -> DATE
                 "time" -> TIME
-                "dateandtime", "datetime" -> DATE_AND_TIME
-                "countdown" -> COUNT_DOWN
+                "dateAndTime", "datetime" -> DATE_AND_TIME
+                "countDown" -> COUNT_DOWN
                 else -> null
             }
         }
@@ -114,8 +120,11 @@ data class SelectBoxAttributes(
         INLINE("inline");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): DatePickerStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("automatic", "wheel", "wheels", "compact", "graphical", "inline")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): DatePickerStyle? = when (raw) {
                 "automatic" -> AUTOMATIC
                 "wheel" -> WHEEL
                 "wheels" -> WHEELS
@@ -132,12 +141,26 @@ data class SelectBoxAttributes(
         DATE("Date");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): SelectItemType? = when (raw.lowercase()) {
-                "normal" -> NORMAL
-                "date" -> DATE
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Normal", "Date")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): SelectItemType? = when (raw) {
+                "Normal" -> NORMAL
+                "Date" -> DATE
                 else -> null
             }
+        }
+    }
+
+    object LabelAttributes {
+        object TextAlign {
+            /** The spellings `labelAttributes.textAlign` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Right", "Center")
+        }
+        object LineBreakMode {
+            /** The spellings `labelAttributes.lineBreakMode` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
         }
     }
 
@@ -238,7 +261,8 @@ data class SelectBoxAttributes(
             (raw as? String)?.let { s ->
                 ColorScheme.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("SelectBox.colorScheme: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ColorScheme.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("SelectBox.colorScheme: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -247,7 +271,8 @@ data class SelectBoxAttributes(
             (raw as? String)?.let { s ->
                 DatePickerMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("SelectBox.datePickerMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> DatePickerMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("SelectBox.datePickerMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -256,7 +281,8 @@ data class SelectBoxAttributes(
             (raw as? String)?.let { s ->
                 DatePickerStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("SelectBox.datePickerStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> DatePickerStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("SelectBox.datePickerStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -265,7 +291,8 @@ data class SelectBoxAttributes(
             (raw as? String)?.let { s ->
                 SelectItemType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("SelectBox.selectItemType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> SelectItemType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("SelectBox.selectItemType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

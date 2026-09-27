@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -74,6 +75,58 @@ class ComponentRawReadGateTest {
                 violations.joinToString("\n"),
             violations.isEmpty()
         )
+    }
+
+    /**
+     * A structural key is read as structure, never as a value.
+     *
+     * The first test lets these keys through because they hold the tree, not
+     * attributes — and that let a component read one as an attribute:
+     * Progress drew a spinner for a `style` named `circular` / `large` (style
+     * is the style file's name), and Toggle bound its state to a string in
+     * `data` (the key that declares a layout's data). A structural key read as
+     * a scalar (`asString`, `asInt`, …), or through TypedAttrs' named raw
+     * entry points, is that misread. The one read that is the key's own
+     * structure is Include's layout name. Chains that span lines are joined
+     * before matching; comment-only lines are dropped as above.
+     */
+    @Test
+    fun `no structural key is read as a value`() {
+        val keys = allowedKeys.joinToString("|")
+        val asValue = Regex(
+            """json\s*\.\s*get\(\s*"($keys)"\s*\)(?:\s*\??\.\s*takeIf\s*\{[^}]*\})?\s*\??\.\s*as(?:String|Int|Long|Boolean|Float|Double|Number)\b""" +
+                """|TypedAttrs\s*\.\s*(?:undeclared|rawKey)\(\s*json\s*,\s*"($keys)"\s*\)"""
+        )
+        val itsOwnStructure = setOf("DynamicIncludeComponent.kt" to "include")
+        fun code(text: String) = text.lines().joinToString("\n") { line ->
+            val t = line.trimStart()
+            if (t.startsWith("//") || t.startsWith("*")) "" else line
+        }
+        fun reads(name: String, text: String): List<String> {
+            val c = code(text)
+            return asValue.findAll(c).mapNotNull { m ->
+                val key = m.groupValues[1].ifEmpty { m.groupValues[2] }
+                if ((name to key) in itsOwnStructure) null
+                else "$name:${c.substring(0, m.range.first).count { it == '\n' } + 1}: '$key' read as a value"
+            }.toList()
+        }
+
+        // both sides: the two misreads this arm exists for, and a structural read
+        assertEquals(1, reads("X.kt", """val style = json.get("style")?.asString ?: "linear"""").size)
+        assertEquals(1, reads("X.kt", "val d = json.get(\"data\")\n    ?.takeIf { it.isJsonPrimitive }?.asString").size)
+        assertEquals(1, reads("X.kt", """val t = TypedAttrs.undeclared(json, "type")""").size)
+        assertEquals(0, reads("X.kt", """val c = json.get("children")?.asJsonArray""").size)
+        assertEquals(0, reads("X.kt", """    // json.get("style")?.asString""").size)
+        assertEquals(0, reads("DynamicIncludeComponent.kt", """val n = json.get("include")?.asString ?: return""").size)
+        assertEquals(1, reads("DynamicTextComponent.kt", """val n = json.get("include")?.asString ?: return""").size)
+
+        val dir = File("src/main/kotlin/com/kotlinjsonui/dynamic/components")
+        val files = dir.listFiles { f -> f.extension == "kt" }!!.sorted()
+        assertTrue("too few component files read (${files.size})", files.size >= 27)
+        val found = files.flatMap { reads(it.name, it.readText()) }
+        assertEquals("structural keys read as values", emptyList<String>(), found)
+        // the exemption is still the key's own structure (a read that moved away leaves it stale)
+        assertEquals(1, reads("X.kt", File(dir, "DynamicIncludeComponent.kt").readText()).count { "'include'" in it })
     }
 
     /**

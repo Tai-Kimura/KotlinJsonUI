@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -83,8 +80,10 @@ class DynamicSafeAreaViewComponent {
             // declared on plain View and must not be read two different ways.
             // SafeAreaView is the one component that defaults to `all`:
             // reserving the whole safe area is what it IS.
-            val requestedEdges = SafeAreaEdges.requested(json, a.safeAreaInsetPositions)
-                ?: listOf("all")
+            val requestedEdges = SafeAreaEdges.requested(
+                json, a.safeAreaInsetPositions,
+                SafeAreaViewAttributes.SafeAreaInsetPositions.declaredSpellings, "SafeAreaView.safeAreaInsetPositions"
+            ) ?: SafeAreaEdges.ALL
             val edges = SafeAreaEdges.filtered(
                 requestedEdges,
                 ignoreTop = safeAreaConfig.ignoreTop,

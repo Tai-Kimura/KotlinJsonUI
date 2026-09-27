@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.helpers
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -75,21 +76,23 @@ object EffectStyleTable {
      * back to `regular` — C's `key_for`, and the reason a typo dims the view
      * rather than silently doing nothing.
      */
-    fun keyFor(value: String?): String {
-        val k = value?.trim()?.lowercase().orEmpty()
+    fun keyFor(value: String?, declared: Collection<String>, context: String? = null): String {
+        // as declared (DeclaredSpelling): another case is no spelling of a
+        // material, and falls back like any other unrecognised value
+        val k = (if (context != null) DeclaredSpelling.lowered(value, declared, context) else DeclaredSpelling.lowered(value, declared)).orEmpty()
         val resolved = ALIASES[k] ?: k
         return if (SCRIM.containsKey(resolved)) resolved else DEFAULT
     }
 
     /** Scrim for a declared material, or null when nothing is declared. */
-    fun scrim(value: String?): Color? {
+    fun scrim(value: String?, declared: Collection<String>, context: String? = null): Color? {
         if (value.isNullOrBlank()) return null
-        return SCRIM[keyFor(value)]
+        return SCRIM[keyFor(value, declared, context)]
     }
 
     /** Blur radius in dp for a declared material, or null when nothing is declared. */
-    fun blurDp(value: String?): Int? {
+    fun blurDp(value: String?, declared: Collection<String>, context: String? = null): Int? {
         if (value.isNullOrBlank()) return null
-        return BLUR_DP[keyFor(value)]
+        return BLUR_DP[keyFor(value, declared, context)]
     }
 }

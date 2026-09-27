@@ -115,7 +115,9 @@ class DynamicBlurViewComponent {
         // component already emitted, so sharing the table changes no Blur
         // output; what changes is that a SwiftUI material name now draws a
         // scrim here instead of nothing.
+        // Blur's own section declares its effectStyle (the node's own section
+        // first, then common — DeclaredSpelling)
         private fun effectStyleColor(style: String?): Color? =
-            EffectStyleTable.scrim(style)
+            EffectStyleTable.scrim(style, BlurAttributes.EffectStyle.declaredSpellings)
     }
 }

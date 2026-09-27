@@ -51,17 +51,20 @@ data class NetworkImageAttributes(
         ASPECT_FIT("AspectFit");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ContentMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("fit", "fill", "center", "top", "bottom", "left", "right", "AspectFill", "AspectFit", "Center")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ContentMode? = when (raw) {
                 "fit" -> FIT
                 "fill" -> FILL
-                "center" -> CENTER
+                "center", "Center" -> CENTER
                 "top" -> TOP
                 "bottom" -> BOTTOM
                 "left" -> LEFT
                 "right" -> RIGHT
-                "aspectfill" -> ASPECT_FILL
-                "aspectfit" -> ASPECT_FIT
+                "AspectFill" -> ASPECT_FILL
+                "AspectFit" -> ASPECT_FIT
                 else -> null
             }
         }
@@ -72,8 +75,11 @@ data class NetworkImageAttributes(
         EAGER("eager");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Loading? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("lazy", "eager")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Loading? = when (raw) {
                 "lazy" -> LAZY
                 "eager" -> EAGER
                 else -> null
@@ -86,8 +92,11 @@ data class NetworkImageAttributes(
         TEMPLATE("template");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): RenderingMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("original", "template")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): RenderingMode? = when (raw) {
                 "original" -> ORIGINAL
                 "template" -> TEMPLATE
                 else -> null
@@ -160,7 +169,8 @@ data class NetworkImageAttributes(
             (raw as? String)?.let { s ->
                 ContentMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("NetworkImage.contentMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ContentMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("NetworkImage.contentMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -169,7 +179,8 @@ data class NetworkImageAttributes(
             (raw as? String)?.let { s ->
                 Loading.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("NetworkImage.loading: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Loading.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("NetworkImage.loading: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -178,7 +189,8 @@ data class NetworkImageAttributes(
             (raw as? String)?.let { s ->
                 RenderingMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("NetworkImage.renderingMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> RenderingMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("NetworkImage.renderingMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

@@ -51,8 +51,11 @@ data class SwitchAttributes(
         TRAILING("trailing");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): LabelPosition? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("leading", "trailing")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): LabelPosition? = when (raw) {
                 "leading" -> LEADING
                 "trailing" -> TRAILING
                 else -> null
@@ -67,8 +70,11 @@ data class SwitchAttributes(
         DEFAULT("default");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ToggleStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("switch", "button", "checkbox", "default")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ToggleStyle? = when (raw) {
                 "switch" -> SWITCH
                 "button" -> BUTTON
                 "checkbox" -> CHECKBOX
@@ -148,7 +154,8 @@ data class SwitchAttributes(
             (raw as? String)?.let { s ->
                 LabelPosition.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Switch.labelPosition: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> LabelPosition.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Switch.labelPosition: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -157,7 +164,8 @@ data class SwitchAttributes(
             (raw as? String)?.let { s ->
                 ToggleStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Switch.toggleStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ToggleStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Switch.toggleStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

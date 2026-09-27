@@ -56,8 +56,8 @@ class DynamicControlStateSurvivesDataTest {
         fun v(static: String, key: String) = if (bound) "\"@{$key}\"" else static
         val items = listOf(
             "{\"type\": \"Switch\", \"id\": \"sw\", \"isOn\": ${v("false", "sw_on")}}",
-            if (bound) "{\"type\": \"Toggle\", \"id\": \"tg\", \"data\": \"tg_on\"}"
-            else "{\"type\": \"Toggle\", \"id\": \"tg\", \"isOn\": false}",
+            // not `data`: the structural key is not a Toggle's binding
+            "{\"type\": \"Toggle\", \"id\": \"tg\", \"isOn\": ${v("false", "tg_on")}}",
             "{\"type\": \"CheckBox\", \"id\": \"cb\", \"isOn\": ${v("false", "cb_on")}}",
             "{\"type\": \"Radio\", \"id\": \"rv\", \"items\": [\"ra\", \"rb\"], \"selectedValue\": ${v("\"ra\"", "rv_sel")}}",
             "{\"type\": \"Segment\", \"id\": \"seg\", \"items\": [\"sx\", \"sy\"], \"selectedIndex\": ${v("0", "seg_sel")}}",

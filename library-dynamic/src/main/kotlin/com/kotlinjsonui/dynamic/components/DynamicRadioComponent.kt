@@ -12,6 +12,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -61,7 +63,7 @@ class DynamicRadioComponent {
         /** Radio-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
             "group", "text", "label", "icon", "selectedIcon", "fontColor", "tintColor",
-            "selectedValue", "value"
+            "selectedValue", "value", "font", "fontSize", "checkedColor", "uncheckedColor", "iconColor"
         )
 
         @Composable
@@ -292,33 +294,8 @@ class DynamicRadioComponent {
             // Parse options: static array or @{binding}
             val options = parseOptions(json, data)
 
-            // Parse colors (supports @{binding}) — 'selectedColor' /
-            // 'unselectedColor' are undeclared legacy runtime extras
-            // (the declared spellings are checkedColor/uncheckedColor)
-            // Declared spellings first (checkedColor/uncheckedColor/iconColor
-            // were parsed but never read — 33 cross-effect measured android
-            // rendering the default glyph for all three).
-            val selectedColor = ColorParser.parseColorStringWithBinding(
-                a.checkedColor, data, context
-            ) ?: ColorParser.parseColorStringWithBinding(
-                TypedAttrs.undeclared(json, "selectedColor")?.asString, data, context
-            )
-            val unselectedColor = ColorParser.parseColorStringWithBinding(
-                a.uncheckedColor, data, context
-            ) ?: ColorParser.parseColorStringWithBinding(
-                a.iconColor, data, context
-            ) ?: ColorParser.parseColorStringWithBinding(
-                TypedAttrs.undeclared(json, "unselectedColor")?.asString, data, context
-            )
-
-            val colors = if (selectedColor != null || unselectedColor != null) {
-                RadioButtonDefaults.colors(
-                    selectedColor = selectedColor ?: RadioButtonDefaults.colors().selectedColor,
-                    unselectedColor = unselectedColor ?: RadioButtonDefaults.colors().unselectedColor
-                )
-            } else {
-                RadioButtonDefaults.colors()
-            }
+            val colors = buttonColors(buttonColorValues(a, json, data, context))
+            val labelStyle = labelStyle(a, json, data, context)
 
             // `enabled` is the Radio's own controls' parameter — each
             // RadioButton and the row that selects it: a disabled Radio neither
@@ -376,7 +353,8 @@ class DynamicRadioComponent {
                             colors = colors
                         )
                         Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
-                        Text(text = label)
+                        // not given a colour before: the theme's content colour
+                        RadioLabel(text = label, style = labelStyle, fallbackColor = Color.Unspecified)
                     }
                 }
             }
@@ -453,25 +431,12 @@ class DynamicRadioComponent {
                         // Declared color skin — this branch (the one every
                         // icon-less fixture takes) never received it (33
                         // cross-effect round-2: android still default).
-                        val stdSelectedColor = ColorParser.parseColorStringWithBinding(
-                            a.checkedColor, data, context
-                        )
-                        val stdUnselectedColor = ColorParser.parseColorStringWithBinding(
-                            a.uncheckedColor, data, context
-                        ) ?: ColorParser.parseColorStringWithBinding(
-                            a.iconColor, data, context
-                        )
                         RadioButton(
                             selected = isSelected,
                             onClick = onSelect,
                             enabled = isEnabled,
                             modifier = glyphModifier,
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = stdSelectedColor
-                                    ?: RadioButtonDefaults.colors().selectedColor,
-                                unselectedColor = stdUnselectedColor
-                                    ?: RadioButtonDefaults.colors().unselectedColor
-                            )
+                            colors = buttonColors(buttonColorValues(a, json, data, context))
                         )
                     }
                     // Square checkbox appearance
@@ -512,27 +477,14 @@ class DynamicRadioComponent {
                     // Default radio button
                     else -> {
                         // The default-glyph path dropped the color skin
-                        // entirely (33 cross-effect) — rebuild the declared
-                        // checked/unchecked/icon colors here.
-                        val itemSelectedColor = ColorParser.parseColorStringWithBinding(
-                            a.checkedColor, data, context
-                        )
-                        val itemUnselectedColor = ColorParser.parseColorStringWithBinding(
-                            a.uncheckedColor, data, context
-                        ) ?: ColorParser.parseColorStringWithBinding(
-                            a.iconColor, data, context
-                        )
+                        // entirely (33 cross-effect) — the declared
+                        // checked/unchecked/icon colors.
                         RadioButton(
                             selected = isSelected,
                             onClick = onSelect,
                             enabled = isEnabled,
                             modifier = glyphModifier,
-                            colors = RadioButtonDefaults.colors(
-                                selectedColor = itemSelectedColor
-                                    ?: RadioButtonDefaults.colors().selectedColor,
-                                unselectedColor = itemUnselectedColor
-                                    ?: RadioButtonDefaults.colors().unselectedColor
-                            )
+                            colors = buttonColors(buttonColorValues(a, json, data, context))
                         )
                     }
                 }
@@ -540,34 +492,7 @@ class DynamicRadioComponent {
                 // Add label text
                 if (text.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
-                    // 'textColor' is an undeclared legacy runtime extra
-                    val textColor =
-                        ColorParser.parseColorStringWithBinding(
-                            TypedAttrs.rawString(a.fontColor), data, context
-                        )
-                            ?: ColorParser.parseColorStringWithBinding(
-                                TypedAttrs.undeclared(json, "textColor")?.asString, data, context
-                            )
-                            ?: Color.Black
-                    // font (weight spelling) / fontSize were never read on
-                    // the label (33 cross-effect: android rendered default
-                    // weight/size for font: bold / fontSize).
-                    //
-                    // `font` is declared `["string","binding"]` and `rawString`
-                    // returns `"@{expr}"` verbatim, so the local table could
-                    // only match the static face — Radio/font__static was
-                    // active on android while Radio/font__binding drew the
-                    // default weight. Resolve, then use the shared table (the
-                    // local copy also stopped three names short of it).
-                    val labelWeight =
-                        ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
-                    val labelSize = TypedAttrs.float(a.fontSize, data)
-                    Text(
-                        text = text,
-                        color = textColor,
-                        fontWeight = labelWeight,
-                        fontSize = labelSize?.sp ?: androidx.compose.ui.unit.TextUnit.Unspecified
-                    )
+                    RadioLabel(text = text, style = labelStyle(a, json, data, context))
                 }
             }
         }
@@ -633,20 +558,14 @@ class DynamicRadioComponent {
                 json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
             )
 
-            // Parse text color ('textColor' is an undeclared legacy runtime extra)
-            val textColor = ColorParser.parseColorStringWithBinding(
-                TypedAttrs.rawString(a.fontColor), data, context
-            )
-                ?: ColorParser.parseColorStringWithBinding(
-                    TypedAttrs.undeclared(json, "textColor")?.asString, data, context
-                )
-                ?: Color.Black
+            val labelStyle = labelStyle(a, json, data, context)
+            val colors = buttonColors(buttonColorValues(a, json, data, context))
 
             Column(modifier = modifier) {
                 // Add label if present
                 TypedAttrs.rawString(a.text)?.let {
                     val label = ResourceResolver.resolveTextValue(it, data, context)
-                    Text(text = label, color = textColor)
+                    RadioLabel(text = label, style = labelStyle)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -665,16 +584,89 @@ class DynamicRadioComponent {
                             modifier = stopped,
                             selected = selectedValue == item,
                             onClick = { onValueChange(item) },
-                            enabled = isEnabled
+                            enabled = isEnabled,
+                            colors = colors
                         )
                         Spacer(modifier = Modifier.width(spacingDp(a, data).dp))
-                        Text(text = item, color = textColor)
+                        RadioLabel(text = item, style = labelStyle)
                     }
                 }
             }
         }
 
         // ── Helpers ──
+
+        /**
+         * What every label a Radio draws is drawn with — the item's, the
+         * group's and each option's: the declared font (weight spelling),
+         * fontSize and fontColor (`textColor` is the undeclared legacy
+         * spelling of the colour, read after it). The items group drew no
+         * fontSize and the options group neither fontSize nor fontColor.
+         */
+        internal data class LabelStyle(val color: Color?, val weight: FontWeight?, val size: Float?)
+
+        // `font` is declared `["string","binding"]` and `rawString` returns
+        // `"@{expr}"` verbatim, so a local table could only match the static
+        // face (Radio/font__binding drew the default weight): resolve, then
+        // the shared table.
+        internal fun labelStyle(
+            a: RadioAttributes,
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): LabelStyle = LabelStyle(
+            color = ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.fontColor), data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "textColor")?.asString, data, context
+                ),
+            weight = ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data)),
+            size = TypedAttrs.float(a.fontSize, data)
+        )
+
+        /** A Radio's label. `fallbackColor` is the path's colour when none is declared. */
+        @Composable
+        private fun RadioLabel(text: String, style: LabelStyle, fallbackColor: Color = Color.Black) {
+            Text(
+                text = text,
+                color = style.color ?: fallbackColor,
+                fontWeight = style.weight,
+                fontSize = style.size?.sp ?: TextUnit.Unspecified
+            )
+        }
+
+        /**
+         * A Radio's button colours, the same on every path: the selected
+         * button `checkedColor`, else the legacy `selectedColor`, else
+         * `tintColor` — the control's accent (4f ruling, 2026-09-26: tintColor
+         * is the accent of what can be operated, not a text colour; kjui's
+         * codegen reads `selectedColor || tintColor` the same way); the others
+         * `uncheckedColor`, else `iconColor`, else the legacy `unselectedColor`.
+         * The items group passed no colours at all.
+         */
+        internal fun buttonColorValues(
+            a: RadioAttributes,
+            json: JsonObject,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): Pair<Color?, Color?> = Pair(
+            ColorParser.parseColorStringWithBinding(a.checkedColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "selectedColor")?.asString, data, context
+                )
+                ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.common.tintColor), data, context),
+            ColorParser.parseColorStringWithBinding(a.uncheckedColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(a.iconColor, data, context)
+                ?: ColorParser.parseColorStringWithBinding(
+                    TypedAttrs.undeclared(json, "unselectedColor")?.asString, data, context
+                )
+        )
+
+        @Composable
+        private fun buttonColors(values: Pair<Color?, Color?>): RadioButtonColors =
+            RadioButtonDefaults.colors(
+                selectedColor = values.first ?: RadioButtonDefaults.colors().selectedColor,
+                unselectedColor = values.second ?: RadioButtonDefaults.colors().unselectedColor
+            )
 
         private fun parseOptions(json: JsonObject, data: Map<String, Any>): List<Pair<String, String>> {
             // 'options' is an undeclared legacy runtime extra on Radio

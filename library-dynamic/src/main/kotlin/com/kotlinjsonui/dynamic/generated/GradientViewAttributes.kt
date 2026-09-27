@@ -31,11 +31,14 @@ data class GradientViewAttributes(
         OBLIQUE("Oblique");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): GradientDirection? = when (raw.lowercase()) {
-                "vertical" -> VERTICAL
-                "horizontal" -> HORIZONTAL
-                "oblique" -> OBLIQUE
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Vertical", "Horizontal", "Oblique")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): GradientDirection? = when (raw) {
+                "Vertical" -> VERTICAL
+                "Horizontal" -> HORIZONTAL
+                "Oblique" -> OBLIQUE
                 else -> null
             }
         }
@@ -90,7 +93,8 @@ data class GradientViewAttributes(
             (raw as? String)?.let { s ->
                 GradientDirection.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("GradientView.gradientDirection: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> GradientDirection.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("GradientView.gradientDirection: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

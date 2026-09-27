@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import android.content.Context
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalTextStyle
@@ -29,6 +30,7 @@ import com.kotlinjsonui.components.PartialAttributesText
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.CommonAttributes
 import com.kotlinjsonui.dynamic.generated.LabelAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -231,7 +233,7 @@ class DynamicTextComponent {
                 useAutoSize -> TextOverflow.Ellipsis
                 lines != null && lines > 0 -> TextOverflow.Ellipsis
                 else -> when (
-                    TypedAttrs.enumString(a.lineBreakMode) { it.json }?.lowercase()
+                    DeclaredSpelling.lowered(TypedAttrs.enumString(a.lineBreakMode) { it.json }, LabelAttributes.LineBreakMode.declaredSpellings)
                 ) {
                     "clip" -> TextOverflow.Clip
                     "tail", "word", "truncatetail" -> TextOverflow.Ellipsis
@@ -307,9 +309,18 @@ class DynamicTextComponent {
                 linkable = true,
                 modifier = modifier,
                 style = style,
-                linksEnabled = linksEnabled(json, data)
+                linksEnabled = linksEnabled(json, data),
+                // tintColor is the links' colour — the accent of what can be
+                // operated, not the text's (4f ruling, 2026-09-26); without
+                // one, Configuration.Colors.linkColor as before
+                linkColor = linkColor(a, data, context)
             )
         }
+
+        /** A linkable Label's link colour: its tintColor, or Unspecified (the configured link colour). */
+        internal fun linkColor(a: LabelAttributes, data: Map<String, Any>, context: Context?): Color =
+            ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.common.tintColor), data, context)
+                ?: Color.Unspecified
 
         // ── Partial Attributes Text ──
 
@@ -399,7 +410,7 @@ class DynamicTextComponent {
             "textAlign", "underline", "strikethrough", "textShadow",
             "lineHeight", "lineHeightMultiple", "lineSpacing", "edgeInset",
             "onclick", "selected", "highlightAttributes", "highlightColor",
-            "hint", "placeholder", "hintAttributes", "hintColor"
+            "hint", "placeholder", "hintAttributes", "hintColor", "tintColor"
         )
 
         private val WEIGHT_NAMES = mapOf(
@@ -577,9 +588,13 @@ class DynamicTextComponent {
             }
         }
 
+        // A written textAlign decides, as written (Left / Right / Center — a
+        // spelling not declared places nothing); only a Label with none is
+        // placed by its gravity. kjui's codegen reads it so
+        // (text_component.rb: compose_text_align, then gravity_text_align).
         private fun resolveTextAlign(a: LabelAttributes, json: JsonObject? = null): TextAlign? {
-            TypedAttrs.staticEnumString(a.textAlign) { it.json }?.let { align ->
-                return when (align.lowercase()) {
+            TypedAttrs.staticEnumString(a.textAlign) { it.json }?.let { written ->
+                return when (DeclaredSpelling.lowered(written, LabelAttributes.TextAlign.declaredSpellings)) {
                     "center" -> TextAlign.Center
                     "right" -> TextAlign.End
                     "left" -> TextAlign.Start
@@ -718,10 +733,20 @@ class DynamicTextComponent {
          * is its text's width. It sat at the start whatever the gravity.
          * kjui's codegen places it the same (TextComponent.gravity_text_align).
          */
+        /**
+         * A gravity word as its declared spelling, lowercased — null for one
+         * the SSoT does not declare (`Right`, `CENTER`), which places nothing.
+         * kjui's codegen reads the parts so (EnumSpelling.lowered, common /
+         * gravity) in gravity_text_align and label_vertical_alignment; these
+         * two lowercased any case.
+         */
+        private fun gravitySpelling(part: String): String? =
+            DeclaredSpelling.lowered(part.trim(), CommonAttributes.Gravity.declaredSpellings)
+
         internal fun gravityTextAlign(json: JsonObject): TextAlign? {
             val width = TypedAttrs.rawKey(json, "width")
             val wraps = width == null ||
-                (width.isJsonPrimitive && width.asString.lowercase() in setOf("wrapcontent", "wrap_content"))
+                (width.isJsonPrimitive && width.asString in setOf("wrapContent", "wrap_content"))
             val ownWidth = !wraps || TypedAttrs.rawKey(json, "minWidth") != null ||
                 TypedAttrs.rawKey(json, "widthWeight") != null || TypedAttrs.rawKey(json, "weight") != null
             if (!ownWidth) return null
@@ -731,7 +756,7 @@ class DynamicTextComponent {
                 gravity.isJsonArray -> gravity.asJsonArray.map { it.asString }
                 gravity.isJsonPrimitive -> gravity.asString.split("|")
                 else -> emptyList()
-            }.map { it.trim().lowercase() }
+            }.mapNotNull { gravitySpelling(it) }
             return when {
                 "right" in parts -> TextAlign.End
                 parts.any { it in setOf("center", "centerhorizontal", "center_horizontal", "centerinparent", "center_in_parent") } -> TextAlign.Center
@@ -752,7 +777,7 @@ class DynamicTextComponent {
         internal fun labelVerticalAlignment(json: JsonObject): Alignment.Vertical? {
             val height = TypedAttrs.rawKey(json, "height")
             val wraps = height == null ||
-                (height.isJsonPrimitive && height.asString.lowercase() in setOf("wrapcontent", "wrap_content"))
+                (height.isJsonPrimitive && height.asString in setOf("wrapContent", "wrap_content"))
             val ownFrame = !wraps || TypedAttrs.rawKey(json, "minHeight") != null ||
                 TypedAttrs.rawKey(json, "heightWeight") != null || TypedAttrs.rawKey(json, "weight") != null
             if (!ownFrame) return null
@@ -762,7 +787,7 @@ class DynamicTextComponent {
                 gravity.isJsonArray -> gravity.asJsonArray.map { it.asString }
                 gravity.isJsonPrimitive -> gravity.asString.split("|")
                 else -> emptyList()
-            }.map { it.trim().lowercase() }
+            }.mapNotNull { gravitySpelling(it) }
             val centered = setOf("center", "centervertical", "center_vertical", "centerinparent", "center_in_parent")
             return when {
                 "bottom" in parts -> Alignment.Bottom

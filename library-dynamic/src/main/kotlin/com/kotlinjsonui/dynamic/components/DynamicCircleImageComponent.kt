@@ -168,8 +168,8 @@ class DynamicCircleImageComponent {
             // drawn with Image's table: no contentMode draws the declared
             // default, fit.
             val mode = TypedAttrs.enumStringResolved(a.contentMode, data) { it.json }
-            val contentScale = ImageContentScale.scale(mode)
-            val contentAlignment = ImageContentScale.alignment(mode)
+            val contentScale = ImageContentScale.scale(mode, ImageAttributes.ContentMode.declaredSpellings)
+            val contentAlignment = ImageContentScale.alignment(mode, ImageAttributes.ContentMode.declaredSpellings)
 
             // A resource that is not found draws no image, and the node still
             // takes its place and its stages, as on Image.

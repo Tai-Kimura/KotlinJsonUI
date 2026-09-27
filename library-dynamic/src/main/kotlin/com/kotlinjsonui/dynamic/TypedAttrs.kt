@@ -345,6 +345,37 @@ object DebugDiagnostics {
 }
 
 /**
+ * Where an enum value that is not one of its declared spellings is named: the
+ * generated parse (AttrWarnings — "Label.lineBreakMode: unknown enum value
+ * 'X'", with " — did you mean 'x'?" for a case-only miss) and the hand-written
+ * comparisons over values no parse saw (DeclaredSpelling, the same sentence).
+ * Neither had a destination: AttrWarnings.handler was set by tests only, so a
+ * near miss the parse named went nowhere. In a debuggable build both go to
+ * logcat, unless the app installed its own; a release build names nothing.
+ */
+object EnumSpellingWarnings {
+    private const val TAG = "JsonUIEnum"
+
+    /**
+     * A value read raw can be named by the helper and by the node's own parse
+     * in the same words (ModifierBuilder's `alignment` / `effectStyle`); the
+     * log carries each sentence once.
+     */
+    private val logged = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val logOnce: (String) -> Unit = { if (logged.add(it)) Log.w(TAG, it) }
+
+    fun install(context: android.content.Context?) {
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        if (com.kotlinjsonui.dynamic.generated.AttrWarnings.handler == null) {
+            com.kotlinjsonui.dynamic.generated.AttrWarnings.handler = logOnce
+        }
+        if (com.kotlinjsonui.core.DeclaredSpelling.warningSink == null) {
+            com.kotlinjsonui.core.DeclaredSpelling.warningSink = logOnce
+        }
+    }
+}
+
+/**
  * A resource NAME that resolved to nothing.
  *
  * `getIdentifier` returns 0 for a name the app does not ship, and every caller

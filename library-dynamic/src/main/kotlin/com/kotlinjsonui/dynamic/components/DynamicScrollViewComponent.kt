@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import com.kotlinjsonui.components.DEFAULT_KEYBOARD_CLEARANCE_DP
 import com.kotlinjsonui.components.keyboardAvoidance
 import androidx.compose.foundation.gestures.scrollBy
@@ -99,7 +100,11 @@ class DynamicScrollViewComponent {
             // emits (ContentInsetHelper), because the two renders of one
             // layout have to inset by the same amount.
             val safeInset = ContentInsetBehavior.safeAreaPadding(
-                TypedAttrs.enumString(a.contentInsetAdjustmentBehavior) { it.json },
+                // as declared (ScrollView's row is an enum; Collection's is a string)
+                DeclaredSpelling.lowered(
+                    TypedAttrs.enumString(a.contentInsetAdjustmentBehavior) { it.json },
+                    ScrollViewAttributes.ContentInsetAdjustmentBehavior.declaredSpellings
+                ),
                 horizontal = isHorizontal
             ) ?: PaddingValues(0.dp)
 
@@ -108,7 +113,7 @@ class DynamicScrollViewComponent {
             // item-agnostic: a huge delta clamps at the end (bottom), and
             // backing up half the consumed extent is the centre. One-shot,
             // same contract as the codegen emit and Collection's anchor.
-            val anchor = TypedAttrs.enumString(a.defaultScrollAnchor) { it.json }?.lowercase()
+            val anchor = DeclaredSpelling.lowered(TypedAttrs.enumString(a.defaultScrollAnchor) { it.json }, ScrollViewAttributes.DefaultScrollAnchor.declaredSpellings)
                 ?.takeIf { it == "bottom" || it == "center" }
             if (anchor != null) {
                 LaunchedEffect(Unit) {

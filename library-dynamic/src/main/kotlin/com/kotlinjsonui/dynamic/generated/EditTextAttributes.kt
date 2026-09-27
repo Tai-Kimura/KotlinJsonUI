@@ -118,7 +118,7 @@ data class EditTextAttributes(
     val secure: AttrValue<Boolean>? = null,
     /** Text content (binding for two-way). `value` folds here (sjui textfield_converter.rb:527 reads `text || value || bind`). [aliases: value; binding: two-way] */
     val text: AttrValue<String>? = null,
-    /** Text alignment */
+    /** Where the field's text sits across it: Left the start, Center the middle, Right the end; default Left (the start). A TextField's text is placed horizontally by textAlign alone - its gravity positions its content only on the vertical axis, the one textAlign does not own (4f ruling 2026-09-27: iOS, Compose and the web each put a TextField's text at the start whatever its gravity). */
     val textAlign: AttrEnum<TextAlign>? = null,
     /** Text padding left */
     val textPaddingLeft: Double? = null,
@@ -136,12 +136,15 @@ data class EditTextAttributes(
         ALL_CHARACTERS("allCharacters");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): AutocapitalizationType? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("none", "words", "sentences", "allCharacters", "characters")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): AutocapitalizationType? = when (raw) {
                 "none" -> NONE
                 "words" -> WORDS
                 "sentences" -> SENTENCES
-                "allcharacters", "characters" -> ALL_CHARACTERS
+                "allCharacters", "characters" -> ALL_CHARACTERS
                 else -> null
             }
         }
@@ -153,8 +156,11 @@ data class EditTextAttributes(
         NO("no");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): AutocorrectionType? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("default", "yes", "no", "on", "off", "true", "false")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): AutocorrectionType? = when (raw) {
                 "default" -> DEFAULT
                 "yes", "on", "true" -> YES
                 "no", "off", "false" -> NO
@@ -170,12 +176,15 @@ data class EditTextAttributes(
         ROUNDED_RECT("roundedRect");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): BorderStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("none", "line", "bezel", "roundedRect", "RoundedRect", "Line", "Bezel")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): BorderStyle? = when (raw) {
                 "none" -> NONE
-                "line" -> LINE
-                "bezel" -> BEZEL
-                "roundedrect" -> ROUNDED_RECT
+                "line", "Line" -> LINE
+                "bezel", "Bezel" -> BEZEL
+                "roundedRect", "RoundedRect" -> ROUNDED_RECT
                 else -> null
             }
         }
@@ -198,22 +207,25 @@ data class EditTextAttributes(
         URL("URL");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ContentType? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("username", "password", "newPassword", "oneTimeCode", "email", "emailAddress", "name", "givenName", "familyName", "telephoneNumber", "tel", "phone", "streetAddress", "postalCode", "country", "creditCardNumber", "URL")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ContentType? = when (raw) {
                 "username" -> USERNAME
                 "password" -> PASSWORD
-                "newpassword" -> NEW_PASSWORD
-                "onetimecode" -> ONE_TIME_CODE
-                "email", "emailaddress" -> EMAIL
+                "newPassword" -> NEW_PASSWORD
+                "oneTimeCode" -> ONE_TIME_CODE
+                "email", "emailAddress" -> EMAIL
                 "name" -> NAME
-                "givenname" -> GIVEN_NAME
-                "familyname" -> FAMILY_NAME
-                "telephonenumber", "tel", "phone" -> TELEPHONE_NUMBER
-                "streetaddress" -> STREET_ADDRESS
-                "postalcode" -> POSTAL_CODE
+                "givenName" -> GIVEN_NAME
+                "familyName" -> FAMILY_NAME
+                "telephoneNumber", "tel", "phone" -> TELEPHONE_NUMBER
+                "streetAddress" -> STREET_ADDRESS
+                "postalCode" -> POSTAL_CODE
                 "country" -> COUNTRY
-                "creditcardnumber" -> CREDIT_CARD_NUMBER
-                "url" -> URL
+                "creditCardNumber" -> CREDIT_CARD_NUMBER
+                "URL" -> URL
                 else -> null
             }
         }
@@ -235,8 +247,11 @@ data class EditTextAttributes(
         DATETIME("datetime");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Input? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("default", "alphabet", "allphabet", "email", "number", "phone", "url", "password", "decimal", "signedDecimal", "date", "time", "datetime")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Input? = when (raw) {
                 "default" -> DEFAULT
                 "alphabet" -> ALPHABET
                 "allphabet" -> ALLPHABET
@@ -246,7 +261,7 @@ data class EditTextAttributes(
                 "url" -> URL
                 "password" -> PASSWORD
                 "decimal" -> DECIMAL
-                "signeddecimal" -> SIGNED_DECIMAL
+                "signedDecimal" -> SIGNED_DECIMAL
                 "date" -> DATE
                 "time" -> TIME
                 "datetime" -> DATETIME
@@ -265,14 +280,17 @@ data class EditTextAttributes(
         MULTILINE("multiline");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): InputType? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("text", "number", "numberDecimal", "phone", "email", "password", "multiline", "textEmailAddress", "textPassword")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): InputType? = when (raw) {
                 "text" -> TEXT
                 "number" -> NUMBER
-                "numberdecimal" -> NUMBER_DECIMAL
+                "numberDecimal" -> NUMBER_DECIMAL
                 "phone" -> PHONE
-                "email", "textemailaddress" -> EMAIL
-                "password", "textpassword" -> PASSWORD
+                "email", "textEmailAddress" -> EMAIL
+                "password", "textPassword" -> PASSWORD
                 "multiline" -> MULTILINE
                 else -> null
             }
@@ -293,19 +311,22 @@ data class EditTextAttributes(
         GOOGLE("Google");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ReturnKeyType? = when (raw.lowercase()) {
-                "done" -> DONE
-                "go" -> GO
-                "next" -> NEXT
-                "return" -> RETURN
-                "search" -> SEARCH
-                "send" -> SEND
-                "continue" -> CONTINUE
-                "join" -> JOIN
-                "route" -> ROUTE
-                "yahoo" -> YAHOO
-                "google" -> GOOGLE
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Done", "Go", "Next", "Return", "Search", "Send", "Continue", "Join", "Route", "Yahoo", "Google")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ReturnKeyType? = when (raw) {
+                "Done" -> DONE
+                "Go" -> GO
+                "Next" -> NEXT
+                "Return" -> RETURN
+                "Search" -> SEARCH
+                "Send" -> SEND
+                "Continue" -> CONTINUE
+                "Join" -> JOIN
+                "Route" -> ROUTE
+                "Yahoo" -> YAHOO
+                "Google" -> GOOGLE
                 else -> null
             }
         }
@@ -317,11 +338,14 @@ data class EditTextAttributes(
         RIGHT("Right");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): TextAlign? = when (raw.lowercase()) {
-                "left" -> LEFT
-                "center" -> CENTER
-                "right" -> RIGHT
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Center", "Right", "left", "center", "right")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): TextAlign? = when (raw) {
+                "Left", "left" -> LEFT
+                "Center", "center" -> CENTER
+                "Right", "right" -> RIGHT
                 else -> null
             }
         }
@@ -479,7 +503,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 AutocapitalizationType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.autocapitalizationType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> AutocapitalizationType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.autocapitalizationType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -488,7 +513,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 AutocorrectionType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.autocorrectionType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> AutocorrectionType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.autocorrectionType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -497,7 +523,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 BorderStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.borderStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> BorderStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.borderStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -506,7 +533,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 ContentType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.contentType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ContentType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.contentType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -515,7 +543,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 Input.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.input: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Input.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.input: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -524,7 +553,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 InputType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.inputType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> InputType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.inputType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -533,7 +563,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 ReturnKeyType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.returnKeyType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ReturnKeyType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.returnKeyType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -542,7 +573,8 @@ data class EditTextAttributes(
             (raw as? String)?.let { s ->
                 TextAlign.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("EditText.textAlign: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> TextAlign.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("EditText.textAlign: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

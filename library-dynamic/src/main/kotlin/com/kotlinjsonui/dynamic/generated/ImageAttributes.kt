@@ -32,7 +32,7 @@ data class ImageAttributes(
     val minZoom: Double? = null,
     /** Rendering mode */
     val renderingMode: AttrEnum<RenderingMode>? = null,
-    /** Image source name (can be data binding) */
+    /** Image source name (can be data binding). On web it is passed to `<img src>` as a path, since web has no asset catalog, so a bare image name belongs in srcName there (rjui warns). */
     val src: AttrValue<String>? = null,
     /** Image source name (alias, can be data binding) */
     val srcName: AttrValue<String>? = null,
@@ -51,17 +51,20 @@ data class ImageAttributes(
         ASPECT_FIT("AspectFit");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ContentMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("fit", "fill", "center", "top", "bottom", "left", "right", "AspectFill", "AspectFit", "Center", "ScaleToFill", "Top", "Bottom", "Left", "Right")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ContentMode? = when (raw) {
                 "fit" -> FIT
-                "fill", "scaletofill" -> FILL
-                "center" -> CENTER
-                "top" -> TOP
-                "bottom" -> BOTTOM
-                "left" -> LEFT
-                "right" -> RIGHT
-                "aspectfill" -> ASPECT_FILL
-                "aspectfit" -> ASPECT_FIT
+                "fill", "ScaleToFill" -> FILL
+                "center", "Center" -> CENTER
+                "top", "Top" -> TOP
+                "bottom", "Bottom" -> BOTTOM
+                "left", "Left" -> LEFT
+                "right", "Right" -> RIGHT
+                "AspectFill" -> ASPECT_FILL
+                "AspectFit" -> ASPECT_FIT
                 else -> null
             }
         }
@@ -72,8 +75,11 @@ data class ImageAttributes(
         EAGER("eager");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Loading? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("lazy", "eager")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Loading? = when (raw) {
                 "lazy" -> LAZY
                 "eager" -> EAGER
                 else -> null
@@ -86,8 +92,11 @@ data class ImageAttributes(
         TEMPLATE("template");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): RenderingMode? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("original", "template")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): RenderingMode? = when (raw) {
                 "original" -> ORIGINAL
                 "template" -> TEMPLATE
                 else -> null
@@ -159,7 +168,8 @@ data class ImageAttributes(
             (raw as? String)?.let { s ->
                 ContentMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Image.contentMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ContentMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Image.contentMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -168,7 +178,8 @@ data class ImageAttributes(
             (raw as? String)?.let { s ->
                 Loading.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Image.loading: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Loading.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Image.loading: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -177,7 +188,8 @@ data class ImageAttributes(
             (raw as? String)?.let { s ->
                 RenderingMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Image.renderingMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> RenderingMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Image.renderingMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

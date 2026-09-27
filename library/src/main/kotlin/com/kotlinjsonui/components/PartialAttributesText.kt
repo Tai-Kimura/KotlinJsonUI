@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
@@ -114,7 +115,8 @@ fun PartialAttributesText(
     linkable: Boolean = false,
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
-    linksEnabled: Boolean = true
+    linksEnabled: Boolean = true,
+    linkColor: Color = Color.Unspecified
 ) {
     val operable = linksEnabled && !LocalInteractionStopped.current
     val ranges = if (operable) partialAttributes else partialAttributes.map { it.copy(onClick = null) }
@@ -124,7 +126,8 @@ fun PartialAttributesText(
             partialAttributes = ranges,
             modifier = modifier,
             style = style,
-            linksEnabled = operable
+            linksEnabled = operable,
+            linkColor = linkColor.takeOrElse { Configuration.Colors.linkColor }
         )
     } else {
         PartialAttributesTextImpl(
@@ -196,7 +199,8 @@ private fun LinkablePartialAttributesText(
     partialAttributes: List<PartialAttribute>,
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
-    linksEnabled: Boolean = true
+    linksEnabled: Boolean = true,
+    linkColor: Color = Configuration.Colors.linkColor
 ) {
     val context = LocalContext.current
 
@@ -251,7 +255,7 @@ private fun LinkablePartialAttributesText(
             )
             addStyle(
                 style = SpanStyle(
-                    color = Configuration.Colors.linkColor,
+                    color = linkColor,
                     textDecoration = TextDecoration.Underline
                 ),
                 start = match.range.first,
@@ -277,7 +281,7 @@ private fun LinkablePartialAttributesText(
             )
             addStyle(
                 style = SpanStyle(
-                    color = Configuration.Colors.linkColor,
+                    color = linkColor,
                     textDecoration = TextDecoration.Underline
                 ),
                 start = match.range.first,
@@ -303,7 +307,7 @@ private fun LinkablePartialAttributesText(
             )
             addStyle(
                 style = SpanStyle(
-                    color = Configuration.Colors.linkColor,
+                    color = linkColor,
                     textDecoration = TextDecoration.Underline
                 ),
                 start = match.range.first,

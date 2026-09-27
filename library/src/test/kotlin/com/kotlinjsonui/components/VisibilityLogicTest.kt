@@ -17,9 +17,11 @@ class VisibilityLogicTest {
     }
 
     @Test
-    fun `visibility GONE case insensitive should not render`() {
+    fun `visibility GONE is no spelling of gone and renders`() {
+        // an enum value is its declared spelling, case and all (jsonui-cli
+        // 1.9.0): the codegen compares as written, and so does the wrapper
         val visibility = "GONE"
-        assertFalse(shouldRender(visibility))
+        assertTrue(shouldRender(visibility))
     }
 
     @Test
@@ -30,10 +32,10 @@ class VisibilityLogicTest {
     }
 
     @Test
-    fun `visibility INVISIBLE case insensitive should render with alpha 0`() {
+    fun `visibility INVISIBLE is no spelling of invisible and renders with alpha 1`() {
         val visibility = "INVISIBLE"
         assertTrue(shouldRender(visibility))
-        assertEquals(0f, getAlpha(visibility), 0.01f)
+        assertEquals(1f, getAlpha(visibility), 0.01f)
     }
 
     @Test
@@ -148,13 +150,14 @@ class VisibilityLogicTest {
         assertEquals(VisibilityResult.GONE, result)
     }
 
-    // Helper functions that mirror the logic in VisibilityWrapper
+    // Helper functions that mirror the logic in VisibilityWrapper (its
+    // reading: DeclaredSpelling.lowered over the declared spellings)
     private fun shouldRender(visibility: String): Boolean {
-        return visibility.lowercase() != "gone"
+        return com.kotlinjsonui.core.DeclaredSpelling.lowered(visibility, com.kotlinjsonui.core.DeclaredSpelling.VISIBILITY) != "gone"
     }
 
     private fun getAlpha(visibility: String): Float {
-        return when (visibility.lowercase()) {
+        return when (com.kotlinjsonui.core.DeclaredSpelling.lowered(visibility, com.kotlinjsonui.core.DeclaredSpelling.VISIBILITY)) {
             "invisible" -> 0f
             else -> 1f
         }

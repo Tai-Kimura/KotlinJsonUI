@@ -27,19 +27,19 @@ data class ButtonAttributes(
     val fontSize: Double? = null,
     /** Font weight (e.g., 'bold', 'semibold', '500', 600, or binding) [accepts: string | number] */
     val fontWeight: AttrValue<Any>? = null,
-    /** Background when highlighted - hex string or color name from colors.json */
+    /** Background while pressed: UIButton's highlighted state, the same colour as tapBackground under its older name. tapBackground wins when both are set. Hex string or color name from colors.json */
     val highlightBackground: String? = null,
     /** Highlight color - hex string or color name from colors.json (binding supported) [aliases: hilightColor] */
     val highlightColor: AttrValue<String>? = null,
     /** Button image - asset name (binding supported) */
     val image: AttrValue<String>? = null,
-    /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onclick'. This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. Declared from the implementation, which already read it: sjui button_converter.rb:68-129 (plan 51-E). */
+    /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onClick' (alias 'onclick'). This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. Declared from the implementation, which already read it: sjui button_converter.rb:68-129 (plan 51-E). */
     val partialAttributes: List<Any?>? = null,
-    /** Background when tapped - hex string or color name from colors.json */
+    /** Background while pressed. On web it also shows on hover (the web has hover; iOS and Android do not). Hex string or color name from colors.json */
     val tapBackground: String? = null,
     /** Button text (can be data binding, supports interpolation) */
     val text: AttrValue<String>? = null,
-    /** Text alignment */
+    /** Where the button's text sits across it: Left the start, Center the middle, Right the end; default Center. A Button's text is placed horizontally by textAlign alone - its gravity positions its content only on the vertical axis, the one textAlign does not own (4f ruling 2026-09-27: iOS, Compose and the web each put a Button's text in the middle whatever its gravity; iOS drew Left and Right in the middle too until jsonui-cli 1.9.0 / SwiftJsonUI 10.29.0). On Compose the text takes the button's width to be placed when the button has a width of its own (declared, not wrapContent, or a weight) - a wrap-width button is its text's width - on kjui codegen and KotlinJsonUI Dynamic alike (round 17; it sat in the middle whatever textAlign said). */
     val textAlign: AttrEnum<TextAlign>? = null,
 ) {
     enum class ButtonType(val json: String) {
@@ -48,8 +48,11 @@ data class ButtonAttributes(
         RESET("reset");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ButtonType? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("button", "submit", "reset")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ButtonType? = when (raw) {
                 "button" -> BUTTON
                 "submit" -> SUBMIT
                 "reset" -> RESET
@@ -64,12 +67,32 @@ data class ButtonAttributes(
         RIGHT("Right");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): TextAlign? = when (raw.lowercase()) {
-                "left" -> LEFT
-                "center" -> CENTER
-                "right" -> RIGHT
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Center", "Right")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): TextAlign? = when (raw) {
+                "Left" -> LEFT
+                "Center" -> CENTER
+                "Right" -> RIGHT
                 else -> null
+            }
+        }
+    }
+
+    object PartialAttributes {
+        object LineBreakMode {
+            /** The spellings `partialAttributes.lineBreakMode` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
+        }
+        object TextAlign {
+            /** The spellings `partialAttributes.textAlign` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Right", "Center")
+        }
+        object Underline {
+            object LineStyle {
+                /** The spellings `partialAttributes.underline.lineStyle` is declared as — case-sensitive. */
+                val declaredSpellings: List<String> = listOf("Single", "Double", "Thick", "None")
             }
         }
     }
@@ -139,7 +162,8 @@ data class ButtonAttributes(
             (raw as? String)?.let { s ->
                 ButtonType.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Button.buttonType: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ButtonType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Button.buttonType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -148,7 +172,8 @@ data class ButtonAttributes(
             (raw as? String)?.let { s ->
                 TextAlign.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Button.textAlign: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> TextAlign.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Button.textAlign: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

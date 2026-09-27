@@ -1,9 +1,16 @@
 package com.kotlinjsonui.dynamic.helpers
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.composed
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculateZoom
@@ -537,17 +544,15 @@ object ModifierBuilder {
             }
         }
 
-        // Background color, with `highlighted` swapping it for the highlight
-        // colour. UIKit's pressed/selected appearance flag: when set (literal
-        // true or a bool binding) the background becomes
-        // `tapBackground ?: highlightBackground` — sjui's
-        // apply_highlighted_to_bag, and what C landed on the codegen path
-        // (modifier_builder.rb:530-546). Neither spelling was read here at
-        // all, so `View/highlighted__true` drew its plain background while the
-        // codegen and web both drew red.
+        // Background color, with `highlighted` swapping it for
+        // `highlightBackground`: the background while `highlighted` (literal
+        // true or a bool binding) is true (4f ruling, 2026-09-26).
+        // `tapBackground` is the background while the node is PRESSED — the
+        // clickable stage draws it (pressedBackgroundClickable); it was read
+        // here, first, as the highlighted colour, so a highlighted node drew
+        // its tap colour and a pressed one drew nothing.
         val highlightBg = if (resolveHighlighted(json, data) == true) {
-            ColorParser.parseColorWithBinding(json, "tapBackground", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
+            ColorParser.parseColorWithBinding(json, "highlightBackground", data, context)
         } else null
         val effectiveBg = highlightBg ?: bgColor
         if (effectiveBg != null) {
@@ -565,8 +570,10 @@ object ModifierBuilder {
         if (effectType != "Blur" && effectType != "BlurView") {
             val effectStyle = json.get("effectStyle")
                 ?.takeIf { it.isJsonPrimitive }?.asString
-            EffectStyleTable.scrim(effectStyle)?.let { result = result.background(it) }
-            EffectStyleTable.blurDp(effectStyle)?.let { result = result.blur(it.dp) }
+            // read raw (no parse saw it): named as common.effectStyle's
+            val spellings = com.kotlinjsonui.dynamic.generated.CommonAttributes.EffectStyle.declaredSpellings
+            EffectStyleTable.scrim(effectStyle, spellings, "common.effectStyle")?.let { result = result.background(it) }
+            EffectStyleTable.blurDp(effectStyle, spellings, "common.effectStyle")?.let { result = result.blur(it.dp) }
         }
 
         // clipToBounds — last in the background group, exactly where
@@ -681,11 +688,15 @@ object ModifierBuilder {
             // TalkBack is told it is a button where the shared rule says so
             // (TapAccessibility): not where the tappable is a control already
             // or holds one.
-            result = result.clickable(
-                enabled = enabled != false,
-                role = if (TapAccessibility.isButton(json)) Role.Button else null
-            ) {
-                handlers.forEach { resolveEventHandler(it, data, viewId) }
+            val role = if (TapAccessibility.isButton(json)) Role.Button else null
+            val onTap: () -> Unit = { handlers.forEach { resolveEventHandler(it, data, viewId) } }
+            // `tapBackground` is the background while the node is pressed —
+            // on every node with a tap (4f ruling, 2026-09-26).
+            val tapBg = ColorParser.parseColorWithBinding(json, "tapBackground", data)
+            result = if (tapBg != null) {
+                result.then(pressedBackgroundClickable(tapBg, enabled != false, role, onTap))
+            } else {
+                result.clickable(enabled = enabled != false, role = role, onClick = onTap)
             }
         }
         // `common.enabled` must be readable from the a11y tree (that is what a
@@ -697,6 +708,30 @@ object ModifierBuilder {
             result = result.semantics { disabled() }
         }
         return applyInteractionBlocker(result, json, data)
+    }
+
+    /**
+     * The click, with `color` as the background while it is pressed: under
+     * what the node holds, over its declared background, inside its clip —
+     * from the press state of this click's own interaction source.
+     */
+    internal fun pressedBackgroundClickable(
+        color: Color,
+        enabled: Boolean,
+        role: Role?,
+        onClick: () -> Unit
+    ): Modifier = Modifier.composed {
+        val source = remember { MutableInteractionSource() }
+        val pressed by source.collectIsPressedAsState()
+        Modifier
+            .then(if (pressed) Modifier.background(color) else Modifier)
+            .clickable(
+                interactionSource = source,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                role = role,
+                onClick = onClick
+            )
     }
 
     /**
@@ -1231,7 +1266,11 @@ object ModifierBuilder {
     internal fun parseAlignmentString(json: JsonObject): AlignFlags? {
         val element = json.get("alignment") ?: return null
         if (!element.isJsonPrimitive || !element.asJsonPrimitive.isString) return null
-        val tokens = ALIGNMENT_GRAVITY_TOKENS[element.asString.lowercase()] ?: return null
+        // as declared, read raw (DeclaredSpelling names another case)
+        val declared = DeclaredSpelling.lowered(
+            element.asString, com.kotlinjsonui.dynamic.generated.CommonAttributes.Alignment.declaredSpellings, "common.alignment"
+        ) ?: return null
+        val tokens = ALIGNMENT_GRAVITY_TOKENS[declared] ?: return null
         return foldGravityTokens(tokens)
     }
 

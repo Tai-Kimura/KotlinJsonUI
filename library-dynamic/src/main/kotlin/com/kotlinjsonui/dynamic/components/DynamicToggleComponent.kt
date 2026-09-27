@@ -30,7 +30,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  *
  * Toggle in iOS maps to Switch in Android.
  * This is a distinct component from DynamicSwitchComponent with its own
- * attribute handling (data/isOn for state, onclick/onClick for handler,
+ * attribute handling (isOn for state, onclick/onClick for handler,
  * tintColor for both thumb+track, backgroundColor for unchecked track).
  *
  * Attribute access goes through the generated [ToggleAttributes]
@@ -39,8 +39,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * ModifierBuilder pipeline.
  *
  * Supported JSON attributes:
- * - data: @{variable} for checked state binding (primary)
- * - isOn: Boolean for checked state (fallback)
+ * - isOn (or value / checked): Boolean or @{variable} for checked state
  * - onclick/onClick: Event handler
  * - enabled: Boolean or @{variable} to enable/disable
  * - tintColor: Hex color for checkedThumbColor + checkedTrackColor (with 0.5f alpha)
@@ -51,25 +50,32 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  */
 class DynamicToggleComponent {
     companion object {
-        /** The data key the state is bound to: the legacy `data` attribute. */
-        internal fun bindingVariableOf(json: JsonObject): String? {
-            val dataAttr = json.get("data")?.takeIf { it.isJsonPrimitive }?.asString ?: return null
-            return ModifierBuilder.extractBindingProperty("@{$dataAttr}")
-                ?: ModifierBuilder.extractBindingProperty(dataAttr)
-                ?: dataAttr
-        }
+        /**
+         * The data key the state is bound to: the first of isOn, value,
+         * checked that is bound — Switch's reading (Toggle is an `_alias_of`
+         * Switch, with its attributes), and where DynamicView folds a lone
+         * `bind` (BindFold). A bound `isOn` was read and never written back,
+         * `value` / `checked` were not read, and neither was `bind`.
+         *
+         * Not `data`: it is the structural key that declares a layout's data
+         * (common.data, an array), and the legacy Toggle read a string there
+         * as its binding — a structural key read as a value, the misread
+         * ComponentRawReadGateTest now counts (0 Toggle nodes with `data` on
+         * the consumer layouts, 2026-09-26).
+         */
+        internal fun bindingVariableOf(a: ToggleAttributes): String? =
+            TypedAttrs.binding(a.isOn ?: a.value ?: a.checked)
 
-        /** The state: the bound value, else `isOn`. */
+        /** The state: the bound value, else the first of isOn, value, checked that is set. */
         internal fun checkedOf(a: ToggleAttributes, data: Map<String, Any>, bindingVariable: String?): Boolean =
             when {
                 bindingVariable != null -> (data[bindingVariable] as? Boolean) ?: false
-                a.isOn != null -> TypedAttrs.boolean(a.isOn, data) ?: false
-                else -> false
+                else -> TypedAttrs.boolean(a.isOn ?: a.value ?: a.checked, data) ?: false
             }
 
         /** Toggle-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "isOn", "enabled", "tintColor", "labelAttributes", "labelPosition",
+            "isOn", "value", "checked", "enabled", "tintColor", "labelAttributes", "labelPosition",
             "onValueChange", "onToggle"
         )
 
@@ -90,10 +96,8 @@ class DynamicToggleComponent {
                 context = context
             )
 
-            // Parse checked state: 'data' attribute (@{var}) or 'isOn' (boolean).
-            // 'data' is a structural key the legacy Toggle reuses as a binding
-            // string — kept as a raw node read.
-            val bindingVariable = bindingVariableOf(json)
+            // Parse checked state: a bound isOn / value / checked, else its value
+            val bindingVariable = bindingVariableOf(a)
             val checked = checkedOf(a, data, bindingVariable)
 
             // State for the toggle

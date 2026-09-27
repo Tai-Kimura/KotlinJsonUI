@@ -42,7 +42,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * for backward compatibility (both spellings parse with the generated
  * [CheckBoxAttributes] — the Check section is a stub alias).
  *
- * State binding priority: isOn > checked > bind
+ * State binding priority: isOn > checked
  *
  * Attribute access goes through the generated [CheckBoxAttributes]
  * extraction (typed, alias-aware, L1-marker-aware) via the [TypedAttrs]
@@ -51,7 +51,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  *
  * Supported JSON attributes:
  * - isOn/checked: Boolean or @{variable} for checked state
- * - bind: @{variable} for two-way binding (lowest priority)
+ * - bind: folded by DynamicView into isOn (BindFold)
  * - onValueChange: @{functionName} for change handler (binding format only)
  * - enabled: Boolean or @{variable} to enable/disable
  * - label/text: String label text to display next to checkbox
@@ -67,7 +67,7 @@ class DynamicCheckBoxComponent {
     companion object {
         /** CheckBox-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "isOn", "checked", "bind", "enabled", "onValueChange",
+            "isOn", "checked", "enabled", "onValueChange",
             "label", "text", "icon", "selectedIcon",
             "spacing", "fontSize", "fontColor", "font", "uncheckedColor"
         )
@@ -112,7 +112,7 @@ class DynamicCheckBoxComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable (priority: isOn > checked > bind)
+            // Parse binding variable (priority: isOn > checked)
             val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state
@@ -167,7 +167,7 @@ class DynamicCheckBoxComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable (priority: isOn > checked > bind)
+            // Parse binding variable (priority: isOn > checked)
             val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state
@@ -297,7 +297,7 @@ class DynamicCheckBoxComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable (priority: isOn > checked > bind)
+            // Parse binding variable (priority: isOn > checked)
             val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state
@@ -376,11 +376,17 @@ class DynamicCheckBoxComponent {
             context: android.content.Context
         ): androidx.compose.material3.CheckboxColors {
             // Declared spelling first; 'checkColor' is the undeclared
-            // legacy runtime extra.
+            // legacy runtime extra. Then tintColor, the control's accent (4f
+            // ruling, 2026-09-26): "on a CheckBox the common tint IS the
+            // checked colour" (attribute_definitions CheckBox.checkedColor),
+            // as kjui's codegen reads it (checkColor || checkedColor ||
+            // tintColor) — this path did not.
             val checkedColor = ColorParser.parseColorStringWithBinding(
                 a.checkedColor, data, context
             ) ?: ColorParser.parseColorStringWithBinding(
                 TypedAttrs.undeclared(json, "checkColor")?.asString, data, context
+            ) ?: ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
             )
             val uncheckedColor = ColorParser.parseColorStringWithBinding(
                 a.uncheckedColor, data, context
@@ -415,20 +421,13 @@ class DynamicCheckBoxComponent {
         }
 
         /**
-         * Resolve the binding variable name from JSON attributes.
-         * Priority: isOn > checked > bind
+         * The data key the state is bound to: the first of isOn, checked that is
+         * bound. `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue).
          */
         internal fun resolveBindingVariable(a: CheckBoxAttributes): String? {
-            // Check isOn, checked in priority order
             val stateAttr = a.isOn ?: a.checked
-            TypedAttrs.binding(stateAttr)?.let { return it }
-
-            // Fall back to bind
-            (TypedAttrs.raw(a.common.bind) as? String)?.let { bind ->
-                ModifierBuilder.extractBindingProperty(bind)?.let { return it }
-            }
-
-            return null
+            return TypedAttrs.binding(stateAttr)
         }
 
         /**

@@ -46,11 +46,11 @@ data class LabelAttributes(
     val lineSpacing: AttrValue<Double>? = null,
     /** Maximum number of lines (0 for unlimited) (binding supported) */
     val lines: AttrValue<Double>? = null,
-    /** Enable URL/phone detection. Auto-links BARE http(s) URLs and phone numbers found in the text. It does not parse markdown, and relative paths are deliberately never linked: a path like "/guides/x" only means something to a web router, so linkifying it would produce a control that is dead on iOS and Android. Express a cross-document reference with partialAttributes 'range' + 'onclick', where the handler performs the navigation itself — including scrolling to the target position, which an href cannot express on mobile anyway. */
+    /** Enable URL/phone detection. Auto-links BARE http(s) URLs and phone numbers found in the text. It does not parse markdown, and relative paths are deliberately never linked: a path like "/guides/x" only means something to a web router, so linkifying it would produce a control that is dead on iOS and Android. Express a cross-document reference with partialAttributes 'range' + 'onClick', where the handler performs the navigation itself — including scrolling to the target position, which an href cannot express on mobile anyway. */
     val linkable: AttrValue<Boolean>? = null,
     /** Minimum scale factor for auto-shrink (binding supported) */
     val minimumScaleFactor: AttrValue<Double>? = null,
-    /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onclick'. This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. */
+    /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onClick' (alias 'onclick'). This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. */
     val partialAttributes: List<Any?>? = null,
     /** Placeholder text when empty (alias for hint) */
     val placeholder: String? = null,
@@ -58,9 +58,9 @@ data class LabelAttributes(
     val selected: AttrValue<Boolean>? = null,
     /** Strikethrough styling: boolean for a plain line, object to style it. Same contract as Label.underline, minus lineOffset, which strikethrough does not declare and must not invent. `lineStyle: "None"` draws nothing, exactly like `false`. Full ruling in attribute_semantics.json -> textDecoration; do not restate it in toolchain comments. [accepts: boolean | object] */
     val strikethrough: Any? = null,
-    /** Text content (can be data binding, supports interpolation). PLAIN TEXT: markdown is not interpreted, so "[label](/path)", "**bold**" and backticks render literally, brackets and all. To emphasise or link part of the string, use partialAttributes ('range' plus font/color/underline, and 'onclick' for a tappable span). Rendering real markdown is out of scope for Label — write a custom component. */
+    /** Text content (can be data binding, supports interpolation). PLAIN TEXT: markdown is not interpreted, so "[label](/path)", "**bold**" and backticks render literally, brackets and all. To emphasise or link part of the string, use partialAttributes ('range' plus font/color/underline, and 'onClick' for a tappable span). Rendering real markdown is out of scope for Label — write a custom component. */
     val text: AttrValue<String>? = null,
-    /** Text alignment (binding supported) */
+    /** Where the label's text sits across the label's own width: Left the start, Center the middle, Right the end (binding supported). Without textAlign, the horizontal part of gravity places it (left / right / centerHorizontal, center); without either, the start. Vertically the text sits at the vertical gravity names, else the middle (gravityDefaults -> leafOwnFrameChannel). The lines of a multi-line or wrapped label follow the same rule across. (4f ruling 2026-09-27, and the user's ruling for iOS, round 6: align iOS to start.) The web draws it so from jsonui-cli 1.9.0, its lines too (rjui gives gravity's text-center / text-right when textAlign is not declared; measured in Chromium, a wrapped label's lines stayed at the start until then); Compose from jsonui-cli 1.9.0 (4f round 17); iOS from jsonui-cli 1.9.0 and SwiftJsonUI 10.29.0 (round 6) - until then, measured on sjui codegen and SwiftJsonUI Dynamic, a fixed-width label with neither drew its text in the middle ("Mon" in 50, a 200 x 44 label), one with gravity right or center at the start, and the lines of a multi-line one at the start whatever its gravity. */
     val textAlign: AttrValue<AttrEnum<TextAlign>>? = null,
     /** Text shadow configuration [accepts: string | object] */
     val textShadow: Any? = null,
@@ -78,14 +78,17 @@ data class LabelAttributes(
         TAIL("Tail");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): LineBreakMode? = when (raw.lowercase()) {
-                "char" -> CHAR
-                "clip" -> CLIP
-                "word" -> WORD
-                "head" -> HEAD
-                "middle" -> MIDDLE
-                "tail" -> TAIL
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): LineBreakMode? = when (raw) {
+                "Char" -> CHAR
+                "Clip" -> CLIP
+                "Word" -> WORD
+                "Head" -> HEAD
+                "Middle" -> MIDDLE
+                "Tail" -> TAIL
                 else -> null
             }
         }
@@ -97,11 +100,14 @@ data class LabelAttributes(
         RIGHT("Right");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): TextAlign? = when (raw.lowercase()) {
-                "left" -> LEFT
-                "center" -> CENTER
-                "right" -> RIGHT
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Center", "Right", "left", "center", "right")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): TextAlign? = when (raw) {
+                "Left", "left" -> LEFT
+                "Center", "center" -> CENTER
+                "Right", "right" -> RIGHT
                 else -> null
             }
         }
@@ -114,14 +120,55 @@ data class LabelAttributes(
         LOWERCASE("lowercase");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): TextTransform? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("none", "capitalize", "uppercase", "lowercase")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): TextTransform? = when (raw) {
                 "none" -> NONE
                 "capitalize" -> CAPITALIZE
                 "uppercase" -> UPPERCASE
                 "lowercase" -> LOWERCASE
                 else -> null
             }
+        }
+    }
+
+    object HighlightAttributes {
+        object TextAlign {
+            /** The spellings `highlightAttributes.textAlign` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Right", "Center")
+        }
+    }
+
+    object PartialAttributes {
+        object LineBreakMode {
+            /** The spellings `partialAttributes.lineBreakMode` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
+        }
+        object TextAlign {
+            /** The spellings `partialAttributes.textAlign` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Left", "Right", "Center")
+        }
+        object Underline {
+            object LineStyle {
+                /** The spellings `partialAttributes.underline.lineStyle` is declared as — case-sensitive. */
+                val declaredSpellings: List<String> = listOf("Single", "Double", "Thick", "None")
+            }
+        }
+    }
+
+    object Strikethrough {
+        object LineStyle {
+            /** The spellings `strikethrough.lineStyle` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Single", "Double", "Thick", "None")
+        }
+    }
+
+    object Underline {
+        object LineStyle {
+            /** The spellings `underline.lineStyle` is declared as — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Single", "Double", "Thick", "None")
         }
     }
 
@@ -217,7 +264,8 @@ data class LabelAttributes(
             (raw as? String)?.let { s ->
                 LineBreakMode.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Label.lineBreakMode: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> LineBreakMode.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Label.lineBreakMode: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -226,7 +274,8 @@ data class LabelAttributes(
             (raw as? String)?.let { s ->
                 TextAlign.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Label.textAlign: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> TextAlign.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Label.textAlign: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -235,7 +284,8 @@ data class LabelAttributes(
             (raw as? String)?.let { s ->
                 TextTransform.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Label.textTransform: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> TextTransform.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Label.textTransform: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

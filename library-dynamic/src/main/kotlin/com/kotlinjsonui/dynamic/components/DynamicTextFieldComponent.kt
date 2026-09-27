@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -85,8 +86,8 @@ class DynamicTextFieldComponent {
 
             // Parse secure field
             val isSecure = TypedAttrs.static(a.secure) == true ||
-                    TypedAttrs.enumString(a.input) { it.json }?.lowercase() == "password" ||
-                    TypedAttrs.staticEnumString(a.contentType) { it.json }?.lowercase()?.let {
+                    DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings) == "password" ||
+                    DeclaredSpelling.lowered(TypedAttrs.staticEnumString(a.contentType) { it.json }, TextFieldAttributes.ContentType.declaredSpellings)?.let {
                         it == "password" || it == "newpassword"
                     } ?: false
 
@@ -407,7 +408,7 @@ class DynamicTextFieldComponent {
         private fun resolveIsOutlined(json: JsonObject, a: TextFieldAttributes): Boolean {
             // borderStyle: none → not outlined (TextField declares its own
             // enum; undeclared spellings pass through like the legacy reader)
-            val borderStyle = TypedAttrs.enumString(a.borderStyle) { it.json }?.lowercase()
+            val borderStyle = DeclaredSpelling.lowered(TypedAttrs.enumString(a.borderStyle) { it.json }, TextFieldAttributes.BorderStyle.declaredSpellings)
             if (borderStyle == "none") return false
             if (borderStyle in listOf("line", "bezel", "roundedrect")) return true
 
@@ -439,8 +440,8 @@ class DynamicTextFieldComponent {
             )
 
             // Text alignment
-            TypedAttrs.enumString(a.textAlign) { it.json }?.let { align ->
-                style = when (align.lowercase()) {
+            DeclaredSpelling.lowered(TypedAttrs.enumString(a.textAlign) { it.json }, TextFieldAttributes.TextAlign.declaredSpellings)?.let { align ->
+                style = when (align) {
                     "center" -> style.copy(textAlign = TextAlign.Center)
                     "right" -> style.copy(textAlign = TextAlign.End)
                     "left" -> style.copy(textAlign = TextAlign.Start)
@@ -471,8 +472,8 @@ class DynamicTextFieldComponent {
             }
 
             // Auto-capitalization
-            val capitalization = TypedAttrs.enumString(a.autocapitalizationType) { it.json }?.let { type ->
-                when (type.lowercase()) {
+            val capitalization = DeclaredSpelling.lowered(TypedAttrs.enumString(a.autocapitalizationType) { it.json }, TextFieldAttributes.AutocapitalizationType.declaredSpellings)?.let { type ->
+                when (type) {
                     "none" -> KeyboardCapitalization.None
                     "words" -> KeyboardCapitalization.Words
                     "sentences" -> KeyboardCapitalization.Sentences
@@ -482,8 +483,8 @@ class DynamicTextFieldComponent {
             } ?: KeyboardCapitalization.None
 
             // Auto-correction
-            val autoCorrect = TypedAttrs.enumString(a.autocorrectionType) { it.json }?.let { type ->
-                when (type.lowercase()) {
+            val autoCorrect = DeclaredSpelling.lowered(TypedAttrs.enumString(a.autocorrectionType) { it.json }, TextFieldAttributes.AutocorrectionType.declaredSpellings)?.let { type ->
+                when (type) {
                     "no", "false", "off" -> false
                     else -> true
                 }
@@ -499,8 +500,8 @@ class DynamicTextFieldComponent {
 
         private fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
             // contentType takes priority
-            TypedAttrs.staticEnumString(a.contentType) { it.json }?.let { type ->
-                return when (type.lowercase()) {
+            DeclaredSpelling.lowered(TypedAttrs.staticEnumString(a.contentType) { it.json }, TextFieldAttributes.ContentType.declaredSpellings)?.let { type ->
+                return when (type) {
                     "emailaddress", "email" -> KeyboardType.Email
                     "password", "newpassword" -> KeyboardType.Password
                     "telephonenumber", "phone" -> KeyboardType.Phone
@@ -510,8 +511,8 @@ class DynamicTextFieldComponent {
                 }
             }
             // Fallback to input
-            TypedAttrs.enumString(a.input) { it.json }?.let { input ->
-                return when (input.lowercase()) {
+            DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings)?.let { input ->
+                return when (input) {
                     "email" -> KeyboardType.Email
                     "password" -> KeyboardType.Password
                     "number" -> KeyboardType.Number

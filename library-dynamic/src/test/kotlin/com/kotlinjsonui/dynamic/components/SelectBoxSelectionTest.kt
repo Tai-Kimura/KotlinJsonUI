@@ -191,8 +191,12 @@ class SelectBoxSelectionTest {
 
     @Test
     fun aBoundSelectedIndexOutranksBind() {
-        val a = attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}","bind":"@{b}"}""")
+        // DynamicView folds bind before the box reads the node (BindFold);
+        // unfolded, the box does not read bind at all
+        val n = com.google.gson.JsonParser.parseString("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}","bind":"@{b}"}""").asJsonObject
+        val a = SelectBoxAttributes.parse(TypedAttrs.toAttrMap(com.kotlinjsonui.dynamic.BindFold.fold(n, "SelectBox")))
         assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(a))
+        assertEquals("idx", DynamicSelectBoxComponent.bindingVariableOf(attrs("""{"type":"SelectBox","items":["One","Two"],"selectedIndex":"@{idx}","bind":"@{b}"}""")))
     }
 
     @Test

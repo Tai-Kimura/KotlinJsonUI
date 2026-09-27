@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -144,18 +145,12 @@ class DynamicButtonComponent {
             val disabledTextColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.disabledFontColor), data, context
             ) ?: textColor.copy(alpha = 0.5f)
-            // Pressed-state container color: 'tapBackground' (tap state)
-            // and 'highlightBackground' (highlighted state) are two
-            // DISTINCT declared attributes; Compose has no separate
-            // highlighted state, so both map to the pressed container
-            // here, tapBackground winning when both are set.
-            // 'hilightBackground' is an undeclared legacy typo spelling,
-            // always honored last.
-            val pressedBgColor = ColorParser.parseColorStringWithBinding(
-                a.tapBackground ?: a.highlightBackground, data, context
-            ) ?: ColorParser.parseColorStringWithBinding(
-                TypedAttrs.undeclared(json, "hilightBackground")?.asString, data, context
-            )
+            // The container while the button is pressed (4f ruling,
+            // 2026-09-26): `tapBackground`, else `highlightBackground` —
+            // Button declares no `highlighted` (View does), and its
+            // highlightBackground is UIButton's highlighted, which IS the
+            // pressed state; tapBackground wins when both are set.
+            val pressedBgColor = pressedColorOf(a, data, context)
             // Pressed-state CONTENT colour. The container already swapped on
             // press while `highlightColor` — the declared label colour for the
             // same state, which the kjui codegen swaps
@@ -171,10 +166,10 @@ class DynamicButtonComponent {
                 ?: Configuration.Button.defaultCornerRadius.toFloat()
             val shape = RoundedCornerShape(cornerRadius.dp)
 
-            // Pressed-state container swap via interactionSource (only when highlightBackground is set).
+            // Pressed-state container swap via interactionSource.
             val interactionSource = remember { MutableInteractionSource() }
             val isPressed by interactionSource.collectIsPressedAsState()
-            val containerColor = if (pressedBgColor != null && isPressed) pressedBgColor else backgroundColor
+            val containerColor = containerColorOf(backgroundColor, pressedBgColor, isPressed)
             val contentColorNow =
                 if (pressedTextColor != null && isPressed) pressedTextColor else textColor
 
@@ -220,12 +215,14 @@ class DynamicButtonComponent {
             val iconDescription = if (text.isEmpty()) imageName?.humanizedIconName() else null
 
             // Text alignment (Button-level). Compose default is center; tool allows override.
-            // The legacy reader also honored the undeclared "start"/"end"
-            // spellings — preserved through the enum unknown-passthrough.
-            val textAlign = TypedAttrs.enumString(a.textAlign) { it.json }?.let { align ->
-                when (align.lowercase()) {
-                    "left", "start" -> TextAlign.Start
-                    "right", "end" -> TextAlign.End
+            // As Button declares it (Left / Center / Right): the undeclared
+            // "start" / "end" the legacy reader also honoured, and another
+            // case, are no alignment and keep the default — the generated
+            // parse names them (DeclaredSpelling, jsonui-cli 1.9.0).
+            val textAlign = DeclaredSpelling.lowered(TypedAttrs.enumString(a.textAlign) { it.json }, ButtonAttributes.TextAlign.declaredSpellings)?.let { align ->
+                when (align) {
+                    "left" -> TextAlign.Start
+                    "right" -> TextAlign.End
                     "center" -> TextAlign.Center
                     else -> null
                 }
@@ -345,10 +342,29 @@ class DynamicButtonComponent {
         internal fun ownsWidth(json: JsonObject): Boolean {
             if (TypedAttrs.rawKey(json, "weight") != null || TypedAttrs.rawKey(json, "widthWeight") != null) return true
             val width = TypedAttrs.rawKey(json, "width") ?: return false
-            return !(width.isJsonPrimitive && width.asString.lowercase() in setOf("wrapcontent", "wrap_content"))
+            return !(width.isJsonPrimitive && width.asString in setOf("wrapContent", "wrap_content"))
         }
 
         // ── Icon ──
+
+        /**
+         * The container while pressed: `tapBackground`, else
+         * `highlightBackground`. The legacy `hilightBackground` is declared
+         * nowhere (only `hilightColor`, Button.highlightColor's alias) and no
+         * layout writes it (2026-09-26): it is not read, and the validator
+         * names it as an unknown attribute.
+         */
+        internal fun pressedColorOf(
+            a: ButtonAttributes,
+            data: Map<String, Any>,
+            context: android.content.Context?
+        ): Color? = ColorParser.parseColorStringWithBinding(
+            a.tapBackground ?: a.highlightBackground, data, context
+        )
+
+        /** The container: the pressed colour while pressed, else the background. */
+        internal fun containerColorOf(background: Color, pressedColor: Color?, pressed: Boolean): Color =
+            if (pressed && pressedColor != null) pressedColor else background
 
         /**
          * Button icon. [tint] null means the drawable is drawn as authored —

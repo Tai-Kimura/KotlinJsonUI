@@ -56,12 +56,15 @@ data class ViewAttributes(
         NONE("none");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Direction? = when (raw.lowercase()) {
-                "toptobottom" -> TOP_TO_BOTTOM
-                "bottomtotop" -> BOTTOM_TO_TOP
-                "lefttoright" -> LEFT_TO_RIGHT
-                "righttoleft" -> RIGHT_TO_LEFT
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("topToBottom", "bottomToTop", "leftToRight", "rightToLeft", "none")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Direction? = when (raw) {
+                "topToBottom" -> TOP_TO_BOTTOM
+                "bottomToTop" -> BOTTOM_TO_TOP
+                "leftToRight" -> LEFT_TO_RIGHT
+                "rightToLeft" -> RIGHT_TO_LEFT
                 "none" -> NONE
                 else -> null
             }
@@ -75,12 +78,15 @@ data class ViewAttributes(
         EQUAL_CENTERING("equalCentering");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Distribution? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("fill", "fillEqually", "equalSpacing", "equalCentering")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Distribution? = when (raw) {
                 "fill" -> FILL
-                "fillequally" -> FILL_EQUALLY
-                "equalspacing" -> EQUAL_SPACING
-                "equalcentering" -> EQUAL_CENTERING
+                "fillEqually" -> FILL_EQUALLY
+                "equalSpacing" -> EQUAL_SPACING
+                "equalCentering" -> EQUAL_CENTERING
                 else -> null
             }
         }
@@ -92,8 +98,11 @@ data class ViewAttributes(
         WRAP_REVERSE("wrap-reverse");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): FlexWrap? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("nowrap", "wrap", "wrap-reverse")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): FlexWrap? = when (raw) {
                 "nowrap" -> NOWRAP
                 "wrap" -> WRAP
                 "wrap-reverse" -> WRAP_REVERSE
@@ -110,13 +119,16 @@ data class ViewAttributes(
         BOTTOM_TO_TOP("BottomToTop");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): GradientDirection? = when (raw.lowercase()) {
-                "vertical", "toptobottom" -> VERTICAL
-                "horizontal", "lefttoright" -> HORIZONTAL
-                "oblique", "diagonal" -> OBLIQUE
-                "righttoleft" -> RIGHT_TO_LEFT
-                "bottomtotop" -> BOTTOM_TO_TOP
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("Vertical", "Horizontal", "Oblique", "LeftToRight", "TopToBottom", "Diagonal", "RightToLeft", "BottomToTop")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): GradientDirection? = when (raw) {
+                "Vertical", "TopToBottom" -> VERTICAL
+                "Horizontal", "LeftToRight" -> HORIZONTAL
+                "Oblique", "Diagonal" -> OBLIQUE
+                "RightToLeft" -> RIGHT_TO_LEFT
+                "BottomToTop" -> BOTTOM_TO_TOP
                 else -> null
             }
         }
@@ -127,13 +139,21 @@ data class ViewAttributes(
         VERTICAL("vertical");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Orientation? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("horizontal", "vertical")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL
                 else -> null
             }
         }
+    }
+
+    object SafeAreaInsetPositions {
+        /** The spellings each value of `safeAreaInsetPositions` is declared as — it holds one or a list of them, so it has no enum type of its own — case-sensitive. */
+        val declaredSpellings: List<String> = listOf("top", "bottom", "leading", "trailing", "vertical", "all")
     }
 
     companion object {
@@ -206,7 +226,8 @@ data class ViewAttributes(
             (raw as? String)?.let { s ->
                 Direction.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("View.direction: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Direction.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("View.direction: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -215,7 +236,8 @@ data class ViewAttributes(
             (raw as? String)?.let { s ->
                 Distribution.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("View.distribution: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Distribution.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("View.distribution: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -224,7 +246,8 @@ data class ViewAttributes(
             (raw as? String)?.let { s ->
                 FlexWrap.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("View.flexWrap: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> FlexWrap.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("View.flexWrap: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -233,7 +256,8 @@ data class ViewAttributes(
             (raw as? String)?.let { s ->
                 GradientDirection.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("View.gradientDirection: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> GradientDirection.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("View.gradientDirection: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -242,7 +266,8 @@ data class ViewAttributes(
             (raw as? String)?.let { s ->
                 Orientation.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("View.orientation: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Orientation.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("View.orientation: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

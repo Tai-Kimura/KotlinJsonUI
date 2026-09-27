@@ -26,8 +26,11 @@ data class IndicatorAttributes(
         LINEAR("linear");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): IndicatorStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("small", "medium", "large", "linear")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): IndicatorStyle? = when (raw) {
                 "small" -> SMALL
                 "medium" -> MEDIUM
                 "large" -> LARGE
@@ -80,7 +83,8 @@ data class IndicatorAttributes(
             (raw as? String)?.let { s ->
                 IndicatorStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Indicator.indicatorStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> IndicatorStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Indicator.indicatorStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

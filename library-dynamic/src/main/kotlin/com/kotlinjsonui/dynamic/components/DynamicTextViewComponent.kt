@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -108,6 +109,12 @@ class DynamicTextViewComponent {
             // declares; it was read here as the focus colour, a meaning no
             // other path gave it.
             val backgroundColor = DynamicTextFieldComponent.fieldBackground(a.common, data, context)
+            // tintColor is the caret — the accent of what can be operated (4f
+            // ruling, 2026-09-26), as on TextField; TextView passed none. None
+            // declared: CustomTextField's own caret colour.
+            val cursorColor = ColorParser.parseColorStringWithBinding(
+                TypedAttrs.rawString(a.common.tintColor), data, context
+            )
 
             // Border color (supports @{binding})
             val borderColor = ColorParser.parseColorStringWithBinding(
@@ -230,7 +237,8 @@ class DynamicTextViewComponent {
                     ),
                     keyboardOptions = keyboardOptions,
                     contentPadding = contentPadding,
-                    enabled = isEnabled
+                    enabled = isEnabled,
+                    cursorColor = cursorColor
                 )
             } else {
                 // Regular modifier with size (default fillMaxWidth + 120dp height)
@@ -277,7 +285,8 @@ class DynamicTextViewComponent {
                     ),
                     keyboardOptions = keyboardOptions,
                     contentPadding = contentPadding,
-                    enabled = isEnabled
+                    enabled = isEnabled,
+                    cursorColor = cursorColor
                 )
             }
         }
@@ -290,7 +299,7 @@ class DynamicTextViewComponent {
             "containerInset", "edgeInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",
-            "font", "fontFamily", "hintFont"
+            "font", "fontFamily", "hintFont", "tintColor"
         )
 
         /**
@@ -455,8 +464,8 @@ class DynamicTextViewComponent {
         }
 
         private fun buildKeyboardOptions(a: TextViewAttributes): KeyboardOptions {
-            val keyboardType = TypedAttrs.enumString(a.keyboardType) { it.json }?.let { type ->
-                when (type.lowercase()) {
+            val keyboardType = DeclaredSpelling.lowered(TypedAttrs.enumString(a.keyboardType) { it.json }, TextViewAttributes.KeyboardType.declaredSpellings)?.let { type ->
+                when (type) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number
                     "decimal" -> KeyboardType.Decimal
@@ -464,8 +473,8 @@ class DynamicTextViewComponent {
                     "url" -> KeyboardType.Uri
                     else -> KeyboardType.Text
                 }
-            } ?: TypedAttrs.enumString(a.input) { it.json }?.let { input ->
-                when (input.lowercase()) {
+            } ?: DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextViewAttributes.Input.declaredSpellings)?.let { input ->
+                when (input) {
                     "email" -> KeyboardType.Email
                     "number" -> KeyboardType.Number
                     "decimal" -> KeyboardType.Decimal

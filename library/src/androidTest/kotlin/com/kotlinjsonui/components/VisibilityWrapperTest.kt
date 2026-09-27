@@ -121,18 +121,20 @@ class VisibilityWrapperTest {
     }
 
     @Test
-    fun visibilityWrapper_caseInsensitiveGONE() {
+    fun visibilityWrapper_GONE_isNoSpellingOfGone() {
+        // an enum value is its declared spelling, case and all (jsonui-cli
+        // 1.9.0): "GONE" is not gone, as on the codegen
         composeTestRule.setContent {
             VisibilityWrapper(visibility = "GONE") {
                 Text("Case Insensitive Gone")
             }
         }
 
-        composeTestRule.onNodeWithText("Case Insensitive Gone").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Case Insensitive Gone").assertExists()
     }
 
     @Test
-    fun visibilityWrapper_caseInsensitiveINVISIBLE() {
+    fun visibilityWrapper_INVISIBLE_isNoSpellingOfInvisible() {
         composeTestRule.setContent {
             VisibilityWrapper(visibility = "INVISIBLE") {
                 Text("Case Insensitive Invisible")

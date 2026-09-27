@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -163,8 +164,9 @@ class DynamicIconLabelComponent {
             // Parse layout attributes (iconPosition feeds the existing
             // lowercase switch; 'spacing' is an undeclared legacy runtime
             // extra — 'iconMargin' is the declared row, not consumed here)
-            val iconPosition = TypedAttrs.enumString(a.iconPosition) { it.json }
-                ?.lowercase() ?: "left"
+            val iconPosition = DeclaredSpelling.lowered(
+                TypedAttrs.enumString(a.iconPosition) { it.json }, IconLabelAttributes.IconPosition.declaredSpellings
+            ) ?: "left"
             // iconMargin is the declared row; 'spacing' the legacy spelling
             // (33 cross-effect: android ignored iconMargin). The undeclared
             // default is 5 — the cross-platform canonical (IconLabelView.swift

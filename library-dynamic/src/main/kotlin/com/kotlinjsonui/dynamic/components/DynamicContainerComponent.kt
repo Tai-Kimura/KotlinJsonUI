@@ -1,5 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.dynamic.generated.CommonAttributes
+import com.kotlinjsonui.core.DeclaredSpelling
 import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -91,7 +93,10 @@ class DynamicContainerComponent {
             // the SafeAreaView component read it, so a plain View naming the
             // edges reserved nothing. Unlike SafeAreaView there is NO default:
             // a View that says nothing reserves nothing.
-            SafeAreaEdges.requested(json, a.safeAreaInsetPositions)?.let { requested ->
+            SafeAreaEdges.requested(
+                json, a.safeAreaInsetPositions,
+                ViewAttributes.SafeAreaInsetPositions.declaredSpellings, "View.safeAreaInsetPositions"
+            )?.let { requested ->
                 val cfg = LocalSafeAreaConfig.current
                 modifier = SafeAreaEdges.apply(
                     modifier,
@@ -304,7 +309,7 @@ class DynamicContainerComponent {
 
             if (visibility != null) {
                 // weight + visibility gone guard: skip composition entirely
-                if (weight != null && visibility.lowercase() == "gone") return
+                if (weight != null && DeclaredSpelling.lowered(visibility, CommonAttributes.Visibility.declaredSpellings, "common.visibility") == "gone") return
                 VisibilityWrapper(visibility = visibility, modifier = childModifier) {
                     DynamicView(effectiveChild, data)
                 }
@@ -377,7 +382,7 @@ class DynamicContainerComponent {
 
             if (visibility != null) {
                 // weight + visibility gone guard: skip composition entirely
-                if (weight != null && visibility.lowercase() == "gone") return
+                if (weight != null && DeclaredSpelling.lowered(visibility, CommonAttributes.Visibility.declaredSpellings, "common.visibility") == "gone") return
                 VisibilityWrapper(visibility = visibility, modifier = childModifier) {
                     DynamicView(effectiveChild, data)
                 }

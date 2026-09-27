@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.Switch
@@ -30,11 +31,11 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * Switch is the primary component name. Toggle is supported as an alias
  * for backward compatibility.
  *
- * State binding priority: isOn > value > checked > bind
+ * State binding priority: isOn > value > checked
  *
  * Supported JSON attributes:
  * - isOn/value/checked: Boolean or @{variable} for checked state
- * - bind: @{variable} for two-way binding (lowest priority)
+ * - bind: folded by DynamicView into isOn (BindFold)
  * - onValueChange/onToggle: @{functionName} for change handler (binding format only)
  * - enabled: Boolean or @{variable} to enable/disable
  * - onTintColor/tint/tintColor: String hex color for checked track
@@ -47,7 +48,7 @@ class DynamicSwitchComponent {
     companion object {
         /** Switch-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "isOn", "value", "checked", "bind", "enabled",
+            "isOn", "value", "checked", "enabled",
             "onValueChange", "onToggle",
             "onTintColor", "tint", "tintColor", "thumbTintColor",
             "trackTintColor", "offTintColor",
@@ -93,7 +94,7 @@ class DynamicSwitchComponent {
         ) {
             val context = LocalContext.current
 
-            // Parse binding variable (priority: isOn > value > checked > bind)
+            // Parse binding variable (priority: isOn > value > checked)
             val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state from binding or direct value
@@ -172,7 +173,7 @@ class DynamicSwitchComponent {
             val context = LocalContext.current
             val labelAttrs = a.labelAttributes
 
-            // Parse binding variable (priority: isOn > value > checked > bind)
+            // Parse binding variable (priority: isOn > value > checked)
             val bindingVariable = resolveBindingVariable(a)
 
             // Get checked state from binding or direct value
@@ -238,8 +239,9 @@ class DynamicSwitchComponent {
                 // The `weight(1f)` stays on the label either way — it pushes
                 // the Switch to the far edge, which is what you want on both
                 // sides, and the codegen says the same thing in the same words.
-                val labelPosition = TypedAttrs.enumString(a.labelPosition) { it.json }
-                    ?.lowercase() ?: "leading"
+                val labelPosition = DeclaredSpelling.lowered(
+                    TypedAttrs.enumString(a.labelPosition) { it.json }, SwitchAttributes.LabelPosition.declaredSpellings
+                ) ?: "leading"
 
                 val label: @Composable RowScope.() -> Unit = {
                     Text(
@@ -290,21 +292,13 @@ class DynamicSwitchComponent {
         // ── Helper Functions ──
 
         /**
-         * Resolve the binding variable name from JSON attributes.
-         * Priority: isOn > value > checked > bind (all standalone declared
-         * rows — not an SSoT alias group, so the priority order is kept).
+         * The data key the state is bound to: the first of isOn, value, checked that is
+         * bound. `bind` never reaches here: DynamicView folds it into the attribute
+         * it stands for (BindFold, SSoT common.bind primaryValue).
          */
         internal fun resolveBindingVariable(a: SwitchAttributes): String? {
-            // Check isOn, value, checked in priority order
             val stateAttr = a.isOn ?: a.value ?: a.checked
-            TypedAttrs.binding(stateAttr)?.let { return it }
-
-            // Fall back to bind
-            (TypedAttrs.raw(a.common.bind) as? String)?.let { bind ->
-                ModifierBuilder.extractBindingProperty(bind)?.let { return it }
-            }
-
-            return null
+            return TypedAttrs.binding(stateAttr)
         }
 
         /**

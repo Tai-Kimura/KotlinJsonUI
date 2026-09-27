@@ -1,5 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
+import com.kotlinjsonui.dynamic.generated.CommonAttributes
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -295,7 +297,7 @@ class DynamicCollectionComponent {
             // carry no cells), the way an empty ios List still shows its
             // style's background — same recipe the codegen emits.
             run {
-                val style = (TypedAttrs.enumString(a.listStyle) { it.json } ?: "plain").lowercase()
+                val style = DeclaredSpelling.lowered(TypedAttrs.enumString(a.listStyle) { it.json }, CollectionAttributes.ListStyle.declaredSpellings) ?: "plain"
                 if (style in setOf("grouped", "insetgrouped", "sidebar")) {
                     if (style == "insetgrouped" || style == "sidebar") {
                         modifier = modifier
@@ -322,7 +324,9 @@ class DynamicCollectionComponent {
 
             // Parse gravity for item alignment
             // Box.contentAlignment uses Alignment (compound), not Alignment.Vertical/Horizontal
-            val gravity = (a.common.gravity as? String)?.lowercase()
+            // as declared (a single value; common.gravity also takes a list,
+            // which this reading does not): another case is no gravity
+            val gravity = DeclaredSpelling.lowered(a.common.gravity as? String, CommonAttributes.Gravity.declaredSpellings)
             val gravityAlignment = if (isHorizontal) {
                 // Horizontal scroll: vertical alignment (TopStart, CenterStart, BottomStart)
                 when (gravity) {
@@ -347,7 +351,7 @@ class DynamicCollectionComponent {
 
             // listStyle chrome + hideSeparator (51-E) — see ListChrome.
             val listChrome = ListChrome(
-                style = (TypedAttrs.enumString(a.listStyle) { it.json } ?: "plain").lowercase(),
+                style = DeclaredSpelling.lowered(TypedAttrs.enumString(a.listStyle) { it.json }, CollectionAttributes.ListStyle.declaredSpellings) ?: "plain",
                 hideSeparator = a.hideSeparator == true
             )
 

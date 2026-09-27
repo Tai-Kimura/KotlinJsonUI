@@ -19,8 +19,6 @@ object JsonUIComponentAliases {
         "Toggle" to "Switch",
     )
 
-    private val lowercased: Map<String, String> = canonical.mapKeys { it.key.lowercase() }
-
-    /** The canonical section [type] is an alias of (matched case-insensitively, as the dispatch matches types), or null. */
-    fun canonicalFor(type: String): String? = lowercased[type.lowercase()]
+    /** The canonical section [type] is an alias of, or null. Matched as written: type names are their SSoT spellings, case-sensitive. */
+    fun canonicalFor(type: String): String? = canonical[type]
 }

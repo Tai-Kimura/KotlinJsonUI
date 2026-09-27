@@ -16,25 +16,25 @@ data class CollectionAttributes(
     val cellClasses: List<Any?>? = null,
     /** Fixed height for every cell, in pt / dp / px. Applied to the cell view AFTER it is built, so it overrides whatever height the cell layout asked for; leave it out to let each cell size itself. Declared from the implementation, which already read it: sjui collection_converter.rb:260,286,318,402 (plan 51-E). */
     val cellHeight: Double? = null,
-    /** Cell data property key to use as unique ID for ForEach identity. When set, scrollTo uses String type instead of Int. */
+    /** Cell data property key to use as unique ID for ForEach identity: a cell's key is its `cellId`, else this property's value. It decides what a scrollTo String names, not the scrollTo's type — the declared data class does (see scrollTo; 4f ruling 2026-09-27, round 14; until jsonui-cli 1.9.0 this said a set cellIdProperty made scrollTo a String). */
     val cellIdProperty: String? = null,
     /** Fixed width for every cell, in pt / dp / px. Applied to the cell view AFTER it is built, so it overrides whatever width the cell layout asked for; leave it out to let each cell size itself. Declared from the implementation, which already read it: sjui collection_converter.rb:256,282,315,650 (plan 51-E). */
     val cellWidth: Double? = null,
     /** Number of columns for CSS grid */
     val columnCount: Double? = null,
-    /** Spacing between columns */
+    /** Spacing between columns (on a horizontal Collection, between lanes). Undeclared: itemSpacing, else 0 on every route, flow included (attribute_semantics.json -> collectionSpacing). */
     val columnSpacing: Double? = null,
     /** Number of columns. Literal int -> static GridCells.Fixed(N) / Array(repeating: ..., count: N). Binding @{prop} -> runtime-resolved data.prop; the Collection always renders on the multi-column grid path (LazyVerticalGrid / LazyHorizontalGrid on Android, LazyVGrid / LazyHGrid on iOS) even when the binding resolves to 1, so the grid layout stays stable across runtime column changes. */
     val columns: AttrValue<Double>? = null,
     /** Container-level insets applied outside of individual cells. */
     val containerInset: List<Any?>? = null,
-    /** Content inset adjustment */
+    /** Content inset adjustment: whether the cells clear the safe area (the system bars). On iOS the system adjusts by default and `never` stops it. On Compose `always` / `automatic` pad the cells by the safe area, `scrollableAxes` by its sides on the scroll axis, and `never` - or no declaration - by nothing, Compose's own default. There is no precedence: the safe area, a declared insets (contentPadding) and insetHorizontal / insetVertical are all added, side by side, on iOS and on both Compose paths (4f rulings 2026-09-27, rounds 16 and 17; until jsonui-cli 1.9.0 a declared insets replaced the other two there, and insetHorizontal / insetVertical and the safe area replaced each other). */
     val contentInsetAdjustmentBehavior: String? = null,
     /** Content insets [accepts: array | string] */
     val contentInsets: Any? = null,
     /** Current page index for paging collections (binding supported) */
     val currentPage: AttrValue<Any>? = null,
-    /** Initial scroll position anchor (iOS 17+). Sets where the scroll view starts. */
+    /** Initial scroll position anchor (iOS 17+). Sets where the scroll view starts. On Compose (kjui codegen and KotlinJsonUI Dynamic) it is applied once, when the list first has cells, by scrolling to the middle (center) or last (bottom) CELL counted as scrollTo counts them - across the drawn sections, headers, footers and grid fillers not counted (4f ruling 2026-09-27, round 11); until jsonui-cli 1.9.0 it counted the first data section only and scrolled to that lazy item index. Under reverseLayout a list rests at its visual bottom, so top and bottom trade places, as they do for scrollAnchor (4f ruling 2026-09-27, round 12 - where iOS lands, which draws the same order from content anchored at its bottom): bottom is where the list rests and moves nothing; top goes to the cell drawn at the visual top, the last one the content emits. Until jsonui-cli 1.9.0 bottom went to the last cell, which a reversed list draws at its visual top. A container that is not a lazy list and draws no reverseLayout (the wrapContent Column, the horizontal EAGER one) takes the middle or last cell to its top edge (round 12); the vertical EAGER one draws reverseLayout and follows the lazy list (round 13). It sets the initial position only: how a list keeps its position when its data changes with no scrollTo is each platform's own - iOS keeps the anchored edge while the list rests at it and, once a scrollTo has moved it, stays where it scrolled; Compose keeps the first visible item - so to follow new content, send scrollTo (4f ruling 2026-09-27, round 13; the iOS half measured round 14: a list resting at its bottom showed an appended cell there, and one a scrollTo had left above a cell kept it below the edge when more arrived). On Compose a list that is not reversed, with defaultScrollAnchor bottom and content shorter than its viewport, sits at its bottom, as iOS draws it (4f ruling 2026-09-27, round 14; it sat at the top). On a horizontal Collection, top / center / bottom mean the start / centre / end along the scroll axis, in reading direction, on every platform (4f ruling 2026-09-27); a horizontal list whose content is shorter than its row sits at the row's centre (center) or end (bottom) on Compose too, on the lazy and eager routes, as iOS draws it - measured on sjui codegen and SwiftJsonUI Dynamic - and a `lazy: none` row, which does not scroll, at its start, as sjui codegen draws it (4f ruling 2026-09-27, round 15; every Compose row sat at its start until jsonui-cli 1.9.0). A vertical list shorter than its viewport sits in its middle for center, on Compose too - the lazy and eager routes, reversed or not, as iOS draws them (measured 2026-09-27 on sjui codegen and SwiftJsonUI Dynamic) - and a `lazy: none` Column, which does not scroll, at its top (4f ruling 2026-09-27, round 16; it sat at the top, the bottom when reversed, until jsonui-cli 1.9.0). */
     val defaultScrollAnchor: AttrEnum<DefaultScrollAnchor>? = null,
     /** Footer class definitions */
     val footerClasses: List<Any?>? = null,
@@ -44,25 +44,25 @@ data class CollectionAttributes(
     val hideSeparator: Boolean? = null,
     /** Enable horizontal scroll */
     val horizontalScroll: Boolean? = null,
-    /** Horizontal inset */
+    /** Horizontal inset: padding on the left and right of the cells, inside the Collection's scroll. Added to the safe area contentInsetAdjustmentBehavior asks for, on every platform - as iOS adds its safe area (measured 2026-09-27 on sjui codegen and SwiftJsonUI Dynamic), and on both Compose paths from jsonui-cli 1.9.0 (4f ruling, round 16; kjui dropped the safe area for it, KotlinJsonUI Dynamic dropped it for the safe area). A declared insets is added to it too, on iOS and from jsonui-cli 1.9.0 on both Compose paths (round 17; it replaced it), and on the web from jsonui-cli 1.9.0 (round 6; a declared insets replaced it there, and it was rounded to Tailwind's spacing scale - 13 became 12). On a horizontal Collection kjui's codegen keeps it in the content padding with the rest (round 17; handed to CollectionStack's insetLeading / insetTrailing, it dropped insetVertical and the safe area there). */
     val insetHorizontal: Double? = null,
-    /** Vertical inset */
+    /** Vertical inset: padding above and below the cells, inside the Collection's scroll. Added to the safe area contentInsetAdjustmentBehavior asks for, on every platform - iOS measured 2026-09-27 on sjui codegen and SwiftJsonUI Dynamic: a Collection at the top of a 62pt safe area with insetVertical 8 put its first cell at 70, `always` alike, and at 8 with `never` - and on both Compose paths from jsonui-cli 1.9.0 (4f ruling, round 16; kjui dropped the safe area for it, KotlinJsonUI Dynamic dropped it for the safe area). A declared insets is added to it too, on iOS (78 = 62 + 8 + 8), from jsonui-cli 1.9.0 on both Compose paths (round 17; it replaced it) and on the web (round 6; a four-value insets replaced it there). */
     val insetVertical: Double? = null,
-    /** Content insets [accepts: array | string] */
+    /** Content insets: padding around the cells, inside the Collection's scroll - 1, 2 or 4 values, an array or a string separated by `|`, read as `paddings` reads them: one, every side; two, [vertical, horizontal]; four, [top, right, bottom, left] (right the end, left the start); any other value pads nothing. A value in the array may be a binding, bound as the data holds it (a number; unset, 0). Both Compose paths read it so from jsonui-cli 1.9.0 (4f rulings 2026-09-27, rounds 16 and 17; kjui read four as [top, left, bottom, right], only an array of four and no string, and KotlinJsonUI Dynamic no array of one or two, nor an array with a binding). It is ADDED to insetHorizontal / insetVertical and to the safe area contentInsetAdjustmentBehavior asks for, side by side, on iOS (measured 2026-09-27 on sjui codegen and SwiftJsonUI Dynamic: insets [8, 0, 0, 0] with insetVertical 8 at the top of a 62pt safe area put the first cell at 78) and on both Compose paths from jsonui-cli 1.9.0 (4f ruling, round 17; a declared insets replaced both until then), and on the web from jsonui-cli 1.9.0 (4f round 6: rjui adds them per edge on the Collection's own box, its scroll container, with exact values; until then it rounded them to Tailwind's spacing scale - 30 became 28 -, four values replaced insetHorizontal / insetVertical, two lost to insetHorizontal, the string form padded nothing and a bound value in the array stopped the layout, measured in Chromium; a pager's snap points keep the insets, as scroll-padding). On iOS every route pads inside its scroll from jsonui-cli 1.9.0 and SwiftJsonUI 10.29.0 (round 6): a List (a sectioned Collection with a listStyle, and the class-list shape) pads its rows with safe-area padding on the List, on top of its own row insets, and a pager pads the cell on every page, a page being the pager's size - until then sjui's Lists read no insets, and SwiftJsonUI Dynamic's Lists and both pagers were padded from outside, which narrowed the scroll (a 300-wide pager with insets [0, 0, 0, 30] turned its pages in a 270-wide scroll, measured). With insetHorizontal / insetVertical it pads every route's content on Compose - the lazy lists and grids, and from jsonui-cli 1.9.0 the containers that are not lazy lists too: the wrapContent and `lazy: none` Column and Row, the flow and CollectionStack's NONE container, as KotlinJsonUI Dynamic already drew them (4f ruling 2026-09-27, round 15; kjui codegen and CollectionStack applied none there). [accepts: array | string] */
     val insets: Any? = null,
-    /** Spacing between items (used for both grid spacing and list item spacing) */
+    /** Spacing between items (used for both grid spacing and list item spacing): the fallback for lineSpacing and columnSpacing. Undeclared: 0 on every route, flow included (attribute_semantics.json -> collectionSpacing). */
     val itemSpacing: Double? = null,
     /** Item sizing weight */
     val itemWeight: Double? = null,
-    /** Data source binding */
-    val items: AttrValue<List<Any?>>? = null,
+    /** Data source binding (@{…}). A binding only: the array form was declared and drawn by no platform (codegen or Dynamic) and used by no face, so it was taken out on 2026-09-26; a literal array is named by the validator. The bound value is a CollectionDataSource or an array; an array is one section, every element drawn with cellClasses[0] (a Collection without `sections`; the layout's data declaration decides on the codegen paths, the value's shape on the Dynamic ones). */
+    val items: AttrValue<Any>? = null,
     /** Enable keyboard avoidance */
     val keyboardAvoidance: Boolean? = null,
     /** Layout type (vertical | horizontal | flow — wrapping layout packed to the leading edge). Flow/LeftAligned/leftAligned are accepted alias spellings of flow (2026-08-03 unification ruling; the old 'left-aligned wrapping' distinction was a frozen-UIKit fossil — no modern path ever implemented it). Scroll rule for flow (2026-09-03 ruling): with `lazy` in effect (default or 'eager') the flow Collection scrolls vertically inside its own bounds; with lazy:'none' it only wraps and the parent must scroll. */
     val layout: AttrEnum<Layout>? = null,
-    /** Outer container shape for the Collection (single-column section path uses CollectionStackView/CollectionStack). Accepts: 'lazy' (default) -> ScrollView+LazyVStack/LazyHStack on iOS, LazyColumn/LazyRow on Android, with virtualized cell rendering. 'eager' -> ScrollView+VStack/HStack on iOS, Column(verticalScroll)/Row(horizontalScroll) on Android — no virtualization, smooth scrolling for heavy cells (markdown / images / attributed text) that suffer from LazyVStack re-evaluation. 'none' -> VStack/HStack only, no scroll container, parent must already be scrollable (for layout:'flow' this is the only value that removes the Collection's own vertical scroll). Bindings (@{prop}) are resolved at runtime via the wrapper's mode parameter so toggles preserve view identity. Sticky headers and paging require 'lazy'. [default: lazy] */
+    /** Outer container shape for the Collection (single-column section path uses CollectionStackView/CollectionStack). Accepts: 'lazy' (default) -> ScrollView+LazyVStack/LazyHStack on iOS, LazyColumn/LazyRow on Android, with virtualized cell rendering. 'eager' -> ScrollView+VStack/HStack on iOS, Column(verticalScroll)/Row(horizontalScroll) on Android — no virtualization, smooth scrolling for heavy cells (markdown / images / attributed text) that suffer from LazyVStack re-evaluation. 'none' -> VStack/HStack only, no scroll container, parent must already be scrollable (for layout:'flow' this is the only value that removes the Collection's own vertical scroll). With no scroll container of its own, a 'none' Collection's scrollTo and defaultScrollAnchor move nothing, on every path - the parent owns the scrolling (declared 4f round 11, jsonui-cli 1.9.0; sjui, rjui and both Dynamic renderers already drew nothing for them). A vertical Collection whose height wraps its content (`height: wrapContent`, lazy or eager) scrolls inside the height its parent bounds it to, and under a parent that does not bound it (a scrolling ancestor) it is its content's height, with nothing of its own to scroll - its scrollTo and defaultScrollAnchor then move nothing. So iOS draws it (a ScrollView as tall as its parent lets it be) and the web (a fit-content box a flex parent shrinks, overflow auto), measured 2026-09-27 on sjui codegen, SwiftJsonUI Dynamic and rjui; both Compose paths draw it so from jsonui-cli 1.9.0 (4f ruling 2026-09-27, round 12) - until then it was a Column that never scrolled, its cells running past a bounded parent. With fewer cells than the parent's height every path fits the cells - iOS from jsonui-cli 1.9.0 (SwiftJsonUI's CollectionContentFit; the user's ruling 2026-09-27), it filled that height until then - except an iOS List-route Collection (the class-list List: cellClasses and no `sections`; a sectioned Collection with listStyle), which fills it: a SwiftUI List reports no content height to fit (measured 2026-09-27: fitted, it was 0pt tall). Bindings (@{prop}) are resolved at runtime via the wrapper's mode parameter so toggles preserve view identity. Sticky headers and paging require 'lazy'. [default: lazy] */
     val lazy: AttrValue<AttrEnum<Lazy>>? = null,
-    /** Spacing between rows. `sectionSpacing` folds here (sjui collection_converter.rb:799,960 read `sectionSpacing || lineSpacing || 8`). [aliases: sectionSpacing] */
+    /** Spacing between rows (on a horizontal Collection, along the scroll axis); `sectionSpacing` folds here. Undeclared: itemSpacing, else 0 on every route, flow included (attribute_semantics.json -> collectionSpacing). [aliases: sectionSpacing] */
     val lineSpacing: Double? = null,
     /** Which list chrome the collection is drawn with: plain (the default), grouped, insetGrouped or sidebar; an unrecognised value falls back to plain. ORTHOGONAL to hideSeparator — that one hides the separators, this one picks the chrome, and neither overrides the other. Full ruling in attribute_semantics.json -> collectionSeparators. [default: plain] */
     val listStyle: AttrEnum<ListStyle>? = null,
@@ -74,21 +74,21 @@ data class CollectionAttributes(
     val orientation: AttrEnum<Orientation>? = null,
     /** Enable paging */
     val paging: Boolean? = null,
-    /** Reverse the layout direction of the Collection grid. When true, section order in the generated code is also reversed so that JSON definition order (index 0 first) matches the visual top-to-bottom order on iOS (which does not support reverseLayout). Compose's reverseLayout then flips the entire list so index 0 appears at the bottom. */
+    /** Reverse the layout direction of the Collection grid. When true, section order in the generated code is also reversed so that JSON definition order (index 0 first) matches the visual top-to-bottom order on iOS (which does not support reverseLayout). Compose's reverseLayout then flips the entire list so index 0 appears at the bottom. A reversed list whose content is shorter than its viewport sits at its bottom (its end, horizontally) - where iOS draws such a list, bottom-anchored - and the vertical EAGER container draws reverseLayout as the lazy list does (its first cell at the bottom, resting there), on both Compose paths (4f rulings 2026-09-27, round 13; jsonui-cli 1.9.0). Until then a short reversed list sat at its top and EAGER drew no reverseLayout. The Column of a wrapContent or `lazy: none` Collection and the horizontal EAGER container draw no reverseLayout. */
     val reverseLayout: Boolean? = null,
-    /** Anchor point for the scrollTo target. Measured 2026-08-05: ios (sjui collection_converter.rb:1138), web (rjui build_command.rb:768) and the Compose GRID path (kjui collection_component.rb:313) all fall back to bottom, so bottom is the declared default. The Compose LIST path emits no anchor offset unless the attribute is explicitly declared, which lands the target at top - that is a divergence in that one path, not a second default. [default: bottom] */
+    /** Anchor point for the scrollTo target: where the target lands along the scroll axis. top - its leading edge at the viewport's leading edge; center - its middle at the viewport's middle; bottom (the default) - its trailing edge at the viewport's trailing edge. Drawn so by SwiftUI's ScrollViewReader (vertical), the web (scrollCollectionToCell) and, since jsonui-cli 1.9.0, both Compose paths (4f ruling 2026-09-27, round 11): kjui codegen offset the target by the viewport (bottom) or half of it (center), which put the target's top edge at the viewport's bottom edge or middle, and KotlinJsonUI Dynamic landed center and bottom at the top. A reverseLayout list (Compose) lands top and bottom on the edges they name on screen. Measured 2026-08-05: ios (sjui collection_converter.rb:1138), web (rjui build_command.rb:768) and the Compose GRID path all fall back to bottom, so bottom is the declared default. On a horizontal Collection, top / center / bottom mean the start / centre / end along the scroll axis, in reading direction, on every platform (4f ruling 2026-09-27). [default: bottom] */
     val scrollAnchor: AttrEnum<ScrollAnchor>? = null,
     /** Whether scrollTo uses animation (default: true) */
     val scrollAnimated: Boolean? = null,
-    /** Enable/disable scrolling (binding supported) */
+    /** Enable/disable scrolling (binding supported). It stops the user's scrolling only: a programmatic scroll (scrollTo, defaultScrollAnchor) still moves the Collection, as iOS's scrollDisabled does, on every route with a scroll container of its own (4f ruling 2026-09-27, round 13; jsonui-cli 1.9.0). Until then Compose's EAGER container dropped its scroll with it (kjui codegen), KotlinJsonUI Dynamic read it on the grids only, and neither Compose path read it on the flow, the pager or the single-lane row. */
     val scrollEnabled: AttrValue<Boolean>? = null,
-    /** Binding that requests a programmatic scroll. The declared DATA CLASS is a plain value — `String` when cellIdProperty is set (scroll to that cell id), `Int` otherwise (scroll to that index). It is deliberately NOT `PassthroughSubject<Int, Never>`, which this description used to prescribe: PassthroughSubject is a Combine type, and naming a Swift transport in the cross-platform SSoT is what made consumers write it into their data section, where kjui's map_to_kotlin_type passes unknown classes through verbatim and the Kotlin build dies on it. How the request is delivered is each platform's own business — iOS wraps the value in a publisher so a repeated send re-scrolls, Compose reads the String directly, web keys a useEffect on it. STATUS 2026-08-05, after B landed the derivation (jsonui-cli 8c41e3e): the CODEGEN side of all three platforms now takes the plain value — sjui emits `.onChange(of: data.<prop>)` with no publisher and no throttle, Compose keys a LaunchedEffect on it, web a useEffect. The remaining gap is the SwiftUI DYNAMIC renderer: CollectionConverter.swift:127 still resolves the binding as `data[propName] as? PassthroughSubject<Int, Never>` and gets nil for a plain value, so the scroll silently never fires there (it does not crash, it does nothing). Consequence for fixtures: a Collection.scrollTo fixture is now declarable and no longer kills the Kotlin build, and Collection.scrollAnchor is measurable on the codegen path — but ios codegen and ios dynamic will disagree until the dynamic resolver accepts the value, so expect a parity finding there rather than a render failure. Owner of the remainder: the SwiftJsonUI dynamic lane. Note also that the vendored CollectionAttributes.swift still carries the old publisher wording in its doc comment; it is generated from this description and will pick the correction up at the next re-vendor. */
+    /** Binding that requests a programmatic scroll. The declared DATA CLASS is a plain value, and it decides what the value names, on every path (4f ruling 2026-09-27, round 14; jsonui-cli 1.9.0): an `Int` is a cell's index, a `String` a cell's key. cellIdProperty decides what a cell's key is — its `cellId`, else its cellIdProperty value — and not the class: a Collection with cellIdProperty may declare an `Int`, and one without it a `String` (its cells' cellIds are the keys). What it names across sections (4f ruling 2026-09-27, jsonui-cli 1.9.0; one rule on every path — sjui, kjui and rjui codegen, SwiftJsonUI and KotlinJsonUI Dynamic): an `Int` is the index of a CELL counted across all the drawn sections in order, cells only — a section's header or footer, and a grid's filler, is not counted (the same n as the paging address `<id>_item_<n>`); a `String` is the FIRST cell, in section order, whose key (its `cellId`, else its cellIdProperty value) it is, when two cells share the key — in two sections or in one; a cell with no key has none, and no String names it. A value that names no cell scrolls nowhere. Kotlin only (legacy): a String that is no cell's key and reads `<digits>` or `<digits>#<anything>` scrolls to lazy item <digits>, with a DEBUG warning, on the lazy lists; a container that is not one (the flow, the EAGER one, the wrapContent Column) has no lazy item and does not read it, and iOS and web do not read it. (A consuming Android screen asks its keyed, reverse-laid-out list for its bottom-most item with `"0#<time>"`; read as a cell, 0 would be section 0's first cell, which is not the bottom-most item when a later section has cells.) The request is a CHANGE of the value (4f ruling 2026-09-27, jsonui-cli 1.9.0): the value a Collection is drawn with scrolls nowhere, a value arriving where there was none is a change like any other, and sending the same value again does not re-scroll. It is deliberately NOT `PassthroughSubject<Int, Never>`, which this description used to prescribe: PassthroughSubject is a Combine type, and naming a Swift transport in the cross-platform SSoT is what made consumers write it into their data section, where kjui's map_to_kotlin_type passes unknown classes through verbatim and the Kotlin build dies on it. How the request is delivered is each platform's own business — iOS keys `.onChange(of:)` on the value inside a ScrollViewReader, Compose a LaunchedEffect, web a useEffect that compares the value with the one it last saw. STATUS 2026-09-27 (jsonui-cli 1.9.0): every path reads the plain value — sjui and SwiftJsonUI Dynamic, kjui and KotlinJsonUI Dynamic, rjui. On iOS and web it reaches the cells of every route with a scroll container of its own: the lists (the class-list shape's included), the grids, the flows, the horizontal Collections and the pagers — a pager turns to the page the value names, its currentPage when one is bound. On Compose (kjui codegen and KotlinJsonUI Dynamic) it reaches the lazy lists and grids, the horizontal rows, the pagers and a flow that scrolls in its own bounds (4f ruling 2026-09-27, round 11), and the EAGER container (kjui's CollectionStack EAGER, KotlinJsonUI Dynamic's Column and Row) and the Column of a vertical Collection whose height wraps its content (see `lazy`), by the same rule (4f ruling 2026-09-27, round 12); until jsonui-cli 1.9.0 neither scrolled to a cell. Until 1.9.0 kjui codegen read every value as its text and scrolled to that LAZY ITEM index - headers, footers and grid fillers counted -, with cellIdProperty looked an Int up as a key first (so an Int never became a cell there) and read a String without cellIdProperty as the index, scrolled on the value the list was first drawn with, landed bottom and center with the target's top edge at the viewport's bottom edge and middle, drew no scroll on the flow and the pager, and a key two cells shared took the lazy list down ("Key ... was already used"); KotlinJsonUI Dynamic read only a SharedFlow<Int>, so the plain value never scrolled, landed center and bottom at the top, and drew no scroll on the flow and the pager. Until 1.9.0 web's grid was no scroll container (a grid of a declared height drew its rows past its box and a scrollTo moved nothing); on iOS the flow (sjui codegen and SwiftJsonUI Dynamic), SwiftJsonUI Dynamic's sectioned List, the class-list List and the pager drew no scroll at all; and a String on a Collection with no cellIdProperty never met a cellId — web read a string of digits there as an index. Until 1.9.0 sjui codegen took what the value names from cellIdProperty, not from the declared class: an `Int` with cellIdProperty did not compile on the class-list List and the pager and scrolled nowhere on the other routes; and its cell ids with cellIdProperty let a String reach a cell with no key (its id was "\(index)"), and gave two cells of one section with one key one id, the cell it reached SwiftUI's choice. A Collection with `lazy: none` has no scroll container of its own and scrolls nowhere. Until 2026-09-27 this paragraph named the SwiftUI Dynamic renderer as the one that could not read a plain value; it was the KotlinJsonUI Dynamic renderer, which reads it today. */
     val scrollTo: AttrValue<Any>? = null,
     /** Section-based configuration */
     val sections: List<Any?>? = null,
-    /** Set target as data source */
+    /** Set target as data source (UIKit: SJUICollectionView reads it; the SwiftUI paths have no data source to set) */
     val setTargetAsDataSource: Boolean? = null,
-    /** Set target as delegate */
+    /** Set target as delegate (UIKit: SJUICollectionView reads it; the SwiftUI paths have no delegate to set) */
     val setTargetAsDelegate: Boolean? = null,
     /** Show horizontal indicator */
     val showsHorizontalScrollIndicator: Boolean? = null,
@@ -101,8 +101,11 @@ data class CollectionAttributes(
         BOTTOM("bottom");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): DefaultScrollAnchor? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("top", "center", "bottom")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): DefaultScrollAnchor? = when (raw) {
                 "top" -> TOP
                 "center" -> CENTER
                 "bottom" -> BOTTOM
@@ -117,11 +120,14 @@ data class CollectionAttributes(
         FLOW("flow");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Layout? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("vertical", "horizontal", "flow", "Flow", "LeftAligned", "leftAligned")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Layout? = when (raw) {
                 "vertical" -> VERTICAL
                 "horizontal" -> HORIZONTAL
-                "flow", "leftaligned" -> FLOW
+                "flow", "Flow", "LeftAligned", "leftAligned" -> FLOW
                 else -> null
             }
         }
@@ -133,8 +139,11 @@ data class CollectionAttributes(
         NONE("none");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Lazy? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("lazy", "eager", "none")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Lazy? = when (raw) {
                 "lazy" -> LAZY
                 "eager" -> EAGER
                 "none" -> NONE
@@ -150,11 +159,14 @@ data class CollectionAttributes(
         SIDEBAR("sidebar");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ListStyle? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("plain", "grouped", "insetGrouped", "sidebar")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ListStyle? = when (raw) {
                 "plain" -> PLAIN
                 "grouped" -> GROUPED
-                "insetgrouped" -> INSET_GROUPED
+                "insetGrouped" -> INSET_GROUPED
                 "sidebar" -> SIDEBAR
                 else -> null
             }
@@ -166,8 +178,11 @@ data class CollectionAttributes(
         VERTICAL("vertical");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): Orientation? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("horizontal", "vertical")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL
                 else -> null
@@ -181,8 +196,11 @@ data class CollectionAttributes(
         BOTTOM("bottom");
 
         companion object {
-            /** Case-insensitive match against the declared values. */
-            fun from(raw: String): ScrollAnchor? = when (raw.lowercase()) {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("top", "center", "bottom")
+
+            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            fun from(raw: String): ScrollAnchor? = when (raw) {
                 "top" -> TOP
                 "center" -> CENTER
                 "bottom" -> BOTTOM
@@ -285,7 +303,7 @@ data class CollectionAttributes(
             insets = AttrCoerce.lookup(json, "insets"),
             itemSpacing = AttrCoerce.number(AttrCoerce.lookup(json, "itemSpacing")),
             itemWeight = AttrCoerce.number(AttrCoerce.lookup(json, "itemWeight")),
-            items = AttrCoerce.attrValue(AttrCoerce.lookup(json, "items")) { AttrCoerce.array(it) },
+            items = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "items")),
             keyboardAvoidance = AttrCoerce.boolean(AttrCoerce.lookup(json, "keyboardAvoidance")),
             layout = parseLayout(AttrCoerce.lookup(json, "layout")),
             lazy = AttrCoerce.attrValue(AttrCoerce.lookup(json, "lazy")) { parseLazy(it) },
@@ -312,7 +330,8 @@ data class CollectionAttributes(
             (raw as? String)?.let { s ->
                 DefaultScrollAnchor.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Collection.defaultScrollAnchor: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> DefaultScrollAnchor.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.defaultScrollAnchor: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -321,7 +340,8 @@ data class CollectionAttributes(
             (raw as? String)?.let { s ->
                 Layout.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Collection.layout: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Layout.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.layout: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -330,7 +350,8 @@ data class CollectionAttributes(
             (raw as? String)?.let { s ->
                 Lazy.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Collection.lazy: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Lazy.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.lazy: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -339,7 +360,8 @@ data class CollectionAttributes(
             (raw as? String)?.let { s ->
                 ListStyle.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Collection.listStyle: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ListStyle.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.listStyle: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -348,7 +370,8 @@ data class CollectionAttributes(
             (raw as? String)?.let { s ->
                 Orientation.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Collection.orientation: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> Orientation.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.orientation: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 
@@ -357,7 +380,8 @@ data class CollectionAttributes(
             (raw as? String)?.let { s ->
                 ScrollAnchor.from(s)?.let { return AttrEnum.Known(it) }
             }
-            AttrWarnings.emit("Collection.scrollAnchor: unknown enum value '$raw'")
+            val near = (raw as? String)?.let { s -> ScrollAnchor.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.scrollAnchor: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

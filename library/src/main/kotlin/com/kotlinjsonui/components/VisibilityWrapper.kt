@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -20,9 +21,12 @@ fun VisibilityWrapper(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
-    if (visibility.lowercase() == "gone") return
+    // As declared ("Gone" is no spelling of gone: the codegen compares as
+    // written, and so does this — DeclaredSpelling)
+    val declared = DeclaredSpelling.lowered(visibility, DeclaredSpelling.VISIBILITY, "common.visibility")
+    if (declared == "gone") return
 
-    if (visibility.lowercase() == "invisible") {
+    if (declared == "invisible") {
         Box(modifier = modifier.alpha(0f), content = content)
     } else {
         Box(modifier = modifier, content = content)
@@ -82,9 +86,10 @@ fun VisibilityWrapper(
     }
 
     // Then handle visibility
-    if (visibility?.lowercase() == "gone") return
+    val declared = DeclaredSpelling.lowered(visibility, DeclaredSpelling.VISIBILITY, "common.visibility")
+    if (declared == "gone") return
 
-    if (visibility?.lowercase() == "invisible") {
+    if (declared == "invisible") {
         Box(modifier = modifier.alpha(0f), content = content)
     } else {
         Box(modifier = modifier, content = content)
