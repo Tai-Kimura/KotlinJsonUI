@@ -22,6 +22,11 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.foundation.lazy.LazyListState
+import android.util.Log
+import com.kotlinjsonui.dynamic.DebugDiagnostics
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import androidx.compose.foundation.background
@@ -373,6 +378,31 @@ class DynamicCollectionComponent {
                 // 'flowAlignment' is an undeclared legacy runtime extra
                 val flowAlignment = TypedAttrs.undeclared(json, "flowAlignment")?.asString ?: "leading"
                 val flowScrolls = collectionMode != CollectionStackMode.NONE && !heightIsWrapContent
+                // scrollTo on a flow that scrolls (4f ruling 2026-09-27, round
+                // 11): its own scroll state, the scrolled content's and each
+                // cell's coordinates recorded as they are laid out, and the
+                // cell scrolled to by scrollAnchor. The flow read no scrollTo
+                // until jsonui-cli 1.9.0. A flow that does not scroll has
+                // nothing to scroll: the parent does. A String that is no key
+                // scrolls nowhere here (a flow has no lazy item).
+                val flowScroll = rememberScrollState()
+                val flowTargets = remember { FlowScrollTargets() }
+                val flowSections = plan.sectionsFor(CellRoute.FLOW)
+                // The drawn sections' cells, in section order: a section that
+                // names a cell (or the class-list shape's cell).
+                val flowCells = if (flowSections != null && collectionDataSource != null) {
+                    (0 until minOf(flowSections.size(), collectionDataSource.sections.size))
+                        .filter { s -> (sectionViewName(flowSections[s].asJsonObject, "cell") ?: cellClassName) != null }
+                        .flatMap { s -> collectionDataSource.sections[s].cells?.data.orEmpty() }
+                } else emptyList()
+                ScrollToEffect(scrollTo, collectionId, { value, _ -> (scrollCell(value, flowCells, cellIdProperty, legacy = false) as? ScrollCell.Cell)?.index }) { cell ->
+                    val content = flowTargets.content?.takeIf { it.isAttached } ?: return@ScrollToEffect
+                    val placed = flowTargets.cells[cell]?.takeIf { it.isAttached } ?: return@ScrollToEffect
+                    val top = content.localPositionOf(placed, androidx.compose.ui.geometry.Offset.Zero).y.toInt()
+                    val size = placed.size.height
+                    val y = (top + anchorOffset(scrollAnchor, false, flowScroll.viewportSize, size)).coerceAtLeast(0)
+                    if (scrollAnimated) flowScroll.animateScrollTo(y) else flowScroll.scrollTo(y)
+                }
                 val flow: @Composable (Modifier) -> Unit = { flowModifier ->
                     renderFlowLayout(
                         sections = plan.sectionsFor(CellRoute.FLOW),
@@ -388,18 +418,20 @@ class DynamicCollectionComponent {
                         cellHeight = cellHeight,
                         gravityAlignment = gravityAlignment,
                         onItemAppear = onItemAppear,
-                        collectionId = collectionId
+                        collectionId = collectionId,
+                        scrollTargets = flowTargets
                     )
                 }
+                val scrolled = Modifier.verticalScroll(flowScroll).onGloballyPositioned { flowTargets.content = it }
                 when {
                     !flowScrolls -> flow(modifier)
-                    heightIsSelfBounded -> flow(modifier.verticalScroll(rememberScrollState()))
+                    heightIsSelfBounded -> flow(modifier.then(scrolled))
                     else -> BoxWithConstraints(modifier = modifier) {
                         // The node's own modifiers (size, background, address) sit
                         // on this box; the FlowRow fills it and scrolls only when
                         // the box was given a finite height to fill.
                         val inner = if (constraints.hasBoundedHeight) {
-                            Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                            Modifier.fillMaxSize().then(scrolled)
                         } else {
                             Modifier.fillMaxWidth()
                         }
@@ -510,6 +542,7 @@ class DynamicCollectionComponent {
                     gravityAlignment = gravityAlignment,
                     scrollTo = scrollTo,
                     scrollAnimated = scrollAnimated,
+                    scrollAnchor = scrollAnchor,
                     onItemAppear = onItemAppear,
                     chrome = listChrome,
                     collectionId = collectionId
@@ -519,6 +552,19 @@ class DynamicCollectionComponent {
 
             // LazyGrid state for programmatic scrolling
             val gridState = rememberLazyGridState()
+
+            // The grid's sections as it emits them (scrollItemIndex's walk),
+            // for scrollTo and defaultScrollAnchor alike.
+            val gridRoute = if (isHorizontal) CellRoute.LAZY_HORIZONTAL_GRID else CellRoute.LAZY_VERTICAL_GRID
+            val gridScrollSections = emittedScrollSections(
+                sections = plan.sectionsFor(gridRoute),
+                collectionDataSource = collectionDataSource,
+                gridColumns = gridColumns,
+                defaultColumns = defaultColumns,
+                reverseLayout = reverseLayout,
+                breakRowsBetweenSections = plan.hasDeclaredSections
+            )
+            val gridLeadingItems = if (!isHorizontal && plan.headerFor(CellRoute.LAZY_VERTICAL_GRID) != null) 1 else 0
 
             // defaultScrollAnchor — where the list STARTS, as opposed to
             // `scrollAnchor`, which positions a programmatic scrollTo. Only
@@ -530,16 +576,20 @@ class DynamicCollectionComponent {
             // shape (collection_component.rb#default_scroll_anchor_code); the
             // dynamic path had no equivalent (34: `Collection/
             // defaultScrollAnchor` pixel-identical to its control).
+            //
+            // The cell is counted by the scrollTo rule — across the drawn
+            // sections, headers, footers and row breaks not counted — and
+            // scrolled to as the item that holds it (4f ruling 2026-09-27,
+            // round 11). Until jsonui-cli 1.9.0 the count was the first data
+            // section's cells and the result the lazy item index.
             val defaultAnchor = TypedAttrs.enumString(a.defaultScrollAnchor) { it.json }
             if (defaultAnchor == "center" || defaultAnchor == "bottom") {
-                val anchorCount = collectionDataSource
-                    ?.sections?.firstOrNull()?.cells?.data?.size ?: 0
+                val anchorCount = gridScrollSections.sumOf { it.cells?.size ?: 0 }
                 val anchorApplied = remember { mutableStateOf(false) }
                 LaunchedEffect(anchorCount) {
                     if (!anchorApplied.value && anchorCount > 0) {
-                        gridState.scrollToItem(
-                            if (defaultAnchor == "center") anchorCount / 2 else anchorCount - 1
-                        )
+                        val cell = if (defaultAnchor == "center") anchorCount / 2 else anchorCount - 1
+                        scrollItemIndex(cell, gridScrollSections, null, gridLeadingItems)?.let { gridState.scrollToItem(it) }
                         anchorApplied.value = true
                     }
                 }
@@ -547,23 +597,11 @@ class DynamicCollectionComponent {
 
             // Handle scrollTo: the lazy item the value names — a cell counted
             // across the sections, headers, footers and fillers not counted
-            // (scrollItemIndex) — over the sections as the grid below emits them.
-            val gridRoute = if (isHorizontal) CellRoute.LAZY_HORIZONTAL_GRID else CellRoute.LAZY_VERTICAL_GRID
-            val gridScrollSections = emittedScrollSections(
-                sections = plan.sectionsFor(gridRoute),
-                collectionDataSource = collectionDataSource,
-                gridColumns = gridColumns,
-                defaultColumns = defaultColumns,
-                reverseLayout = reverseLayout,
-                breakRowsBetweenSections = plan.hasDeclaredSections
-            )
-            val gridLeadingItems = if (!isHorizontal && plan.headerFor(CellRoute.LAZY_VERTICAL_GRID) != null) 1 else 0
-            ScrollToEffect(scrollTo, { value -> scrollItemIndex(value, gridScrollSections, cellIdProperty, gridLeadingItems) }) { index ->
-                when (scrollAnchor) {
-                    "top" -> if (scrollAnimated) gridState.animateScrollToItem(index, 0) else gridState.scrollToItem(index, 0)
-                    "center" -> if (scrollAnimated) gridState.animateScrollToItem(index) else gridState.scrollToItem(index)
-                    else -> if (scrollAnimated) gridState.animateScrollToItem(index) else gridState.scrollToItem(index)
-                }
+            // (scrollItemIndex) — over the sections as the grid below emits
+            // them, landed where scrollAnchor says (scrollToAnchored). Until
+            // jsonui-cli 1.9.0 center and bottom landed the item at the top.
+            ScrollToEffect(scrollTo, collectionId, { value, onLegacy -> scrollItemIndex(value, gridScrollSections, cellIdProperty, gridLeadingItems, onLegacy) }) { index ->
+                gridState.scrollToAnchored(index, scrollAnchor, reverseLayout, scrollAnimated, isHorizontal)
             }
 
             // Create the appropriate grid based on layout
@@ -667,20 +705,108 @@ class DynamicCollectionComponent {
         /**
          * A scrollTo request, keyed on its value — kjui's codegen keys its
          * LaunchedEffect on the bound value the same way — or, for a
-         * SharedFlow, each value it emits. [itemIndex] names the lazy item;
-         * null is no scroll.
+         * SharedFlow, each value it emits. [target] names the item (the lazy
+         * item, the page, the flow's cell); null is no scroll. It is handed a
+         * callback for the legacy reading, which a debuggable app hears as a
+         * warning naming the value and the migration.
+         *
+         * A value scrolls when it CHANGES (4f ruling 2026-09-27, round 11):
+         * the value the Collection first composes with names no scroll, as
+         * SwiftUI's `.onChange(of:)` reads it — a list with a header and an
+         * initial 0 stays at its top. Until jsonui-cli 1.9.0 the first
+         * composition scrolled too.
          */
         @Composable
-        private fun ScrollToEffect(value: Any?, itemIndex: (Any?) -> Int?, scroll: suspend (Int) -> Unit) {
-            val currentItemIndex by rememberUpdatedState(itemIndex)
+        private fun ScrollToEffect(
+            value: Any?,
+            collectionId: String?,
+            target: (Any?, (String, Int) -> Unit) -> Int?,
+            scroll: suspend (Int) -> Unit
+        ) {
+            val currentTarget by rememberUpdatedState(target)
             val currentScroll by rememberUpdatedState(scroll)
-            when (value) {
-                null -> {}
-                is SharedFlow<*> -> LaunchedEffect(value) {
-                    value.collect { emitted -> currentItemIndex(emitted)?.let { currentScroll(it) } }
+            val debuggable = DebugDiagnostics.isAppDebuggable(LocalContext.current)
+            val onLegacy: (String, Int) -> Unit = { raw, index ->
+                if (debuggable) {
+                    Log.w(
+                        "DynamicView",
+                        "Collection ${collectionId ?: "(unnamed)"}: scrollTo \"$raw\" is no cell's key — read as the legacy " +
+                            "lazy item index $index. Scroll by a cell's key, or by its index among the cells (jsonui-cli 1.9.0, Collection.scrollTo)."
+                    )
                 }
-                else -> LaunchedEffect(value) { currentItemIndex(value)?.let { currentScroll(it) } }
             }
+            if (value is SharedFlow<*>) {
+                LaunchedEffect(value) {
+                    value.collect { emitted -> currentTarget(emitted, onLegacy)?.let { currentScroll(it) } }
+                }
+                return
+            }
+            val armed = remember { mutableStateOf(false) }
+            LaunchedEffect(value) {
+                if (!armed.value) {
+                    armed.value = true
+                    return@LaunchedEffect
+                }
+                currentTarget(value, onLegacy)?.let { currentScroll(it) }
+            }
+        }
+
+        /**
+         * Where a scrolled-to item lands: [anchor] (top / center / bottom)
+         * along the main axis — top: its start at the viewport's start;
+         * center: its middle at the middle; bottom: its end at the viewport's
+         * end — what SwiftUI's ScrollViewReader anchors and kjui's codegen
+         * emits. Under [reverse] the list starts at its end, so top and bottom
+         * trade places. Returns the offset `scrollToItem` takes (negative
+         * pushes the item toward the viewport's end).
+         */
+        internal fun anchorOffset(anchor: String, reverse: Boolean, viewport: Int, size: Int): Int {
+            val effective = if (reverse) when (anchor) { "top" -> "bottom"; "bottom" -> "top"; else -> anchor } else anchor
+            return when (effective) {
+                "center" -> -(viewport - size) / 2
+                "bottom" -> -(viewport - size)
+                else -> 0
+            }
+        }
+
+        /**
+         * Scrolls to [index] landed by [anchor] (anchorOffset). The item's
+         * size is its own when it is laid out, else the laid-out items'
+         * average for the scroll, corrected once it is laid out.
+         */
+        private suspend fun LazyGridState.scrollToAnchored(index: Int, anchor: String, reverse: Boolean, animated: Boolean, horizontal: Boolean) {
+            fun sizeOf(info: LazyGridItemInfo) = if (horizontal) info.size.width else info.size.height
+            val viewport = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+            val items = layoutInfo.visibleItemsInfo
+            val size = items.firstOrNull { it.index == index }?.let(::sizeOf)
+                ?: items.map(::sizeOf).average().let { if (it.isNaN()) 0 else it.toInt() }
+            val offset = anchorOffset(anchor, reverse, viewport, size)
+            if (animated) animateScrollToItem(index, offset) else scrollToItem(index, offset)
+            layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.let(::sizeOf)?.let {
+                if (it != size) scrollToItem(index, anchorOffset(anchor, reverse, viewport, it))
+            }
+        }
+
+        private suspend fun LazyListState.scrollToAnchored(index: Int, anchor: String, reverse: Boolean, animated: Boolean) {
+            val viewport = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+            val items = layoutInfo.visibleItemsInfo
+            val size = items.firstOrNull { it.index == index }?.size
+                ?: items.map { it.size }.average().let { if (it.isNaN()) 0 else it.toInt() }
+            val offset = anchorOffset(anchor, reverse, viewport, size)
+            if (animated) animateScrollToItem(index, offset) else scrollToItem(index, offset)
+            layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.size?.let {
+                if (it != size) scrollToItem(index, anchorOffset(anchor, reverse, viewport, it))
+            }
+        }
+
+        /**
+         * The flow's scroll targets: its scrolled content's coordinates and
+         * each cell's, recorded as they are laid out, by the cell's place
+         * among the drawn sections' cells.
+         */
+        internal class FlowScrollTargets {
+            var content: LayoutCoordinates? = null
+            val cells = mutableMapOf<Int, LayoutCoordinates>()
         }
 
         /**
@@ -759,6 +885,21 @@ class DynamicCollectionComponent {
             val pagerState = rememberPagerState(
                 initialPage = (boundPage ?: 0).coerceIn(0, (pageCount - 1).coerceAtLeast(0))
             ) { pageCount }
+
+            // scrollTo: the page is the cell the value names, counted across
+            // the sections (4f ruling 2026-09-27, round 11) — as kjui's codegen
+            // pager. The pager read no scrollTo until jsonui-cli 1.9.0.
+            @Suppress("UNCHECKED_CAST")
+            val pageCells = pageItems.map { (it.itemData as? Map<String, Any>).orEmpty() }
+            ScrollToEffect(resolveScrollTo(a, data), collectionId, { value, onLegacy ->
+                when (val named = scrollCell(value, pageCells, cellIdProperty)) {
+                    null -> null
+                    is ScrollCell.Legacy -> named.item.also { onLegacy(named.raw, it) }
+                    is ScrollCell.Cell -> named.index
+                }?.takeIf { it in 0 until pageCount }
+            }) { page ->
+                if (a.scrollAnimated != false) pagerState.animateScrollToPage(page) else pagerState.scrollToPage(page)
+            }
 
             // Sync data binding -> pager. While this programmatic scroll is
             // in flight the write-back leg stays quiet: writing intermediate
@@ -858,6 +999,7 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
+            scrollTargets: FlowScrollTargets? = null,
         ) {
             val horizontalArrangement = Arrangement.spacedBy(horizontalSpacing, when (flowAlignment) {
                 "center" -> Alignment.CenterHorizontally
@@ -871,6 +1013,10 @@ class DynamicCollectionComponent {
             @Composable
             fun FlowRowScope.sectionCells(sectionIndex: Int, sectionObj: JsonObject) {
                 val cellViewName = sectionViewName(sectionObj, "cell")
+                // The cell's place among the drawn sections' cells (scrollTo).
+                val cellBase = (0 until sectionIndex)
+                    .filter { s -> sections?.get(s)?.asJsonObject?.let { sectionViewName(it, "cell") ?: cellClassName } != null }
+                    .sumOf { collectionDataSource?.sections?.getOrNull(it)?.cells?.data?.size ?: 0 }
                 collectionDataSource?.sections?.getOrNull(sectionIndex)?.cells?.let { cellData ->
                     cellData.data.forEachIndexed { cellIndex, item ->
                         val cellId = (item["cellId"] as? String)
@@ -884,6 +1030,9 @@ class DynamicCollectionComponent {
                                     )
                                     .then(
                                         if (cellHeight != null) Modifier.height(cellHeight) else Modifier
+                                    )
+                                    .then(
+                                        if (scrollTargets != null) Modifier.onGloballyPositioned { scrollTargets.cells[cellBase + cellIndex] = it } else Modifier
                                     ),
                                 contentAlignment = gravityAlignment
                             ) {
@@ -1097,6 +1246,7 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             scrollTo: Any?,
             scrollAnimated: Boolean,
+            scrollAnchor: String = "bottom",
             onItemAppear: ((Int) -> Unit)? = null,
             chrome: ListChrome? = null,
             collectionId: String? = null,
@@ -1108,8 +1258,8 @@ class DynamicCollectionComponent {
                     ScrollSection(i, breakBefore = false, header = false, cells = collectionDataSource.sections.getOrNull(i)?.cells?.data, footer = false)
                 }
             } else emptyList()
-            ScrollToEffect(scrollTo, { value -> scrollItemIndex(value, rowScrollSections, cellIdProperty) }) { index ->
-                if (scrollAnimated) listState.animateScrollToItem(index) else listState.scrollToItem(index)
+            ScrollToEffect(scrollTo, collectionId, { value, onLegacy -> scrollItemIndex(value, rowScrollSections, cellIdProperty, 0, onLegacy) }) { index ->
+                listState.scrollToAnchored(index, scrollAnchor, false, scrollAnimated)
             }
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = modifier,
@@ -1363,10 +1513,11 @@ class DynamicCollectionComponent {
                                 // (measured, 4f round 10). kjui's codegen keys
                                 // its items the same way (jsonui-cli 1.9.0).
                                 val identifiedItems = if (cellIdProperty != null) {
+                                    val ids = uniqueKeys(cellData.data.mapIndexed { index, item ->
+                                        (item["cellId"] as? String) ?: (item[cellIdProperty] as? String) ?: index.toString()
+                                    })
                                     cellData.data.mapIndexed { index, item ->
-                                        val id = (item["cellId"] as? String)
-                                            ?: (item[cellIdProperty] as? String)
-                                            ?: index.toString()
+                                        val id = ids[index]
                                         IdentifiedCellItem(id = if (sectionIndex == 0) id else "$sectionIndex:$id", index = index, data = item)
                                     }
                                 } else null
@@ -1676,40 +1827,35 @@ class DynamicCollectionComponent {
         /**
          * The lazy item a scrollTo value names (4f ruling 2026-09-27;
          * jsonui-cli 1.9.0, the SSoT's Collection.scrollTo), or null for none:
-         * - an Int (any number) is a CELL counted across the drawn sections
-         *   in section order — a header or footer item, and a grid's row
-         *   break, is not a cell;
-         * - a String, with [cellIdProperty], is the first cell in section
-         *   order whose key — its "cellId", else its cellIdProperty value — it
-         *   is; one that is no cell's key is read as it was before 1.9.0:
-         *   digits, optionally `#` and anything (a re-send nonce), as the lazy
-         *   item index (the SSoT says why, and that this reading is the
-         *   Kotlin paths' own); without cellIdProperty, digits and an optional
-         *   `#…` are a cell's index.
+         * - a number is a CELL counted across the drawn sections in section
+         *   order — a header or footer item, and a grid's row break, is not a
+         *   cell — with or without cellIdProperty;
+         * - a String is the first cell in section order whose key — its
+         *   "cellId", else its cellIdProperty value — it is; one that is no
+         *   cell's key and reads `<digits>` / `<digits>#…` is the legacy lazy
+         *   item index (the SSoT says why, and that this reading is the Kotlin
+         *   paths' own), said through [onLegacy] (scrollCell).
          * [emitted] is the sections in the order the lazy content emits them
          * (reversed under reverseLayout); [leadingItems] the items before the
          * first (the legacy shape's header). Until jsonui-cli 1.9.0 the value
          * was the lazy item index itself.
          */
-        internal fun scrollItemIndex(value: Any?, emitted: List<ScrollSection>, cellIdProperty: String?, leadingItems: Int = 0): Int? {
+        internal fun scrollItemIndex(
+            value: Any?,
+            emitted: List<ScrollSection>,
+            cellIdProperty: String?,
+            leadingItems: Int = 0,
+            onLegacy: ((String, Int) -> Unit)? = null,
+        ): Int? {
             val inOrder = emitted.sortedBy { it.section }
-            val cell: Int = when (value) {
-                is Number -> value.toInt()
-                is String -> {
-                    if (value.isEmpty()) return null
-                    val byIndex = value.substringBefore("#").toIntOrNull()
-                    if (cellIdProperty != null) {
-                        val keyed = inOrder.flatMap { it.cells.orEmpty() }
-                            .indexOfFirst { ((it["cellId"] as? String) ?: (it[cellIdProperty] as? String)) == value }
-                        if (keyed < 0) return byIndex?.takeIf { it >= 0 }
-                        keyed
-                    } else {
-                        byIndex ?: return null
-                    }
+            val cell = when (val named = scrollCell(value, inOrder.flatMap { it.cells.orEmpty() }, cellIdProperty)) {
+                null -> return null
+                is ScrollCell.Legacy -> {
+                    onLegacy?.invoke(named.raw, named.item)
+                    return named.item
                 }
-                else -> return null
+                is ScrollCell.Cell -> named.index
             }
-            if (cell < 0) return null
             var rest = cell
             val target = inOrder.firstOrNull { s ->
                 val size = s.cells?.size ?: 0
@@ -1724,6 +1870,57 @@ class DynamicCollectionComponent {
                 if (s.footer) item += 1
             }
             return null
+        }
+
+        /** What a scrollTo value names: a cell, or (the legacy reading) a lazy item index. */
+        internal sealed class ScrollCell {
+            data class Cell(val index: Int) : ScrollCell()
+            data class Legacy(val raw: String, val item: Int) : ScrollCell()
+        }
+
+        /** `<digits>` or `<digits>#<anything>` → the digits, else null. */
+        internal fun leadingDigits(raw: String): Int? =
+            raw.substringBefore("#").takeIf { it.isNotEmpty() && it.all(Char::isDigit) }?.toIntOrNull()
+
+        /**
+         * The cell a scrollTo value names among [cells] (the drawn cells in
+         * section order), or null. The value's class decides (4f ruling
+         * 2026-09-27, round 14; the SSoT's Collection.scrollTo): a number is
+         * the cell's index, with or without cellIdProperty; a String is a key —
+         * the first cell whose "cellId", else its [cellIdProperty] value when
+         * one is set, it is (a cell with neither has no key). A String that is
+         * no cell's key and is `<digits>` / `<digits>#…` is the legacy lazy
+         * item index when [legacy] (round 11). Until jsonui-cli 1.9.0 a String
+         * without cellIdProperty was read as a cell's index.
+         */
+        internal fun scrollCell(value: Any?, cells: List<Map<String, Any>>, cellIdProperty: String?, legacy: Boolean = true): ScrollCell? {
+            val index = when (value) {
+                is Number -> value.toInt()
+                is String -> {
+                    if (value.isEmpty()) return null
+                    val keyed = cells.indexOfFirst {
+                        ((it["cellId"] as? String) ?: cellIdProperty?.let { prop -> it[prop] as? String }) == value
+                    }
+                    if (keyed < 0) {
+                        val item = leadingDigits(value) ?: return null
+                        return if (legacy) ScrollCell.Legacy(value, item) else null
+                    }
+                    keyed
+                }
+                else -> return null
+            }
+            return if (index in cells.indices) ScrollCell.Cell(index) else null
+        }
+
+        /**
+         * Two cells of one section may share a key; one lazy list may not
+         * (Compose throws "Key … was already used"). A key an earlier cell of
+         * the section took gets "#2", "#3"… — CellIdGenerator's dedupe, and
+         * kjui's codegen (4f ruling 2026-09-27, round 11).
+         */
+        internal fun uniqueKeys(keys: List<String>): List<String> {
+            val seen = HashSet<String>()
+            return keys.map { k -> if (seen.add(k)) k else generateSequence(2) { it + 1 }.map { "$k#$it" }.first { seen.add(it) } }
         }
 
         /** One row of a non-lazy grid: its (section, cell) pairs, and the columns it is laid out in. */
