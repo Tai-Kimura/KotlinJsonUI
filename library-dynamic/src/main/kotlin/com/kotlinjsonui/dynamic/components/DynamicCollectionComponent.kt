@@ -243,22 +243,27 @@ class DynamicCollectionComponent {
             // Not `contentInsets`: it is declared for swift only (mode
             // swiftui) and kjui's codegen does not draw it, so reading it
             // here drew padding in Debug that the Release build does not.
-            // A DECLARED contentPadding/insets wins: the author named
-            // an exact value, and `contentInsetAdjustmentBehavior` only says
-            // "clear the system bars" — it cannot also mean "and discard the
-            // number I wrote". Same precedence the codegen uses. Without one,
-            // insetHorizontal / insetVertical are ADDED to the safe area, as
-            // iOS adds them (ContentInsetBehavior.safeAreaPadding; 4f ruling
-            // 2026-09-27, round 16) — the safe area replaced them until
-            // jsonui-cli 1.9.0.
-            val contentPadding = declaredCollectionPadding(json)
-                ?: ContentInsetBehavior.safeAreaPadding(
-                    a.contentInsetAdjustmentBehavior,
-                    horizontal = isHorizontal,
-                    insetHorizontal = a.insetHorizontal?.toFloat(),
-                    insetVertical = a.insetVertical?.toFloat()
+            // A declared contentPadding / insets, insetHorizontal / insetVertical
+            // and the safe area `contentInsetAdjustmentBehavior` asks for are
+            // ADDED, side by side, as iOS adds them — measured 2026-09-27 on
+            // sjui codegen and SwiftJsonUI Dynamic: insets [8,0,0,0] with
+            // insetVertical 8 at the top of a 62pt safe area put the first cell
+            // at 78 (4f rulings, rounds 16 and 17). Until jsonui-cli 1.9.0 a
+            // declared insets replaced the other two (plan 49 lane C, #4, whose
+            // reason — "the author named an exact value" — adding keeps too).
+            val paddingSides = collectionPaddingSides(a, json, data)
+            val safeArea = ContentInsetBehavior.safeAreaPadding(a.contentInsetAdjustmentBehavior, horizontal = isHorizontal)
+            val paddingDirection = LocalLayoutDirection.current
+            val contentPadding = when {
+                safeArea == null -> paddingSides?.let { paddingOfSides(it) } ?: PaddingValues(0.dp)
+                paddingSides == null -> safeArea
+                else -> PaddingValues(
+                    start = safeArea.calculateStartPadding(paddingDirection) + paddingSides[3].dp,
+                    top = safeArea.calculateTopPadding() + paddingSides[0].dp,
+                    end = safeArea.calculateEndPadding(paddingDirection) + paddingSides[1].dp,
+                    bottom = safeArea.calculateBottomPadding() + paddingSides[2].dp
                 )
-                ?: parseCollectionPadding(a, json)
+            }
 
             // Parse spacing
             // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
@@ -2565,38 +2570,45 @@ class DynamicCollectionComponent {
          * it were absent.
          */
         internal fun hasDeclaredContentPadding(a: CollectionAttributes, json: JsonObject): Boolean =
-            declaredCollectionPadding(json) != null
+            declaredCollectionSides(json) != null
 
         /**
-         * Resolve Collection content padding from any of the tool-emitted
-         * attributes: `contentPadding`, `insets` (declaredCollectionPadding),
-         * else `insetHorizontal`/`insetVertical`, else none.
+         * The Collection's own content padding — a declared `contentPadding` /
+         * `insets` plus `insetHorizontal` / `insetVertical` (added, as iOS
+         * adds them; round 17) — or no padding. The safe area is added by the
+         * caller (it is read in the composition).
          */
-        internal fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject): PaddingValues {
-            declaredCollectionPadding(json)?.let { return it }
+        internal fun parseCollectionPadding(a: CollectionAttributes, json: JsonObject, data: Map<String, Any> = emptyMap()): PaddingValues =
+            collectionPaddingSides(a, json, data)?.let { paddingOfSides(it) } ?: PaddingValues(0.dp)
 
-            if (a.insetHorizontal != null || a.insetVertical != null) {
-                val hInset = a.insetHorizontal?.toFloat() ?: 0f
-                val vInset = a.insetVertical?.toFloat() ?: 0f
-                return PaddingValues(horizontal = hInset.dp, vertical = vInset.dp)
-            }
-
-            return PaddingValues(0.dp)
+        /**
+         * [top, end, bottom, start] of a declared contentPadding / insets
+         * (declaredCollectionSides) plus insetHorizontal / insetVertical, or
+         * null when neither is declared.
+         */
+        internal fun collectionPaddingSides(a: CollectionAttributes, json: JsonObject, data: Map<String, Any>): FloatArray? {
+            val declared = declaredCollectionSides(json, data)
+            if (declared == null && a.insetHorizontal == null && a.insetVertical == null) return null
+            val sides = declared ?: FloatArray(4)
+            val h = a.insetHorizontal?.toFloat() ?: 0f
+            val v = a.insetVertical?.toFloat() ?: 0f
+            return floatArrayOf(sides[0] + v, sides[1] + h, sides[2] + v, sides[3] + h)
         }
 
         /**
          * A `contentPadding` / `insets` value as the SSoT's Collection.insets
-         * declares it, or null: a number, or 1, 2 or 4 values — an array, or
-         * a string separated by `|` (whitespace and commas too) — read as
-         * `paddings` reads them: one, every side; two, [vertical, horizontal];
-         * four, [top, right, bottom, left] (right the end, left the start).
-         * kjui's codegen reads the same (content_padding_values). Until
-         * jsonui-cli 1.9.0 an array had to be four values, and kjui read four
-         * in another order and no string (4f ruling 2026-09-27, round 16).
-         * 'contentPadding' is an undeclared legacy runtime extra; 'insets' is
-         * a declared shape union, read raw (TypedAttrs.rawKey).
+         * declares it, as [top, end, bottom, start], or null: a number, or 1,
+         * 2 or 4 values — an array, or a string separated by `|` (whitespace
+         * and commas too) — read as `paddings` reads them: one, every side;
+         * two, [vertical, horizontal]; four, [top, right, bottom, left] (right
+         * the end, left the start). kjui's codegen reads the same
+         * (content_padding_values). A value in an array may be a binding,
+         * resolved from [data] as kjui's codegen binds it — a number, else 0
+         * (4f ruling 2026-09-27, round 17; the array declared nothing until
+         * then). 'contentPadding' is an undeclared legacy runtime extra;
+         * 'insets' is a declared shape union, read raw (TypedAttrs.rawKey).
          */
-        internal fun declaredCollectionPadding(json: JsonObject): PaddingValues? {
+        internal fun declaredCollectionSides(json: JsonObject, data: Map<String, Any> = emptyMap()): FloatArray? {
             listOf(
                 TypedAttrs.undeclared(json, "contentPadding"),
                 TypedAttrs.rawKey(json, "insets")
@@ -2606,24 +2618,28 @@ class DynamicCollectionComponent {
                     element.isJsonPrimitive && element.asJsonPrimitive.isNumber -> listOf(element.asFloat)
                     element.isJsonPrimitive && element.asJsonPrimitive.isString ->
                         element.asString.split(Regex("[|\\s,]+")).filter { it.isNotEmpty() }.mapNotNull { it.toFloatOrNull() }
-                    // A number, or a number written as a string; anything else
-                    // (a binding) is no value this reader takes.
+                    // A number, a number written as a string, or a binding;
+                    // anything else is no value this reader takes.
                     element.isJsonArray -> element.asJsonArray.map { item ->
-                        (if (item.isJsonPrimitive) item.asString.toFloatOrNull() else null) ?: return@forEach
+                        val raw = if (item.isJsonPrimitive) item.asString else null
+                        raw?.toFloatOrNull()
+                            ?: raw?.takeIf { it.startsWith("@{") && it.endsWith("}") }?.let { DataBindingContext.resolveNumber(it, data)?.toFloat() ?: 0f }
+                            ?: return@forEach
                     }
                     else -> null
                 }
-                paddingOf(values)?.let { return it }
+                when (values?.size) {
+                    1 -> return FloatArray(4) { values[0] }
+                    2 -> return floatArrayOf(values[0], values[1], values[0], values[1])
+                    4 -> return floatArrayOf(values[0], values[1], values[2], values[3])
+                }
             }
             return null
         }
 
-        private fun paddingOf(values: List<Float>?): PaddingValues? = when (values?.size) {
-            1 -> PaddingValues(values[0].dp)
-            2 -> PaddingValues(vertical = values[0].dp, horizontal = values[1].dp)
-            4 -> PaddingValues(top = values[0].dp, end = values[1].dp, bottom = values[2].dp, start = values[3].dp)
-            else -> null
-        }
+        /** PaddingValues of [top, end, bottom, start]. */
+        internal fun paddingOfSides(sides: FloatArray): PaddingValues =
+            PaddingValues(top = sides[0].dp, end = sides[1].dp, bottom = sides[2].dp, start = sides[3].dp)
 
         /**
          * Collection-specific attributes this component applies (see

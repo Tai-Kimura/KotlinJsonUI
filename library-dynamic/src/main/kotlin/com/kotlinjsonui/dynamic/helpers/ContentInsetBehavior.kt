@@ -3,12 +3,10 @@ package com.kotlinjsonui.dynamic.helpers
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.dp
 
 /**
  * `contentInsetAdjustmentBehavior` for the Compose scrollables.
@@ -35,29 +33,22 @@ object ContentInsetBehavior {
      *
      * `horizontal` picks the axis for `scrollableAxes`.
      *
-     * [insetHorizontal] / [insetVertical] (a Collection's) are added to the
-     * safe area, as iOS adds them — measured 2026-09-27 on sjui codegen and
-     * SwiftJsonUI Dynamic: insetVertical 8 at the top of a 62pt safe area put
-     * the first cell at 70 (4f ruling, round 16). The Collection dropped them
-     * for the safe area until jsonui-cli 1.9.0; kjui's codegen, the other way.
+     * A Collection adds its own content padding to it, side by side
+     * (DynamicCollectionComponent; rounds 16 and 17).
      */
     @Composable
-    fun safeAreaPadding(value: String?, horizontal: Boolean = false, insetHorizontal: Float? = null, insetVertical: Float? = null): PaddingValues? {
-        val insets = when (value?.trim()?.lowercase()) {
+    fun safeAreaPadding(value: String?, horizontal: Boolean = false): PaddingValues? =
+        when (value?.trim()?.lowercase()) {
             // Compose has no "depending on context", so automatic is always.
-            "always", "automatic" -> WindowInsets.safeDrawing
+            "always", "automatic" -> WindowInsets.safeDrawing.asPaddingValues()
             "scrollableaxes" -> WindowInsets.safeDrawing
                 .only(if (horizontal) WindowInsetsSides.Horizontal else WindowInsetsSides.Vertical)
+                .asPaddingValues()
             // `never` — and anything undeclared — emits nothing, which is
             // Compose's own default and is what keeps every existing screen
             // exactly where it is.
-            else -> return null
+            else -> null
         }
-        if (insetHorizontal == null && insetVertical == null) return insets.asPaddingValues()
-        val h = (insetHorizontal ?: 0f).dp
-        val v = (insetVertical ?: 0f).dp
-        return insets.add(WindowInsets(left = h, top = v, right = h, bottom = v)).asPaddingValues()
-    }
 
     /** Whether this declaration asks for an inset the caller has to apply. */
     fun adjusts(value: String?): Boolean =

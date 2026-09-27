@@ -6,6 +6,8 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -248,6 +250,9 @@ class DynamicTextComponent {
 
             // Handle edgeInset for text-specific padding (overrides regular padding)
             modifier = applyEdgeInset(modifier, a.edgeInset)
+            // The text sits in a taller frame by its gravity, inside the
+            // background and the padding (labelVerticalAlignment, round 17).
+            labelVerticalAlignment(json)?.let { modifier = modifier.wrapContentHeight(align = it) }
 
             if (lineState != null) {
                 modifier = modifier.styledTextLines(
@@ -295,6 +300,7 @@ class DynamicTextComponent {
         ) {
             val style = buildFullTextStyle(a, data, context)
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+                .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
 
             PartialAttributesText(
                 text = text,
@@ -358,6 +364,7 @@ class DynamicTextComponent {
 
             val style = buildFullTextStyle(a, data, context)
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
+                .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
 
             PartialAttributesText(
                 text = text,
@@ -700,6 +707,38 @@ class DynamicTextComponent {
          * Apply edgeInset (text-specific padding) to modifier.
          * edgeInset takes priority over regular padding for Text components.
          */
+        /**
+         * Where a Label's text sits in a frame taller than it (4f ruling
+         * 2026-09-27, round 17; attribute_semantics.json gravityDefaults ->
+         * leafOwnFrameChannel): its gravity's vertical part — top, bottom, or
+         * the middle for center / centerVertical — and the middle when the
+         * gravity names none, as iOS places it. Null: top, or no frame of its
+         * own along the height (a height that wraps its text). kjui's codegen
+         * places it the same (label_vertical_alignment). Until jsonui-cli 1.9.0
+         * the text sat at the top whatever the gravity.
+         */
+        internal fun labelVerticalAlignment(json: JsonObject): Alignment.Vertical? {
+            val height = TypedAttrs.rawKey(json, "height")
+            val wraps = height == null ||
+                (height.isJsonPrimitive && height.asString.lowercase() in setOf("wrapcontent", "wrap_content"))
+            val ownFrame = !wraps || TypedAttrs.rawKey(json, "minHeight") != null ||
+                TypedAttrs.rawKey(json, "heightWeight") != null || TypedAttrs.rawKey(json, "weight") != null
+            if (!ownFrame) return null
+            val gravity = TypedAttrs.rawKey(json, "gravity")
+            val parts = when {
+                gravity == null || gravity.isJsonNull -> emptyList()
+                gravity.isJsonArray -> gravity.asJsonArray.map { it.asString }
+                gravity.isJsonPrimitive -> gravity.asString.split("|")
+                else -> emptyList()
+            }.map { it.trim().lowercase() }
+            val centered = setOf("center", "centervertical", "center_vertical", "centerinparent", "center_in_parent")
+            return when {
+                "bottom" in parts -> Alignment.Bottom
+                "top" in parts && parts.none { it in centered } -> null
+                else -> Alignment.CenterVertically
+            }
+        }
+
         private fun applyEdgeInset(modifier: Modifier, edgeInset: Any?): Modifier {
             return when {
                 edgeInset is List<*> && edgeInset.size == 4 &&

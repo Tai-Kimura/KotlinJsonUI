@@ -150,6 +150,28 @@ class CollectionDeclaredRowsTest {
         )
     }
 
+    /**
+     * A declared insets and insetHorizontal / insetVertical are added, as
+     * iOS adds them (4f ruling 2026-09-27, round 17); a binding in the array
+     * is resolved from the data, a missing one 0 — kjui's codegen binds it as
+     * `(data.t?.dp ?: 0.dp)`. The declared insets replaced the insets, and an
+     * array with a binding declared nothing, until jsonui-cli 1.9.0.
+     */
+    @Test
+    fun insetsAddsToTheInsetsAndBindsItsValues() {
+        fun padded(json: String, data: Map<String, Any> = emptyMap()): List<Float> {
+            val node = obj(json)
+            val p = DynamicCollectionComponent.parseCollectionPadding(CollectionAttributes.parse(TypedAttrs.toAttrMap(node)), node, data)
+            return listOf(p.calculateTopPadding().value, p.calculateRightPadding(LayoutDirection.Ltr).value,
+                p.calculateBottomPadding().value, p.calculateLeftPadding(LayoutDirection.Ltr).value)
+        }
+        assertEquals(listOf(16f, 16f, 8f, 16f), padded("""{"type":"Collection","insets":[8,0,0,0],"insetVertical":8,"insetHorizontal":16}"""))
+        assertEquals(listOf(20f, 0f, 0f, 0f), padded("""{"type":"Collection","insets":["@{t}",0,0,0]}""", mapOf("t" to 20)))
+        assertEquals(listOf(0f, 0f, 0f, 0f), padded("""{"type":"Collection","insets":["@{t}",0,0,0]}"""))
+        assertTrue(declaresPadding("""{"type":"Collection","insets":["@{t}",0,0,0]}"""))
+        assertEquals(listOf(0f, 0f, 0f, 0f), padded("""{"type":"Collection","insets":["x",0,0,0]}"""))
+    }
+
     /** Control: `insets` — the cross-platform spelling — still pads, in the same call. */
     @Test
     fun insetsStillPads() {

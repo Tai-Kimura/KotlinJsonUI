@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -301,15 +302,34 @@ class DynamicButtonComponent {
                         }
                     }
                 } else {
+                    // The text is placed across the button by textAlign (4f
+                    // ruling 2026-09-27, round 17; centre by default): the
+                    // Text takes the button's width, which the button's
+                    // content Row centred a wrap-width Text in, so Start / End
+                    // drew it in the middle. Only a button of a width of its
+                    // own (ownsWidth): a wrap-width one is its text's width,
+                    // and filling would stretch it to its parent.
                     Text(
                         text = text,
                         fontSize = fontSize.sp,
                         fontWeight = fontWeight,
-                            fontFamily = fontFamily,
-                        textAlign = textAlign
+                        fontFamily = fontFamily,
+                        textAlign = textAlign,
+                        modifier = if (textAlign != null && ownsWidth(json)) Modifier.fillMaxWidth() else Modifier
                     )
                 }
             }
+        }
+
+        /**
+         * Whether the button has a width of its own: a declared width that
+         * is not wrapContent, or a weight. kjui's codegen reads the same
+         * (ButtonComponent.bounded_width?).
+         */
+        internal fun ownsWidth(json: JsonObject): Boolean {
+            if (TypedAttrs.rawKey(json, "weight") != null || TypedAttrs.rawKey(json, "widthWeight") != null) return true
+            val width = TypedAttrs.rawKey(json, "width") ?: return false
+            return !(width.isJsonPrimitive && width.asString.lowercase() in setOf("wrapcontent", "wrap_content"))
         }
 
         // ── Icon ──

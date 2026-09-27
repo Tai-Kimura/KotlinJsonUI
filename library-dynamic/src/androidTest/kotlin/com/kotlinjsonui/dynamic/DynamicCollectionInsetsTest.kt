@@ -55,7 +55,7 @@ class DynamicCollectionInsetsTest {
             rule.runOnUiThread { androidx.core.view.WindowCompat.setDecorFitsSystemWindows(rule.activity.window, false) }
             rule.setContent {
                 safeTopPx = WindowInsets.safeDrawing.getTop(LocalDensity.current)
-                shown?.let { j -> key(j) { DynamicView(json = j, data = mapOf("items" to twoCells)) } }
+                shown?.let { j -> key(j) { DynamicView(json = j, data = mapOf("items" to twoCells, "t" to 20)) } }
             }
         }
         rule.runOnIdle {
@@ -73,6 +73,40 @@ class DynamicCollectionInsetsTest {
         return Rect(s0.positionInRoot, s0.size.toSize()).top - list
     }
 
+    private fun cellLeft(): Float {
+        val list = rule.onNodeWithTag("list", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.x
+        return rule.onAllNodesWithText("s0").fetchSemanticsNodes().single().positionInRoot.x - list
+    }
+
+    /**
+     * A declared insets, insetHorizontal / insetVertical and the safe area
+     * are all added, side by side, as iOS adds them (measured: insets
+     * [8,0,0,0] with insetVertical 8 at the top of a 62pt safe area, the
+     * first cell at 78). Until jsonui-cli 1.9.0 the declared insets replaced
+     * the other two (4f ruling 2026-09-27, round 17). A binding in the insets
+     * array is resolved from the data (t = 20); the array declared nothing.
+     */
+    @Test
+    fun aDeclaredInsetsIsAddedToTheOthers() {
+        show("")
+        val px = { dp: Int -> with(rule.density) { dp.toFloat() * density } }
+        assertTrue("the safe area is 0 here: the arm cannot tell adding from replacing", safeTopPx > 0)
+        val safe = safeTopPx.toFloat()
+        val cases = listOf(
+            """, "insets": [8, 0, 0, 0], "insetVertical": 8, "insetHorizontal": 16""" to (px(16) to px(16)),
+            """, "insets": [8, 0, 0, 0], "insetVertical": 8, "contentInsetAdjustmentBehavior": "always"""" to (safe + px(16) to 0f),
+            """, "insets": [8, 0, 0, 0], "contentInsetAdjustmentBehavior": "always"""" to (safe + px(8) to 0f),
+            """, "insets": [8, 4, 8, 6], "insetHorizontal": 10""" to (px(8) to px(16)),
+            """, "insets": ["@{t}", 0, 0, 0]""" to (px(20) to 0f),
+            """, "insets": ["@{t}", 0, 0, 0], "insetVertical": 4""" to (px(24) to 0f),
+            """, "insets": [8, 0, 0, 0]""" to (px(8) to 0f),
+            // Start and end in the layout's direction, beside the safe area: left (the start) 6.
+            """, "insets": [0, 4, 0, 6], "contentInsetAdjustmentBehavior": "always"""" to (safe to px(6)),
+        )
+        val drawn = cases.map { (extra, _) -> show(extra); "%.0f,%.0f".format(cellTop(), cellLeft()) }
+        assertEquals(cases.map { "%.0f,%.0f".format(it.second.first, it.second.second) }, drawn)
+    }
+
     @Test
     fun insetsAreAddedToTheSafeArea() {
         show("")
@@ -84,7 +118,6 @@ class DynamicCollectionInsetsTest {
             """, "insetVertical": 8, "contentInsetAdjustmentBehavior": "scrollableAxes"""" to safe + px(8),
             """, "insetVertical": 8, "contentInsetAdjustmentBehavior": "never"""" to px(8),
             """, "contentInsetAdjustmentBehavior": "always"""" to safe,
-            """, "insets": [8, 0, 0, 0], "insetVertical": 8, "contentInsetAdjustmentBehavior": "always"""" to px(8),
             """, "insets": "1|2|3", "contentInsetAdjustmentBehavior": "always"""" to safe,
             "" to 0f,
         )
