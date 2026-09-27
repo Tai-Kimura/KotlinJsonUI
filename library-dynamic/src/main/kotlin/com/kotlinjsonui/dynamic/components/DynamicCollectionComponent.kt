@@ -1827,16 +1827,14 @@ class DynamicCollectionComponent {
         /**
          * The lazy item a scrollTo value names (4f ruling 2026-09-27;
          * jsonui-cli 1.9.0, the SSoT's Collection.scrollTo), or null for none:
-         * - an Int (any number) is a CELL counted across the drawn sections
-         *   in section order — a header or footer item, and a grid's row
-         *   break, is not a cell;
-         * - a String, with [cellIdProperty], is the first cell in section
-         *   order whose key — its "cellId", else its cellIdProperty value — it
-         *   is; one that is no cell's key is read as it was before 1.9.0:
-         *   digits, optionally `#` and anything (a re-send nonce), as the lazy
-         *   item index (the SSoT says why, and that this reading is the
-         *   Kotlin paths' own); without cellIdProperty, digits and an optional
-         *   `#…` are a cell's index.
+         * - a number is a CELL counted across the drawn sections in section
+         *   order — a header or footer item, and a grid's row break, is not a
+         *   cell — with or without cellIdProperty;
+         * - a String is the first cell in section order whose key — its
+         *   "cellId", else its cellIdProperty value — it is; one that is no
+         *   cell's key and reads `<digits>` / `<digits>#…` is the legacy lazy
+         *   item index (the SSoT says why, and that this reading is the Kotlin
+         *   paths' own), said through [onLegacy] (scrollCell).
          * [emitted] is the sections in the order the lazy content emits them
          * (reversed under reverseLayout); [leadingItems] the items before the
          * first (the legacy shape's header). Until jsonui-cli 1.9.0 the value
@@ -1886,28 +1884,28 @@ class DynamicCollectionComponent {
 
         /**
          * The cell a scrollTo value names among [cells] (the drawn cells in
-         * section order), or null: a number is the cell's index; a String,
-         * with [cellIdProperty], the first cell whose key (its "cellId", else
-         * its cellIdProperty value) it is — and one that is no cell's key and
-         * is `<digits>` / `<digits>#…`, the legacy lazy item index when
-         * [legacy] (4f ruling 2026-09-27, round 11); without cellIdProperty a
-         * String of digits (and an optional `#…`) is a cell's index.
+         * section order), or null. The value's class decides (4f ruling
+         * 2026-09-27, round 14; the SSoT's Collection.scrollTo): a number is
+         * the cell's index, with or without cellIdProperty; a String is a key —
+         * the first cell whose "cellId", else its [cellIdProperty] value when
+         * one is set, it is (a cell with neither has no key). A String that is
+         * no cell's key and is `<digits>` / `<digits>#…` is the legacy lazy
+         * item index when [legacy] (round 11). Until jsonui-cli 1.9.0 a String
+         * without cellIdProperty was read as a cell's index.
          */
         internal fun scrollCell(value: Any?, cells: List<Map<String, Any>>, cellIdProperty: String?, legacy: Boolean = true): ScrollCell? {
             val index = when (value) {
                 is Number -> value.toInt()
                 is String -> {
                     if (value.isEmpty()) return null
-                    if (cellIdProperty != null) {
-                        val keyed = cells.indexOfFirst { ((it["cellId"] as? String) ?: (it[cellIdProperty] as? String)) == value }
-                        if (keyed < 0) {
-                            val item = leadingDigits(value) ?: return null
-                            return if (legacy) ScrollCell.Legacy(value, item) else null
-                        }
-                        keyed
-                    } else {
-                        leadingDigits(value) ?: return null
+                    val keyed = cells.indexOfFirst {
+                        ((it["cellId"] as? String) ?: cellIdProperty?.let { prop -> it[prop] as? String }) == value
                     }
+                    if (keyed < 0) {
+                        val item = leadingDigits(value) ?: return null
+                        return if (legacy) ScrollCell.Legacy(value, item) else null
+                    }
+                    keyed
                 }
                 else -> return null
             }

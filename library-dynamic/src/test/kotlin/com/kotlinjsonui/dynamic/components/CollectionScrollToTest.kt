@@ -49,8 +49,10 @@ class CollectionScrollToTest {
         assertEquals(15, item(12))    // b7, the last cell
         assertNull(item(13))          // no 14th cell
         assertEquals(9, item(6L))     // any number
-        assertEquals(9, item("6"))    // a String without cellIdProperty: digits
-        assertEquals(9, item("6#1727"))
+        // A String is a key (round 14), with or without cellIdProperty: no
+        // cell here has a cellId, so "6" is no key — the legacy lazy item 6.
+        assertEquals(6, item("6"))
+        assertEquals(6, item("6#1727"))
         assertNull(item(""))
         assertNull(item("six"))
         assertNull(item("-1"))
@@ -108,6 +110,13 @@ class CollectionScrollToTest {
         assertNull(item("-3#1", key = "key"))
         assertNull(item("3a", key = "key"))
         assertEquals(1, told.size)
+        // A number is the counted cell with cellIdProperty too (round 14).
+        assertEquals(4, item(3, key = "key"))   // a3
+        assertEquals(9, item(6, key = "key"))   // b1
+        // Without cellIdProperty a String is matched against the cellId.
+        val withIds = listOf(ScrollSection(0, false, true, listOf(mapOf("cellId" to "c0"), mapOf("cellId" to "c1")), false))
+        assertEquals(2, item("c1", withIds))
+        assertEquals(1, item(0, withIds))
         // An enriched cellId is the key when there is one.
         val enriched = listOf(ScrollSection(0, false, false, listOf(mapOf("key" to "k0", "cellId" to "k0_x")), false))
         assertEquals(0, item("k0_x", enriched, key = "key"))

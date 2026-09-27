@@ -135,6 +135,8 @@ class DynamicCollectionScrollToTest {
         val json = layout(""", "width": 200, "height": 40, "cellIdProperty": "key"""")
         assertEquals("k3 is a3's key and b0's: a3", "a3", landed(json, "k3", cellsAndEdges))
         assertEquals("x2 is b2's", "b2", landed(json, "x2", cellsAndEdges))
+        // The class decides (round 14): an Int is the counted cell, with cellIdProperty too.
+        assertEquals("an Int 6 with cellIdProperty is b1", "b1", landed(json, 6, cellsAndEdges))
     }
 
     /**
