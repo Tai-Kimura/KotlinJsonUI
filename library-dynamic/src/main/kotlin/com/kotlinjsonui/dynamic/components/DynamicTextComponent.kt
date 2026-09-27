@@ -212,7 +212,7 @@ class DynamicTextComponent {
                     "left" -> TextAlign.Start
                     else -> null
                 }
-            } ?: resolveTextAlign(a)
+            } ?: resolveTextAlign(a, json)
 
             // Auto size (text shrinking)
             val useAutoSize = a.autoShrink == true || a.minimumScaleFactor != null
@@ -298,7 +298,7 @@ class DynamicTextComponent {
             data: Map<String, Any>,
             context: Context
         ) {
-            val style = buildFullTextStyle(a, data, context)
+            val style = buildFullTextStyle(a, data, context, json)
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
                 .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
 
@@ -362,7 +362,7 @@ class DynamicTextComponent {
                 }
             }
 
-            val style = buildFullTextStyle(a, data, context)
+            val style = buildFullTextStyle(a, data, context, json)
             val modifier = ModifierBuilder.buildModifier(json, data, context = context)
                 .let { m -> labelVerticalAlignment(json)?.let { m.wrapContentHeight(align = it) } ?: m }
 
@@ -577,7 +577,7 @@ class DynamicTextComponent {
             }
         }
 
-        private fun resolveTextAlign(a: LabelAttributes): TextAlign? {
+        private fun resolveTextAlign(a: LabelAttributes, json: JsonObject? = null): TextAlign? {
             TypedAttrs.staticEnumString(a.textAlign) { it.json }?.let { align ->
                 return when (align.lowercase()) {
                     "center" -> TextAlign.Center
@@ -586,6 +586,7 @@ class DynamicTextComponent {
                     else -> null
                 }
             }
+            json?.let { gravityTextAlign(it) }?.let { return it }
             if (TypedAttrs.static(a.common.centerHorizontal) == true) {
                 return TextAlign.Center
             }
@@ -658,7 +659,8 @@ class DynamicTextComponent {
         private fun buildFullTextStyle(
             a: LabelAttributes,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            json: JsonObject? = null
         ): TextStyle {
             val fontSize = TypedAttrs.float(a.fontSize, data)
             // LocalTextStyle base, not a bare TextStyle(): an unstyled
@@ -696,7 +698,7 @@ class DynamicTextComponent {
                 style = style.copy(fontFamily = it)
             }
 
-            resolveTextAlign(a)?.let {
+            resolveTextAlign(a, json)?.let {
                 style = style.copy(textAlign = it)
             }
 
@@ -707,6 +709,36 @@ class DynamicTextComponent {
          * Apply edgeInset (text-specific padding) to modifier.
          * edgeInset takes priority over regular padding for Text components.
          */
+        /**
+         * Where a Label's text sits across a frame wider than it when it
+         * declares no textAlign: by its gravity's horizontal part — the end
+         * for right, the middle for center / centerHorizontal (4f ruling
+         * 2026-09-27, round 17; the web draws it so and iOS follows). Null
+         * otherwise (the start), and for a Label of wrapContent width, which
+         * is its text's width. It sat at the start whatever the gravity.
+         * kjui's codegen places it the same (TextComponent.gravity_text_align).
+         */
+        internal fun gravityTextAlign(json: JsonObject): TextAlign? {
+            val width = TypedAttrs.rawKey(json, "width")
+            val wraps = width == null ||
+                (width.isJsonPrimitive && width.asString.lowercase() in setOf("wrapcontent", "wrap_content"))
+            val ownWidth = !wraps || TypedAttrs.rawKey(json, "minWidth") != null ||
+                TypedAttrs.rawKey(json, "widthWeight") != null || TypedAttrs.rawKey(json, "weight") != null
+            if (!ownWidth) return null
+            val gravity = TypedAttrs.rawKey(json, "gravity")
+            val parts = when {
+                gravity == null || gravity.isJsonNull -> emptyList()
+                gravity.isJsonArray -> gravity.asJsonArray.map { it.asString }
+                gravity.isJsonPrimitive -> gravity.asString.split("|")
+                else -> emptyList()
+            }.map { it.trim().lowercase() }
+            return when {
+                "right" in parts -> TextAlign.End
+                parts.any { it in setOf("center", "centerhorizontal", "center_horizontal", "centerinparent", "center_in_parent") } -> TextAlign.Center
+                else -> null
+            }
+        }
+
         /**
          * Where a Label's text sits in a frame taller than it (4f ruling
          * 2026-09-27, round 17; attribute_semantics.json gravityDefaults ->

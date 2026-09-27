@@ -141,6 +141,38 @@ class DynamicLabelAndButtonPlacementTest {
         assertEquals("the guide in its 122dp strip", "middle", place(white, black))
     }
 
+    /**
+     * Without textAlign, a Label's text is placed across a frame wider than it
+     * by its gravity's horizontal part (4f ruling 2026-09-27, round 17);
+     * textAlign still wins. It sat at the start whatever the gravity.
+     */
+    @Test
+    fun aLabelsTextSitsAcrossItsFrameByItsGravity() {
+        val cases = listOf(
+            // The face's intensity value: 32 wide, gravity right.
+            """, "width": 32, "fontSize": 14, "text": "4", "gravity": "right"""" to "right",
+            """, "width": 200, "fontSize": 14, "gravity": "center"""" to "middle",
+            """, "width": 200, "fontSize": 14, "gravity": "centerHorizontal"""" to "middle",
+            """, "width": 200, "fontSize": 14, "gravity": "right", "textAlign": "left"""" to "left",
+            """, "width": 200, "fontSize": 14""" to "left",
+        )
+        val drawn = cases.map { (extra, _) ->
+            show(label(extra))
+            val (white, black) = extent(columns = true)
+            if (white == null || black == null) "not drawn" else {
+                val left = black.first - white.first
+                val right = white.last - black.last
+                println("LABEL_ACROSS $extra: ink ${left}..${right} of ${white.last - white.first + 1}")
+                when {
+                    kotlin.math.abs(left - right) <= 2 -> "middle"
+                    left < right -> "left"
+                    else -> "right"
+                }
+            }
+        }
+        assertEquals(cases.map { it.second }, drawn)
+    }
+
     @Test
     fun aButtonsTextSitsAcrossItByTextAlign() {
         fun button(extra: String) =

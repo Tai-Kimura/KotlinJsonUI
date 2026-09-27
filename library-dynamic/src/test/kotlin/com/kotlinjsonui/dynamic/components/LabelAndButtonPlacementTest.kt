@@ -39,4 +39,17 @@ class LabelAndButtonPlacementTest {
             """{"width":"wrapContent"}""" to false, """{}""" to false)
         assertEquals(cases.map { it.second }, cases.map { DynamicButtonComponent.ownsWidth(obj(it.first)) })
     }
+
+    @Test
+    fun aLabelsHorizontalPlaceWithoutTextAlign() {
+        val cases = listOf(
+            """{"width":32,"gravity":"right"}""" to androidx.compose.ui.text.style.TextAlign.End,
+            """{"width":"matchParent","gravity":["top","centerHorizontal"]}""" to androidx.compose.ui.text.style.TextAlign.Center,
+            """{"width":32,"gravity":"center"}""" to androidx.compose.ui.text.style.TextAlign.Center,
+            """{"width":32,"gravity":"left"}""" to null,
+            """{"width":"wrapContent","gravity":"right"}""" to null,
+            """{"gravity":"right"}""" to null,
+        )
+        assertEquals(cases.map { it.second }, cases.map { DynamicTextComponent.gravityTextAlign(obj(it.first)) })
+    }
 }
