@@ -17,6 +17,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -72,6 +73,17 @@ enum class CollectionStackAxis {
  * [eagerScrollState] is the EAGER container's scroll: a caller that scrolls
  * it (a Collection's scrollTo / defaultScrollAnchor, jsonui-cli 1.9.0) hands
  * its own; otherwise the container keeps one of its own, as before.
+ *
+ * [reverseLayout] (4f rulings 2026-09-27, round 13): a reversed list whose
+ * content is shorter than the container sits at its bottom (the end, on a
+ * row) — where iOS draws such a list, bottom-anchored — and the vertical
+ * EAGER container draws reverseLayout as the lazy one does: its first child
+ * at the bottom (ReversedColumn), resting at its bottom. Until then a short
+ * reversed list sat at the top, and EAGER drew no reverseLayout.
+ *
+ * [userScrollEnabled] false stops the user's scrolling only: the EAGER
+ * container keeps its scroll, so a programmatic scroll still moves it, as a
+ * lazy list's does (round 13). It dropped the scroll until then.
  */
 @Composable
 fun CollectionStack(
@@ -103,7 +115,11 @@ fun CollectionStack(
                 state = state,
                 contentPadding = contentPadding,
                 reverseLayout = reverseLayout,
-                verticalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Top,
+                verticalArrangement = when {
+                    spacing > 0.dp -> Arrangement.spacedBy(spacing, if (reverseLayout) Alignment.Bottom else Alignment.Top)
+                    reverseLayout -> Arrangement.Bottom
+                    else -> Arrangement.Top
+                },
                 horizontalAlignment = horizontalAlignment,
                 userScrollEnabled = userScrollEnabled,
                 content = lazyContent
@@ -111,11 +127,19 @@ fun CollectionStack(
         }
         axis == CollectionStackAxis.VERTICAL && mode == CollectionStackMode.EAGER -> {
             val scrollState = eagerScrollState ?: rememberScrollState()
-            Column(
-                modifier = if (userScrollEnabled) modifier.verticalScroll(scrollState) else modifier,
-                verticalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Top,
-                horizontalAlignment = horizontalAlignment
-            ) { eagerContent() }
+            if (reverseLayout) {
+                ReversedColumn(
+                    modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled, reverseScrolling = true),
+                    spacing = spacing,
+                    horizontalAlignment = horizontalAlignment
+                ) { eagerContent() }
+            } else {
+                Column(
+                    modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled),
+                    verticalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Top,
+                    horizontalAlignment = horizontalAlignment
+                ) { eagerContent() }
+            }
         }
         axis == CollectionStackAxis.VERTICAL && mode == CollectionStackMode.NONE -> {
             Column(
@@ -138,7 +162,11 @@ fun CollectionStack(
                 state = state,
                 contentPadding = resolvedPadding,
                 reverseLayout = reverseLayout,
-                horizontalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Start,
+                horizontalArrangement = when {
+                    spacing > 0.dp -> Arrangement.spacedBy(spacing, if (reverseLayout) Alignment.End else Alignment.Start)
+                    reverseLayout -> Arrangement.End
+                    else -> Arrangement.Start
+                },
                 verticalAlignment = verticalAlignment,
                 userScrollEnabled = userScrollEnabled,
                 content = lazyContent
@@ -147,7 +175,7 @@ fun CollectionStack(
         axis == CollectionStackAxis.HORIZONTAL && mode == CollectionStackMode.EAGER -> {
             val scrollState = eagerScrollState ?: rememberScrollState()
             Row(
-                modifier = if (userScrollEnabled) modifier.horizontalScroll(scrollState) else modifier,
+                modifier = modifier.horizontalScroll(scrollState, enabled = userScrollEnabled),
                 horizontalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Start,
                 verticalAlignment = verticalAlignment
             ) {
@@ -165,6 +193,37 @@ fun CollectionStack(
                 if (insetLeading > 0.dp) Spacer(Modifier.width(insetLeading))
                 eagerContent()
                 if (insetTrailing > 0.dp) Spacer(Modifier.width(insetTrailing))
+            }
+        }
+    }
+}
+
+/**
+ * A Column that lays its children out from the bottom up — the first at the
+ * bottom, as a reverseLayout LazyColumn draws its items — and, shorter than
+ * its height, sits at its bottom. The vertical EAGER container under
+ * reverseLayout (CollectionStack; KotlinJsonUI Dynamic's Column route), 4f
+ * ruling 2026-09-27, round 13. A caller that emits its children in the order
+ * a reversed lazy list's content emits them draws the same picture.
+ */
+@Composable
+fun ReversedColumn(
+    modifier: Modifier = Modifier,
+    spacing: Dp = 0.dp,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable () -> Unit
+) {
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val gap = spacing.roundToPx()
+        val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+        val width = (placeables.maxOfOrNull { it.width } ?: 0).coerceIn(constraints.minWidth, constraints.maxWidth)
+        val contentHeight = placeables.sumOf { it.height } + gap * (placeables.size - 1).coerceAtLeast(0)
+        val height = contentHeight.coerceIn(constraints.minHeight, constraints.maxHeight)
+        layout(width, height) {
+            var bottom = height
+            placeables.forEach { placeable ->
+                placeable.place(horizontalAlignment.align(placeable.width, width, layoutDirection), bottom - placeable.height)
+                bottom -= placeable.height + gap
             }
         }
     }

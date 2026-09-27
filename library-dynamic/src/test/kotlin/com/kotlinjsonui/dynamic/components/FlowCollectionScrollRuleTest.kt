@@ -70,7 +70,7 @@ class FlowCollectionScrollRuleTest {
         // jsonui-cli 1.9.0, round 11), the content's place recorded.
         assertEquals("heightIsSelfBounded -> flow(modifier.then(scrolled))", flowBranch().line("heightIsSelfBounded ->"))
         assertEquals(
-            "val scrolled = Modifier.verticalScroll(flowScroll).onGloballyPositioned { flowTargets.content = it }",
+            "val scrolled = Modifier.verticalScroll(flowScroll, enabled = scrollEnabled).onGloballyPositioned { flowTargets.content = it }",
             flowBranch().line("val scrolled =")
         )
     }

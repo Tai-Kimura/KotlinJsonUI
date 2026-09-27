@@ -53,6 +53,7 @@ import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.generated.DimensionValue
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.components.CollectionStackMode
+import com.kotlinjsonui.components.ReversedColumn
 import com.kotlinjsonui.dynamic.helpers.ContentInsetBehavior
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.data.CollectionDataSource
@@ -429,7 +430,8 @@ class DynamicCollectionComponent {
                         scrollTargets = flowTargets
                     )
                 }
-                val scrolled = Modifier.verticalScroll(flowScroll).onGloballyPositioned { flowTargets.content = it }
+                // scrollEnabled false stops the user's scrolling only (round 13).
+                val scrolled = Modifier.verticalScroll(flowScroll, enabled = scrollEnabled).onGloballyPositioned { flowTargets.content = it }
                 when {
                     !flowScrolls -> flow(modifier)
                     heightIsSelfBounded -> flow(modifier.then(scrolled))
@@ -466,7 +468,7 @@ class DynamicCollectionComponent {
                 val rowTargets = remember { FlowScrollTargets() }
                 val rowScrolls = collectionMode == CollectionStackMode.EAGER && !widthIsWrapContent
                 val rowModifier = if (rowScrolls) {
-                    modifier.horizontalScroll(rowScroll).onGloballyPositioned { rowTargets.content = it }
+                    modifier.horizontalScroll(rowScroll, enabled = scrollEnabled).onGloballyPositioned { rowTargets.content = it }
                 } else {
                     modifier
                 }
@@ -481,7 +483,9 @@ class DynamicCollectionComponent {
                         defaultAnchor = defaultAnchor,
                         state = rowScroll,
                         targets = rowTargets,
-                        horizontal = true
+                        horizontal = true,
+                        sectionSizes = drawnSectionSizes(rowSections, collectionDataSource),
+                        reverse = false
                     )
                 }
                 renderNonLazyRow(
@@ -521,10 +525,19 @@ class DynamicCollectionComponent {
                 val columnScroll = rememberScrollState()
                 val columnTargets = remember { FlowScrollTargets() }
                 val columnScrolls = collectionMode != CollectionStackMode.NONE
+                // The EAGER Column draws reverseLayout as the lazy list does — its
+                // first item at the bottom, resting there, a short list at the
+                // bottom (ReversedColumn, reverseScrolling) — and scrollEnabled
+                // false stops the user's scrolling only; a scrollTo still scrolls
+                // (4f rulings 2026-09-27, round 13). Until then EAGER drew no
+                // reverseLayout and ignored scrollEnabled. The wrapContent and
+                // `lazy: none` Columns draw no reverseLayout, as kjui's.
+                val columnReversed = reverseLayout && collectionMode == CollectionStackMode.EAGER && !heightIsWrapContent
                 val columnModifier = when {
                     !columnScrolls -> modifier
-                    heightIsWrapContent -> modifier.scrollWithinBounds(columnScroll).onGloballyPositioned { columnTargets.content = it }
-                    else -> modifier.verticalScroll(columnScroll).onGloballyPositioned { columnTargets.content = it }
+                    heightIsWrapContent -> modifier.scrollWithinBounds(columnScroll, scrollEnabled).onGloballyPositioned { columnTargets.content = it }
+                    else -> modifier.verticalScroll(columnScroll, enabled = scrollEnabled, reverseScrolling = columnReversed)
+                        .onGloballyPositioned { columnTargets.content = it }
                 }
                 if (columnScrolls) {
                     NonLazyScrollEffects(
@@ -537,7 +550,9 @@ class DynamicCollectionComponent {
                         defaultAnchor = defaultAnchor,
                         state = columnScroll,
                         targets = columnTargets,
-                        horizontal = false
+                        horizontal = false,
+                        sectionSizes = drawnSectionSizes(columnSections, collectionDataSource),
+                        reverse = columnReversed
                     )
                 }
                 renderNonLazy(
@@ -558,7 +573,8 @@ class DynamicCollectionComponent {
                     gravityAlignment = gravityAlignment,
                     onItemAppear = onItemAppear,
                     collectionId = collectionId,
-                    scrollTargets = if (columnScrolls) columnTargets else null
+                    scrollTargets = if (columnScrolls) columnTargets else null,
+                    reverseLayout = columnReversed
                 )
                 return
             }
@@ -580,7 +596,8 @@ class DynamicCollectionComponent {
                     cellHeight = cellHeight,
                     gravityAlignment = gravityAlignment,
                     onItemAppear = onItemAppear,
-                    collectionId = collectionId
+                    collectionId = collectionId,
+                    userScrollEnabled = scrollEnabled
                 )
                 return
             }
@@ -609,7 +626,9 @@ class DynamicCollectionComponent {
                     scrollAnchor = scrollAnchor,
                     onItemAppear = onItemAppear,
                     chrome = listChrome,
-                    collectionId = collectionId
+                    collectionId = collectionId,
+                    defaultAnchor = defaultAnchor,
+                    userScrollEnabled = scrollEnabled
                 )
                 return
             }
@@ -686,7 +705,9 @@ class DynamicCollectionComponent {
                     userScrollEnabled = scrollEnabled,
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(horizontal.betweenLanes.dp) /* between lanes: columnSpacing, else itemSpacing */,
-                    horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing)
+                    // A short reversed grid sits at its end, as a reversed list
+                    // does (4f ruling 2026-09-27, round 13).
+                    horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, if (reverseLayout) Alignment.End else Alignment.Start)
                 ) {
                     generateCollectionItems(
                         sections = plan.sectionsFor(CellRoute.LAZY_HORIZONTAL_GRID),
@@ -718,7 +739,10 @@ class DynamicCollectionComponent {
                     reverseLayout = reverseLayout,
                     userScrollEnabled = scrollEnabled,
                     contentPadding = contentPadding,
-                    verticalArrangement = Arrangement.spacedBy(lineSpacing),
+                    // A short reversed list sits at its bottom — where iOS draws it,
+                    // bottom-anchored (4f ruling 2026-09-27, round 13). It sat at the
+                    // top until then (spacedBy aligns to the top).
+                    verticalArrangement = Arrangement.spacedBy(lineSpacing, if (reverseLayout) Alignment.Bottom else Alignment.Top),
                     horizontalArrangement = Arrangement.spacedBy(columnSpacing)
                 ) {
                     // The legacy shape's headerClasses / footerClasses: once,
@@ -921,7 +945,7 @@ class DynamicCollectionComponent {
          * maximum height constraints"). The wrapContent Collection's Column
          * (4f ruling 2026-09-27, round 12).
          */
-        internal fun Modifier.scrollWithinBounds(state: ScrollState): Modifier = this
+        internal fun Modifier.scrollWithinBounds(state: ScrollState, enabled: Boolean = true): Modifier = this
             .layout { measurable, constraints ->
                 val bounded = if (constraints.hasBoundedHeight) constraints else Constraints.fitPrioritizingWidth(
                     constraints.minWidth, constraints.maxWidth, constraints.minHeight, Int.MAX_VALUE - 1
@@ -929,14 +953,15 @@ class DynamicCollectionComponent {
                 val placeable = measurable.measure(bounded)
                 layout(placeable.width, placeable.height) { placeable.place(0, 0) }
             }
-            .verticalScroll(state)
+            .verticalScroll(state, enabled = enabled)
 
         /**
          * Scrolls a non-lazy container's [state] to [cell], landed by [anchor]
-         * along its axis (anchorOffset, not reversed: these containers draw no
-         * reverseLayout), from where the cell sits in the scrolled content
-         * ([targets], recorded as they are laid out). A cell that arrived with
-         * the value is waited for, a few frames.
+         * along its axis on the edges it names on screen, from where the cell
+         * sits in the scrolled content ([targets], recorded as they are laid
+         * out). [reverse]: the reversed EAGER Column, whose scroll runs from its
+         * bottom (reverseScrolling) — a position counts from the other end. A
+         * cell that arrived with the value is waited for, a few frames.
          */
         internal suspend fun scrollToPlacedCell(
             state: ScrollState,
@@ -946,6 +971,7 @@ class DynamicCollectionComponent {
             animated: Boolean,
             horizontal: Boolean,
             rtl: Boolean,
+            reverse: Boolean = false,
         ) {
             var frames = 0
             while ((targets.content?.isAttached != true || targets.cells[cell]?.isAttached != true) && frames < 10) {
@@ -961,7 +987,8 @@ class DynamicCollectionComponent {
                 rtl -> content.size.width - (at.x.toInt() + size)
                 else -> at.x.toInt()
             }
-            val to = (lead + anchorOffset(anchor, false, state.viewportSize, size)).coerceAtLeast(0)
+            val start = lead + anchorOffset(anchor, false, state.viewportSize, size)
+            val to = (if (reverse) state.maxValue - start else start).coerceIn(0, state.maxValue)
             if (animated) state.animateScrollTo(to) else state.scrollTo(to)
         }
 
@@ -973,7 +1000,11 @@ class DynamicCollectionComponent {
          * anchor the middle or last cell, applied once when the cells arrive
          * — over [cells] (drawnCells). A String that is no key names no cell
          * here: these containers have no lazy item, so the legacy reading is
-         * not theirs (4f ruling 2026-09-27, round 12).
+         * not theirs (4f ruling 2026-09-27, round 12). [reverse]: the reversed
+         * EAGER Column rests at its bottom, and its resting anchor is the lazy
+         * list's (restingAnchor: top and bottom traded; the cell put where a
+         * lazy list's scrollToItem puts its item, the start edge — the bottom
+         * here), round 13. [sectionSizes]: the drawn sections' cell counts.
          */
         @Composable
         private fun NonLazyScrollEffects(
@@ -987,21 +1018,38 @@ class DynamicCollectionComponent {
             state: ScrollState,
             targets: FlowScrollTargets,
             horizontal: Boolean,
+            sectionSizes: List<Int> = listOf(cells.size),
+            reverse: Boolean = false,
         ) {
             val rtl = horizontal && LocalLayoutDirection.current == LayoutDirection.Rtl
             ScrollToEffect(scrollTo, collectionId, { value, _ -> (scrollCell(value, cells, cellIdProperty, legacy = false) as? ScrollCell.Cell)?.index }) { cell ->
-                scrollToPlacedCell(state, targets, cell, scrollAnchor, scrollAnimated, horizontal, rtl)
+                scrollToPlacedCell(state, targets, cell, scrollAnchor, scrollAnimated, horizontal, rtl, reverse)
             }
-            if (defaultAnchor == "center" || defaultAnchor == "bottom") {
+            val resting = restingAnchor(defaultAnchor, reverse)
+            if (resting == "center" || resting == "bottom") {
                 val count = cells.size
                 val applied = remember { mutableStateOf(false) }
                 LaunchedEffect(count) {
                     if (!applied.value && count > 0) {
-                        scrollToPlacedCell(state, targets, if (defaultAnchor == "center") count / 2 else count - 1, "top", false, horizontal, rtl)
+                        val cell = when {
+                            resting == "center" -> count / 2
+                            // Emitted last-first: the first section with cells is drawn last, its last cell at the top.
+                            reverse -> sectionSizes.firstOrNull { it > 0 }?.let { it - 1 } ?: (count - 1)
+                            else -> count - 1
+                        }
+                        scrollToPlacedCell(state, targets, cell, if (reverse) "bottom" else "top", false, horizontal, rtl, reverse)
                         applied.value = true
                     }
                 }
             }
+        }
+
+        /** The drawn sections' cell counts, in section order (drawnCells' sections). */
+        internal fun drawnSectionSizes(sections: JsonArray?, collectionDataSource: CollectionDataSource?): List<Int> {
+            if (sections == null || collectionDataSource == null) return emptyList()
+            return (0 until minOf(sections.size(), collectionDataSource.sections.size))
+                .filter { s -> sectionViewName(sections[s].asJsonObject, "cell") != null }
+                .map { s -> collectionDataSource.sections[s].cells?.data?.size ?: 0 }
         }
 
         /**
@@ -1030,6 +1078,7 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
+            userScrollEnabled: Boolean = true,
         ) {
             // Build a flat list of (cellViewName, itemData, cellIndex) for all sections
             data class PageItem(val cellViewName: String?, val itemData: Any?, val cellIndex: Int)
@@ -1149,7 +1198,9 @@ class DynamicCollectionComponent {
                 state = pagerState,
                 modifier = modifier,
                 contentPadding = contentPadding,
-                pageSpacing = pageSpacing
+                pageSpacing = pageSpacing,
+                // scrollEnabled false stops the user's paging only (round 13).
+                userScrollEnabled = userScrollEnabled
             ) { pageIndex ->
                 Box(
                     modifier = Modifier
@@ -1339,11 +1390,13 @@ class DynamicCollectionComponent {
             chrome: ListChrome? = null,
             collectionId: String? = null,
             scrollTargets: FlowScrollTargets? = null,
+            reverseLayout: Boolean = false,
         ) {
-            Column(
-                modifier = modifier.then(Modifier.padding(contentPadding)),
-                verticalArrangement = Arrangement.spacedBy(lineSpacing)
-            ) {
+            // Under [reverseLayout] (the EAGER Column, round 13) the content is
+            // emitted as the reversed lazy grid emits it — the sections last-first
+            // — and a ReversedColumn draws it from the bottom up: the picture the
+            // lazy grid draws.
+            val content: @Composable () -> Unit = {
                 // The legacy shape's headerClasses: once, without data,
                 // before the cells (sjui's non-lazy stack); its footer after.
                 legacyHeader?.let { renderCellView(it, emptyMap<String, Any>(), -1, data) }
@@ -1368,7 +1421,8 @@ class DynamicCollectionComponent {
                             if (scrollTargets != null && cellNameOf(s) != null) {
                                 Modifier.onGloballyPositioned { scrollTargets.cells[cellBase[s] + cellIndex] = it }
                             } else Modifier
-                        sections.forEachIndexed { sectionIndex, sectionElement ->
+                        val sectionOrder = sections.mapIndexed { index, element -> index to element }
+                        (if (reverseLayout) sectionOrder.reversed() else sectionOrder).forEach { (sectionIndex, sectionElement) ->
                             val sectionObj = sectionElement.asJsonObject
 
                             // Header
@@ -1435,6 +1489,14 @@ class DynamicCollectionComponent {
                 }
                 legacyFooter?.let { renderCellView(it, emptyMap<String, Any>(), -1, data) }
             }
+            if (reverseLayout) {
+                ReversedColumn(modifier = modifier.then(Modifier.padding(contentPadding)), spacing = lineSpacing) { content() }
+            } else {
+                Column(
+                    modifier = modifier.then(Modifier.padding(contentPadding)),
+                    verticalArrangement = Arrangement.spacedBy(lineSpacing)
+                ) { content() }
+            }
         }
 
         /**
@@ -1460,6 +1522,8 @@ class DynamicCollectionComponent {
             onItemAppear: ((Int) -> Unit)? = null,
             chrome: ListChrome? = null,
             collectionId: String? = null,
+            defaultAnchor: String? = null,
+            userScrollEnabled: Boolean = true,
         ) {
             val listState = androidx.compose.foundation.lazy.rememberLazyListState()
             // The row's items are its sections' cells, in order: a cell is its item.
@@ -1471,11 +1535,28 @@ class DynamicCollectionComponent {
             ScrollToEffect(scrollTo, collectionId, { value, onLegacy -> scrollItemIndex(value, rowScrollSections, cellIdProperty, 0, onLegacy) }) { index ->
                 listState.scrollToAnchored(index, scrollAnchor, false, scrollAnimated)
             }
+            // defaultScrollAnchor, as the grid applies it (round 11's count, once
+            // the row has cells): the middle or last cell, where scrollToItem puts
+            // it (4f ruling 2026-09-27, round 13). The row drew none until then.
+            if (defaultAnchor == "center" || defaultAnchor == "bottom") {
+                val anchorCount = rowScrollSections.sumOf { it.cells?.size ?: 0 }
+                val anchorApplied = remember { mutableStateOf(false) }
+                LaunchedEffect(anchorCount) {
+                    if (!anchorApplied.value && anchorCount > 0) {
+                        restingAnchorCell(defaultAnchor, rowScrollSections)?.let { cell ->
+                            scrollItemIndex(cell, rowScrollSections, null, 0)?.let { listState.scrollToItem(it) }
+                        }
+                        anchorApplied.value = true
+                    }
+                }
+            }
             androidx.compose.foundation.lazy.LazyRow(
                 modifier = modifier,
                 state = listState,
                 contentPadding = contentPadding,
-                horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing)
+                horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing),
+                // scrollEnabled false stops the user's scrolling only (round 13).
+                userScrollEnabled = userScrollEnabled
             ) {
                 when {
                     sections != null && collectionDataSource != null -> {

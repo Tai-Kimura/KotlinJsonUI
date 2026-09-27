@@ -216,4 +216,18 @@ class CollectionScrollToTest {
         assertEquals(a + b, drawn)
         assertEquals(ScrollCell.Cell(6), DynamicCollectionComponent.scrollCell("x1", drawn, "key", legacy = false))
     }
+
+    /** The non-lazy routes' drawn sections' sizes, for the reversed EAGER Column's resting cell (round 13). */
+    @Test
+    fun theNonLazyRoutesDrawnSectionSizes() {
+        val declared = JsonParser.parseString("""[{"cell": "c"}, {"header": "h"}, {"cell": "c"}]""").asJsonArray
+        val source = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", emptyList())),
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", cells("z0"))),
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", b)),
+            )
+        )
+        assertEquals(listOf(0, 8), DynamicCollectionComponent.drawnSectionSizes(declared, source))
+    }
 }

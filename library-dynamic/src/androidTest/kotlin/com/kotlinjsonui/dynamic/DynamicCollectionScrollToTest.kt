@@ -10,6 +10,15 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -402,5 +411,141 @@ class DynamicCollectionScrollToTest {
         show(messageList(60), mapOf("messages" to messages, "mode" to "lazy", "target" to ""))
         val newest = bounds("m5") ?: error("m5 is not drawn: the list did not open at its newest message")
         assertEquals("m5 at the list's bottom", listBounds().bottom, newest.bottom, 1f)
+        // A new conversation's welcome, two cells, in the tall list: at its bottom, L above w0, as iOS
+        // draws it (round 13; it sat at the top).
+        val welcome = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell, listOf(
+                    mapOf<String, Any>("title" to "w0", "cellId" to "welcome0"), mapOf<String, Any>("title" to "L", "cellId" to "new_load_more")))),
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell, emptyList())),
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell, emptyList())),
+            )
+        )
+        show(messageList(400), mapOf("messages" to welcome, "mode" to "lazy", "target" to ""))
+        assertEquals("w0 at the list's bottom", listBounds().bottom, bounds("w0")?.bottom ?: -999f, 1f)
+        assert((bounds("L")?.bottom ?: 999f) <= (bounds("w0")?.top ?: -999f) + 1f) { "L above w0" }
+    }
+
+    // ── round 13 (4f rulings 2026-09-27) ─────────────────────────────
+
+    private val twoCells = CollectionDataSource(
+        sections = listOf(CollectionDataSection(cells = CollectionDataSection.CellData(cell, listOf("s0", "s1").map { mapOf<String, Any>("title" to it) })))
+    )
+
+    /**
+     * A reversed list whose content is shorter than its viewport sits at its
+     * bottom — where iOS draws such a list, bottom-anchored — with or without
+     * lineSpacing. It sat at the top until then (spacedBy packs to the top).
+     */
+    @Test
+    fun aShortReversedListSitsAtItsBottom() {
+        for (spacing in listOf("", """, "lineSpacing": 4""")) {
+            val json = JsonParser.parseString(
+                """{"type": "Collection", "id": "list", "items": "@{items}", "width": 200, "height": 200, "reverseLayout": true,
+                    "sections": [{"cell": "$cell"}] $spacing}"""
+            ).asJsonObject
+            show(json, mapOf("items" to twoCells))
+            val s0 = bounds("s0") ?: error("s0 is not drawn")
+            val s1 = bounds("s1") ?: error("s1 is not drawn")
+            assertEquals("s0, the first cell, at the bottom ($spacing)", listBounds().bottom, s0.bottom, 1f)
+            assert(s1.bottom <= s0.top + 1f) { "s1 above s0 ($spacing)" }
+        }
+    }
+
+    /**
+     * The EAGER Column draws reverseLayout as the lazy list does: its first
+     * cell at the bottom, the sections in order top to bottom, a short list at
+     * its bottom, resting at its bottom when long; a scrollTo lands on the
+     * edge it names. It drew no reverseLayout until then.
+     */
+    @Test
+    fun theEagerColumnDrawsReverseLayout() {
+        fun eager(height: Int) = JsonParser.parseString(
+            """{"type": "Collection", "id": "list", "lazy": "eager", "items": "@{items}", "width": 200, "height": $height, "reverseLayout": true,
+                "scrollTo": "@{target}", "scrollAnchor": "top", "scrollAnimated": false,
+                "sections": [{"cell": "$cell", "header": "$cell", "footer": "$cell"}, {"cell": "$cell", "header": "$cell"}]}"""
+        ).asJsonObject
+        // The whole of it: F0 a4 … a0 H0 (section A) above b7 … b0 H1 (section B), H1 at the bottom
+        // of a list taller than its content (and inside the window).
+        show(eager(300), mapOf("items" to items, "target" to -1))
+        val order = listOf("F0") + (4 downTo 0).map { "a$it" } + "H0" + (7 downTo 0).map { "b$it" } + "H1"
+        val ys = order.map { at(it)?.y ?: error("$it is not drawn") }
+        assertEquals("top to bottom: $order", ys.sorted(), ys)
+        assertEquals("H1, the first item, at the bottom", listBounds().bottom, bounds("H1")!!.bottom, 1f)
+        // Long: it rests at its bottom; scrollTo 3 (a3) lands a3 at the top.
+        show(eager(60), mapOf("items" to items, "target" to -1))
+        assertEquals("resting at the bottom: H1 there", listBounds().bottom, bounds("H1")!!.bottom, 1f)
+        show(eager(60), mapOf("items" to items, "target" to 3))
+        assertEquals("a3 at the top", listBounds().top, bounds("a3")!!.top, 1f)
+    }
+
+    /**
+     * scrollEnabled false stops the user's scrolling only: a swipe moves
+     * nothing, a scrollTo still lands — the EAGER Column, the flow, the
+     * wrapContent Column. KotlinJsonUI Dynamic ignored scrollEnabled there
+     * until then (a swipe scrolled them).
+     */
+    @Test
+    fun scrollEnabledFalseStopsTheUserOnly() {
+        val shapes = mapOf(
+            "eager" to """, "lazy": "eager", "width": 200, "height": 60""",
+            // One cell a row (as theFlowScrollsToTheCell), so b1 can reach the top.
+            "flow" to """, "layout": "flow", "width": 60, "height": 40""",
+        )
+        for ((name, extra) in shapes) {
+            val json = layout(""", "scrollEnabled": false $extra""")
+            show(json, mapOf("items" to items, "target" to -1))
+            val before = at("H0")?.y ?: error("$name: H0 is not drawn")
+            rule.onNodeWithTag("list", useUnmergedTree = true).performTouchInput { swipeUp() }
+            rule.waitForIdle()
+            assertEquals("$name: a swipe moved nothing", before, at("H0")?.y ?: -999f, 1f)
+            show(json, mapOf("items" to items, "target" to 6))
+            assertEquals("$name: scrollTo 6 still lands b1 at the top", listBounds().top, bounds("b1")!!.top, 1f)
+        }
+    }
+
+    /** The single-lane row applies defaultScrollAnchor: bottom, the last cell at the row's end. It drew none until then. */
+    @Test
+    fun theRowAppliesItsDefaultAnchor() {
+        val json = JsonParser.parseString(
+            """{"type": "Collection", "id": "row", "layout": "horizontal", "width": 60, "height": 40, "items": "@{items}",
+                "defaultScrollAnchor": "bottom", "sections": [{"cell": "$cell"}, {"cell": "$cell"}]}"""
+        ).asJsonObject
+        show(json, mapOf("items" to items))
+        val last = bounds("b7") ?: error("b7 is not drawn: the row did not reach its end")
+        assertEquals("b7 at the row's end", listBounds("row").right, last.right, 1f)
+    }
+
+    /**
+     * CollectionStack (the kjui codegen's container): the EAGER one keeps its
+     * scroll with the user's scrolling off — a programmatic scroll moves it —
+     * and a short reversed LAZY one sits at its bottom. Until then EAGER
+     * dropped its scroll with userScrollEnabled false, and a short reversed
+     * stack sat at its top.
+     */
+    @Test
+    fun theStackKeepsItsScrollAndSitsAtItsBottom() {
+        val state = ScrollState(0)
+        var mode by mutableStateOf(com.kotlinjsonui.components.CollectionStackMode.EAGER)
+        var count by mutableStateOf(20)
+        rule.setContent {
+            com.kotlinjsonui.components.CollectionStack(
+                mode = mode,
+                modifier = Modifier.testTag("stack").width(100.dp).height(60.dp),
+                userScrollEnabled = false,
+                reverseLayout = mode == com.kotlinjsonui.components.CollectionStackMode.LAZY,
+                eagerScrollState = state,
+                lazyContent = { items(count) { Text("r$it", Modifier.height(20.dp)) } },
+                eagerContent = { repeat(count) { Text("r$it", Modifier.height(20.dp)) } }
+            )
+        }
+        rule.waitForIdle()
+        val step = with(rule.density) { 40.dp.roundToPx() }
+        rule.runOnIdle { kotlinx.coroutines.runBlocking { state.scrollTo(step) } }
+        rule.waitForIdle()
+        assertEquals("EAGER: the programmatic scroll moved r2 to the top", listBounds("stack").top, bounds("r2")?.top ?: -999f, 1f)
+        rule.runOnIdle { mode = com.kotlinjsonui.components.CollectionStackMode.LAZY; count = 2 }
+        rule.waitForIdle()
+        assertEquals("reversed LAZY, 2 rows: r0 at the bottom", listBounds("stack").bottom, bounds("r0")?.bottom ?: -999f, 1f)
     }
 }
