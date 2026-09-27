@@ -548,4 +548,82 @@ class DynamicCollectionScrollToTest {
         rule.waitForIdle()
         assertEquals("reversed LAZY, 2 rows: r0 at the bottom", listBounds("stack").bottom, bounds("r0")?.bottom ?: -999f, 1f)
     }
+
+    // ── round 14 (4f rulings 2026-09-27) ─────────────────────────────
+
+    /**
+     * The single-lane row draws reverseLayout, as kjui's horizontal
+     * CollectionStack does: its first cell at its end, a short row at its end,
+     * and a scrollTo landing on the edge it names. It drew none until then.
+     */
+    @Test
+    fun theRowDrawsReverseLayout() {
+        val short = JsonParser.parseString(
+            """{"type": "Collection", "id": "row", "layout": "horizontal", "width": 200, "height": 40, "items": "@{items}",
+                "reverseLayout": true, "sections": [{"cell": "$cell"}]}"""
+        ).asJsonObject
+        show(short, mapOf("items" to twoCells))
+        val s0 = bounds("s0") ?: error("s0 is not drawn")
+        val s1 = bounds("s1") ?: error("s1 is not drawn")
+        assertEquals("s0, the first cell, at the row's end", listBounds("row").right, s0.right, 1f)
+        assert(s1.right <= s0.left + 1f) { "s1 before s0" }
+        val long = JsonParser.parseString(
+            """{"type": "Collection", "id": "row", "layout": "horizontal", "width": 60, "height": 40, "items": "@{items}",
+                "reverseLayout": true, "scrollTo": "@{target}", "scrollAnchor": "top", "scrollAnimated": false,
+                "sections": [{"cell": "$cell"}, {"cell": "$cell"}]}"""
+        ).asJsonObject
+        show(long, mapOf("items" to items, "target" to -1))
+        // Emitted last-first, B's cells from the end: a3 is near the start; top lands it at the row's start.
+        show(long, mapOf("items" to items, "target" to 3))
+        assertEquals("scrollTo 3: a3 at the row's start", listBounds("row").left, bounds("a3")?.left ?: -999f, 1f)
+    }
+
+    /**
+     * Not reversed, defaultScrollAnchor bottom: content shorter than the list
+     * sits at its bottom, as iOS draws it — the grid route and the EAGER
+     * Column. It sat at the top until then.
+     */
+    @Test
+    fun aShortListWithABottomAnchorSitsAtItsBottom() {
+        for (extra in listOf("", """, "lazy": "eager"""")) {
+            val json = JsonParser.parseString(
+                """{"type": "Collection", "id": "list", "items": "@{items}", "width": 200, "height": 200, "defaultScrollAnchor": "bottom",
+                    "sections": [{"cell": "$cell"}] $extra}"""
+            ).asJsonObject
+            show(json, mapOf("items" to twoCells))
+            val s1 = bounds("s1") ?: error("s1 is not drawn ($extra)")
+            assertEquals("s1, the last cell, at the bottom ($extra)", listBounds().bottom, s1.bottom, 1f)
+            assert((bounds("s0")?.bottom ?: 999f) <= s1.top + 1f) { "s0 above s1 ($extra)" }
+        }
+    }
+
+    /**
+     * CollectionStack's EAGER container pads its content with contentPadding,
+     * as the LAZY one does (a consuming message list's top inset of 12 was lost
+     * in eager mode), and contentAtBottom puts short content at its bottom on
+     * both modes.
+     */
+    @Test
+    fun theEagerStackPadsItsContentAndSitsAtItsBottom() {
+        var mode by mutableStateOf(com.kotlinjsonui.components.CollectionStackMode.EAGER)
+        var atBottom by mutableStateOf(false)
+        rule.setContent {
+            com.kotlinjsonui.components.CollectionStack(
+                mode = mode,
+                modifier = Modifier.testTag("stack").width(100.dp).height(200.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 12.dp),
+                contentAtBottom = atBottom,
+                lazyContent = { items(2) { Text("r$it", Modifier.height(20.dp)) } },
+                eagerContent = { repeat(2) { Text("r$it", Modifier.height(20.dp)) } }
+            )
+        }
+        rule.waitForIdle()
+        val inset = with(rule.density) { 12.dp.toPx() }
+        assertEquals("EAGER: r0 below the top inset", listBounds("stack").top + inset, bounds("r0")?.top ?: -999f, 1f)
+        for (m in listOf(com.kotlinjsonui.components.CollectionStackMode.EAGER, com.kotlinjsonui.components.CollectionStackMode.LAZY)) {
+            rule.runOnIdle { mode = m; atBottom = true }
+            rule.waitForIdle()
+            assertEquals("$m, contentAtBottom: r1 at the bottom", listBounds("stack").bottom, bounds("r1")?.bottom ?: -999f, 1f)
+        }
+    }
 }

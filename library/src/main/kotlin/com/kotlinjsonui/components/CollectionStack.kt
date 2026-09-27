@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -84,6 +85,12 @@ enum class CollectionStackAxis {
  * [userScrollEnabled] false stops the user's scrolling only: the EAGER
  * container keeps its scroll, so a programmatic scroll still moves it, as a
  * lazy list's does (round 13). It dropped the scroll until then.
+ *
+ * [contentAtBottom]: a vertical list whose content is shorter than the
+ * container sits at its bottom, not reversed — a Collection's
+ * defaultScrollAnchor bottom, where iOS draws such a list (4f ruling
+ * 2026-09-27, round 14). The EAGER container pads its content with
+ * [contentPadding] as the lazy one does (round 14; it applied none).
  */
 @Composable
 fun CollectionStack(
@@ -104,6 +111,7 @@ fun CollectionStack(
     reverseLayout: Boolean = false,
     lazyState: LazyListState? = null,
     eagerScrollState: ScrollState? = null,
+    contentAtBottom: Boolean = false,
     lazyContent: LazyListScope.() -> Unit = {},
     eagerContent: @Composable () -> Unit = {}
 ) {
@@ -116,8 +124,8 @@ fun CollectionStack(
                 contentPadding = contentPadding,
                 reverseLayout = reverseLayout,
                 verticalArrangement = when {
-                    spacing > 0.dp -> Arrangement.spacedBy(spacing, if (reverseLayout) Alignment.Bottom else Alignment.Top)
-                    reverseLayout -> Arrangement.Bottom
+                    spacing > 0.dp -> Arrangement.spacedBy(spacing, if (reverseLayout || contentAtBottom) Alignment.Bottom else Alignment.Top)
+                    reverseLayout || contentAtBottom -> Arrangement.Bottom
                     else -> Arrangement.Top
                 },
                 horizontalAlignment = horizontalAlignment,
@@ -129,14 +137,19 @@ fun CollectionStack(
             val scrollState = eagerScrollState ?: rememberScrollState()
             if (reverseLayout) {
                 ReversedColumn(
-                    modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled, reverseScrolling = true),
+                    modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled, reverseScrolling = true)
+                        .padding(contentPadding),
                     spacing = spacing,
                     horizontalAlignment = horizontalAlignment
                 ) { eagerContent() }
             } else {
                 Column(
-                    modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled),
-                    verticalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Top,
+                    modifier = modifier.verticalScroll(scrollState, enabled = userScrollEnabled).padding(contentPadding),
+                    verticalArrangement = when {
+                        spacing > 0.dp -> Arrangement.spacedBy(spacing, if (contentAtBottom) Alignment.Bottom else Alignment.Top)
+                        contentAtBottom -> Arrangement.Bottom
+                        else -> Arrangement.Top
+                    },
                     horizontalAlignment = horizontalAlignment
                 ) { eagerContent() }
             }
@@ -175,7 +188,9 @@ fun CollectionStack(
         axis == CollectionStackAxis.HORIZONTAL && mode == CollectionStackMode.EAGER -> {
             val scrollState = eagerScrollState ?: rememberScrollState()
             Row(
-                modifier = modifier.horizontalScroll(scrollState, enabled = userScrollEnabled),
+                // contentPadding, as the LAZY row takes it: the insets' spacers stand in for it when set.
+                modifier = modifier.horizontalScroll(scrollState, enabled = userScrollEnabled)
+                    .then(if (insetLeading > 0.dp || insetTrailing > 0.dp) Modifier else Modifier.padding(contentPadding)),
                 horizontalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Start,
                 verticalAlignment = verticalAlignment
             ) {
