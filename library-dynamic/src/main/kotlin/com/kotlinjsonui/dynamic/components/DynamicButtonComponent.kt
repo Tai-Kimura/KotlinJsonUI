@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -254,6 +255,21 @@ class DynamicButtonComponent {
             modifier = ModifierBuilder.applyStoppedControl(modifier, json, data)
             modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
 
+            // The icon row and the loading row move together, placed across the
+            // button by textAlign as the text-only text is (4f ruling
+            // 2026-09-27, round 18; measured on iOS: the icon + text group at
+            // the start / end / middle of a 200pt button): the Row takes the
+            // button's width and arranges the pair. They sat in the middle
+            // whatever textAlign said.
+            val placesRow = textAlign != null && ownsWidth(json)
+            val rowModifier = if (placesRow) Modifier.fillMaxWidth() else Modifier
+            val rowArrangement = when {
+                !placesRow -> Arrangement.Start
+                textAlign == TextAlign.Start -> Arrangement.Start
+                textAlign == TextAlign.End -> Arrangement.End
+                else -> Arrangement.Center
+            }
+
             Button(
                 onClick = onClick,
                 modifier = modifier,
@@ -266,7 +282,7 @@ class DynamicButtonComponent {
                 interactionSource = interactionSource
             ) {
                 if (isLoading) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = rowModifier, horizontalArrangement = rowArrangement, verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp,
@@ -284,7 +300,7 @@ class DynamicButtonComponent {
                 } else if (imageResId != null && text.isEmpty()) {
                     ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
                 } else if (imageResId != null) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = rowModifier, horizontalArrangement = rowArrangement, verticalAlignment = Alignment.CenterVertically) {
                         if (imagePosition == "leading") {
                             ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
                             Spacer(modifier = Modifier.width(8.dp))

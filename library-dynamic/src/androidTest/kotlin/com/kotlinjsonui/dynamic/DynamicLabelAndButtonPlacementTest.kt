@@ -43,12 +43,13 @@ class DynamicLabelAndButtonPlacementTest {
     val rule = createComposeRule()
 
     private var shown by mutableStateOf<JsonObject?>(null)
+    private var boxColor by mutableStateOf(Color.Red)
     private var composed = false
 
     private fun show(json: String) {
         if (!composed) {
             rule.setContent {
-                Box(Modifier.testTag("box").background(Color.Red)) {
+                Box(Modifier.testTag("box").background(boxColor)) {
                     shown?.let { j -> key(j) { DynamicView(json = j, data = emptyMap()) } }
                 }
             }
@@ -171,6 +172,93 @@ class DynamicLabelAndButtonPlacementTest {
             }
         }
         assertEquals(cases.map { it.second }, drawn)
+    }
+
+    /**
+     * A Button with an icon, and a loading one: the icon (the spinner) and
+     * the text move together, placed across the button by textAlign — the
+     * group at the start / end / middle, as iOS places it (measured round 18:
+     * sjui codegen and SwiftJsonUI Dynamic, a 200pt button, the icon + text
+     * group at 0..43, 156..198 and 78..120). They sat in the middle whatever
+     * textAlign said. The group's width is the same in every place.
+     */
+    @Test
+    fun aButtonsIconAndTextMoveTogetherByTextAlign() {
+        fun button(extra: String) =
+            """{"type": "Button", "id": "b", "text": "Go", "width": 200, "height": 44, "fontSize": 14, "fontColor": "#000000",
+                "background": "#FFFFFF", "cornerRadius": 0 $extra}"""
+        val icon = """, "image": "button_icon_probe", "tintColor": "#000000""""
+        val cases = listOf(
+            "$icon, \"textAlign\": \"Left\"" to "left",
+            "$icon, \"textAlign\": \"Right\"" to "right",
+            "$icon, \"textAlign\": \"Center\"" to "middle",
+            icon to "middle",
+        )
+        val widths = mutableListOf<Int>()
+        val drawn = cases.map { (extra, _) ->
+            show(button(extra))
+            rule.mainClock.advanceTimeBy(100)
+            val (white, black) = extent(columns = true)
+            if (white == null || black == null) "not drawn" else {
+                val left = black.first - white.first
+                val right = white.last - black.last
+                if (extra.startsWith(icon)) widths += black.last - black.first
+                println("BUTTON_GROUP $extra: ink ${left}..${right} of ${white.last - white.first + 1}")
+                when {
+                    kotlin.math.abs(left - right) <= 2 -> "middle"
+                    left < right -> "left"
+                    else -> "right"
+                }
+            }
+        }
+        assertEquals(cases.map { it.second }, drawn)
+        assertTrue("the icon and the text moved apart: $widths", widths.max() - widths.min() <= 1)
+        // A wrap-width icon button keeps its content's width: the Row does not fill there.
+        show(button("$icon, \"textAlign\": \"Left\"").replace("\"width\": 200", "\"width\": \"wrapContent\""))
+        val (white, _) = extent(columns = true)
+        val wrapWidth = white?.let { it.last - it.first + 1 } ?: -1
+        assertTrue("a wrap-width icon button is $wrapWidth dp wide", wrapWidth in 1..120)
+    }
+
+    /**
+     * A loading Button (the undeclared `isLoading` runtime extra): the spinner
+     * and the text move together by textAlign too. A loading button is
+     * disabled — drawn at half alpha — so the box is white here, the frame is
+     * the button node's bounds, and the ink any pixel darker than 0.7.
+     */
+    @Test
+    fun aLoadingButtonsSpinnerAndTextMoveTogetherByTextAlign() {
+        rule.mainClock.autoAdvance = false
+        boxColor = Color.White
+        fun button(align: String) =
+            """{"type": "Button", "id": "b", "text": "Go", "width": 200, "height": 44, "fontSize": 14, "fontColor": "#000000",
+                "background": "#FFFFFF", "cornerRadius": 0, "isLoading": true, "textAlign": "$align"}"""
+        val drawn = listOf("Left", "Right", "Center").map { align ->
+            show(button(align))
+            rule.mainClock.advanceTimeBy(300)
+            val frame = rule.onNodeWithTag("b", useUnmergedTree = true).fetchSemanticsNode()
+            val box = rule.onNodeWithTag("box").fetchSemanticsNode()
+            val map = rule.onNodeWithTag("box").captureToImage().toPixelMap()
+            val left0 = (frame.positionInRoot.x - box.positionInRoot.x).toInt()
+            val right0 = left0 + frame.size.width - 1
+            var i0 = -1
+            var i1 = -1
+            for (x in left0..right0) for (y in 0 until map.height) {
+                val c = map[x, y]
+                if (c.red < 0.7f && c.green < 0.7f && c.blue < 0.7f) { if (i0 < 0) i0 = x; i1 = x }
+            }
+            val d = rule.density.density
+            val left = ((i0 - left0) / d).toInt()
+            val right = ((right0 - i1) / d).toInt()
+            println("BUTTON_GROUP loading $align: ink ${left}..${right} of ${(frame.size.width / d).toInt()}")
+            when {
+                i0 < 0 -> "not drawn"
+                kotlin.math.abs(left - right) <= 2 -> "middle"
+                left < right -> "left"
+                else -> "right"
+            }
+        }
+        assertEquals(listOf("left", "right", "middle"), drawn)
     }
 
     @Test
