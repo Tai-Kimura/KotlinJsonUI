@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -67,6 +68,10 @@ enum class CollectionStackAxis {
  *
  * For [CollectionStackMode.NONE] (no scroll container), [lazyContent] is
  * ignored.
+ *
+ * [eagerScrollState] is the EAGER container's scroll: a caller that scrolls
+ * it (a Collection's scrollTo / defaultScrollAnchor, jsonui-cli 1.9.0) hands
+ * its own; otherwise the container keeps one of its own, as before.
  */
 @Composable
 fun CollectionStack(
@@ -86,6 +91,7 @@ fun CollectionStack(
     insetTrailing: Dp = 0.dp,
     reverseLayout: Boolean = false,
     lazyState: LazyListState? = null,
+    eagerScrollState: ScrollState? = null,
     lazyContent: LazyListScope.() -> Unit = {},
     eagerContent: @Composable () -> Unit = {}
 ) {
@@ -104,7 +110,7 @@ fun CollectionStack(
             )
         }
         axis == CollectionStackAxis.VERTICAL && mode == CollectionStackMode.EAGER -> {
-            val scrollState = rememberScrollState()
+            val scrollState = eagerScrollState ?: rememberScrollState()
             Column(
                 modifier = if (userScrollEnabled) modifier.verticalScroll(scrollState) else modifier,
                 verticalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Top,
@@ -139,7 +145,7 @@ fun CollectionStack(
             )
         }
         axis == CollectionStackAxis.HORIZONTAL && mode == CollectionStackMode.EAGER -> {
-            val scrollState = rememberScrollState()
+            val scrollState = eagerScrollState ?: rememberScrollState()
             Row(
                 modifier = if (userScrollEnabled) modifier.horizontalScroll(scrollState) else modifier,
                 horizontalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Start,

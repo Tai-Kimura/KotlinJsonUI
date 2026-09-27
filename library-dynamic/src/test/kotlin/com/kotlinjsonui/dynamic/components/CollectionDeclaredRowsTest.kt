@@ -156,8 +156,9 @@ class CollectionDeclaredRowsTest {
         // Since jsonui-cli 1.9.0 (round 11) the lazy scrolls go through
         // scrollToAnchored (grid, row), which takes `animated`, and the flow
         // and the pager scroll too; the pager's currentPage leg is its own.
+        // Round 12: the non-lazy containers' scrollToPlacedCell.
         val scrolls = lines.filter { ("animateScrollTo" in it) && "currentPage" !in it && "animateScrollToPage(target)" !in it }
-        assertEquals("the two scrollToAnchored helpers, the flow and the pager", 4, scrolls.size)
+        assertEquals("the two scrollToAnchored helpers, the flow, the pager and scrollToPlacedCell", 5, scrolls.size)
         for (line in scrolls) {
             assertTrue(line, "if (animated)" in line || "if (scrollAnimated)" in line || "if (a.scrollAnimated != false)" in line)
             val instant = line.substringAfter(" else ")

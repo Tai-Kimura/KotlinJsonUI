@@ -246,4 +246,161 @@ class DynamicCollectionScrollToTest {
         ).asJsonObject
         assertEquals("b1", landed(json, 6, cellsAndEdges, horizontal = true))
     }
+
+    // ── round 12 (4f rulings 2026-09-27) ─────────────────────────────
+
+    /**
+     * The EAGER Column scrolls to the cell by the rule the lazy routes follow:
+     * an Int the counted cell, a String a key. The legacy form names no cell
+     * here (no lazy item). Until jsonui-cli 1.9.0 its scrollTo moved nothing.
+     */
+    @Test
+    fun theEagerColumnScrollsToTheCell() {
+        val eager = layout(""", "lazy": "eager", "width": 200, "height": 40, "cellIdProperty": "key"""")
+        assertEquals("scrollTo 6", "b1", landed(eager, 6, cellsAndEdges))
+        assertEquals("scrollTo x2", "b2", landed(eager, "x2", cellsAndEdges))
+        show(eager, mapOf("items" to items, "target" to "0#1"))
+        assertEquals("0#1 moved nothing: b2 still at the top", 0f, at("b2")?.y ?: -999f, 1f)
+    }
+
+    /**
+     * A value that arrives with its cells (a consumer screen's refresh and
+     * its request in one turn): the EAGER Column's cell is not laid out yet
+     * when the request runs, and is waited for.
+     */
+    @Test
+    fun theEagerColumnScrollsToACellThatArrivesWithTheValue() {
+        val eager = layout(""", "lazy": "eager", "width": 200, "height": 40""")
+        show(eager, mapOf("items" to CollectionDataSource(), "target" to -1))
+        show(eager, mapOf("items" to items, "target" to 6))
+        assertEquals("b1 at the top", 0f, at("b1")?.y ?: -999f, 1f)
+    }
+
+    /** The EAGER Column lands its anchor: bottom the cell's end at the list's end, center its middle. */
+    @Test
+    fun theEagerColumnLandsItsAnchor() {
+        for (anchor in listOf("bottom", "center")) {
+            val json = JsonParser.parseString(
+                layout(""", "lazy": "eager", "width": 200, "height": 100""").toString()
+                    .replace("\"scrollAnchor\":\"top\"", "\"scrollAnchor\":\"$anchor\"")
+            ).asJsonObject
+            landed(json, 6, cellsAndEdges)
+            val cell = bounds("b1") ?: error("b1 is not drawn ($anchor)")
+            val list = listBounds()
+            if (anchor == "bottom") assertEquals("b1's end at the list's end", list.bottom, cell.bottom, 1f)
+            else assertEquals("b1's middle at the list's middle", list.center.y, cell.center.y, 1f)
+        }
+    }
+
+    /** The EAGER Row scrolls to the cell along x. */
+    @Test
+    fun theEagerRowScrollsToTheCell() {
+        val json = JsonParser.parseString(
+            """{"type": "Collection", "id": "row", "layout": "horizontal", "lazy": "eager", "width": 60, "height": 40, "items": "@{items}",
+                "scrollTo": "@{target}", "scrollAnchor": "top", "scrollAnimated": false,
+                "sections": [{"cell": "$cell"}, {"cell": "$cell"}]}"""
+        ).asJsonObject
+        assertEquals("b1", landed(json, 6, cellsAndEdges, horizontal = true))
+    }
+
+    private fun wrapped(parent: String, height: Int): JsonObject = JsonParser.parseString(
+        """{"type": "$parent", "id": "box", "width": 200, "height": $height, "child": [
+             {"type": "View", "id": "inner", "width": "matchParent", "child": [
+               {"type": "Collection", "id": "list", "width": "matchParent", "height": "wrapContent", "items": "@{items}",
+                "scrollTo": "@{target}", "scrollAnchor": "top", "scrollAnimated": false,
+                "sections": [{"cell": "$cell", "header": "$cell", "footer": "$cell"}, {"cell": "$cell", "header": "$cell"}]}]}]}"""
+    ).asJsonObject
+
+    /**
+     * A vertical Collection whose height wraps its content scrolls inside the
+     * height its parent bounds it to, as iOS and the web draw it (measured,
+     * 4f round 12). Until jsonui-cli 1.9.0 it never scrolled: its cells ran
+     * past the parent, and a scrollTo moved nothing.
+     */
+    @Test
+    fun aWrapContentCollectionScrollsInsideItsParentsHeight() {
+        val json = wrapped("View", 60)
+        show(json, mapOf("items" to items, "target" to -1))
+        assertEquals("as tall as its parent lets it be", listBounds("box").height, listBounds().height, 1f)
+        show(json, mapOf("items" to items, "target" to 6))
+        val cell = bounds("b1") ?: error("b1 is not drawn")
+        assertEquals("b1 at the list's top", listBounds().top, cell.top, 1f)
+    }
+
+    /**
+     * Under a parent that does not bound its height (a ScrollView) it is its
+     * content's height, with nothing of its own to scroll: a scrollTo moves
+     * nothing, as on iOS and the web — and it draws, where a bare
+     * verticalScroll would throw on the unbounded height.
+     */
+    @Test
+    fun aWrapContentCollectionUnderAScrollingParentIsItsContentsHeight() {
+        val json = wrapped("ScrollView", 60)
+        show(json, mapOf("items" to items, "target" to -1))
+        assertEquals("every cell is laid out", true, at("b7") != null)
+        // Laid-out heights, unclipped (boundsInRoot clips the list to the ScrollView's viewport).
+        fun height(tag: String) = rule.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().size.height
+        assert(height("list") > height("box")) { "the list is its content's height (${height("list")}), taller than the parent (${height("box")})" }
+        val before = at("H0")?.y
+        show(json, mapOf("items" to items, "target" to 6))
+        assertEquals("nothing moved", before ?: -999f, at("H0")?.y ?: -998f, 1f)
+    }
+
+    /**
+     * defaultScrollAnchor under reverseLayout: bottom is where a reversed list
+     * rests — its first emitted item at the visual bottom — and top goes to the
+     * visual top (4f ruling, round 12: where iOS lands). Until jsonui-cli 1.9.0
+     * bottom went to the last cell, which a reversed list draws at its top.
+     */
+    @Test
+    fun aReversedListsDefaultAnchorLandsWhereItNames() {
+        fun json(anchor: String) = JsonParser.parseString(
+            """{"type": "Collection", "id": "list", "items": "@{items}", "width": 200, "height": 60, "reverseLayout": true,
+                "defaultScrollAnchor": "$anchor",
+                "sections": [{"cell": "$cell", "header": "$cell", "footer": "$cell"}, {"cell": "$cell", "header": "$cell"}]}"""
+        ).asJsonObject
+        // Emitted last-first: H1 b0 … b7 H0 a0 … a4 F0 — H1 at the visual bottom, F0 at the visual top.
+        show(json("bottom"), mapOf("items" to items))
+        val h1 = bounds("H1") ?: error("H1 is not drawn: the list left its visual bottom")
+        assertEquals("bottom: H1 at the list's bottom", listBounds().bottom, h1.bottom, 1f)
+        show(json("top"), mapOf("items" to items))
+        val f0 = bounds("F0") ?: error("F0 is not drawn: the list did not reach its visual top")
+        assertEquals("top: F0 at the list's top", listBounds().top, f0.top, 1f)
+    }
+
+    /**
+     * A list with a consuming message list's attributes — three sections (messages, a
+     * prompt, a streaming cell), reverseLayout, defaultScrollAnchor and
+     * scrollAnchor bottom, cellIdProperty cellId, autoChangeTrackingId, a
+     * bound `lazy` — fed that screen's Android order (newest first, the
+     * load-more cell last): it draws top to bottom L, m0 … m5 (the order iOS
+     * draws from its own order: L first, oldest first) and opens with the
+     * newest message at its bottom edge, as iOS does (4f round 12, measured on
+     * both). Until jsonui-cli 1.9.0 defaultScrollAnchor bottom took it to the
+     * load-more cell, the visual top.
+     */
+    @Test
+    fun aMessageListOpensAtItsNewestMessage() {
+        fun messageList(height: Int) = JsonParser.parseString(
+            """{"type": "Collection", "id": "list", "lazy": "@{mode}", "width": 200, "height": $height, "items": "@{messages}",
+                "sections": [{"cell": "$cell"}, {"cell": "$cell"}, {"cell": "$cell"}], "lineSpacing": 0, "insets": [12, 0, 0, 0],
+                "scrollTo": "@{target}", "scrollAnchor": "bottom", "reverseLayout": true, "scrollAnimated": false,
+                "cellIdProperty": "cellId", "autoChangeTrackingId": true, "defaultScrollAnchor": "bottom"}"""
+        ).asJsonObject
+        val messages = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell,
+                    (5 downTo 0).map { mapOf<String, Any>("title" to "m$it", "cellId" to "msg$it") } + mapOf("title" to "L", "cellId" to "conv_load_more"))),
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell, emptyList())),
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell, emptyList())),
+            )
+        )
+        val order = listOf("L") + (0..5).map { "m$it" }
+        show(messageList(400), mapOf("messages" to messages, "mode" to "lazy", "target" to ""))
+        val tall = order.map { at(it)?.y ?: error("$it is not drawn in the tall list") }
+        assertEquals("top to bottom: L, m0 … m5", tall.sorted(), tall)
+        show(messageList(60), mapOf("messages" to messages, "mode" to "lazy", "target" to ""))
+        val newest = bounds("m5") ?: error("m5 is not drawn: the list did not open at its newest message")
+        assertEquals("m5 at the list's bottom", listBounds().bottom, newest.bottom, 1f)
+    }
 }

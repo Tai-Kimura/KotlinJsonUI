@@ -168,4 +168,52 @@ class CollectionScrollToTest {
         assertEquals(listOf(1, 0), reversed.map { it.section })
         assertEquals(1, item(6, reversed))  // b1: B first, its cells from item 0
     }
+
+    // ── round 12 (4f rulings 2026-09-27) ─────────────────────────────
+
+    /**
+     * defaultScrollAnchor as the list rests: under reverseLayout top and
+     * bottom trade places (the visual bottom is where a reversed list starts).
+     */
+    @Test
+    fun aReversedListRestsAtItsVisualBottom() {
+        assertEquals("bottom", DynamicCollectionComponent.restingAnchor("bottom", false))
+        assertEquals("top", DynamicCollectionComponent.restingAnchor("bottom", true))
+        assertEquals("bottom", DynamicCollectionComponent.restingAnchor("top", true))
+        assertEquals("center", DynamicCollectionComponent.restingAnchor("center", true))
+        assertNull(DynamicCollectionComponent.restingAnchor(null, true))
+    }
+
+    /**
+     * The cell a resting anchor names: center the middle cell; bottom the
+     * cell drawn last — the last section's last cell, or, emitted
+     * last-first (reverseLayout), the first section's last cell. Until
+     * jsonui-cli 1.9.0 a reversed bottom went to the last cell (b7), which a
+     * reversed list draws at its visual top.
+     */
+    @Test
+    fun theRestingAnchorsCell() {
+        assertEquals(12, DynamicCollectionComponent.restingAnchorCell("bottom", list))            // b7
+        assertEquals(6, DynamicCollectionComponent.restingAnchorCell("center", list))             // b1
+        assertEquals(4, DynamicCollectionComponent.restingAnchorCell("bottom", list.reversed()))  // a4, drawn last
+        val emptyFirst = listOf(list[0].copy(cells = emptyList()), list[1])
+        assertEquals(7, DynamicCollectionComponent.restingAnchorCell("bottom", emptyFirst.reversed()))  // b7: A has none
+        assertNull(DynamicCollectionComponent.restingAnchorCell("bottom", emptyList()))
+    }
+
+    /** The non-lazy routes' drawn cells: a section's when it names a cell, in section order. */
+    @Test
+    fun theNonLazyRoutesDrawnCells() {
+        val declared = JsonParser.parseString("""[{"cell": "c"}, {"header": "h"}, {"cell": "c"}]""").asJsonArray
+        val source = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", a)),
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", cells("z0"))),
+                CollectionDataSection(cells = CollectionDataSection.CellData("c", b)),
+            )
+        )
+        val drawn = DynamicCollectionComponent.drawnCells(declared, source)
+        assertEquals(a + b, drawn)
+        assertEquals(ScrollCell.Cell(6), DynamicCollectionComponent.scrollCell("x1", drawn, "key", legacy = false))
+    }
 }
