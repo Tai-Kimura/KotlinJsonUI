@@ -87,8 +87,10 @@ import java.util.concurrent.atomic.AtomicInteger
  * clock 500 ms, reads its own window's pixel at the pointer, lifts it,
  * advances 400 ms, and reads the pixel again. The ScrollView's item is held,
  * then dragged up 40dp while still down — the list scrolls, which must end
- * the press — and read again before and after the lift. A tap
- * (performClick) on each node counts its handler.
+ * the press — and read again before and after the lift, at the item's own
+ * spot: where the item is now (its position in the root, which the
+ * scroll moved), not where it was. A tap (performClick) on each node counts
+ * what that tap called.
  *
  * Expected, per the ruling (asserted after every reading is printed):
  * - pbView, pbLabel, pbEmpty, pbScrollItem: red while held, blue after;
@@ -321,6 +323,17 @@ class PressedBackgroundProbe {
         }
     }
 
+    /**
+     * The colour at [local] in the node [tag] where the node is now (its
+     * position in the root, fetched afresh); "not shown" when that spot is
+     * outside what the node shows (its bounds, cut at the viewport).
+     */
+    private fun colourOnNode(tag: String, local: Offset): String {
+        val node = rule.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode()
+        val spot = node.positionInRoot + local
+        return if (node.boundsInRoot.contains(spot)) colourAt(spot) else "not shown (${spot.x}, ${spot.y})"
+    }
+
     private fun inset(size: Size): Offset {
         val d = with(rule.density) { 8.dp.toPx() }
         return Offset(size.width - d, size.height - d)
@@ -363,30 +376,46 @@ class PressedBackgroundProbe {
             read("pbNoTap", "held", held, "blue"); read("pbNoTap", "after", after, "blue")
         }
 
-        // the scroll view's item: held, then dragged while still down
+        // The scroll view's item: held, then dragged while still down. Where
+        // the item is, is its position in the root: boundsInRoot is cut at the
+        // list's viewport, so once the item's top scrolled above it the bounds
+        // kept the old top, "list moved" read false, and the colour was read
+        // at the old spot — the grey spacer that had scrolled under it. On an
+        // API 35 emulator: position 720 -> 656 px, the list's scroll 0 -> 64
+        // px, boundsInRoot.top 720 -> 720 (and blue at the item's own spot
+        // while still down).
         val item = rule.onNodeWithTag("pbScrollItem", useUnmergedTree = true)
-        val before = item.fetchSemanticsNode().boundsInRoot
-        val local = inset(before.size)
+        // Values, taken now: a SemanticsNode reads its layout when asked, so
+        // the node's own positionInRoot after the drag is the moved one.
+        val start = item.fetchSemanticsNode()
+        val startY = start.positionInRoot.y
+        val local = inset(start.boundsInRoot.size)
         item.performTouchInput { down(local) }
         settle(500)
-        read("pbScrollItem", "held", colourAt(before.topLeft + local), "red")
+        read("pbScrollItem", "held", colourOnNode("pbScrollItem", local), "red")
         val step = with(rule.density) { 10.dp.toPx() }
         repeat(4) { item.performTouchInput { moveBy(Offset(0f, -step)) }; settle(16) }
         settle(400)
-        val moved = item.fetchSemanticsNode().boundsInRoot
-        read("pbScrollItem", "list moved", moved.top < before.top, true)
-        read("pbScrollItem", "dragged, still down", colourAt(moved.topLeft + local), "blue")
+        read("pbScrollItem", "list moved", item.fetchSemanticsNode().positionInRoot.y < startY, true)
+        read("pbScrollItem", "dragged, still down", colourOnNode("pbScrollItem", local), "blue")
         item.performTouchInput { up() }
         settle(400)
-        read("pbScrollItem", "after the drag", colourAt(moved.topLeft + local), "blue")
+        read("pbScrollItem", "after the drag", colourOnNode("pbScrollItem", local), "blue")
         read("pbScrollItem", "calls from the drag", calls("onScrollItem"), 0)
 
-        // taps
+        // Taps: what each tap called — its handler's count after it less
+        // before it. The hold above is a press and a release on the node,
+        // which the click answers as well (Compose's clickable calls on the
+        // release however long the press); the ruling says nothing of a hold,
+        // so its calls are printed, not judged. SwiftJsonUI's twin reads a
+        // tap the same way (after - before).
         val tapped = listOf("pbView" to "onView", "pbLabel" to "onLabel", "pbEmpty" to "onEmpty", "pbGated" to "onGated")
         for ((tag, handler) in tapped) {
+            val before = calls(handler)
+            Log.i(TAG, "PB path=$path gate=${if (gateOpen) "open" else "shut"} $tag calls from the hold: $before (not judged)")
             rule.onNodeWithTag(tag, useUnmergedTree = true).performClick()
             settle(400)
-            read(tag, "tap calls", calls(handler), if (tag == "pbGated" && !gateOpen) 0 else 1)
+            read(tag, "tap calls", calls(handler) - before, if (tag == "pbGated" && !gateOpen) 0 else 1)
         }
 
         for (r in readings) {
