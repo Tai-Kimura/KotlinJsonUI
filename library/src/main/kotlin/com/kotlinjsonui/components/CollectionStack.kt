@@ -90,7 +90,16 @@ enum class CollectionStackAxis {
  * container sits at its bottom, not reversed — a Collection's
  * defaultScrollAnchor bottom, where iOS draws such a list (4f ruling
  * 2026-09-27, round 14). The EAGER container pads its content with
- * [contentPadding] as the lazy one does (round 14; it applied none).
+ * [contentPadding] as the lazy one does (round 14; it applied none), and so
+ * does the NONE one (round 15; it applied none either) — on a row, the
+ * insets' spacers stand in for it when set, as on the other rows.
+ *
+ * [rowContentAlignment]: where a horizontal list whose content is shorter
+ * than the container sits along its axis, on the LAZY and EAGER rows — a
+ * Collection's defaultScrollAnchor center (its middle) or bottom (its end),
+ * where iOS draws such a list (4f ruling 2026-09-27, round 15; it sat at the
+ * start). Null keeps the start, the end under [reverseLayout]. The NONE row
+ * does not scroll and takes none, as iOS's does not.
  */
 @Composable
 fun CollectionStack(
@@ -112,6 +121,7 @@ fun CollectionStack(
     lazyState: LazyListState? = null,
     eagerScrollState: ScrollState? = null,
     contentAtBottom: Boolean = false,
+    rowContentAlignment: Alignment.Horizontal? = null,
     lazyContent: LazyListScope.() -> Unit = {},
     eagerContent: @Composable () -> Unit = {}
 ) {
@@ -156,7 +166,7 @@ fun CollectionStack(
         }
         axis == CollectionStackAxis.VERTICAL && mode == CollectionStackMode.NONE -> {
             Column(
-                modifier = modifier,
+                modifier = modifier.padding(contentPadding),
                 verticalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Top,
                 horizontalAlignment = horizontalAlignment
             ) { eagerContent() }
@@ -176,7 +186,8 @@ fun CollectionStack(
                 contentPadding = resolvedPadding,
                 reverseLayout = reverseLayout,
                 horizontalArrangement = when {
-                    spacing > 0.dp -> Arrangement.spacedBy(spacing, if (reverseLayout) Alignment.End else Alignment.Start)
+                    spacing > 0.dp -> Arrangement.spacedBy(spacing, rowContentAlignment ?: if (reverseLayout) Alignment.End else Alignment.Start)
+                    rowContentAlignment != null -> Arrangement.aligned(rowContentAlignment)
                     reverseLayout -> Arrangement.End
                     else -> Arrangement.Start
                 },
@@ -191,7 +202,12 @@ fun CollectionStack(
                 // contentPadding, as the LAZY row takes it: the insets' spacers stand in for it when set.
                 modifier = modifier.horizontalScroll(scrollState, enabled = userScrollEnabled)
                     .then(if (insetLeading > 0.dp || insetTrailing > 0.dp) Modifier else Modifier.padding(contentPadding)),
-                horizontalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Start,
+                horizontalArrangement = when {
+                    spacing > 0.dp && rowContentAlignment != null -> Arrangement.spacedBy(spacing, rowContentAlignment)
+                    spacing > 0.dp -> Arrangement.spacedBy(spacing)
+                    rowContentAlignment != null -> Arrangement.aligned(rowContentAlignment)
+                    else -> Arrangement.Start
+                },
                 verticalAlignment = verticalAlignment
             ) {
                 if (insetLeading > 0.dp) Spacer(Modifier.width(insetLeading))
@@ -201,7 +217,8 @@ fun CollectionStack(
         }
         axis == CollectionStackAxis.HORIZONTAL && mode == CollectionStackMode.NONE -> {
             Row(
-                modifier = modifier,
+                // contentPadding, as the EAGER row takes it (round 15).
+                modifier = modifier.then(if (insetLeading > 0.dp || insetTrailing > 0.dp) Modifier else Modifier.padding(contentPadding)),
                 horizontalArrangement = if (spacing > 0.dp) Arrangement.spacedBy(spacing) else Arrangement.Start,
                 verticalAlignment = verticalAlignment
             ) {

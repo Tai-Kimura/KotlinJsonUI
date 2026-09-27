@@ -504,7 +504,11 @@ class DynamicCollectionComponent {
                     gravityAlignment = gravityAlignment,
                     onItemAppear = onItemAppear,
                     collectionId = collectionId,
-                    scrollTargets = if (rowScrolls) rowTargets else null
+                    scrollTargets = if (rowScrolls) rowTargets else null,
+                    // A short EAGER Row sits where defaultScrollAnchor says, as the
+                    // lazy row does (round 15); it draws no reverseLayout. A Row
+                    // that does not scroll takes none, as iOS's does not.
+                    contentAlignment = if (rowScrolls) rowContentAlignment(defaultAnchor, false) else null
                 )
                 return
             }
@@ -710,8 +714,9 @@ class DynamicCollectionComponent {
                     contentPadding = contentPadding,
                     verticalArrangement = Arrangement.spacedBy(horizontal.betweenLanes.dp) /* between lanes: columnSpacing, else itemSpacing */,
                     // A short reversed grid sits at its end, as a reversed list
-                    // does (4f ruling 2026-09-27, round 13).
-                    horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, if (reverseLayout) Alignment.End else Alignment.Start)
+                    // does (4f ruling 2026-09-27, round 13); a short grid sits
+                    // where defaultScrollAnchor says (rowContentAlignment, round 15).
+                    horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, rowContentAlignment(defaultAnchor, reverseLayout))
                 ) {
                     generateCollectionItems(
                         sections = plan.sectionsFor(CellRoute.LAZY_HORIZONTAL_GRID),
@@ -918,6 +923,20 @@ class DynamicCollectionComponent {
          */
         internal fun restingAnchor(anchor: String?, reverse: Boolean): String? =
             if (reverse) when (anchor) { "top" -> "bottom"; "bottom" -> "top"; else -> anchor } else anchor
+
+        /**
+         * Where a horizontal list whose content is shorter than the row sits
+         * along it: defaultScrollAnchor center — its middle; bottom — its end;
+         * otherwise its start, its end under [reverse] (a reversed list, round
+         * 13). iOS draws a short row at its leading edge / middle / trailing
+         * edge by the anchor (4f ruling 2026-09-27, round 15); every row here
+         * sat at its start whatever the anchor said.
+         */
+        internal fun rowContentAlignment(anchor: String?, reverse: Boolean): Alignment.Horizontal = when {
+            anchor == "center" -> Alignment.CenterHorizontally
+            anchor == "bottom" || reverse -> Alignment.End
+            else -> Alignment.Start
+        }
 
         /**
          * The cell a resting anchor (restingAnchor) names among [emitted]
@@ -1568,7 +1587,9 @@ class DynamicCollectionComponent {
                 state = listState,
                 contentPadding = contentPadding,
                 reverseLayout = reverseLayout,
-                horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, if (reverseLayout) Alignment.End else Alignment.Start),
+                // A short row sits where defaultScrollAnchor says, at its end when
+                // reversed (rowContentAlignment, round 15).
+                horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, rowContentAlignment(defaultAnchor, reverseLayout)),
                 // scrollEnabled false stops the user's scrolling only (round 13).
                 userScrollEnabled = userScrollEnabled
             ) {
@@ -1625,10 +1646,11 @@ class DynamicCollectionComponent {
             chrome: ListChrome? = null,
             collectionId: String? = null,
             scrollTargets: FlowScrollTargets? = null,
+            contentAlignment: Alignment.Horizontal? = null,
         ) {
             Row(
                 modifier = modifier.then(Modifier.padding(contentPadding)),
-                horizontalArrangement = Arrangement.spacedBy(columnSpacing)
+                horizontalArrangement = if (contentAlignment != null) Arrangement.spacedBy(columnSpacing, contentAlignment) else Arrangement.spacedBy(columnSpacing)
             ) {
                 when {
                     sections != null && collectionDataSource != null -> {

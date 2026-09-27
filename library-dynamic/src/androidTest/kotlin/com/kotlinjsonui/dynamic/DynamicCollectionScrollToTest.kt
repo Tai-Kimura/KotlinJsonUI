@@ -626,4 +626,128 @@ class DynamicCollectionScrollToTest {
             assertEquals("$m, contentAtBottom: r1 at the bottom", listBounds("stack").bottom, bounds("r1")?.bottom ?: -999f, 1f)
         }
     }
+
+    // ── round 15 (4f rulings 2026-09-27) ─────────────────────────────
+
+    /**
+     * A short horizontal list sits where defaultScrollAnchor says, as iOS
+     * draws it (sjui codegen and SwiftJsonUI Dynamic, measured): bottom at
+     * its end, center in its middle — on the single-lane row, the lanes'
+     * grid and the EAGER Row. A `lazy: none` Row does not scroll and stays at
+     * its start, as iOS's none route; a reversed row keeps its end (round 13)
+     * but for center. Every row sat at its start whatever the anchor said.
+     */
+    @Test
+    fun aShortRowSitsWhereItsDefaultAnchorSays() {
+        val routes = listOf("row" to "", "grid" to """, "columns": 2""", "eager" to """, "lazy": "eager"""",
+            "none" to """, "lazy": "none"""", "reversed" to """, "reverseLayout": true""")
+        val drawn = mutableListOf<String>()
+        val wanted = mutableListOf<String>()
+        for ((route, extra) in routes) {
+            for (anchor in listOf("top", "center", "bottom")) {
+                val json = JsonParser.parseString(
+                    """{"type": "Collection", "id": "row", "layout": "horizontal", "width": 300, "height": 80, "items": "@{items}",
+                        "defaultScrollAnchor": "$anchor", "sections": [{"cell": "$cell"}] $extra}"""
+                ).asJsonObject
+                show(json, mapOf("items" to twoCells))
+                val row = listBounds("row")
+                val s0 = bounds("s0") ?: error("$route $anchor: s0 is not drawn")
+                val s1 = bounds("s1") ?: error("$route $anchor: s1 is not drawn")
+                val left = minOf(s0.left, s1.left)
+                val right = maxOf(s0.right, s1.right)
+                val at = when {
+                    kotlin.math.abs(left - row.left) < 1f -> "start"
+                    kotlin.math.abs(right - row.right) < 1f -> "end"
+                    kotlin.math.abs((left + right) / 2 - row.center.x) < 1f -> "center"
+                    else -> "x ${left - row.left}..${right - row.left} of ${row.width}"
+                }
+                drawn += "$route $anchor: $at"
+                wanted += "$route $anchor: " + when {
+                    route == "none" -> "start"
+                    anchor == "center" -> "center"
+                    anchor == "bottom" || route == "reversed" -> "end"
+                    else -> "start"
+                }
+            }
+        }
+        assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
+    }
+
+    /**
+     * CollectionStack (the kjui codegen's container): the NONE container pads
+     * its content with contentPadding, as the LAZY and EAGER ones do (it
+     * applied none), on both axes.
+     */
+    @Test
+    fun theNoneStackPadsItsContent() {
+        var axis by mutableStateOf(com.kotlinjsonui.components.CollectionStackAxis.VERTICAL)
+        rule.setContent {
+            com.kotlinjsonui.components.CollectionStack(
+                mode = com.kotlinjsonui.components.CollectionStackMode.NONE,
+                axis = axis,
+                modifier = Modifier.testTag("stack").width(200.dp).height(100.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 12.dp, start = 16.dp),
+                eagerContent = { repeat(2) { Text("r$it", Modifier.height(20.dp)) } }
+            )
+        }
+        val top = with(rule.density) { 12.dp.toPx() }
+        val start = with(rule.density) { 16.dp.toPx() }
+        for (a in com.kotlinjsonui.components.CollectionStackAxis.values()) {
+            rule.runOnIdle { axis = a }
+            rule.waitForIdle()
+            val r0 = bounds("r0") ?: error("$a: r0 is not drawn")
+            assertEquals("$a: r0 below the top inset", listBounds("stack").top + top, r0.top, 1f)
+            assertEquals("$a: r0 after the start inset", listBounds("stack").left + start, r0.left, 1f)
+        }
+    }
+
+    /**
+     * CollectionStack's rows take rowContentAlignment: a short LAZY or EAGER
+     * row at its end or in its middle, with and without spacing; the NONE
+     * row, which does not scroll, at its start. Null is the start.
+     */
+    @Test
+    fun theStackRowSitsWhereItsAlignmentSays() {
+        var mode by mutableStateOf(com.kotlinjsonui.components.CollectionStackMode.LAZY)
+        var alignment by mutableStateOf<androidx.compose.ui.Alignment.Horizontal?>(null)
+        var spacing by mutableStateOf(0.dp)
+        rule.setContent {
+            com.kotlinjsonui.components.CollectionStack(
+                mode = mode,
+                axis = com.kotlinjsonui.components.CollectionStackAxis.HORIZONTAL,
+                modifier = Modifier.testTag("stack").width(300.dp).height(40.dp),
+                spacing = spacing,
+                rowContentAlignment = alignment,
+                lazyContent = { items(2) { Text("r$it", Modifier.width(60.dp)) } },
+                eagerContent = { repeat(2) { Text("r$it", Modifier.width(60.dp)) } }
+            )
+        }
+        val px = { dp: Int -> with(rule.density) { dp.dp.toPx() } }
+        val drawn = mutableListOf<String>()
+        val wanted = mutableListOf<String>()
+        for (m in com.kotlinjsonui.components.CollectionStackMode.values()) {
+            for (gap in listOf(0, 8)) {
+                for ((name, a) in listOf("null" to null, "End" to androidx.compose.ui.Alignment.End,
+                        "CenterHorizontally" to androidx.compose.ui.Alignment.CenterHorizontally)) {
+                    rule.runOnIdle { mode = m; spacing = gap.dp; alignment = a }
+                    rule.waitForIdle()
+                    val left = (bounds("r0")?.left ?: -999f) - listBounds("stack").left
+                    val free = px(300) - px(120) - px(gap)
+                    val at = when {
+                        kotlin.math.abs(left) < 1f -> "start"
+                        kotlin.math.abs(left - free) < 1f -> "end"
+                        kotlin.math.abs(left - free / 2) < 1f -> "middle"
+                        else -> "x $left"
+                    }
+                    drawn += "$m gap $gap $name: $at"
+                    wanted += "$m gap $gap $name: " + when {
+                        m == com.kotlinjsonui.components.CollectionStackMode.NONE || a == null -> "start"
+                        name == "End" -> "end"
+                        else -> "middle"
+                    }
+                }
+            }
+        }
+        assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
+    }
 }

@@ -83,7 +83,7 @@ class CollectionHorizontalRuleTest {
     fun theHorizontalGridSpacesItsLanesAndBreaksBetweenSections() {
         val grid = block("LazyHorizontalGrid(", "} else {")
         assertTrue(grid.joinToString("\n"), grid.any { it.startsWith("verticalArrangement = Arrangement.spacedBy(horizontal.betweenLanes.dp)") })
-        assertTrue(grid.joinToString("\n"), grid.any { it.startsWith("horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, if (reverseLayout) Alignment.End else Alignment.Start)") })
+        assertTrue(grid.joinToString("\n"), grid.any { it.startsWith("horizontalArrangement = Arrangement.spacedBy(scrollAxisSpacing, rowContentAlignment(defaultAnchor, reverseLayout))") })
         assertTrue(grid.joinToString("\n"), grid.contains("breakRowsBetweenSections = plan.hasDeclaredSections,"))
     }
 }

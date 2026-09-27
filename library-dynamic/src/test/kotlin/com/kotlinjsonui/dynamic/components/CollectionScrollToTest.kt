@@ -230,4 +230,22 @@ class CollectionScrollToTest {
         )
         assertEquals(listOf(0, 8), DynamicCollectionComponent.drawnSectionSizes(declared, source))
     }
+
+    /**
+     * Where a short horizontal list sits along its row (round 15): the
+     * defaultScrollAnchor's middle or end, as iOS draws it; else the start,
+     * the end when reversed (round 13).
+     */
+    @Test
+    fun aShortRowSitsWhereItsDefaultAnchorSays() {
+        val start = androidx.compose.ui.Alignment.Start
+        val end = androidx.compose.ui.Alignment.End
+        val center = androidx.compose.ui.Alignment.CenterHorizontally
+        val cases = listOf(null to false, "top" to false, "bottom" to false, "center" to false,
+            null to true, "top" to true, "bottom" to true, "center" to true)
+        assertEquals(
+            listOf(start, start, end, center, end, end, end, center),
+            cases.map { (anchor, reverse) -> DynamicCollectionComponent.rowContentAlignment(anchor, reverse) }
+        )
+    }
 }
