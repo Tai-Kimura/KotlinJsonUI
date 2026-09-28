@@ -1114,7 +1114,9 @@ class DynamicCollectionComponent {
          * Supports:
          * - onPageChanged: @{callback} binding for page change notification
          * - pageSpacing: spacing between pages (the horizontal rule: lineSpacing, else itemSpacing)
-         * - contentPadding: padding around the pager
+         * - contentPadding: the Collection's content padding (insets,
+         *   insetHorizontal / insetVertical and the safe area, added), which
+         *   pads each page's cell inside the page
          */
         @Suppress("UNCHECKED_CAST")
         @Composable
@@ -1249,10 +1251,15 @@ class DynamicCollectionComponent {
                 }
             }
 
+            // The content padding pads EACH PAGE'S CELL, inside the page (the
+            // ruling 2026-09-28), as SwiftJsonUI pads the page's cell and kjui's
+            // codegen pager does: a page stays the pager's width, so no
+            // neighbouring page shows in the padding. Through jsonui-cli 1.9.0
+            // it was the HorizontalPager's own contentPadding, which narrows
+            // every page and shows its neighbours there.
             HorizontalPager(
                 state = pagerState,
                 modifier = modifier,
-                contentPadding = contentPadding,
                 pageSpacing = pageSpacing,
                 // scrollEnabled false stops the user's paging only (round 13).
                 userScrollEnabled = userScrollEnabled
@@ -1260,6 +1267,7 @@ class DynamicCollectionComponent {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(contentPadding)
                         .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
                         .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
                     contentAlignment = gravityAlignment

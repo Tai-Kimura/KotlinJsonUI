@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -49,12 +50,14 @@ class DynamicCollectionInsetsTest {
 
     private var shown by mutableStateOf<JsonObject?>(null)
     private var safeTopPx = -1
+    private var safeLeftPx = -1
 
     private fun show(extra: String) {
         if (safeTopPx < 0) {
             rule.runOnUiThread { androidx.core.view.WindowCompat.setDecorFitsSystemWindows(rule.activity.window, false) }
             rule.setContent {
                 safeTopPx = WindowInsets.safeDrawing.getTop(LocalDensity.current)
+                safeLeftPx = WindowInsets.safeDrawing.getLeft(LocalDensity.current, LocalLayoutDirection.current)
                 shown?.let { j -> key(j) { DynamicView(json = j, data = mapOf("items" to twoCells, "t" to 20)) } }
             }
         }
@@ -123,5 +126,43 @@ class DynamicCollectionInsetsTest {
         )
         val drawn = cases.map { (extra, _) -> show(extra); "%.0f".format(cellTop()) }
         assertEquals(cases.map { "%.0f".format(it.second) }, drawn)
+    }
+
+    /**
+     * A pager's content padding pads EACH PAGE'S CELL, inside the page (the
+     * ruling 2026-09-28), as SwiftJsonUI and kjui's codegen pager pad it:
+     * insets, insetHorizontal / insetVertical and the safe area added, a
+     * binding in the array resolved. The page stays the pager's width, so the
+     * next page does not show in the padding — with the HorizontalPager's own
+     * contentPadding (through jsonui-cli 1.9.0) insets [0, 30, 0, 30] drew
+     * the second page's cell at 170 of the 200 wide pager.
+     */
+    @Test
+    fun aPagerPadsEachPageCell() {
+        show("")
+        val px = { dp: Int -> with(rule.density) { dp.toFloat() * density } }
+        assertTrue("the safe area is 0 here: the arm cannot tell adding from replacing", safeTopPx > 0)
+        val safeTop = safeTopPx.toFloat()
+        val safeLeft = safeLeftPx.toFloat()
+        val pager = """, "layout": "horizontal", "paging": true"""
+        show(pager)
+        val top0 = cellTop()
+        val left0 = cellLeft()
+        val cases = listOf(
+            """, "insets": [0, 0, 0, 30]""" to (0f to px(30)),
+            """, "insets": [0, 30, 0, 30]""" to (0f to px(30)),
+            """, "insets": 12""" to (px(12) to px(12)),
+            """, "insets": "8|4|12|6"""" to (px(8) to px(6)),
+            """, "insets": [8, 4], "insetHorizontal": 10, "insetVertical": 2""" to (px(10) to px(14)),
+            """, "insets": ["@{t}", 0, 0, 0], "insetVertical": 4""" to (px(24) to 0f),
+            """, "insets": [0, 0, 0, 30], "contentInsetAdjustmentBehavior": "always"""" to (safeTop to safeLeft + px(30)),
+        )
+        val drawn = cases.map { (extra, _) -> show(pager + extra); "%.0f,%.0f".format(cellTop() - top0, cellLeft() - left0) }
+        assertEquals(cases.map { "%.0f,%.0f".format(it.second.first, it.second.second) }, drawn)
+
+        show(pager + """, "insets": [0, 30, 0, 30]""")
+        val listLeft = rule.onNodeWithTag("list", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.x
+        val nextPage = rule.onAllNodesWithText("s1").fetchSemanticsNodes().map { it.positionInRoot.x - listLeft }
+        assertTrue("the next page's cell shows in the padding: $nextPage", nextPage.all { it >= px(200) })
     }
 }
