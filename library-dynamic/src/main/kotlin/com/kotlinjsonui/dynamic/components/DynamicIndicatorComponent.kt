@@ -93,8 +93,8 @@ class DynamicIndicatorComponent {
         ): SizePlan {
             val styleDp = styleSizeDp(style)
                 ?: return SizePlan(declared = if (hasWidth || hasHeight) json else null)
-            val wrapWidth = hasWidth && isWrap(json.get("width"))
-            val wrapHeight = hasHeight && isWrap(json.get("height"))
+            val wrapWidth = hasWidth && isWrap(TypedAttrs.rawKey(json, "width"))
+            val wrapHeight = hasHeight && isWrap(TypedAttrs.rawKey(json, "height"))
             val lengthWidth = hasWidth && !wrapWidth
             val lengthHeight = hasHeight && !wrapHeight
             if (!lengthWidth && !lengthHeight) return SizePlan(declared = null, styleBothDp = styleDp)

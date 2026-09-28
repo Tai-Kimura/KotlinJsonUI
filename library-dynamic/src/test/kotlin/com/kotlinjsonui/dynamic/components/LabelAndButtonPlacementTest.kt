@@ -50,8 +50,11 @@ class LabelAndButtonPlacementTest {
             """{"width":"matchParent","gravity":["top","centerHorizontal"]}""" to androidx.compose.ui.text.style.TextAlign.Center,
             """{"width":32,"gravity":"center"}""" to androidx.compose.ui.text.style.TextAlign.Center,
             """{"width":32,"gravity":"left"}""" to null,
-            """{"width":"wrapContent","gravity":"right"}""" to null,
-            """{"gravity":"right"}""" to null,
+            // No width guard (kjui's gravity_text_align reads it the same): a
+            // wrapContent Label whose text wraps takes its parent's width, so
+            // its lines follow the gravity too; on one line it changes nothing.
+            """{"width":"wrapContent","gravity":"right"}""" to androidx.compose.ui.text.style.TextAlign.End,
+            """{"gravity":"right"}""" to androidx.compose.ui.text.style.TextAlign.End,
             // Read as declared: `Right` is no gravity word, so the start.
             """{"width":32,"gravity":"Right"}""" to null,
         )
