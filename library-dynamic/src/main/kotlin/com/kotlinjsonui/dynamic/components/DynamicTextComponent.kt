@@ -725,15 +725,6 @@ class DynamicTextComponent {
          * edgeInset takes priority over regular padding for Text components.
          */
         /**
-         * Where a Label's text sits across a frame wider than it when it
-         * declares no textAlign: by its gravity's horizontal part — the end
-         * for right, the middle for center / centerHorizontal (4f ruling
-         * 2026-09-27, round 17; the web draws it so and iOS follows). Null
-         * otherwise (the start), and for a Label of wrapContent width, which
-         * is its text's width. It sat at the start whatever the gravity.
-         * kjui's codegen places it the same (TextComponent.gravity_text_align).
-         */
-        /**
          * A gravity word as its declared spelling, lowercased — null for one
          * the SSoT does not declare (`Right`, `CENTER`), which places nothing.
          * kjui's codegen reads the parts so (EnumSpelling.lowered, common /
@@ -743,13 +734,19 @@ class DynamicTextComponent {
         private fun gravitySpelling(part: String): String? =
             DeclaredSpelling.lowered(part.trim(), CommonAttributes.Gravity.declaredSpellings)
 
+        /**
+         * Where a Label's text sits across a frame wider than it when it
+         * declares no textAlign: by its gravity's horizontal part — the middle
+         * for center / centerHorizontal, the end for right. Null otherwise
+         * (the start). Center is tested before right, so a gravity naming both
+         * centres, as on iOS and the web (the SSoT Label.textAlign order).
+         * Returned whatever the width: a single-line wrapContent Label is as
+         * wide as its text, so the alignment is a no-op there, but one whose
+         * text wraps inside a narrower parent takes the parent's width, and
+         * its lines must follow the rule too. kjui's codegen places it the
+         * same (TextComponent.gravity_text_align).
+         */
         internal fun gravityTextAlign(json: JsonObject): TextAlign? {
-            val width = TypedAttrs.rawKey(json, "width")
-            val wraps = width == null ||
-                (width.isJsonPrimitive && width.asString in setOf("wrapContent", "wrap_content"))
-            val ownWidth = !wraps || TypedAttrs.rawKey(json, "minWidth") != null ||
-                TypedAttrs.rawKey(json, "widthWeight") != null || TypedAttrs.rawKey(json, "weight") != null
-            if (!ownWidth) return null
             val gravity = TypedAttrs.rawKey(json, "gravity")
             val parts = when {
                 gravity == null || gravity.isJsonNull -> emptyList()
@@ -758,8 +755,8 @@ class DynamicTextComponent {
                 else -> emptyList()
             }.mapNotNull { gravitySpelling(it) }
             return when {
-                "right" in parts -> TextAlign.End
                 parts.any { it in setOf("center", "centerhorizontal", "center_horizontal", "centerinparent", "center_in_parent") } -> TextAlign.Center
+                "right" in parts -> TextAlign.End
                 else -> null
             }
         }
