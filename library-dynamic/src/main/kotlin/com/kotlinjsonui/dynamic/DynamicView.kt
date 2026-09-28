@@ -30,6 +30,8 @@ import com.kotlinjsonui.dynamic.helpers.ImageAccessibility
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.LocalImageTappable
 import com.kotlinjsonui.core.LocalInteractionStopped
+import com.kotlinjsonui.core.LocalJsonUITint
+import com.kotlinjsonui.dynamic.helpers.TintHandDown
 import com.kotlinjsonui.dynamic.helpers.InteractionMarking
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.hotloader.HotLoader
@@ -275,10 +277,19 @@ private fun DynamicViewContent(
         } else {
             renderComponent
         }
-    val render: @Composable () -> Unit = if (ImageAccessibility.isTappable(responsiveJson)) {
-        { CompositionLocalProvider(LocalImageTappable provides responsiveJson) { stopping() } }
+    // A node that holds other nodes hands its tintColor down to the controls
+    // inside it (TintHandDown): they read their own tintColor first, then
+    // LocalJsonUITint — as `.tint` on a container reaches its controls on iOS.
+    val tintHandedDown = TintHandDown.color(responsiveJson, effectiveData, context)
+    val tinting: @Composable () -> Unit = if (tintHandedDown != null) {
+        { CompositionLocalProvider(LocalJsonUITint provides tintHandedDown) { stopping() } }
     } else {
         stopping
+    }
+    val render: @Composable () -> Unit = if (ImageAccessibility.isTappable(responsiveJson)) {
+        { CompositionLocalProvider(LocalImageTappable provides responsiveJson) { tinting() } }
+    } else {
+        tinting
     }
 
     if (hidden == true || !visibility.isNullOrEmpty()) {

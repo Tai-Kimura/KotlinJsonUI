@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOrNull
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -91,7 +92,7 @@ class DynamicProgressComponent {
                 TypedAttrs.rawString(a.progressTintColor), data, context
             ) ?: ColorParser.parseColorStringWithBinding(
                 a.tintColor, data, context
-            )
+            ) ?: jsonUITintOrNull() // none of its own: the tint a container handed down
             val trackColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.trackTintColor), data, context
             )

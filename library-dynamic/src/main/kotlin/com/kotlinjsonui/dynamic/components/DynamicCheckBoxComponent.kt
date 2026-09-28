@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOrNull
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
@@ -387,7 +388,7 @@ class DynamicCheckBoxComponent {
                 TypedAttrs.undeclared(json, "checkColor")?.asString, data, context
             ) ?: ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.common.tintColor), data, context
-            )
+            ) ?: jsonUITintOrNull() // none of its own: the tint a container handed down
             val uncheckedColor = ColorParser.parseColorStringWithBinding(
                 a.uncheckedColor, data, context
             )

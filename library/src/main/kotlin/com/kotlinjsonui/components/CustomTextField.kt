@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.jsonUITintOrNull
 
 /**
  * Custom TextField component using TextFieldState API (Compose BOM 2026.03.00+).
@@ -50,8 +51,9 @@ fun CustomTextField(
     onEndEditing: (() -> Unit)? = null,
     enabled: Boolean = true,
     // `tintColor` in JsonUI vocabulary: the caret (cursor) accent. Falls
-    // back to the text colour / theme primary, which was the previous
-    // hard-wired behaviour.
+    // back to the tint a container handed down (LocalJsonUITint), then to
+    // the text colour / theme primary, which was the previous hard-wired
+    // behaviour.
     cursorColor: Color? = null
 ) {
     // Determine background colors
@@ -169,6 +171,11 @@ fun CustomTextField(
         }
     }
 
+    // The caret: the field's own tintColor, else the tint a container
+    // handed down (LocalJsonUITint), else the text colour / theme primary.
+    val caretColor = cursorColor ?: jsonUITintOrNull()
+        ?: textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary
+
     if (isSecure) {
         BasicSecureTextField(
             state = state,
@@ -176,7 +183,7 @@ fun CustomTextField(
             enabled = enabled,
             textStyle = effectiveTextStyle,
             keyboardOptions = keyboardOptions,
-            cursorBrush = SolidColor(cursorColor ?: textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
+            cursorBrush = SolidColor(caretColor),
             interactionSource = interactionSource,
             decorator = { innerTextField -> DecorationContent(innerTextField) }
         )
@@ -192,7 +199,7 @@ fun CustomTextField(
             } else {
                 androidx.compose.foundation.text.input.TextFieldLineLimits.MultiLine(maxHeightInLines = maxLines)
             },
-            cursorBrush = SolidColor(cursorColor ?: textStyle.color.takeIf { it != Color.Unspecified } ?: MaterialTheme.colorScheme.primary),
+            cursorBrush = SolidColor(caretColor),
             interactionSource = interactionSource,
             decorator = { innerTextField -> DecorationContent(innerTextField) }
         )

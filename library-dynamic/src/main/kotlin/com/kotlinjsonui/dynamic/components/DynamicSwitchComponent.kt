@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOrNull
 import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -134,6 +135,8 @@ class DynamicSwitchComponent {
             val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
                 ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.tint), data, context)
                 ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                // none of its own: the tint a container handed down
+                ?: jsonUITintOrNull()
             val uncheckedTrackColor = ColorParser.parseColorStringWithBinding(a.trackTintColor, data, context)
                 ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.offTintColor), data, context)
             val checkedThumbColor = ColorParser.parseColorStringWithBinding(
@@ -258,6 +261,8 @@ class DynamicSwitchComponent {
                 val checkedTrackColor = ColorParser.parseColorStringWithBinding(a.onTintColor, data, context)
                     ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.tint), data, context)
                     ?: ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                    // none of its own: the tint a container handed down
+                    ?: jsonUITintOrNull()
                 val uncheckedTrackColor = ColorParser.parseColorStringWithBinding(a.trackTintColor, data, context)
                     ?: ColorParser.parseColorStringWithBinding(TypedAttrs.rawString(a.offTintColor), data, context)
                 val checkedThumbColor = ColorParser.parseColorStringWithBinding(

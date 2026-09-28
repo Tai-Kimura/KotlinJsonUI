@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOr
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -297,8 +298,9 @@ class DynamicTabViewComponent {
                                     { Text(tabItem.title) }
                                 } else null,
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = tintColor ?: MaterialTheme.colorScheme.primary,
-                                    selectedTextColor = tintColor ?: MaterialTheme.colorScheme.primary,
+                                    // none of its own: the tint a container handed down
+                                    selectedIconColor = tintColor ?: jsonUITintOr(MaterialTheme.colorScheme.primary),
+                                    selectedTextColor = tintColor ?: jsonUITintOr(MaterialTheme.colorScheme.primary),
                                     unselectedIconColor = unselectedColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
                                     unselectedTextColor = unselectedColor ?: MaterialTheme.colorScheme.onSurfaceVariant
                                 )

@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOr
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -467,7 +468,8 @@ class DynamicRadioComponent {
                                         ?: ColorParser.parseColorStringWithBinding(
                                             TypedAttrs.rawString(a.common.tintColor), data, context
                                         )
-                                        ?: MaterialTheme.colorScheme.primary
+                                        // none of its own: the tint a container handed down
+                                        ?: jsonUITintOr(MaterialTheme.colorScheme.primary)
                                 } else {
                                     Color.Gray
                                 }
@@ -664,7 +666,8 @@ class DynamicRadioComponent {
         @Composable
         private fun buttonColors(values: Pair<Color?, Color?>): RadioButtonColors =
             RadioButtonDefaults.colors(
-                selectedColor = values.first ?: RadioButtonDefaults.colors().selectedColor,
+                // none of its own: the tint a container handed down
+                selectedColor = values.first ?: jsonUITintOr(RadioButtonDefaults.colors().selectedColor),
                 unselectedColor = values.second ?: RadioButtonDefaults.colors().unselectedColor
             )
 

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.jsonUITintOrNull
 
 /**
  * Custom Segment component that wraps SecondaryTabRow with Configuration defaults
@@ -31,7 +32,9 @@ fun Segment(
             TabRowDefaults.SecondaryIndicator(
                 Modifier.tabIndicatorOffset(selectedTabIndex, matchContentSize = false),
                 color = if (enabled) {
-                    indicatorColor ?: Configuration.Segment.defaultSelectedBackgroundColor
+                    // The Segment's own tintColor, else the tint a container
+                    // handed down (LocalJsonUITint), else the default.
+                    indicatorColor ?: jsonUITintOrNull() ?: Configuration.Segment.defaultSelectedBackgroundColor
                 } else {
                     // No indicator when disabled
                     Color.Transparent

@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOrNull
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Switch
@@ -164,7 +165,9 @@ class DynamicToggleComponent {
 
             // Colors: tintColor -> checkedThumbColor + checkedTrackColor (0.5f alpha)
             //         backgroundColor -> uncheckedTrackColor
+            // None of its own: the tint a container handed down (LocalJsonUITint).
             val tintColor = ColorParser.parseColorStringWithBinding(a.tintColor, data, context)
+                ?: jsonUITintOrNull()
             // 'backgroundColor' is an undeclared legacy runtime extra
             val bgColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.undeclared(json, "backgroundColor")?.asString, data, context

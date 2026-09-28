@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUITintOrNull
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
@@ -159,10 +160,18 @@ class DynamicSliderComponent {
             // and read BEHIND them, canonical-first (slider.trackColors in
             // shared/core/attribute_semantics.json). Plain tintColor is the
             // last-resort accent for the active track (UISlider heritage).
+            // tintColor colours the thumb too, as kjui's codegen reads it
+            // (thumbTintColor || tintColor). With no accent of its own, the
+            // thumb and the filled track take the tint a container handed
+            // down (LocalJsonUITint).
+            val ownTint = ColorParser.parseColorWithBinding(json, "tintColor", data, context)
             val thumbColor = ColorParser.parseColorWithBinding(json, "thumbTintColor", data, context)
+                ?: ownTint
+                ?: jsonUITintOrNull()
             val activeTrackColor = ColorParser.parseColorWithBinding(json, "progressTintColor", data, context)
                 ?: ColorParser.parseColorWithBinding(json, "minimumTrackTintColor", data, context)
-                ?: ColorParser.parseColorWithBinding(json, "tintColor", data, context)
+                ?: ownTint
+                ?: jsonUITintOrNull()
             val inactiveTrackColor = ColorParser.parseColorWithBinding(json, "trackTintColor", data, context)
                 ?: ColorParser.parseColorWithBinding(json, "maximumTrackTintColor", data, context)
 
