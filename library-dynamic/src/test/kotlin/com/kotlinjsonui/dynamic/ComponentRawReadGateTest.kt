@@ -15,8 +15,8 @@ import java.io.File
  *   attributes),
  * - `TypedAttrs.rawKey` (declared keys whose accepted value space is wider
  *   than the declared type) and `TypedAttrs.undeclared` (legacy runtime
- *   extras pending definitions backfill) — both named, greppable entry
- *   points.
+ *   extras, each to be declared in the SSoT or no longer read) — both
+ *   named, greppable entry points.
  *
  * Reads on CHILD nodes (constraint loops etc.) use receivers other than
  * `json`, so they don't trip this gate.

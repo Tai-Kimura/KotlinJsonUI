@@ -9,6 +9,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.generated.AttrEnum
 import com.kotlinjsonui.dynamic.generated.AttrValue
+import com.kotlinjsonui.dynamic.helpers.TintHandDown
 
 /**
  * Bridge between the generated typed attribute extraction
@@ -201,10 +202,13 @@ object TypedAttrs {
 
     /**
      * Raw read of a key NOT declared in attribute_definitions.json
-     * (legacy runtime extras such as `isLoading`, `async`,
-     * `imagePosition`). Every call site is a definitions-backfill
-     * candidate — keeping them on this single entry point makes them
-     * mechanically greppable.
+     * (legacy runtime extras). Every call site is to be settled one way
+     * or the other: declare the key in the SSoT (so every path draws it
+     * or records that it does not), or stop reading it and name it in a
+     * debuggable build through [UnreadAttributes] — as Button's
+     * `isLoading`, `loadingText`, `async`, `imagePosition`, `iconSize`
+     * and `disabled` were. Keeping the remaining reads on this single
+     * entry point makes them mechanically greppable.
      */
     fun undeclared(json: JsonObject, key: String): JsonElement? = json.get(key)
 }
@@ -307,6 +311,9 @@ object UnappliedAttributes {
             if (key in STRUCTURAL_KEYS) continue
             if (key !in declared) continue // undeclared keys are the validator's business
             if (key in applied) continue
+            // A container's tintColor is applied by DynamicView, which hands it
+            // down to the controls inside (TintHandDown), not by the component.
+            if (key == "tintColor" && TintHandDown.handsDown(json)) continue
             val dedupeKey = "$componentType:$key"
             if (!warned.add(dedupeKey)) continue
             val message =
@@ -406,5 +413,48 @@ object UnresolvedResource {
                 "ships no such resource, so nothing is drawn there"
         warningSink?.invoke(message)
         Log.w(TAG, message)
+    }
+}
+
+/**
+ * Keys a component USED to read as undeclared runtime extras and no longer
+ * reads: the SSoT declares none of them for that type, no codegen draws them,
+ * so reading them here made this path render a layout differently from every
+ * other. [UnappliedAttributes] leaves undeclared keys to the jui validator
+ * ("Unknown attribute"); a layout loaded at runtime may never pass through it,
+ * so a debuggable build names each such key the layout still writes — once per
+ * (component, key) pair per process. A release build names nothing.
+ */
+object UnreadAttributes {
+    private const val TAG = "JsonUIUnread"
+
+    /** Test hook: receives every emitted warning message. */
+    var warningSink: ((String) -> Unit)? = null
+
+    private val warned = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    /** Test hook: forget which pairs were named. */
+    fun resetForTest() = warned.clear()
+
+    /** The sentence for [key] on [componentType]. */
+    fun message(componentType: String, key: String): String =
+        "$componentType: '$key' is not a declared attribute of $componentType and is not read " +
+            "— it draws nothing on any path; remove it from the layout"
+
+    fun check(
+        componentType: String,
+        json: JsonObject,
+        keys: Collection<String>,
+        context: android.content.Context? = null
+    ) {
+        if (keys.none { json.has(it) }) return
+        if (!DebugDiagnostics.isAppDebuggable(context)) return
+        for (key in keys) {
+            if (!json.has(key)) continue
+            if (!warned.add("$componentType:$key")) continue
+            val message = message(componentType, key)
+            warningSink?.invoke(message)
+            Log.w(TAG, message)
+        }
     }
 }

@@ -175,7 +175,7 @@ class DynamicLabelAndButtonPlacementTest {
     }
 
     /**
-     * A Button with an icon, and a loading one: the icon (the spinner) and
+     * A Button with an icon: the icon and
      * the text move together, placed across the button by textAlign — the
      * group at the start / end / middle, as iOS places it (measured round 18:
      * sjui codegen and SwiftJsonUI Dynamic, a 200pt button, the icon + text
@@ -221,44 +221,42 @@ class DynamicLabelAndButtonPlacementTest {
     }
 
     /**
-     * A loading Button (the undeclared `isLoading` runtime extra): the spinner
-     * and the text move together by textAlign too. A loading button is
-     * disabled — drawn at half alpha — so the box is white here, the frame is
-     * the button node's bounds, and the ink any pixel darker than 0.7.
+     * Button declares no `isLoading`, `loadingText`, `imagePosition`,
+     * `iconSize` or `disabled`, and the Dynamic Button does not read them
+     * (DynamicButtonComponent.NOT_READ): a layout that still writes them draws
+     * what it draws without them. No spinner and no loading text (the ink is
+     * as wide as without the keys), not disabled (a disabled button draws at
+     * half alpha, so its text would not read as black), and the text placed
+     * by textAlign.
      */
     @Test
-    fun aLoadingButtonsSpinnerAndTextMoveTogetherByTextAlign() {
-        rule.mainClock.autoAdvance = false
-        boxColor = Color.White
-        fun button(align: String) =
+    fun aButtonDrawsTheSameWithTheKeysItDoesNotRead() {
+        fun button(extra: String) =
             """{"type": "Button", "id": "b", "text": "Go", "width": 200, "height": 44, "fontSize": 14, "fontColor": "#000000",
-                "background": "#FFFFFF", "cornerRadius": 0, "isLoading": true, "textAlign": "$align"}"""
-        val drawn = listOf("Left", "Right", "Center").map { align ->
-            show(button(align))
+                "background": "#FFFFFF", "cornerRadius": 0 $extra}"""
+        val unread = """, "isLoading": true, "loadingText": "Please wait", "disabled": true, "imagePosition": "trailing", "iconSize": 40"""
+        fun drawn(extra: String): Pair<String, Int> {
+            show(button(extra))
             rule.mainClock.advanceTimeBy(300)
-            val frame = rule.onNodeWithTag("b", useUnmergedTree = true).fetchSemanticsNode()
-            val box = rule.onNodeWithTag("box").fetchSemanticsNode()
-            val map = rule.onNodeWithTag("box").captureToImage().toPixelMap()
-            val left0 = (frame.positionInRoot.x - box.positionInRoot.x).toInt()
-            val right0 = left0 + frame.size.width - 1
-            var i0 = -1
-            var i1 = -1
-            for (x in left0..right0) for (y in 0 until map.height) {
-                val c = map[x, y]
-                if (c.red < 0.7f && c.green < 0.7f && c.blue < 0.7f) { if (i0 < 0) i0 = x; i1 = x }
-            }
-            val d = rule.density.density
-            val left = ((i0 - left0) / d).toInt()
-            val right = ((right0 - i1) / d).toInt()
-            println("BUTTON_GROUP loading $align: ink ${left}..${right} of ${(frame.size.width / d).toInt()}")
-            when {
-                i0 < 0 -> "not drawn"
+            val (white, black) = extent(columns = true)
+            if (white == null || black == null) return "not drawn" to -1
+            val left = black.first - white.first
+            val right = white.last - black.last
+            val place = when {
                 kotlin.math.abs(left - right) <= 2 -> "middle"
                 left < right -> "left"
                 else -> "right"
             }
+            return place to (black.last - black.first)
         }
-        assertEquals(listOf("left", "right", "middle"), drawn)
+        val aligns = listOf("Left" to "left", "Right" to "right", "Center" to "middle")
+        for ((align, want) in aligns) {
+            val plain = drawn(""", "textAlign": "$align"""")
+            val withUnread = drawn(""", "textAlign": "$align"$unread""")
+            println("BUTTON_UNREAD $align: plain $plain, with the unread keys $withUnread")
+            assertEquals("textAlign $align", want to plain.second, withUnread)
+            assertEquals("textAlign $align without the keys", want, plain.first)
+        }
     }
 
     @Test

@@ -15,14 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,16 +35,13 @@ import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.generated.AttrValue
 import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.UnreadAttributes
 import com.kotlinjsonui.dynamic.generated.ButtonAttributes
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Button component → Button composable.
@@ -71,6 +65,7 @@ class DynamicButtonComponent {
                 applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
                 context = context
             )
+            UnreadAttributes.check("Button", json, NOT_READ, context)
 
             // `image` is binding-capable, so the typed value is an AttrValue;
             // rawString gives back the layout spelling — the static name or
@@ -87,23 +82,13 @@ class DynamicButtonComponent {
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) } ?: "")
                 .ifEmpty { if (hasImage) "" else "Button" }
 
-            // Loading state (undeclared legacy runtime extra)
-            var isLoading by remember {
-                mutableStateOf(TypedAttrs.undeclared(json, "isLoading")?.asBoolean ?: false)
-            }
-
-            // Enabled state (supports @{binding}; 'disabled' is undeclared legacy)
-            val isEnabled = when {
-                isLoading -> false
-                else -> (TypedAttrs.boolean(a.common.enabled, data) ?: true) &&
-                        !ResourceResolver.resolveBoolean(json, "disabled", data, default = false)
-            }
+            // Enabled state (supports @{binding}). The declared `enabled`
+            // only: the undeclared `disabled` is not read (see NOT_READ).
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Click handler
             val viewId = LayoutPath.viewId(json)
-            val onClick: () -> Unit = buildClickHandler(json, a, data, viewId, isLoading) { loading ->
-                isLoading = loading
-            }
+            val onClick: () -> Unit = buildClickHandler(json, a, data, viewId)
 
             // Text style
             val fontSize = a.fontSize?.toFloat()
@@ -195,13 +180,13 @@ class DynamicButtonComponent {
             // Elevation
             val elevation = resolveElevation(a.common.shadow)
 
-            // Optional leading/trailing icon ('imagePosition'/'iconSize' are
-            // undeclared legacy runtime extras)
+            // Optional icon, before the text. Button declares no position and
+            // no size for it (see NOT_READ), so it is always leading and
+            // ICON_SIZE dp, as the codegen draws it.
             val imageResId = imageName?.let {
                 ResourceResolver.resolveDrawable(it, data, context).takeIf { id -> id != 0 }
             }
-            val imagePosition = TypedAttrs.undeclared(json, "imagePosition")?.asString?.lowercase() ?: "leading"
-            val iconSize = TypedAttrs.undeclared(json, "iconSize")?.asFloat ?: 18f
+            val iconSize = ICON_SIZE
             // Tint only when the layout asked for one. Icon() forces a single
             // colour, which flattens a multi-colour asset; the untinted case
             // draws the drawable as authored. Same rule as button_component.rb
@@ -252,7 +237,7 @@ class DynamicButtonComponent {
             modifier = ModifierBuilder.applyStoppedControl(modifier, json, data)
             modifier = ModifierBuilder.applyInteractionBlocker(modifier, json, data)
 
-            // The icon row and the loading row move together, placed across the
+            // The icon and the text move together, placed across the
             // button by textAlign as the text-only text is (4f ruling
             // 2026-09-27, round 18; measured on iOS: the icon + text group at
             // the start / end / middle of a 200pt button): the Row takes the
@@ -278,30 +263,12 @@ class DynamicButtonComponent {
                 contentPadding = contentPadding,
                 interactionSource = interactionSource
             ) {
-                if (isLoading) {
-                    Row(modifier = rowModifier, horizontalArrangement = rowArrangement, verticalAlignment = Alignment.CenterVertically) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                            color = textColor
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = TypedAttrs.undeclared(json, "loadingText")?.asString ?: text,
-                            fontSize = fontSize.sp,
-                            fontWeight = fontWeight,
-                            fontFamily = fontFamily,
-                            textAlign = textAlign
-                        )
-                    }
-                } else if (imageResId != null && text.isEmpty()) {
+                if (imageResId != null && text.isEmpty()) {
                     ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
                 } else if (imageResId != null) {
                     Row(modifier = rowModifier, horizontalArrangement = rowArrangement, verticalAlignment = Alignment.CenterVertically) {
-                        if (imagePosition == "leading") {
-                            ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
-                            Spacer(modifier = Modifier.width(8.dp))
-                        }
+                        ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = text,
                             fontSize = fontSize.sp,
@@ -309,10 +276,6 @@ class DynamicButtonComponent {
                             fontFamily = fontFamily,
                             textAlign = textAlign
                         )
-                        if (imagePosition == "trailing") {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            ButtonIcon(imageResId, iconSize, iconTint, iconDescription)
-                        }
                     }
                 } else {
                     // The text is placed across the button by textAlign (4f
@@ -400,42 +363,20 @@ class DynamicButtonComponent {
             json: JsonObject,
             a: ButtonAttributes,
             data: Map<String, Any>,
-            viewId: String,
-            isLoading: Boolean,
-            setLoading: (Boolean) -> Unit
+            viewId: String
         ): () -> Unit = {
             // common.canTap gates the handler's call; the button stays a
             // button and is not disabled (that is `enabled`'s).
-            if (!isLoading && ModifierBuilder.tapGateOpen(json, data)) {
+            if (ModifierBuilder.tapGateOpen(json, data)) {
                 val methodName = resolveClickMethodName(a)
                 methodName?.let { name ->
                     val handler = data[name]
                     if (handler is Function<*>) {
-                        val isAsync = TypedAttrs.undeclared(json, "async")?.asBoolean ?: false
-                        if (isAsync) {
-                            setLoading(true)
-                            CoroutineScope(Dispatchers.Main).launch {
-                                try {
-                                    @Suppress("UNCHECKED_CAST")
-                                    withContext(Dispatchers.IO) {
-                                        (handler as suspend () -> Unit)()
-                                    }
-                                } catch (_: Exception) {
-                                    try {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (handler as () -> Unit)()
-                                    } catch (_: Exception) {}
-                                } finally {
-                                    setLoading(false)
-                                }
-                            }
-                        } else {
-                            ModifierBuilder.resolveEventHandler(
-                                a.common.onclick as? String
-                                    ?: TypedAttrs.raw(a.common.onClick) as? String,
-                                data, viewId
-                            )
-                        }
+                        ModifierBuilder.resolveEventHandler(
+                            a.common.onclick as? String
+                                ?: TypedAttrs.raw(a.common.onClick) as? String,
+                            data, viewId
+                        )
                     }
                 }
             }
@@ -551,6 +492,25 @@ class DynamicButtonComponent {
                 else -> null
             }
         }
+
+        /** The icon's edge, in dp: Button declares no icon size. */
+        internal const val ICON_SIZE: Float = 18f
+
+        /**
+         * Keys Button does not declare that this component used to read as
+         * runtime extras: a loading state (`isLoading`, its `loadingText`, and
+         * `async`, which set it around the handler), the icon's
+         * `imagePosition` and `iconSize`, and `disabled`. No codegen path
+         * and no other platform drew them, so a layout that wrote them
+         * rendered differently on this path alone. They are not read; a
+         * debuggable build names each one that a layout still writes
+         * (UnreadAttributes), as the jui validator does ("Unknown
+         * attribute"). The declared ways: `enabled` for the disabled state,
+         * a bound `text` / `enabled` for a busy state, `image` for the icon.
+         */
+        internal val NOT_READ: List<String> = listOf(
+            "isLoading", "loadingText", "async", "imagePosition", "iconSize", "disabled"
+        )
 
         /** Button-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(

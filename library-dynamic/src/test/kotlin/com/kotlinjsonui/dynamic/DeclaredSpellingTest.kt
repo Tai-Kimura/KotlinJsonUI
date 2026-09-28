@@ -195,8 +195,6 @@ class DeclaredSpellingTest {
             "a cell class name made a layout file name — not an enum value"),
         Left("${dyn}components/DynamicCollectionComponent.kt", ".lowercase()",
             "a cell class name made a layout file name — not an enum value"),
-        Left("${dyn}components/DynamicButtonComponent.kt", "val imagePosition = TypedAttrs.undeclared(json, \"imagePosition\")?.asString?.lowercase() ?: \"leading\"",
-            "Button declares no imagePosition", absent = "ButtonAttributes.imagePosition"),
         Left("${dyn}components/DynamicTextFieldComponent.kt", "val isHidden = TypedAttrs.static(a.fontColor)?.lowercase() == \"transparent\"",
             "a colour — not an enum"),
         Left("${dyn}helpers/ModifierBuilder.kt", "if (p.isString) return p.asString.equals(\"true\", ignoreCase = true)",
