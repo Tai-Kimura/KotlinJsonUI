@@ -1,6 +1,8 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -8,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
@@ -57,6 +60,55 @@ class DynamicIndicatorComponent {
             else -> null
         }
 
+        private fun isWrap(e: JsonElement?): Boolean =
+            e != null && e.isJsonPrimitive && e.asJsonPrimitive.isString &&
+                (e.asString == "wrapContent" || e.asString == "wrap_content")
+
+        /**
+         * Who draws each axis. [declared] is the json the size builder gets
+         * (null: it is not called), [styleWidthDp] / [styleHeightDp] the style's
+         * size on one axis, [styleBothDp] the style's size on both.
+         */
+        internal data class SizePlan(
+            val declared: JsonObject?,
+            val styleWidthDp: Int? = null,
+            val styleHeightDp: Int? = null,
+            val styleBothDp: Int? = null
+        )
+
+        /**
+         * A declared length (a number or a bound number) wins over the style's
+         * size; so do matchParent and a weight, which were not ruled and keep
+         * their old picture. A wrapContent axis is the content's size, and the
+         * style sets the content's size, so with a style size of its own a
+         * wrapContent axis is not a declaration: it draws the style's size
+         * (kjui-indicator-style-loses-to-a-declared-wrapcontent; the codegen's
+         * indicator_component.rb draws the same).
+         */
+        internal fun planSize(
+            json: JsonObject,
+            style: String,
+            hasWidth: Boolean,
+            hasHeight: Boolean
+        ): SizePlan {
+            val styleDp = styleSizeDp(style)
+                ?: return SizePlan(declared = if (hasWidth || hasHeight) json else null)
+            val wrapWidth = hasWidth && isWrap(json.get("width"))
+            val wrapHeight = hasHeight && isWrap(json.get("height"))
+            val lengthWidth = hasWidth && !wrapWidth
+            val lengthHeight = hasHeight && !wrapHeight
+            if (!lengthWidth && !lengthHeight) return SizePlan(declared = null, styleBothDp = styleDp)
+            val declared = json.deepCopy().apply {
+                if (wrapWidth) remove("width")
+                if (wrapHeight) remove("height")
+            }
+            return SizePlan(
+                declared = declared,
+                styleWidthDp = if (wrapWidth) styleDp else null,
+                styleHeightDp = if (wrapHeight) styleDp else null
+            )
+        }
+
         @Composable
         fun create(
             json: JsonObject,
@@ -92,13 +144,14 @@ class DynamicIndicatorComponent {
             modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // The declared width / height, as on every component; without
-            // them, the style's size. The undeclared `size` is not read: the
-            // normalizer folds it into width / height.
-            if (a.common.width != null || a.common.height != null) {
-                modifier = ModifierBuilder.applySize(modifier, json, data = data)
-            } else {
-                styleSizeDp(style)?.let { modifier = modifier.size(it.dp) }
-            }
+            // them — or where one is wrapContent — the style's size (planSize).
+            // The undeclared `size` is not read: the normalizer folds it into
+            // width / height.
+            val plan = planSize(json, style, a.common.width != null, a.common.height != null)
+            plan.declared?.let { modifier = ModifierBuilder.applySize(modifier, it, data = data) }
+            plan.styleWidthDp?.let { modifier = modifier.width(it.dp) }
+            plan.styleHeightDp?.let { modifier = modifier.height(it.dp) }
+            plan.styleBothDp?.let { modifier = modifier.size(it.dp) }
             // offset sits after size and before alpha, the same slot
             // buildModifier uses — outside background/shadow so the
             // decoration moves with the view, inside margins so siblings

@@ -69,4 +69,60 @@ class IndicatorStyleTest {
         assertFalse(code.contains("\"size\""))
         assertTrue(code.contains("styleOf(a)"))
     }
+
+    // kjui-indicator-style-loses-to-a-declared-wrapcontent: only a length beats
+    // the style's size; a wrapContent axis draws it. matchParent is not ruled
+    // and keeps its old picture.
+    private fun plan(style: String, json: String): DynamicIndicatorComponent.SizePlan {
+        val o = JsonParser.parseString(json).asJsonObject
+        return DynamicIndicatorComponent.planSize(o, style, o.has("width"), o.has("height"))
+    }
+
+    @Test
+    fun wrapContentOnBothAxesDrawsTheStyleSize_theConformanceFixtures() {
+        for ((style, dp) in listOf("small" to 16, "large" to 48)) {
+            val p = plan(style, """{"width":"wrapContent","height":"wrapContent"}""")
+            assertEquals(DynamicIndicatorComponent.SizePlan(declared = null, styleBothDp = dp), p)
+        }
+        assertEquals(48, plan("large", """{"width":"wrap_content","height":"wrap_content"}""").styleBothDp)
+        assertEquals(48, plan("large", """{"width":"wrapContent"}""").styleBothDp)
+    }
+
+    @Test
+    fun mixed_theLengthAxisTakesTheLength_theWrapAxisTheStyleSize() {
+        val p = plan("large", """{"width":30,"height":"wrapContent","minWidth":10}""")
+        assertEquals(null, p.styleBothDp)
+        assertEquals(null, p.styleWidthDp)
+        assertEquals(48, p.styleHeightDp)
+        val declared = p.declared!!
+        assertEquals(30, declared.get("width").asInt)
+        assertFalse(declared.has("height"))
+        assertTrue("other keys stay for the size builder", declared.has("minWidth"))
+
+        val q = plan("small", """{"width":"wrapContent","height":"@{h}"}""")
+        assertEquals(16, q.styleWidthDp)
+        assertEquals(null, q.styleHeightDp)
+        assertFalse(q.declared!!.has("width"))
+    }
+
+    @Test
+    fun aLengthOrMatchParentStillWins() {
+        val both = plan("large", """{"width":40,"height":40}""")
+        assertEquals(DynamicIndicatorComponent.SizePlan(declared = both.declared), both)
+        assertEquals(40, both.declared!!.get("height").asInt)
+        val fill = plan("large", """{"width":"matchParent"}""")
+        assertEquals(DynamicIndicatorComponent.SizePlan(declared = fill.declared), fill)
+        assertEquals("matchParent", fill.declared!!.get("width").asString)
+    }
+
+    @Test
+    fun withoutAStyleSizeWrapContentGoesToTheSizeBuilderAsBefore() {
+        for (style in listOf("medium", "linear")) {
+            val p = plan(style, """{"width":"wrapContent","height":"wrapContent"}""")
+            assertEquals("wrapContent", p.declared!!.get("width").asString)
+            assertEquals(null, p.styleBothDp)
+        }
+        assertEquals(DynamicIndicatorComponent.SizePlan(declared = null), plan("medium", "{}"))
+        assertEquals(DynamicIndicatorComponent.SizePlan(declared = null, styleBothDp = 48), plan("large", "{}"))
+    }
 }
