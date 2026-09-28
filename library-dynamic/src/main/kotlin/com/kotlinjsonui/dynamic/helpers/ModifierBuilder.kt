@@ -1097,23 +1097,21 @@ object ModifierBuilder {
             }
         }
 
-        // Individual padding properties
+        // Individual padding properties. The undeclared `paddingVertical` /
+        // `paddingHorizontal` are not read: no codegen and no other platform
+        // draws them (UnreadAttributes.COMMON names them in a debuggable build).
         val paddingTop = dimen(json.get("paddingTop"), data)
-            ?: dimen(json.get("topPadding"), data)
-            ?: dimen(json.get("paddingVertical"), data) ?: 0f
+            ?: dimen(json.get("topPadding"), data) ?: 0f
         val paddingBottom = dimen(json.get("paddingBottom"), data)
-            ?: dimen(json.get("bottomPadding"), data)
-            ?: dimen(json.get("paddingVertical"), data) ?: 0f
+            ?: dimen(json.get("bottomPadding"), data) ?: 0f
         val paddingStart = dimen(json.get("paddingStart"), data)
             ?: dimen(json.get("startPadding"), data)
             ?: dimen(json.get("paddingLeft"), data)
-            ?: dimen(json.get("leftPadding"), data)
-            ?: dimen(json.get("paddingHorizontal"), data) ?: 0f
+            ?: dimen(json.get("leftPadding"), data) ?: 0f
         val paddingEnd = dimen(json.get("paddingEnd"), data)
             ?: dimen(json.get("endPadding"), data)
             ?: dimen(json.get("paddingRight"), data)
-            ?: dimen(json.get("rightPadding"), data)
-            ?: dimen(json.get("paddingHorizontal"), data) ?: 0f
+            ?: dimen(json.get("rightPadding"), data) ?: 0f
 
         return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
             modifier.padding(

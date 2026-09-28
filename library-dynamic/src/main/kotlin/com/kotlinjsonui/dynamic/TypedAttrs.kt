@@ -207,7 +207,7 @@ object TypedAttrs {
      * or records that it does not), or stop reading it and name it in a
      * debuggable build through [UnreadAttributes] — as Button's
      * `isLoading`, `loadingText`, `async`, `imagePosition`, `iconSize`
-     * and `disabled` were. Keeping the remaining reads on this single
+     * and `disabled` were, and SelectBox's `disabled`. Keeping the remaining reads on this single
      * entry point makes them mechanically greppable.
      */
     fun undeclared(json: JsonObject, key: String): JsonElement? = json.get(key)
@@ -288,8 +288,8 @@ object UnappliedAttributes {
         "offsetX", "offsetY",
         "onAppear", "onClick", "onDisappear", "onLongPress", "onclick",
         "opacity", "padding", "paddingBottom", "paddingEnd",
-        "paddingHorizontal", "paddingLeft", "paddingRight",
-        "paddingStart", "paddingTop", "paddingVertical", "paddings",
+        "paddingLeft", "paddingRight",
+        "paddingStart", "paddingTop", "paddings",
         "rightMargin", "rightPadding", "shadow",
         "startMargin", "startPadding",
         "topMargin", "topPadding",
@@ -304,6 +304,10 @@ object UnappliedAttributes {
         applied: Set<String>,
         context: android.content.Context? = null
     ) {
+        // Every component calls this gate, so the keys no component reads
+        // (UnreadAttributes.COMMON) are named here once for all of them.
+        UnreadAttributes.check(componentType, json, UnreadAttributes.COMMON, context)
+
         val enabled = enabledOverride ?: isAppDebuggable(context)
         if (!enabled) return
 
@@ -435,6 +439,18 @@ object UnreadAttributes {
 
     /** Test hook: forget which pairs were named. */
     fun resetForTest() = warned.clear()
+
+    /**
+     * Keys NO component reads any more, named for every component through
+     * [UnappliedAttributes.check]: `paddingHorizontal` / `paddingVertical`.
+     * The SSoT declares neither, the jsonui-cli normalizer does not fold
+     * them, and neither sjui, rjui nor SwiftJsonUI Dynamic draws them (the
+     * kjui codegen read them on Button alone; it no longer does). The
+     * shared padding pipeline read them for every component, so a layout
+     * that wrote them drew padding on this path only. The declared ways:
+     * `paddings: [vertical, horizontal]`, or the per-edge padding keys.
+     */
+    val COMMON: List<String> = listOf("paddingHorizontal", "paddingVertical")
 
     /** The sentence for [key] on [componentType]. */
     fun message(componentType: String, key: String): String =

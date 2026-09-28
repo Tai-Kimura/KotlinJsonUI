@@ -423,18 +423,14 @@ class DynamicButtonComponent {
                 }
             }
 
-            // Individual padding values ('paddingVertical'/'paddingHorizontal'
-            // are undeclared legacy spellings)
-            val paddingTop = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingTop"), data)
-                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingVertical"), data) ?: 0f
-            val paddingBottom = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingBottom"), data)
-                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingVertical"), data) ?: 0f
+            // Individual padding values. The undeclared 'paddingVertical' /
+            // 'paddingHorizontal' are not read (UnreadAttributes.COMMON).
+            val paddingTop = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingTop"), data) ?: 0f
+            val paddingBottom = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingBottom"), data) ?: 0f
             val paddingStart = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingStart"), data)
-                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingLeft"), data)
-                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingHorizontal"), data) ?: 0f
+                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingLeft"), data) ?: 0f
             val paddingEnd = ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingEnd"), data)
-                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingRight"), data)
-                ?: ModifierBuilder.dimen(TypedAttrs.undeclared(json, "paddingHorizontal"), data) ?: 0f
+                ?: ModifierBuilder.dimen(TypedAttrs.rawKey(json, "paddingRight"), data) ?: 0f
 
             return if (paddingTop > 0 || paddingBottom > 0 || paddingStart > 0 || paddingEnd > 0) {
                 PaddingValues(
