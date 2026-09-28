@@ -38,6 +38,18 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * Note: Always shows indeterminate progress indicator.
  */
 class DynamicIndicatorComponent {
+    /**
+     * Who draws each axis. [declared] is the json the size builder gets
+     * (null: it is not called), [styleWidthDp] / [styleHeightDp] the style's
+     * size on one axis, [styleBothDp] the style's size on both.
+     */
+    internal data class SizePlan(
+        val declared: JsonObject?,
+        val styleWidthDp: Int? = null,
+        val styleHeightDp: Int? = null,
+        val styleBothDp: Int? = null
+    )
+
     companion object {
         /** Indicator-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
@@ -63,18 +75,6 @@ class DynamicIndicatorComponent {
         private fun isWrap(e: JsonElement?): Boolean =
             e != null && e.isJsonPrimitive && e.asJsonPrimitive.isString &&
                 (e.asString == "wrapContent" || e.asString == "wrap_content")
-
-        /**
-         * Who draws each axis. [declared] is the json the size builder gets
-         * (null: it is not called), [styleWidthDp] / [styleHeightDp] the style's
-         * size on one axis, [styleBothDp] the style's size on both.
-         */
-        internal data class SizePlan(
-            val declared: JsonObject?,
-            val styleWidthDp: Int? = null,
-            val styleHeightDp: Int? = null,
-            val styleBothDp: Int? = null
-        )
 
         /**
          * A declared length (a number or a bound number) wins over the style's
