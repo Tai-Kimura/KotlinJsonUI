@@ -128,7 +128,8 @@ class Wave1bAttrsParseTest {
         )
         assertEquals("vertical", TypedAttrs.enumString(lower.gradientDirection) { it.json })
 
-        // "leftToRight" is not a declared enum value; the legacy reader honored it
+        // "leftToRight" is not a declared enum value: the parse passes it through
+        // (and names it); the component no longer draws it (GradientViewUnreadDirectionsTest)
         val unknown = GradientViewAttributes.parse(
             TypedAttrs.toAttrMap(obj("""{"type":"GradientView","gradientDirection":"leftToRight"}"""))
         )

@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.kotlinjsonui.core.DeclaredSpelling
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -29,6 +30,9 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  *
  * Supported JSON attributes:
  * - colors/items: Array of color strings for gradient (supports @{binding})
+ * - gradientDirection: the declared Vertical | Horizontal | Oblique, as
+ *   declared (case and all). The camelCase `leftToRight` / `topToBottom` /
+ *   `rightToLeft` / `bottomToTop` are not read (see NOT_READ_DIRECTIONS)
  * - orientation: "horizontal" | "vertical" | "diagonal" gradient direction
  * - startPoint/endPoint: Alternative to orientation (top/bottom, left/right, etc.)
  * - cornerRadius: Float corner radius (applies clip)
@@ -112,7 +116,8 @@ class DynamicGradientViewComponent {
                 ?.takeIf { it.size == colors.size }
 
             // Determine gradient brush based on gradientDirection/orientation/startPoint.
-            val gradientBrush = resolveGradientBrush(effective, colors, locations)
+            val direction = gradientDirectionOf(a, gradientObject)
+            val gradientBrush = resolveGradientBrush(effective, direction, colors, locations)
 
             // Build modifier: testTag → margins → size → alpha → clickable → padding
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -140,6 +145,38 @@ class DynamicGradientViewComponent {
         )
 
         private val DEFAULT_COLORS = listOf(Color.Black, Color.White)
+
+        /**
+         * `gradientDirection` spellings this component used to read as
+         * undeclared legacy extras. GradientView declares Vertical /
+         * Horizontal / Oblique only, and neither the kjui codegen nor the
+         * other platforms' GradientView draws these, so reading them here
+         * made this path render a layout differently from every other. They
+         * are not read: a value outside the declared spellings draws the
+         * default like any other undeclared value, and a debuggable build
+         * names it ("GradientView.gradientDirection: unknown enum value
+         * 'X'") — the typed parse for the node's own key, DeclaredSpelling
+         * for the one inside the `gradient` object wrapper.
+         */
+        internal val NOT_READ_DIRECTIONS: List<String> =
+            listOf("leftToRight", "topToBottom", "rightToLeft", "bottomToTop")
+
+        /**
+         * The declared `gradientDirection`, lowercased (DeclaredSpelling), or
+         * null when absent or not one of GradientView's declared spellings.
+         * Read from the `gradient` object wrapper when there is one (its
+         * fields win, as for colors / locations), else from the node through
+         * the typed parse.
+         */
+        internal fun gradientDirectionOf(a: GradientViewAttributes, wrapper: JsonObject?): String? {
+            val spellings = GradientViewAttributes.GradientDirection.declaredSpellings
+            if (wrapper == null) {
+                // The generated parse saw this value and named an undeclared one.
+                return DeclaredSpelling.lowered(TypedAttrs.enumString(a.gradientDirection) { it.json }, spellings)
+            }
+            val raw = TypedAttrs.rawKey(wrapper, "gradientDirection")?.takeIf { it.isJsonPrimitive }?.asString
+            return DeclaredSpelling.lowered(raw, spellings, "GradientView.gradientDirection")
+        }
 
         /**
          * Parse color array from JSON, resolving each color string via ColorParser.
@@ -184,6 +221,7 @@ class DynamicGradientViewComponent {
          */
         private fun resolveGradientBrush(
             effective: JsonObject,
+            direction: String?,
             colors: List<Color>,
             locations: List<Float>?
         ): Brush {
@@ -195,25 +233,18 @@ class DynamicGradientViewComponent {
                 return Brush.linearGradient(colorStops = stops, start = start, end = end)
             }
 
-            // Direction-hinted convenience brushes, only when endpoints degenerate
-            // to pure vertical / horizontal.
-            // `gradientDirection` is declared, but the legacy reader matches
-            // spellings ("leftToRight", exact case, ...) wider than the
-            // declared enum and must also serve the nested gradient wrapper
-            // — read raw (see TypedAttrs.rawKey). 'orientation' is an
-            // undeclared legacy runtime extra.
-            // Declared enum is Vertical/Horizontal/Oblique (capitalized) —
-            // match case-insensitively like sjui/rjui; the camelCase
-            // spellings stay as legacy extras.
-            val direction = (TypedAttrs.rawKey(effective, "gradientDirection")?.asString
-                ?: TypedAttrs.undeclared(effective, "orientation")?.asString)
-                ?.replaceFirstChar { it.lowercaseChar() }
-            when (direction) {
+            // Direction-hinted convenience brushes. `direction` is the
+            // declared gradientDirection only (gradientDirectionOf), as the
+            // kjui codegen reads it; with none, the undeclared legacy
+            // 'orientation' decides, as it does in the codegen.
+            val hint = direction
+                ?: TypedAttrs.undeclared(effective, "orientation")
+                    ?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.replaceFirstChar { it.lowercaseChar() }
+            when (hint) {
                 "oblique" -> return Brush.linearGradient(colors)
-                "horizontal", "leftToRight" -> return Brush.horizontalGradient(colors)
-                "vertical", "topToBottom" -> return Brush.verticalGradient(colors)
-                "rightToLeft" -> return Brush.horizontalGradient(colors, startX = Float.POSITIVE_INFINITY, endX = 0f)
-                "bottomToTop" -> return Brush.verticalGradient(colors, startY = Float.POSITIVE_INFINITY, endY = 0f)
+                "horizontal" -> return Brush.horizontalGradient(colors)
+                "vertical" -> return Brush.verticalGradient(colors)
             }
 
             return Brush.linearGradient(colors = colors, start = start, end = end)

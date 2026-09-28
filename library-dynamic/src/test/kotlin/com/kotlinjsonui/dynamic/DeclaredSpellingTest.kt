@@ -230,7 +230,7 @@ class DeclaredSpellingTest {
             c + "DynamicTextFieldComponent.kt" to 8, c + "DynamicTextViewComponent.kt" to 2,
             c + "DynamicButtonComponent.kt" to 1, c + "DynamicCircleImageComponent.kt" to 0,
             c + "DynamicBlurViewComponent.kt" to 0, c + "DynamicToggleComponent.kt" to 0,
-            c + "DynamicSelectBoxComponent.kt" to 0,
+            c + "DynamicSelectBoxComponent.kt" to 0, c + "DynamicGradientViewComponent.kt" to 2,
             h + "ImageContentScale.kt" to 2, h + "EffectStyleTable.kt" to 1, h + "ModifierBuilder.kt" to 1,
             h + "ContentInsetBehavior.kt" to 0, h + "ResourceResolver.kt" to 0, h + "SafeAreaEdges.kt" to 1,
             lib + "components/VisibilityWrapper.kt" to 2, lib + "components/CollectionCellChrome.kt" to 1,
@@ -245,6 +245,7 @@ class DeclaredSpellingTest {
             c + "DynamicScrollViewComponent.kt" to listOf("ScrollViewAttributes.ContentInsetAdjustmentBehavior.declaredSpellings"),
             c + "DynamicBlurViewComponent.kt" to listOf("BlurAttributes.EffectStyle.declaredSpellings"),
             c + "DynamicCollectionComponent.kt" to listOf("CommonAttributes.Gravity.declaredSpellings"),
+            c + "DynamicGradientViewComponent.kt" to listOf("GradientViewAttributes.GradientDirection.declaredSpellings"),
             h + "ModifierBuilder.kt" to listOf("CommonAttributes.EffectStyle.declaredSpellings", "CommonAttributes.Alignment.declaredSpellings"),
         )
         val lowering = Regex("""\.lowercase\(\)|ignoreCase\s*=\s*true""")
