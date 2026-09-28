@@ -15,6 +15,7 @@ import com.kotlinjsonui.components.SelectBoxCaret
 import com.kotlinjsonui.components.DateSelectBox
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.UnreadAttributes
 import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
@@ -39,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
  * - minuteInterval: Integer interval for time picker
  * - minimumDate/maximumDate: Date range constraints
  * - hint/placeholder: Placeholder text
- * - enabled/disabled: Boolean state
+ * - enabled: Boolean state (the undeclared `disabled` is not read — NOT_READ)
  * - background/borderColor/fontColor/hintColor: Colors
  * - cornerRadius: Float corner radius
  * - fontSize: Float font size
@@ -350,6 +351,15 @@ class DynamicSelectBoxComponent {
             )
         }
 
+        /**
+         * Keys SelectBox does not declare that this component used to read
+         * as runtime extras: `disabled`. It is not read; a debuggable build
+         * names it when a layout still writes it (UnreadAttributes), as the
+         * jui validator does ("Unknown attribute"). The declared way is
+         * `enabled: false` (or a bound `enabled`).
+         */
+        internal val NOT_READ: List<String> = listOf("disabled")
+
         private val APPLIED: Set<String> = setOf(
             "selectItemType", "selectedItem", "selectedValue", "selectedIndex",
             "selectedDate",
@@ -369,12 +379,14 @@ class DynamicSelectBoxComponent {
             val a = rememberTypedAttrs(json) { m, canonicalOnly ->
                 SelectBoxAttributes.parse(m, canonicalOnly)
             }
+            val context = LocalContext.current
             UnappliedAttributes.check(
                 "SelectBox", json,
                 declared = SelectBoxAttributes.declaredAttributes,
                 applied = UnappliedAttributes.COMMON_APPLIED + APPLIED,
-                context = LocalContext.current
+                context = context
             )
+            UnreadAttributes.check("SelectBox", json, NOT_READ, context)
 
             val isDatePicker = isDateBox(json)
 
@@ -411,11 +423,9 @@ class DynamicSelectBoxComponent {
                 mutableStateOf(seed)
             }
 
-            // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
-            val isEnabled = when {
-                TypedAttrs.undeclared(json, "disabled")?.asBoolean == true -> false
-                else -> TypedAttrs.boolean(a.common.enabled, data) ?: true
-            }
+            // Enabled state (supports @{binding}). The declared `enabled`
+            // only: the undeclared `disabled` is not read (see NOT_READ).
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Parse placeholder — spec canonical `prompt` (primary) plus the
             // `hint` / `placeholder` aliases. Routed through ResourceResolver
@@ -587,11 +597,9 @@ class DynamicSelectBoxComponent {
             val minimumDate = TypedAttrs.string(a.minimumDate, data)
             val maximumDate = TypedAttrs.string(a.maximumDate, data)
 
-            // Parse enabled state ('disabled' is an undeclared legacy runtime extra)
-            val isEnabled = when {
-                TypedAttrs.undeclared(json, "disabled")?.asBoolean == true -> false
-                else -> TypedAttrs.boolean(a.common.enabled, data) ?: true
-            }
+            // Enabled state (supports @{binding}). The declared `enabled`
+            // only: the undeclared `disabled` is not read (see NOT_READ).
+            val isEnabled = TypedAttrs.boolean(a.common.enabled, data) ?: true
 
             // Parse placeholder — spec canonical `prompt` (primary) plus the
             // `hint` / `placeholder` aliases. Routed through ResourceResolver
