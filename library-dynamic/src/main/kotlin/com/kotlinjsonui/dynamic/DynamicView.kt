@@ -427,6 +427,26 @@ internal fun applyDataSectionDefaults(json: JsonObject, data: Map<String, Any>):
                 // plain Map/List data-map shape so the canonical resolver's
                 // dot-path / bracket-index traversal reaches into them
                 // (e.g. @{profile.name} against a defaulted object).
+                // A list declared CollectionDataSource is a data source, as
+                // the generated Data class has it (one section of the cells,
+                // viewName "" — the layout's sections / cellClasses name the
+                // cell). As a plain List, a Collection with `sections` drew no
+                // row: boundSource takes a list only without them (jsonui-cli
+                // ticket kjui-dynamic-collection-default-list-draws-no-rows-
+                // with-sections; kjui codegen drew the rows).
+                className == "CollectionDataSource" && defaultValue.isJsonArray -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val cells = (convertDefaultElement(defaultValue) as? List<Any?>).orEmpty()
+                        .mapNotNull { (it as? Map<*, *>)?.entries?.filter { e -> e.key is String && e.value != null }
+                            ?.associate { e -> e.key as String to e.value!! } }
+                    defaults[name] = com.kotlinjsonui.data.CollectionDataSource(
+                        sections = listOf(
+                            com.kotlinjsonui.data.CollectionDataSection(
+                                cells = com.kotlinjsonui.data.CollectionDataSection.CellData(viewName = "", data = cells)
+                            )
+                        )
+                    )
+                }
                 defaultValue.isJsonObject || defaultValue.isJsonArray -> {
                     convertDefaultElement(defaultValue)?.let { defaults[name] = it }
                 }
