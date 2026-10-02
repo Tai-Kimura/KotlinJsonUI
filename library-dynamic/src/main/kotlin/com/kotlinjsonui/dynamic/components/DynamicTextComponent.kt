@@ -281,9 +281,16 @@ class DynamicTextComponent {
                 textDecoration = textDecoration,
                 maxLines = maxLines,
                 overflow = overflow,
+                // Shrink only: fontSize is the ceiling, as iOS's
+                // .minimumScaleFactor. With no maxFontSize StepBased took its
+                // default 112.sp and a short text grew to fill the box
+                // (jsonui-cli ticket kjui-minimum-scale-factor-grows-text-
+                // past-its-font-size; measured: a line 264px tall beside 32px
+                // at 12sp).
                 autoSize = if (useAutoSize) TextAutoSize.StepBased(
                     minFontSize = ((fontSize ?: 14f) *
-                        (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp
+                        (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
+                    maxFontSize = (fontSize ?: 14f).sp
                 ) else null,
                 style = style ?: LocalTextStyle.current,
                 modifier = modifier
