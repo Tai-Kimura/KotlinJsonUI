@@ -116,6 +116,8 @@ jobs:
                "shared/core/binding_vectors.json"),
               ("library-dynamic/src/test/resources/include_ids_fixture.json",
                "shared/core/include_ids_fixture.json"),
+              ("library-dynamic/src/test/resources/include_maps_fixture.json",
+               "shared/core/include_maps_fixture.json"),
               ("library-dynamic/src/test/resources/camel_case_vectors.json",
                "shared/core/camel_case_vectors.json"),
               ("library-dynamic/src/test/resources/image_accessibility_vectors.json",

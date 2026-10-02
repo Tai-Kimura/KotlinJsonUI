@@ -24,6 +24,7 @@ import java.util.regex.Pattern
 object IncludeExpander {
     private var context: Context? = null
     private val bindingPattern = Pattern.compile("@\\{([^}]+)\\}")
+    private val wholeBindingPattern = Pattern.compile("\\A@\\{([^}]+)\\}\\z")
 
     /**
      * Test seam: reads an included layout by its name. Production leaves it
@@ -143,8 +144,81 @@ object IncludeExpander {
             styledJson
         }
 
+        // The include node's maps over the including layout's data —
+        // shared_data, then data (jsonui-cli shared/core/include_data_map.rb;
+        // ruling 2026-10-02). Read off the include node as written: its values
+        // are bindings in the including layout's scope, not this include's.
+        // Until 2.43.1 an object map was dropped here.
+        val mappedJson = applyIncludeDataMap(prefixedJson, includeDataMap(includeJson)) { name ->
+            if (newPrefix != null) combineWithPrefix(newPrefix, name) else name
+        } as JsonObject
+
         // Recursively process any nested includes
-        return processIncludes(prefixedJson, newPrefix)
+        return processIncludes(mappedJson, newPrefix)
+    }
+
+    /** The include node's object maps, merged: shared_data first, then data. */
+    internal fun includeDataMap(includeJson: JsonObject): Map<String, JsonElement> {
+        val merged = LinkedHashMap<String, JsonElement>()
+        for (key in listOf("shared_data", "data")) {
+            val map = includeJson.get(key)
+            if (map != null && map.isJsonObject) {
+                map.asJsonObject.entrySet().forEach { (name, value) -> merged[name] = value }
+            }
+        }
+        return merged
+    }
+
+    /**
+     * Every `@{name}` whose name is a map key reads the map's value: a
+     * whole-string binding takes the value as it is (a Bool stays a Bool),
+     * one inside a longer string takes a binding as written and a literal as
+     * its text. `spelled` turns a map key into the name the expanded tree
+     * binds (the include's prefix is already on every binding). Declarations
+     * (an array `data`) are not bindings; dotted names are never a key.
+     */
+    internal fun applyIncludeDataMap(
+        element: JsonElement,
+        map: Map<String, JsonElement>,
+        spelled: (String) -> String
+    ): JsonElement {
+        if (map.isEmpty()) return element
+        val byName = map.entries.associate { (key, value) -> spelled(key) to value }
+        return rewriteMapped(element, byName)
+    }
+
+    private fun rewriteMapped(element: JsonElement, byName: Map<String, JsonElement>): JsonElement = when {
+        element.isJsonObject -> {
+            val result = JsonObject()
+            element.asJsonObject.entrySet().forEach { (key, value) ->
+                result.add(key, if (key == "data" && value.isJsonArray) value else rewriteMapped(value, byName))
+            }
+            result
+        }
+        element.isJsonArray -> JsonArray().also { arr -> element.asJsonArray.forEach { arr.add(rewriteMapped(it, byName)) } }
+        element.isJsonPrimitive && element.asJsonPrimitive.isString -> {
+            val str = element.asString
+            val whole = wholeBindingPattern.matcher(str)
+            if (whole.matches() && byName.containsKey(whole.group(1))) {
+                byName.getValue(whole.group(1)!!).deepCopy()
+            } else {
+                val matcher = bindingPattern.matcher(str)
+                val out = StringBuffer()
+                while (matcher.find()) {
+                    val value = byName[matcher.group(1)]
+                    val replacement = when {
+                        value == null -> matcher.group(0)
+                        value.isJsonNull -> ""
+                        value.isJsonPrimitive -> value.asString
+                        else -> value.toString()
+                    }
+                    matcher.appendReplacement(out, java.util.regex.Matcher.quoteReplacement(replacement))
+                }
+                matcher.appendTail(out)
+                JsonPrimitive(out.toString())
+            }
+        }
+        else -> element
     }
 
     /**
