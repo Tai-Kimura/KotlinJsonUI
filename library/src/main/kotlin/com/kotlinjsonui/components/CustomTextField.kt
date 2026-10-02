@@ -250,12 +250,15 @@ internal fun keyboardActionHandler(
 /**
  * A single-line field with a Done action and no declared returnKeyType gets
  * the Done action key: the field's Enter is then the action (a hardware Enter
- * on an ImeAction.Default field performs none — measured on a device: 0 calls
- * for Enter, 1 with Done), as the return key submits on iOS. Any declared
- * action is kept as written.
+ * on a field whose action is Default or Unspecified performs none — measured
+ * on a device: 0 calls for Enter, 1 with Done), as the return key submits on
+ * iOS. `KeyboardOptions.Default` — what kjui codegen passes — says
+ * Unspecified, Dynamic's options Default. Any declared action is kept.
  */
 internal fun submitOptions(options: KeyboardOptions, actions: KeyboardActions, singleLine: Boolean): KeyboardOptions =
-    if (singleLine && options.imeAction == ImeAction.Default && actions.onDone != null) {
+    if (singleLine && (options.imeAction == ImeAction.Default || options.imeAction == ImeAction.Unspecified) &&
+        actions.onDone != null
+    ) {
         options.copy(imeAction = ImeAction.Done)
     } else {
         options
