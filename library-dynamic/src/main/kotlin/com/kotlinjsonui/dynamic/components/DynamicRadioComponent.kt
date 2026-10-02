@@ -413,8 +413,7 @@ class DynamicRadioComponent {
                 // SwiftJsonUI 7ea1e4a). A group radio wrote the selection and
                 // called only onClick (jsonui-cli ticket
                 // kjui-radio-group-form-never-calls-onvaluechange).
-                val changeHandler = json.get("onValueChange")
-                    ?.takeIf { it.isJsonPrimitive }?.asString
+                val changeHandler = (TypedAttrs.raw(a.onValueChange) as? String)
                     ?.takeIf { ModifierBuilder.isBinding(it) }
                 val onSelect: () -> Unit = {
                     val updates = mutableMapOf<String, Any>(selectedVar to id)
@@ -557,8 +556,7 @@ class DynamicRadioComponent {
             // the iOS faces call it. This path wrote the selection and called
             // only onClick; the handler was read on the options path alone
             // (jsonui-cli ticket kjui-dynamic-radio-items-never-calls-onvaluechange).
-            val changeHandler = json.get("onValueChange")
-                ?.takeIf { it.isJsonPrimitive }?.asString
+            val changeHandler = (TypedAttrs.raw(a.onValueChange) as? String)
                 ?.takeIf { ModifierBuilder.isBinding(it) }
             val itemsViewId = LayoutPath.viewId(json)
 
