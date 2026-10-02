@@ -1188,21 +1188,6 @@ class DynamicCollectionComponent {
                 initialPage = (boundPage ?: 0).coerceIn(0, (pageCount - 1).coerceAtLeast(0))
             ) { pageCount }
 
-            // scrollTo: the page is the cell the value names, counted across
-            // the sections (4f ruling 2026-09-27, round 11) — as kjui's codegen
-            // pager. The pager read no scrollTo until jsonui-cli 1.9.0.
-            @Suppress("UNCHECKED_CAST")
-            val pageCells = pageItems.map { (it.itemData as? Map<String, Any>).orEmpty() }
-            ScrollToEffect(resolveScrollTo(a, data), collectionId, { value, onLegacy ->
-                when (val named = scrollCell(value, pageCells, cellIdProperty)) {
-                    null -> null
-                    is ScrollCell.Legacy -> named.item.also { onLegacy(named.raw, it) }
-                    is ScrollCell.Cell -> named.index
-                }?.takeIf { it in 0 until pageCount }
-            }) { page ->
-                if (a.scrollAnimated != false) pagerState.animateScrollToPage(page) else pagerState.scrollToPage(page)
-            }
-
             // Resolve the page-change callback: canonical 'onValueChange' with
             // the 'onValueChanged' / 'onPageChanged' alias spellings resolved
             // by the generated parse (aliases are skipped for L1-normalized
@@ -1216,31 +1201,69 @@ class DynamicCollectionComponent {
                     // (flat-first, dot paths).
                     DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
                 }
+            // The effects below outlive the composition they start in: they
+            // read the handler and the bound page the data holds NOW. Through
+            // 2.43.0 the collector called the handler the data held when the
+            // pager first composed, so one set later was never called.
+            val currentOnPageChanged by rememberUpdatedState(onPageChanged)
+            val currentBoundPage by rememberUpdatedState(boundPage)
+            val runtimeWriter = LocalDynamicRuntimeWriter.current
 
-            // Sync data binding -> pager. While this programmatic scroll is
-            // in flight the pager -> binding leg stays quiet: writing the
-            // pages it passes through back moves `boundPage`, which restarts
-            // this effect and cancels its own animation short of the target.
-            // The callback is quiet too — a handler that sets the bound page
-            // itself (the usual one) cancelled the scroll the same way: 0 -> 6
-            // of 7 pages stopped on 5, measured on a device with 2.43.0. The
-            // landing is told to the callback once, if the page moved. kjui's
-            // codegen pager keeps the same guard from jsonui-cli 1.9.6; through
-            // 1.9.5 it had none and stopped short the same way (this comment
-            // said it tolerated the echo — measured, it did not).
+            // A programmatic scroll — the bound page changed, or a scrollTo.
+            // While it is in flight the pager -> binding leg below stays quiet:
+            // writing the pages it passes through back moves `boundPage`,
+            // which restarts the effect and cancels its own animation short of
+            // the target. The callback is quiet too — a handler that sets the
+            // bound page itself (the usual one) cancelled the scroll the same
+            // way: 0 -> 6 of 7 pages stopped on 5, measured on a device with
+            // 2.43.0 — and a scrollTo told it the pages it passed ([5, 6] for
+            // 0 -> 6). The landing is told once: written back if the bound
+            // value differs (a page past the last page settles on the last
+            // page; through 2.43.0 the binding kept it — 10 of 5 pages stayed
+            // 10, measured, where kjui codegen wrote 4) and to the callback if
+            // the page moved. kjui's codegen pager does the same from
+            // jsonui-cli 1.9.6; through 1.9.5 it had no guard and stopped short
+            // the same way (this comment said it tolerated the echo — measured,
+            // it did not).
             val programmaticScroll = remember { mutableStateOf(false) }
+            suspend fun scrollProgrammatically(scroll: suspend () -> Unit) {
+                val from = pagerState.currentPage
+                programmaticScroll.value = true
+                try {
+                    scroll()
+                } finally {
+                    programmaticScroll.value = false
+                }
+                val landed = pagerState.currentPage
+                if (currentPageProp != null && currentBoundPage != landed) runtimeWriter?.invoke(currentPageProp, landed)
+                if (landed != from) currentOnPageChanged?.invoke(landed)
+            }
+
+            // scrollTo: the page is the cell the value names, counted across
+            // the sections (4f ruling 2026-09-27, round 11) — as kjui's codegen
+            // pager. The pager read no scrollTo until jsonui-cli 1.9.0.
+            @Suppress("UNCHECKED_CAST")
+            val pageCells = pageItems.map { (it.itemData as? Map<String, Any>).orEmpty() }
+            ScrollToEffect(resolveScrollTo(a, data), collectionId, { value, onLegacy ->
+                when (val named = scrollCell(value, pageCells, cellIdProperty)) {
+                    null -> null
+                    is ScrollCell.Legacy -> named.item.also { onLegacy(named.raw, it) }
+                    is ScrollCell.Cell -> named.index
+                }?.takeIf { it in 0 until pageCount }
+            }) { page ->
+                scrollProgrammatically {
+                    if (a.scrollAnimated != false) pagerState.animateScrollToPage(page) else pagerState.scrollToPage(page)
+                }
+            }
+
+            // Sync data binding -> pager.
             if (boundPage != null) {
                 LaunchedEffect(boundPage) {
                     val target = boundPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
-                    val from = pagerState.currentPage
-                    if (from != target) {
-                        programmaticScroll.value = true
-                        try {
-                            pagerState.animateScrollToPage(target)
-                        } finally {
-                            programmaticScroll.value = false
-                        }
-                        if (pagerState.currentPage != from) onPageChanged?.invoke(pagerState.currentPage)
+                    if (pagerState.currentPage != target) {
+                        scrollProgrammatically { pagerState.animateScrollToPage(target) }
+                    } else if (currentPageProp != null && boundPage != target) {
+                        runtimeWriter?.invoke(currentPageProp, target)
                     }
                 }
             }
@@ -1250,13 +1273,12 @@ class DynamicCollectionComponent {
             // collector's first value told the callback the appearance page,
             // which iOS and web do not; the ruling of 2026-10-02 is "only on a
             // change" (pager-page-change-callback-initial-call-differs-by-platform).
-            val runtimeWriter = LocalDynamicRuntimeWriter.current
             if ((currentPageProp != null && runtimeWriter != null) || onPageChanged != null) {
                 LaunchedEffect(pagerState) {
                     snapshotFlow { pagerState.currentPage }.drop(1).collect { page ->
                         if (!programmaticScroll.value) {
                             if (currentPageProp != null) runtimeWriter?.invoke(currentPageProp, page)
-                            onPageChanged?.invoke(page)
+                            currentOnPageChanged?.invoke(page)
                         }
                     }
                 }
