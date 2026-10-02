@@ -50,6 +50,7 @@ import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.AppComponentStages
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
+import com.kotlinjsonui.dynamic.TypeSynonyms
 
 /**
  * Builds Compose Modifier from JSON attributes.
@@ -985,6 +986,23 @@ object ModifierBuilder {
      * [resolveEventHandler]'s cast ladder; an (Offset)-typed handler
      * receives the payload.
      */
+    /**
+     * The types jsonui-cli's SSoT declares onPan not to reach —
+     * `common.onPan.notApplicableTo` in shared/core/attribute_definitions.json
+     * (ruling 2026-10-03: the component's own drag takes the gesture; the
+     * build warns, in the same words on every face). A TextView's pan was
+     * wired here and called on Android alone (jsonui-cli runtime census: 33–34
+     * calls; 0 on iOS and web); it is not now, so the faces agree. A copy of
+     * the declaration, not read from it: this library ships no copy of the
+     * definitions. A synonym (EditText, Input) resolves through [TypeSynonyms].
+     */
+    internal val PAN_NOT_APPLICABLE: Set<String> = setOf("TextField", "TextView", "Slider")
+
+    internal fun panNotApplicable(json: JsonObject): Boolean {
+        val type = json.get("type")?.takeIf { it.isJsonPrimitive }?.asString ?: return false
+        return TypeSynonyms.drawnType(type) in PAN_NOT_APPLICABLE
+    }
+
     fun applyPannable(
         modifier: Modifier,
         json: JsonObject,
@@ -992,6 +1010,7 @@ object ModifierBuilder {
     ): Modifier {
         val handler = json.get("onPan")?.asString ?: return modifier
         if (gesturesShut(json, data)) return modifier
+        if (panNotApplicable(json)) return modifier
         val viewId = LayoutPath.viewId(json)
         return modifier.pointerInput(handler, data) {
             var total = Offset.Zero

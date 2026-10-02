@@ -174,6 +174,42 @@ jobs:
           print(f"vendored test fixtures match jsonui-cli @ {ref[:12]} ({len(COPIES)} files)")
           EOF
 
+      # A copy that is not a file: ModifierBuilder.PAN_NOT_APPLICABLE is the
+      # SSoT's `common.onPan.notApplicableTo` (the types onPan does not reach,
+      # ruling 2026-10-03), written as a Kotlin set because this library ships
+      # no copy of attribute_definitions.json. Compared by name with the SSoT
+      # at the pinned ref; a pin from before the declaration existed cannot
+      # compare, and says so (exit 2) rather than passing.
+      - name: Dynamic's onPan exclusions match the pinned SSoT declaration
+        if: ${{ !cancelled() }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, re, sys, urllib.request
+
+          ref = os.environ["JSONUI_CLI_MANIFEST_REF"]
+          src = "library-dynamic/src/main/kotlin/com/kotlinjsonui/dynamic/helpers/ModifierBuilder.kt"
+          m = re.search(r"PAN_NOT_APPLICABLE: Set<String> = setOf\(([^)]*)\)", open(src).read())
+          if not m:
+              print(f"cannot compare: PAN_NOT_APPLICABLE not found in {src}")
+              sys.exit(2)
+          mine = set(re.findall(r'"([^"]+)"', m.group(1)))
+          url = f"https://raw.githubusercontent.com/Tai-Kimura/jsonui-cli/{ref}/shared/core/attribute_definitions.json"
+          try:
+              defs = json.loads(urllib.request.urlopen(url).read())
+          except Exception as error:
+              print(f"cannot compare: {url} did not load ({error})")
+              sys.exit(2)
+          table = defs.get("common", {}).get("onPan", {}).get("notApplicableTo")
+          if not isinstance(table, dict):
+              print(f"cannot compare: jsonui-cli @ {ref[:12]} declares no common.onPan.notApplicableTo (move the pin to a release that does)")
+              sys.exit(2)
+          theirs = set(table)
+          if mine != theirs:
+              print(f"PAN_NOT_APPLICABLE {sorted(mine)} is not common.onPan.notApplicableTo {sorted(theirs)} @ {ref[:12]}")
+              sys.exit(1)
+          print(f"PAN_NOT_APPLICABLE == common.onPan.notApplicableTo @ {ref[:12]}: {sorted(mine)}")
+          EOF
+
   build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
