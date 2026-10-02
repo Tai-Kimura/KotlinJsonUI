@@ -61,10 +61,21 @@ PACKAGE = 'com.kotlinjsonui.conformance'
 
 # ---------------------------------------------------------------- selection
 entries = []
+compile_only = []
 skipped = []
 manifest.fetch('fixtures', []).each do |fixture|
   next unless (fixture['platforms'] || []).include?('android')
-  next unless fixture['class'] == 'visual'
+  # Non-visual fixtures (assertable / interactive) are drawn by the dynamic
+  # suite only, and the codegen suite asserts visual ones. They are still
+  # layouts a consumer writes, so they go through `kjui build` and the host's
+  # compile: a fixture whose generated Kotlin does not compile fails this
+  # build. Until 2.43.1 they were not staged at all, and an interactive
+  # fixture's emission that did not compile (an Object path binding, a
+  # handler called with the wrong arguments, focus handlers written with the
+  # binding's braces — jsonui-cli 1.9.6's tickets) reached no compiler.
+  # Compiled, not registered: the runtime registry stays the visual set.
+  compile = %w[assertable interactive].include?(fixture['class'])
+  next unless fixture['class'] == 'visual' || compile
   mode = fixture['mode']
   mode_values =
     case mode
@@ -87,7 +98,7 @@ manifest.fetch('fixtures', []).each do |fixture|
     skipped << { 'id' => fixture['id'], 'reason' => 'embed-companion resolution not hosted in codegen yet' }
     next
   end
-  entries << fixture
+  (compile ? compile_only : entries) << fixture
 end
 
 entries.each_with_index do |fixture, i|
@@ -96,8 +107,14 @@ entries.each_with_index do |fixture, i|
     File.join(layouts_dir, format('fx_%04d.json', i + 1))
   )
 end
+compile_only.each_with_index do |fixture, i|
+  FileUtils.cp(
+    File.join(conformance_dir, fixture['layout']),
+    File.join(layouts_dir, format('cx_%04d.json', i + 1))
+  )
+end
 
-cell_companions = entries
+cell_companions = (entries + compile_only)
   .flat_map { |f| f['companions'] || [] }
   .select { |c| c.include?('__cells/') }
   .uniq
@@ -108,7 +125,7 @@ cell_companions.each do |companion|
   bare = File.basename(companion).sub(/\.layout\.json\z/, '') + '.json'
   FileUtils.cp(src, File.join(layouts_dir, bare))
 end
-puts "[codegen-host] staged #{entries.size} visual fixture layout(s) + #{cell_companions.size} cell companion(s), skipped #{skipped.size}"
+puts "[codegen-host] staged #{entries.size} visual fixture layout(s), #{compile_only.size} compile-only (assertable / interactive) + #{cell_companions.size} cell companion(s), skipped #{skipped.size}"
 
 # Cell wrapper rewrite happens AFTER kjui build (see below): build scaffolds
 # the plain view wrapper, but the collection call sites pass `modifier =`,
@@ -238,9 +255,14 @@ registry_dir = File.join(codegen_src, 'registry', 'com', 'kotlinjsonui', 'confor
 FileUtils.mkdir_p(File.dirname(File.join(codegen_src, 'CodegenFixtureEntries.kt')))
 File.write(File.join(codegen_src, 'CodegenFixtureEntries.kt'), registry)
 
+compiled_only = compile_only.each_with_index.count do |_, i|
+  File.file?(File.join(codegen_src, 'views', format('cx_%04d', i + 1), format('Cx%04dView.kt', i + 1)))
+end
 map = {
   'generated' => generated,
   'staged' => entries.size,
+  'compile_only' => { 'staged' => compile_only.size, 'generated' => compiled_only,
+                      'fixtures' => compile_only.each_with_index.map { |f, i| [f['id'], format('cx_%04d', i + 1)] }.to_h },
   'skipped' => skipped,
   'fixtures' => entries.map { |f| [f['id'], f['_codegen']] }.to_h
 }
