@@ -174,6 +174,23 @@ class DynamicTabViewComponent {
                 )
             }
 
+            // The handler hears the selected tab when its VALUE changes — a tap
+            // on another tab, or the view model writing the bound index — once,
+            // and not the tab it appears on, nor a tap on the tab already
+            // selected (ruling 2026-10-02, "only when the value changes", as
+            // iOS). Through 2.43.0 it was called from the tab's onClick, so a
+            // view model's write was never told (measured: tab 0 -> 1 by the
+            // data, calls unchanged). A tap that the handler answers by writing
+            // the same index back is one change, told once.
+            val currentOnTabChange by rememberUpdatedState(onTabChangeCallback)
+            val toldTab = remember { mutableStateOf(selectedTab) }
+            LaunchedEffect(selectedTab) {
+                if (selectedTab != toldTab.value) {
+                    toldTab.value = selectedTab
+                    currentOnTabChange?.invoke(selectedTab)
+                }
+            }
+
             // Parse colors - handle both static values and bindings
             val tintColor = ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.tintColor), data
@@ -259,7 +276,6 @@ class DynamicTabViewComponent {
                                 onClick = {
                                     if (selectedTab != tabItem.index) {
                                         selectedTab = tabItem.index
-                                        onTabChangeCallback?.invoke(tabItem.index)
 
                                         // Update bound variable
                                         if (bindingVariable != null) {
