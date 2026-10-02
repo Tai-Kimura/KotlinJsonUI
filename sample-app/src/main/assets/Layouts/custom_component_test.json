@@ -97,7 +97,7 @@
                   "child": [
                     {
                       "type": "Label",
-                      "text": "Dynamic count: @{itemCount}",
+                      "text": "@{itemCountText}",
                       "fontSize": 16,
                       "fontWeight": "medium",
                       "fontColor": "medium_blue_3"
@@ -262,7 +262,7 @@
             },
             {
               "type": "Label",
-              "text": "Dynamic Mode: @{dynamicModeStatus}",
+              "text": "@{dynamicModeText}",
               "fontSize": 14,
               "fontColor": "medium_gray_4",
               "textAlign": "center",
@@ -305,11 +305,6 @@
       "defaultValue": "3"
     },
     {
-      "name": "dynamicModeStatus",
-      "class": "String",
-      "defaultValue": "'OFF'"
-    },
-    {
       "name": "toggleDynamicMode",
       "class": "(() -> Void)?"
     },
@@ -320,6 +315,16 @@
     {
       "name": "decrementCount",
       "class": "(() -> Void)?"
+    },
+    {
+      "name": "itemCountText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "dynamicModeText",
+      "class": "String",
+      "defaultValue": "Dynamic Mode: OFF"
     }
   ]
 }

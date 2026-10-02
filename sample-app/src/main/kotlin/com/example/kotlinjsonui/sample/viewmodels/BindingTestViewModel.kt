@@ -2,6 +2,9 @@ package com.example.kotlinjsonui.sample.viewmodels
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.BindingTestData
 import com.kotlinjsonui.core.DynamicModeManager
@@ -16,7 +19,18 @@ class BindingTestViewModel(application: Application) : AndroidViewModel(applicat
     
     // Data model
     private val _data = MutableStateFlow(BindingTestData())
-    val data: StateFlow<BindingTestData> = _data.asStateFlow()
+    // The layout binds each display line as one value (binding-mixed-text,
+    // jsonui-cli 1.9.6: a layout holds no logic); the line is composed here,
+    // from the state, every time it changes.
+    val data: StateFlow<BindingTestData> = _data.map(::withDisplayTexts)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, withDisplayTexts(_data.value))
+
+    private fun withDisplayTexts(d: BindingTestData): BindingTestData = d.copy(
+        typedText = "You typed: ${d.textValue}",
+        toggleText = "Toggle is: ${d.toggleValue}",
+        sliderText = "Slider value: ${d.sliderValue}",
+        selectedOptionText = "Selected: ${d.selectedOption}"
+    )
     // Dynamic mode toggle
     fun toggleDynamicMode() {
         // Toggle the actual DynamicModeManager
@@ -36,8 +50,11 @@ class BindingTestViewModel(application: Application) : AndroidViewModel(applicat
         _data.value = _data.value.copy(counter = _data.value.counter + 1)
     }
     
+    // The Switch writes toggleValue through its two-way binding before it
+    // calls this (`"onclick": "toggleChanged"`), so this only reacts: flipping
+    // the value again here would undo the user's tap.
     fun toggleChanged() {
-        _data.value = _data.value.copy(toggleValue = !_data.value.toggleValue)
+        println("Toggle is now ${_data.value.toggleValue}")
     }
     
     fun sliderChanged(value: Float) {
@@ -58,7 +75,8 @@ class BindingTestViewModel(application: Application) : AndroidViewModel(applicat
             toggleDynamicMode = { toggleDynamicMode() },
             decreaseCounter = { decreaseCounter() },
             increaseCounter = { increaseCounter() },
-            sliderChanged = { _, value -> sliderChanged(value) }
+            sliderChanged = { _, value -> sliderChanged(value) },
+            toggleChanged = { toggleChanged() }
         )
     }
 }

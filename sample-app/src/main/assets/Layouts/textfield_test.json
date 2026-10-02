@@ -90,21 +90,21 @@
     },
     {
       "type": "Label",
-      "text": "Email: @{email}",
+      "text": "@{emailText}",
       "fontSize": 14,
       "fontColor": "medium_gray_4",
       "marginBottom": 5
     },
     {
       "type": "Label",
-      "text": "Password: @{password}",
+      "text": "@{passwordText}",
       "fontSize": 14,
       "fontColor": "medium_gray_4",
       "marginBottom": 5
     },
     {
       "type": "Label",
-      "text": "Phone: @{phone}",
+      "text": "@{phoneText}",
       "fontSize": 14,
       "fontColor": "medium_gray_4",
       "marginBottom": 5
@@ -138,6 +138,21 @@
     },
     {
       "name": "url",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "emailText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "passwordText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "phoneText",
       "class": "String",
       "defaultValue": ""
     }

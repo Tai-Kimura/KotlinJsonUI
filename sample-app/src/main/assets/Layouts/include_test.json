@@ -123,19 +123,19 @@
                     },
                     {
                       "type": "Label",
-                      "text": "Count=@{mainCount}, ",
+                      "text": "@{mainCountLabel}",
                       "fontSize": 14,
                       "fontColor": "medium_gray_4"
                     },
                     {
                       "type": "Label",
-                      "text": "User=@{userName}, ",
+                      "text": "@{userNameLabel}",
                       "fontSize": 14,
                       "fontColor": "medium_gray_4"
                     },
                     {
                       "type": "Label",
-                      "text": "Status=@{mainStatus}",
+                      "text": "@{mainStatusLabel}",
                       "fontSize": 14,
                       "fontColor": "medium_gray_4"
                     }
@@ -180,9 +180,9 @@
                 {
                   "include": "included2",
                   "data": {
-                    "viewTitle": "Static Title",
-                    "viewStatus": "Static Status",
-                    "viewCount": 42
+                    "titleLine": "Title: Static Title",
+                    "statusLine": "Status: Static Status",
+                    "countLine": "Count: 42"
                   }
                 }
               ]
@@ -194,7 +194,7 @@
               "child": [
                 {
                   "type": "Label",
-                  "text": "3. Include with data (using @{} references):",
+                  "text": "3. Include with data (bound to this screen's data):",
                   "fontSize": 16,
                   "fontColor": "medium_gray_4",
                   "marginBottom": 10
@@ -202,9 +202,9 @@
                 {
                   "include": "included2",
                   "data": {
-                    "viewTitle": "@{userName}",
-                    "viewStatus": "@{mainStatus}",
-                    "viewCount": "@{mainCount}"
+                    "titleLine": "@{userTitleLine}",
+                    "statusLine": "@{mainStatusLine}",
+                    "countLine": "@{mainCountLine}"
                   }
                 }
               ]
@@ -224,12 +224,12 @@
                 {
                   "include": "included2",
                   "shared_data": {
-                    "viewTitle": "@{userName}",
-                    "viewStatus": "@{mainStatus}",
-                    "viewCount": "@{mainCount}"
+                    "titleLine": "@{userTitleLine}",
+                    "statusLine": "@{mainStatusLine}",
+                    "countLine": "@{mainCountLine}"
                   },
                   "data": {
-                    "viewStatus": "Overridden Status"
+                    "statusLine": "Status: Overridden Status"
                   }
                 }
               ]
@@ -241,7 +241,7 @@
               "child": [
                 {
                   "type": "Label",
-                  "text": "5. Another included_1 with @{} references:",
+                  "text": "5. Another included_1 bound to this screen's data:",
                   "fontSize": 16,
                   "fontColor": "medium_gray_4",
                   "marginBottom": 10
@@ -310,6 +310,36 @@
     {
       "name": "toggleStatus",
       "class": "(() -> Void)?"
+    },
+    {
+      "name": "mainCountLabel",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "userNameLabel",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "mainStatusLabel",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "userTitleLine",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "mainStatusLine",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "mainCountLine",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

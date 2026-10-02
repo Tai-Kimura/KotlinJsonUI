@@ -117,7 +117,7 @@
         },
         {
           "type": "Label",
-          "text": "Regular: @{regularText}",
+          "text": "@{regularDisplayText}",
           "fontSize": 12,
           "fontColor": "medium_gray_4",
           "topMargin": 5
@@ -168,6 +168,11 @@
     {
       "name": "toggleDynamicMode",
       "class": "(() -> Void)?"
+    },
+    {
+      "name": "regularDisplayText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

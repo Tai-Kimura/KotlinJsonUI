@@ -204,14 +204,14 @@
             },
             {
               "type": "Label",
-              "text": "Date: @{selectedDate}",
+              "text": "@{selectedDateText}",
               "fontSize": 12,
               "fontColor": "medium_gray_4",
               "topMargin": 5
             },
             {
               "type": "Label",
-              "text": "Range: @{startDate} to @{endDate}",
+              "text": "@{dateRangeText}",
               "fontSize": 12,
               "fontColor": "medium_gray_4",
               "topMargin": 5
@@ -275,6 +275,16 @@
     {
       "name": "toggleDynamicMode",
       "class": "(() -> Void)?"
+    },
+    {
+      "name": "selectedDateText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "dateRangeText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

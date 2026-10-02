@@ -113,7 +113,7 @@
         },
         {
           "type": "Label",
-          "text": "Selected: @{selectedColor}",
+          "text": "@{selectedColorText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "leftMargin": 20,
@@ -137,6 +137,11 @@
       "name": "selectedColor",
       "class": "String",
       "defaultValue": "Red"
+    },
+    {
+      "name": "selectedColorText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

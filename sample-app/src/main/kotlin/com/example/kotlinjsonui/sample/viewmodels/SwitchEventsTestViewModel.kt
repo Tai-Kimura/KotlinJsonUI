@@ -4,6 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.SwitchEventsTestData
 
@@ -13,7 +17,15 @@ class SwitchEventsTestViewModel(application: Application) : AndroidViewModel(app
 
     // Data model
     private val _data = MutableStateFlow(SwitchEventsTestData())
-    val data: StateFlow<SwitchEventsTestData> = _data.asStateFlow()
+    // The layout binds each display line as one value (binding-mixed-text,
+    // jsonui-cli 1.9.6: a layout holds no logic); the line is composed here,
+    // from the state, every time it changes.
+    val data: StateFlow<SwitchEventsTestData> = _data.map(::withDisplayTexts)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, withDisplayTexts(_data.value))
+
+    private fun withDisplayTexts(d: SwitchEventsTestData): SwitchEventsTestData = d.copy(
+        connectionStatusText = "Status: ${connectionStatus(d)}"
+    )
 
     // Action handlers
     fun onGetStarted() {
@@ -45,7 +57,6 @@ class SwitchEventsTestViewModel(application: Application) : AndroidViewModel(app
         _data.value = currentData.copy(
             wifiEnabled = enabled
         )
-        updateConnectionStatus()
     }
 
     fun handleBluetoothChange(enabled: Boolean) {
@@ -64,20 +75,13 @@ class SwitchEventsTestViewModel(application: Application) : AndroidViewModel(app
         )
     }
 
-    private fun updateConnectionStatus() {
-        val activeConnections = mutableListOf<String>()
-        val currentData = _data.value
-        if (currentData.wifiEnabled) activeConnections.add("Wi-Fi")
-        if (currentData.bluetoothEnabled) activeConnections.add("Bluetooth")
-        if (currentData.locationEnabled) activeConnections.add("Location")
-        val status = if (activeConnections.isNotEmpty()) {
-            "Active: ${activeConnections.joinToString(", ")}"
-        } else {
-            "No active connections"
-        }
-        _data.value = currentData.copy(
-            connectionStatus = status
+    private fun connectionStatus(d: SwitchEventsTestData): String {
+        val active = listOfNotNull(
+            "Wi-Fi".takeIf { d.wifiEnabled },
+            "Bluetooth".takeIf { d.bluetoothEnabled },
+            "Location".takeIf { d.locationEnabled }
         )
+        return if (active.isNotEmpty()) "Active: ${active.joinToString(", ")}" else "No active connections"
     }
 
     // Add more action handlers as needed
@@ -96,9 +100,7 @@ class SwitchEventsTestViewModel(application: Application) : AndroidViewModel(app
             notificationStatus = updates["notificationStatus"] as? String
                 ?: currentData.notificationStatus,
             darkModeStatus = updates["darkModeStatus"] as? String
-                ?: currentData.darkModeStatus,
-            connectionStatus = updates["connectionStatus"] as? String
-                ?: currentData.connectionStatus
+                ?: currentData.darkModeStatus
         )
         _data.value = newData
     }

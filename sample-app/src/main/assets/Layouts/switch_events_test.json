@@ -114,7 +114,7 @@
         },
         {
           "type": "Label",
-          "text": "Status: @{connectionStatus}",
+          "text": "@{connectionStatusText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "fontWeight": "semibold",
@@ -161,11 +161,6 @@
       "defaultValue": "Dark mode is off"
     },
     {
-      "name": "connectionStatus",
-      "class": "String",
-      "defaultValue": "Active: Wi-Fi, Location"
-    },
-    {
       "name": "handleNotificationChange",
       "class": "((Event) -> Void)?"
     },
@@ -184,6 +179,11 @@
     {
       "name": "handleLocationChange",
       "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "connectionStatusText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

@@ -21,7 +21,7 @@
     },
     {
       "type": "Label",
-      "text": "Button enabled state: @{isButtonEnabled}",
+      "text": "@{buttonEnabledText}",
       "fontSize": 16,
       "fontColor": "medium_gray_4",
       "marginBottom": 10
@@ -104,6 +104,11 @@
     {
       "name": "alwaysCalled",
       "class": "(() -> Void)?"
+    },
+    {
+      "name": "buttonEnabledText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

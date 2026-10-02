@@ -181,7 +181,7 @@
         },
         {
           "type": "Label",
-          "text": "Current state: @{isEnabled}",
+          "text": "@{enabledStateText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "topMargin": 10,
@@ -234,6 +234,11 @@
     {
       "name": "onDynamicButtonTap",
       "class": "(() -> Void)?"
+    },
+    {
+      "name": "enabledStateText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

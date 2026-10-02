@@ -87,7 +87,7 @@
         {
           "type": "Label",
           "id": "segmentStatus",
-          "text": "Selected: @{selectedSize}",
+          "text": "@{selectedSizeText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "leftMargin": 20,
@@ -140,13 +140,13 @@
       "defaultValue": 2
     },
     {
-      "name": "selectedSize",
-      "class": "String",
-      "defaultValue": "Medium"
-    },
-    {
       "name": "handleSegmentChange",
       "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "selectedSizeText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

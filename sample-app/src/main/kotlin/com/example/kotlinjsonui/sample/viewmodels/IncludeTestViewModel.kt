@@ -3,6 +3,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.IncludeTestData
 import com.kotlinjsonui.core.DynamicModeManager
@@ -12,7 +16,21 @@ class IncludeTestViewModel(application: Application) : AndroidViewModel(applicat
     
     // Data model
     private val _data = MutableStateFlow(IncludeTestData())
-    val data: StateFlow<IncludeTestData> = _data.asStateFlow()
+    // The layout binds each display line as one value (binding-mixed-text,
+    // jsonui-cli 1.9.6: a layout holds no logic); the lines are composed here,
+    // from the state, every time it changes — this screen's own row and the
+    // lines it hands included2 through the include maps.
+    val data: StateFlow<IncludeTestData> = _data.map(::withDisplayTexts)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, withDisplayTexts(_data.value))
+
+    private fun withDisplayTexts(d: IncludeTestData): IncludeTestData = d.copy(
+        mainCountLabel = "Count=${d.mainCount}, ",
+        userNameLabel = "User=${d.userName}, ",
+        mainStatusLabel = "Status=${d.mainStatus}",
+        userTitleLine = "Title: ${d.userName}",
+        mainStatusLine = "Status: ${d.mainStatus}",
+        mainCountLine = "Count: ${d.mainCount}"
+    )
 
     // Dynamic mode toggle
     fun toggleDynamicMode() {

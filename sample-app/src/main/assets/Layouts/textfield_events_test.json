@@ -41,7 +41,7 @@
         {
           "type": "Label",
           "id": "emailStatus",
-          "text": "Email: @{emailDisplay}",
+          "text": "@{emailDisplayText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "leftMargin": 20,
@@ -70,7 +70,7 @@
         },
         {
           "type": "Label",
-          "text": "Password length: @{passwordLength}",
+          "text": "@{passwordLengthText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "leftMargin": 20,
@@ -106,19 +106,9 @@
       "defaultValue": ""
     },
     {
-      "name": "emailDisplay",
-      "class": "String",
-      "defaultValue": "(not entered)"
-    },
-    {
       "name": "password",
       "class": "String",
       "defaultValue": ""
-    },
-    {
-      "name": "passwordLength",
-      "class": "String",
-      "defaultValue": "0"
     },
     {
       "name": "notes",
@@ -132,6 +122,16 @@
     {
       "name": "handlePasswordChange",
       "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "emailDisplayText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "passwordLengthText",
+      "class": "String",
+      "defaultValue": ""
     }
   ]
 }

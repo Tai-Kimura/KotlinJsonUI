@@ -51,7 +51,7 @@
         },
         {
           "type": "Label",
-          "text": "You typed: @{textValue}",
+          "text": "@{typedText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "topMargin": 10,
@@ -133,7 +133,7 @@
         },
         {
           "type": "Label",
-          "text": "Toggle is: @{toggleValue}",
+          "text": "@{toggleText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "topMargin": 10,
@@ -181,7 +181,7 @@
         },
         {
           "type": "Label",
-          "text": "Slider value: @{sliderValue}",
+          "text": "@{sliderText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "topMargin": 10,
@@ -265,7 +265,7 @@
         },
         {
           "type": "Label",
-          "text": "Selected: @{selectedOption}",
+          "text": "@{selectedOptionText}",
           "fontSize": 14,
           "fontColor": "medium_gray_4",
           "topMargin": 10,
@@ -398,6 +398,30 @@
     {
       "name": "sliderChanged",
       "class": "((Event) -> Void)?"
+    },
+    {
+      "name": "typedText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "toggleText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "sliderText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "selectedOptionText",
+      "class": "String",
+      "defaultValue": ""
+    },
+    {
+      "name": "toggleChanged",
+      "class": "(() -> Void)?"
     }
   ]
 }

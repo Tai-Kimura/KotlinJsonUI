@@ -21,21 +21,21 @@
       "child": [
         {
           "type": "Label",
-          "text": "Title: @{viewTitle}",
+          "text": "@{titleLine}",
           "fontSize": 14,
           "fontColor": "dark_gray",
           "marginBottom": 5
         },
         {
           "type": "Label",
-          "text": "Status: @{viewStatus}",
+          "text": "@{statusLine}",
           "fontSize": 14,
           "fontColor": "dark_gray",
           "marginBottom": 5
         },
         {
           "type": "Label",
-          "text": "Count: @{viewCount}",
+          "text": "@{countLine}",
           "fontSize": 14,
           "fontColor": "dark_gray"
         }
@@ -44,19 +44,19 @@
   ],
   "data": [
     {
-      "name": "viewCount",
-      "class": "Int",
-      "defaultValue": "0"
+      "name": "countLine",
+      "class": "String",
+      "defaultValue": "Count: 0"
     },
     {
-      "name": "viewStatus",
+      "name": "statusLine",
       "class": "String",
-      "defaultValue": "Default Status"
+      "defaultValue": "Status: Default Status"
     },
     {
-      "name": "viewTitle",
+      "name": "titleLine",
       "class": "String",
-      "defaultValue": "Default Title"
+      "defaultValue": "Title: Default Title"
     }
   ]
 }

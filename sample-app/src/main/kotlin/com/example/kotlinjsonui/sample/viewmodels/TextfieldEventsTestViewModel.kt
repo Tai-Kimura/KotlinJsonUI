@@ -4,6 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.kotlinjsonui.sample.data.TextfieldEventsTestData
 
@@ -13,15 +17,23 @@ class TextfieldEventsTestViewModel(application: Application) : AndroidViewModel(
 
     // Data model
     private val _data = MutableStateFlow(TextfieldEventsTestData())
-    val data: StateFlow<TextfieldEventsTestData> = _data.asStateFlow()
+    // The layout binds each display line as one value (binding-mixed-text,
+    // jsonui-cli 1.9.6: a layout holds no logic); the line is composed here,
+    // from the state, every time it changes.
+    val data: StateFlow<TextfieldEventsTestData> = _data.map(::withDisplayTexts)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, withDisplayTexts(_data.value))
+
+    private fun withDisplayTexts(d: TextfieldEventsTestData): TextfieldEventsTestData = d.copy(
+        emailDisplayText = "Email: ${d.email.ifEmpty { "(not entered)" }}",
+        passwordLengthText = "Password length: ${d.password.length}"
+    )
 
     // TextField event handlers
     fun handleEmailChange(value: String) {
         println("Email changed: $value")
         val currentData = _data.value
         _data.value = currentData.copy(
-            email = value,
-            emailDisplay = if (value.isEmpty()) "(not entered)" else value
+            email = value
         )
     }
 
@@ -29,8 +41,7 @@ class TextfieldEventsTestViewModel(application: Application) : AndroidViewModel(
         println("Password changed: $value")
         val currentData = _data.value
         _data.value = currentData.copy(
-            password = value,
-            passwordLength = value.length.toString()
+            password = value
         )
     }
 
@@ -49,9 +60,7 @@ class TextfieldEventsTestViewModel(application: Application) : AndroidViewModel(
         val currentData = _data.value
         val newData = currentData.copy(
             email = updates["email"] as? String ?: currentData.email,
-            emailDisplay = updates["emailDisplay"] as? String ?: currentData.emailDisplay,
             password = updates["password"] as? String ?: currentData.password,
-            passwordLength = updates["passwordLength"] as? String ?: currentData.passwordLength,
             notes = updates["notes"] as? String ?: currentData.notes
         )
         _data.value = newData
