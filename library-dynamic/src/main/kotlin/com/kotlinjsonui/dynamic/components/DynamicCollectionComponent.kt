@@ -62,6 +62,7 @@ import com.kotlinjsonui.data.CollectionDataSource
 import com.kotlinjsonui.data.CollectionDataSection
 import com.kotlinjsonui.data.IdentifiedCellItem
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.drop
 import androidx.compose.runtime.snapshotFlow
 
 /**
@@ -130,9 +131,9 @@ class DynamicCollectionComponent {
             // handler itself comes from the data map, as it does here.
             @Suppress("UNCHECKED_CAST")
             val onItemAppear: ((Int) -> Unit)? = run {
-                val raw = TypedAttrs.rawString(a.onItemAppear) ?: return@run null
-                val propName = ModifierBuilder.extractBindingProperty(raw) ?: return@run null
-                data[propName] as? Function1<Int, Unit>
+                // The binding or the bare name, both declared (type string | binding).
+                val expr = ModifierBuilder.handlerExpression(TypedAttrs.rawString(a.onItemAppear)) ?: return@run null
+                DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
             }
 
             // Check if sections are defined
@@ -1202,51 +1203,61 @@ class DynamicCollectionComponent {
                 if (a.scrollAnimated != false) pagerState.animateScrollToPage(page) else pagerState.scrollToPage(page)
             }
 
-            // Sync data binding -> pager. While this programmatic scroll is
-            // in flight the write-back leg stays quiet: writing intermediate
-            // pages back would move `boundPage`, which restarts this effect
-            // and cancels its own animation short of the target. (The codegen
-            // face's view-state store tolerates the echo; an override scope
-            // must not feed it back.)
-            val programmaticScroll = remember { mutableStateOf(false) }
-            if (boundPage != null) {
-                LaunchedEffect(boundPage) {
-                    val target = boundPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
-                    if (pagerState.currentPage != target) {
-                        programmaticScroll.value = true
-                        try {
-                            pagerState.animateScrollToPage(target)
-                        } finally {
-                            programmaticScroll.value = false
-                        }
-                    }
-                }
-            }
-
-            // Resolve the page-change callback from binding: canonical
-            // 'onValueChange' with the 'onValueChanged' / 'onPageChanged'
-            // alias spellings resolved by the generated parse (aliases are
-            // skipped for L1-normalized layouts via canonicalOnly).
-            val onPageChangedBinding = TypedAttrs.raw(a.onValueChange) as? String
-            val onPageChanged: ((Int) -> Unit)? = onPageChangedBinding
-                ?.takeIf { it.startsWith("@{") && it.endsWith("}") }
+            // Resolve the page-change callback: canonical 'onValueChange' with
+            // the 'onValueChanged' / 'onPageChanged' alias spellings resolved
+            // by the generated parse (aliases are skipped for L1-normalized
+            // layouts via canonicalOnly). The binding `@{onPage}` or the bare
+            // name `onPage` — the SSoT declares both (type string | binding);
+            // through 2.43.0 a bare name was dropped
+            // (bare-event-handler-is-dropped-without-a-warning).
+            val onPageChanged: ((Int) -> Unit)? = ModifierBuilder.handlerExpression(TypedAttrs.raw(a.onValueChange) as? String)
                 ?.let { expr ->
                     // Canonical value resolution of the handler reference
                     // (flat-first, dot paths).
                     DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
                 }
 
-            // Sync pager -> binding + callback
+            // Sync data binding -> pager. While this programmatic scroll is
+            // in flight the pager -> binding leg stays quiet: writing the
+            // pages it passes through back moves `boundPage`, which restarts
+            // this effect and cancels its own animation short of the target.
+            // The callback is quiet too — a handler that sets the bound page
+            // itself (the usual one) cancelled the scroll the same way: 0 -> 6
+            // of 7 pages stopped on 5, measured on a device with 2.43.0. The
+            // landing is told to the callback once, if the page moved. kjui's
+            // codegen pager keeps the same guard from jsonui-cli 1.9.6; through
+            // 1.9.5 it had none and stopped short the same way (this comment
+            // said it tolerated the echo — measured, it did not).
+            val programmaticScroll = remember { mutableStateOf(false) }
+            if (boundPage != null) {
+                LaunchedEffect(boundPage) {
+                    val target = boundPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
+                    val from = pagerState.currentPage
+                    if (from != target) {
+                        programmaticScroll.value = true
+                        try {
+                            pagerState.animateScrollToPage(target)
+                        } finally {
+                            programmaticScroll.value = false
+                        }
+                        if (pagerState.currentPage != from) onPageChanged?.invoke(pagerState.currentPage)
+                    }
+                }
+            }
+
+            // Sync pager -> binding + callback: a page the pager moved to, not
+            // the page it appeared on (`drop(1)`). Through 2.43.0 the
+            // collector's first value told the callback the appearance page,
+            // which iOS and web do not; the ruling of 2026-10-02 is "only on a
+            // change" (pager-page-change-callback-initial-call-differs-by-platform).
             val runtimeWriter = LocalDynamicRuntimeWriter.current
             if ((currentPageProp != null && runtimeWriter != null) || onPageChanged != null) {
                 LaunchedEffect(pagerState) {
-                    snapshotFlow { pagerState.currentPage }.collect { page ->
-                        if (currentPageProp != null && !programmaticScroll.value) {
-                            runtimeWriter?.invoke(currentPageProp, page)
+                    snapshotFlow { pagerState.currentPage }.drop(1).collect { page ->
+                        if (!programmaticScroll.value) {
+                            if (currentPageProp != null) runtimeWriter?.invoke(currentPageProp, page)
+                            onPageChanged?.invoke(page)
                         }
-                        // Callback parity with codegen: it fires for
-                        // programmatic changes too.
-                        onPageChanged?.invoke(page)
                     }
                 }
             }

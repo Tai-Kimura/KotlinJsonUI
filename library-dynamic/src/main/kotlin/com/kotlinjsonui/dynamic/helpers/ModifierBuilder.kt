@@ -74,6 +74,21 @@ object ModifierBuilder {
     }
 
     /**
+     * The handler an event attribute names, as a binding expression: `@{onPage}`
+     * as written, a bare name `onPage` as `@{onPage}`. For the event attributes
+     * the SSoT types `string | binding` (Collection onValueChange / onItemAppear,
+     * TabView onValueChange), where a bare name is a declared form. Anything
+     * else — empty, or text that is no name — is no handler.
+     */
+    fun handlerExpression(raw: String?): String? {
+        val value = raw?.trim() ?: return null
+        if (isBinding(value)) return value
+        return if (BARE_HANDLER_NAME.matches(value)) "@{$value}" else null
+    }
+
+    private val BARE_HANDLER_NAME = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")
+
+    /**
      * Resolve event handler from data map and invoke it.
      * Supports () -> Unit, (String) -> Unit, (String, T) -> Unit signatures.
      */

@@ -66,7 +66,9 @@ class DynamicTabViewComponent {
          * are erased); a handler of another shape is skipped. null for none.
          */
         fun tabChangeCallback(raw: String?, data: Map<String, Any>, viewId: String): ((Int) -> Unit)? {
-            val expr = raw?.takeIf { it.startsWith("@{") && it.endsWith("}") } ?: return null
+            // The binding or the bare name, both declared (type string | binding);
+            // through 2.43.0 a bare name was dropped.
+            val expr = ModifierBuilder.handlerExpression(raw) ?: return null
             val fn = DataBindingContext.evaluateExpression(expr, data) ?: return null
             if (fn !is Function<*>) return null
             return { index ->
