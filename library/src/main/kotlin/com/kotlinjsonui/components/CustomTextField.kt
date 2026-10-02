@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActionScope
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.core.Configuration
@@ -182,7 +185,8 @@ fun CustomTextField(
             modifier = focusModifier,
             enabled = enabled,
             textStyle = effectiveTextStyle,
-            keyboardOptions = keyboardOptions,
+            keyboardOptions = submitOptions(keyboardOptions, keyboardActions, singleLine = true),
+            onKeyboardAction = keyboardActionHandler(keyboardActions, keyboardOptions.imeAction, singleLine = true),
             cursorBrush = SolidColor(caretColor),
             interactionSource = interactionSource,
             decorator = { innerTextField -> DecorationContent(innerTextField) }
@@ -193,7 +197,8 @@ fun CustomTextField(
             modifier = focusModifier,
             enabled = enabled,
             textStyle = effectiveTextStyle,
-            keyboardOptions = keyboardOptions,
+            keyboardOptions = submitOptions(keyboardOptions, keyboardActions, singleLine),
+            onKeyboardAction = keyboardActionHandler(keyboardActions, keyboardOptions.imeAction, singleLine),
             lineLimits = if (singleLine) {
                 androidx.compose.foundation.text.input.TextFieldLineLimits.SingleLine
             } else {
@@ -205,6 +210,56 @@ fun CustomTextField(
         )
     }
 }
+
+/**
+ * The keyboard action the field's IME (or a hardware Enter on a single-line
+ * field) performs, as the state-based fields take it: `onKeyboardAction`. The
+ * fields took `keyboardActions` and passed it on to nothing — kjui codegen's
+ * onSubmit (KeyboardActions onDone / onGo / onSearch / onSend) and Dynamic's
+ * (onSubmit, and the move to the next field) were never called (jsonui-cli
+ * ticket kjui-textfield-keyboard-actions-never-reach-the-field; measured on a
+ * device: 0 calls in every form, `returnKeyType: Done` included).
+ *
+ * The action is the one [imeAction] names; `Default` (no returnKeyType) on a
+ * single-line field is Done, as the platform shows it. Null when the
+ * declared actions have nothing for it, so the field keeps its default.
+ */
+internal fun keyboardActionHandler(
+    actions: KeyboardActions,
+    imeAction: ImeAction,
+    singleLine: Boolean
+): KeyboardActionHandler? {
+    val run: (KeyboardActionScope.() -> Unit)? = when (imeAction) {
+        ImeAction.Done -> actions.onDone
+        ImeAction.Go -> actions.onGo
+        ImeAction.Next -> actions.onNext
+        ImeAction.Previous -> actions.onPrevious
+        ImeAction.Search -> actions.onSearch
+        ImeAction.Send -> actions.onSend
+        else -> if (singleLine) actions.onDone else null
+    }
+    if (run == null) return null
+    return KeyboardActionHandler { performDefaultAction ->
+        val scope = object : KeyboardActionScope {
+            override fun defaultKeyboardAction(imeAction: ImeAction) = performDefaultAction()
+        }
+        scope.run()
+    }
+}
+
+/**
+ * A single-line field with a Done action and no declared returnKeyType gets
+ * the Done action key: the field's Enter is then the action (a hardware Enter
+ * on an ImeAction.Default field performs none — measured on a device: 0 calls
+ * for Enter, 1 with Done), as the return key submits on iOS. Any declared
+ * action is kept as written.
+ */
+internal fun submitOptions(options: KeyboardOptions, actions: KeyboardActions, singleLine: Boolean): KeyboardOptions =
+    if (singleLine && options.imeAction == ImeAction.Default && actions.onDone != null) {
+        options.copy(imeAction = ImeAction.Done)
+    } else {
+        options
+    }
 
 /**
  * Custom TextField with Box wrapper for margins

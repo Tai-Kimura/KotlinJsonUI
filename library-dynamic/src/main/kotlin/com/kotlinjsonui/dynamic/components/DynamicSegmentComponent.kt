@@ -80,11 +80,16 @@ class DynamicSegmentComponent {
         /**
          * The data's name for a `valueChange` selector: camelCased as the code
          * generators name it (`seg_changed` → `segChanged`: kjui's
-         * camelize_selector, sjui's to_camel_case). Null for none, a blank
-         * one, or a binding — that is onValueChange's spelling.
+         * camelize_selector, sjui's to_camel_case). A binding is returned as
+         * written: `valueChange` is declared `string`, and `@{h}` is its
+         * spelling too — it was null ("onValueChange's spelling"), and with no
+         * onValueChange `valueChange: "@{h}"` called nothing (jsonui-cli ticket
+         * kjui-dynamic-segment-valuechange-binding-is-never-called; iOS
+         * Dynamic's same fix: SwiftJsonUI 7ea1e4a). Null for none or a blank one.
          */
         internal fun valueChangeSelector(value: String?): String? {
-            if (value == null || value.isBlank() || ModifierBuilder.isBinding(value)) return null
+            if (value == null || value.isBlank()) return null
+            if (ModifierBuilder.isBinding(value)) return value
             val parts = value.split("_")
             return parts.first() + parts.drop(1).joinToString("") { part ->
                 part.take(1).uppercase() + part.drop(1).lowercase()

@@ -407,11 +407,21 @@ class DynamicRadioComponent {
                 // value back through it as well as through the group state.
                 val selectionBinding =
                     extractBindingVariable(TypedAttrs.rawString(a.selectedValue))
+                // onValueChange, with this radio's value, after the selection
+                // is written and before onClick — as the items form passes its
+                // item, and as the iOS faces call it (jsonui-cli f96b340e,
+                // SwiftJsonUI 7ea1e4a). A group radio wrote the selection and
+                // called only onClick (jsonui-cli ticket
+                // kjui-radio-group-form-never-calls-onvaluechange).
+                val changeHandler = json.get("onValueChange")
+                    ?.takeIf { it.isJsonPrimitive }?.asString
+                    ?.takeIf { ModifierBuilder.isBinding(it) }
                 val onSelect: () -> Unit = {
                     val updates = mutableMapOf<String, Any>(selectedVar to id)
                     if (selectionBinding != null) updates[selectionBinding] = radioValue
                     @Suppress("UNCHECKED_CAST")
                     (data["updateData"] as? (Map<String, Any>) -> Unit)?.invoke(updates)
+                    if (changeHandler != null) ModifierBuilder.resolveEventHandler(changeHandler, data, id, radioValue)
                     onClick?.invoke()
                 }
 
@@ -542,6 +552,16 @@ class DynamicRadioComponent {
             // (ModifierBuilder.onClickFromOperation).
             val onClick = ModifierBuilder.onClickFromOperation(json, data)
 
+            // The declared onValueChange, with the tapped item, after the
+            // selection is written and before onClick — as kjui codegen and
+            // the iOS faces call it. This path wrote the selection and called
+            // only onClick; the handler was read on the options path alone
+            // (jsonui-cli ticket kjui-dynamic-radio-items-never-calls-onvaluechange).
+            val changeHandler = json.get("onValueChange")
+                ?.takeIf { it.isJsonPrimitive }?.asString
+                ?.takeIf { ModifierBuilder.isBinding(it) }
+            val itemsViewId = LayoutPath.viewId(json)
+
             // Handle value change
             val onValueChange: (String) -> Unit = { newValue ->
                 selectedValue = newValue
@@ -550,6 +570,7 @@ class DynamicRadioComponent {
                     (data["updateData"] as? (Map<String, Any>) -> Unit)
                         ?.invoke(mapOf(bindingVariable to newValue))
                 }
+                if (changeHandler != null) ModifierBuilder.resolveEventHandler(changeHandler, data, itemsViewId, newValue)
                 onClick?.invoke()
             }
 

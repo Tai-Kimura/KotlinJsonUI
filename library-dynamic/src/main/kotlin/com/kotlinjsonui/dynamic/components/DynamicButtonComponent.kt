@@ -232,6 +232,13 @@ class DynamicButtonComponent {
             // long-press gesture fires the handler and consumes the events so
             // a long press never also triggers onClick.
             modifier = ModifierBuilder.applyLongPressable(modifier, json, data)
+            // onPan / onPinch, declared on every type (`common`), in the
+            // order the shared stages apply them (after the long press). This
+            // chain did not apply them, so a Button's drag or pinch called
+            // nothing; kjui codegen calls both (jsonui-cli ticket
+            // kjui-dynamic-button-never-calls-onpan-or-onpinch, measured).
+            modifier = ModifierBuilder.applyPannable(modifier, json, data)
+            modifier = ModifierBuilder.applyPinchable(modifier, json, data)
             // userInteractionEnabled stops the button (this chain runs no
             // buildModifier, whose clickable stage applies it elsewhere)
             modifier = ModifierBuilder.applyStoppedControl(modifier, json, data)
