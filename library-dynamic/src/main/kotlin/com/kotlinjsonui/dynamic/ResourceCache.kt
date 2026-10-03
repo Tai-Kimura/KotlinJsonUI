@@ -1,12 +1,12 @@
 package com.kotlinjsonui.dynamic
 
+import com.kotlinjsonui.core.AppLocale
 import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import java.io.InputStreamReader
-import java.util.Locale
 
 /**
  * ResourceCache manages cached resources for dynamic UI rendering.
@@ -125,13 +125,15 @@ object ResourceCache {
             val jsonObject = gson.fromJson(jsonString, JsonObject::class.java)
             val flattenedStrings = mutableMapOf<String, String>()
             val reverseKeyMap = mutableMapOf<String, String>()
-            val preferredLang = Locale.getDefault().language
+            // The app's language (AppCompat's application locales, then the
+            // device), as KotlinJsonUI.localizedString reads it.
+            val preferredLang = AppLocale.current().language
 
             // Flatten the nested structure. Two value shapes are supported:
             //   1. Legacy: { "file1": { "key1": "value1" } }
             //   2. i18n:   { "file1": { "key1": { "en": "Foo", "ja": "フー" } } }
             //
-            // In (2), values are resolved against the device locale (with "en"
+            // In (2), values are resolved against the app language (AppLocale; "en"
             // as fallback) for cache population. For both shapes the
             // unprefixed→prefixed map is always populated so R.string lookup
             // (`<fileName>_<key>`) can bypass a missing strings.json value.

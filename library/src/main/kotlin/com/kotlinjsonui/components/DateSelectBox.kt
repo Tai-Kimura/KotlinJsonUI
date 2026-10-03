@@ -1,5 +1,7 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.AppLocale
+import com.kotlinjsonui.core.DateFormats
 import androidx.compose.foundation.background
 import com.kotlinjsonui.core.Configuration
 import androidx.compose.foundation.border
@@ -24,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -74,10 +75,12 @@ fun DateSelectBox(
     
     // Parse the current date/time value
     val calendar = remember { Calendar.getInstance() }
-    val dateFormatter = remember(dateFormat) { SimpleDateFormat(dateFormat, Locale.getDefault()) }
-    val isoFormatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
-    val isoTimeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
-    val isoDateTimeFormatter = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
+    // The label in the app's language; the bound value in Locale.ROOT (DateFormats).
+    val displayLocale = AppLocale.current()
+    val dateFormatter = remember(dateFormat, displayLocale) { DateFormats.display(dateFormat, displayLocale) }
+    val isoFormatter = remember { DateFormats.value("yyyy-MM-dd") }
+    val isoTimeFormatter = remember { DateFormats.value("HH:mm") }
+    val isoDateTimeFormatter = remember { DateFormats.value("yyyy-MM-dd HH:mm") }
     
     // Parse current value if not empty
     LaunchedEffect(value) {
@@ -291,7 +294,7 @@ fun DateSelectBox(
 
                                 Button(
                                     onClick = {
-                                        val newValue = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+                                        val newValue = DateFormats.value("HH:mm").format(calendar.time)
                                         onValueChange(newValue)
                                         scope.launch {
                                             sheetState.hide()
@@ -375,7 +378,7 @@ fun DateSelectBox(
 
                                 Button(
                                     onClick = {
-                                        val newValue = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+                                        val newValue = DateFormats.value("HH:mm").format(calendar.time)
                                         onValueChange(newValue)
                                         scope.launch {
                                             sheetState.hide()
@@ -465,7 +468,7 @@ fun DateSelectBox(
 
                                 Button(
                                     onClick = {
-                                        val newValue = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.time)
+                                        val newValue = DateFormats.value("yyyy-MM-dd HH:mm").format(calendar.time)
                                         onValueChange(newValue)
                                         scope.launch {
                                             sheetState.hide()
@@ -547,7 +550,7 @@ fun DateSelectBox(
 
                                 Button(
                                     onClick = {
-                                        val newValue = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(calendar.time)
+                                        val newValue = DateFormats.value("yyyy-MM-dd HH:mm").format(calendar.time)
                                         onValueChange(newValue)
                                         scope.launch {
                                             sheetState.hide()
@@ -624,7 +627,7 @@ fun DateSelectBox(
 
                                     Button(
                                         onClick = {
-                                            val newValue = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                                            val newValue = DateFormats.value("yyyy-MM-dd").format(calendar.time)
                                             onValueChange(newValue)
                                             scope.launch {
                                                 sheetState.hide()
@@ -649,7 +652,7 @@ fun DateSelectBox(
                                     selectedDate = calendar,
                                     onDateSelected = { year, month, day ->
                                         calendar.set(year, month, day)
-                                        val newValue = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                                        val newValue = DateFormats.value("yyyy-MM-dd").format(calendar.time)
                                         onValueChange(newValue)
                                         scope.launch {
                                             sheetState.hide()
@@ -672,7 +675,7 @@ fun DateSelectBox(
                                     selectedDate = calendar,
                                     onDateSelected = { year, month, day ->
                                         calendar.set(year, month, day)
-                                        val newValue = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                                        val newValue = DateFormats.value("yyyy-MM-dd").format(calendar.time)
                                         onValueChange(newValue)
                                         scope.launch {
                                             sheetState.hide()

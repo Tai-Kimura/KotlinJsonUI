@@ -1,5 +1,6 @@
 package com.kotlinjsonui.views
 
+import com.kotlinjsonui.core.DateFormats
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.DialogInterface
@@ -11,7 +12,6 @@ import android.widget.*
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.button.MaterialButton
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -29,9 +29,9 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
     private var backgroundColor: Int = android.graphics.Color.WHITE
     
     private val calendar = Calendar.getInstance()
-    private val isoDateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    private val isoTimeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
-    private val isoDateTimeFormatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    private val isoDateFormatter = DateFormats.value("yyyy-MM-dd")
+    private val isoTimeFormatter = DateFormats.value("HH:mm")
+    private val isoDateTimeFormatter = DateFormats.value("yyyy-MM-dd HH:mm")
     
     companion object {
         fun newInstance(
@@ -105,7 +105,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
     private fun setupDatePicker(layout: LinearLayout) {
         // Display current date
         val dateDisplay = TextView(context).apply {
-            text = SimpleDateFormat(dateFormat, Locale.getDefault()).format(calendar.time)
+            text = DateFormats.display(dateFormat).format(calendar.time)
             textSize = 16f
             setTextColor(textColor)
             setPadding(0, 16, 0, 16)
@@ -120,7 +120,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     requireContext(),
                     { _, year, month, dayOfMonth ->
                         calendar.set(year, month, dayOfMonth)
-                        dateDisplay.text = SimpleDateFormat(dateFormat, Locale.getDefault()).format(calendar.time)
+                        dateDisplay.text = DateFormats.display(dateFormat).format(calendar.time)
                     },
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH),
@@ -159,7 +159,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
     private fun setupTimePicker(layout: LinearLayout) {
         // Display current time
         val timeDisplay = TextView(context).apply {
-            text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+            text = DateFormats.display("HH:mm").format(calendar.time)
             textSize = 16f
             setTextColor(textColor)
             setPadding(0, 16, 0, 16)
@@ -175,7 +175,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     { _, hourOfDay, minute ->
                         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
                         calendar.set(Calendar.MINUTE, minute)
-                        timeDisplay.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+                        timeDisplay.text = DateFormats.display("HH:mm").format(calendar.time)
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
                     calendar.get(Calendar.MINUTE),
@@ -195,7 +195,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
     private fun setupDateTimePicker(layout: LinearLayout) {
         // Display current date and time
         val dateTimeDisplay = TextView(context).apply {
-            text = SimpleDateFormat(dateFormat, Locale.getDefault()).format(calendar.time)
+            text = DateFormats.display(dateFormat).format(calendar.time)
             textSize = 16f
             setTextColor(textColor)
             setPadding(0, 16, 0, 16)
@@ -210,7 +210,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     requireContext(),
                     { _, year, month, dayOfMonth ->
                         calendar.set(year, month, dayOfMonth)
-                        dateTimeDisplay.text = SimpleDateFormat(dateFormat, Locale.getDefault()).format(calendar.time)
+                        dateTimeDisplay.text = DateFormats.display(dateFormat).format(calendar.time)
                     },
                     calendar.get(Calendar.YEAR),
                     calendar.get(Calendar.MONTH),
@@ -248,7 +248,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     { _, hourOfDay, minute ->
                         calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
                         calendar.set(Calendar.MINUTE, minute)
-                        dateTimeDisplay.text = SimpleDateFormat(dateFormat, Locale.getDefault()).format(calendar.time)
+                        dateTimeDisplay.text = DateFormats.display(dateFormat).format(calendar.time)
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
                     calendar.get(Calendar.MINUTE),

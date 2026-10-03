@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.DateFormats
 import android.app.DatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -37,7 +37,7 @@ fun SimpleDateSelectBox(
 ) {
     val context = LocalContext.current
     val calendar = remember { Calendar.getInstance() }
-    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val dateFormat = DateFormats.value("yyyy-MM-dd") // the bound value, not text the user reads
     
     // Parse current value if not empty
     LaunchedEffect(value) {
