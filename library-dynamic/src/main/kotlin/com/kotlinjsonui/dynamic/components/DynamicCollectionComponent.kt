@@ -133,7 +133,7 @@ class DynamicCollectionComponent {
             val onItemAppear: ((Int) -> Unit)? = run {
                 // The binding or the bare name, both declared (type string | binding).
                 val expr = ModifierBuilder.handlerExpression(TypedAttrs.rawString(a.onItemAppear)) ?: return@run null
-                DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
+                indexHandler(DataBindingContext.evaluateExpression(expr, data))
             }
 
             // Check if sections are defined
@@ -1199,7 +1199,7 @@ class DynamicCollectionComponent {
                 ?.let { expr ->
                     // Canonical value resolution of the handler reference
                     // (flat-first, dot paths).
-                    DataBindingContext.evaluateExpression(expr, data) as? Function1<Int, Unit>
+                    indexHandler(DataBindingContext.evaluateExpression(expr, data))
                 }
             // The effects below outlive the composition they start in: they
             // read the handler and the bound page the data holds NOW. Through
@@ -2356,6 +2356,21 @@ class DynamicCollectionComponent {
                 return cellCounts.indices.map { s -> if (s == 0) rows(all, sectionColumns.firstOrNull() ?: 1) else emptyList() }
             }
             return cellCounts.mapIndexed { s, n -> rows((0 until n).map { s to it }, sectionColumns.getOrElse(s) { 1 }) }
+        }
+
+        /**
+         * An index handler (onItemAppear's cell index, the pager's page) as
+         * the data holds it: one parameter is called with the index, none
+         * with nothing. Through 2.43.1 it was taken `as? Function1<Int, Unit>`
+         * only, so a `() -> Unit` was null and never called (jsonui-cli
+         * ticket kjui-dynamic-collection-index-handler-without-a-parameter-
+         * is-never-called; kjui codegen calls it since jsonui-cli 1.9.6).
+         */
+        @Suppress("UNCHECKED_CAST")
+        internal fun indexHandler(value: Any?): ((Int) -> Unit)? = when (value) {
+            is Function1<*, *> -> value as (Int) -> Unit
+            is Function0<*> -> { _: Int -> (value as () -> Unit)() }
+            else -> null
         }
 
         /** A cellClasses / headerClasses / footerClasses entry: a name, or `{"className": …}`. */
