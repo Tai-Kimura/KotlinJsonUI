@@ -1262,7 +1262,8 @@ class DynamicCollectionComponent {
                     val target = boundPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
                     if (pagerState.currentPage != target) {
                         scrollProgrammatically { pagerState.animateScrollToPage(target) }
-                    } else if (currentPageProp != null && boundPage != target) {
+                    } else if (boundPage != target) {
+                        // (a bound page implies currentPageProp: boundPage is read from it)
                         runtimeWriter?.invoke(currentPageProp, target)
                     }
                 }

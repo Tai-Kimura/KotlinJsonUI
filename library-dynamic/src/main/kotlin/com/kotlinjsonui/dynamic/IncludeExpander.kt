@@ -199,13 +199,15 @@ object IncludeExpander {
         element.isJsonPrimitive && element.asJsonPrimitive.isString -> {
             val str = element.asString
             val whole = wholeBindingPattern.matcher(str)
-            if (whole.matches() && byName.containsKey(whole.group(1))) {
-                byName.getValue(whole.group(1)!!).deepCopy()
+            val wholeName: String? = if (whole.matches()) whole.group(1) else null
+            if (wholeName != null && byName.containsKey(wholeName)) {
+                byName.getValue(wholeName).deepCopy()
             } else {
                 val matcher = bindingPattern.matcher(str)
                 val out = StringBuffer()
                 while (matcher.find()) {
-                    val value = byName[matcher.group(1)]
+                    val name: String? = matcher.group(1)
+                    val value = name?.let { byName[it] }
                     val replacement = when {
                         value == null -> matcher.group(0)
                         value.isJsonNull -> ""
