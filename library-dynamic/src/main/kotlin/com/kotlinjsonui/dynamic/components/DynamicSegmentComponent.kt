@@ -9,6 +9,7 @@ import com.kotlinjsonui.components.Segment
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
+import androidx.compose.ui.platform.testTag
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
@@ -87,6 +88,19 @@ class DynamicSegmentComponent {
          * kjui-dynamic-segment-valuechange-binding-is-never-called; iOS
          * Dynamic's same fix: SwiftJsonUI 7ea1e4a). Null for none or a blank one.
          */
+        /**
+         * The testTag of a Segment's tab: `<id>_tab_<n>`, what the Android
+         * driver's selectTab waits for (ActionExecutor executeSelectTab), the
+         * id rjui gives each segment button and kjui codegen / sjui each
+         * segment (jsonui-cli 11dfe22c). The tabs were untagged, so a
+         * Segment could not be selected from a UI test (jsonui-cli ticket
+         * jui-segment-tabs-carry-no-tab-ids-so-selecttab-cannot-reach-them).
+         * None without an id, like the Segment's own tag; the Segment's
+         * testTagsAsResourceId covers its tabs.
+         */
+        internal fun tabTestTag(id: String?, index: Int): String? =
+            id?.takeIf { it.isNotEmpty() }?.let { "${it}_tab_$index" }
+
         internal fun valueChangeSelector(value: String?): String? {
             if (value == null || value.isBlank()) return null
             if (ModifierBuilder.isBinding(value)) return value
@@ -183,8 +197,11 @@ class DynamicSegmentComponent {
                 segments.forEachIndexed { index, segment ->
                     Tab(
                         // Each tab is a node of its own: it reads the stop
-                        // too (stoppedItem).
-                        modifier = ModifierBuilder.stoppedItem(json, data),
+                        // too (stoppedItem). With an id it carries
+                        // `<id>_tab_<n>` (tabTestTag).
+                        modifier = ModifierBuilder.stoppedItem(json, data).let { m ->
+                            tabTestTag(a.common.id, index)?.let { m.testTag(it) } ?: m
+                        },
                         selected = selectedIndex == index,
                         enabled = isEnabled,
                         onClick = {

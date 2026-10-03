@@ -126,4 +126,17 @@ class SegmentResolutionTest {
         assertEquals(null, DynamicSegmentComponent.valueChangeSelector("  "))
         assertEquals(null, DynamicSegmentComponent.valueChangeSelector(null))
     }
+
+    /**
+     * Each tab's testTag is `<id>_tab_<n>` — what the Android driver's
+     * selectTab waits for; none without an id (jsonui-cli ticket
+     * jui-segment-tabs-carry-no-tab-ids-so-selecttab-cannot-reach-them).
+     */
+    @Test
+    fun `a tab is tagged by the segment id and its position`() {
+        assertEquals("plan_tab_0", DynamicSegmentComponent.tabTestTag("plan", 0))
+        assertEquals("plan_tab_2", DynamicSegmentComponent.tabTestTag("plan", 2))
+        assertEquals(null, DynamicSegmentComponent.tabTestTag(null, 1))
+        assertEquals(null, DynamicSegmentComponent.tabTestTag("", 1))
+    }
 }
