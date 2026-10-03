@@ -103,15 +103,14 @@ configuration. Re-sync from a checkout with:
 JSONUI_TEST_RUNNER_PATH=/path/to/jsonui-test-runner ./conformance-host/scripts/sync_driver.sh
 ```
 
-The vendored copy is a snapshot of upstream
-`jsonui-test-runner-android@7c00459` (the former `KJUI-CONFORMANCE PATCH`
-set — pluggable `screenshotHandler`, K2 smart-cast fixes, descendant-text
-`assertText` — was upstreamed). One local patch is currently carried,
-marked `// KJUI-CONFORMANCE PATCH`:
-
-- `AssertionExecutor.assertText` retries until the step timeout instead of
-  a single sample (racy against Compose async state updates; upstream bug
-  `testrunner-android-asserttext-single-sample-race`).
+The vendored copy is upstream `jsonui-test-runner-android` **1.15.8** (44298ff),
+byte for byte: no local patch is carried. `sync_driver.sh` replaces the whole
+directory, so a local patch would be lost on the next re-vendor — fix the
+driver upstream and re-vendor instead. (Until 2026-10-03 this section said one
+`// KJUI-CONFORMANCE PATCH` was carried, an `assertText` that retries until
+the step timeout; upstream already polls (`pollUntil`) since before 1.8.2, the
+marker left the tree with the 1.2.2 re-vendor (8bac81d), and the 1.8.2 copy
+that sat here was upstream's unchanged.)
 
 Screenshot capture: upstream now also offers `TestRunnerConfig.screenshotDir`,
 but this harness drives `ActionExecutor` directly (not `JsonUITestRunner`)

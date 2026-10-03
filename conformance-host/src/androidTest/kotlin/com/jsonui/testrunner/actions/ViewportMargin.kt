@@ -1,0 +1,187 @@
+package com.jsonui.testrunner.actions
+
+/**
+ * Whether `scrollUntilVisible` stopped with the target FLUSH against the
+ * viewport edge, and how far to move it.
+ *
+ * Reported 2026-09-08 by a consumer face on a landscape tablet. The early
+ * return asks "does the id exist in the projection?", never "how much of it
+ * can be seen", so a target peeking a few pixels above the bottom edge counts
+ * as found and NO scroll happens. Harmless on its own — until operating that
+ * target reveals something directly BELOW it, which then lands off-screen.
+ * Off-screen Compose nodes are not projected, so the following
+ * `assert visible` sees a census identical to the one it would see if the
+ * operation had done nothing at all.
+ *
+ * ⚠️ Phone lanes never see this: in portrait the target does not end up
+ * pinned to the edge. The face measured 6 consecutive green phone runs
+ * against a reproducible tablet failure, which is why a single-form-factor
+ * suite cannot be the evidence that this is fixed.
+ *
+ * 📌 The rule is deliberately one-directional: it says when a target is TOO
+ * CLOSE to an edge, never where it ought to sit. Centring the target would
+ * be a bigger behaviour change than the defect warrants, and any test that
+ * currently passes with the target mid-viewport must keep passing unchanged.
+ */
+object ViewportMargin {
+
+    /**
+     * Fraction of the surface's shorter dimension a target must be clear of
+     * the trailing edge by. 12% ≈ one list row on the shapes measured, which
+     * is what "the thing revealed below it" needs to land inside.
+     *
+     * ⚠️ "SHORTER DIMENSION" IS RESOLVED PER CALL, NOT PER DEVICE. The surface
+     * is whatever [clearanceFor] is handed — for a container step it is that
+     * container's *visible* bounds, which by definition shrink when anything
+     * covers part of it. So the axis that is shorter can SWAP WITHIN ONE RUN on
+     * one device: a 1080-wide surface yields 129 while the same surface reduced
+     * to 1000 tall yields 120, and nothing about the device changed. Two
+     * clearances that differ are not evidence of a bug.
+     *
+     * 🚨 THIS CONSTANT HAS A SECOND USE WITH A DIFFERENT BASE. The corrective
+     * swipe in `ActionExecutor.unstickFromTrailingEdge` sizes its step as
+     * `surface.height() * CLEARANCE_FRACTION` — height, not the shorter side.
+     * The two agree in landscape and diverge in portrait (1080x2400: clearance
+     * 129, step 288, so the swipe travels 576px to repair a 129px shortfall),
+     * and [MAX_CLEARANCE_PX] caps the clearance while nothing caps the step.
+     * Filed rather than changed: making them agree is a behaviour change and
+     * this repo has no device to measure the shorter swipe against.
+     *
+     * ⚠️ Not tuned against the reporting face's flow — that flow is on a
+     * consumer tree this repo cannot run. It is a floor chosen to be smaller
+     * than a row and larger than the few pixels that produced the report.
+     */
+    const val CLEARANCE_FRACTION = 0.12
+
+    /** No clearance is demanded beyond this many pixels, whatever the size. */
+    const val MAX_CLEARANCE_PX = 240
+
+    /**
+     * Where a target the driver had to move ends up: its trailing side this
+     * many clearances from the trailing edge. Three, not two: one clearance
+     * is "about one list row", and the reporting page has a segmented
+     * control between its section heading and its first row — measured
+     * 2026-09-20, a landing two clearances up left the first row on the
+     * edge (6px inside), three leaves it a row clear. The old fling landed
+     * targets 500–700px up by accident; this is the same headroom on purpose.
+     */
+    const val LANDING_CLEARANCES = 3
+
+    @JvmStatic
+    fun clearanceFor(surfaceHeight: Int, surfaceWidth: Int): Int {
+        val shorter = minOf(surfaceHeight, surfaceWidth).coerceAtLeast(0)
+        return minOf((shorter * CLEARANCE_FRACTION).toInt(), MAX_CLEARANCE_PX)
+    }
+
+    /**
+     * True when *targetBottom* sits within the clearance of *surfaceBottom*.
+     *
+     * ⚠️ Only the trailing (bottom) edge, and only for a downward search.
+     * The leading edge has no equivalent failure: something revealed BELOW a
+     * target pinned to the TOP lands inside the viewport, not outside it.
+     * Making this symmetric would add scrolls to passing tests for a shape
+     * nobody has reported.
+     */
+    /**
+     * True when *targetBottom* is BEYOND *surfaceBottom* — outside the
+     * surface a scroll of that surface can move.
+     *
+     * 🚨 STRICTLY BEYOND. `bottom == surfaceBottom` is a target resting
+     * exactly on the edge, which is INSIDE and which the unstick moves
+     * normally: one face measured `flush 1307 of 1307` travel 248px on a node
+     * its own layout audit confirmed to be a descendant of the named
+     * container. An inclusive-vs-exclusive slip here does not merely skip a
+     * no-op; it (a) suppresses an unstick that was working and (b) accuses a
+     * CORRECT test of naming the wrong container.
+     *
+     * ⚠️ AND IT IS DELIBERATELY ONE-SIDED. The first draft used
+     * `Rect.contains`, which tests all four edges — a four-sided test for a
+     * one-sided claim. `visibleBounds` is clipped to the SCREEN, not to the
+     * container, so a target inside a horizontally scrollable container, or
+     * one wider than its container, fails `contains` for a reason that has
+     * nothing to do with whether a VERTICAL scroll can reach it. The rule
+     * only ever swipes vertically, so only the vertical relation may gate it.
+     *
+     * ⚠️ Raised by a face 2026-09-09 BEFORE this shipped, from a boundary
+     * case in its own capture. Its stated mechanism was that
+     * `Rect.contains(Rect)` excludes the bottom edge; measured, it does not
+     * (`bottom >= r.bottom`, "inside or equal to"). The conclusion was right
+     * and the mechanism was not, which is why the arm below pins the
+     * BOUNDARY rather than the spelling of the call.
+     */
+    @JvmStatic
+    fun isOutsideTrailingEdge(targetBottom: Int, surfaceBottom: Int): Boolean =
+        targetBottom > surfaceBottom
+
+    @JvmStatic
+    fun isFlushAgainstTrailingEdge(
+        targetBottom: Int,
+        surfaceBottom: Int,
+        surfaceHeight: Int,
+        surfaceWidth: Int
+    ): Boolean {
+        if (surfaceHeight <= 0 || surfaceWidth <= 0) return false
+        val clearance = clearanceFor(surfaceHeight, surfaceWidth)
+        if (clearance <= 0) return false
+        return targetBottom > surfaceBottom - clearance
+    }
+
+    /**
+     * How far the corrective drag travels, in px: enough to land the target's
+     * bottom [LANDING_CLEARANCES] clearances above the trailing edge, wherever
+     * inside the clearance band it started. `(LANDING_CLEARANCES - 1) *
+     * clearance + shortfall`, so between two and three clearances — never a
+     * screenful (387px at most on a 1080-wide phone).
+     *
+     * Until 1.15.5 the motion was `2 * surface.height() * CLEARANCE_FRACTION`
+     * flung in 20 steps: 492px nominal on a 1080x2400 phone, measured 613–645px
+     * of travel with a 220–350ms tail (the release velocity of a 100ms swipe
+     * is a fling), and its rollback 520–645px the other way. A repair sized
+     * for a 129px shortfall was moving the page by half a screen twice, and
+     * the two flings did not cancel — which is how a target that was FOUND
+     * could be returned off-screen (2026-09-19, a phone lane, 1 run in 4).
+     * The same drag sized to the clearance moved 125–127px in three runs.
+     */
+    @JvmStatic
+    fun unstickTravel(targetBottom: Int, surfaceBottom: Int, clearance: Int): Int {
+        if (clearance <= 0) return 0
+        val shortfall = (targetBottom - (surfaceBottom - clearance)).coerceIn(0, clearance)
+        return (LANDING_CLEARANCES - 1) * clearance + shortfall
+    }
+
+    /**
+     * True when the extra scroll IMPROVED things and should be kept.
+     *
+     * 📌 This is the "never make it worse" half, and it is the reason the fix
+     * can ship without the reporting face's flow to test against. The extra
+     * scroll is speculative: a container at the end of its content, or one
+     * that overshoots, can leave the target further from view than it started
+     * — or gone. So the position is re-measured afterwards and kept only if
+     * the target is still there AND no closer to the edge than before. A
+     * change that can only leave the target where it was or further from the
+     * edge cannot redden a test that passes today ON POSITION.
+     *
+     * ⚠️ ON POSITION is the whole scope of that sentence, and 1.15.0 is where
+     * the distinction starts to matter: the rule now runs on the scroll legs
+     * too, so it fires far more often, and every firing costs a swipe and a
+     * settle. Where a suite runs near a timeout, longer and redder are the
+     * same event. The headroom is unmeasured.
+     *
+     * ⚠️ And the re-measure only means something if it reads a RESTING value.
+     * Until 1.15.0 the caller sampled it one waitForIdle into a fling — 1184
+     * against a resting 1157 in the reporting capture. The guard was sound and
+     * its input was not, which no test of this function could ever show.
+     */
+    @JvmStatic
+    fun keepScrolledPosition(
+        before: Int?,
+        after: Int?,
+        surfaceBottom: Int
+    ): Boolean {
+        if (after == null) return false          // scrolled the target away
+        if (before == null) return true          // it was not visible before
+        val gainedBefore = surfaceBottom - before
+        val gainedAfter = surfaceBottom - after
+        return gainedAfter >= gainedBefore
+    }
+}

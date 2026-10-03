@@ -4,9 +4,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import com.jsonui.testrunner.models.TestStep
+import com.jsonui.testrunner.runner.ProjectionProbe
 import com.jsonui.testrunner.runner.ViewModelStateProvider
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -100,11 +102,21 @@ class AssertionExecutor(
         throw AssertionError(ScreenMarker.diagnosis(device, screenId, appPackage))
     }
 
+    /**
+     * "Not found" plus what the accessibility projection actually held, and
+     * whether dropping UiAutomator's cache or resyncing the service brought
+     * it back (ProjectionProbe). Runs only on this failure path, so a green
+     * run pays nothing — and the next intermittent occurrence answers, by
+     * itself, the question a consumer could not reproduce on demand.
+     */
+    private fun elementNotFound(id: String, within: String): String =
+        "Element '$id' not found by resource-id within $within\n" + ProjectionProbe.report(id)
+
     private fun assertVisible(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("visible requires 'id'")
         pollUntil(timeout, id) {
             findElement(id)
-                ?: throw AssertionError("Element '$id' not found by resource-id within ${timeout}ms")
+                ?: throw AssertionError(elementNotFound(id, "${timeout}ms"))
         }
     }
 
@@ -122,7 +134,7 @@ class AssertionExecutor(
         val id = step.id ?: throw IllegalArgumentException("enabled requires 'id'")
         pollUntil(timeout, id) {
             val element = findElement(id)
-                ?: throw AssertionError("Element '$id' not found by resource-id within ${timeout}ms")
+                ?: throw AssertionError(elementNotFound(id, "${timeout}ms"))
             if (!element.isEnabled) {
                 throw AssertionError("Element '$id' should be enabled but it is disabled")
             }
@@ -133,7 +145,7 @@ class AssertionExecutor(
         val id = step.id ?: throw IllegalArgumentException("disabled requires 'id'")
         pollUntil(timeout, id) {
             val element = findElement(id)
-                ?: throw AssertionError("Element '$id' not found by resource-id within ${timeout}ms")
+                ?: throw AssertionError(elementNotFound(id, "${timeout}ms"))
             if (element.isEnabled) {
                 throw AssertionError("Element '$id' should be disabled but it is enabled")
             }
@@ -152,7 +164,7 @@ class AssertionExecutor(
 
     private fun assertTextOnce(step: TestStep, id: String) {
         val element = findElement(id)
-            ?: throw AssertionError("Element '$id' not found by resource-id within a step of polling")
+            ?: throw AssertionError(elementNotFound(id, "a step of polling"))
 
         // For Compose TextField, the editable value is on an EditText-classed
         // a11y node — either the tagged element itself or a descendant.
@@ -368,25 +380,55 @@ class AssertionExecutor(
     /**
      * Poll a check every 100ms until it passes or the timeout elapses.
      * The last failure (with the current actual value) is rethrown at timeout.
+     *
+     * 🚨 `StaleObjectException` IS RETRIED HERE, AND IT IS NAMED, NOT INHERITED.
+     * `assertText` polls because a state-driven UI updates bound text
+     * asynchronously; that same recomposition replaces the a11y node behind a
+     * handle this loop's `check` is holding, and uiautomator then raises
+     * `StaleObjectException` — which `javap` reports as
+     * `extends java.lang.RuntimeException`, NOT an `AssertionError`. Until
+     * 2026-09-09 the loop caught only `AssertionError`, so the one failure the
+     * poll exists to absorb was the one failure that escaped it: the poll was
+     * abandoned on first occurrence and the case fell back to whole-case retry
+     * (the run survives — the per-case catch is `Throwable` — so what is lost
+     * is the 100ms granularity, and the assertion's own message).
+     *
+     * ⚠️ Caught by NAME rather than by `RuntimeException`. The parent would
+     * absorb unrelated runtime failures into this loop and re-report them as a
+     * timeout, which hides defects instead of surviving a race. Adding a new
+     * transient type here is a deliberate act, not a side effect of widening.
+     *
+     * ⚠️ The throw at timeout is `last`, the exception that ACTUALLY ended the
+     * final attempt. Rethrowing a manufactured `AssertionError` would point the
+     * reader at a value comparison that never happened.
      */
     private fun pollUntil(timeout: Long, searchedId: String?, check: () -> Unit) {
         val startTime = System.currentTimeMillis()
         var debugLogged = false
+
+        // One body, two catch clauses: the retry policy lives in a single place
+        // so a future transient type cannot be handled one way here and another
+        // way three lines down.
+        fun retryOrRethrow(last: Throwable) {
+            if (System.currentTimeMillis() - startTime >= timeout) throw last
+
+            // Debug: dump hierarchy once after 2 seconds of element polling
+            if (searchedId != null && !debugLogged && System.currentTimeMillis() - startTime > 2000) {
+                debugLogged = true
+                dumpHierarchy(searchedId)
+            }
+
+            Thread.sleep(100)
+        }
 
         while (true) {
             try {
                 check()
                 return
             } catch (e: AssertionError) {
-                if (System.currentTimeMillis() - startTime >= timeout) throw e
-
-                // Debug: dump hierarchy once after 2 seconds of element polling
-                if (searchedId != null && !debugLogged && System.currentTimeMillis() - startTime > 2000) {
-                    debugLogged = true
-                    dumpHierarchy(searchedId)
-                }
-
-                Thread.sleep(100)
+                retryOrRethrow(e)
+            } catch (e: StaleObjectException) {
+                retryOrRethrow(e)
             }
         }
     }
@@ -427,6 +469,6 @@ class AssertionExecutor(
             Thread.sleep(100)
         }
 
-        throw AssertionError("Element '$id' not found by resource-id within ${timeout}ms")
+        throw AssertionError(elementNotFound(id, "${timeout}ms"))
     }
 }
