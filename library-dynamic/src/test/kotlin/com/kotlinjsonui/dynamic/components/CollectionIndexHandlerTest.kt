@@ -16,7 +16,8 @@ class CollectionIndexHandlerTest {
     @Test
     fun aHandlerWithNoParameterIsCalledWithNothing() {
         var calls = 0
-        val handler = DynamicCollectionComponent.indexHandler({ calls++ ; Unit } as () -> Unit)
+        val noParameter: () -> Unit = { calls++ }
+        val handler = DynamicCollectionComponent.indexHandler(noParameter)
         handler!!(3)
         handler(4)
         assertEquals(2, calls)
