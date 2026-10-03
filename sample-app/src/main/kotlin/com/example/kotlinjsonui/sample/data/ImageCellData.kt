@@ -12,7 +12,7 @@ package com.example.kotlinjsonui.sample.data
 data class ImageCellData(
     var imageUrl: String = "https://picsum.photos/200/150",
     var title: String = "Image Item",
-    var price: String = "$99.99"
+    var price: String = "\$99.99"
 ) {
     companion object {
         // Update properties from map
@@ -20,7 +20,7 @@ data class ImageCellData(
             return ImageCellData(
                 imageUrl = map["imageUrl"] as? String ?: "https://picsum.photos/200/150",
                 title = map["title"] as? String ?: "Image Item",
-                price = map["price"] as? String ?: "$99.99"
+                price = map["price"] as? String ?: "\$99.99"
             )
         }
     }

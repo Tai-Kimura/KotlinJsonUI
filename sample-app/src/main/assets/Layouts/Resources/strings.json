@@ -288,7 +288,9 @@
     "5_another_included1_with_refere": "5. Another included_1 with @{} references:",
     "4_include_with_shared_data_and_": "4. Include with shared_data and data override:",
     "5_another_included_1_with_refer": "5. Another included_1 with @{} references:",
-    "count_2": "Count -"
+    "count_2": "Count -",
+    "3_include_with_data_bound_to_th": "3. Include with data (bound to this screen's data):",
+    "5_another_included_1_bound_to_t": "5. Another included_1 bound to this screen's data:"
   },
   "included2": {
     "included_view_2": "Included View 2",

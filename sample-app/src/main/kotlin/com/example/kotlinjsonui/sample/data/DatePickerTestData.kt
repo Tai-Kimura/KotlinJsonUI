@@ -22,7 +22,9 @@ data class DatePickerTestData(
     var selectedCalendarDate: String = "",
     var startDate: String = "2025-01-01",
     var title: String = KotlinJsonUI.localizedString(R.string.test_menu_date_picker_test_2, "Date Picker Test"),
-    var toggleDynamicMode: (() -> Unit)? = null
+    var toggleDynamicMode: (() -> Unit)? = null,
+    var selectedDateText: String = "",
+    var dateRangeText: String = ""
 ) {
     companion object {
         // Update properties from map
@@ -39,7 +41,9 @@ data class DatePickerTestData(
                 selectedCalendarDate = map["selectedCalendarDate"] as? String ?: "",
                 startDate = map["startDate"] as? String ?: "2025-01-01",
                 title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_date_picker_test_2, "Date Picker Test"),
-                toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
+                toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
+                selectedDateText = map["selectedDateText"] as? String ?: "",
+                dateRangeText = map["dateRangeText"] as? String ?: ""
             )
         }
     }
@@ -60,6 +64,8 @@ data class DatePickerTestData(
         map["startDate"] = startDate
         map["title"] = title
         toggleDynamicMode?.let { map["toggleDynamicMode"] = it }
+        map["selectedDateText"] = selectedDateText
+        map["dateRangeText"] = dateRangeText
         
         return map
     }

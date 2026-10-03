@@ -392,7 +392,7 @@ private fun Section4(
             italic = false
         ))
         Text(
-            text = "${data.regularText}",
+            text = "${data.regularDisplayText}",
             color = colorResource(R.color.medium_gray_4),
             fontFamily = resolved_text6.family,
             fontWeight = resolved_text6.weight,

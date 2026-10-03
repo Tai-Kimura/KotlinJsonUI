@@ -18,6 +18,7 @@ data class SecureFieldTestData(
     var regularText: String = "",
     var title: String = KotlinJsonUI.localizedString(R.string.test_menu_secure_field_test_2, "Secure Field Test"),
     var toggleDynamicMode: (() -> Unit)? = null,
+    var regularDisplayText: String = "",
     var regularFieldIsFocused: Boolean = false,
     var passwordFieldIsFocused: Boolean = false,
     var confirmPasswordFieldIsFocused: Boolean = false
@@ -33,6 +34,7 @@ data class SecureFieldTestData(
                 regularText = map["regularText"] as? String ?: "",
                 title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_secure_field_test_2, "Secure Field Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
+                regularDisplayText = map["regularDisplayText"] as? String ?: "",
                 regularFieldIsFocused = map["regularFieldIsFocused"] as? Boolean ?: false,
                 passwordFieldIsFocused = map["passwordFieldIsFocused"] as? Boolean ?: false,
                 confirmPasswordFieldIsFocused = map["confirmPasswordFieldIsFocused"] as? Boolean ?: false
@@ -51,6 +53,7 @@ data class SecureFieldTestData(
         map["regularText"] = regularText
         map["title"] = title
         toggleDynamicMode?.let { map["toggleDynamicMode"] = it }
+        map["regularDisplayText"] = regularDisplayText
         map["regularFieldIsFocused"] = regularFieldIsFocused
         map["passwordFieldIsFocused"] = passwordFieldIsFocused
         map["confirmPasswordFieldIsFocused"] = confirmPasswordFieldIsFocused

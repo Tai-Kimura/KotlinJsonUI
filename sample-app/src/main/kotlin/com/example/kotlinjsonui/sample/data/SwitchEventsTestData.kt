@@ -17,12 +17,12 @@ data class SwitchEventsTestData(
     var locationEnabled: Boolean = true,
     var notificationStatus: String = "Notifications are enabled",
     var darkModeStatus: String = "Dark mode is off",
-    var connectionStatus: String = "Active: Wi-Fi, Location",
     var handleNotificationChange: ((String, Boolean) -> Unit)? = null,
     var handleDarkModeChange: ((String, Boolean) -> Unit)? = null,
     var handleWifiChange: ((String, Boolean) -> Unit)? = null,
     var handleBluetoothChange: ((String, Boolean) -> Unit)? = null,
-    var handleLocationChange: ((String, Boolean) -> Unit)? = null
+    var handleLocationChange: ((String, Boolean) -> Unit)? = null,
+    var connectionStatusText: String = ""
 ) {
     companion object {
         // Update properties from map
@@ -36,12 +36,12 @@ data class SwitchEventsTestData(
                 locationEnabled = map["locationEnabled"] as? Boolean ?: true,
                 notificationStatus = map["notificationStatus"] as? String ?: "Notifications are enabled",
                 darkModeStatus = map["darkModeStatus"] as? String ?: "Dark mode is off",
-                connectionStatus = map["connectionStatus"] as? String ?: "Active: Wi-Fi, Location",
                 handleNotificationChange = map["handleNotificationChange"] as? ((String, Boolean) -> Unit)?,
                 handleDarkModeChange = map["handleDarkModeChange"] as? ((String, Boolean) -> Unit)?,
                 handleWifiChange = map["handleWifiChange"] as? ((String, Boolean) -> Unit)?,
                 handleBluetoothChange = map["handleBluetoothChange"] as? ((String, Boolean) -> Unit)?,
-                handleLocationChange = map["handleLocationChange"] as? ((String, Boolean) -> Unit)?
+                handleLocationChange = map["handleLocationChange"] as? ((String, Boolean) -> Unit)?,
+                connectionStatusText = map["connectionStatusText"] as? String ?: ""
             )
         }
     }
@@ -58,12 +58,12 @@ data class SwitchEventsTestData(
         map["locationEnabled"] = locationEnabled
         map["notificationStatus"] = notificationStatus
         map["darkModeStatus"] = darkModeStatus
-        map["connectionStatus"] = connectionStatus
         handleNotificationChange?.let { map["handleNotificationChange"] = it }
         handleDarkModeChange?.let { map["handleDarkModeChange"] = it }
         handleWifiChange?.let { map["handleWifiChange"] = it }
         handleBluetoothChange?.let { map["handleBluetoothChange"] = it }
         handleLocationChange?.let { map["handleLocationChange"] = it }
+        map["connectionStatusText"] = connectionStatusText
         
         return map
     }

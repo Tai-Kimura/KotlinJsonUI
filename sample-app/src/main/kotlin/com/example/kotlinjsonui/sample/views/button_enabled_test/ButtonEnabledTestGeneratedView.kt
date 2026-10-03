@@ -179,7 +179,7 @@ private fun Section2(
         italic = false
     ))
     Text(
-        text = "${data.isButtonEnabled}",
+        text = "${data.buttonEnabledText}",
         color = colorResource(R.color.medium_gray_4),
         fontFamily = resolved_text2.family,
         fontWeight = resolved_text2.weight,

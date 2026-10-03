@@ -249,7 +249,8 @@ private fun Section3(
             modifier = Modifier
                 .weight(2f)
                 .fillMaxHeight()
-                .background(colorResource(R.color.pale_yellow)),
+                .background(colorResource(R.color.pale_yellow))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
         val resolved_text5 = Configuration.Font.resolve(FontSpec(
@@ -269,7 +270,8 @@ private fun Section3(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(colorResource(R.color.pale_cyan)),
+                .background(colorResource(R.color.pale_cyan))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
     }
@@ -329,7 +331,8 @@ private fun Section5(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .background(colorResource(R.color.white_2)),
+                .background(colorResource(R.color.white_2))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
         val resolved_text8 = Configuration.Font.resolve(FontSpec(
@@ -349,7 +352,8 @@ private fun Section5(
             modifier = Modifier
                 .weight(3f)
                 .fillMaxWidth()
-                .background(colorResource(R.color.white_3)),
+                .background(colorResource(R.color.white_3))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
         val resolved_text9 = Configuration.Font.resolve(FontSpec(
@@ -369,7 +373,8 @@ private fun Section5(
             modifier = Modifier
                 .weight(2f)
                 .fillMaxWidth()
-                .background(colorResource(R.color.white_4)),
+                .background(colorResource(R.color.white_4))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
     }
@@ -429,7 +434,8 @@ private fun Section7(
             modifier = Modifier
                 .requiredWidth(0.dp)
                 .fillMaxHeight()
-                .background(colorResource(R.color.white_5)),
+                .background(colorResource(R.color.white_5))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
         val resolved_text12 = Configuration.Font.resolve(FontSpec(
@@ -449,7 +455,8 @@ private fun Section7(
             modifier = Modifier
                 .requiredWidth(0.dp)
                 .fillMaxHeight()
-                .background(colorResource(R.color.white_6)),
+                .background(colorResource(R.color.white_6))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
     }

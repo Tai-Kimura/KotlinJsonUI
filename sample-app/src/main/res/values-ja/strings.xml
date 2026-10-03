@@ -201,9 +201,9 @@
     <string name='include_test_reset'>Reset</string>
     <string name='include_test_change_name'>Change Name</string>
     <string name='include_test_toggle_status'>Toggle Status</string>
-    <string name='include_test_current_values'>Current Values:</string>
-    <string name='include_test_countmaincount'>Count=@{mainCount},</string>
-    <string name='include_test_userusername'>User=@{userName},</string>
+    <string name='include_test_current_values'>&quot;Current Values: &quot;</string>
+    <string name='include_test_countmaincount'>&quot;Count=@{mainCount}, &quot;</string>
+    <string name='include_test_userusername'>&quot;User=@{userName}, &quot;</string>
     <string name='include_test_statusmainstatus'>Status=@{mainStatus}</string>
     <string name='include_test_1_basic_include_with_static_dat'>1. Basic Include with static data:</string>
     <string name='include_test_2_include_with_data_static_valu'>2. Include with data (static values):</string>
@@ -605,4 +605,6 @@
     <string name='test_menu_scroll_test'>Scroll Test</string>
     <string name='weight_test_with_fixed_weight_1_2'>Weight 1</string>
     <string name='weight_test_with_fixed_fixed_30_2'>Fixed: 30</string>
+    <string name='include_test_3_include_with_data_bound_to_th'>3. Include with data (bound to this screen\&apos;s data):</string>
+    <string name='include_test_5_another_included_1_bound_to_t'>5. Another included_1 bound to this screen\&apos;s data:</string>
 </resources>

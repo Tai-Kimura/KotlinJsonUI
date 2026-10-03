@@ -11,12 +11,12 @@ package com.example.kotlinjsonui.sample.data
 
 data class TextfieldEventsTestData(
     var email: String = "",
-    var emailDisplay: String = "(not entered)",
     var password: String = "",
-    var passwordLength: String = "0",
     var notes: String = "",
     var handleEmailChange: ((String, String) -> Unit)? = null,
     var handlePasswordChange: ((String, String) -> Unit)? = null,
+    var emailDisplayText: String = "",
+    var passwordLengthText: String = "",
     var emailFieldIsFocused: Boolean = false,
     var passwordFieldIsFocused: Boolean = false,
     var notesFieldIsFocused: Boolean = false
@@ -27,12 +27,12 @@ data class TextfieldEventsTestData(
         fun fromMap(map: Map<String, Any>): TextfieldEventsTestData {
             return TextfieldEventsTestData(
                 email = map["email"] as? String ?: "",
-                emailDisplay = map["emailDisplay"] as? String ?: "(not entered)",
                 password = map["password"] as? String ?: "",
-                passwordLength = map["passwordLength"] as? String ?: "0",
                 notes = map["notes"] as? String ?: "",
                 handleEmailChange = map["handleEmailChange"] as? ((String, String) -> Unit)?,
                 handlePasswordChange = map["handlePasswordChange"] as? ((String, String) -> Unit)?,
+                emailDisplayText = map["emailDisplayText"] as? String ?: "",
+                passwordLengthText = map["passwordLengthText"] as? String ?: "",
                 emailFieldIsFocused = map["emailFieldIsFocused"] as? Boolean ?: false,
                 passwordFieldIsFocused = map["passwordFieldIsFocused"] as? Boolean ?: false,
                 notesFieldIsFocused = map["notesFieldIsFocused"] as? Boolean ?: false
@@ -46,12 +46,12 @@ data class TextfieldEventsTestData(
         
         // Data properties
         map["email"] = email
-        map["emailDisplay"] = emailDisplay
         map["password"] = password
-        map["passwordLength"] = passwordLength
         map["notes"] = notes
         handleEmailChange?.let { map["handleEmailChange"] = it }
         handlePasswordChange?.let { map["handlePasswordChange"] = it }
+        map["emailDisplayText"] = emailDisplayText
+        map["passwordLengthText"] = passwordLengthText
         map["emailFieldIsFocused"] = emailFieldIsFocused
         map["passwordFieldIsFocused"] = passwordFieldIsFocused
         map["notesFieldIsFocused"] = notesFieldIsFocused

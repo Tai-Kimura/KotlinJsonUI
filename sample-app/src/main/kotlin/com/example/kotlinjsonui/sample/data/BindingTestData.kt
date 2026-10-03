@@ -24,7 +24,12 @@ data class BindingTestData(
     var toggleDynamicMode: (() -> Unit)? = null,
     var decreaseCounter: (() -> Unit)? = null,
     var increaseCounter: (() -> Unit)? = null,
-    var sliderChanged: ((String, Float) -> Unit)? = null
+    var sliderChanged: ((String, Float) -> Unit)? = null,
+    var typedText: String = "",
+    var toggleText: String = "",
+    var sliderText: String = "",
+    var selectedOptionText: String = "",
+    var toggleChanged: (() -> Unit)? = null
 ) {
     companion object {
         // Update properties from map
@@ -43,7 +48,12 @@ data class BindingTestData(
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
                 decreaseCounter = map["decreaseCounter"] as? (() -> Unit)?,
                 increaseCounter = map["increaseCounter"] as? (() -> Unit)?,
-                sliderChanged = map["sliderChanged"] as? ((String, Float) -> Unit)?
+                sliderChanged = map["sliderChanged"] as? ((String, Float) -> Unit)?,
+                typedText = map["typedText"] as? String ?: "",
+                toggleText = map["toggleText"] as? String ?: "",
+                sliderText = map["sliderText"] as? String ?: "",
+                selectedOptionText = map["selectedOptionText"] as? String ?: "",
+                toggleChanged = map["toggleChanged"] as? (() -> Unit)?
             )
         }
     }
@@ -66,6 +76,11 @@ data class BindingTestData(
         decreaseCounter?.let { map["decreaseCounter"] = it }
         increaseCounter?.let { map["increaseCounter"] = it }
         sliderChanged?.let { map["sliderChanged"] = it }
+        map["typedText"] = typedText
+        map["toggleText"] = toggleText
+        map["sliderText"] = sliderText
+        map["selectedOptionText"] = selectedOptionText
+        toggleChanged?.let { map["toggleChanged"] = it }
         
         return map
     }

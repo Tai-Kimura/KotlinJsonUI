@@ -140,8 +140,8 @@ fun FeatureCellGeneratedView(
             fontStyle = resolved_text3.style ?: FontStyle.Normal,
             style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
             modifier = Modifier
-                .alpha(0.9f)
                 .padding(top = 8.dp)
+                .alpha(0.9f)
         )
     }    }
     // >>> GENERATED_CODE_END

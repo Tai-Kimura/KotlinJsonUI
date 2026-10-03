@@ -23,9 +23,15 @@ data class IncludeTestData(
     var resetCount: (() -> Unit)? = null,
     var changeUserName: (() -> Unit)? = null,
     var toggleStatus: (() -> Unit)? = null,
-    var viewCount: Int = 0,
-    var viewStatus: String = "Default Status",
-    var viewTitle: String = "Default Title"
+    var mainCountLabel: String = "",
+    var userNameLabel: String = "",
+    var mainStatusLabel: String = "",
+    var userTitleLine: String = "",
+    var mainStatusLine: String = "",
+    var mainCountLine: String = "",
+    var countLine: String = "Count: 0",
+    var statusLine: String = "Status: Default Status",
+    var titleLine: String = "Title: Default Title"
 ) {
     companion object {
         // Update properties from map
@@ -43,9 +49,15 @@ data class IncludeTestData(
                 resetCount = map["resetCount"] as? (() -> Unit)?,
                 changeUserName = map["changeUserName"] as? (() -> Unit)?,
                 toggleStatus = map["toggleStatus"] as? (() -> Unit)?,
-                viewCount = (map["viewCount"] as? Number)?.toInt() ?: 0,
-                viewStatus = map["viewStatus"] as? String ?: "Default Status",
-                viewTitle = map["viewTitle"] as? String ?: "Default Title"
+                mainCountLabel = map["mainCountLabel"] as? String ?: "",
+                userNameLabel = map["userNameLabel"] as? String ?: "",
+                mainStatusLabel = map["mainStatusLabel"] as? String ?: "",
+                userTitleLine = map["userTitleLine"] as? String ?: "",
+                mainStatusLine = map["mainStatusLine"] as? String ?: "",
+                mainCountLine = map["mainCountLine"] as? String ?: "",
+                countLine = map["countLine"] as? String ?: "Count: 0",
+                statusLine = map["statusLine"] as? String ?: "Status: Default Status",
+                titleLine = map["titleLine"] as? String ?: "Title: Default Title"
             )
         }
     }
@@ -66,9 +78,15 @@ data class IncludeTestData(
         resetCount?.let { map["resetCount"] = it }
         changeUserName?.let { map["changeUserName"] = it }
         toggleStatus?.let { map["toggleStatus"] = it }
-        map["viewCount"] = viewCount
-        map["viewStatus"] = viewStatus
-        map["viewTitle"] = viewTitle
+        map["mainCountLabel"] = mainCountLabel
+        map["userNameLabel"] = userNameLabel
+        map["mainStatusLabel"] = mainStatusLabel
+        map["userTitleLine"] = userTitleLine
+        map["mainStatusLine"] = mainStatusLine
+        map["mainCountLine"] = mainCountLine
+        map["countLine"] = countLine
+        map["statusLine"] = statusLine
+        map["titleLine"] = titleLine
         
         return map
     }

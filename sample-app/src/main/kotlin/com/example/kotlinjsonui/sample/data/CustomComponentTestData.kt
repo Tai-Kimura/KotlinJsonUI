@@ -17,10 +17,11 @@ data class CustomComponentTestData(
     var currentStatus: String = "Online",
     var statusColor: Color = Color.Green,
     var notificationCount: Int = 3,
-    var dynamicModeStatus: String = "OFF",
     var toggleDynamicMode: (() -> Unit)? = null,
     var incrementCount: (() -> Unit)? = null,
-    var decrementCount: (() -> Unit)? = null
+    var decrementCount: (() -> Unit)? = null,
+    var itemCountText: String = "",
+    var dynamicModeText: String = "Dynamic Mode: OFF"
 ) {
     companion object {
         // Update properties from map
@@ -33,10 +34,11 @@ data class CustomComponentTestData(
                 currentStatus = map["currentStatus"] as? String ?: "Online",
                 statusColor = map["statusColor"] as? Color ?: (map["statusColor"] as? String)?.let { com.kotlinjsonui.generated.ColorManager.compose.colorOrHex(it) } ?: Color.Green,
                 notificationCount = (map["notificationCount"] as? Number)?.toInt() ?: 3,
-                dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?,
                 incrementCount = map["incrementCount"] as? (() -> Unit)?,
-                decrementCount = map["decrementCount"] as? (() -> Unit)?
+                decrementCount = map["decrementCount"] as? (() -> Unit)?,
+                itemCountText = map["itemCountText"] as? String ?: "",
+                dynamicModeText = map["dynamicModeText"] as? String ?: "Dynamic Mode: OFF"
             )
         }
     }
@@ -52,10 +54,11 @@ data class CustomComponentTestData(
         map["currentStatus"] = currentStatus
         map["statusColor"] = statusColor
         map["notificationCount"] = notificationCount
-        map["dynamicModeStatus"] = dynamicModeStatus
         toggleDynamicMode?.let { map["toggleDynamicMode"] = it }
         incrementCount?.let { map["incrementCount"] = it }
         decrementCount?.let { map["decrementCount"] = it }
+        map["itemCountText"] = itemCountText
+        map["dynamicModeText"] = dynamicModeText
         
         return map
     }

@@ -119,7 +119,7 @@ fun Included2GeneratedView(
                 italic = false
             ))
             Text(
-                text = "${data.viewTitle}",
+                text = "${data.titleLine}",
                 color = colorResource(R.color.dark_gray),
                 fontFamily = resolved_text2.family,
                 fontWeight = resolved_text2.weight,
@@ -135,7 +135,7 @@ fun Included2GeneratedView(
                 italic = false
             ))
             Text(
-                text = "${data.viewStatus}",
+                text = "${data.statusLine}",
                 color = colorResource(R.color.dark_gray),
                 fontFamily = resolved_text3.family,
                 fontWeight = resolved_text3.weight,
@@ -151,7 +151,7 @@ fun Included2GeneratedView(
                 italic = false
             ))
             Text(
-                text = "${data.viewCount}",
+                text = "${data.countLine}",
                 color = colorResource(R.color.dark_gray),
                 fontFamily = resolved_text4.family,
                 fontWeight = resolved_text4.weight,

@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +31,7 @@ import com.example.kotlinjsonui.sample.R
 import com.example.kotlinjsonui.sample.data.UserProfileTestData
 import com.example.kotlinjsonui.sample.viewmodels.UserProfileTestViewModel
 import com.kotlinjsonui.components.SafeDynamicView
+import com.kotlinjsonui.components.keyboardAvoidance
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
@@ -102,95 +103,99 @@ private fun Section0(
     viewModel: UserProfileTestViewModel,
     modifier: Modifier
 ) {
-        LazyColumn(
-            modifier = modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(colorResource(R.color.white_23))
-                .imePadding()
-        ) {
-            item {
-            Column(
-                modifier = Modifier
+        run {
+            val scrollPagingState = rememberLazyListState()
+            LazyColumn(
+                state = scrollPagingState,
+                modifier = modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(16.dp)
+                    .fillMaxHeight()
+                    .background(colorResource(R.color.white_23))
+                    .keyboardAvoidance(scrollPagingState, 20)
             ) {
-    // TODO: Implement component type: SampleCard
-                val resolved_text1 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = FontWeight.Bold,
-                    size = 18.sp,
-                    italic = false
-                ))
-                Text(
-                    text = stringResource(R.string.user_profile_test_team_members),
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text1.family,
-                    fontWeight = resolved_text1.weight,
-                    fontSize = resolved_text1.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text1.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-                    modifier = Modifier
-                        .padding(top = 24.dp)
-                        .padding(bottom = 12.dp)
-                )
-                Row(
+                item {
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
+                        .padding(16.dp)
                 ) {
-    // TODO: Implement component type: UserAvatar
-    // TODO: Implement component type: UserAvatar
-    // TODO: Implement component type: UserAvatar
-    // TODO: Implement component type: UserAvatar
+    // Unknown component type 'SampleCard'
+                    val resolved_text1 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.Bold,
+                        size = 18.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = stringResource(R.string.user_profile_test_team_members),
+                        color = colorResource(R.color.dark_gray),
+                        fontFamily = resolved_text1.family,
+                        fontWeight = resolved_text1.weight,
+                        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .padding(bottom = 12.dp)
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                    ) {
+    // Unknown component type 'UserAvatar'
+    // Unknown component type 'UserAvatar'
+    // Unknown component type 'UserAvatar'
+    // Unknown component type 'UserAvatar'
+                    }
+                    val resolved_text2 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.Bold,
+                        size = 18.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = stringResource(R.string.user_profile_test_actions),
+                        color = colorResource(R.color.dark_gray),
+                        fontFamily = resolved_text2.family,
+                        fontWeight = resolved_text2.weight,
+                        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                        modifier = Modifier
+                            .padding(top = 24.dp)
+                            .padding(bottom = 12.dp)
+                    )
+                    Button(
+                        onClick = { data.toggleOnlineStatus?.invoke() },
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                                                containerColor = colorResource(R.color.medium_blue),
+                                                disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
+                                                contentColor = colorResource(R.color.white),
+                                                disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                            )
+                    ) {
+                        Text(stringResource(R.string.user_profile_test_toggle_online_status))
+                    }
+                    Button(
+                        onClick = { data.toggleDynamicMode?.invoke() },
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                                                containerColor = colorResource(R.color.medium_green),
+                                                disabledContainerColor = colorResource(R.color.medium_green).copy(alpha = 0.5f),
+                                                contentColor = colorResource(R.color.white),
+                                                disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                            )
+                    ) {
+                        Text(stringResource(R.string.user_profile_test_toggle_dynamic_mode))
+                    }
                 }
-                val resolved_text2 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = FontWeight.Bold,
-                    size = 18.sp,
-                    italic = false
-                ))
-                Text(
-                    text = stringResource(R.string.user_profile_test_actions),
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text2.family,
-                    fontWeight = resolved_text2.weight,
-                    fontSize = resolved_text2.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text2.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-                    modifier = Modifier
-                        .padding(top = 24.dp)
-                        .padding(bottom = 12.dp)
-                )
-                Button(
-                    onClick = { data.toggleOnlineStatus?.invoke() },
-                    modifier = Modifier.padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = colorResource(R.color.medium_blue),
-                                        disabledContainerColor = colorResource(R.color.medium_blue).copy(alpha = 0.5f),
-                                        contentColor = colorResource(R.color.white),
-                                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                    )
-                ) {
-                    Text(stringResource(R.string.user_profile_test_toggle_online_status))
                 }
-                Button(
-                    onClick = { data.toggleDynamicMode?.invoke() },
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = colorResource(R.color.medium_green),
-                                        disabledContainerColor = colorResource(R.color.medium_green).copy(alpha = 0.5f),
-                                        contentColor = colorResource(R.color.white),
-                                        disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                    )
-                ) {
-                    Text(stringResource(R.string.user_profile_test_toggle_dynamic_mode))
-                }
-            }
             }
         }
 }

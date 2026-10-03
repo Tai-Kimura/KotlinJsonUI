@@ -19,7 +19,8 @@ data class ButtonEnabledTestData(
     var testAction: (() -> Unit)? = null,
     var toggleEnabled: (() -> Unit)? = null,
     var neverCalled: (() -> Unit)? = null,
-    var alwaysCalled: (() -> Unit)? = null
+    var alwaysCalled: (() -> Unit)? = null,
+    var buttonEnabledText: String = ""
 ) {
     companion object {
         // Update properties from map
@@ -33,7 +34,8 @@ data class ButtonEnabledTestData(
                 testAction = map["testAction"] as? (() -> Unit)?,
                 toggleEnabled = map["toggleEnabled"] as? (() -> Unit)?,
                 neverCalled = map["neverCalled"] as? (() -> Unit)?,
-                alwaysCalled = map["alwaysCalled"] as? (() -> Unit)?
+                alwaysCalled = map["alwaysCalled"] as? (() -> Unit)?,
+                buttonEnabledText = map["buttonEnabledText"] as? String ?: ""
             )
         }
     }
@@ -51,6 +53,7 @@ data class ButtonEnabledTestData(
         toggleEnabled?.let { map["toggleEnabled"] = it }
         neverCalled?.let { map["neverCalled"] = it }
         alwaysCalled?.let { map["alwaysCalled"] = it }
+        map["buttonEnabledText"] = buttonEnabledText
         
         return map
     }

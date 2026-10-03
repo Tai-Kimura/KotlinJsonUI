@@ -187,7 +187,8 @@ private fun Section2(
             .padding(top = 20.dp)
             .fillMaxWidth()
             .requiredHeight(50.dp)
-            .background(colorResource(R.color.light_red)),
+            .background(colorResource(R.color.light_red))
+            .wrapContentHeight(align = Alignment.CenterVertically),
         textAlign = TextAlign.Center
     )
 }
@@ -214,7 +215,8 @@ private fun Section3(
             .padding(top = 10.dp)
             .requiredWidth(200.dp)
             .requiredHeight(50.dp)
-            .background(colorResource(R.color.light_lime)),
+            .background(colorResource(R.color.light_lime))
+            .wrapContentHeight(align = Alignment.CenterVertically),
         textAlign = TextAlign.Center
     )
 }
@@ -241,7 +243,8 @@ private fun Section4(
             .padding(top = 10.dp)
             .wrapContentWidth()
             .requiredHeight(50.dp)
-            .background(colorResource(R.color.light_cyan)),
+            .background(colorResource(R.color.light_cyan))
+            .wrapContentHeight(align = Alignment.CenterVertically),
         textAlign = TextAlign.Center
     )
 }
@@ -274,7 +277,8 @@ private fun Section5(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(colorResource(R.color.light_yellow)),
+                .background(colorResource(R.color.light_yellow))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
         val resolved_text6 = Configuration.Font.resolve(FontSpec(
@@ -312,7 +316,8 @@ private fun Section5(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .background(colorResource(R.color.pale_gray_6)),
+                .background(colorResource(R.color.pale_gray_6))
+                .wrapContentHeight(align = Alignment.CenterVertically),
             textAlign = TextAlign.Center
         )
     }

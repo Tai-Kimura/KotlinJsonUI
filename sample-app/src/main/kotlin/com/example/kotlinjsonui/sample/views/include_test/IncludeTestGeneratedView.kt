@@ -6,9 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +36,7 @@ import com.example.kotlinjsonui.sample.R
 import com.example.kotlinjsonui.sample.data.IncludeTestData
 import com.example.kotlinjsonui.sample.viewmodels.IncludeTestViewModel
 import com.kotlinjsonui.components.SafeDynamicView
+import com.kotlinjsonui.components.keyboardAvoidance
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
@@ -93,24 +94,7 @@ fun IncludeTestGeneratedView(
             }
         } else {
             // Static Mode - use generated code
-            LazyColumn(
-            modifier = modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(colorResource(R.color.white))
-                .imePadding()
-        ) {
-            item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
-                Section0(data, viewModel)
-                Section1(data, viewModel)
-            }
-            }
-        }    }
+        Section0(data, viewModel, modifier)    }
         // Requires KotlinJsonUI >= 2.15.1 (screen marker)
         ScreenMarker("include_test")
     }
@@ -121,704 +105,630 @@ fun IncludeTestGeneratedView(
 @Composable
 private fun Section0(
     data: IncludeTestData,
-    viewModel: IncludeTestViewModel
+    viewModel: IncludeTestViewModel,
+    modifier: Modifier
 ) {
-    Button(
-        onClick = { data.toggleDynamicMode?.invoke() },
-        modifier = Modifier
-            .wrapContentWidth()
-            .requiredHeight(44.dp),
-        shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
-        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
-                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
-                            contentColor = colorResource(R.color.white),
-                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+    run {
+        val scrollPagingState = rememberLazyListState()
+        LazyColumn(
+            state = scrollPagingState,
+            modifier = modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .background(colorResource(R.color.white))
+                .keyboardAvoidance(scrollPagingState, 20)
+        ) {
+            item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                Button(
+                    onClick = { data.toggleDynamicMode?.invoke() },
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .requiredHeight(44.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(android.graphics.Color.parseColor("#5856D6")),
+                                            disabledContainerColor = Color(android.graphics.Color.parseColor("#5856D6")).copy(alpha = 0.5f),
+                                            contentColor = colorResource(R.color.white),
+                                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                        )
+                ) {
+                    val resolved_button1 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.Medium,
+                        size = 14.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = "${data.dynamicModeStatus}",
+                        fontFamily = resolved_button1.family,
+                        fontWeight = resolved_button1.weight,
+                        fontSize = resolved_button1.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_button1.style ?: FontStyle.Normal,
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                ) {
+                    val resolved_text1 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = null,
+                        size = 24.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = "${data.title}",
+                        color = colorResource(R.color.black),
+                        fontFamily = resolved_text1.family,
+                        fontWeight = resolved_text1.weight,
+                        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
+                        modifier = Modifier
+                    )
+                    Column(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(colorResource(R.color.white_20))
+                            .padding(15.dp)
+                    ) {
+                        val resolved_text2 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = FontWeight.Bold,
+                            size = 18.sp,
+                            italic = false
+                        ))
+                        Text(
+                            text = stringResource(R.string.include_test_control_panel),
+                            color = colorResource(R.color.medium_blue_4),
+                            fontFamily = resolved_text2.family,
+                            fontWeight = resolved_text2.weight,
+                            fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+                            fontStyle = resolved_text2.style ?: FontStyle.Normal,
+                            style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                            modifier = Modifier
                         )
-    ) {
-        val resolved_button1 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = FontWeight.Medium,
-            size = 14.sp,
-            italic = false
-        ))
-        Text(
-            text = "${data.dynamicModeStatus}",
-            fontFamily = resolved_button1.family,
-            fontWeight = resolved_button1.weight,
-            fontSize = resolved_button1.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_button1.style ?: FontStyle.Normal,
-        )
-    }
-}
-
-@Composable
-private fun Section1_0(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    val resolved_text1 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = null,
-        size = 24.sp,
-        italic = false
-    ))
-    Text(
-        text = "${data.title}",
-        color = colorResource(R.color.black),
-        fontFamily = resolved_text1.family,
-        fontWeight = resolved_text1.weight,
-        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text1.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
-        modifier = Modifier
-    )
-}
-
-@Composable
-private fun Section1_1_0(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    val resolved_text2 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = FontWeight.Bold,
-        size = 18.sp,
-        italic = false
-    ))
-    Text(
-        text = stringResource(R.string.include_test_control_panel),
-        color = colorResource(R.color.medium_blue_4),
-        fontFamily = resolved_text2.family,
-        fontWeight = resolved_text2.weight,
-        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text2.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-        modifier = Modifier
-    )
-}
-
-@Composable
-private fun Section1_1_1(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Row(
-    ) {
-        Button(
-            onClick = { data.incrementCount?.invoke() },
-            shape = RoundedCornerShape(5.dp),
-            contentPadding = PaddingValues(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_green_2),
-                                            disabledContainerColor = colorResource(R.color.medium_green_2).copy(alpha = 0.5f),
-                                            contentColor = colorResource(R.color.white),
-                                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                        )
-        ) {
-            Text("Count +")
-        }
-        Button(
-            onClick = { data.decrementCount?.invoke() },
-            shape = RoundedCornerShape(5.dp),
-            contentPadding = PaddingValues(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_red_5),
-                                            disabledContainerColor = colorResource(R.color.medium_red_5).copy(alpha = 0.5f),
-                                            contentColor = colorResource(R.color.white),
-                                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                        )
-        ) {
-            Text(stringResource(R.string.include_test_count))
-        }
-        Button(
-            onClick = { data.resetCount?.invoke() },
-            shape = RoundedCornerShape(5.dp),
-            contentPadding = PaddingValues(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_blue_2),
-                                            disabledContainerColor = colorResource(R.color.medium_blue_2).copy(alpha = 0.5f),
-                                            contentColor = colorResource(R.color.white),
-                                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                        )
-        ) {
-            Text(stringResource(R.string.include_test_reset))
-        }
-    }
-}
-
-@Composable
-private fun Section1_1_2(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Row(
-    ) {
-        Button(
-            onClick = { data.changeUserName?.invoke() },
-            shape = RoundedCornerShape(5.dp),
-            contentPadding = PaddingValues(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_purple),
-                                            disabledContainerColor = colorResource(R.color.medium_purple).copy(alpha = 0.5f),
-                                            contentColor = colorResource(R.color.white),
-                                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                        )
-        ) {
-            Text(stringResource(R.string.include_test_change_name))
-        }
-        Button(
-            onClick = { data.toggleStatus?.invoke() },
-            shape = RoundedCornerShape(5.dp),
-            contentPadding = PaddingValues(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                                            containerColor = colorResource(R.color.medium_cyan),
-                                            disabledContainerColor = colorResource(R.color.medium_cyan).copy(alpha = 0.5f),
-                                            contentColor = colorResource(R.color.white),
-                                            disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
-                                        )
-        ) {
-            Text(stringResource(R.string.include_test_toggle_status))
-        }
-    }
-}
-
-@Composable
-private fun Section1_1_3(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(5.dp))
-            .background(colorResource(R.color.white))
-            .padding(10.dp)
-    ) {
-        val resolved_text3 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = FontWeight.SemiBold,
-            size = 14.sp,
-            italic = false
-        ))
-        Text(
-            text = stringResource(R.string.include_test_current_values),
-            color = colorResource(R.color.dark_gray),
-            fontFamily = resolved_text3.family,
-            fontWeight = resolved_text3.weight,
-            fontSize = resolved_text3.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text3.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-            modifier = Modifier
-        )
-        val resolved_text4 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 14.sp,
-            italic = false
-        ))
-        Text(
-            text = "${data.mainCount}",
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text4.family,
-            fontWeight = resolved_text4.weight,
-            fontSize = resolved_text4.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text4.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-            modifier = Modifier
-        )
-        val resolved_text5 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 14.sp,
-            italic = false
-        ))
-        Text(
-            text = "${data.userName}",
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text5.family,
-            fontWeight = resolved_text5.weight,
-            fontSize = resolved_text5.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text5.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-            modifier = Modifier
-        )
-        val resolved_text6 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 14.sp,
-            italic = false
-        ))
-        Text(
-            text = "${data.mainStatus}",
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text6.family,
-            fontWeight = resolved_text6.weight,
-            fontSize = resolved_text6.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text6.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-            modifier = Modifier
-        )
-    }
-}
-
-@Composable
-private fun Section1_1(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(colorResource(R.color.white_20))
-            .padding(15.dp)
-    ) {
-        Section1_1_0(data, viewModel)
-        Section1_1_1(data, viewModel)
-        Section1_1_2(data, viewModel)
-        Section1_1_3(data, viewModel)
-    }
-}
-
-@Composable
-private fun Section1_2(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-        modifier = Modifier.width(IntrinsicSize.Min)
-    ) {
-        val resolved_text7 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 16.sp,
-            italic = false
-        ))
-        Text(
-            text = stringResource(R.string.include_test_1_basic_include_with_static_dat),
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text7.family,
-            fontWeight = resolved_text7.weight,
-            fontSize = resolved_text7.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text7.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
-            modifier = Modifier
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(colorResource(R.color.white))
-        ) {
-            val resolved_text8 = Configuration.Font.resolve(FontSpec(
-                family = null,
-                weight = null,
-                size = 24.sp,
-                italic = false
-            ))
-            Text(
-                text = "${data.title}",
-                color = colorResource(R.color.black),
-                fontFamily = resolved_text8.family,
-                fontWeight = resolved_text8.weight,
-                fontSize = resolved_text8.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text8.style ?: FontStyle.Normal,
-                style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
-                modifier = Modifier
-                    .testTag("title_label")
-                    .semantics { testTagsAsResourceId = true }
-                    .padding(top = 20.dp)
-                    .wrapContentWidth()
-                    .wrapContentHeight()
-            )
-        }
-    }
-}
-
-@Composable
-private fun Section1_3(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-    ) {
-        val resolved_text9 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 16.sp,
-            italic = false
-        ))
-        Text(
-            text = stringResource(R.string.include_test_2_include_with_data_static_valu),
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text9.family,
-            fontWeight = resolved_text9.weight,
-            fontSize = resolved_text9.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text9.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
-            modifier = Modifier
-        )
-        Column(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(colorResource(R.color.white_21))
-                .padding(15.dp)
-        ) {
-            val resolved_text10 = Configuration.Font.resolve(FontSpec(
-                family = null,
-                weight = null,
-                size = 18.sp,
-                italic = false
-            ))
-            Text(
-                text = stringResource(R.string.included2_included_view_2),
-                color = colorResource(R.color.medium_red_6),
-                fontFamily = resolved_text10.family,
-                fontWeight = resolved_text10.weight,
-                fontSize = resolved_text10.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text10.style ?: FontStyle.Normal,
-                style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-                modifier = Modifier
-            )
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(colorResource(R.color.white))
-                    .padding(10.dp)
-            ) {
-                val resolved_text11 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewTitle}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text11.family,
-                    fontWeight = resolved_text11.weight,
-                    fontSize = resolved_text11.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text11.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-                val resolved_text12 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewStatus}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text12.family,
-                    fontWeight = resolved_text12.weight,
-                    fontSize = resolved_text12.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text12.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-                val resolved_text13 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewCount}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text13.family,
-                    fontWeight = resolved_text13.weight,
-                    fontSize = resolved_text13.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text13.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
+                        Row(
+                        ) {
+                            Button(
+                                onClick = { data.incrementCount?.invoke() },
+                                shape = RoundedCornerShape(5.dp),
+                                contentPadding = PaddingValues(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                                                    containerColor = colorResource(R.color.medium_green_2),
+                                                                    disabledContainerColor = colorResource(R.color.medium_green_2).copy(alpha = 0.5f),
+                                                                    contentColor = colorResource(R.color.white),
+                                                                    disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                                                )
+                            ) {
+                                Text("Count +")
+                            }
+                            Button(
+                                onClick = { data.decrementCount?.invoke() },
+                                shape = RoundedCornerShape(5.dp),
+                                contentPadding = PaddingValues(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                                                    containerColor = colorResource(R.color.medium_red_5),
+                                                                    disabledContainerColor = colorResource(R.color.medium_red_5).copy(alpha = 0.5f),
+                                                                    contentColor = colorResource(R.color.white),
+                                                                    disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                                                )
+                            ) {
+                                Text(stringResource(R.string.include_test_count))
+                            }
+                            Button(
+                                onClick = { data.resetCount?.invoke() },
+                                shape = RoundedCornerShape(5.dp),
+                                contentPadding = PaddingValues(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                                                    containerColor = colorResource(R.color.medium_blue_2),
+                                                                    disabledContainerColor = colorResource(R.color.medium_blue_2).copy(alpha = 0.5f),
+                                                                    contentColor = colorResource(R.color.white),
+                                                                    disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                                                )
+                            ) {
+                                Text(stringResource(R.string.include_test_reset))
+                            }
+                        }
+                        Row(
+                        ) {
+                            Button(
+                                onClick = { data.changeUserName?.invoke() },
+                                shape = RoundedCornerShape(5.dp),
+                                contentPadding = PaddingValues(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                                                    containerColor = colorResource(R.color.medium_purple),
+                                                                    disabledContainerColor = colorResource(R.color.medium_purple).copy(alpha = 0.5f),
+                                                                    contentColor = colorResource(R.color.white),
+                                                                    disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                                                )
+                            ) {
+                                Text(stringResource(R.string.include_test_change_name))
+                            }
+                            Button(
+                                onClick = { data.toggleStatus?.invoke() },
+                                shape = RoundedCornerShape(5.dp),
+                                contentPadding = PaddingValues(10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                                                    containerColor = colorResource(R.color.medium_cyan),
+                                                                    disabledContainerColor = colorResource(R.color.medium_cyan).copy(alpha = 0.5f),
+                                                                    contentColor = colorResource(R.color.white),
+                                                                    disabledContentColor = colorResource(R.color.white).copy(alpha = 0.5f)
+                                                                )
+                            ) {
+                                Text(stringResource(R.string.include_test_toggle_status))
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(colorResource(R.color.white))
+                                .padding(10.dp)
+                        ) {
+                            val resolved_text3 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = FontWeight.SemiBold,
+                                size = 14.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = stringResource(R.string.include_test_current_values),
+                                color = colorResource(R.color.dark_gray),
+                                fontFamily = resolved_text3.family,
+                                fontWeight = resolved_text3.weight,
+                                fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text3.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                modifier = Modifier
+                            )
+                            val resolved_text4 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 14.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = "${data.mainCountLabel}",
+                                color = colorResource(R.color.medium_gray_4),
+                                fontFamily = resolved_text4.family,
+                                fontWeight = resolved_text4.weight,
+                                fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text4.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                modifier = Modifier
+                            )
+                            val resolved_text5 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 14.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = "${data.userNameLabel}",
+                                color = colorResource(R.color.medium_gray_4),
+                                fontFamily = resolved_text5.family,
+                                fontWeight = resolved_text5.weight,
+                                fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text5.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                modifier = Modifier
+                            )
+                            val resolved_text6 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 14.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = "${data.mainStatusLabel}",
+                                color = colorResource(R.color.medium_gray_4),
+                                fontFamily = resolved_text6.family,
+                                fontWeight = resolved_text6.weight,
+                                fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text6.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                modifier = Modifier
+                            )
+                        }
+                    }
+                    Column(
+                        modifier = Modifier.width(IntrinsicSize.Min)
+                    ) {
+                        val resolved_text7 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 16.sp,
+                            italic = false
+                        ))
+                        Text(
+                            text = stringResource(R.string.include_test_1_basic_include_with_static_dat),
+                            color = colorResource(R.color.medium_gray_4),
+                            fontFamily = resolved_text7.family,
+                            fontWeight = resolved_text7.weight,
+                            fontSize = resolved_text7.size ?: TextUnit.Unspecified,
+                            fontStyle = resolved_text7.style ?: FontStyle.Normal,
+                            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
+                            modifier = Modifier
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .background(colorResource(R.color.white))
+                        ) {
+                            val resolved_text8 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 24.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = "Included View 1",
+                                color = colorResource(R.color.black),
+                                fontFamily = resolved_text8.family,
+                                fontWeight = resolved_text8.weight,
+                                fontSize = resolved_text8.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text8.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
+                                modifier = Modifier
+                                    .testTag("title_label")
+                                    .semantics { testTagsAsResourceId = true }
+                                    .padding(top = 20.dp)
+                                    .wrapContentWidth()
+                                    .wrapContentHeight()
+                            )
+                        }
+                    }
+                    Column(
+                    ) {
+                        val resolved_text9 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 16.sp,
+                            italic = false
+                        ))
+                        Text(
+                            text = stringResource(R.string.include_test_2_include_with_data_static_valu),
+                            color = colorResource(R.color.medium_gray_4),
+                            fontFamily = resolved_text9.family,
+                            fontWeight = resolved_text9.weight,
+                            fontSize = resolved_text9.size ?: TextUnit.Unspecified,
+                            fontStyle = resolved_text9.style ?: FontStyle.Normal,
+                            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
+                            modifier = Modifier
+                        )
+                        Column(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(colorResource(R.color.white_21))
+                                .padding(15.dp)
+                        ) {
+                            val resolved_text10 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 18.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = stringResource(R.string.included2_included_view_2),
+                                color = colorResource(R.color.medium_red_6),
+                                fontFamily = resolved_text10.family,
+                                fontWeight = resolved_text10.weight,
+                                fontSize = resolved_text10.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text10.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                                modifier = Modifier
+                            )
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .background(colorResource(R.color.white))
+                                    .padding(10.dp)
+                            ) {
+                                val resolved_text11 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "Title: Static Title",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text11.family,
+                                    fontWeight = resolved_text11.weight,
+                                    fontSize = resolved_text11.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text11.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                                val resolved_text12 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "Status: Static Status",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text12.family,
+                                    fontWeight = resolved_text12.weight,
+                                    fontSize = resolved_text12.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text12.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                                val resolved_text13 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "Count: 42",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text13.family,
+                                    fontWeight = resolved_text13.weight,
+                                    fontSize = resolved_text13.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text13.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                            }
+                        }
+                    }
+                    Column(
+                    ) {
+                        val resolved_text14 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 16.sp,
+                            italic = false
+                        ))
+                        Text(
+                            text = stringResource(R.string.include_test_3_include_with_data_bound_to_th),
+                            color = colorResource(R.color.medium_gray_4),
+                            fontFamily = resolved_text14.family,
+                            fontWeight = resolved_text14.weight,
+                            fontSize = resolved_text14.size ?: TextUnit.Unspecified,
+                            fontStyle = resolved_text14.style ?: FontStyle.Normal,
+                            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
+                            modifier = Modifier
+                        )
+                        Column(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(colorResource(R.color.white_21))
+                                .padding(15.dp)
+                        ) {
+                            val resolved_text15 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 18.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = stringResource(R.string.included2_included_view_2),
+                                color = colorResource(R.color.medium_red_6),
+                                fontFamily = resolved_text15.family,
+                                fontWeight = resolved_text15.weight,
+                                fontSize = resolved_text15.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text15.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                                modifier = Modifier
+                            )
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .background(colorResource(R.color.white))
+                                    .padding(10.dp)
+                            ) {
+                                val resolved_text16 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "${data.userTitleLine}",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text16.family,
+                                    fontWeight = resolved_text16.weight,
+                                    fontSize = resolved_text16.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text16.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                                val resolved_text17 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "${data.mainStatusLine}",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text17.family,
+                                    fontWeight = resolved_text17.weight,
+                                    fontSize = resolved_text17.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text17.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                                val resolved_text18 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "${data.mainCountLine}",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text18.family,
+                                    fontWeight = resolved_text18.weight,
+                                    fontSize = resolved_text18.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text18.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                            }
+                        }
+                    }
+                    Column(
+                    ) {
+                        val resolved_text19 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 16.sp,
+                            italic = false
+                        ))
+                        Text(
+                            text = stringResource(R.string.include_test_4_include_with_shareddata_and_d),
+                            color = colorResource(R.color.medium_gray_4),
+                            fontFamily = resolved_text19.family,
+                            fontWeight = resolved_text19.weight,
+                            fontSize = resolved_text19.size ?: TextUnit.Unspecified,
+                            fontStyle = resolved_text19.style ?: FontStyle.Normal,
+                            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
+                            modifier = Modifier
+                        )
+                        Column(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(colorResource(R.color.white_21))
+                                .padding(15.dp)
+                        ) {
+                            val resolved_text20 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 18.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = stringResource(R.string.included2_included_view_2),
+                                color = colorResource(R.color.medium_red_6),
+                                fontFamily = resolved_text20.family,
+                                fontWeight = resolved_text20.weight,
+                                fontSize = resolved_text20.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text20.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                                modifier = Modifier
+                            )
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(5.dp))
+                                    .background(colorResource(R.color.white))
+                                    .padding(10.dp)
+                            ) {
+                                val resolved_text21 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "${data.userTitleLine}",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text21.family,
+                                    fontWeight = resolved_text21.weight,
+                                    fontSize = resolved_text21.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text21.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                                val resolved_text22 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "Status: Overridden Status",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text22.family,
+                                    fontWeight = resolved_text22.weight,
+                                    fontSize = resolved_text22.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text22.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                                val resolved_text23 = Configuration.Font.resolve(FontSpec(
+                                    family = null,
+                                    weight = null,
+                                    size = 14.sp,
+                                    italic = false
+                                ))
+                                Text(
+                                    text = "${data.mainCountLine}",
+                                    color = colorResource(R.color.dark_gray),
+                                    fontFamily = resolved_text23.family,
+                                    fontWeight = resolved_text23.weight,
+                                    fontSize = resolved_text23.size ?: TextUnit.Unspecified,
+                                    fontStyle = resolved_text23.style ?: FontStyle.Normal,
+                                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                                    modifier = Modifier
+                                )
+                            }
+                        }
+                    }
+                    Column(
+                        modifier = Modifier.width(IntrinsicSize.Min)
+                    ) {
+                        val resolved_text24 = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = null,
+                            size = 16.sp,
+                            italic = false
+                        ))
+                        Text(
+                            text = stringResource(R.string.include_test_5_another_included_1_bound_to_t),
+                            color = colorResource(R.color.medium_gray_4),
+                            fontFamily = resolved_text24.family,
+                            fontWeight = resolved_text24.weight,
+                            fontSize = resolved_text24.size ?: TextUnit.Unspecified,
+                            fontStyle = resolved_text24.style ?: FontStyle.Normal,
+                            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
+                            modifier = Modifier
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight()
+                                .background(colorResource(R.color.white))
+                        ) {
+                            val resolved_text25 = Configuration.Font.resolve(FontSpec(
+                                family = null,
+                                weight = null,
+                                size = 24.sp,
+                                italic = false
+                            ))
+                            Text(
+                                text = "${data.userName}",
+                                color = colorResource(R.color.black),
+                                fontFamily = resolved_text25.family,
+                                fontWeight = resolved_text25.weight,
+                                fontSize = resolved_text25.size ?: TextUnit.Unspecified,
+                                fontStyle = resolved_text25.style ?: FontStyle.Normal,
+                                style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
+                                modifier = Modifier
+                                    .testTag("title_label")
+                                    .semantics { testTagsAsResourceId = true }
+                                    .padding(top = 20.dp)
+                                    .wrapContentWidth()
+                                    .wrapContentHeight()
+                            )
+                        }
+                    }
+                }
+            }
             }
         }
-    }
-}
-
-@Composable
-private fun Section1_4(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-    ) {
-        val resolved_text14 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 16.sp,
-            italic = false
-        ))
-        Text(
-            text = stringResource(R.string.include_test_3_include_with_data_using_refer),
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text14.family,
-            fontWeight = resolved_text14.weight,
-            fontSize = resolved_text14.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text14.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
-            modifier = Modifier
-        )
-        Column(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(colorResource(R.color.white_21))
-                .padding(15.dp)
-        ) {
-            val resolved_text15 = Configuration.Font.resolve(FontSpec(
-                family = null,
-                weight = null,
-                size = 18.sp,
-                italic = false
-            ))
-            Text(
-                text = stringResource(R.string.included2_included_view_2),
-                color = colorResource(R.color.medium_red_6),
-                fontFamily = resolved_text15.family,
-                fontWeight = resolved_text15.weight,
-                fontSize = resolved_text15.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text15.style ?: FontStyle.Normal,
-                style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-                modifier = Modifier
-            )
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(colorResource(R.color.white))
-                    .padding(10.dp)
-            ) {
-                val resolved_text16 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewTitle}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text16.family,
-                    fontWeight = resolved_text16.weight,
-                    fontSize = resolved_text16.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text16.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-                val resolved_text17 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewStatus}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text17.family,
-                    fontWeight = resolved_text17.weight,
-                    fontSize = resolved_text17.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text17.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-                val resolved_text18 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewCount}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text18.family,
-                    fontWeight = resolved_text18.weight,
-                    fontSize = resolved_text18.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text18.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun Section1_5(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-    ) {
-        val resolved_text19 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 16.sp,
-            italic = false
-        ))
-        Text(
-            text = stringResource(R.string.include_test_4_include_with_shareddata_and_d),
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text19.family,
-            fontWeight = resolved_text19.weight,
-            fontSize = resolved_text19.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text19.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
-            modifier = Modifier
-        )
-        Column(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(colorResource(R.color.white_21))
-                .padding(15.dp)
-        ) {
-            val resolved_text20 = Configuration.Font.resolve(FontSpec(
-                family = null,
-                weight = null,
-                size = 18.sp,
-                italic = false
-            ))
-            Text(
-                text = stringResource(R.string.included2_included_view_2),
-                color = colorResource(R.color.medium_red_6),
-                fontFamily = resolved_text20.family,
-                fontWeight = resolved_text20.weight,
-                fontSize = resolved_text20.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text20.style ?: FontStyle.Normal,
-                style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-                modifier = Modifier
-            )
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(5.dp))
-                    .background(colorResource(R.color.white))
-                    .padding(10.dp)
-            ) {
-                val resolved_text21 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewTitle}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text21.family,
-                    fontWeight = resolved_text21.weight,
-                    fontSize = resolved_text21.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text21.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-                val resolved_text22 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewStatus}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text22.family,
-                    fontWeight = resolved_text22.weight,
-                    fontSize = resolved_text22.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text22.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-                val resolved_text23 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = null,
-                    size = 14.sp,
-                    italic = false
-                ))
-                Text(
-                    text = "${data.viewCount}",
-                    color = colorResource(R.color.dark_gray),
-                    fontFamily = resolved_text23.family,
-                    fontWeight = resolved_text23.weight,
-                    fontSize = resolved_text23.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text23.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-                    modifier = Modifier
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun Section1_6(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-        modifier = Modifier.width(IntrinsicSize.Min)
-    ) {
-        val resolved_text24 = Configuration.Font.resolve(FontSpec(
-            family = null,
-            weight = null,
-            size = 16.sp,
-            italic = false
-        ))
-        Text(
-            text = stringResource(R.string.include_test_5_another_included1_with_refere),
-            color = colorResource(R.color.medium_gray_4),
-            fontFamily = resolved_text24.family,
-            fontWeight = resolved_text24.weight,
-            fontSize = resolved_text24.size ?: TextUnit.Unspecified,
-            fontStyle = resolved_text24.style ?: FontStyle.Normal,
-            style = LocalTextStyle.current.copy(lineHeight = 20.8.sp),
-            modifier = Modifier
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .background(colorResource(R.color.white))
-        ) {
-            val resolved_text25 = Configuration.Font.resolve(FontSpec(
-                family = null,
-                weight = null,
-                size = 24.sp,
-                italic = false
-            ))
-            Text(
-                text = "${data.title}",
-                color = colorResource(R.color.black),
-                fontFamily = resolved_text25.family,
-                fontWeight = resolved_text25.weight,
-                fontSize = resolved_text25.size ?: TextUnit.Unspecified,
-                fontStyle = resolved_text25.style ?: FontStyle.Normal,
-                style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
-                modifier = Modifier
-                    .testTag("title_label")
-                    .semantics { testTagsAsResourceId = true }
-                    .padding(top = 20.dp)
-                    .wrapContentWidth()
-                    .wrapContentHeight()
-            )
-        }
-    }
-}
-
-@Composable
-private fun Section1(
-    data: IncludeTestData,
-    viewModel: IncludeTestViewModel
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-    ) {
-        Section1_0(data, viewModel)
-        Section1_1(data, viewModel)
-        Section1_2(data, viewModel)
-        Section1_3(data, viewModel)
-        Section1_4(data, viewModel)
-        Section1_5(data, viewModel)
-        Section1_6(data, viewModel)
     }
 }
 // >>> RESPONSIVE_HELPERS_END

@@ -16,6 +16,9 @@ data class TextfieldTestData(
     var number: String = "",
     var search: String = "",
     var url: String = "",
+    var emailText: String = "",
+    var passwordText: String = "",
+    var phoneText: String = "",
     var emailFieldIsFocused: Boolean = false,
     var passwordFieldIsFocused: Boolean = false,
     var phoneFieldIsFocused: Boolean = false,
@@ -33,6 +36,9 @@ data class TextfieldTestData(
                 number = map["number"] as? String ?: "",
                 search = map["search"] as? String ?: "",
                 url = map["url"] as? String ?: "",
+                emailText = map["emailText"] as? String ?: "",
+                passwordText = map["passwordText"] as? String ?: "",
+                phoneText = map["phoneText"] as? String ?: "",
                 emailFieldIsFocused = map["emailFieldIsFocused"] as? Boolean ?: false,
                 passwordFieldIsFocused = map["passwordFieldIsFocused"] as? Boolean ?: false,
                 phoneFieldIsFocused = map["phoneFieldIsFocused"] as? Boolean ?: false,
@@ -54,6 +60,9 @@ data class TextfieldTestData(
         map["number"] = number
         map["search"] = search
         map["url"] = url
+        map["emailText"] = emailText
+        map["passwordText"] = passwordText
+        map["phoneText"] = phoneText
         map["emailFieldIsFocused"] = emailFieldIsFocused
         map["passwordFieldIsFocused"] = passwordFieldIsFocused
         map["phoneFieldIsFocused"] = phoneFieldIsFocused

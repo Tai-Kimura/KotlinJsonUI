@@ -95,7 +95,7 @@ fun ImageCellGeneratedView(
     ) {
         AsyncImage(
             model = data.imageUrl,
-            contentDescription = "Image",
+            contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()

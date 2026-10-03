@@ -346,7 +346,7 @@ private fun Section3(
         italic = false
     ))
     Text(
-        text = "${data.email}",
+        text = "${data.emailText}",
         color = colorResource(R.color.medium_gray_4),
         fontFamily = resolved_text3.family,
         fontWeight = resolved_text3.weight,
@@ -369,7 +369,7 @@ private fun Section4(
         italic = false
     ))
     Text(
-        text = "${data.password}",
+        text = "${data.passwordText}",
         color = colorResource(R.color.medium_gray_4),
         fontFamily = resolved_text4.family,
         fontWeight = resolved_text4.weight,
@@ -392,7 +392,7 @@ private fun Section5(
         italic = false
     ))
     Text(
-        text = "${data.phone}",
+        text = "${data.phoneText}",
         color = colorResource(R.color.medium_gray_4),
         fontFamily = resolved_text5.family,
         fontWeight = resolved_text5.weight,

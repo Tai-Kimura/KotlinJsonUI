@@ -26,11 +26,11 @@ data class CollectionTestData(
             return CollectionTestData(
                 dynamicModeEnabled = map["dynamicModeEnabled"] as? Boolean ?: false,
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
-                items1 = com.kotlinjsonui.data.CollectionDataSource(),
-                mixedItems = com.kotlinjsonui.data.CollectionDataSource(),
-                horizontalItems = com.kotlinjsonui.data.CollectionDataSource(),
-                sectionedItems = com.kotlinjsonui.data.CollectionDataSource(),
-                multiSectionItems = com.kotlinjsonui.data.CollectionDataSource(),
+                items1 = map["items1"] as? com.kotlinjsonui.data.CollectionDataSource ?: com.kotlinjsonui.data.CollectionDataSource(),
+                mixedItems = map["mixedItems"] as? com.kotlinjsonui.data.CollectionDataSource ?: com.kotlinjsonui.data.CollectionDataSource(),
+                horizontalItems = map["horizontalItems"] as? com.kotlinjsonui.data.CollectionDataSource ?: com.kotlinjsonui.data.CollectionDataSource(),
+                sectionedItems = map["sectionedItems"] as? com.kotlinjsonui.data.CollectionDataSource ?: com.kotlinjsonui.data.CollectionDataSource(),
+                multiSectionItems = map["multiSectionItems"] as? com.kotlinjsonui.data.CollectionDataSource ?: com.kotlinjsonui.data.CollectionDataSource(),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
             )
         }

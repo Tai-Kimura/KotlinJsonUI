@@ -96,7 +96,7 @@ fun ConverterTestCellGeneratedView(
             italic = false
         ))
         Text(
-            text = "${data.item["label"] ?: ""}",
+            text = "@{item[\"label\"]}",
             color = colorResource(R.color.black),
             fontFamily = resolved_text1.family,
             fontWeight = resolved_text1.weight,
@@ -112,7 +112,7 @@ fun ConverterTestCellGeneratedView(
             italic = false
         ))
         Text(
-            text = "${data.item["value"] ?: ""}",
+            text = "@{item[\"value\"]}",
             color = colorResource(R.color.medium_blue),
             fontFamily = resolved_text2.family,
             fontWeight = resolved_text2.weight,

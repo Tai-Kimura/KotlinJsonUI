@@ -23,7 +23,7 @@ data class ConverterTestData(
         fun fromMap(map: Map<String, Any>): ConverterTestData {
             return ConverterTestData(
                 dynamicModeStatus = map["dynamicModeStatus"] as? String ?: "OFF",
-                items = com.kotlinjsonui.data.CollectionDataSource(),
+                items = map["items"] as? com.kotlinjsonui.data.CollectionDataSource ?: com.kotlinjsonui.data.CollectionDataSource(),
                 title = map["title"] as? String ?: KotlinJsonUI.localizedString(R.string.test_menu_converter_components_test, "Converter Components Test"),
                 toggleDynamicMode = map["toggleDynamicMode"] as? (() -> Unit)?
             )

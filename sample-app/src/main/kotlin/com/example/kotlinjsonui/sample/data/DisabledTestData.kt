@@ -20,6 +20,7 @@ data class DisabledTestData(
     var onTouchDisabledTap: (() -> Unit)? = null,
     var toggleEnableState: (() -> Unit)? = null,
     var onDynamicButtonTap: (() -> Unit)? = null,
+    var enabledStateText: String = "",
     var disabledTestField1IsFocused: Boolean = false,
     var disabledTestField2IsFocused: Boolean = false
 ) {
@@ -38,6 +39,7 @@ data class DisabledTestData(
                 onTouchDisabledTap = map["onTouchDisabledTap"] as? (() -> Unit)?,
                 toggleEnableState = map["toggleEnableState"] as? (() -> Unit)?,
                 onDynamicButtonTap = map["onDynamicButtonTap"] as? (() -> Unit)?,
+                enabledStateText = map["enabledStateText"] as? String ?: "",
                 disabledTestField1IsFocused = map["disabledTestField1IsFocused"] as? Boolean ?: false,
                 disabledTestField2IsFocused = map["disabledTestField2IsFocused"] as? Boolean ?: false
             )
@@ -59,6 +61,7 @@ data class DisabledTestData(
         onTouchDisabledTap?.let { map["onTouchDisabledTap"] = it }
         toggleEnableState?.let { map["toggleEnableState"] = it }
         onDynamicButtonTap?.let { map["onDynamicButtonTap"] = it }
+        map["enabledStateText"] = enabledStateText
         map["disabledTestField1IsFocused"] = disabledTestField1IsFocused
         map["disabledTestField2IsFocused"] = disabledTestField2IsFocused
         

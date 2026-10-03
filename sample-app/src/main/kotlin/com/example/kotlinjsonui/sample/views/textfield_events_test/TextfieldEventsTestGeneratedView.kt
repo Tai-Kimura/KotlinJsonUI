@@ -3,9 +3,14 @@ package com.example.kotlinjsonui.sample.views.textfield_events_test
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -43,6 +48,7 @@ import com.example.kotlinjsonui.sample.viewmodels.TextfieldEventsTestViewModel
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.components.CustomTextFieldWithMargins
 import com.kotlinjsonui.components.SafeDynamicView
+import com.kotlinjsonui.components.keyboardAvoidance
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.FontSpec
@@ -102,7 +108,7 @@ fun TextfieldEventsTestGeneratedView(
             }
         } else {
             // Static Mode - use generated code
-        Section6(data, viewModel, modifier)    }
+        Section0(data, viewModel, modifier)    }
         // Requires KotlinJsonUI >= 2.15.1 (screen marker)
         ScreenMarker("textfield_events_test")
     }
@@ -111,240 +117,218 @@ fun TextfieldEventsTestGeneratedView(
 
 // >>> RESPONSIVE_HELPERS_START
 @Composable
-private fun Section1(
-    data: TextfieldEventsTestData,
-    viewModel: TextfieldEventsTestViewModel
-) {
-    val resolved_text2 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = FontWeight.SemiBold,
-        size = 18.sp,
-        italic = false
-    ))
-    Text(
-        text = stringResource(R.string.textfield_events_test_ontextchange_event_test),
-        fontFamily = resolved_text2.family,
-        fontWeight = resolved_text2.weight,
-        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text2.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-        modifier = Modifier
-            .padding(top = 10.dp)
-            .padding(start = 20.dp)
-    )
-}
-
-@Composable
-private fun Section2(
-    data: TextfieldEventsTestData,
-    viewModel: TextfieldEventsTestViewModel
-) {
-    val textFieldState_emailField = rememberTextFieldState(initialText = data.email)
-    LaunchedEffect(data.email) { if (textFieldState_emailField.text.toString() != data.email) textFieldState_emailField.edit { replace(0, length, data.email) } }
-    LaunchedEffect(textFieldState_emailField.text) { val newValue = textFieldState_emailField.text.toString(); if (newValue != data.email) { viewModel.updateData(mapOf("email" to newValue)); data.handleEmailChange?.invoke("emailField", newValue) } }
-    val focusRequester_emailField = remember { FocusRequester() }
-    val keyboardController_emailField = LocalSoftwareKeyboardController.current
-    LaunchedEffect(data.emailFieldIsFocused) { if (data.emailFieldIsFocused) { focusRequester_emailField.requestFocus(); keyboardController_emailField?.show() } }
-    CustomTextFieldWithMargins(
-        state = textFieldState_emailField,
-        boxModifier = Modifier
-            .testTag("emailField")
-            .semantics { testTagsAsResourceId = true }
-            .padding(top = 10.dp)
-            .padding(start = 20.dp)
-            .padding(end = 20.dp),
-        textFieldModifier = Modifier
-            .onFocusChanged { if (it.isFocused != data.emailFieldIsFocused) viewModel.updateData(mapOf("emailFieldIsFocused" to it.isFocused)) }
-            .focusRequester(focusRequester_emailField),
-        placeholder = { Text(
-                                text = stringResource(R.string.textfield_events_test_enter_email),
-                                color = Configuration.TextField.defaultPlaceholderColor
-                            ) },
-        isOutlined = true,
-        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Default)
-    )
-    val resolved_text3 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = null,
-        size = 14.sp,
-        italic = false
-    ))
-    Text(
-        text = "${data.emailDisplay}",
-        color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text3.family,
-        fontWeight = resolved_text3.weight,
-        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text3.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-        modifier = Modifier
-            .testTag("emailStatus")
-            .semantics { testTagsAsResourceId = true }
-            .padding(top = 10.dp)
-            .padding(start = 20.dp)
-    )
-    val resolved_text4 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = FontWeight.SemiBold,
-        size = 18.sp,
-        italic = false
-    ))
-    Text(
-        text = stringResource(R.string.textfield_events_test_secure_textfield_test),
-        fontFamily = resolved_text4.family,
-        fontWeight = resolved_text4.weight,
-        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text4.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-        modifier = Modifier
-            .padding(top = 30.dp)
-            .padding(start = 20.dp)
-    )
-    val textFieldState_passwordField = rememberTextFieldState(initialText = data.password)
-    LaunchedEffect(data.password) { if (textFieldState_passwordField.text.toString() != data.password) textFieldState_passwordField.edit { replace(0, length, data.password) } }
-    LaunchedEffect(textFieldState_passwordField.text) { val newValue = textFieldState_passwordField.text.toString(); if (newValue != data.password) { viewModel.updateData(mapOf("password" to newValue)); data.handlePasswordChange?.invoke("passwordField", newValue) } }
-    val focusRequester_passwordField = remember { FocusRequester() }
-    val keyboardController_passwordField = LocalSoftwareKeyboardController.current
-    LaunchedEffect(data.passwordFieldIsFocused) { if (data.passwordFieldIsFocused) { focusRequester_passwordField.requestFocus(); keyboardController_passwordField?.show() } }
-    CustomTextFieldWithMargins(
-        state = textFieldState_passwordField,
-        boxModifier = Modifier
-            .testTag("passwordField")
-            .semantics { testTagsAsResourceId = true }
-            .padding(top = 10.dp)
-            .padding(start = 20.dp)
-            .padding(end = 20.dp),
-        textFieldModifier = Modifier
-            .onFocusChanged { if (it.isFocused != data.passwordFieldIsFocused) viewModel.updateData(mapOf("passwordFieldIsFocused" to it.isFocused)) }
-            .focusRequester(focusRequester_passwordField),
-        placeholder = { Text(
-                                text = stringResource(R.string.textfield_events_test_enter_password),
-                                color = Configuration.TextField.defaultPlaceholderColor
-                            ) },
-        isOutlined = true,
-        isSecure = true,
-        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
-    )
-    val resolved_text5 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = null,
-        size = 14.sp,
-        italic = false
-    ))
-    Text(
-        text = "${data.passwordLength}",
-        color = colorResource(R.color.medium_gray_4),
-        fontFamily = resolved_text5.family,
-        fontWeight = resolved_text5.weight,
-        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text5.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
-        modifier = Modifier
-            .padding(top = 10.dp)
-            .padding(start = 20.dp)
-    )
-    val resolved_text6 = Configuration.Font.resolve(FontSpec(
-        family = null,
-        weight = FontWeight.SemiBold,
-        size = 18.sp,
-        italic = false
-    ))
-    Text(
-        text = stringResource(R.string.textfield_events_test_input_accessory_test),
-        fontFamily = resolved_text6.family,
-        fontWeight = resolved_text6.weight,
-        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
-        fontStyle = resolved_text6.style ?: FontStyle.Normal,
-        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
-        modifier = Modifier
-            .padding(top = 30.dp)
-            .padding(start = 20.dp)
-    )
-    val textFieldState_notesField = rememberTextFieldState(initialText = data.notes)
-    LaunchedEffect(data.notes) { if (textFieldState_notesField.text.toString() != data.notes) textFieldState_notesField.edit { replace(0, length, data.notes) } }
-    LaunchedEffect(textFieldState_notesField.text) { val newValue = textFieldState_notesField.text.toString(); if (newValue != data.notes) viewModel.updateData(mapOf("notes" to newValue)) }
-    val focusRequester_notesField = remember { FocusRequester() }
-    val keyboardController_notesField = LocalSoftwareKeyboardController.current
-    LaunchedEffect(data.notesFieldIsFocused) { if (data.notesFieldIsFocused) { focusRequester_notesField.requestFocus(); keyboardController_notesField?.show() } }
-    CustomTextFieldWithMargins(
-        state = textFieldState_notesField,
-        boxModifier = Modifier
-            .testTag("notesField")
-            .semantics { testTagsAsResourceId = true }
-            .padding(top = 10.dp)
-            .padding(start = 20.dp)
-            .padding(end = 20.dp),
-        textFieldModifier = Modifier
-            .onFocusChanged { if (it.isFocused != data.notesFieldIsFocused) viewModel.updateData(mapOf("notesFieldIsFocused" to it.isFocused)) }
-            .focusRequester(focusRequester_notesField),
-        placeholder = { Text(
-                                text = stringResource(R.string.textfield_events_test_enter_notes),
-                                color = Configuration.TextField.defaultPlaceholderColor
-                            ) },
-        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp)
-    )
-}
-
-@Composable
-private fun Section6(
+private fun Section0(
     data: TextfieldEventsTestData,
     viewModel: TextfieldEventsTestViewModel,
     modifier: Modifier
 ) {
     val safeAreaConfig = LocalSafeAreaConfig.current
-    val edges = mutableListOf("all").apply {
-        if (safeAreaConfig.ignoreBottom) {
-            remove("bottom")
-            if (contains("all")) { remove("all"); addAll(listOf("top", "start", "end")) }
-        }
-        if (safeAreaConfig.ignoreTop) {
-            remove("top")
-            if (contains("all")) { remove("all"); addAll(listOf("bottom", "start", "end")) }
-        }
-    }.distinct()
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (edges.contains("all")) Modifier.systemBarsPadding() else Modifier)
-            .then(if (!edges.contains("all") && edges.contains("top")) Modifier.statusBarsPadding() else Modifier)
-            .then(if (!edges.contains("all") && edges.contains("bottom")) Modifier.navigationBarsPadding() else Modifier)
+            .then(if (!safeAreaConfig.ignoreTop) Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top)) else Modifier)
+            .then(if (!safeAreaConfig.ignoreBottom) Modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)) else Modifier)
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Start + WindowInsetsSides.End))
             .imePadding()
     ) {
-        LazyColumn(
-            modifier = Modifier.imePadding()
-        ) {
-            item {
-            Column(
-                modifier = Modifier
-                    .testTag("container")
-                    .semantics { testTagsAsResourceId = true }
-                    .background(colorResource(R.color.white_23))
+        run {
+            val scrollPagingState = rememberLazyListState()
+            LazyColumn(
+                state = scrollPagingState,
+                modifier = Modifier.keyboardAvoidance(scrollPagingState, 20)
             ) {
-                val resolved_text1 = Configuration.Font.resolve(FontSpec(
-                    family = null,
-                    weight = FontWeight.Bold,
-                    size = 24.sp,
-                    italic = false
-                ))
-                Text(
-                    text = stringResource(R.string.textfield_events_test_textfield_events_test),
-                    fontFamily = resolved_text1.family,
-                    fontWeight = resolved_text1.weight,
-                    fontSize = resolved_text1.size ?: TextUnit.Unspecified,
-                    fontStyle = resolved_text1.style ?: FontStyle.Normal,
-                    style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
+                item {
+                Column(
                     modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .padding(top = 20.dp)
-                        .padding(bottom = 20.dp),
-                    textAlign = TextAlign.Center
-                )
-                Section1(data, viewModel)
-                Section2(data, viewModel)
-            }
+                        .testTag("container")
+                        .semantics { testTagsAsResourceId = true }
+                        .background(colorResource(R.color.white_23))
+                ) {
+                    val resolved_text1 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.Bold,
+                        size = 24.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = stringResource(R.string.textfield_events_test_textfield_events_test),
+                        fontFamily = resolved_text1.family,
+                        fontWeight = resolved_text1.weight,
+                        fontSize = resolved_text1.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text1.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 31.2.sp),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 20.dp)
+                            .padding(bottom = 20.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    val resolved_text2 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.SemiBold,
+                        size = 18.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = stringResource(R.string.textfield_events_test_ontextchange_event_test),
+                        fontFamily = resolved_text2.family,
+                        fontWeight = resolved_text2.weight,
+                        fontSize = resolved_text2.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text2.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .padding(start = 20.dp)
+                    )
+                    val textFieldState_emailField = rememberTextFieldState(initialText = data.email)
+                    LaunchedEffect(data.email) { if (textFieldState_emailField.text.toString() != data.email) textFieldState_emailField.edit { replace(0, length, data.email) } }
+                    LaunchedEffect(textFieldState_emailField.text) { val newValue = textFieldState_emailField.text.toString(); if (newValue != data.email) { viewModel.updateData(mapOf("email" to newValue)); data.handleEmailChange?.invoke("emailField", newValue) } }
+                    val focusRequester_emailField = remember { FocusRequester() }
+                    val keyboardController_emailField = LocalSoftwareKeyboardController.current
+                    LaunchedEffect(data.emailFieldIsFocused) { if (data.emailFieldIsFocused) { focusRequester_emailField.requestFocus(); keyboardController_emailField?.show() } }
+                    CustomTextFieldWithMargins(
+                        state = textFieldState_emailField,
+                        boxModifier = Modifier
+                            .testTag("emailField")
+                            .semantics { testTagsAsResourceId = true }
+                            .padding(top = 10.dp)
+                            .padding(start = 20.dp)
+                            .padding(end = 20.dp),
+                        textFieldModifier = Modifier
+                            .onFocusChanged { if (it.isFocused != data.emailFieldIsFocused) viewModel.updateData(mapOf("emailFieldIsFocused" to it.isFocused)) }
+                            .focusRequester(focusRequester_emailField),
+                        placeholder = { Text(
+                                                    text = stringResource(R.string.textfield_events_test_enter_email),
+                                                    color = Configuration.TextField.defaultPlaceholderColor
+                                                ) },
+                        isOutlined = true,
+                        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Default)
+                    )
+                    val resolved_text3 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = null,
+                        size = 14.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = "${data.emailDisplayText}",
+                        color = colorResource(R.color.medium_gray_4),
+                        fontFamily = resolved_text3.family,
+                        fontWeight = resolved_text3.weight,
+                        fontSize = resolved_text3.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text3.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                        modifier = Modifier
+                            .testTag("emailStatus")
+                            .semantics { testTagsAsResourceId = true }
+                            .padding(top = 10.dp)
+                            .padding(start = 20.dp)
+                    )
+                    val resolved_text4 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.SemiBold,
+                        size = 18.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = stringResource(R.string.textfield_events_test_secure_textfield_test),
+                        fontFamily = resolved_text4.family,
+                        fontWeight = resolved_text4.weight,
+                        fontSize = resolved_text4.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text4.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                        modifier = Modifier
+                            .padding(top = 30.dp)
+                            .padding(start = 20.dp)
+                    )
+                    val textFieldState_passwordField = rememberTextFieldState(initialText = data.password)
+                    LaunchedEffect(data.password) { if (textFieldState_passwordField.text.toString() != data.password) textFieldState_passwordField.edit { replace(0, length, data.password) } }
+                    LaunchedEffect(textFieldState_passwordField.text) { val newValue = textFieldState_passwordField.text.toString(); if (newValue != data.password) { viewModel.updateData(mapOf("password" to newValue)); data.handlePasswordChange?.invoke("passwordField", newValue) } }
+                    val focusRequester_passwordField = remember { FocusRequester() }
+                    val keyboardController_passwordField = LocalSoftwareKeyboardController.current
+                    LaunchedEffect(data.passwordFieldIsFocused) { if (data.passwordFieldIsFocused) { focusRequester_passwordField.requestFocus(); keyboardController_passwordField?.show() } }
+                    CustomTextFieldWithMargins(
+                        state = textFieldState_passwordField,
+                        boxModifier = Modifier
+                            .testTag("passwordField")
+                            .semantics { testTagsAsResourceId = true }
+                            .padding(top = 10.dp)
+                            .padding(start = 20.dp)
+                            .padding(end = 20.dp),
+                        textFieldModifier = Modifier
+                            .onFocusChanged { if (it.isFocused != data.passwordFieldIsFocused) viewModel.updateData(mapOf("passwordFieldIsFocused" to it.isFocused)) }
+                            .focusRequester(focusRequester_passwordField),
+                        placeholder = { Text(
+                                                    text = stringResource(R.string.textfield_events_test_enter_password),
+                                                    color = Configuration.TextField.defaultPlaceholderColor
+                                                ) },
+                        isOutlined = true,
+                        isSecure = true,
+                        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default)
+                    )
+                    val resolved_text5 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = null,
+                        size = 14.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = "${data.passwordLengthText}",
+                        color = colorResource(R.color.medium_gray_4),
+                        fontFamily = resolved_text5.family,
+                        fontWeight = resolved_text5.weight,
+                        fontSize = resolved_text5.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text5.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 18.2.sp),
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .padding(start = 20.dp)
+                    )
+                    val resolved_text6 = Configuration.Font.resolve(FontSpec(
+                        family = null,
+                        weight = FontWeight.SemiBold,
+                        size = 18.sp,
+                        italic = false
+                    ))
+                    Text(
+                        text = stringResource(R.string.textfield_events_test_input_accessory_test),
+                        fontFamily = resolved_text6.family,
+                        fontWeight = resolved_text6.weight,
+                        fontSize = resolved_text6.size ?: TextUnit.Unspecified,
+                        fontStyle = resolved_text6.style ?: FontStyle.Normal,
+                        style = LocalTextStyle.current.copy(lineHeight = 23.4.sp),
+                        modifier = Modifier
+                            .padding(top = 30.dp)
+                            .padding(start = 20.dp)
+                    )
+                    val textFieldState_notesField = rememberTextFieldState(initialText = data.notes)
+                    LaunchedEffect(data.notes) { if (textFieldState_notesField.text.toString() != data.notes) textFieldState_notesField.edit { replace(0, length, data.notes) } }
+                    LaunchedEffect(textFieldState_notesField.text) { val newValue = textFieldState_notesField.text.toString(); if (newValue != data.notes) viewModel.updateData(mapOf("notes" to newValue)) }
+                    val focusRequester_notesField = remember { FocusRequester() }
+                    val keyboardController_notesField = LocalSoftwareKeyboardController.current
+                    LaunchedEffect(data.notesFieldIsFocused) { if (data.notesFieldIsFocused) { focusRequester_notesField.requestFocus(); keyboardController_notesField?.show() } }
+                    CustomTextFieldWithMargins(
+                        state = textFieldState_notesField,
+                        boxModifier = Modifier
+                            .testTag("notesField")
+                            .semantics { testTagsAsResourceId = true }
+                            .padding(top = 10.dp)
+                            .padding(start = 20.dp)
+                            .padding(end = 20.dp),
+                        textFieldModifier = Modifier
+                            .onFocusChanged { if (it.isFocused != data.notesFieldIsFocused) viewModel.updateData(mapOf("notesFieldIsFocused" to it.isFocused)) }
+                            .focusRequester(focusRequester_notesField),
+                        placeholder = { Text(
+                                                    text = stringResource(R.string.textfield_events_test_enter_notes),
+                                                    color = Configuration.TextField.defaultPlaceholderColor
+                                                ) },
+                        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp)
+                    )
+                }
+                }
             }
         }
     }
