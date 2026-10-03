@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -148,11 +149,28 @@ private fun EmbedContainerImpl(
     // Without this, multiple embeds of the same screen in the same parent
     // would share the same VM instance (Compose's `viewModel()` resolves by
     // class within the ambient LocalViewModelStoreOwner).
-    val owner = remember(embedId, parentFactory) {
-        EmbedViewModelStoreOwner(parentFactory, parentExtras)
+    //
+    // The slot's ViewModelStore lives as long as the HOST's owner (a
+    // NavBackStackEntry under Navigation, else the Activity), held there by
+    // [EmbedStores] keyed by embedId — not as long as this composition.
+    // Through 2.43.1 it was a `remember` cleared in onDispose: Navigation
+    // drops a covered destination's composition, so every push over the host
+    // destroyed the Embed's ViewModels, the return made new ones, and what
+    // was sent while covered was lost; iOS keeps them (jsonui-cli ticket
+    // kjui-embed-viewmodel-store-cleared-when-host-destination-is-covered).
+    // Now the store is cleared when the host's owner is (the destination is
+    // popped) or when this slot's embedId changes in place. With no host
+    // owner, the composition still bounds it.
+    val stores: EmbedStores? = parentOwner?.let { EmbedStores.of(it) }
+    val owner = remember(embedId, parentFactory, stores) {
+        EmbedViewModelStoreOwner(parentFactory, parentExtras, stores?.store(embedId) ?: ViewModelStore())
     }
+    val lastEmbedId = remember { arrayOfNulls<String>(1) }
     DisposableEffect(embedId) {
-        onDispose { owner.viewModelStore.clear() }
+        val previous = lastEmbedId[0]
+        if (stores != null && previous != null && previous != embedId) stores.release(previous)
+        lastEmbedId[0] = embedId
+        onDispose { if (stores == null) owner.viewModelStore.clear() }
     }
 
     val navigationDelegate = remember(embedId, navigationMode) {
@@ -393,15 +411,47 @@ class EmbedScope(
  */
 internal class EmbedViewModelStoreOwner(
     parentFactory: ViewModelProvider.Factory?,
-    parentExtras: CreationExtras
+    parentExtras: CreationExtras,
+    private val store: ViewModelStore = ViewModelStore()
 ) : ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
-    private val store = ViewModelStore()
     override val viewModelStore: ViewModelStore get() = store
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory =
         parentFactory ?: ViewModelProvider.NewInstanceFactory()
 
     override val defaultViewModelCreationExtras: CreationExtras = parentExtras
+}
+
+/**
+ * The ViewModelStores of a host's Embed slots, one per embedId, held as a
+ * ViewModel in the HOST's [ViewModelStoreOwner] so they live as long as the
+ * host destination does: cleared with it ([onCleared]) or one by one when a
+ * slot's embedId changes ([release]). See EmbedContainerImpl.
+ */
+internal class EmbedStores : ViewModel() {
+    private val stores = HashMap<String, ViewModelStore>()
+
+    fun store(embedId: String): ViewModelStore = synchronized(stores) { stores.getOrPut(embedId) { ViewModelStore() } }
+
+    fun release(embedId: String) {
+        synchronized(stores) { stores.remove(embedId) }?.clear()
+    }
+
+    override fun onCleared() {
+        val all = synchronized(stores) { stores.values.toList().also { stores.clear() } }
+        all.forEach { it.clear() }
+    }
+
+    companion object {
+        private const val KEY = "com.kotlinjsonui.embed.EmbedStores"
+        private val factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T = EmbedStores() as T
+        }
+
+        fun of(owner: ViewModelStoreOwner): EmbedStores =
+            ViewModelProvider(owner.viewModelStore, factory)[KEY, EmbedStores::class.java]
+    }
 }
 
 // MARK: - EmbeddedEvent
