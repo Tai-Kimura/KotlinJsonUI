@@ -289,6 +289,7 @@ private fun Section0(
                         .semantics { testTagsAsResourceId = true }
                 ) {
                     Tab(
+                        modifier = Modifier.testTag("segment1_tab_0"),
                         selected = (data.selectedSegment1 == 0),
                         onClick = {
                             viewModel.updateData(mapOf("selectedSegment1" to 0))
@@ -296,6 +297,7 @@ private fun Section0(
                         text = { Text(stringResource(R.string.components_test_list)) }
                     )
                     Tab(
+                        modifier = Modifier.testTag("segment1_tab_1"),
                         selected = (data.selectedSegment1 == 1),
                         onClick = {
                             viewModel.updateData(mapOf("selectedSegment1" to 1))
@@ -303,6 +305,7 @@ private fun Section0(
                         text = { Text(stringResource(R.string.components_test_grid)) }
                     )
                     Tab(
+                        modifier = Modifier.testTag("segment1_tab_2"),
                         selected = (data.selectedSegment1 == 2),
                         onClick = {
                             viewModel.updateData(mapOf("selectedSegment1" to 2))

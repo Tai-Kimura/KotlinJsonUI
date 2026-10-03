@@ -659,6 +659,7 @@ private fun Section0(
                             .padding(bottom = 10.dp)
                     ) {
                         Tab(
+                            modifier = Modifier.testTag("segment_tab_0"),
                             selected = (data.selectedSegment == 0),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedSegment" to 0))
@@ -671,6 +672,7 @@ private fun Section0(
                             }
                         )
                         Tab(
+                            modifier = Modifier.testTag("segment_tab_1"),
                             selected = (data.selectedSegment == 1),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedSegment" to 1))
@@ -683,6 +685,7 @@ private fun Section0(
                             }
                         )
                         Tab(
+                            modifier = Modifier.testTag("segment_tab_2"),
                             selected = (data.selectedSegment == 2),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedSegment" to 2))

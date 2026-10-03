@@ -180,6 +180,7 @@ private fun Section0(
                             .padding(end = 20.dp)
                     ) {
                         Tab(
+                            modifier = Modifier.testTag("basicSegment_tab_0"),
                             selected = (data.selectedBasic == 0),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedBasic" to 0))
@@ -187,6 +188,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_option_1)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("basicSegment_tab_1"),
                             selected = (data.selectedBasic == 1),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedBasic" to 1))
@@ -194,6 +196,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_option_2)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("basicSegment_tab_2"),
                             selected = (data.selectedBasic == 2),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedBasic" to 2))
@@ -231,6 +234,7 @@ private fun Section0(
                             .padding(end = 20.dp)
                     ) {
                         Tab(
+                            modifier = Modifier.testTag("colorSegment_tab_0"),
                             selected = (data.selectedColor == 0),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedColor" to 0))
@@ -243,6 +247,7 @@ private fun Section0(
                             }
                         )
                         Tab(
+                            modifier = Modifier.testTag("colorSegment_tab_1"),
                             selected = (data.selectedColor == 1),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedColor" to 1))
@@ -255,6 +260,7 @@ private fun Section0(
                             }
                         )
                         Tab(
+                            modifier = Modifier.testTag("colorSegment_tab_2"),
                             selected = (data.selectedColor == 2),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedColor" to 2))
@@ -295,6 +301,7 @@ private fun Section0(
                             .padding(end = 20.dp)
                     ) {
                         Tab(
+                            modifier = Modifier.testTag("eventSegment_tab_0"),
                             selected = (data.selectedEvent == 0),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedEvent" to 0))
@@ -303,6 +310,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_small)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("eventSegment_tab_1"),
                             selected = (data.selectedEvent == 1),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedEvent" to 1))
@@ -311,6 +319,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_medium)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("eventSegment_tab_2"),
                             selected = (data.selectedEvent == 2),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedEvent" to 2))
@@ -319,6 +328,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_large)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("eventSegment_tab_3"),
                             selected = (data.selectedEvent == 3),
                             onClick = {
                                 viewModel.updateData(mapOf("selectedEvent" to 3))
@@ -377,6 +387,7 @@ private fun Section0(
                             .semantics { disabled() }
                     ) {
                         Tab(
+                            modifier = Modifier.testTag("disabledSegment_tab_0"),
                             selected = (data.selectedDisabled == 0),
                             enabled = false,
                             onClick = {
@@ -385,6 +396,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_disabled_1)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("disabledSegment_tab_1"),
                             selected = (data.selectedDisabled == 1),
                             enabled = false,
                             onClick = {
@@ -393,6 +405,7 @@ private fun Section0(
                             text = { Text(stringResource(R.string.segment_test_disabled_2)) }
                         )
                         Tab(
+                            modifier = Modifier.testTag("disabledSegment_tab_2"),
                             selected = (data.selectedDisabled == 2),
                             enabled = false,
                             onClick = {
