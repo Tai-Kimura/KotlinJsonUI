@@ -241,9 +241,21 @@ class DynamicTextFieldComponent {
                 }
             } else null
 
-            // Focus event handlers
-            val onFocusHandler = a.onFocus ?: a.onBeginEditing
-            val onBlurHandler = a.onBlur ?: a.onEndEditing
+            // Focus event handlers: each declared one, called by the field
+            // (CustomTextField's onFocus / onBlur / onBeginEditing /
+            // onEndEditing), as kjui codegen passes them. Through 2.43.1 they
+            // were called from an onFocusChanged attached only when the
+            // undeclared `fieldId` was set, so a TextField as normally written
+            // never called them (jsonui-cli ticket kjui-dynamic-textfield-
+            // focus-events-are-never-called; measured: 0 calls in 24 census
+            // cases, kjui codegen 1 each). onFocus stood in for onBeginEditing
+            // (and onBlur for onEndEditing) too; each is its own now.
+            fun focusCall(handler: String?): (() -> Unit)? =
+                handler?.let { h -> { ModifierBuilder.resolveEventHandler(h, data, viewId) } }
+            val onFocusCall = focusCall(a.onFocus)
+            val onBlurCall = focusCall(a.onBlur)
+            val onBeginEditingCall = focusCall(a.onBeginEditing)
+            val onEndEditingCall = focusCall(a.onEndEditing)
 
             // Build common modifier. The standard stages in their standard
             // order; the background, radius, border and paddings are the
@@ -280,14 +292,7 @@ class DynamicTextFieldComponent {
                 modifier = modifier
                     .focusRequester(focusRequester)
                     .onFocusChanged { focusState ->
-                        val wasFocused = hasFocus
                         hasFocus = focusState.isFocused
-                        if (focusState.isFocused && !wasFocused) {
-                            onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
-                        }
-                        if (!focusState.isFocused && wasFocused) {
-                            onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
-                        }
                     }
             }
 
@@ -322,14 +327,7 @@ class DynamicTextFieldComponent {
                     textFieldModifier = textFieldModifier
                         .focusRequester(focusRequester)
                         .onFocusChanged { focusState ->
-                            val wasFocused = hasFocus
                             hasFocus = focusState.isFocused
-                            if (focusState.isFocused && !wasFocused) {
-                                onFocusHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
-                            }
-                            if (!focusState.isFocused && wasFocused) {
-                                onBlurHandler?.let { ModifierBuilder.resolveEventHandler(it, data, viewId) }
-                            }
                         }
                 }
 
@@ -350,7 +348,11 @@ class DynamicTextFieldComponent {
                     singleLine = singleLine,
                     maxLines = maxLines,
                     enabled = isEnabled,
-                    cursorColor = cursorColor
+                    cursorColor = cursorColor,
+                    onFocus = onFocusCall,
+                    onBlur = onBlurCall,
+                    onBeginEditing = onBeginEditingCall,
+                    onEndEditing = onEndEditingCall
                 )
             } else {
                 CustomTextField(
@@ -369,7 +371,11 @@ class DynamicTextFieldComponent {
                     singleLine = singleLine,
                     maxLines = maxLines,
                     enabled = isEnabled,
-                    cursorColor = cursorColor
+                    cursorColor = cursorColor,
+                    onFocus = onFocusCall,
+                    onBlur = onBlurCall,
+                    onBeginEditing = onBeginEditingCall,
+                    onEndEditing = onEndEditingCall
                 )
             }
         }
