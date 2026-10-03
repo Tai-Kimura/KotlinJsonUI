@@ -273,11 +273,14 @@ class DynamicSelectBoxComponent {
         internal fun isDateBox(json: JsonObject): Boolean =
             TypedAttrs.rawKey(json, "selectItemType")?.takeIf { it.isJsonPrimitive }?.asString == "Date"
 
-        /** The handler's name, `@{x}` → `x`; null without a binding. onValueChanged is the declared alias spelling. */
+        /**
+         * The handler's name, `@{x}` → `x`; null without a binding.
+         * `onValueChanged` is onValueChange's declared alias since jsonui-cli
+         * 1.9.6 (its own attribute before), and the generated parse folds it
+         * into onValueChange.
+         */
         private fun valueChangeHandler(a: SelectBoxAttributes): String? {
-            val handler = TypedAttrs.raw(a.onValueChange) as? String
-                ?: TypedAttrs.raw(a.onValueChanged) as? String
-                ?: return null
+            val handler = TypedAttrs.raw(a.onValueChange) as? String ?: return null
             return if (ModifierBuilder.isBinding(handler)) ModifierBuilder.extractBindingProperty(handler) else null
         }
 

@@ -50,10 +50,8 @@ data class SelectBoxAttributes(
     val minuteInterval: Double? = null,
     /** Allow multiple selection */
     val multiple: Boolean? = null,
-    /** Value change handler - binding only (@{functionName}). The handler receives the new value of the selection binding, the same on every platform: with selectedIndex bound it is the Int index (declare ((Int) -> Void)?, or ((String, Int) -> Void)? for viewId + index); with selectedItem / selectedValue bound it is the String item (declare ((String, String) -> Void)? for viewId + item). A lone (String) parameter is the selected item as a String, with selectedIndex bound too; the viewId comes only as the first of two parameters. (() -> Void)? receives nothing and the ViewModel reads the bound value back. */
+    /** Value change handler - binding only (@{functionName}). The handler receives the new value of the selection binding, the same on every platform: with selectedIndex bound it is the Int index (declare ((Int) -> Void)?, or ((String, Int) -> Void)? for viewId + index); with selectedItem / selectedValue bound it is the String item (declare ((String, String) -> Void)? for viewId + item). A lone (String) parameter is the selected item as a String, with selectedIndex bound too; the viewId comes only as the first of two parameters. (() -> Void)? receives nothing and the ViewModel reads the bound value back. `onValueChanged` folds here, as on Slider, Collection and CheckBox; it was declared as its own attribute, so the normalizer never folded it and sjui codegen called nothing for it (ticket sjui-selectbox-onvaluechanged-alias-is-never-called). [aliases: onValueChanged] */
     val onValueChange: AttrValue<Any>? = null,
-    /** Value change handler (alias for onValueChange) - binding only (@{functionName}) */
-    val onValueChanged: AttrValue<Any>? = null,
     /** Placeholder text (alias for prompt) */
     val placeholder: String? = null,
     /** Prompt text (primary) */
@@ -191,7 +189,6 @@ data class SelectBoxAttributes(
             "minuteInterval",
             "multiple",
             "onValueChange",
-            "onValueChanged",
             "placeholder",
             "prompt",
             "referenceView",
@@ -211,6 +208,7 @@ data class SelectBoxAttributes(
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
             "dateFormat" to "dateStringFormat",
+            "onValueChanged" to "onValueChange",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -243,8 +241,7 @@ data class SelectBoxAttributes(
             minimumDate = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minimumDate")) { AttrCoerce.string(it) },
             minuteInterval = AttrCoerce.number(AttrCoerce.lookup(json, "minuteInterval")),
             multiple = AttrCoerce.boolean(AttrCoerce.lookup(json, "multiple")),
-            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
-            onValueChanged = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChanged")),
+            onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("onValueChanged"), canonicalOnly)),
             placeholder = AttrCoerce.string(AttrCoerce.lookup(json, "placeholder")),
             prompt = AttrCoerce.string(AttrCoerce.lookup(json, "prompt")),
             referenceView = AttrCoerce.string(AttrCoerce.lookup(json, "referenceView")),
