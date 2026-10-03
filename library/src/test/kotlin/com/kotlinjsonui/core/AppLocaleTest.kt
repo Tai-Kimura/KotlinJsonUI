@@ -42,9 +42,40 @@ class AppLocaleTest {
         }
     }
 
+    // A label the app keeps and hands back: written in the app's language,
+    // read back the same way (MMM is where a device-locale parse fails:
+    // "Oct" is not a month to a Japanese parser).
+    @Test
+    fun aLabelInTheAppLanguageReadsBack() {
+        val en = Locale.ENGLISH
+        val label = DateFormats.display("MMM d, yyyy", en).format(october)
+        assertEquals("Oct 4, 2026", label)
+        assertEquals(dayOf(october), dayOf(DateFormats.parseDisplay(label, "MMM d, yyyy", app = en, device = Locale.JAPAN)))
+    }
+
+    // ...and a label written in the device's language before 2.43.3 still reads.
+    @Test
+    fun aLabelInTheDeviceLanguageStillReads() {
+        val label = java.text.SimpleDateFormat("MMM d, yyyy", Locale.JAPAN).format(october)
+        assertEquals(dayOf(october), dayOf(DateFormats.parseDisplay(label, "MMM d, yyyy", app = Locale.ENGLISH, device = Locale.JAPAN)))
+    }
+
+    // A value 2.43.2 wrote on an Arabic device (Locale.getDefault(): Arabic-Indic
+    // digits) and one this version writes both read as the same date in ROOT.
+    @Test
+    fun aValueFromEitherWriterReads() {
+        val old = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.forLanguageTag("ar-EG")).format(october)
+        assertEquals("٢٠٢٦-١٠-٠٤", old)
+        assertEquals(dayOf(october), dayOf(DateFormats.parseValue(old, "yyyy-MM-dd")))
+        assertEquals(dayOf(october), dayOf(DateFormats.parseValue("2026-10-04", "yyyy-MM-dd")))
+    }
+
+    private fun dayOf(date: java.util.Date?): String? =
+        date?.let { java.text.SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(it) }
+
     // The date pickers and the Dynamic strings cache take their locale from
-    // AppLocale / DateFormats only: no Locale.getDefault() or bare
-    // SimpleDateFormat left in the files that produced displayed text.
+    // AppLocale / DateFormats only: no Locale.getDefault(), bare
+    // SimpleDateFormat or bare parse left in the files that produced displayed text.
     @Test
     fun theDisplayingFilesTakeNoDeviceLocale() {
         val files = listOf(
@@ -54,7 +85,9 @@ class AppLocaleTest {
             "../library-dynamic/src/main/kotlin/com/kotlinjsonui/dynamic/ResourceCache.kt",
         ).map { File(it) }
         files.forEach { assertTrue("${it.path} is where it was", it.isFile) }
-        val offenders = files.filter { f -> f.readText().let { "Locale.getDefault()" in it || "SimpleDateFormat(" in it } }
+        val offenders = files.filter { f ->
+            f.readText().let { "Locale.getDefault()" in it || "SimpleDateFormat(" in it || Regex("""\.parse\(""").containsMatchIn(it) }
+        }
         assertEquals(emptyList<File>(), offenders)
     }
 }

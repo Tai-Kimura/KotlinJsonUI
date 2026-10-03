@@ -43,7 +43,7 @@ fun SimpleDateSelectBox(
     LaunchedEffect(value) {
         if (value.isNotEmpty()) {
             try {
-                dateFormat.parse(value)?.let {
+                DateFormats.parseValue(value, "yyyy-MM-dd")?.let {
                     calendar.time = it
                 }
             } catch (e: Exception) {

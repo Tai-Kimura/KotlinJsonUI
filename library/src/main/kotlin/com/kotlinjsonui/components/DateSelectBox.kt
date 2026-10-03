@@ -78,55 +78,32 @@ fun DateSelectBox(
     // The label in the app's language; the bound value in Locale.ROOT (DateFormats).
     val displayLocale = AppLocale.current()
     val dateFormatter = remember(dateFormat, displayLocale) { DateFormats.display(dateFormat, displayLocale) }
-    val isoFormatter = remember { DateFormats.value("yyyy-MM-dd") }
-    val isoTimeFormatter = remember { DateFormats.value("HH:mm") }
-    val isoDateTimeFormatter = remember { DateFormats.value("yyyy-MM-dd HH:mm") }
     
+    // The bound value's pattern. The component writes this form back in
+    // Locale.ROOT and reads it the same way; a value in the label's form (one
+    // an app keeps as the text it shows) reads in the app's language, then
+    // the device's — the language a label was written in before 2.43.3.
+    val valuePattern = when (datePickerMode) {
+        "time" -> "HH:mm"
+        "dateAndTime" -> "yyyy-MM-dd HH:mm"
+        else -> "yyyy-MM-dd"
+    }
+    fun readValue(text: String): Date? =
+        DateFormats.parseValue(text, valuePattern) ?: DateFormats.parseDisplay(text, dateFormat, displayLocale)
+
     // Parse current value if not empty
     LaunchedEffect(value) {
         if (value.isNotEmpty()) {
-            try {
-                val date = when (datePickerMode) {
-                    "time" -> isoTimeFormatter.parse(value)
-                    "dateAndTime" -> isoDateTimeFormatter.parse(value)
-                    else -> isoFormatter.parse(value)
-                }
-                if (date != null) {
-                    calendar.time = date
-                }
-            } catch (e: Exception) {
-                try {
-                    val date = dateFormatter.parse(value)
-                    if (date != null) {
-                        calendar.time = date
-                    }
-                } catch (e2: Exception) {
-                    // Invalid format
-                }
-            }
+            readValue(value)?.let { calendar.time = it }
         }
     }
     
     // Format display text
-    val displayText = remember(value, dateFormat) {
+    val displayText = remember(value, dateFormat, displayLocale) {
         if (value.isEmpty()) {
             ""
         } else {
-            try {
-                val date = when (datePickerMode) {
-                    "time" -> isoTimeFormatter.parse(value)
-                    "dateAndTime" -> isoDateTimeFormatter.parse(value)
-                    else -> isoFormatter.parse(value)
-                } ?: dateFormatter.parse(value)
-                
-                if (date != null) {
-                    dateFormatter.format(date)
-                } else {
-                    value
-                }
-            } catch (e: Exception) {
-                value
-            }
+            readValue(value)?.let { dateFormatter.format(it) } ?: value
         }
     }
     
@@ -135,7 +112,7 @@ fun DateSelectBox(
         minimumDate?.let {
             Calendar.getInstance().apply {
                 try {
-                    time = isoFormatter.parse(it) ?: Date()
+                    time = DateFormats.parseValue(it, "yyyy-MM-dd") ?: Date()
                 } catch (e: Exception) {
                     // Invalid date format
                 }
@@ -147,7 +124,7 @@ fun DateSelectBox(
         maximumDate?.let {
             Calendar.getInstance().apply {
                 try {
-                    time = isoFormatter.parse(it) ?: Date()
+                    time = DateFormats.parseValue(it, "yyyy-MM-dd") ?: Date()
                 } catch (e: Exception) {
                     // Invalid date format
                 }

@@ -2,7 +2,9 @@ package com.kotlinjsonui.core
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import java.text.ParseException
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 /**
@@ -39,4 +41,38 @@ object DateFormats {
         SimpleDateFormat(pattern, locale)
 
     fun value(pattern: String): SimpleDateFormat = SimpleDateFormat(pattern, Locale.ROOT)
+
+    /**
+     * Read a stored value in [Locale.ROOT] — what this version writes, and what
+     * reads the values written before 2.43.3 too: those were formatted with
+     * Locale.getDefault(), and on Android (API 35, measured 2026-10-04) that
+     * changed only the digits (Arabic-Indic, Persian, Bengali, Thai, Myanmar,
+     * Devanagari), which a ROOT parse reads; th-TH and ja-JP-u-ca-japanese
+     * wrote Gregorian years. Null when it does not read.
+     */
+    fun parseValue(text: String, pattern: String): Date? =
+        parseFirst(text, pattern, listOf(Locale.ROOT))
+
+    /**
+     * Read text in display form (a value an app keeps as the label it shows):
+     * the app's language first, then the device locale — the language a
+     * label was written in before 2.43.3. Null when neither reads it.
+     */
+    fun parseDisplay(
+        text: String,
+        pattern: String,
+        app: Locale = AppLocale.current(),
+        device: Locale = Locale.getDefault(),
+    ): Date? = parseFirst(text, pattern, listOf(app, device))
+
+    private fun parseFirst(text: String, pattern: String, locales: List<Locale>): Date? {
+        for (locale in locales.distinct()) {
+            try {
+                SimpleDateFormat(pattern, locale).parse(text)?.let { return it }
+            } catch (_: ParseException) {
+                // the next locale
+            }
+        }
+        return null
+    }
 }

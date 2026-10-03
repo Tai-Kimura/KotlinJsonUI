@@ -68,16 +68,13 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
         
         // Parse current value
         if (selectedValue.isNotEmpty()) {
-            try {
-                val date = when (datePickerMode) {
-                    "time" -> isoTimeFormatter.parse(selectedValue)
-                    "dateAndTime" -> isoDateTimeFormatter.parse(selectedValue)
-                    else -> isoDateFormatter.parse(selectedValue)
-                }
-                date?.let { calendar.time = it }
-            } catch (e: Exception) {
-                // Invalid format, use current date/time
+            // the stored form, in Locale.ROOT (DateFormats.parseValue)
+            val pattern = when (datePickerMode) {
+                "time" -> "HH:mm"
+                "dateAndTime" -> "yyyy-MM-dd HH:mm"
+                else -> "yyyy-MM-dd"
             }
+            DateFormats.parseValue(selectedValue, pattern)?.let { calendar.time = it }
         }
         
         // Title
@@ -129,7 +126,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     // Set min/max dates if provided
                     minDate?.let {
                         try {
-                            val minCal = isoDateFormatter.parse(it)
+                            val minCal = DateFormats.parseValue(it, "yyyy-MM-dd")
                             minCal?.let { date -> datePicker.minDate = date.time }
                         } catch (e: Exception) {
                             // Invalid date format
@@ -137,7 +134,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     }
                     maxDate?.let {
                         try {
-                            val maxCal = isoDateFormatter.parse(it)
+                            val maxCal = DateFormats.parseValue(it, "yyyy-MM-dd")
                             maxCal?.let { date -> datePicker.maxDate = date.time }
                         } catch (e: Exception) {
                             // Invalid date format
@@ -219,7 +216,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     // Set min/max dates if provided
                     minDate?.let {
                         try {
-                            val minCal = isoDateFormatter.parse(it)
+                            val minCal = DateFormats.parseValue(it, "yyyy-MM-dd")
                             minCal?.let { date -> datePicker.minDate = date.time }
                         } catch (e: Exception) {
                             // Invalid date format
@@ -227,7 +224,7 @@ class DatePickerBottomSheet : BottomSheetDialogFragment() {
                     }
                     maxDate?.let {
                         try {
-                            val maxCal = isoDateFormatter.parse(it)
+                            val maxCal = DateFormats.parseValue(it, "yyyy-MM-dd")
                             maxCal?.let { date -> datePicker.maxDate = date.time }
                         } catch (e: Exception) {
                             // Invalid date format
