@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Slider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
@@ -199,6 +202,30 @@ class ConformanceFramesTest {
         val anchor = rel(frames(), "anchor")
         near(20f, anchor.y, "the bound topMargin")
         near(50f, anchor.height, "the drawn height")
+    }
+
+    /**
+     * Material3 widens a Slider's and a LinearProgressIndicator's semantics
+     * bounds by 10 dp per side for TalkBack, without changing the layout. The
+     * reader reads the testTag modifier's own coordinates, so the frame is the
+     * declared 200-wide box, not the 220 the merged semantics node reports.
+     */
+    @Test
+    fun aMaterialControlReportsItsLayoutBoxNotItsWidenedSemanticsBounds() {
+        rule.setContent {
+            Box(Modifier.fillMaxSize().testTag("root")) {
+                Slider(value = 0.5f, onValueChange = {}, modifier = Modifier.padding(top = 100.dp).width(200.dp).testTag("slider"))
+                LinearProgressIndicator(progress = { 0.5f }, modifier = Modifier.padding(top = 300.dp).width(200.dp).testTag("progress"))
+            }
+        }
+        val read = frames()
+        val slider = rel(read, "slider")
+        near(0f, slider.x, "slider x, not -10")
+        near(200f, slider.width, "slider width, not 220")
+        val progress = rel(read, "progress")
+        near(300f, progress.y, "progress y, not 290")
+        near(200f, progress.width, "progress width")
+        near(4f, progress.height, "progress height, the declared 4, not 24")
     }
 
     @Test

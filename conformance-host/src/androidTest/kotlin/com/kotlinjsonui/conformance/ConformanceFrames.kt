@@ -2,6 +2,8 @@ package com.kotlinjsonui.conformance
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -27,6 +29,15 @@ import kotlinx.serialization.json.put
  * instead of where it is. `positionInWindow` goes through the layer
  * transforms, so a graphicsLayer translation is included
  * (ConformanceFramesTest holds that).
+ *
+ * The box is the testTag MODIFIER's own layout coordinates (the ModifierInfo
+ * of its TestTagElement), not the bounds of the semantics node it merges
+ * into. Material3's Slider and LinearProgressIndicator widen their semantics
+ * bounds by 10 dp per side for TalkBack (AccessibilityUtil.kt,
+ * IncreaseHorizontal / VerticalSemanticsBounds) without changing their
+ * layout: the merged node read x -10 / width 220 for a 200-wide Slider and
+ * y -10 / height 24 for a Progress (found by support lane 1). The tag's own
+ * coordinates are the box at that point of the chain — the drawn box.
  *
  * KotlinJsonUI places the testTag inside the margins and the offset (margins
  * → size → offset → testTag → alpha → …, since 2.43.5), so the tagged box is
@@ -54,10 +65,17 @@ object ConformanceFrames {
             walk(root.semanticsOwner.unmergedRootSemanticsNode) { node ->
                 val tag = node.config.getOrNull(SemanticsProperties.TestTag) ?: return@walk
                 if (!node.layoutInfo.isPlaced) return@walk
-                val p = node.positionInWindow
-                found.getOrPut(tag) { mutableListOf() }.add(
+                val c = tagCoordinates(node, tag)
+                val box = if (c != null) {
+                    val p = c.positionInWindow()
+                    Box(p.x / density, p.y / density, c.size.width / density, c.size.height / density)
+                } else {
+                    // No TestTagElement on this layout node (a tag set through
+                    // a plain semantics block): the node's own position.
+                    val p = node.positionInWindow
                     Box(p.x / density, p.y / density, node.size.width / density, node.size.height / density)
-                )
+                }
+                found.getOrPut(tag) { mutableListOf() }.add(box)
             }
         }
         val duplicates = found.filterValues { it.size > 1 }.keys
@@ -96,6 +114,24 @@ object ConformanceFrames {
     }
 
     private fun round(v: Float): Double = (v * 100.0).roundToLong() / 100.0
+
+    /**
+     * The layout coordinates the testTag modifier with this [tag] sits on: the
+     * ModifierInfo of the node's TestTagElement. The element class is internal
+     * to Compose, so it is found by name and its tag read reflectively; with
+     * one TestTagElement on the node the tag is not needed to choose.
+     */
+    private fun tagCoordinates(node: SemanticsNode, tag: String): LayoutCoordinates? {
+        val infos = node.layoutInfo.getModifierInfo()
+            .filter { it.modifier.javaClass.simpleName == "TestTagElement" }
+        if (infos.isEmpty()) return null
+        val named = infos.firstOrNull { info ->
+            runCatching {
+                info.modifier.javaClass.getDeclaredField("tag").apply { isAccessible = true }.get(info.modifier)
+            }.getOrNull() == tag
+        }
+        return (named ?: infos.singleOrNull())?.coordinates
+    }
 
     private fun walk(node: SemanticsNode, visit: (SemanticsNode) -> Unit) {
         visit(node)
