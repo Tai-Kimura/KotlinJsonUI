@@ -160,6 +160,28 @@ class ConformanceFramesTest {
         near(170f, anchor.width, "and its box includes them")
     }
 
+    /**
+     * KotlinJsonUI's offset stage is inside the testTag, so the tagged box does
+     * not move; the drawn box does (measured: common/offsetX__static, 8 dp).
+     */
+    @Test
+    fun aDeclaredOffsetMovesTheFrameAsItMovesTheDrawing() {
+        val json = JsonParser.parseString(
+            """{"type": "View", "id": "root", "width": "matchParent", "height": "matchParent", "child": [
+                 {"type": "View", "id": "target", "width": 200, "height": 200, "offsetX": 8, "offsetY": 12,
+                  "topMargin": 20}
+               ]}"""
+        ).asJsonObject
+        rule.setContent { DynamicView(json = json, data = emptyMap()) }
+        val withPlacement = rel(frames(ConformanceFrames.Margins.from(json)), "target")
+        near(8f, withPlacement.x, "offsetX 8")
+        near(32f, withPlacement.y, "topMargin 20 + offsetY 12")
+        near(200f, withPlacement.width, "the offset does not resize")
+        near(200f, withPlacement.height, "nor does the margin, once inset")
+        val tagged = rel(frames(), "target")
+        near(0f, tagged.x, "control: the tagged box does not move with the offset")
+    }
+
     @Test
     fun aViewWithBoundMarginsIsLeftOut() {
         val json = JsonParser.parseString(
