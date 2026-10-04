@@ -265,8 +265,9 @@ object ModifierBuilder {
         json.get("frame")?.let { frameElement ->
             if (frameElement.isJsonObject) {
                 val frame = frameElement.asJsonObject
-                result = applySingleDimension(result, frame, "width", isWidth = true)
-                result = applySingleDimension(result, frame, "height", isWidth = false)
+                val frameBias = overflowBias(json)
+                result = applySingleDimension(result, frame, "width", isWidth = true, bias = frameBias)
+                result = applySingleDimension(result, frame, "height", isWidth = false, bias = frameBias)
                 return applyConstraints(result, json, data)
             }
         }
@@ -278,6 +279,8 @@ object ModifierBuilder {
         // bug this ordering fixes. An EXPLICIT numeric size is the opposite
         // case: the declared dimension wins and the bound stays inert, so
         // the bound is applied after it (mirrors kjui codegen 847fb56).
+
+        val bias = overflowBias(json)
 
         // Width
         val hasWeight = json.has("weight")
@@ -291,7 +294,7 @@ object ModifierBuilder {
                     result = applyWidthConstraints(result, json, data)
                     widthBoundsApplied = true
                 }
-                result = applySingleDimension(result, json, "width", isWidth = true)
+                result = applySingleDimension(result, json, "width", isWidth = true, bias = bias)
             }
         } else if (defaultFillMaxWidth) {
             result = applyWidthConstraints(result, json, data)
@@ -314,7 +317,7 @@ object ModifierBuilder {
                     result = applyHeightConstraints(result, json, data)
                     heightBoundsApplied = true
                 }
-                result = applySingleDimension(result, json, "height", isWidth = false)
+                result = applySingleDimension(result, json, "height", isWidth = false, bias = bias)
             }
         }
         if (!heightBoundsApplied) {
@@ -336,11 +339,48 @@ object ModifierBuilder {
         }
     }
 
+    /**
+     * The key a View container injects into a child that declares a numeric
+     * size: where, per axis, the container places that child (bias −1 start /
+     * top, 0 centre, 1 end / bottom). See [declaredSize].
+     */
+    const val OVERFLOW_BIAS_KEY = "_overflowBias"
+
+    internal fun overflowBias(json: JsonObject): Pair<Float, Float>? {
+        val e = json.get(OVERFLOW_BIAS_KEY)
+        if (e == null || !e.isJsonArray || e.asJsonArray.size() != 2) return null
+        return e.asJsonArray[0].asFloat to e.asJsonArray[1].asFloat
+    }
+
+    /**
+     * A declared size wins over the parent's constraint: requiredWidth /
+     * requiredHeight (canonical size ruling; ios and web draw the declared
+     * box). Over-constrained, a required size is coerced and its content
+     * CENTRED in the coerced box, so a 300 child of a 200 Box drew at
+     * (−50, −50) whatever the container said (jsonui-cli ticket
+     * kjui-oversized-child-is-centred-and-cut-to-its-parent; web puts it at
+     * the container's corner, or overflows both sides when centred). With the
+     * container's placement injected ([OVERFLOW_BIAS_KEY]) an unbounded
+     * wrapContent in front places the declared box where the container puts
+     * the child; a child that fits reads the same size and place as before.
+     * The kjui codegen emits the same chain (modifier_builder.rb
+     * overflow_wrapper).
+     */
+    private fun declaredSize(modifier: Modifier, v: Float, isWidth: Boolean, bias: Pair<Float, Float>?): Modifier =
+        if (isWidth) {
+            (bias?.let { modifier.wrapContentWidth(align = BiasAlignment.Horizontal(it.first), unbounded = true) } ?: modifier)
+                .requiredWidth(v.dp)
+        } else {
+            (bias?.let { modifier.wrapContentHeight(align = BiasAlignment.Vertical(it.second), unbounded = true) } ?: modifier)
+                .requiredHeight(v.dp)
+        }
+
     private fun applySingleDimension(
         modifier: Modifier,
         json: JsonObject,
         key: String,
-        isWidth: Boolean
+        isWidth: Boolean,
+        bias: Pair<Float, Float>? = null
     ): Modifier {
         val element = json.get(key) ?: return modifier
         return when {
@@ -363,7 +403,7 @@ object ModifierBuilder {
                                     // declared box). Modifier.width coerced an over-constrained
                                     // child to the parent size, so the clipToBounds overflow
                                     // probes were byte-identical on android (2026-08-08).
-                                    if (isWidth) modifier.requiredWidth(v.dp) else modifier.requiredHeight(v.dp)
+                                    declaredSize(modifier, v, isWidth, bias)
                                 }
                             } else modifier
                         }
@@ -373,7 +413,7 @@ object ModifierBuilder {
                         if (v < 0) {
                             if (isWidth) modifier.fillMaxWidth() else modifier.fillMaxHeight()
                         } else {
-                            if (isWidth) modifier.requiredWidth(v.dp) else modifier.requiredHeight(v.dp)
+                            declaredSize(modifier, v, isWidth, bias)
                         }
                     }
                     else -> modifier

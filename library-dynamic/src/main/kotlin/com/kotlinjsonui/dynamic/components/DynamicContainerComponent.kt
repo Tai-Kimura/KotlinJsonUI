@@ -170,8 +170,10 @@ class DynamicContainerComponent {
                 verticalArrangement = verticalArrangement,
                 horizontalAlignment = horizontalAlignment
             ) {
+                val flags = ModifierBuilder.resolvedAlignFlags(json)
+                val mainBias = axisBias(flags.alignTop, flags.alignBottom, flags.centerV || flags.centerInParent)
                 children.forEach { child ->
-                    renderChildInColumn(child, data, context, distributionOf(a))
+                    renderChildInColumn(child, data, context, distributionOf(a), OverflowPlacement(horizontalAlignment, mainBias))
                 }
             }
         }
@@ -205,8 +207,10 @@ class DynamicContainerComponent {
                 horizontalArrangement = horizontalArrangement,
                 verticalAlignment = verticalAlignment
             ) {
+                val flags = ModifierBuilder.resolvedAlignFlags(json)
+                val mainBias = axisBias(flags.alignLeft, flags.alignRight, flags.centerH || flags.centerInParent)
                 children.forEach { child ->
-                    renderChildInRow(child, data, context, distributionOf(a))
+                    renderChildInRow(child, data, context, distributionOf(a), OverflowPlacement(verticalAlignment, mainBias))
                 }
             }
         }
@@ -241,7 +245,7 @@ class DynamicContainerComponent {
                 contentAlignment = contentAlignment
             ) {
                 children.forEach { child ->
-                    renderChildInBox(child, data, context)
+                    renderChildInBox(child, data, context, contentAlignment)
                 }
             }
         }
@@ -253,7 +257,8 @@ class DynamicContainerComponent {
             child: JsonObject,
             data: Map<String, Any>,
             context: Context,
-            distribution: String? = null
+            distribution: String? = null,
+            overflow: OverflowPlacement<Alignment.Horizontal>? = null
         ) {
             // `fill` and `fillEqually` distribute SIZE among the children, so
             // they are weights — not an Arrangement (49-E: "mapping `fill` to
@@ -303,9 +308,12 @@ class DynamicContainerComponent {
             // its track and draws exactly what fillEqually draws. So the
             // inject serves declared weights and fillEqually only; a `fill`
             // child keeps its content size inside its equal track.
-            val effectiveChild = if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
+            val effectiveChild = (if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
                 injectFillSize(child, fillHeight = true, fillWidth = false, override = declaredWeight != null)
-            } else child
+            } else child).let { c ->
+                if (overflow == null) c
+                else withOverflowBias(c, columnBias(alignment, overflow.crossAlignment), overflow.mainBias)
+            }
 
             if (visibility != null) {
                 // weight + visibility gone guard: skip composition entirely
@@ -327,7 +335,8 @@ class DynamicContainerComponent {
             child: JsonObject,
             data: Map<String, Any>,
             context: Context,
-            distribution: String? = null
+            distribution: String? = null,
+            overflow: OverflowPlacement<Alignment.Vertical>? = null
         ) {
             // `fill` and `fillEqually` distribute SIZE among the children, so
             // they are weights — not an Arrangement (49-E: "mapping `fill` to
@@ -376,9 +385,12 @@ class DynamicContainerComponent {
             // its track and draws exactly what fillEqually draws. So the
             // inject serves declared weights and fillEqually only; a `fill`
             // child keeps its content size inside its equal track.
-            val effectiveChild = if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
+            val effectiveChild = (if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
                 injectFillSize(child, fillHeight = false, fillWidth = true, override = declaredWeight != null)
-            } else child
+            } else child).let { c ->
+                if (overflow == null) c
+                else withOverflowBias(c, overflow.mainBias, rowBias(alignment, overflow.crossAlignment))
+            }
 
             if (visibility != null) {
                 // weight + visibility gone guard: skip composition entirely
@@ -399,24 +411,85 @@ class DynamicContainerComponent {
         internal fun BoxScope.renderChildInBox(
             child: JsonObject,
             data: Map<String, Any>,
-            context: Context
+            context: Context,
+            contentAlignment: Alignment? = null
         ) {
             val alignment = ModifierBuilder.getChildAlignment(child, "Box", data)
             val visibility = resolveVisibility(child, data, context)
+            val drawn = if (contentAlignment == null) child else boxBias(alignment, contentAlignment).let { (h, v) ->
+                withOverflowBias(child, h, v)
+            }
 
             var childModifier: Modifier = Modifier
             if (alignment is Alignment) childModifier = childModifier.align(alignment)
 
             if (visibility != null) {
                 VisibilityWrapper(visibility = visibility, modifier = childModifier) {
-                    DynamicView(child, data)
+                    DynamicView(drawn, data)
                 }
             } else if (childModifier != Modifier) {
                 Box(modifier = childModifier) {
-                    DynamicView(child, data)
+                    DynamicView(drawn, data)
                 }
             } else {
-                DynamicView(child, data)
+                DynamicView(drawn, data)
+            }
+        }
+
+        // ── Where the container places an over-constrained child ──
+        //
+        // A child declaring a numeric size larger than its container was
+        // coerced and centred by requiredWidth/requiredHeight, whatever the
+        // container said (jsonui-cli ticket kjui-oversized-child-is-centred-
+        // and-cut-to-its-parent). The container hands the child, per axis,
+        // where it places it; the size stage (ModifierBuilder.declaredSize)
+        // anchors the declared box there. The kjui codegen computes the same
+        // biases (container_component.rb overflow_bias).
+
+        /** The cross-axis alignment a Column / Row gives its children, and the main-axis bias of its gravity. */
+        internal data class OverflowPlacement<A>(val crossAlignment: A, val mainBias: Float)
+
+        /** −1 start, 1 end, 0 centre, start when the gravity names none (gravityDefaults). */
+        internal fun axisBias(start: Boolean, end: Boolean, center: Boolean): Float = when {
+            start -> -1f
+            end -> 1f
+            center -> 0f
+            else -> -1f
+        }
+
+        /** A Box child: its own placement if it declares one, else the Box's contentAlignment. */
+        internal fun boxBias(childAlignment: Any?, contentAlignment: Alignment): Pair<Float, Float> {
+            val a = (childAlignment as? Alignment) ?: contentAlignment
+            return (a as? androidx.compose.ui.BiasAlignment)?.let { it.horizontalBias to it.verticalBias } ?: (-1f to -1f)
+        }
+
+        /** A Column child's horizontal bias: its own alignment, else the Column's horizontalAlignment. */
+        internal fun columnBias(childAlignment: Any?, horizontalAlignment: Alignment.Horizontal): Float =
+            (((childAlignment as? Alignment.Horizontal) ?: horizontalAlignment) as? androidx.compose.ui.BiasAlignment.Horizontal)?.bias ?: -1f
+
+        /** A Row child's vertical bias: its own alignment, else the Row's verticalAlignment. */
+        internal fun rowBias(childAlignment: Any?, verticalAlignment: Alignment.Vertical): Float =
+            (((childAlignment as? Alignment.Vertical) ?: verticalAlignment) as? androidx.compose.ui.BiasAlignment.Vertical)?.bias ?: -1f
+
+        /**
+         * The child with the container's placement injected, when it declares a
+         * numeric width or height (or a frame) — the only nodes the size stage
+         * wraps. A shallow copy: the child's own entries are shared.
+         */
+        internal fun withOverflowBias(child: JsonObject, h: Float, v: Float): JsonObject {
+            if (!declaresNumericSize(child)) return child
+            val copy = JsonObject()
+            for ((key, value) in child.entrySet()) copy.add(key, value)
+            copy.add(ModifierBuilder.OVERFLOW_BIAS_KEY, com.google.gson.JsonArray().apply { add(h); add(v) })
+            return copy
+        }
+
+        private fun declaresNumericSize(child: JsonObject): Boolean {
+            if (TypedAttrs.rawKey(child, "frame")?.isJsonObject == true) return true
+            return listOf("width", "height").any { key ->
+                val e = TypedAttrs.rawKey(child, key)
+                e != null && e.isJsonPrimitive && (e.asJsonPrimitive.isNumber ||
+                    (e.asJsonPrimitive.isString && (e.asString.toFloatOrNull() ?: -1f) >= 0f))
             }
         }
 

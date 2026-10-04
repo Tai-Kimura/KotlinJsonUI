@@ -51,6 +51,40 @@ class FrameParityAndroidLayoutTest {
         }
     }
 
+    // kjui-oversized-child-is-centred-and-cut-to-its-parent: the container
+    // hands a child with a numeric size where it places it, per axis; the
+    // size stage anchors the declared box there (device arms:
+    // OversizedChildPlacementTest). The codegen computes the same biases
+    // (container_component.rb inject_overflow_bias!).
+    @Test
+    fun aBoxChildIsPlacedByItsOwnAlignmentElseTheContentAlignment() {
+        assertEquals(-1f to -1f, DynamicContainerComponent.boxBias(null, androidx.compose.ui.Alignment.TopStart))
+        assertEquals(0f to 0f, DynamicContainerComponent.boxBias(null, androidx.compose.ui.Alignment.Center))
+        assertEquals(1f to 1f, DynamicContainerComponent.boxBias(null, androidx.compose.ui.Alignment.BottomEnd))
+        assertEquals(1f to -1f, DynamicContainerComponent.boxBias(androidx.compose.ui.BiasAlignment(1f, -1f), androidx.compose.ui.Alignment.Center))
+    }
+
+    @Test
+    fun aColumnOrRowChildTakesTheCrossAlignmentAndTheMainAxisGravity() {
+        assertEquals(0f, DynamicContainerComponent.columnBias(null, androidx.compose.ui.Alignment.CenterHorizontally))
+        assertEquals(1f, DynamicContainerComponent.columnBias(androidx.compose.ui.Alignment.End, androidx.compose.ui.Alignment.Start))
+        assertEquals(1f, DynamicContainerComponent.rowBias(null, androidx.compose.ui.Alignment.Bottom))
+        assertEquals(0f, DynamicContainerComponent.rowBias(androidx.compose.ui.Alignment.CenterVertically, androidx.compose.ui.Alignment.Top))
+        assertEquals(-1f, DynamicContainerComponent.axisBias(start = false, end = false, center = false))
+        assertEquals(1f, DynamicContainerComponent.axisBias(start = false, end = true, center = false))
+        assertEquals(0f, DynamicContainerComponent.axisBias(start = false, end = false, center = true))
+    }
+
+    @Test
+    fun onlyAChildWithANumericSizeIsGivenThePlacement() {
+        val sized = DynamicContainerComponent.withOverflowBias(json("""{"type":"View","width":300}"""), 0f, 1f)
+        assertEquals(0f to 1f, com.kotlinjsonui.dynamic.helpers.ModifierBuilder.overflowBias(sized))
+        val wrapped = json("""{"type":"View","width":"wrapContent","height":"matchParent"}""")
+        assertTrue(DynamicContainerComponent.withOverflowBias(wrapped, 0f, 1f) === wrapped)
+        val bound = json("""{"type":"View","width":"@{w}"}""")
+        assertTrue(DynamicContainerComponent.withOverflowBias(bound, 0f, 1f) === bound)
+    }
+
     // kjui-scrollview-center-anchor-is-off-by-4: scrollBy reports
     // `delta − leftover` in float32. Near 1e9 floats are 64 apart, so a 1200 px
     // extent came back as 1216 and the centre started 8 px (4 dp) short.
