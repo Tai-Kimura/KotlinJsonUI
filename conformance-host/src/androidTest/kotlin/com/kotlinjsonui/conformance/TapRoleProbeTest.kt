@@ -70,8 +70,15 @@ import org.junit.runner.RunWith
  * the docs that say they are not must change with this table.
  *
  * canTap (common.canTap, the Compose tap gate): dyn_gate (onClick, canTap:
- * false) was enabled — the gate ignored — on 2cc81f3, and is disabled
- * after; dyn_image_nogate (onClick, no canTap) taps before and after.
+ * false) was enabled — the gate ignored — on 2cc81f3, and disabled after
+ * b35dc8a. Since 14c075b (2026-09-26) canTap gates the onClick handler's
+ * call and only that, and a gated view is no longer disabled: the node
+ * reads as enabled under every gate, as CanTapGateProbeTest pins along with
+ * the handler's call counts. This probe asserted `isEnabled == false` until
+ * 2026-10-04 — red since 14c075b, and unseen because no CI job ran the
+ * conformance host's probes (ticket kjui-conformance-host-androidtest-
+ * probes-never-run-in-ci). dyn_image_nogate (onClick, no canTap) taps
+ * throughout.
  *
  * The content starts 80dp down: at y=0 the first row sat under the status
  * bar, its title was not visible to the user, and UiAutomator's By.res did
@@ -147,7 +154,7 @@ class TapRoleProbeTest {
             "dyn_row" to view,                 // the rule's `combine`: Compose keeps View
             "row_title" to text, "row_sub" to text,
             "dyn_image_nogate" to button,      // no canTap: no gate, the handler alone taps
-            "dyn_gate" to view, "gate_title" to text,   // canTap: false: gated shut, no role
+            "dyn_gate" to view, "gate_title" to text,   // canTap: false: the handler is gated, no role
             "dyn_switch_row" to view, "sw_title" to text, "dyn_sw" to view,
         )
         val ids = expected.keys.toList()
@@ -172,9 +179,10 @@ class TapRoleProbeTest {
             assertEquals("$id: class", expected[id], nodes[id]?.className?.toString())
         }
         assertTrue("dyn_sw is checkable", nodes["dyn_sw"]?.isCheckable == true)
-        // common.canTap: false is the Compose tap gate (kjui emits
-        // clickable(enabled = false)); the Dynamic runtime reads it too.
-        assertEquals("dyn_gate is gated shut", false, nodes["dyn_gate"]?.isEnabled)
+        // common.canTap: false gates the handler's call, not the node
+        // (14c075b): the gated row still reads as enabled. Whether its
+        // handler runs is CanTapGateProbeTest's to measure.
+        assertEquals("dyn_gate: canTap is not enabled", true, nodes["dyn_gate"]?.isEnabled)
         assertEquals("dyn_image_nogate taps", true, nodes["dyn_image_nogate"]?.isEnabled)
         assertEquals("the Switch inside a tappable row toggles on its own", false to true, before to after)
         scenario.close()
