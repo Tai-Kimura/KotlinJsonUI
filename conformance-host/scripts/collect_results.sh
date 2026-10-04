@@ -93,6 +93,30 @@ if [ "${ALLOW_NARROWING:-0}" != "1" ] && [ -f "$RESULTS_DEST" ]; then
 fi
 mv "$INCOMING_TMP" "$RESULTS_DEST"
 
+# A codegen run's PNGs and frames land in artifacts/android-codegen (above), but
+# the suite on the device wrote every path as artifacts/android/… . The parity
+# check reads screenshots by basename, so that never mattered; the frame-parity
+# gate reads `frames` as a path, and a codegen results file pointed at the
+# DYNAMIC run's frames (or at nothing). Rewrite the frames paths to where the
+# files are. Screenshot paths are left alone: what reads them reads basenames.
+if [ "${HOST_MODE:-dynamic}" = "codegen" ]; then
+  python3 - "$RESULTS_DEST" <<'PYEOF'
+import json, sys
+path = sys.argv[1]
+data = json.load(open(path))
+moved = 0
+for entry in data.get("results", []):
+    frames = entry.get("frames")
+    if isinstance(frames, str) and frames.startswith("artifacts/android/"):
+        entry["frames"] = "artifacts/android-codegen/" + frames[len("artifacts/android/"):]
+        moved += 1
+with open(path, "w") as fh:
+    json.dump(data, fh, indent=2)
+    fh.write("\n")
+print(f"codegen: {moved} frames path(s) now under artifacts/android-codegen/")
+PYEOF
+fi
+
 if "$ADB" shell "[ -d $DEVICE_OUT/artifacts/android ]"; then
   tmp="$(mktemp -d)"
   "$ADB" pull "$DEVICE_OUT/artifacts/android" "$tmp/android" >/dev/null
