@@ -61,9 +61,17 @@ class DynamicRadioItemModeTest {
         )
     }
 
+    // A bare Radio (no text, no options) is one radio row: the options branch
+    // had nothing to list and drew an empty Column, 0 high (ticket
+    // kjui-radio-without-a-label-draws-nothing).
     @Test
-    fun bareNodeIsNotAnItem() {
-        assertFalse(DynamicRadioComponent.rendersAsItem(attrs(), hasOptions = false))
+    fun bareNodeIsAnItem() {
+        assertTrue(DynamicRadioComponent.rendersAsItem(attrs(), hasOptions = false))
+    }
+
+    @Test
+    fun bareNodeWithOptionsStaysAGroup() {
+        assertFalse(DynamicRadioComponent.rendersAsItem(attrs(), hasOptions = true))
     }
 
     // ── itemText ─────────────────────────────────────────────────────

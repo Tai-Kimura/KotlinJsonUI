@@ -10,6 +10,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.PaddingValues
 import com.kotlinjsonui.dynamic.helpers.ContentInsetBehavior
@@ -37,6 +40,9 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  */
 class DynamicScrollViewComponent {
     companion object {
+        /** The delta that scrolls to the end: 2^24, exact in float32 (see the anchor). */
+        internal const val SCROLL_TO_END_DELTA = 16_777_216f
+
         /** The SSoT default of `keyboardAvoidancePadding`; absent means 20, not 0. */
         /**
          * `keyboardAvoidancePadding` in dp, or the SSoT default when the
@@ -117,7 +123,12 @@ class DynamicScrollViewComponent {
                 ?.takeIf { it == "bottom" || it == "center" }
             if (anchor != null) {
                 LaunchedEffect(Unit) {
-                    val consumed = listState.scrollBy(1e9f)
+                    // 2^24, not 1e9f: scrollBy reports `delta − leftover` in
+                    // float32, and near 1e9 floats are 64 apart, so a 1200 px
+                    // extent came back as 1216 and the centre started 8 px
+                    // (4 dp) short (jsonui-cli ticket kjui-scrollview-center-
+                    // anchor-is-off-by-4). Below 2^24 every integer is exact.
+                    val consumed = listState.scrollBy(SCROLL_TO_END_DELTA)
                     if (anchor == "center") listState.scrollBy(-consumed / 2f)
                 }
             }
@@ -130,8 +141,17 @@ class DynamicScrollViewComponent {
                     userScrollEnabled = scrollEnabled
                 ) {
                     item {
-                        children.forEach { child ->
-                            DynamicView(child, data)
+                        // A LazyRow measures its items with the viewport's
+                        // height as the cross-axis max, so a child declaring
+                        // more (content 600 in a 200-high ScrollView) was cut
+                        // to 200 and centred. Unbounded and top-anchored, it
+                        // keeps its declared height from y 0, as web does
+                        // (jsonui-cli ticket kjui-horizontal-scrollview-
+                        // clamps-content-height-to-the-viewport).
+                        Row(Modifier.wrapContentHeight(align = Alignment.Top, unbounded = true)) {
+                            children.forEach { child ->
+                                DynamicView(child, data)
+                            }
                         }
                     }
                 }

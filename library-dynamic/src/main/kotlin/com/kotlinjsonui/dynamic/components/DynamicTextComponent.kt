@@ -219,10 +219,15 @@ class DynamicTextComponent {
             // Auto size (text shrinking)
             val useAutoSize = a.autoShrink == true || a.minimumScaleFactor != null
 
-            // Max lines
+            // Max lines. Auto size does not imply one line: the text wraps as
+            // any Label does and shrinks only when it overflows a bounded box,
+            // so under a wrapContent height nothing shrinks
+            // (attribute_semantics autoShrink.requiresBoundedAxis, ruling
+            // 51-E, web is canon; jsonui-cli ticket kjui-label-autoshrink-
+            // shrinks-when-the-height-can-grow — a 200-wide Label drew one
+            // shrunk, cut line 24 high where web wraps to 120).
             val lines = TypedAttrs.int(a.lines, data)
             val maxLines = when {
-                useAutoSize -> 1
                 lines == 0 -> Int.MAX_VALUE
                 lines != null -> lines
                 else -> Int.MAX_VALUE
@@ -230,7 +235,6 @@ class DynamicTextComponent {
 
             // Overflow
             val overflow = when {
-                useAutoSize -> TextOverflow.Ellipsis
                 lines != null && lines > 0 -> TextOverflow.Ellipsis
                 else -> when (
                     DeclaredSpelling.lowered(TypedAttrs.enumString(a.lineBreakMode) { it.json }, LabelAttributes.LineBreakMode.declaredSpellings)

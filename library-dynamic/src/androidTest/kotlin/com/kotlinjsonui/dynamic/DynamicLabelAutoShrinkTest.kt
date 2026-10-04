@@ -68,10 +68,40 @@ class DynamicLabelAutoShrinkTest {
     @Test
     fun aLongTextShrinksDownToTheFloor() {
         // 12sp lays this out wider than the box (a shorter one fit in one
-        // line at 12sp and rightly did not shrink — measured).
-        show("A text far too long to fit in a box of two hundred dp at twelve sp in one line", ""","minimumScaleFactor":0.5""")
+        // line at 12sp and rightly did not shrink — measured). One line is
+        // declared: auto size no longer implies it, and two hundred dp by
+        // sixty holds this text wrapped at 12sp.
+        show("A text far too long to fit in a box of two hundred dp at twelve sp in one line", ""","minimumScaleFactor":0.5,"lines":1""")
         val ref = glyphWidth("ref")
         val w = glyphWidth("l")
         assertTrue("first glyph $w px wide against $ref at 12sp", w < ref - 0.5f && w >= ref * 0.5f - 0.5f)
+    }
+
+    /**
+     * Under a wrapContent height there is nothing to shrink into: the text
+     * wraps at its font size, as web does (attribute_semantics autoShrink
+     * .requiresBoundedAxis, ruling 51-E; jsonui-cli ticket
+     * kjui-label-autoshrink-shrinks-when-the-height-can-grow — autoShrink
+     * forced one line, and a 200-wide Label drew one shrunk, cut line 24 high
+     * where web wraps to 120).
+     */
+    @Test
+    fun aLongTextUnderAWrapContentHeightWrapsAtItsFontSize() {
+        val text = "A text far too long to fit in a box of two hundred dp at twelve sp in one line"
+        rule.setContent {
+            DynamicView(
+                json = JsonParser.parseString(
+                    """{"type":"View","orientation":"vertical","child":[
+                      {"type":"Label","id":"ref","width":200,"height":60,"text":"$text","fontSize":12,"lines":1},
+                      {"type":"Label","id":"l","width":200,"text":"$text","fontSize":12,"autoShrink":true}]}"""
+                ).asJsonObject,
+                data = emptyMap()
+            )
+        }
+        rule.waitForIdle()
+        assertEquals(glyphWidth("ref"), glyphWidth("l"), 0.5f)
+        val results = mutableListOf<TextLayoutResult>()
+        rule.onNodeWithTag("l").fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+        assertTrue("lines ${results.first().lineCount}", results.first().lineCount > 1)
     }
 }

@@ -125,8 +125,16 @@ class DynamicRadioComponent {
         internal fun spacingDp(a: RadioAttributes, data: Map<String, Any>): Float =
             TypedAttrs.float(a.spacing, data) ?: 8f
 
+        /**
+         * A Radio with no `items` (routed first) and no `options` is one radio
+         * row, with or without text: with nothing to list, the options branch
+         * drew an empty Column, 0 high, where web draws the indicator
+         * (jsonui-cli ticket kjui-radio-without-a-label-draws-nothing; the
+         * item row already draws its RadioButton and a label only when there
+         * is text). Same rule as the codegen's radio_component.rb.
+         */
         internal fun rendersAsItem(a: RadioAttributes, hasOptions: Boolean): Boolean =
-            a.group != null || ((a.text != null || a.label != null) && !hasOptions)
+            a.group != null || !hasOptions
 
         /**
          * The row's text as WRITTEN — `text || label`, the codegen's order.

@@ -166,6 +166,23 @@ class DynamicSwitchComponent {
             )
         }
 
+        /**
+         * Whether a labelled Switch's label takes the rest of the row
+         * (`weight(1f)`). Only when the Switch's own width is decided — a
+         * declared width other than wrapContent, or a weight. A weighted child
+         * makes Compose's Row take its whole max width, so under wrapContent a
+         * labelled Switch drew as wide as its parent (1280 where web wraps to
+         * the label and the switch; jsonui-cli ticket
+         * kjui-labelled-switch-fills-the-parent-width-under-wrapcontent).
+         * Same rule as the codegen's SwitchComponent.label_fills_row?.
+         */
+        internal fun labelFillsRow(json: JsonObject): Boolean {
+            if (json.has("weight")) return true
+            val width = json.get("width") ?: return false
+            if (width.isJsonNull) return false
+            return !(width.isJsonPrimitive && width.asJsonPrimitive.isString && width.asString == "wrapContent")
+        }
+
         @Composable
         private fun createWithLabel(
             json: JsonObject,
@@ -239,17 +256,20 @@ class DynamicSwitchComponent {
                 // codegen emits the Switch first and then the weighted label,
                 // which is what put the two paths 27 apart in run 4's parity.
                 //
-                // The `weight(1f)` stays on the label either way — it pushes
-                // the Switch to the far edge, which is what you want on both
-                // sides, and the codegen says the same thing in the same words.
+                // The label's `weight(1f)` pushes the Switch to the far edge of
+                // a Row whose width is decided — on either side, and the codegen
+                // says the same thing in the same words. Under a wrapContent
+                // width there is no far edge: a weight makes a Row take its
+                // whole max width, so it is left off (labelFillsRow).
                 val labelPosition = DeclaredSpelling.lowered(
                     TypedAttrs.enumString(a.labelPosition) { it.json }, SwitchAttributes.LabelPosition.declaredSpellings
                 ) ?: "leading"
 
+                val labelModifier = if (labelFillsRow(json)) Modifier.weight(1f) else Modifier
                 val label: @Composable RowScope.() -> Unit = {
                     Text(
                         text = labelText,
-                        modifier = Modifier.weight(1f),
+                        modifier = labelModifier,
                         fontSize = fontSize?.sp ?: 16.sp,
                         color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
                         fontWeight = fontWeightValue
