@@ -103,7 +103,7 @@ configuration. Re-sync from a checkout with:
 JSONUI_TEST_RUNNER_PATH=/path/to/jsonui-test-runner ./conformance-host/scripts/sync_driver.sh
 ```
 
-The vendored copy is upstream `jsonui-test-runner-android` **1.15.8** (44298ff),
+The vendored copy is upstream `jsonui-test-runner-android` **1.15.9** (cb85003),
 byte for byte: no local patch is carried. `sync_driver.sh` replaces the whole
 directory, so a local patch would be lost on the next re-vendor — fix the
 driver upstream and re-vendor instead. (Until 2026-10-03 this section said one
