@@ -8,7 +8,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject as GsonObject
-import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.conformance.MarginShim as ModifierBuilder
 import kotlin.math.roundToLong
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
