@@ -119,6 +119,19 @@ class DynamicConstraintLayoutComponent {
                     }
                 }
 
+                // Every child draws its margins as padding around its declared
+                // size (DynamicView -> applyMargins), so its ref box includes
+                // them: a sibling aligned to it adds the margin on that edge to
+                // reach the box it DRAWS (applyRelativePositioning).
+                val pads = mutableMapOf<String, ModifierBuilder.MarginPaddings>()
+                childrenArray.forEachIndexed { index, childElement ->
+                    if (childElement.isJsonObject) {
+                        val childJson = childElement.asJsonObject
+                        val id = childJson.get("id")?.asString ?: "view_$index"
+                        ModifierBuilder.marginPaddings(childJson, data)?.let { pads[id] = it }
+                    }
+                }
+
                 // Apply constraints to each child
                 childrenArray.forEachIndexed { index, childElement ->
                     if (childElement.isJsonObject) {
@@ -128,7 +141,7 @@ class DynamicConstraintLayoutComponent {
 
                         constrain(ref) {
                             // Apply relative positioning constraints
-                            applyRelativePositioning(childJson, this@ConstraintSet, this, refs, data)
+                            applyRelativePositioning(childJson, this@ConstraintSet, this, refs, pads, data)
 
                             // Apply dimension constraints
                             applyDimensionConstraints(childJson, this)
@@ -193,8 +206,11 @@ class DynamicConstraintLayoutComponent {
             setScope: ConstraintSetScope,
             scope: ConstrainScope,
             refs: Map<String, androidx.constraintlayout.compose.ConstrainedLayoutReference>,
+            pads: Map<String, ModifierBuilder.MarginPaddings>,
             data: Map<String, Any>
         ) {
+            // The anchor's padding-drawn margin on one edge (0 when none).
+            fun pad(id: String, edge: (ModifierBuilder.MarginPaddings) -> Float): Float = pads[id]?.let(edge) ?: 0f
             with(scope) {
                 // Extract margins
                 var topMargin = ModifierBuilder.dimen(childNode.get("topMargin"), data)?.toInt() ?: 0
@@ -221,25 +237,29 @@ class DynamicConstraintLayoutComponent {
                 // Position relative to other views
                 childNode.get("alignTopOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        bottom.linkTo(targetRef.top, margin = bottomMargin.dp)
+                        // The anchor's top margin is inside its ref box:
+                        // `bottom.linkTo(a.top, m)` is a.top - m, the drawn
+                        // top is a.top + its margin (ticket
+                        // kjui-relative-align-view-measures-the-anchor-with-its-margin).
+                        bottom.linkTo(targetRef.top, margin = (bottomMargin - pad(targetId) { it.top }).dp)
                     }
                 }
 
                 childNode.get("alignBottomOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        top.linkTo(targetRef.bottom, margin = topMargin.dp)
+                        top.linkTo(targetRef.bottom, margin = (topMargin - pad(targetId) { it.bottom }).dp)
                     }
                 }
 
                 childNode.get("alignLeftOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        end.linkTo(targetRef.start, margin = rightMargin.dp)
+                        end.linkTo(targetRef.start, margin = (rightMargin - pad(targetId) { it.start }).dp)
                     }
                 }
 
                 childNode.get("alignRightOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        start.linkTo(targetRef.end, margin = leftMargin.dp)
+                        start.linkTo(targetRef.end, margin = (leftMargin - pad(targetId) { it.end }).dp)
                     }
                 }
 
@@ -247,40 +267,42 @@ class DynamicConstraintLayoutComponent {
                 childNode.get("alignTopView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
                         // For edge alignment, negative margin moves in expected direction
-                        top.linkTo(targetRef.top, margin = if (topMargin > 0) (-topMargin).dp else 0.dp)
+                        // The anchor's drawn edge, then the own margin pulled inward.
+                        top.linkTo(targetRef.top, margin = (pad(targetId) { it.top } - (if (topMargin > 0) topMargin else 0)).dp)
                     }
                 }
 
                 childNode.get("alignBottomView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        bottom.linkTo(targetRef.bottom, margin = if (bottomMargin > 0) (-bottomMargin).dp else 0.dp)
+                        bottom.linkTo(targetRef.bottom, margin = (pad(targetId) { it.bottom } - (if (bottomMargin > 0) bottomMargin else 0)).dp)
                     }
                 }
 
                 childNode.get("alignLeftView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        start.linkTo(targetRef.start, margin = if (leftMargin > 0) (-leftMargin).dp else 0.dp)
+                        start.linkTo(targetRef.start, margin = (pad(targetId) { it.start } - (if (leftMargin > 0) leftMargin else 0)).dp)
                     }
                 }
 
                 childNode.get("alignRightView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        end.linkTo(targetRef.end, margin = if (rightMargin > 0) (-rightMargin).dp else 0.dp)
+                        end.linkTo(targetRef.end, margin = (pad(targetId) { it.end } - (if (rightMargin > 0) rightMargin else 0)).dp)
                     }
                 }
 
                 // Center with other views
                 childNode.get("alignCenterVerticalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        top.linkTo(targetRef.top)
-                        bottom.linkTo(targetRef.bottom)
+                        // Between the anchor's drawn edges.
+                        top.linkTo(targetRef.top, margin = pad(targetId) { it.top }.dp)
+                        bottom.linkTo(targetRef.bottom, margin = pad(targetId) { it.bottom }.dp)
                     }
                 }
 
                 childNode.get("alignCenterHorizontalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        start.linkTo(targetRef.start)
-                        end.linkTo(targetRef.end)
+                        start.linkTo(targetRef.start, margin = pad(targetId) { it.start }.dp)
+                        end.linkTo(targetRef.end, margin = pad(targetId) { it.end }.dp)
                     }
                 }
 

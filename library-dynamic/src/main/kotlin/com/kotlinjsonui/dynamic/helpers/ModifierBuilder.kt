@@ -143,25 +143,36 @@ object ModifierBuilder {
             .semantics { testTagsAsResourceId = true }
     }
 
-    /** build_margins: margins array / individual margin properties with binding support */
-    fun applyMargins(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
-        // Handle margins array first
+    /** The margins a node draws as padding around its declared size, per edge (dp). */
+    data class MarginPaddings(val top: Float, val bottom: Float, val start: Float, val end: Float)
+
+    /**
+     * The padding [applyMargins] draws for this node's margins, per edge, or
+     * null when it draws none. One rule for both: a `margins` array of 1, 2
+     * or 4 values wins (any other length draws nothing); otherwise the first
+     * individual spelling per edge. A ConstraintLayout sibling aligned to this
+     * node reads it — the node's ref box includes this padding
+     * (DynamicConstraintLayoutComponent, ticket
+     * kjui-relative-align-view-measures-the-anchor-with-its-margin).
+     */
+    fun marginPaddings(json: JsonObject, data: Map<String, Any>): MarginPaddings? {
         json.get("margins")?.let { element ->
             if (element.isJsonArray) {
                 val arr = element.asJsonArray
                 return when (arr.size()) {
-                    1 -> modifier.padding((dimen(arr[0], data) ?: 0f).dp)
-                    2 -> modifier.padding(
-                        vertical = (dimen(arr[0], data) ?: 0f).dp,
-                        horizontal = (dimen(arr[1], data) ?: 0f).dp
+                    1 -> (dimen(arr[0], data) ?: 0f).let { MarginPaddings(it, it, it, it) }
+                    2 -> {
+                        val v = dimen(arr[0], data) ?: 0f
+                        val h = dimen(arr[1], data) ?: 0f
+                        MarginPaddings(v, v, h, h)
+                    }
+                    4 -> MarginPaddings(
+                        top = dimen(arr[0], data) ?: 0f,
+                        bottom = dimen(arr[2], data) ?: 0f,
+                        start = dimen(arr[3], data) ?: 0f,
+                        end = dimen(arr[1], data) ?: 0f
                     )
-                    4 -> modifier.padding(
-                        top = (dimen(arr[0], data) ?: 0f).dp,
-                        end = (dimen(arr[1], data) ?: 0f).dp,
-                        bottom = (dimen(arr[2], data) ?: 0f).dp,
-                        start = (dimen(arr[3], data) ?: 0f).dp
-                    )
-                    else -> modifier
+                    else -> null
                 }
             }
         }
@@ -180,11 +191,13 @@ object ModifierBuilder {
             ?: resolveMarginValue(json, "endMargin", data)
             ?: resolveMarginValue(json, "marginEnd", data) ?: 0f
 
-        return if (top > 0 || bottom > 0 || start > 0 || end > 0) {
-            modifier.padding(top = top.dp, bottom = bottom.dp, start = start.dp, end = end.dp)
-        } else {
-            modifier
-        }
+        return if (top > 0 || bottom > 0 || start > 0 || end > 0) MarginPaddings(top, bottom, start, end) else null
+    }
+
+    /** build_margins: margins array / individual margin properties with binding support */
+    fun applyMargins(modifier: Modifier, json: JsonObject, data: Map<String, Any>): Modifier {
+        val p = marginPaddings(json, data) ?: return modifier
+        return modifier.padding(top = p.top.dp, bottom = p.bottom.dp, start = p.start.dp, end = p.end.dp)
     }
 
     private fun resolveMarginValue(json: JsonObject, key: String, data: Map<String, Any>): Float? {
