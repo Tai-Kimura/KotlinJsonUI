@@ -1,10 +1,9 @@
-// Pasted from what `kjui build` (kjui_tools of jsonui-cli train/1.9.11 = 5447c616) emits for three Collections
-// of conformance_cell cells — cellIdProperty "cellId", "key", and "cellId" with autoChangeTrackingId — and the
-// cell view and view model it scaffolds, for CellDataRefreshProbeTest (jsonui-cli ticket
-// ios-cell-ignores-data-change-when-cellid-is-fixed-android-updates). Changed from the output: the packages
-// (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.celldatarefresh) and the cell's two colorResource(R.color.…)
-// (the probe project's resources) → the literal colors conformance_cell.json declares.
-package com.kotlinjsonui.conformance.celldatarefresh
+// Pasted from what `kjui build` (kjui_tools of jsonui-cli 5447c616 + the sibling-locals fix, c38b15be) emits for three
+// Collections of cell_refresh_probe_cell cells — cellIdProperty "cellId", "key", and "cellId" with
+// autoChangeTrackingId, each in a View of its own — and the cell view and view model it scaffolds, for
+// DynamicCellDataRefreshProbeTest (jsonui-cli ticket ios-cell-ignores-data-change-when-cellid-is-fixed-android-updates).
+// Changed from the output: the packages (com.kotlinjsonui.probe.* → com.kotlinjsonui.dynamic.celldatarefresh).
+package com.kotlinjsonui.dynamic.celldatarefresh
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -127,17 +126,17 @@ private fun Section0(
                                     .fillMaxWidth()
                                     .requiredHeight(150.dp),
                 lazyContent = {
-                    // Section 1: conformance_cell
+                    // Section 1: cell_refresh_probe_cell
                     if (section0 != null) {
                         if (cellData0 != null) {
                             val lazyKeys0 = HashSet<String>().let { seen -> cellData0.data.mapIndexed { i, cell -> ((cell["cellId"] as? String) ?: (cell["cellId"] as? String) ?: i.toString()).let { k -> if (seen.add(k)) k else generateSequence(2) { it + 1 }.map { "$k#$it" }.first { seen.add(it) } } } }
                             items(cellData0.data.size, key = { idx -> lazyKeys0[idx] }) { cellIndex ->
                                 val currentCellData = cellData0.data[cellIndex]
                                 val cellId = lazyKeys0[cellIndex]
-                                val cellViewModel: ConformanceCellViewModel = viewModel(key = "conformance_cell_cell_0_${cellId}_${viewModel.hashCode()}")
+                                val cellViewModel: CellRefreshProbeCellViewModel = viewModel(key = "cell_refresh_probe_cell_cell_0_${cellId}_${viewModel.hashCode()}")
                                 remember(cellViewModel, currentCellData) { cellViewModel.updateData(currentCellData); currentCellData }
                                 LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
-                                ConformanceCellView(
+                                CellRefreshProbeCellView(
                                     viewModel = cellViewModel,
                                     modifier = Modifier.testTag("cdr_cellid_item_$cellIndex")
                                 )
@@ -146,17 +145,17 @@ private fun Section0(
                     }
                 },
                 eagerContent = {
-                    // Section 1: conformance_cell
+                    // Section 1: cell_refresh_probe_cell
                     if (section0 != null) {
                         if (cellData0 != null) {
                             val eagerKeys0 = HashSet<String>().let { seen -> cellData0.data.mapIndexed { i, cell -> ((cell["cellId"] as? String) ?: (cell["cellId"] as? String) ?: i.toString()).let { k -> if (seen.add(k)) k else generateSequence(2) { it + 1 }.map { "$k#$it" }.first { seen.add(it) } } } }
                             cellData0.data.forEachIndexed { cellIndex, _ ->
                                 val currentCellData = cellData0.data[cellIndex]
                                 val cellId = eagerKeys0[cellIndex]
-                                val cellViewModel: ConformanceCellViewModel = viewModel(key = "conformance_cell_cell_0_${cellId}_${viewModel.hashCode()}")
+                                val cellViewModel: CellRefreshProbeCellViewModel = viewModel(key = "cell_refresh_probe_cell_cell_0_${cellId}_${viewModel.hashCode()}")
                                 remember(cellViewModel, currentCellData) { cellViewModel.updateData(currentCellData); currentCellData }
                                 LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
-                                ConformanceCellView(
+                                CellRefreshProbeCellView(
                                     viewModel = cellViewModel,
                                     modifier = Modifier.testTag("cdr_cellid_item_$cellIndex")
                                 )
@@ -184,17 +183,17 @@ private fun Section0(
                                     .fillMaxWidth()
                                     .requiredHeight(150.dp),
                 lazyContent = {
-                    // Section 1: conformance_cell
+                    // Section 1: cell_refresh_probe_cell
                     if (section0 != null) {
                         if (cellData0 != null) {
                             val lazyKeys0 = HashSet<String>().let { seen -> cellData0.data.mapIndexed { i, cell -> ((cell["cellId"] as? String) ?: (cell["key"] as? String) ?: i.toString()).let { k -> if (seen.add(k)) k else generateSequence(2) { it + 1 }.map { "$k#$it" }.first { seen.add(it) } } } }
                             items(cellData0.data.size, key = { idx -> lazyKeys0[idx] }) { cellIndex ->
                                 val currentCellData = cellData0.data[cellIndex]
                                 val cellId = lazyKeys0[cellIndex]
-                                val cellViewModel: ConformanceCellViewModel = viewModel(key = "conformance_cell_cell_0_${cellId}_${viewModel.hashCode()}")
+                                val cellViewModel: CellRefreshProbeCellViewModel = viewModel(key = "cell_refresh_probe_cell_cell_0_${cellId}_${viewModel.hashCode()}")
                                 remember(cellViewModel, currentCellData) { cellViewModel.updateData(currentCellData); currentCellData }
                                 LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
-                                ConformanceCellView(
+                                CellRefreshProbeCellView(
                                     viewModel = cellViewModel,
                                     modifier = Modifier.testTag("cdr_key_item_$cellIndex")
                                 )
@@ -203,17 +202,17 @@ private fun Section0(
                     }
                 },
                 eagerContent = {
-                    // Section 1: conformance_cell
+                    // Section 1: cell_refresh_probe_cell
                     if (section0 != null) {
                         if (cellData0 != null) {
                             val eagerKeys0 = HashSet<String>().let { seen -> cellData0.data.mapIndexed { i, cell -> ((cell["cellId"] as? String) ?: (cell["key"] as? String) ?: i.toString()).let { k -> if (seen.add(k)) k else generateSequence(2) { it + 1 }.map { "$k#$it" }.first { seen.add(it) } } } }
                             cellData0.data.forEachIndexed { cellIndex, _ ->
                                 val currentCellData = cellData0.data[cellIndex]
                                 val cellId = eagerKeys0[cellIndex]
-                                val cellViewModel: ConformanceCellViewModel = viewModel(key = "conformance_cell_cell_0_${cellId}_${viewModel.hashCode()}")
+                                val cellViewModel: CellRefreshProbeCellViewModel = viewModel(key = "cell_refresh_probe_cell_cell_0_${cellId}_${viewModel.hashCode()}")
                                 remember(cellViewModel, currentCellData) { cellViewModel.updateData(currentCellData); currentCellData }
                                 LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
-                                ConformanceCellView(
+                                CellRefreshProbeCellView(
                                     viewModel = cellViewModel,
                                     modifier = Modifier.testTag("cdr_key_item_$cellIndex")
                                 )
@@ -242,16 +241,16 @@ private fun Section0(
                                     .fillMaxWidth()
                                     .requiredHeight(150.dp),
                 lazyContent = {
-                    // Section 1: conformance_cell
+                    // Section 1: cell_refresh_probe_cell
                     if (section0 != null) {
                         if (enrichedData0 != null) {
                             items(enrichedData0.size, key = { idx -> (enrichedData0[idx]["cellId"] as? String) ?: (enrichedData0[idx]["cellId"] as? String) ?: idx.toString() }) { cellIndex ->
                                 val currentCellData = enrichedData0[cellIndex]
                                 val cellId = (currentCellData["cellId"] as? String) ?: (currentCellData["cellId"] as? String) ?: "$cellIndex"
-                                val cellViewModel: ConformanceCellViewModel = viewModel(key = "conformance_cell_cell_0_${cellId}_${viewModel.hashCode()}")
+                                val cellViewModel: CellRefreshProbeCellViewModel = viewModel(key = "cell_refresh_probe_cell_cell_0_${cellId}_${viewModel.hashCode()}")
                                 remember(cellViewModel, currentCellData) { cellViewModel.updateData(currentCellData); currentCellData }
                                 LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
-                                ConformanceCellView(
+                                CellRefreshProbeCellView(
                                     viewModel = cellViewModel,
                                     modifier = Modifier.testTag("cdr_tracked_item_$cellIndex")
                                 )
@@ -260,16 +259,16 @@ private fun Section0(
                     }
                 },
                 eagerContent = {
-                    // Section 1: conformance_cell
+                    // Section 1: cell_refresh_probe_cell
                     if (section0 != null) {
                         if (enrichedData0 != null) {
                             enrichedData0.forEachIndexed { cellIndex, _ ->
                                 val currentCellData = enrichedData0[cellIndex]
                                 val cellId = (currentCellData["cellId"] as? String) ?: (currentCellData["cellId"] as? String) ?: "$cellIndex"
-                                val cellViewModel: ConformanceCellViewModel = viewModel(key = "conformance_cell_cell_0_${cellId}_${viewModel.hashCode()}")
+                                val cellViewModel: CellRefreshProbeCellViewModel = viewModel(key = "cell_refresh_probe_cell_cell_0_${cellId}_${viewModel.hashCode()}")
                                 remember(cellViewModel, currentCellData) { cellViewModel.updateData(currentCellData); currentCellData }
                                 LaunchedEffect(currentCellData) { cellViewModel.updateData(currentCellData) }
-                                ConformanceCellView(
+                                CellRefreshProbeCellView(
                                     viewModel = cellViewModel,
                                     modifier = Modifier.testTag("cdr_tracked_item_$cellIndex")
                                 )

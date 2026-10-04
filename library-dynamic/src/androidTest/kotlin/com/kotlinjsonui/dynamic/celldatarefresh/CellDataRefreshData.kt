@@ -1,9 +1,8 @@
-// Pasted from what `kjui build` (kjui_tools of jsonui-cli train/1.9.11 = 5447c616) emits for three Collections
-// of conformance_cell cells — cellIdProperty "cellId", "key", and "cellId" with autoChangeTrackingId — and the
-// cell view and view model it scaffolds, for CellDataRefreshProbeTest (jsonui-cli ticket
-// ios-cell-ignores-data-change-when-cellid-is-fixed-android-updates). Changed from the output: the packages
-// (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.celldatarefresh) and the cell's two colorResource(R.color.…)
-// (the probe project's resources) → the literal colors conformance_cell.json declares.
+// Pasted from what `kjui build` (kjui_tools of jsonui-cli 5447c616 + the sibling-locals fix, c38b15be) emits for three
+// Collections of cell_refresh_probe_cell cells — cellIdProperty "cellId", "key", and "cellId" with
+// autoChangeTrackingId, each in a View of its own — and the cell view and view model it scaffolds, for
+// DynamicCellDataRefreshProbeTest (jsonui-cli ticket ios-cell-ignores-data-change-when-cellid-is-fixed-android-updates).
+// Changed from the output: the packages (com.kotlinjsonui.probe.* → com.kotlinjsonui.dynamic.celldatarefresh).
 // ╔══════════════════════════════════════════════════════════════════╗
 // ║  @generated AUTO-GENERATED FILE — DO NOT EDIT
 // ║  Source:    Layouts/cell_data_refresh.json
@@ -12,7 +11,7 @@
 // ║  LLM/Agent: you MUST NOT modify this file.
 // ╚══════════════════════════════════════════════════════════════════╝
 
-package com.kotlinjsonui.conformance.celldatarefresh
+package com.kotlinjsonui.dynamic.celldatarefresh
 
 
 data class CellDataRefreshData(
