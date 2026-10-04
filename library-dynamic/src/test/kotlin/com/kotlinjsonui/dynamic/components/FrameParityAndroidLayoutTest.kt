@@ -28,6 +28,27 @@ class FrameParityAndroidLayoutTest {
         assertTrue(DynamicSwitchComponent.labelFillsRow(json("""{"type":"Switch","label":"L","width":300}""")))
         assertTrue(DynamicSwitchComponent.labelFillsRow(json("""{"type":"Switch","label":"L","width":"matchParent"}""")))
         assertTrue(DynamicSwitchComponent.labelFillsRow(json("""{"type":"Switch","label":"L","weight":1}""")))
+        assertTrue(DynamicSwitchComponent.labelFillsRow(json("""{"type":"Switch","label":"L","widthWeight":1}""")))
+        assertFalse(DynamicSwitchComponent.labelFillsRow(json("""{"type":"Switch","label":"L","width":"wrap_content"}""")))
+    }
+
+    // kjui-dynamic-toggle-is-not-drawn-as-its-canonical-switch: the conformance
+    // manifest has no fixture for an alias ("fixtures live on the canonical
+    // section"), so codegen_parity never draws one, and a renderer of its own
+    // goes unseen. Every declared alias must share its canonical section's arm
+    // of DynamicView's dispatch. Read from the source: the arm is a `when`
+    // branch, which no unit test can call without a composition.
+    @Test
+    fun everyDeclaredAliasIsDispatchedWithItsCanonicalSection() {
+        val source = java.io.File("src/main/kotlin/com/kotlinjsonui/dynamic/DynamicView.kt").readText()
+        val arms = Regex("""^\s*((?:"\w+",\s*)*"\w+")\s*->\s*(Dynamic\w+)\.create\(""", RegexOption.MULTILINE)
+            .findAll(source)
+            .flatMap { m -> Regex(""""(\w+)"""").findAll(m.groupValues[1]).map { it.groupValues[1] to m.groupValues[2] } }
+            .toMap()
+        assertTrue("dispatch arms read: ${arms.size}", arms.size > 20)
+        com.kotlinjsonui.dynamic.generated.JsonUIComponentAliases.canonical.forEach { (alias, canonical) ->
+            assertEquals("$alias (alias of $canonical)", arms[canonical], arms[alias])
+        }
     }
 
     // kjui-scrollview-center-anchor-is-off-by-4: scrollBy reports

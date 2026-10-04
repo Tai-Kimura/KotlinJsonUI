@@ -57,7 +57,6 @@ class TintHandDownTest {
         val c = "src/main/kotlin/com/kotlinjsonui/dynamic/components/"
         val reads = mapOf(
             "DynamicSwitchComponent.kt" to 2,
-            "DynamicToggleComponent.kt" to 1,
             "DynamicCheckBoxComponent.kt" to 1,
             "DynamicSliderComponent.kt" to 2,
             "DynamicProgressComponent.kt" to 1,

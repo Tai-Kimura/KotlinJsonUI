@@ -47,7 +47,8 @@ class ComponentRawReadGateTest {
         val dispatched = Regex("""(Dynamic\w+Component)\.create\(""")
             .findAll(File("src/main/kotlin/com/kotlinjsonui/dynamic/DynamicView.kt").readText())
             .map { it.groupValues[1] }.toSet()
-        assertTrue("too few dispatched components read (${dispatched.size})", dispatched.size >= 27)
+        // 26 since Toggle is drawn by DynamicSwitchComponent (its `_alias_of`).
+        assertTrue("too few dispatched components read (${dispatched.size})", dispatched.size >= 26)
         val missing = dispatched - files.map { it.nameWithoutExtension }.toSet()
         assertTrue("dispatched components the scan does not read: $missing", missing.isEmpty())
 

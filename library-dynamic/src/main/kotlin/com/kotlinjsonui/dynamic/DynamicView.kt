@@ -209,7 +209,12 @@ private fun DynamicViewContent(
             // CircleImage / CircleImageView are Image synonyms drawn as
             // CircleImage (`render_as`)
             "CircleImage" -> DynamicCircleImageComponent.create(drawn, effectiveData)
-            "Switch" -> DynamicSwitchComponent.create(drawn, effectiveData)
+            // Toggle is a declared section pointing at Switch (`_alias_of`), drawn
+            // as it — the kjui codegen does the same. Its own renderer drew a
+            // labelled Toggle with a fixed 8 dp gap, no far-edge switch and no
+            // `label` (jsonui-cli ticket kjui-dynamic-toggle-is-not-drawn-as-its-
+            // canonical-switch).
+            "Switch", "Toggle" -> DynamicSwitchComponent.create(drawn, effectiveData)
             // Check is a declared section pointing at CheckBox (`_alias_of`)
             "CheckBox", "Check" -> DynamicCheckBoxComponent.create(drawn, effectiveData)
             "Radio" -> DynamicRadioComponent.create(drawn, effectiveData)
@@ -218,7 +223,6 @@ private fun DynamicViewContent(
             "Indicator" -> DynamicIndicatorComponent.create(drawn, effectiveData)
             "SelectBox" -> DynamicSelectBoxComponent.create(drawn, effectiveData)
             "Segment" -> DynamicSegmentComponent.create(drawn, effectiveData)
-            "Toggle" -> DynamicToggleComponent.create(drawn, effectiveData)
             "ScrollView" -> DynamicScrollViewComponent.create(drawn, effectiveData)
             "View" -> DynamicContainerComponent.create(drawn, effectiveData)
             "SafeAreaView" -> DynamicSafeAreaViewComponent.create(drawn, effectiveData)

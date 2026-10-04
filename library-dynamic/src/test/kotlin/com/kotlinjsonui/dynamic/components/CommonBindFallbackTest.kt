@@ -11,7 +11,6 @@ import com.kotlinjsonui.dynamic.generated.SegmentAttributes
 import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import com.kotlinjsonui.dynamic.generated.SliderAttributes
 import com.kotlinjsonui.dynamic.generated.SwitchAttributes
-import com.kotlinjsonui.dynamic.generated.ToggleAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -39,9 +38,10 @@ class CommonBindFallbackTest {
         assertEquals("on", DynamicSwitchComponent.resolveBindingVariable(drawn("""{"type":"Switch","bind":"@{on}"}""") { SwitchAttributes.parse(it) }))
         assertEquals("c", DynamicCheckBoxComponent.resolveBindingVariable(drawn("""{"type":"CheckBox","bind":"@{c}"}""") { CheckBoxAttributes.parse(it) }))
         assertEquals("c", DynamicCheckBoxComponent.resolveBindingVariable(drawn("""{"type":"Check","bind":"@{c}"}""") { CheckBoxAttributes.parse(it) }))
+        // Toggle is drawn by the Switch renderer (its `_alias_of`).
         val toggle = node("""{"type":"Toggle","bind":"@{t}"}""")
         val folded = BindFold.fold(toggle, "Toggle")
-        assertEquals("t", DynamicToggleComponent.bindingVariableOf(ToggleAttributes.parse(TypedAttrs.toAttrMap(folded))))
+        assertEquals("t", DynamicSwitchComponent.resolveBindingVariable(SwitchAttributes.parse(TypedAttrs.toAttrMap(folded))))
         assertEquals("downloadProgress", DynamicProgressComponent.bindingVariableOf(drawn("""{"type":"Progress","bind":"@{downloadProgress}"}""") { ProgressAttributes.parse(it) }))
         assertEquals("tabIndex", DynamicSegmentComponent.bindingVariableOf(drawn("""{"type":"Segment","bind":"@{tabIndex}"}""") { SegmentAttributes.parse(it) }))
         assertEquals("volume", DynamicSliderComponent.bindingVariableOf(drawn("""{"type":"Slider","bind":"@{volume}"}""") { SliderAttributes.parse(it) }))

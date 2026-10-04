@@ -15,7 +15,6 @@ import com.kotlinjsonui.dynamic.generated.SegmentAttributes
 import com.kotlinjsonui.dynamic.generated.SelectBoxAttributes
 import com.kotlinjsonui.dynamic.generated.SliderAttributes
 import com.kotlinjsonui.dynamic.generated.SwitchAttributes
-import com.kotlinjsonui.dynamic.generated.ToggleAttributes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -117,9 +116,10 @@ class BindFoldVectorsTest {
                 val key = DynamicSwitchComponent.resolveBindingVariable(a)
                 Reading(key, DynamicSwitchComponent.resolveCheckedState(a, data, key))
             }
-            "Toggle" -> ToggleAttributes.parse(m).let { a ->
-                val key = DynamicToggleComponent.bindingVariableOf(a)
-                Reading(key, DynamicToggleComponent.checkedOf(a, data, key))
+            // Toggle is drawn by the Switch renderer (its `_alias_of`).
+            "Toggle" -> SwitchAttributes.parse(m).let { a ->
+                val key = DynamicSwitchComponent.resolveBindingVariable(a)
+                Reading(key, DynamicSwitchComponent.resolveCheckedState(a, data, key))
             }
             "CheckBox", "Check" -> CheckBoxAttributes.parse(m).let { a ->
                 val key = DynamicCheckBoxComponent.resolveBindingVariable(a)
@@ -254,7 +254,8 @@ class BindFoldVectorsTest {
             app in 0 until synonym && synonym < fold && fold < dispatch)
         // every built-in case draws `drawn`
         val cases = Regex("""-> Dynamic\w+Component\.create\((\w+), effectiveData\)""").findAll(view.substring(dispatch)).map { it.groupValues[1] }.toList()
-        assertTrue("too few cases (${cases.size})", cases.size >= 27)
+        // 26 since Toggle shares the Switch arm (its `_alias_of`).
+        assertTrue("too few cases (${cases.size})", cases.size >= 26)
         assertEquals(setOf("drawn"), cases.toSet())
     }
 

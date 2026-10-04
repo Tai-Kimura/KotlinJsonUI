@@ -174,14 +174,10 @@ class DynamicSwitchComponent {
          * labelled Switch drew as wide as its parent (1280 where web wraps to
          * the label and the switch; jsonui-cli ticket
          * kjui-labelled-switch-fills-the-parent-width-under-wrapcontent).
-         * Same rule as the codegen's SwitchComponent.label_fills_row?.
+         * The rule a Button's own width is read by (ownsWidth); the codegen's
+         * SwitchComponent.label_fills_row? reads it the same way.
          */
-        internal fun labelFillsRow(json: JsonObject): Boolean {
-            if (json.has("weight")) return true
-            val width = json.get("width") ?: return false
-            if (width.isJsonNull) return false
-            return !(width.isJsonPrimitive && width.asJsonPrimitive.isString && width.asString == "wrapContent")
-        }
+        internal fun labelFillsRow(json: JsonObject): Boolean = DynamicButtonComponent.ownsWidth(json)
 
         @Composable
         private fun createWithLabel(
@@ -251,7 +247,7 @@ class DynamicSwitchComponent {
                 }
 
                 // `labelPosition` — which side of the Switch the label sits on.
-                // It was read by DynamicToggleComponent and by nobody here, so
+                // It was read by the former Toggle renderer and by nobody here, so
                 // a Switch always drew its label LEADING; with `trailing` the
                 // codegen emits the Switch first and then the weighted label,
                 // which is what put the two paths 27 apart in run 4's parity.
