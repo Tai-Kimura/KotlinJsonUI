@@ -21,6 +21,12 @@ import org.junit.runner.RunWith
  * or centre — or placed above or left of it — landed at 0 / 85 while iOS and
  * web placed it where the declaration says.
  *
+ * That anchor has no margin on its bottom or right edge, where the ref box
+ * and the drawn box meet, so the four alignments to those edges read the same
+ * before and after the fix. They are judged again against an anchor with a
+ * margin on every edge (bottom 30, right 40): drawn at 120..170 on both axes,
+ * ref box 0..200 high and 0..210 wide.
+ *
  * The expected edges come from the declaration, not from a render.
  */
 @RunWith(AndroidJUnit4::class)
@@ -29,11 +35,11 @@ class RelativeAlignToMarginedAnchorTest {
     @get:Rule
     val rule = createComposeRule()
 
-    private fun target(attr: String): DpRect {
+    private fun target(attr: String, farMargins: String = ""): DpRect {
         val json = JsonParser.parseString(
             """{"type": "View", "id": "root", "width": "matchParent", "height": "matchParent", "child": [
                  {"type": "View", "id": "anchor", "width": 50, "height": 50, "background": "#CCCCCC",
-                  "topMargin": 120, "leftMargin": 120},
+                  "topMargin": 120, "leftMargin": 120$farMargins},
                  {"type": "View", "id": "target", "width": 50, "height": 50, "background": "#DDDDDD",
                   "$attr": "anchor"}
                ]}"""
@@ -60,4 +66,19 @@ class RelativeAlignToMarginedAnchorTest {
     @Test fun alignBottomOfView() = target("alignBottomOfView").let { near(170f, it.top, "top = the anchor's drawn bottom") }
     @Test fun alignLeftOfView() = target("alignLeftOfView").let { near(120f, it.right, "right = the anchor's drawn left") }
     @Test fun alignRightOfView() = target("alignRightOfView").let { near(170f, it.left, "left = the anchor's drawn right") }
+
+    private val allEdges = ", \"bottomMargin\": 30, \"rightMargin\": 40"
+
+    @Test fun alignBottomViewToAMarginedBottom() = target("alignBottomView", allEdges).let {
+        near(170f, it.bottom, "bottom = the anchor's drawn bottom, not its ref box's 200")
+    }
+    @Test fun alignRightViewToAMarginedRight() = target("alignRightView", allEdges).let {
+        near(170f, it.right, "right = the anchor's drawn right, not its ref box's 210")
+    }
+    @Test fun alignBottomOfViewToAMarginedBottom() = target("alignBottomOfView", allEdges).let {
+        near(170f, it.top, "top = the anchor's drawn bottom, not its ref box's 200")
+    }
+    @Test fun alignRightOfViewToAMarginedRight() = target("alignRightOfView", allEdges).let {
+        near(170f, it.left, "left = the anchor's drawn right, not its ref box's 210")
+    }
 }
