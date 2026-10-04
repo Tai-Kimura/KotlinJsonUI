@@ -215,7 +215,6 @@ class DynamicButtonComponent {
 
             // Modifier: testTag, margins, size, offset, alpha, shadow (not padding – handled by contentPadding)
             var modifier: Modifier = Modifier
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, data = data)
             // offset sits after size and before alpha, the same slot
@@ -224,6 +223,9 @@ class DynamicButtonComponent {
             // do not. This chain does not call buildModifier, which is why
             // it needed the line of its own (51-C's warning, measured).
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            // testTag after offset, before alpha: the tagged box is the drawn box
+            // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             // shadow, which the SSoT declares on every type (`common`) and
             // this chain did not apply — cast in the button's own shape.

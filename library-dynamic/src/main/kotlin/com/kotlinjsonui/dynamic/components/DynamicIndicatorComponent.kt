@@ -141,7 +141,6 @@ class DynamicIndicatorComponent {
             // background, radius or border, all of which the SSoT declares on
             // every type (`common`).
             var modifier: Modifier = Modifier
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // The declared width / height, as on every component; without
             // them — or where one is wrapContent — the style's size (planSize).
@@ -158,6 +157,9 @@ class DynamicIndicatorComponent {
             // do not. This chain does not call buildModifier, which is why
             // it needed the line of its own (51-C's warning, measured).
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            // testTag after offset, before alpha: the tagged box is the drawn box
+            // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyShadow(modifier, json, data)
             modifier = ModifierBuilder.applyBackground(modifier, json, data, context)

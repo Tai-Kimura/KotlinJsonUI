@@ -149,10 +149,12 @@ class DynamicNetworkImageComponent {
             val modifier = if (sizeValue != null) {
                 // Build modifier but skip applySize — we apply square size manually
                 var m: Modifier = Modifier
-                m = ModifierBuilder.applyTestTag(m, json)
                 m = ModifierBuilder.applyMargins(m, json, data)
                 // Square size instead of applySize
                 m = m.size(sizeValue.dp)
+                // testTag after offset, before alpha: the tagged box is the drawn box
+                // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                m = ModifierBuilder.applyTestTag(m, json)
                 m = ModifierBuilder.applyAlpha(m, json, data)
                 m = ModifierBuilder.applyShadow(m, json, data)
                 m = ModifierBuilder.applyBackground(m, json, data, context)

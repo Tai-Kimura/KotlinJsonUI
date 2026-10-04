@@ -200,9 +200,11 @@ class DynamicTextViewComponent {
                 // applies `enabled`, userInteractionEnabled and the node's
                 // long press, pan and pinch, as on every component.
                 var boxModifier: Modifier = Modifier
-                boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyOffset(boxModifier, json, data)
+                // testTag after offset, before alpha: the tagged box is the drawn box
+                // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                 boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
                 boxModifier = ModifierBuilder.applyShadow(boxModifier, json, data, ownShape = shape)
                 // A text field's clickable stage is a control's: the gestures and the
@@ -243,13 +245,15 @@ class DynamicTextViewComponent {
             } else {
                 // Regular modifier with size (default fillMaxWidth + 120dp height)
                 var modifier = buildTextViewSizeModifier(json, a)
-                modifier = ModifierBuilder.applyTestTag(modifier, json)
                 // offset sits after size and before alpha, the same slot
                 // buildModifier uses — outside background/shadow so the
                 // decoration moves with the view, inside margins so siblings
                 // do not. This chain does not call buildModifier, which is why
                 // it needed the line of its own (51-C's warning, measured).
                 modifier = ModifierBuilder.applyOffset(modifier, json, data)
+                // testTag after offset, before alpha: the tagged box is the drawn box
+                // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                modifier = ModifierBuilder.applyTestTag(modifier, json)
                 modifier = ModifierBuilder.applyAlpha(modifier, json, data)
                 // shadow and the click, which this chain did not apply;
                 // applyClickable also applies `enabled`,

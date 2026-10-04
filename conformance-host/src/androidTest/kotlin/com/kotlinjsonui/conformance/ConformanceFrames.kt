@@ -6,9 +6,6 @@ import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject as GsonObject
-import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import kotlin.math.roundToLong
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
@@ -31,24 +28,12 @@ import kotlinx.serialization.json.put
  * transforms, so a graphicsLayer translation is included
  * (ConformanceFramesTest holds that).
  *
- * The testTag sits before the margins in KotlinJsonUI's modifier order
- * (testTag → margins → … ; ModifierBuilder.applyTestTag / applyMargins), and
- * a margin is drawn as padding. The tagged box is therefore the
- * margin-inclusive box — measured: the align fixtures' anchor reads (0, 0,
- * 170, 170). iOS and web report the box the view draws, so each frame is inset
- * by the margins that view draws as padding ([Margins.from], the same
- * ModifierBuilder.marginPaddings the renderer calls).
- *
- * The offset stage is inside the testTag too (testTag → margins → size → … →
- * offset → … → background), so an offsetX / offsetY moves the drawn box and
- * not the tagged one — measured: common/offsetX__static drew its target 8 dp
- * right (16 px at density 2) while the tagged box stayed at 0. The declared
- * offset is added. Of the stages between the testTag and the background, these
- * two are the ones that move the box; `size` is the box itself.
- *
- * A view whose margins or offsets are bound resolves them against the
- * fixture's runtime data, which this reader does not see; it is left out, and
- * the gate names it as absent.
+ * KotlinJsonUI places the testTag inside the margins and the offset (margins
+ * → size → offset → testTag → alpha → …, since 2.43.5), so the tagged box is
+ * the drawn box and is read as it is. Before that the tag came first and a
+ * margined view's tagged box included its margin (ticket
+ * kjui-a11y-bounds-of-a-margined-view-include-its-margin); this reader inset
+ * it from the layout, and that step is gone with the fix.
  */
 object ConformanceFrames {
     const val SOURCE = "compose-layout-coordinates"
@@ -61,72 +46,17 @@ object ConformanceFrames {
         val density: Float,
     )
 
-    /**
-     * Per-id margins the layout draws as padding, per-id declared offsets
-     * (dp, x to y), and the ids whose margins or offsets are bound.
-     */
-    data class Margins(
-        val byId: Map<String, ModifierBuilder.MarginPaddings>,
-        val bound: Set<String>,
-        val offsets: Map<String, Pair<Float, Float>> = emptyMap(),
-    ) {
-        companion object {
-            val NONE = Margins(emptyMap(), emptySet())
-
-            fun from(layout: GsonObject): Margins {
-                val byId = mutableMapOf<String, ModifierBuilder.MarginPaddings>()
-                val bound = mutableSetOf<String>()
-                val offsets = mutableMapOf<String, Pair<Float, Float>>()
-                fun visit(e: JsonElement) {
-                    when {
-                        e.isJsonObject -> {
-                            val o = e.asJsonObject
-                            val id = o.get("id")?.takeIf { it.isJsonPrimitive }?.asString
-                            if (id != null) {
-                                val marginKeys = o.keySet().filter {
-                                    it == "margins" || it.endsWith("Margin") || it == "offsetX" || it == "offsetY"
-                                }
-                                val isBound = marginKeys.any { k ->
-                                    val v = o.get(k)
-                                    v.isJsonPrimitive && v.asJsonPrimitive.isString && v.asString.contains("@{")
-                                }
-                                if (isBound) bound += id
-                                else {
-                                    ModifierBuilder.marginPaddings(o, emptyMap())?.let { byId[id] = it }
-                                    val ox = o.get("offsetX")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asFloat ?: 0f
-                                    val oy = o.get("offsetY")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isNumber }?.asFloat ?: 0f
-                                    if (ox != 0f || oy != 0f) offsets[id] = ox to oy
-                                }
-                            }
-                            o.entrySet().forEach { (k, v) -> if (k != "_generated") visit(v) }
-                        }
-                        e.isJsonArray -> e.asJsonArray.forEach { visit(it) }
-                    }
-                }
-                visit(layout)
-                return Margins(byId, bound, offsets)
-            }
-        }
-    }
-
     /** Must run on the main thread. Every Compose root under [decorView]. */
-    fun read(decorView: View, margins: Margins = Margins.NONE): Read {
+    fun read(decorView: View): Read {
         val density = decorView.resources.displayMetrics.density
         val found = LinkedHashMap<String, MutableList<Box>>()
         composeRoots(decorView).forEach { root ->
             walk(root.semanticsOwner.unmergedRootSemanticsNode) { node ->
                 val tag = node.config.getOrNull(SemanticsProperties.TestTag) ?: return@walk
-                if (!node.layoutInfo.isPlaced || tag in margins.bound) return@walk
+                if (!node.layoutInfo.isPlaced) return@walk
                 val p = node.positionInWindow
-                val m = margins.byId[tag]
-                // Start / end are left / right: the conformance emulator is LTR.
-                val off = margins.offsets[tag]
-                val l = (m?.start ?: 0f) + (off?.first ?: 0f)
-                val t = (m?.top ?: 0f) + (off?.second ?: 0f)
                 found.getOrPut(tag) { mutableListOf() }.add(
-                    Box(p.x / density + l, p.y / density + t,
-                        node.size.width / density - (m?.start ?: 0f) - (m?.end ?: 0f),
-                        node.size.height / density - (m?.top ?: 0f) - (m?.bottom ?: 0f))
+                    Box(p.x / density, p.y / density, node.size.width / density, node.size.height / density)
                 )
             }
         }

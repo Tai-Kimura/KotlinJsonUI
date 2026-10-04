@@ -484,18 +484,8 @@ class ConformanceSuiteTest {
         val active = scenario ?: return
         try {
             var doc: kotlinx.serialization.json.JsonObject? = null
-            // The margins come from the layout this host rendered (the same
-            // asset FixtureScreen loads), so the frames are the drawn boxes.
-            val margins = try {
-                targetContext.assets.open(ConformanceStateRegistry.layoutAssetPath(targetContext, fixtureId))
-                    .bufferedReader().use { it.readText() }
-                    .let { ConformanceFrames.Margins.from(com.google.gson.JsonParser.parseString(it).asJsonObject) }
-            } catch (e: Exception) {
-                Log.w("ConformanceSuite", "frames: layout not read for margins: $fixtureId: ${e.message}")
-                return
-            }
             active.onActivity { activity ->
-                doc = ConformanceFrames.toJson(fixtureId, ConformanceFrames.read(activity.window.decorView, margins))
+                doc = ConformanceFrames.toJson(fixtureId, ConformanceFrames.read(activity.window.decorView))
             }
             doc?.let {
                 File(artifactsDir, "$name.frames.json").writeText(framesJson.encodeToString(

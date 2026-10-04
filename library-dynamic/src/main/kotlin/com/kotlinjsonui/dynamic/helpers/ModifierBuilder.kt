@@ -57,7 +57,13 @@ import com.kotlinjsonui.dynamic.TypeSynonyms
  * Method order matches modifier_builder.rb in kjui_tools.
  *
  * Modifier application order:
- * testTag → margins → weight → size → alpha → shadow → background(clip+border+bg) → clickable → padding → alignment
+ * margins → weight → size → offset → testTag → alpha → shadow → background(clip+border+bg) → clickable → padding → alignment
+ *
+ * The testTag (with testTagsAsResourceId) sits after the margins and the
+ * offset, so the tagged box — the resource-id bounds, TalkBack's focus frame
+ * — is the box the view draws. Before KotlinJsonUI 2.43.5 it came first and a
+ * view with a margin reported its margin-inclusive box (ticket
+ * kjui-a11y-bounds-of-a-margined-view-include-its-margin).
  */
 object ModifierBuilder {
 
@@ -1586,7 +1592,6 @@ object ModifierBuilder {
      * entry here would declare an application this function cannot perform.
      */
     val standardOrder: List<Stage> = listOf(
-        Stage("testTag") { m, json, _, _, _ -> applyTestTag(m, json) },
         Stage("margins") { m, json, data, _, _ -> applyMargins(m, json, data) },
         Stage("size") { m, json, data, _, fill -> applySize(m, json, fill, data) },
         // offset — the slot is forced, not chosen: it must sit OUTSIDE
@@ -1596,6 +1601,9 @@ object ModifierBuilder {
         // size and alpha is the only position satisfying both. Agreed with C
         // so the two paths put `.absoluteOffset` in the same place.
         Stage("offset") { m, json, data, _, _ -> applyOffset(m, json, data) },
+        // testTag inside the margins and the offset: the tagged box is the
+        // drawn box (see the order at the top of this file).
+        Stage("testTag") { m, json, _, _, _ -> applyTestTag(m, json) },
         Stage("alpha") { m, json, data, _, _ -> applyAlpha(m, json, data) },
         Stage("shadow") { m, json, data, _, _ -> applyShadow(m, json, data) },
         // background folds clip + border + bg into one stage.

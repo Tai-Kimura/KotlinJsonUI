@@ -44,10 +44,12 @@ class StandardModifierOrderTest {
      * is handled by the container. Their absence is not a migration gap.
      */
     private val expectedOrder = listOf(
-        "testTag",
         "margins",
         "size",
         "offset",
+        // inside the margins and the offset: the tagged box is the drawn box
+        // (ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin)
+        "testTag",
         "alpha",
         "shadow",
         "background",

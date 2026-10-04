@@ -105,7 +105,7 @@ class DynamicSafeAreaViewComponent {
             // every type (`common`).
             // applyClickable also applies userInteractionEnabled and the
             // node's long press, pan and pinch, as on every component.
-            var modifier = ModifierBuilder.applyTestTag(Modifier, json)
+            var modifier: Modifier = Modifier
             // margins outside the size, as on every component: after it, as
             // this chain had them, they padded the inside of the view and the
             // view took no more room (measured: 111x53 with and without).
@@ -114,6 +114,9 @@ class DynamicSafeAreaViewComponent {
             // offset after size and OUTSIDE the background, so the
             // background moves with the view — as in the standard order.
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            // testTag after offset, before alpha: the tagged box is the drawn box
+            // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyShadow(modifier, json, data)
             modifier = ModifierBuilder.applyBackground(modifier, json, data, context)

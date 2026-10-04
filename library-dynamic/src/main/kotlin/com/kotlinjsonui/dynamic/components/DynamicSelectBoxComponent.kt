@@ -703,7 +703,6 @@ class DynamicSelectBoxComponent {
             ownShape: Shape? = null
         ): Modifier {
             var modifier: Modifier = Modifier
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, defaultFillMaxWidth = true, data)
             // offset sits after size and before alpha, the same slot
@@ -712,6 +711,9 @@ class DynamicSelectBoxComponent {
             // do not. This chain does not call buildModifier, which is why
             // it needed the line of its own (51-C's warning, measured).
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            // testTag after offset, before alpha: the tagged box is the drawn box
+            // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape)
             // A control's clickable stage: the gestures and the blocker, no

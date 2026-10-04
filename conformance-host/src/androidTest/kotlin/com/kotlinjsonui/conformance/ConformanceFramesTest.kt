@@ -40,10 +40,10 @@ class ConformanceFramesTest {
     @get:Rule
     val rule = createAndroidComposeRule<ComponentActivity>()
 
-    private fun frames(margins: ConformanceFrames.Margins = ConformanceFrames.Margins.NONE): ConformanceFrames.Read {
+    private fun frames(): ConformanceFrames.Read {
         rule.waitForIdle()
         var read: ConformanceFrames.Read? = null
-        rule.runOnUiThread { read = ConformanceFrames.read(rule.activity.window.decorView, margins) }
+        rule.runOnUiThread { read = ConformanceFrames.read(rule.activity.window.decorView) }
         return read!!
     }
 
@@ -119,12 +119,12 @@ class ConformanceFramesTest {
     }
 
     /**
-     * KotlinJsonUI draws a margin as padding around the view's own box, so a
-     * testTag placed outside that padding would report the margin-inclusive
-     * box (0..170 for the align fixtures' anchor) instead of the box drawn at
-     * 120..170. The frame must be the drawn box: that is what iOS and web
-     * report, and the misplacement this exists to catch was exactly a
-     * confusion of the two.
+     * KotlinJsonUI draws a margin as padding around the view's own box. Since
+     * 2.43.5 the testTag sits inside it, so the tagged box, read as it is, IS
+     * the drawn box: 120..170 for the align fixtures' anchor. Before, the tag
+     * sat outside and this read 0..170 (ticket
+     * kjui-a11y-bounds-of-a-margined-view-include-its-margin). This arm fails
+     * if the tag moves back out.
      */
     @Test
     fun aMarginedViewReportsTheBoxItDraws() {
@@ -136,36 +136,19 @@ class ConformanceFramesTest {
                ]}"""
         ).asJsonObject
         rule.setContent { DynamicView(json = json, data = emptyMap()) }
-        val read = frames(ConformanceFrames.Margins.from(json))
+        val read = frames()
         val anchor = rel(read, "anchor")
         near(120f, anchor.x, "anchor x = its drawn left, not its ref box's 0")
         near(120f, anchor.y, "anchor y = its drawn top")
         near(50f, anchor.width, "anchor width = 50, not 170")
         near(50f, anchor.height, "anchor height = 50, not 170")
         val target = rel(read, "target")
-        near(120f, target.y, "target aligned to the anchor's drawn top (KotlinJsonUI 2.43.4)")
+        near(120f, target.y, "target aligned to the anchor's drawn top")
     }
 
-    /** The control for the inset: without the margins, the tagged box is the ref box. */
+    /** The offset stage is outside the testTag too: the tagged box moves with the drawing. */
     @Test
-    fun withoutTheMarginsTheTaggedBoxIsTheRefBox() {
-        val json = JsonParser.parseString(
-            """{"type": "View", "id": "root", "width": "matchParent", "height": "matchParent", "child": [
-                 {"type": "View", "id": "anchor", "width": 50, "height": 50, "topMargin": 120, "leftMargin": 120}
-               ]}"""
-        ).asJsonObject
-        rule.setContent { DynamicView(json = json, data = emptyMap()) }
-        val anchor = rel(frames(), "anchor")
-        near(0f, anchor.x, "the testTag sits outside the margins")
-        near(170f, anchor.width, "and its box includes them")
-    }
-
-    /**
-     * KotlinJsonUI's offset stage is inside the testTag, so the tagged box does
-     * not move; the drawn box does (measured: common/offsetX__static, 8 dp).
-     */
-    @Test
-    fun aDeclaredOffsetMovesTheFrameAsItMovesTheDrawing() {
+    fun aDeclaredOffsetMovesTheTaggedBox() {
         val json = JsonParser.parseString(
             """{"type": "View", "id": "root", "width": "matchParent", "height": "matchParent", "child": [
                  {"type": "View", "id": "target", "width": 200, "height": 200, "offsetX": 8, "offsetY": 12,
@@ -173,26 +156,49 @@ class ConformanceFramesTest {
                ]}"""
         ).asJsonObject
         rule.setContent { DynamicView(json = json, data = emptyMap()) }
-        val withPlacement = rel(frames(ConformanceFrames.Margins.from(json)), "target")
-        near(8f, withPlacement.x, "offsetX 8")
-        near(32f, withPlacement.y, "topMargin 20 + offsetY 12")
-        near(200f, withPlacement.width, "the offset does not resize")
-        near(200f, withPlacement.height, "nor does the margin, once inset")
-        val tagged = rel(frames(), "target")
-        near(0f, tagged.x, "control: the tagged box does not move with the offset")
+        val target = rel(frames(), "target")
+        near(8f, target.x, "offsetX 8")
+        near(32f, target.y, "topMargin 20 + offsetY 12")
+        near(200f, target.width, "the drawn width")
+        near(200f, target.height, "the drawn height")
     }
 
+    /**
+     * The control for the two arms above: the reader reports the box the tag
+     * sits on, and corrects nothing. A tag placed OUTSIDE a padding (the shape
+     * KotlinJsonUI had before 2.43.5) reads the padding-inclusive box; one
+     * placed inside reads the drawn box. So those arms measure the library's
+     * order, not a correction made here.
+     */
     @Test
-    fun aViewWithBoundMarginsIsLeftOut() {
+    fun theReaderReportsTheBoxTheTagSitsOn() {
+        rule.setContent {
+            Box(Modifier.fillMaxSize().testTag("root")) {
+                Box(Modifier.testTag("outer").padding(start = 120.dp, top = 120.dp).size(50.dp))
+                Box(Modifier.padding(start = 120.dp, top = 300.dp).testTag("inner").size(50.dp))
+            }
+        }
+        val read = frames()
+        val outer = rel(read, "outer")
+        near(0f, outer.x, "outer tag x")
+        near(170f, outer.width, "outer tag box includes the padding")
+        val inner = rel(read, "inner")
+        near(120f, inner.x, "inner tag x")
+        near(50f, inner.width, "inner tag box is the drawn box")
+    }
+
+    /** A bound margin resolves at runtime, and the frame reads where it put the view. */
+    @Test
+    fun aViewWithBoundMarginsIsMeasured() {
         val json = JsonParser.parseString(
             """{"type": "View", "id": "root", "width": "matchParent", "height": "matchParent", "child": [
                  {"type": "View", "id": "anchor", "width": 50, "height": 50, "topMargin": "@{m}"}
                ]}"""
         ).asJsonObject
         rule.setContent { DynamicView(json = json, data = mapOf("m" to 20)) }
-        val read = frames(ConformanceFrames.Margins.from(json))
-        assertTrue(read.tags.containsKey("root"))
-        assertTrue(!read.tags.containsKey("anchor"))
+        val anchor = rel(frames(), "anchor")
+        near(20f, anchor.y, "the bound topMargin")
+        near(50f, anchor.height, "the drawn height")
     }
 
     @Test

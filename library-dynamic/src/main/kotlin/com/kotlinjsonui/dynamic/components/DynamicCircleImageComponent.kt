@@ -118,7 +118,6 @@ class DynamicCircleImageComponent {
             // moved; it read no declared width / height, and applied no
             // shadow or radius.
             var modifier: Modifier = Modifier
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // The declared width / height, as on every component; without
             // them, the legacy `size`.
@@ -128,6 +127,9 @@ class DynamicCircleImageComponent {
                 modifier.size(size.dp)
             }
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
+            // testTag after offset, before alpha: the tagged box is the drawn box
+            // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = CircleShape)
             modifier = modifier.clip(CircleShape)

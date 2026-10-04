@@ -265,10 +265,12 @@ class DynamicTextFieldComponent {
             // `enabled`, userInteractionEnabled and the node's long press,
             // pan and pinch, as on every component.
             var modifier: Modifier = Modifier
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             modifier = ModifierBuilder.applySize(modifier, json, data = data)
             if (isHidden) {
+                // testTag after offset, before alpha: the tagged box is the drawn box
+                // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                modifier = ModifierBuilder.applyTestTag(modifier, json)
                 modifier = modifier.alpha(0f)
             } else {
                 // offset sits after size and before alpha, the same slot
@@ -277,6 +279,9 @@ class DynamicTextFieldComponent {
                 // do not. This chain does not call buildModifier, which is why
                 // it needed the line of its own (51-C's warning, measured).
                 modifier = ModifierBuilder.applyOffset(modifier, json, data)
+                // testTag after offset, before alpha: the tagged box is the drawn box
+                // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                modifier = ModifierBuilder.applyTestTag(modifier, json)
                 modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             }
             modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape = shape)
@@ -303,12 +308,17 @@ class DynamicTextFieldComponent {
                 // applied on this branch at all — a TextField with margins
                 // and offsetX did not move.
                 var boxModifier: Modifier = Modifier
-                boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                 boxModifier = ModifierBuilder.applyMargins(boxModifier, json, data)
                 if (isHidden) {
+                    // testTag after offset, before alpha: the tagged box is the drawn box
+                    // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                    boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                     boxModifier = boxModifier.alpha(0f)
                 } else {
                     boxModifier = ModifierBuilder.applyOffset(boxModifier, json, data)
+                    // testTag after offset, before alpha: the tagged box is the drawn box
+                    // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
+                    boxModifier = ModifierBuilder.applyTestTag(boxModifier, json)
                     boxModifier = ModifierBuilder.applyAlpha(boxModifier, json, data)
                 }
                 boxModifier = ModifierBuilder.applyShadow(boxModifier, json, data, ownShape = shape)
