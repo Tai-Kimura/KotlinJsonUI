@@ -78,6 +78,12 @@ class ConformanceSuiteTest {
     /** screenshot path (relative to conformance/) captured by the current fixture */
     private var lastScreenshot: String? = null
 
+    /** frames.json path (relative to conformance/) written with [lastScreenshot] */
+    private var lastFrames: String? = null
+
+    /** The fixture being executed, for the frames document. */
+    private var currentFixtureId: String? = null
+
     /** current host Activity scenario (relaunched for assertable fixtures) */
     private var scenario: ActivityScenario<FixtureHostActivity>? = null
 
@@ -280,6 +286,8 @@ class ConformanceSuiteTest {
 
     private fun executeFixture(fixture: ManifestFixture, firstFixture: Boolean): FixtureResult {
         lastScreenshot = null
+        lastFrames = null
+        currentFixtureId = fixture.id
 
         // Parse the fixture's screen test up-front (parse failure = error)
         val screenTest: ScreenTest = try {
@@ -396,9 +404,9 @@ class ConformanceSuiteTest {
             }
             null // pass
         } catch (e: AssertionError) {
-            FixtureResult(fixture.id, "fail", brief(e), lastScreenshot)
+            FixtureResult(fixture.id, "fail", brief(e), lastScreenshot, lastFrames)
         } catch (e: Exception) {
-            FixtureResult(fixture.id, "error", brief(e), lastScreenshot)
+            FixtureResult(fixture.id, "error", brief(e), lastScreenshot, lastFrames)
         }
         if (status != null) return status
 
@@ -410,16 +418,18 @@ class ConformanceSuiteTest {
             return FixtureResult(
                 fixture.id, "error",
                 "render error: ${brief(renderErrors.joinToString("; "))}",
-                lastScreenshot
+                lastScreenshot,
+                lastFrames
             )
         }
-        return FixtureResult(fixture.id, "pass", "", lastScreenshot)
+        return FixtureResult(fixture.id, "pass", "", lastScreenshot, lastFrames)
     }
 
     private fun captureScreenshot(name: String) {
         val file = File(artifactsDir, "$name.png")
         if (device.takeScreenshot(file)) {
             lastScreenshot = "artifacts/android/$name.png"
+            captureFrames(name)
         } else {
             throw AssertionError("screenshot capture failed: $name")
         }
@@ -457,10 +467,47 @@ class ConformanceSuiteTest {
                 }
             }
             lastScreenshot = "artifacts/android/$name.png"
+            captureFrames(name)
         } finally {
             scratch.delete()
         }
     }
+
+    /**
+     * Where each testTag was drawn, written beside the screenshot just taken
+     * (ConformanceFrames; jsonui-cli frames.schema.json). Read at the same
+     * moment as the picture. A failure here leaves the fixture's verdict
+     * alone: the gate counts the missing file.
+     */
+    private fun captureFrames(name: String) {
+        val fixtureId = currentFixtureId ?: return
+        val active = scenario ?: return
+        try {
+            var doc: kotlinx.serialization.json.JsonObject? = null
+            // The margins come from the layout this host rendered (the same
+            // asset FixtureScreen loads), so the frames are the drawn boxes.
+            val margins = try {
+                targetContext.assets.open(ConformanceStateRegistry.layoutAssetPath(targetContext, fixtureId))
+                    .bufferedReader().use { it.readText() }
+                    .let { ConformanceFrames.Margins.from(com.google.gson.JsonParser.parseString(it).asJsonObject) }
+            } catch (e: Exception) {
+                Log.w("ConformanceSuite", "frames: layout not read for margins: $fixtureId: ${e.message}")
+                return
+            }
+            active.onActivity { activity ->
+                doc = ConformanceFrames.toJson(fixtureId, ConformanceFrames.read(activity.window.decorView, margins))
+            }
+            doc?.let {
+                File(artifactsDir, "$name.frames.json").writeText(framesJson.encodeToString(
+                    kotlinx.serialization.json.JsonObject.serializer(), it) + "\n")
+                lastFrames = "artifacts/android/$name.frames.json"
+            }
+        } catch (e: Throwable) {
+            Log.w("ConformanceSuite", "frames not captured: $name: ${e.message}")
+        }
+    }
+
+    private val framesJson = kotlinx.serialization.json.Json { prettyPrint = true }
 
     private fun waitForResourceId(resourceId: String, timeoutMs: Long): Boolean {
         val deadline = System.currentTimeMillis() + timeoutMs

@@ -13,7 +13,9 @@ data class FixtureResult(
     val id: String,
     val status: String, // pass | fail | error | skipped | running
     val detail: String = "",
-    val screenshot: String? = null
+    val screenshot: String? = null,
+    /** frames.json path (relative to conformance/) written beside [screenshot] */
+    val frames: String? = null
 )
 
 /**
@@ -68,7 +70,8 @@ class ConformanceResultsStore(private val outputDir: File) {
                 id = id,
                 status = status,
                 detail = o["detail"]?.jsonPrimitive?.content ?: "",
-                screenshot = o["screenshot"]?.jsonPrimitive?.content
+                screenshot = o["screenshot"]?.jsonPrimitive?.content,
+                frames = o["frames"]?.jsonPrimitive?.content
             )
         }
         val resolved = LinkedHashMap<String, FixtureResult>()
@@ -104,6 +107,7 @@ class ConformanceResultsStore(private val outputDir: File) {
             put("status", result.status)
             put("detail", result.detail)
             result.screenshot?.let { put("screenshot", it) }
+            result.frames?.let { put("frames", it) }
         }.toString()
         progressFile.appendText(line + "\n")
     }
@@ -148,6 +152,7 @@ class ConformanceResultsStore(private val outputDir: File) {
                         put("status", r.status)
                         put("detail", r.detail)
                         r.screenshot?.let { put("screenshot", it) }
+                        r.frames?.let { put("frames", it) }
                     })
                 }
             })
