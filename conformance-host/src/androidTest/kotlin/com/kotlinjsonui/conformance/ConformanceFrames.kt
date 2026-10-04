@@ -49,29 +49,43 @@ import kotlinx.serialization.json.put
 object ConformanceFrames {
     const val SOURCE = "compose-layout-coordinates"
 
+    /**
+     * The Compose class Modifier.testTag creates. It is internal to Compose, so
+     * it is found by name: a Compose upgrade that renames it makes every tag
+     * fall back to the semantics node's position (and read Material3's widened
+     * Slider / Progress bounds again). Each such tag is listed in the frames
+     * document's `fallbacks`, and the gate fails on any — the break is red,
+     * not a silent regression.
+     */
+    const val TEST_TAG_ELEMENT = "TestTagElement"
+
     data class Box(val x: Float, val y: Float, val width: Float, val height: Float)
 
     data class Read(
         val tags: Map<String, Box>,
         val duplicates: Set<String>,
         val density: Float,
+        /** Tags read from the semantics node's position: no TestTagElement was found. */
+        val fallbacks: Set<String> = emptySet(),
     )
 
     /** Must run on the main thread. Every Compose root under [decorView]. */
-    fun read(decorView: View): Read {
+    fun read(decorView: View, testTagElement: String = TEST_TAG_ELEMENT): Read {
         val density = decorView.resources.displayMetrics.density
         val found = LinkedHashMap<String, MutableList<Box>>()
+        val fellBack = mutableSetOf<String>()
         composeRoots(decorView).forEach { root ->
             walk(root.semanticsOwner.unmergedRootSemanticsNode) { node ->
                 val tag = node.config.getOrNull(SemanticsProperties.TestTag) ?: return@walk
                 if (!node.layoutInfo.isPlaced) return@walk
-                val c = tagCoordinates(node, tag)
+                val c = tagCoordinates(node, tag, testTagElement)
                 val box = if (c != null) {
                     val p = c.positionInWindow()
                     Box(p.x / density, p.y / density, c.size.width / density, c.size.height / density)
                 } else {
-                    // No TestTagElement on this layout node (a tag set through
-                    // a plain semantics block): the node's own position.
+                    // No TestTagElement on this layout node: the node's own
+                    // position, recorded as a fallback (the gate fails on it).
+                    fellBack += tag
                     val p = node.positionInWindow
                     Box(p.x / density, p.y / density, node.size.width / density, node.size.height / density)
                 }
@@ -80,7 +94,7 @@ object ConformanceFrames {
         }
         val duplicates = found.filterValues { it.size > 1 }.keys
         val tags = found.filterKeys { it !in duplicates }.mapValues { it.value.single() }
-        return Read(tags, duplicates, density)
+        return Read(tags, duplicates, density, fellBack - duplicates)
     }
 
     /**
@@ -100,6 +114,9 @@ object ConformanceFrames {
             put("frames", buildJsonObject {
                 read.tags.keys.sorted().forEach { tag -> put(tag, box(read.tags.getValue(tag), root.x, root.y)) }
             })
+            if (read.fallbacks.isNotEmpty()) {
+                put("fallbacks", buildJsonArray { read.fallbacks.sorted().forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
+            }
             if (read.duplicates.isNotEmpty()) {
                 put("duplicates", buildJsonArray { read.duplicates.sorted().forEach { add(kotlinx.serialization.json.JsonPrimitive(it)) } })
             }
@@ -121,9 +138,9 @@ object ConformanceFrames {
      * to Compose, so it is found by name and its tag read reflectively; with
      * one TestTagElement on the node the tag is not needed to choose.
      */
-    private fun tagCoordinates(node: SemanticsNode, tag: String): LayoutCoordinates? {
+    private fun tagCoordinates(node: SemanticsNode, tag: String, elementName: String): LayoutCoordinates? {
         val infos = node.layoutInfo.getModifierInfo()
-            .filter { it.modifier.javaClass.simpleName == "TestTagElement" }
+            .filter { it.modifier.javaClass.simpleName == elementName }
         if (infos.isEmpty()) return null
         val named = infos.firstOrNull { info ->
             runCatching {

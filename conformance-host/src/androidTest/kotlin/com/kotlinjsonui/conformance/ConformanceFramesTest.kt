@@ -228,6 +228,32 @@ class ConformanceFramesTest {
         near(4f, progress.height, "progress height, the declared 4, not 24")
     }
 
+    /** Every tag in the specimens is found by its TestTagElement: no fallback. */
+    @Test
+    fun theTagElementIsFoundSoNothingFallsBack() {
+        specimens()
+        val read = frames()
+        assertTrue("fallbacks: ${read.fallbacks}", read.fallbacks.isEmpty())
+        assertTrue(ConformanceFrames.toJson("a/b__c", read)!!["fallbacks"] == null)
+    }
+
+    /**
+     * The control: if the element's name stops matching (a Compose upgrade
+     * renames the internal class), every tag falls back and is listed — the
+     * frames document carries `fallbacks`, which the gate fails on.
+     */
+    @Test
+    fun aRenamedTagElementListsEveryTagAsAFallback() {
+        specimens()
+        rule.waitForIdle()
+        var read: ConformanceFrames.Read? = null
+        rule.runOnUiThread { read = ConformanceFrames.read(rule.activity.window.decorView, "NoSuchElement") }
+        val r = read!!
+        assertTrue("offset" in r.fallbacks && "layer" in r.fallbacks && "root" in r.fallbacks)
+        val doc = ConformanceFrames.toJson("a/b__c", r)!!
+        assertTrue(doc["fallbacks"]!!.jsonArray.map { it.jsonPrimitive.content }.contains("offset"))
+    }
+
     @Test
     fun noSingleRootWritesNoDocument() {
         rule.setContent { Box(Modifier.size(10.dp).testTag("target")) }
