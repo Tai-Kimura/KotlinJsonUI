@@ -23,7 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.PartialAttribute
+import com.kotlinjsonui.components.LabelLineHeight
 import com.kotlinjsonui.components.StyledLineState
+import com.kotlinjsonui.components.lineSpacingBetween
 import com.kotlinjsonui.components.styledTextLines
 import androidx.compose.ui.graphics.graphicsLayer
 import com.kotlinjsonui.components.PartialAttributesText
@@ -249,10 +251,15 @@ class DynamicTextComponent {
             }
 
             // Build style (shadow, lineHeight)
+            val overrideLineHeightMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
             val style = buildTextStyle(
                 a, data, fontSize,
-                overrideLineHeightMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
+                overrideLineHeightMultiple = overrideLineHeightMultiple
             )
+            // lineSpacing goes between lines only; a lineHeightMultiple wins
+            // over it, as in buildTextStyle.
+            val betweenLines = if ((overrideLineHeightMultiple ?: TypedAttrs.float(a.lineHeightMultiple, data)) == null)
+                TypedAttrs.float(a.lineSpacing, data) else null
 
             // Build modifier using composite builder
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
@@ -262,6 +269,9 @@ class DynamicTextComponent {
             // The text sits in a taller frame by its gravity, inside the
             // background and the padding (labelVerticalAlignment, round 17).
             labelVerticalAlignment(json)?.let { modifier = modifier.wrapContentHeight(align = it) }
+            // Innermost but outside the drawn line faces, which read the
+            // Text's own layout coordinates.
+            betweenLines?.let { modifier = modifier.lineSpacingBetween(it) }
 
             if (lineState != null) {
                 modifier = modifier.styledTextLines(
@@ -650,22 +660,25 @@ class DynamicTextComponent {
             val base = androidx.compose.material3.LocalTextStyle.current
             var style: TextStyle? = null
 
-            // Line height calculation matching Ruby implementation
-            // (the highlight override resolves against the highlight's own
-            // font size, which is what the caller passes as fontSize)
+            // Line height, matching the codegen emit (text_component.rb).
+            // lineHeightMultiple and lineSpacing start from L, one line of a
+            // Label that declares no lineHeight (LabelLineHeight.base;
+            // attribute_semantics lineHeightMultipleBase / lineSpacingBetween):
+            // not from the font size with 14 when none was declared. The
+            // highlight override resolves against the highlight's own font
+            // size, which is what the caller passes as fontSize. lineSpacing's
+            // L + spacing is cut back to "between lines only" by
+            // lineSpacingBetween at the call site.
             val lineHeightMultiple = overrideLineHeightMultiple
                 ?: TypedAttrs.float(a.lineHeightMultiple, data)
             val lineSpacing = TypedAttrs.float(a.lineSpacing, data)
             val lineHeight = when {
-                lineHeightMultiple != null -> (fontSize ?: 14f) * lineHeightMultiple
-                lineSpacing != null -> (fontSize ?: 14f) + lineSpacing
-                fontSize != null -> {
-                    // Default lineHeight = fontSize * 1.3 to match iOS compact line spacing
-                    (fontSize * 1.3f)
-                }
+                lineHeightMultiple != null -> LabelLineHeight.multiple(fontSize, lineHeightMultiple, base)
+                lineSpacing != null -> LabelLineHeight.spaced(fontSize, lineSpacing, base)
+                fontSize != null -> (fontSize * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp
                 else -> null
             }
-            lineHeight?.let { style = (style ?: base).copy(lineHeight = it.sp) }
+            lineHeight?.let { style = (style ?: base).copy(lineHeight = it) }
 
             // Text shadow
             if (a.textShadow != null) {
