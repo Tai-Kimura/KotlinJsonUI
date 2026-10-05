@@ -175,7 +175,7 @@ class DynamicContainerComponent {
                 horizontalAlignment = horizontalAlignment
             ) {
                 val flags = ModifierBuilder.resolvedAlignFlags(json)
-                val mainBias = axisBias(flags.alignTop, flags.alignBottom, flags.centerV || flags.centerInParent)
+                val mainBias = if (stacksFromTheBottom(json, a)) 1f else axisBias(flags.alignTop, flags.alignBottom, flags.centerV || flags.centerInParent)
                 children.forEach { child ->
                     renderChildInColumn(child, data, context, distributionOf(a), OverflowPlacement(horizontalAlignment, mainBias))
                 }
@@ -271,7 +271,12 @@ class DynamicContainerComponent {
             // than its share, `fillEqually` forces every child to the same
             // size. An explicit `weight` on the child still wins.
             val distributedWeight = when (distribution) {
-                "fill", "fillEqually" -> 1f
+                "fill" -> 1f
+                // A child that declares its own height keeps it and takes no
+                // share; the others split what is left equally (user ruling,
+                // 2026-10-05: 60 / 120 / 120, not 60 drawn in an equal 100
+                // slot with 40 empty).
+                "fillEqually" -> if (declaresSizeAlong(child, "height")) null else 1f
                 else -> null
             }
             // A weight the CHILD declares owns that axis and overrides the
@@ -349,7 +354,12 @@ class DynamicContainerComponent {
             // than its share, `fillEqually` forces every child to the same
             // size. An explicit `weight` on the child still wins.
             val distributedWeight = when (distribution) {
-                "fill", "fillEqually" -> 1f
+                "fill" -> 1f
+                // A child that declares its own width keeps it and takes no
+                // share; the others split what is left equally (user ruling,
+                // 2026-10-05: 60 / 120 / 120, not 60 drawn in an equal 100
+                // slot with 40 empty).
+                "fillEqually" -> if (declaresSizeAlong(child, "width")) null else 1f
                 else -> null
             }
             // A weight the CHILD declares owns that axis and overrides the
@@ -481,11 +491,16 @@ class DynamicContainerComponent {
                 )
             } else {
                 Modifier.wrapContentHeight(
-                    align = androidx.compose.ui.BiasAlignment.Vertical(axisBias(flags.alignTop, flags.alignBottom, flags.centerV || flags.centerInParent)),
+                    align = androidx.compose.ui.BiasAlignment.Vertical(
+                        if (stacksFromTheBottom(json, a)) 1f else axisBias(flags.alignTop, flags.alignBottom, flags.centerV || flags.centerInParent)
+                    ),
                     unbounded = true
                 )
             }
         }
+
+        /** A numeric size declared along [axis] ("width" / "height"). */
+        internal fun declaresSizeAlong(child: JsonObject, axis: String): Boolean = isNumericSize(TypedAttrs.rawKey(child, axis))
 
         private fun isNumericSize(e: com.google.gson.JsonElement?): Boolean =
             e != null && e.isJsonPrimitive && (e.asJsonPrimitive.isNumber ||
@@ -583,6 +598,7 @@ class DynamicContainerComponent {
             val spacing = TypedAttrs.float(a.spacing, data)
             val distribution = TypedAttrs.enumString(a.distribution) { it.json }
             val flags = ModifierBuilder.resolvedAlignFlags(json)
+            val bottomUp = stacksFromTheBottom(json, a)
 
             return when {
                 // An explicit `spacing` pins the GAP, so it overrides the gap
@@ -590,7 +606,7 @@ class DynamicContainerComponent {
                 // SIZE, so fill/fillEqually still apply as child weights
                 // underneath it (49-E: "the more specific declaration wins the
                 // axis it speaks about, and only that axis").
-                spacing != null -> Arrangement.spacedBy(spacing.dp)
+                spacing != null -> if (bottomUp) Arrangement.spacedBy(spacing.dp, Alignment.Bottom) else Arrangement.spacedBy(spacing.dp)
                 // `equalSpacing` = equal gaps between adjacent children, with
                 // no leading or trailing gap.
                 distribution == "equalSpacing" -> Arrangement.SpaceBetween
@@ -606,9 +622,25 @@ class DynamicContainerComponent {
                 flags.alignTop -> Arrangement.Top
                 flags.alignBottom -> Arrangement.Bottom
                 flags.centerV || flags.centerInParent -> Arrangement.Center
+                bottomUp -> Arrangement.Bottom
                 else -> Arrangement.Top
             }
         }
+
+        /**
+         * `direction: bottomToTop` stacks from the bottom edge: the first child
+         * at the bottom (user ruling, 2026-10-05). Reversing the children
+         * alone stacked them from the top. Not when the gravity names a
+         * vertical place or a distribution spreads them: those say where they
+         * go. The kjui codegen: container_component.rb bottom_up?.
+         */
+        internal fun stacksFromTheBottom(json: JsonObject, a: ViewAttributes): Boolean {
+            if (TypedAttrs.enumString(a.direction) { it.json } != "bottomToTop") return false
+            if (distributionOf(a) != null) return false
+            val f = ModifierBuilder.resolvedAlignFlags(json)
+            return !(f.alignTop || f.alignBottom || f.centerV || f.centerInParent)
+        }
+
 
         private fun parseColumnHorizontalAlignment(json: JsonObject): Alignment.Horizontal {
             val flags = ModifierBuilder.resolvedAlignFlags(json)

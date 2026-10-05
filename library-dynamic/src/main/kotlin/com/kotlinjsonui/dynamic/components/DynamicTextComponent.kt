@@ -71,15 +71,15 @@ class DynamicTextComponent {
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) }
                 ?: ""
 
-            // `hint` + `hintAttributes` — a Label's placeholder. UIKit's
-            // SJUILabel swaps in the hint, styled by hintAttributes, when the
-            // text is empty, and it requires BOTH: a hint with no attributes
-            // shows nothing. The kjui codegen states the same rule verbatim
-            // (text_component.rb#hint_overrides) rather than inventing a
-            // divergence; the dynamic path read none of the three rows.
-            // `placeholder` is the declared alias of `hint`.
+            // `hint` — a Label's placeholder, shown while the text is empty,
+            // styled by hintAttributes when it has them. A hint with no
+            // hintAttributes is shown too, in the default placeholder colour
+            // (user ruling, 2026-10-05; through 2.43.4 every face required both
+            // and drew nothing). The kjui codegen states the same rule
+            // (text_component.rb#hint_overrides). `placeholder` is the
+            // declared alias of `hint`.
             val hintText = (a.hint ?: a.placeholder)
-                ?.takeIf { it.isNotEmpty() && a.hintAttributes != null }
+                ?.takeIf { it.isNotEmpty() }
                 ?.let { ResourceResolver.resolveTextValue(it, data, context) }
             val showHint = declaredText.isEmpty() && hintText != null
             val text = if (showHint) hintText else declaredText
@@ -154,6 +154,9 @@ class DynamicTextComponent {
             // bag's literals, so one call serves all three.
             val enabledColor = ((hl?.get("fontColor") as? String) ?: hlFallbackColor)
                 ?.let { ColorParser.parseColorStringWithBinding(it, data, context) }
+                // A hint with neither a fontColor in its bag nor a hintColor:
+                // the default placeholder colour, as a TextField's.
+                ?: hintStyle?.let { com.kotlinjsonui.core.Configuration.TextField.defaultPlaceholderColor }
                 ?: ColorParser.parseColorStringWithBinding(
                     TypedAttrs.rawString(a.fontColor), data, context
                 )
