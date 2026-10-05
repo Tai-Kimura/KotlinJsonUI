@@ -82,6 +82,27 @@ class LayoutRulingsTest {
         assertEquals(listOf(160, 120, 80, 40, 0, -40), (0 until 6).map { box("b$it", "row")[0] })
     }
 
+    // A SafeAreaView stacks the same way: bottomToTop from its bottom edge,
+    // rightToLeft from its right edge. It reversed the children and stacked
+    // them from the top / left. Only the top inset is reserved, so the bottom
+    // and both sides are the SafeAreaView's own edges whatever the device's
+    // insets are.
+    @Test
+    fun aSafeAreaViewBottomToTopStacksFromItsBottomEdge() {
+        val boxes = (0 until 3).joinToString(",") { """{"type":"View","id":"b$it","width":40,"height":40}""" }
+        show("""{"type":"View","id":"root","width":"matchParent","height":"matchParent","child":[
+                 {"type":"SafeAreaView","id":"sa","width":200,"height":200,"safeAreaInsetPositions":["top"],"orientation":"vertical","direction":"bottomToTop","child":[$boxes]}]}""")
+        assertEquals(listOf(160, 120, 80), (0 until 3).map { box("b$it", "sa")[1] })
+    }
+
+    @Test
+    fun aSafeAreaViewRightToLeftStacksFromItsRightEdge() {
+        val boxes = (0 until 3).joinToString(",") { """{"type":"View","id":"b$it","width":40,"height":40}""" }
+        show("""{"type":"View","id":"root","width":"matchParent","height":"matchParent","child":[
+                 {"type":"SafeAreaView","id":"sa","width":200,"height":200,"safeAreaInsetPositions":["top"],"orientation":"horizontal","direction":"rightToLeft","child":[$boxes]}]}""")
+        assertEquals(listOf(160, 120, 80), (0 until 3).map { box("b$it", "sa")[0] })
+    }
+
     // A hint with no hintAttributes is shown (default placeholder colour).
     // Through 2.43.4 every face required both and the label drew nothing.
     @Test

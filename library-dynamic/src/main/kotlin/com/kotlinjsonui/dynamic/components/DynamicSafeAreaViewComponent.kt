@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Arrangement
@@ -160,6 +161,18 @@ class DynamicSafeAreaViewComponent {
             ) {
                 childList.reverse()
             }
+            // ...and stacks them from the edge the direction starts from, the
+            // first child at the bottom (rightmost), as a View does (user
+            // ruling, 2026-10-05; DynamicContainerComponent.stacksFromTheBottom
+            // / stacksFromTheEnd). Reversed alone they were stacked from the
+            // top: three 40s in a full-height SafeAreaView sat at 80 / 40 / 0
+            // where web draws them at the bottom. A gravity naming a place on
+            // that axis still wins; SafeAreaView declares no distribution.
+            val gravity = ModifierBuilder.resolvedAlignFlags(json)
+            val bottomUp = direction == "bottomToTop" && orientation == "vertical" &&
+                !(gravity.alignTop || gravity.alignBottom || gravity.centerV || gravity.centerInParent)
+            val endFirst = direction == "rightToLeft" && orientation == "horizontal" &&
+                !(gravity.alignLeft || gravity.alignRight || gravity.centerH || gravity.centerInParent)
 
             // Route children through the scope-aware renderers used by
             // DynamicContainerComponent so weight/alignment/visibility are
@@ -176,10 +189,11 @@ class DynamicSafeAreaViewComponent {
                 "horizontal" -> {
                     Row(
                         modifier = modifier,
-                        horizontalArrangement = if (spacing != null) {
-                            Arrangement.spacedBy(spacing.dp)
-                        } else {
-                            Arrangement.Start
+                        horizontalArrangement = when {
+                            spacing != null && endFirst -> Arrangement.spacedBy(spacing.dp, Alignment.End)
+                            spacing != null -> Arrangement.spacedBy(spacing.dp)
+                            endFirst -> Arrangement.End
+                            else -> Arrangement.Start
                         }
                     ) {
                         childList.forEach { child ->
@@ -190,10 +204,11 @@ class DynamicSafeAreaViewComponent {
                 "vertical" -> {
                     Column(
                         modifier = modifier,
-                        verticalArrangement = if (spacing != null) {
-                            Arrangement.spacedBy(spacing.dp)
-                        } else {
-                            Arrangement.Top
+                        verticalArrangement = when {
+                            spacing != null && bottomUp -> Arrangement.spacedBy(spacing.dp, Alignment.Bottom)
+                            spacing != null -> Arrangement.spacedBy(spacing.dp)
+                            bottomUp -> Arrangement.Bottom
+                            else -> Arrangement.Top
                         }
                     ) {
                         childList.forEach { child ->
