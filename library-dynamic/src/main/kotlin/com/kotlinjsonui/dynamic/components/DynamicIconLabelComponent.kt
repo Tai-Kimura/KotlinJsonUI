@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.components.LabelLineHeight
 import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -229,7 +230,17 @@ class DynamicIconLabelComponent {
                     // label's text box ran tighter than the codegen label and
                     // pushed the icon up (32 parity, the theme-destruction
                     // class the TextView hint fix named).
-                    val labelBase = androidx.compose.material3.LocalTextStyle.current
+                    //
+                    // The text's line is a Label's (user ruling 2026-10-05,
+                    // ruling 5's ordinary line applied to IconLabel): with a
+                    // declared fontSize it is fontSize x 1.3, as
+                    // DynamicTextComponent sets it, not the theme's 24 under a
+                    // 20sp font (an IconLabel at fontSize 20 was 24 high where
+                    // a Label is 26). With none it stays the theme's line.
+                    val themeBase = androidx.compose.material3.LocalTextStyle.current
+                    val labelBase = a.fontSize?.let {
+                        themeBase.copy(lineHeight = (it.toFloat() * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp)
+                    } ?: themeBase
                     Text(
                         text = text,
                         fontSize = fontSize.sp,

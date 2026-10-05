@@ -103,6 +103,21 @@ class LayoutRulingsTest {
         assertEquals(listOf(160, 120, 80), (0 until 3).map { box("b$it", "sa")[0] })
     }
 
+    // An IconLabel's text line is a Label's: at fontSize 20 both are 26
+    // (20 x 1.3). The IconLabel kept the theme's 24 line under its 20sp font.
+    // Undeclared sizes are not compared here: this rule has no MaterialTheme,
+    // so a Label falls to TextStyle.Default (14sp, 17 high) while an IconLabel
+    // keeps its own 16 default (19) — a gap that predates the ruling. Under
+    // the Material theme both are 24 (conformance host, IconLabel/__control).
+    @Test
+    fun anIconLabelLineIsALabelLine() {
+        show("""{"type":"View","id":"root","width":"matchParent","height":"matchParent","orientation":"vertical","child":[
+                 {"type":"IconLabel","id":"il","width":200,"text":"Sample","fontSize":20},
+                 {"type":"Label","id":"l","width":200,"text":"Sample","fontSize":20}]}""")
+        assertEquals(26, box("il", "root")[3])
+        assertEquals(box("l", "root")[3], box("il", "root")[3])
+    }
+
     // A hint with no hintAttributes is shown (default placeholder colour).
     // Through 2.43.4 every face required both and the label drew nothing.
     @Test
