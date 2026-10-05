@@ -36,7 +36,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * - iconPosition: "left" | "right" | "top" | "bottom" (default "left")
  *   - left/right → Row layout
  *   - top/bottom → Column layout
- * - iconSize: Number icon size in dp (default 24)
+ * - iconSize: Number icon size in dp (undeclared: the image's own size)
  * - iconColor/tintColor: String hex color for icon tint, supports @{binding}
  * - fontSize: Float text size in sp (default 14)
  * - fontColor: String hex color for text, supports @{binding}
@@ -62,6 +62,21 @@ class DynamicIconLabelComponent {
             "heavy" to FontWeight.ExtraBold,
             "black" to FontWeight.Black
         )
+
+        /**
+         * The declared `iconSize` as (width, height) in dp, or null when it
+         * gives no size — then the icon is drawn at the image's own size. A
+         * number sizes both edges; a [width, height] array sizes them
+         * separately (a missing height follows the width), the same two
+         * faces the codegen's icon_size_call reads.
+         */
+        internal fun iconSizeFor(raw: Any?): Pair<Float, Float>? = when (raw) {
+            is Number -> raw.toFloat() to raw.toFloat()
+            is List<*> -> (raw.getOrNull(0) as? Number)?.toFloat()?.let { w ->
+                w to ((raw.getOrNull(1) as? Number)?.toFloat() ?: w)
+            }
+            else -> null
+        }
 
         /** IconLabel-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
@@ -114,18 +129,12 @@ class DynamicIconLabelComponent {
             // undeclared bridge read only the number face.
             // ('iconColor' stays an undeclared legacy runtime extra;
             // 'tintColor' is the declared common row.)
-            val iconSizeRaw = a.iconSize
-            val iconSizeW: Float
-            val iconSizeH: Float
-            when (iconSizeRaw) {
-                is Number -> { iconSizeW = iconSizeRaw.toFloat(); iconSizeH = iconSizeRaw.toFloat() }
-                is List<*> -> {
-                    val w = (iconSizeRaw.getOrNull(0) as? Number)?.toFloat() ?: 24f
-                    iconSizeW = w
-                    iconSizeH = (iconSizeRaw.getOrNull(1) as? Number)?.toFloat() ?: w
-                }
-                else -> { iconSizeW = 24f; iconSizeH = 24f }
-            }
+            // Undeclared, the icon is drawn at the image's own size
+            // (attribute_semantics iconLabelIconSize, 2026-10-05 ruling): no
+            // size modifier, so the Image takes the painter's intrinsic size.
+            // A fixed 24 dp here drew a 64 dp asset at 24 where iOS and the
+            // declaration draw it at 64.
+            val iconSize = iconSizeFor(a.iconSize)
             // `selectedFontColor` is the selected-state colour and wins over
             // `fontColor` while `selected` holds — recolouring on selection is
             // the whole point of the row. Only `fontColor` was read here, so
@@ -184,7 +193,7 @@ class DynamicIconLabelComponent {
                         // The label beside it names the control, so the icon is
                         // decorative (null; "" is still an unnamed image to TalkBack).
                         contentDescription = TypedAttrs.undeclared(json, "contentDescription")?.asString,
-                        modifier = Modifier.size(width = iconSizeW.dp, height = iconSizeH.dp),
+                        modifier = iconSize?.let { (w, h) -> Modifier.size(width = w.dp, height = h.dp) } ?: Modifier,
                         colorFilter = iconTintColor?.let { ColorFilter.tint(it) }
                     )
                 }
