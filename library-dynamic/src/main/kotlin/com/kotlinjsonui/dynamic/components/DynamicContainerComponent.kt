@@ -212,7 +212,7 @@ class DynamicContainerComponent {
                 verticalAlignment = verticalAlignment
             ) {
                 val flags = ModifierBuilder.resolvedAlignFlags(json)
-                val mainBias = axisBias(flags.alignLeft, flags.alignRight, flags.centerH || flags.centerInParent)
+                val mainBias = if (stacksFromTheEnd(json, a)) 1f else axisBias(flags.alignLeft, flags.alignRight, flags.centerH || flags.centerInParent)
                 children.forEach { child ->
                     renderChildInRow(child, data, context, distributionOf(a), OverflowPlacement(verticalAlignment, mainBias))
                 }
@@ -486,7 +486,9 @@ class DynamicContainerComponent {
             val flags = ModifierBuilder.resolvedAlignFlags(json)
             return if (layout == "Row") {
                 Modifier.wrapContentWidth(
-                    align = androidx.compose.ui.BiasAlignment.Horizontal(axisBias(flags.alignLeft, flags.alignRight, flags.centerH || flags.centerInParent)),
+                    align = androidx.compose.ui.BiasAlignment.Horizontal(
+                        if (stacksFromTheEnd(json, a)) 1f else axisBias(flags.alignLeft, flags.alignRight, flags.centerH || flags.centerInParent)
+                    ),
                     unbounded = true
                 )
             } else {
@@ -660,6 +662,7 @@ class DynamicContainerComponent {
             val spacing = TypedAttrs.float(a.spacing, data)
             val distribution = TypedAttrs.enumString(a.distribution) { it.json }
             val flags = ModifierBuilder.resolvedAlignFlags(json)
+            val endFirst = stacksFromTheEnd(json, a)
 
             return when {
                 // An explicit `spacing` pins the GAP, so it overrides the gap
@@ -667,7 +670,7 @@ class DynamicContainerComponent {
                 // SIZE, so fill/fillEqually still apply as child weights
                 // underneath it (49-E: "the more specific declaration wins the
                 // axis it speaks about, and only that axis").
-                spacing != null -> Arrangement.spacedBy(spacing.dp)
+                spacing != null -> if (endFirst) Arrangement.spacedBy(spacing.dp, Alignment.End) else Arrangement.spacedBy(spacing.dp)
                 // `equalSpacing` = equal gaps between adjacent children, with
                 // no leading or trailing gap.
                 distribution == "equalSpacing" -> Arrangement.SpaceBetween
@@ -683,8 +686,23 @@ class DynamicContainerComponent {
                 flags.alignLeft -> Arrangement.Start
                 flags.alignRight -> Arrangement.End
                 flags.centerH || flags.centerInParent -> Arrangement.Center
+                endFirst -> Arrangement.End
                 else -> Arrangement.Start
             }
+        }
+
+        /**
+         * `direction: rightToLeft` stacks a Row from its right edge: the first
+         * child rightmost (user ruling, 2026-10-05, bottomToTop's rule turned
+         * sideways). Reversing the children alone stacked them from the left.
+         * Not when the gravity names a horizontal place or a distribution
+         * spreads them. The kjui codegen: container_component.rb end_first?.
+         */
+        internal fun stacksFromTheEnd(json: JsonObject, a: ViewAttributes): Boolean {
+            if (TypedAttrs.enumString(a.direction) { it.json } != "rightToLeft") return false
+            if (distributionOf(a) != null) return false
+            val f = ModifierBuilder.resolvedAlignFlags(json)
+            return !(f.alignLeft || f.alignRight || f.centerH || f.centerInParent)
         }
 
         private fun parseRowVerticalAlignment(json: JsonObject): Alignment.Vertical {

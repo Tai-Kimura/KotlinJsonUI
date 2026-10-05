@@ -71,6 +71,17 @@ class LayoutRulingsTest {
         assertEquals(listOf(160, 120), (0 until 2).map { box("b$it", "col")[1] })
     }
 
+    // rightToLeft stacks a Row from its right edge, the first child rightmost
+    // (bottomToTop's ruling turned sideways). Was reversed and stacked from
+    // the left.
+    @Test
+    fun rightToLeftStacksFromTheRightEdge() {
+        val boxes = (0 until 6).joinToString(",") { """{"type":"View","id":"b$it","width":40,"height":40}""" }
+        show("""{"type":"View","id":"root","width":"matchParent","height":"matchParent","child":[
+                 {"type":"View","id":"row","width":200,"height":200,"orientation":"horizontal","direction":"rightToLeft","child":[$boxes]}]}""")
+        assertEquals(listOf(160, 120, 80, 40, 0, -40), (0 until 6).map { box("b$it", "row")[0] })
+    }
+
     // A hint with no hintAttributes is shown (default placeholder colour).
     // Through 2.43.4 every face required both and the label drew nothing.
     @Test
