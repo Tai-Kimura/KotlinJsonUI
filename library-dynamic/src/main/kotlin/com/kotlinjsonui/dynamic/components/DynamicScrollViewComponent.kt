@@ -160,6 +160,16 @@ class DynamicScrollViewComponent {
                     state = listState,
                     modifier = modifier,
                     contentPadding = safeInset,
+                    // The ScrollView's own content gravity across the scroll
+                    // (common.gravity is "Content gravity/alignment";
+                    // gravityDefaults top|start), read as a Column's is. It
+                    // was not read, so a ScrollView declaring
+                    // centerHorizontal drew a narrow child at the start,
+                    // where web centred it (2026-10-05). A child's gravity is
+                    // the child's content's and does not place the child.
+                    // The kjui codegen: scrollview_component.rb
+                    // cross_alignment.
+                    horizontalAlignment = DynamicContainerComponent.parseColumnHorizontalAlignment(json),
                     userScrollEnabled = scrollEnabled
                 ) {
                     item {

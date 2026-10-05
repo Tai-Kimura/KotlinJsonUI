@@ -644,7 +644,8 @@ class DynamicContainerComponent {
         }
 
 
-        private fun parseColumnHorizontalAlignment(json: JsonObject): Alignment.Horizontal {
+        /** A Column's content gravity across: also a vertical ScrollView's (DynamicScrollViewComponent). */
+        internal fun parseColumnHorizontalAlignment(json: JsonObject): Alignment.Horizontal {
             val flags = ModifierBuilder.resolvedAlignFlags(json)
             return when {
                 flags.alignLeft -> Alignment.Start
