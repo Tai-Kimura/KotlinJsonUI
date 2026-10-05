@@ -3,6 +3,7 @@ package com.kotlinjsonui.components
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.offset
@@ -40,17 +41,29 @@ object LabelLineHeight {
         return themeSize * DECLARED_FONT_SIZE_RATIO
     }
 
-    /** Every line m x L. */
-    fun multiple(fontSize: Float?, multiple: Float, style: TextStyle): TextUnit =
-        (base(fontSize, style) * multiple).sp
+    /** Every line m x L, on the device's pixel grid ([onPixelGrid]). */
+    fun multiple(fontSize: Float?, multiple: Float, style: TextStyle, density: Density): TextUnit =
+        onPixelGrid(base(fontSize, style) * multiple, density)
 
     /**
      * The line height that, with [lineSpacingBetween], gives L per line and
      * [spacing] between lines: L + spacing on every line, the extra spacing
      * after the last line taken away by the modifier.
      */
-    fun spaced(fontSize: Float?, spacing: Float, style: TextStyle): TextUnit =
-        (base(fontSize, style) + spacing).sp
+    fun spaced(fontSize: Float?, spacing: Float, style: TextStyle, density: Density): TextUnit =
+        onPixelGrid(base(fontSize, style) + spacing, density)
+
+    /**
+     * [sp] rounded to the nearest whole pixel. Compose draws a line height
+     * a whole number of pixels tall, rounding UP: 43.2sp at density 2 is
+     * 86.4 px and drew 87, so five lines measured 217.5 against the declared
+     * 216 and the error grew by 0.3 a line. Rounded to the nearest pixel
+     * first, a line is off by half a pixel at most (0.25 at density 2).
+     */
+    fun onPixelGrid(sp: Float, density: Density): TextUnit {
+        val pxPerSp = density.density * density.fontScale
+        return (kotlin.math.round(sp * pxPerSp) / pxPerSp).sp
+    }
 }
 
 /**

@@ -658,6 +658,7 @@ class DynamicTextComponent {
             // boundary (Label_hintAttributes__static android parity d=19,
             // runs 31234163967/31243724782).
             val base = androidx.compose.material3.LocalTextStyle.current
+            val density = androidx.compose.ui.platform.LocalDensity.current
             var style: TextStyle? = null
 
             // Line height, matching the codegen emit (text_component.rb).
@@ -673,8 +674,8 @@ class DynamicTextComponent {
                 ?: TypedAttrs.float(a.lineHeightMultiple, data)
             val lineSpacing = TypedAttrs.float(a.lineSpacing, data)
             val lineHeight = when {
-                lineHeightMultiple != null -> LabelLineHeight.multiple(fontSize, lineHeightMultiple, base)
-                lineSpacing != null -> LabelLineHeight.spaced(fontSize, lineSpacing, base)
+                lineHeightMultiple != null -> LabelLineHeight.multiple(fontSize, lineHeightMultiple, base, density)
+                lineSpacing != null -> LabelLineHeight.spaced(fontSize, lineSpacing, base, density)
                 fontSize != null -> (fontSize * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp
                 else -> null
             }
