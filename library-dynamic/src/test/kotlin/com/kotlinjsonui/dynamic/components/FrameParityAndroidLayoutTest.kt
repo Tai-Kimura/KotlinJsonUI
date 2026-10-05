@@ -85,6 +85,27 @@ class FrameParityAndroidLayoutTest {
         assertTrue(DynamicContainerComponent.withOverflowBias(bound, 0f, 1f) === bound)
     }
 
+    // Ruling S: a fixed-size Row / Column whose children all declare their
+    // main-axis size lays them out unbounded along it (device arms:
+    // OversizedChildPlacementTest.aPaddedRow…).
+    @Test
+    fun onlyAFixedRowOfFixedChildrenWithoutADistributionIsUnboundedAlongItsAxis() {
+        fun w(s: String): Boolean {
+            val j = json(s)
+            val a = com.kotlinjsonui.dynamic.generated.ViewAttributes.parse(com.kotlinjsonui.dynamic.TypedAttrs.toAttrMap(j))
+            val kids = j.getAsJsonArray("child").map { it.asJsonObject }
+            val layout = if (j.get("orientation")?.asString == "vertical") "Column" else "Row"
+            return DynamicContainerComponent.mainAxisOverflowWrapper(j, a, layout, kids) != null
+        }
+        val kid = """{"type":"View","width":40,"height":40}"""
+        assertTrue(w("""{"type":"View","orientation":"horizontal","width":200,"child":[$kid,$kid]}"""))
+        assertTrue(w("""{"type":"View","orientation":"vertical","height":200,"child":[$kid,$kid]}"""))
+        assertFalse(w("""{"type":"View","orientation":"horizontal","width":"matchParent","child":[$kid]}"""))
+        assertFalse(w("""{"type":"View","orientation":"horizontal","width":200,"distribution":"equalSpacing","child":[$kid]}"""))
+        assertFalse(w("""{"type":"View","orientation":"horizontal","width":200,"child":[$kid,{"type":"Label","text":"t"}]}"""))
+        assertFalse(w("""{"type":"View","orientation":"horizontal","width":200,"child":[$kid,{"type":"View","width":40,"weight":1}]}"""))
+    }
+
     // kjui-scrollview-center-anchor-is-off-by-4: scrollBy reports
     // `delta − leftover` in float32. Near 1e9 floats are 64 apart, so a 1200 px
     // extent came back as 1216 and the centre started 8 px (4 dp) short.

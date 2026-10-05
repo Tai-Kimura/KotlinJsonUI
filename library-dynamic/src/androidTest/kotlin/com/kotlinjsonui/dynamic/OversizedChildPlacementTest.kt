@@ -87,4 +87,48 @@ class OversizedChildPlacementTest {
     @Test
     fun aRowChildAlignedBottomOverflowsTheTopSide() =
         assertAt(0f, -100f, place(""","orientation":"horizontal"""", ""","width":50,"height":300,"alignBottom":true"""))
+    // ── Ruling S: a fixed-size row's children in sequence past its edge ──
+
+    private fun rowOfSix(container: String): List<Float> {
+        val boxes = (0 until 6).joinToString(",") { """{"type":"View","id":"b$it","width":40,"height":40}""" }
+        rule.setContent {
+            DynamicView(
+                json = JsonParser.parseString(
+                    """{"type":"View","id":"root","width":"matchParent","height":"matchParent","child":[
+                         {"type":"View","id":"row","width":200,"height":200,"orientation":"horizontal" $container,"child":[$boxes]}]}"""
+                ).asJsonObject,
+                data = emptyMap()
+            )
+        }
+        rule.waitForIdle()
+        val density = rule.density.density
+        val row = rule.onNodeWithTag("row").fetchSemanticsNode().positionInRoot.x
+        return (0 until 6).map { Math.round((rule.onNodeWithTag("b$it").fetchSemanticsNode().positionInRoot.x - row) / density).toFloat() }
+    }
+
+    @Test
+    fun aPaddedRowPutsItsChildrenInSequencePastTheEdge() =
+        assertEquals(listOf(8f, 48f, 88f, 128f, 168f, 208f), rowOfSix(""","padding":8"""))
+
+    @Test
+    fun aRowWithSpacingPutsItsChildrenInSequencePastTheEdge() =
+        assertEquals(listOf(0f, 48f, 96f, 144f, 192f, 240f), rowOfSix(""","spacing":8"""))
+
+    @Test
+    fun aRowThatFitsIsArrangedAsBefore() {
+        val boxes = (0 until 3).joinToString(",") { """{"type":"View","id":"b$it","width":40,"height":40}""" }
+        rule.setContent {
+            DynamicView(
+                json = JsonParser.parseString(
+                    """{"type":"View","id":"root","width":"matchParent","height":"matchParent","child":[
+                         {"type":"View","id":"row","width":200,"height":200,"orientation":"horizontal","gravity":"centerHorizontal","child":[$boxes]}]}"""
+                ).asJsonObject,
+                data = emptyMap()
+            )
+        }
+        rule.waitForIdle()
+        val density = rule.density.density
+        val row = rule.onNodeWithTag("row").fetchSemanticsNode().positionInRoot.x
+        assertEquals(40f, (rule.onNodeWithTag("b0").fetchSemanticsNode().positionInRoot.x - row) / density, 0.5f)
+    }
 }

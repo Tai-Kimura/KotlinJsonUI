@@ -86,6 +86,10 @@ class DynamicContainerComponent {
 
             // Build modifier
             var modifier = ModifierBuilder.buildModifier(json, data, parentType = null, context = context)
+            // A fixed-size row whose children all declare their size along it
+            // lays them out in sequence past its edge (ruling S); see
+            // mainAxisOverflowWrapper.
+            mainAxisOverflowWrapper(json, a, layout, children)?.let { modifier = modifier.then(it) }
 
             // `safeAreaInsetPositions` is declared on View as well as on
             // SafeAreaView — the SSoT says so explicitly, because SafeAreaView
@@ -446,6 +450,47 @@ class DynamicContainerComponent {
         // anchors the declared box there. The kjui codegen computes the same
         // biases (container_component.rb overflow_bias).
 
+        /**
+         * A fixed-size Row / Column whose children all declare a numeric size
+         * along its axis measures them unbounded along it, innermost in its
+         * chain, anchored by its gravity. Compose measures a Row's children
+         * against the space left, so the child that crosses the edge was
+         * coerced to what was left and every child after it moved up — six
+         * 40-wide boxes in a 200 row with padding 8 put box_f at 172 where
+         * web and iOS put it at 208 (user ruling S, 2026-10-05: children of a
+         * fixed-size row are placed in sequence and overflow past the edge).
+         * Content that fits reads the same as before: the wrapper reports the
+         * declared size and places the content where the gravity would.
+         * Not with a distribution (it needs the free space) nor with any child
+         * sized by weight, fill or content, all of which need the bound. The
+         * kjui codegen emits the same (container_component.rb
+         * main_axis_overflow_wrapper).
+         */
+        internal fun mainAxisOverflowWrapper(json: JsonObject, a: ViewAttributes, layout: String, children: List<JsonObject>): Modifier? {
+            if (layout != "Row" && layout != "Column") return null
+            val axis = if (layout == "Row") "width" else "height"
+            if (distributionOf(a) != null || children.isEmpty()) return null
+            if (!isNumericSize(TypedAttrs.rawKey(json, axis))) return null
+            val weights = listOf("weight", "widthWeight", "heightWeight")
+            if (children.any { c -> weights.any { TypedAttrs.rawKey(c, it) != null } || !isNumericSize(TypedAttrs.rawKey(c, axis)) }) return null
+            val flags = ModifierBuilder.resolvedAlignFlags(json)
+            return if (layout == "Row") {
+                Modifier.wrapContentWidth(
+                    align = androidx.compose.ui.BiasAlignment.Horizontal(axisBias(flags.alignLeft, flags.alignRight, flags.centerH || flags.centerInParent)),
+                    unbounded = true
+                )
+            } else {
+                Modifier.wrapContentHeight(
+                    align = androidx.compose.ui.BiasAlignment.Vertical(axisBias(flags.alignTop, flags.alignBottom, flags.centerV || flags.centerInParent)),
+                    unbounded = true
+                )
+            }
+        }
+
+        private fun isNumericSize(e: com.google.gson.JsonElement?): Boolean =
+            e != null && e.isJsonPrimitive && (e.asJsonPrimitive.isNumber ||
+                (e.asJsonPrimitive.isString && (e.asString.toFloatOrNull() ?: -1f) >= 0f))
+
         /** The cross-axis alignment a Column / Row gives its children, and the main-axis bias of its gravity. */
         internal data class OverflowPlacement<A>(val crossAlignment: A, val mainBias: Float)
 
@@ -486,11 +531,7 @@ class DynamicContainerComponent {
 
         private fun declaresNumericSize(child: JsonObject): Boolean {
             if (TypedAttrs.rawKey(child, "frame")?.isJsonObject == true) return true
-            return listOf("width", "height").any { key ->
-                val e = TypedAttrs.rawKey(child, key)
-                e != null && e.isJsonPrimitive && (e.asJsonPrimitive.isNumber ||
-                    (e.asJsonPrimitive.isString && (e.asString.toFloatOrNull() ?: -1f) >= 0f))
-            }
+            return listOf("width", "height").any { key -> isNumericSize(TypedAttrs.rawKey(child, key)) }
         }
 
         // ── Visibility resolution ──
