@@ -7,6 +7,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import org.junit.Assume
@@ -74,13 +75,17 @@ class ScreenMarkerProbeTest {
     private fun snapshot(label: String, id: String): String {
         val anyWindow = foundAnyWindow(id)
         val activeWindow = foundActiveWindow(id)
-        val obj = device.findObject(By.res(id))
-        val bounds: Rect? = obj?.visibleBounds
-        val boundsText = when {
-            obj == null -> "-"
-            bounds == null -> "null"
-            bounds.isEmpty -> "EMPTY"
-            else -> "${bounds.width()}x${bounds.height()}@(${bounds.left},${bounds.top})"
+        val read = readBounds({ device.findObject(By.res(id)) }) { it.visibleBounds }
+        val boundsText = when (read) {
+            BoundsRead.Missing -> "-"
+            BoundsRead.Stale -> "STALE"
+            is BoundsRead.Read -> read.bounds.let { b ->
+                when {
+                    b == null -> "null"
+                    b.isEmpty -> "EMPTY"
+                    else -> "${b.width()}x${b.height()}@(${b.left},${b.top})"
+                }
+            }
         }
         // The driver's own primitive is `findObject` + null check, so record
         // it separately from `findObjects`: the two disagree for a node that
@@ -90,9 +95,42 @@ class ScreenMarkerProbeTest {
             val r = Rect().also { node.getBoundsInScreen(it) }
             "visibleToUser=${node.isVisibleToUser} bounds=${r.width()}x${r.height()}@(${r.left},${r.top})"
         }
-        return "$label: findObjects=$anyWindow findObject=${obj != null} inTree=$activeWindow " +
+        return "$label: findObjects=$anyWindow findObject=${read != BoundsRead.Missing} inTree=$activeWindow " +
             "visibleBounds=$boundsText node[$nodeText] " +
             "windows=${instrumentation.uiAutomation.windows.size}"
+    }
+
+    companion object {
+        /** What one read of an object's bounds came to. */
+        sealed interface BoundsRead {
+            data object Missing : BoundsRead
+            data object Stale : BoundsRead
+            data class Read(val bounds: Rect?) : BoundsRead
+        }
+
+        /**
+         * Finds the object and reads its bounds. The node behind a UiObject2
+         * can be replaced between the find and the read — right after a
+         * scroll: CI run 37630851587, `visibleBounds` in snapshot() after
+         * scrollingDoesNotHideTheMarker's swipes (ticket kjui-conformance-host-
+         * screen-marker-probe-snapshot-throws-stale-object-after-scroll) — and
+         * uiautomator then throws StaleObjectException, which failed the test
+         * from a printing helper. It is caught by NAME, as AssertionExecutor
+         * does: a RuntimeException catch would absorb unrelated failures. The
+         * find is made once more; a second stale read is reported as Stale.
+         * The arm: ScreenMarkerProbeStaleReadTest.
+         */
+        fun <T : Any> readBounds(find: () -> T?, read: (T) -> Rect?): BoundsRead {
+            repeat(2) {
+                val obj = find() ?: return BoundsRead.Missing
+                try {
+                    return BoundsRead.Read(read(obj))
+                } catch (_: StaleObjectException) {
+                    // the node was replaced under the handle: find it again
+                }
+            }
+            return BoundsRead.Stale
+        }
     }
 
     private fun launch(mode: String): ActivityScenario<ScreenMarkerProbeActivity> {
