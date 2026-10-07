@@ -159,9 +159,9 @@ class DynamicContainerComponent {
                 DistributionFillColumn(
                     modifier = modifier,
                     gap = (TypedAttrs.float(a.spacing, data) ?: 0f).dp,
-                    grows = children.map { !it.has("height") }
+                    grows = fillGrows(children, "height")
                 ) {
-                    children.forEach { child -> renderChildPlain(child, data, context) }
+                    children.forEach { child -> renderChildPlain(fillChild(child, "height"), data, context) }
                 }
                 return
             }
@@ -196,9 +196,9 @@ class DynamicContainerComponent {
                 DistributionFillRow(
                     modifier = modifier,
                     gap = (TypedAttrs.float(a.spacing, data) ?: 0f).dp,
-                    grows = children.map { !it.has("width") }
+                    grows = fillGrows(children, "width")
                 ) {
-                    children.forEach { child -> renderChildPlain(child, data, context) }
+                    children.forEach { child -> renderChildPlain(fillChild(child, "width"), data, context) }
                 }
                 return
             }
@@ -318,7 +318,7 @@ class DynamicContainerComponent {
             // inject serves declared weights and fillEqually only; a `fill`
             // child keeps its content size inside its equal track.
             val effectiveChild = (if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
-                injectFillSize(child, fillHeight = true, fillWidth = false, override = declaredWeight != null)
+                injectFillSize(child, fillHeight = true, fillWidth = false, override = overridesTheChildsSize(declaredWeight, child, "height"))
             } else child).let { c ->
                 if (overflow == null) c
                 else withOverflowBias(c, columnBias(alignment, overflow.crossAlignment), overflow.mainBias)
@@ -400,7 +400,7 @@ class DynamicContainerComponent {
             // inject serves declared weights and fillEqually only; a `fill`
             // child keeps its content size inside its equal track.
             val effectiveChild = (if (weight != null && childFillsItsTrack(declaredWeight, distribution)) {
-                injectFillSize(child, fillHeight = false, fillWidth = true, override = declaredWeight != null)
+                injectFillSize(child, fillHeight = false, fillWidth = true, override = overridesTheChildsSize(declaredWeight, child, "width"))
             } else child).let { c ->
                 if (overflow == null) c
                 else withOverflowBias(c, overflow.mainBias, rowBias(alignment, overflow.crossAlignment))
@@ -586,6 +586,41 @@ class DynamicContainerComponent {
          * fillEqually" (0px apart). A weight the child DECLARES always
          * stretches: that axis is its to own (f33e66c).
          */
+        /**
+         * Which children of a `distribution: fill` row (column) grow. Only a
+         * NUMERIC size on the axis is explicit and kept (explicit > fill);
+         * `wrapContent` is a child fill grows. User ruling 2026-10-07: width is
+         * required, so reading wrapContent as explicit would leave fill no
+         * child to grow in a correct layout (attribute_semantics
+         * distribution.explicitChildSizeWins). This read the key's presence,
+         * so a declared wrapContent kept its content width (ticket kjui-a-
+         * wrapcontent-child-of-a-fill-row-does-not-grow).
+         */
+        internal fun fillGrows(children: List<JsonObject>, axis: String): List<Boolean> =
+            children.map { !declaresSizeAlong(it, axis) }
+
+        /**
+         * A growing child of a fill row draws across the slot
+         * DistributionFillRow gives it. Its own `wrapContent` would be a
+         * wrapContentWidth inside that exact width, drawing the content at its
+         * own size at the start of a wider slot. DistributionFillRow sizes the
+         * slot from the child's max intrinsic, which a fill modifier leaves
+         * alone, so this changes the drawing and not the split.
+         */
+        internal fun fillChild(child: JsonObject, axis: String): JsonObject =
+            if (declaresSizeAlong(child, axis)) child
+            else injectFillSize(child, fillHeight = axis == "height", fillWidth = axis == "width", override = true)
+
+        /**
+         * Whether a weighted child's track size replaces the size it declares.
+         * A weight the child declares always does. A weight from the container's
+         * `distribution` replaces anything but a numeric size: a declared
+         * `wrapContent` would otherwise draw at its content size inside its
+         * equal share (same ruling as [fillGrows]).
+         */
+        internal fun overridesTheChildsSize(declaredWeight: Float?, child: JsonObject, axis: String): Boolean =
+            declaredWeight != null || !declaresSizeAlong(child, axis)
+
         internal fun childFillsItsTrack(declaredWeight: Float?, distribution: String?): Boolean =
             declaredWeight != null || distribution != "fill"
 
@@ -763,7 +798,7 @@ class DynamicContainerComponent {
          * axis. In Dynamic mode weight is on a wrapper Box, so we need to ensure the
          * child fills the available space by injecting matchParent on the weighted axis.
          */
-        private fun injectFillSize(
+        internal fun injectFillSize(
             json: JsonObject,
             fillHeight: Boolean,
             fillWidth: Boolean,

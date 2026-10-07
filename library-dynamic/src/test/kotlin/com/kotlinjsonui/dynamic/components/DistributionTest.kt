@@ -128,4 +128,40 @@ class DistributionTest {
         assertTrue(DynamicContainerComponent.childFillsItsTrack(1f, "fill"))
         assertTrue(DynamicContainerComponent.childFillsItsTrack(1f, null))
     }
+
+    // ── a wrapContent child is one fill grows (user ruling 2026-10-07) ──
+    // Width is required, so a correct layout gives every child a width; only
+    // a NUMERIC one is explicit (attribute_semantics
+    // distribution.explicitChildSizeWins). Ticket kjui-a-wrapcontent-child-
+    // of-a-fill-row-does-not-grow: a declared wrapContent kept its content
+    // width on Android while the other faces grew it.
+
+    private fun node(json: String): JsonObject = Gson().fromJson(json, JsonObject::class.java)
+
+    @Test
+    fun aFillRowGrowsEveryChildButANumericSize() {
+        val children = listOf(
+            node("""{"type":"View","width":60}"""),
+            node("""{"type":"Label","width":"wrapContent"}"""),
+            node("""{"type":"Label"}"""),
+            node("""{"type":"View","width":"120"}""")
+        )
+        assertEquals(listOf(false, true, true, false), DynamicContainerComponent.fillGrows(children, "width"))
+    }
+
+    @Test
+    fun aGrowingFillChildDrawsAcrossItsSlot() {
+        val grown = DynamicContainerComponent.fillChild(node("""{"type":"Label","width":"wrapContent","height":"wrapContent"}"""), "width")
+        assertEquals("matchParent", grown.get("width").asString)
+        assertEquals("the cross axis is the child's own", "wrapContent", grown.get("height").asString)
+        val kept = DynamicContainerComponent.fillChild(node("""{"type":"View","width":60}"""), "width")
+        assertEquals(60, kept.get("width").asInt)
+    }
+
+    @Test
+    fun aDistributedWeightReplacesADeclaredWrapContentButNotANumber() {
+        assertTrue(DynamicContainerComponent.overridesTheChildsSize(null, node("""{"type":"Label","height":"wrapContent"}"""), "height"))
+        assertFalse(DynamicContainerComponent.overridesTheChildsSize(null, node("""{"type":"View","height":40}"""), "height"))
+        assertTrue("a declared weight always does", DynamicContainerComponent.overridesTheChildsSize(1f, node("""{"type":"View","height":40}"""), "height"))
+    }
 }
