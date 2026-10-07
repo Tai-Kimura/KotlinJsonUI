@@ -19,8 +19,10 @@ import com.jsonui.testrunner.models.TestStep
 import com.jsonui.testrunner.runner.AppWindow
 import com.jsonui.testrunner.runner.Deadline
 import com.jsonui.testrunner.runner.FindTimeoutReport
+import com.jsonui.testrunner.runner.ScrollHistory
 import com.jsonui.testrunner.runner.NodeCache
 import com.jsonui.testrunner.runner.ProjectionProbe
+import com.jsonui.testrunner.runner.ZeroSizeNodes
 import java.io.File
 
 /**
@@ -321,6 +323,7 @@ class ActionExecutor(
 
     private fun executeScroll(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("scroll requires 'id'")
+        ScrollHistory.previousContainerId = id
         val direction = step.direction ?: throw IllegalArgumentException("scroll requires 'direction'")
 
         // Scroll WITHIN the target element's bounds (parity with `swipe` /
@@ -361,7 +364,14 @@ class ActionExecutor(
 
     private fun executeWaitFor(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("waitFor requires 'id'")
-        waitForElement(id, timeout)
+        // Presence, as on iOS (waitForExistence): an element whose drawn box is
+        // 0 x 0 is not in the accessibility tree, so it is asked of the
+        // semantics tree once By.res has missed (ZeroSizeNodes).
+        val deadline = Deadline.of(timeout)
+        deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            device.findObject(By.res(id)) ?: ZeroSizeNodes.find(id).firstOrNull()
+        }?.let { return }
+        throw AssertionError(notFoundMessage(id, timeout, deadline))
     }
 
     private fun executeWaitForAny(step: TestStep, timeout: Long) {
@@ -372,7 +382,9 @@ class ActionExecutor(
 
         val deadline = Deadline.of(timeout)
         // Find by resource-id (Compose testTag)
-        deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) { ids.firstOrNull { device.findObject(By.res(it)) != null } }?.let { return }
+        deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            ids.firstOrNull { device.findObject(By.res(it)) != null || ZeroSizeNodes.find(it).isNotEmpty() }
+        }?.let { return }
         throw AssertionError(
             "None of elements [${ids.joinToString(", ")}] appeared within ${timeout}ms\n  ${deadline.describe()}"
         )
@@ -651,8 +663,21 @@ class ActionExecutor(
         }
     }
 
+    /**
+     * Brings `step.id` into view. ⚠️ It guarantees the target is VISIBLE, not
+     * where the scroll stops: a target that arrives clear of the edge stays
+     * where it arrived, one flush against the trailing edge is moved
+     * [ViewportMargin.LANDING_CLEARANCES] clearances in. The same target can
+     * therefore rest at different offsets depending on where the scroll
+     * started, and its neighbours land inside or outside the viewport
+     * accordingly (ticket android-driver-scroll-until-visible-stops-at-two-
+     * different-offsets-for-the-same-target, ruled: documented, not
+     * normalized). A test that asserts another element afterwards scrolls to
+     * that element itself.
+     */
     private fun executeScrollUntilVisible(step: TestStep) {
         val id = step.id ?: throw IllegalArgumentException("scrollUntilVisible requires 'id'")
+        ScrollHistory.previousContainerId = step.container
         val direction = step.direction ?: "down"
         val timeout = step.timeout?.toLong() ?: 20000L
 
@@ -898,8 +923,8 @@ class ActionExecutor(
     /**
      * Accessibility-action scrolling: repeatedly performs
      * ACTION_SCROLL_FORWARD/BACKWARD on the container node until the target's
-     * viewId appears in a FRESH rootInActiveWindow tree (no UiObject2 caching,
-     * no coordinates). Returns false when the container is missing / not
+     * viewId appears VISIBLE TO THE USER in a FRESH rootInActiveWindow tree (no
+     * UiObject2 caching, no coordinates). Returns false when the container is missing / not
      * scrollable / the end is reached without finding the target — the caller
      * falls back to gesture scrolling and its end-of-scroll diagnostics.
      */
@@ -929,7 +954,7 @@ class ActionExecutor(
                 // once it has settled and re-approaches it when it is gone
                 // (reapproachAfterLoss); polling this tree for "rest" was tried
                 // and measured useless (it reads the same cache).
-                if (findByViewId(targetId) != null) return@runCatching true
+                if (isVisibleInTree(targetId)) return@runCatching true
                 val container = findByViewId(containerId) ?: return@runCatching false
                 if (!container.isScrollable) return@runCatching false
                 val moved = container.performAction(action)
@@ -940,11 +965,11 @@ class ActionExecutor(
                 NodeCache.clear()
                 if (!moved) {
                     // End of content (or action refused): one final fresh look.
-                    return@runCatching findByViewId(targetId) != null
+                    return@runCatching isVisibleInTree(targetId)
                 }
                 guard++
             }
-            findByViewId(targetId) != null
+            isVisibleInTree(targetId)
         }.getOrDefault(false)
     }
 
@@ -1010,8 +1035,12 @@ class ActionExecutor(
     private fun executeReadText(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("readText requires 'id'")
         val variable = step.variable ?: throw IllegalArgumentException("readText requires 'variable'")
-        val element = waitForElement(id, timeout)
-        val text = element.text ?: ""
+        // Read as iOS reads it (value, else label): a 0 x 0 element reads its
+        // semantics text (ZeroSizeNodes), "" when it has none.
+        val deadline = Deadline.of(timeout)
+        val text = deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) {
+            device.findObject(By.res(id))?.let { it.text ?: "" } ?: ZeroSizeNodes.find(id).firstOrNull()?.text
+        } ?: throw AssertionError(notFoundMessage(id, timeout, deadline))
         val store = variableStore
             ?: throw IllegalStateException("readText requires a variable store (set ActionExecutor.variableStore)")
         store[variable] = text
@@ -1250,13 +1279,31 @@ class ActionExecutor(
     // Helper functions
 
     /**
+     * The target is in the fresh tree AND visible to the user — the meaning
+     * "found" has for a scroll that stops on it. [findByViewId] alone means
+     * only "in the tree": a Views ScrollView keeps its off-screen children
+     * there with `isVisibleToUser=false` (Compose does not project them), so
+     * "found" by presence stopped the scroll before its first action whenever
+     * the target was below the viewport. Measured 2026-10-08 on a form
+     * (FormFooterOnDeviceTest): 7 of 7 starts below the target failed with 0
+     * settle samples, and the re-approach then dragged the wrong way.
+     * Any visible node with the id counts, not the first node: a repeated id
+     * (list rows) can have an off-screen copy ahead of the on-screen one.
+     */
+    private fun isVisibleInTree(viewId: String): Boolean =
+        findByViewId(viewId) { it.isVisibleToUser } != null
+
+    /**
      * BFS over a FRESH rootInActiveWindow comparing viewIdResourceName
      * directly — findAccessibilityNodeInfosByViewId does NOT match Compose's
      * raw testTag ids (measured: returns nothing for tags that By.res finds),
      * so it would silently turn the a11y scroll path into dead code that
      * always falls back to gestures.
      */
-    private fun findByViewId(viewId: String): android.view.accessibility.AccessibilityNodeInfo? =
+    private fun findByViewId(
+        viewId: String,
+        accept: (android.view.accessibility.AccessibilityNodeInfo) -> Boolean = { true }
+    ): android.view.accessibility.AccessibilityNodeInfo? =
         runCatching {
             val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
             val root = automation.rootInActiveWindow ?: return@runCatching null
@@ -1264,7 +1311,7 @@ class ActionExecutor(
             queue.add(root)
             while (queue.isNotEmpty()) {
                 val node = queue.removeFirst()
-                if (node.viewIdResourceName == viewId) return@runCatching node
+                if (node.viewIdResourceName == viewId && accept(node)) return@runCatching node
                 for (i in 0 until node.childCount) {
                     node.getChild(i)?.let(queue::add)
                 }
@@ -1772,10 +1819,22 @@ class ActionExecutor(
         val deadline = Deadline.of(timeout)
         // Find by resource-id (Compose testTag with testTagsAsResourceId = true)
         return deadline.poll(beforeRetry = NodeCache.clearBeforeRetry) { device.findObject(By.res(id)) }
-            ?: throw AssertionError(
-                "Element '$id' not found by resource-id within ${timeout}ms\n" +
-                    FindTimeoutReport.render(device, id, deadline) + "\n" + ProjectionProbe.report(id)
-            )
+            ?: throw AssertionError(notFoundMessage(id, timeout, deadline))
+    }
+
+    /**
+     * Why an id was not found. When the id IS on screen on a node whose drawn
+     * box is 0 x 0 (ZeroSizeNodes), it says so instead: the element exists,
+     * as on iOS, but there is nothing to tap, type into, scroll or swipe.
+     */
+    private fun notFoundMessage(id: String, timeout: Long, deadline: Deadline): String {
+        ZeroSizeNodes.find(id).firstOrNull()?.let { hit ->
+            return "Element '$id' exists, but its drawn box is ${hit.width}x${hit.height}: " +
+                "there is nothing to act on (an empty container draws no area). " +
+                "Waited ${timeout}ms."
+        }
+        return "Element '$id' not found by resource-id within ${timeout}ms\n" +
+            FindTimeoutReport.render(device, id, deadline) + "\n" + ProjectionProbe.report(id)
     }
 
     private fun getSwipeCoordinates(direction: String): SwipeCoordinates {
