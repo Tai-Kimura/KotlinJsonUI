@@ -17,7 +17,7 @@ data class ViewAttributes(
     val children: List<Any?>? = null,
     /** Layout direction */
     val direction: AttrEnum<Direction>? = null,
-    /** Child distribution mode for stacks */
+    /** Child distribution mode for stacks. `fill` and `fillEqually` distribute SIZE: a child whose width (in a vertical stack, its height) is `wrapContent` grows, and the growing children share the axis — `fill` grows each from its content, `fillEqually` makes them equal shares of what is left. Only a child that declares a numeric size keeps it. `equalSpacing` and `equalCentering` leave the children's sizes alone and distribute the free space between them (equal gaps / equal centre-to-centre tracks). */
     val distribution: AttrEnum<Distribution>? = null,
     /** Make this view draggable */
     val draggable: Boolean? = null,
