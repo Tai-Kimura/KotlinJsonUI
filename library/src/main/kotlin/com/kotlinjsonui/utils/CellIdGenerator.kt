@@ -80,10 +80,25 @@ object CellIdGenerator {
                 .sortedBy { it.key }
                 .fold(0) { acc, (k, v) -> 31 * acc + k.hashCode() + hashValue(v) }
         }
-        else -> {
-            val typeName = value::class.simpleName ?: ""
-            if (typeName.contains("Function") || typeName.contains("Lambda")) 0
-            else value.toString().hashCode()
-        }
+        // A callback, or any value whose toString is Object's
+        // ("<class>@<identity hash>"), contributes nothing: a new instance
+        // with the same contents would otherwise move the cellId — the cell's
+        // LazyColumn key and its ViewModel key — every time the data is
+        // rebuilt. Decided by type and by where toString is declared, never
+        // by the class name: until 2.43.6 a name containing "Function" /
+        // "Lambda" was the test, and R8 renames synthetic lambdas (`mf0`), so
+        // in a minified release every callback-bearing cell got a new id on
+        // each rebuild (ticket kjui-cellid-lambda-detection-by-class-name-
+        // breaks-under-r8). `is Function<*>` alone misses a fun interface or
+        // Java SAM lambda, which implement only their interface.
+        else -> if (value is Function<*> || hasIdentityToString(value.javaClass)) 0
+                else value.toString().hashCode()
     }
+
+    private val identityToString = java.util.concurrent.ConcurrentHashMap<Class<*>, Boolean>()
+
+    private fun hasIdentityToString(type: Class<*>): Boolean =
+        identityToString.getOrPut(type) {
+            type.getMethod("toString").declaringClass == Any::class.java
+        }
 }
