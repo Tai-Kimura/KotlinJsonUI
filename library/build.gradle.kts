@@ -80,6 +80,10 @@ tasks.withType<Test>().configureEach {
     inputs.files(fileTree(projectDir) { include("*.pro", "build.gradle.kts") })
         .withPropertyName("consumerRuleSources")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // ScreenMarkerGateTest reads the consumer document that names the flag.
+    inputs.file(rootProject.file("Docs/ui-tests-on-release-builds.md"))
+        .withPropertyName("screenMarkerDoc")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // JaCoCo configuration

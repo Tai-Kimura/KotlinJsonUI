@@ -1,6 +1,9 @@
 package com.kotlinjsonui.core
 
+import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
@@ -24,6 +27,36 @@ const val SCREEN_MARKER_PREFIX = "__screen_"
 fun screenMarkerTag(screenId: String): String = "$SCREEN_MARKER_PREFIX$screenId"
 
 /**
+ * Application meta-data that turns the marker on in a build that is not
+ * debuggable — a UI-test build type made from release, so the tests run the
+ * code R8 shipped. Docs/ui-tests-on-release-builds.md says how to set it.
+ */
+const val SCREEN_MARKER_META_DATA = "com.kotlinjsonui.SCREEN_MARKER"
+
+/**
+ * Whether [ScreenMarker] draws: in a debuggable app, or when the app declares
+ * [SCREEN_MARKER_META_DATA] true. A shipped app is neither, so it draws nothing.
+ */
+internal fun screenMarkerEnabled(debuggable: Boolean, metaDataFlag: Boolean): Boolean =
+    debuggable || metaDataFlag
+
+private fun screenMarkerMetaDataFlag(context: Context): Boolean = try {
+    val pm = context.packageManager
+    val info = if (Build.VERSION.SDK_INT >= 33) {
+        pm.getApplicationInfo(
+            context.packageName,
+            PackageManager.ApplicationInfoFlags.of(PackageManager.GET_META_DATA.toLong())
+        )
+    } else {
+        @Suppress("DEPRECATION")
+        pm.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+    }
+    info.metaData?.getBoolean(SCREEN_MARKER_META_DATA, false) ?: false
+} catch (e: PackageManager.NameNotFoundException) {
+    false
+}
+
+/**
  * Runtime identity beacon for a screen, so a test can assert that the screen
  * is displayed without knowing anything about its contents.
  *
@@ -32,13 +65,18 @@ fun screenMarkerTag(screenId: String): String = "$SCREEN_MARKER_PREFIX$screenId"
  * inside the transparent `Box` that wraps both rendering branches, so the
  * marker covers static AND dynamic mode and costs no layout.
  *
- * **Debug builds only.** The marker is test scaffolding and has no place in
- * a shipped app. The gate is a RUNTIME check of the host application's
- * debuggable flag, not a compile-time one: this library ships as an AAR, so
- * its own `BuildConfig.DEBUG` describes how the library was built, not the
- * app — the same reason `DynamicModeManager` resolves availability from
- * `ApplicationInfo.FLAG_DEBUGGABLE`. UI tests therefore run against a debug
- * build, which is already true for Dynamic mode.
+ * **Debug builds, or a build that asks for it.** The marker is test
+ * scaffolding and has no place in a shipped app. The gate is a RUNTIME check
+ * of the host application, not a compile-time one: this library ships as an
+ * AAR, so its own `BuildConfig.DEBUG` describes how the library was built, not
+ * the app — the same reason `DynamicModeManager` resolves availability from
+ * `ApplicationInfo.FLAG_DEBUGGABLE`. It draws when the app is debuggable, or
+ * when the app declares the meta-data [SCREEN_MARKER_META_DATA] true: a
+ * debuggable build makes AGP run R8 without optimization or obfuscation, so
+ * the UI tests of a minified release need a build type made from release that
+ * sets the flag instead (ticket
+ * kjui-screenmarker-gated-on-debuggable-blocks-r8-ui-tests). The gate is read
+ * at run time, so R8 cannot remove the marker from such a build.
  *
  * The 1.dp size is not cosmetic: measured on API 35, a zero-size node is
  * absent from the accessibility tree and unfindable by resource id, as is a
@@ -78,10 +116,11 @@ fun screenMarkerTag(screenId: String): String = "$SCREEN_MARKER_PREFIX$screenId"
 @Composable
 fun ScreenMarker(screenId: String) {
     val context = LocalContext.current
-    val debuggable = remember(context) {
-        (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    val enabled = remember(context) {
+        val debuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        screenMarkerEnabled(debuggable, !debuggable && screenMarkerMetaDataFlag(context))
     }
-    if (!debuggable) return
+    if (!enabled) return
 
     val density = LocalDensity.current
     val insets = WindowInsets.systemBars
