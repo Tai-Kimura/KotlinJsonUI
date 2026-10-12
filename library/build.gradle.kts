@@ -73,6 +73,15 @@ kotlin {
     }
 }
 
+// ConsumerRulesTest reads the rule files consumerProguardFiles names, and this
+// file to find them. Declared as inputs so editing a rule re-runs the unit
+// tests instead of reporting the previous run's green as up to date.
+tasks.withType<Test>().configureEach {
+    inputs.files(fileTree(projectDir) { include("*.pro", "build.gradle.kts") })
+        .withPropertyName("consumerRuleSources")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
 // JaCoCo configuration
 jacoco {
     toolVersion = "0.8.12"
