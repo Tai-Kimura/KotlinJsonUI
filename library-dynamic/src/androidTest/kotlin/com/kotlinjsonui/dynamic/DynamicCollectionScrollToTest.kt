@@ -900,4 +900,49 @@ class DynamicCollectionScrollToTest {
         }
         assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
     }
+    /**
+     * kjui-collection-scrollto-landing-cancelled-by-next-value: an animated
+     * landing in flight is not cut by a change to a value that names no cell
+     * — "", a key no cell has, an index out of range, no value — and a value
+     * naming another cell replaces it (iOS: `.onChange(of:)` returns for a
+     * value that names no cell, and a new scrollTo takes the scroll over). A
+     * consumer names a cell and puts the value back to "" 200 ms later so it
+     * can name the same cell again; a landing ran 173–269 ms on an Android 15
+     * emulator, and the ones that ran longer stopped where their first step
+     * left them.
+     *
+     * The frame clock is held: the value changes 48 ms into the landing, then
+     * the clock runs until the list is idle.
+     */
+    @Test
+    fun aLandingInFlightIsNotCutByAValueThatNamesNoCell() {
+        val json = JsonParser.parseString(
+            """{"type": "Collection", "id": "list", "items": "@{items}", "scrollTo": "@{target}",
+                "scrollAnchor": "top", "scrollAnimated": true, "cellIdProperty": "key", "width": 200, "height": 40,
+                "sections": [{"cell": "$cell", "header": "$cell", "footer": "$cell"}, {"cell": "$cell", "header": "$cell"}]}"""
+        ).asJsonObject
+        fun data(target: Any?): Map<String, Any> = if (target == null) mapOf("items" to items) else mapOf("items" to items, "target" to target)
+        // Where the cell is drawn: "start" on the list's start line, else its y
+        // (a lazy list keeps items it has drawn composed, so the line is read
+        // for the cell asked about rather than for whatever sits at 0).
+        fun where(text: String): String = at(text)?.y?.let { if (kotlin.math.abs(it) < 1f) "start" else "y=$it" } ?: "not composed"
+        fun landing(next: Any?, nextIsSet: Boolean = true, cell: String = "b2"): String {
+            show(json, data("k0"))
+            show(json, data(""))
+            rule.mainClock.autoAdvance = false
+            rule.runOnIdle { shown = json to data("x2") }
+            rule.mainClock.advanceTimeBy(48)
+            if (nextIsSet) rule.runOnIdle { shown = json to data(next) }
+            rule.mainClock.autoAdvance = true
+            rule.waitForIdle()
+            return where(cell)
+        }
+        // The landing on its own reaches b2 (x2), so the arm can see it cut.
+        assertEquals("x2, nothing after", "start", landing(null, nextIsSet = false))
+        val misses = listOf<Pair<String, Any?>>("\"\"" to "", "a key no cell has" to "nothing", "an index out of range" to 99, "no value" to null)
+            .mapNotNull { (what, value) -> landing(value).takeIf { it != "start" }?.let { "x2, then $what: b2 at $it" } }
+        assertEquals("a value that names no cell cut the landing", emptyList<String>(), misses)
+        // A value that names another cell takes the scroll over: k1 is a1.
+        assertEquals("x2, then k1", "start", landing("k1", cell = "a1"))
+    }
 }

@@ -15,6 +15,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.mutableStateOf
@@ -842,6 +845,17 @@ class DynamicCollectionComponent {
          * SwiftUI's `.onChange(of:)` reads it — a list with a header and an
          * initial 0 stays at its top. Until jsonui-cli 1.9.0 the first
          * composition scrolled too.
+         *
+         * The scroll runs in the composition's scope, not in the effect the
+         * value keys: the effect restarts on every change and cancels what it
+         * runs, so a value that names no cell ("", null, a key no cell has, an
+         * index out of range) cut a landing in flight. A consumer names a
+         * cell and puts the value back to "" 200 ms later, to name the same
+         * cell again; a landing ran 173–269 ms on an Android 15 emulator
+         * (kjui-collection-scrollto-landing-cancelled-by-next-value). Now
+         * such a value leaves the landing alone, and a value that names a
+         * cell cancels it and scrolls on its own — as iOS (`.onChange(of:)`
+         * returns for a value that names no cell) and kjui's codegen do.
          */
         @Composable
         private fun ScrollToEffect(
@@ -862,9 +876,15 @@ class DynamicCollectionComponent {
                     )
                 }
             }
+            val scope = rememberCoroutineScope()
+            val landing = remember { arrayOfNulls<Job>(1) }
+            val land: (Int) -> Unit = { target ->
+                landing[0]?.cancel()
+                landing[0] = scope.launch { currentScroll(target) }
+            }
             if (value is SharedFlow<*>) {
                 LaunchedEffect(value) {
-                    value.collect { emitted -> currentTarget(emitted, onLegacy)?.let { currentScroll(it) } }
+                    value.collect { emitted -> currentTarget(emitted, onLegacy)?.let(land) }
                 }
                 return
             }
@@ -874,7 +894,7 @@ class DynamicCollectionComponent {
                     armed.value = true
                     return@LaunchedEffect
                 }
-                currentTarget(value, onLegacy)?.let { currentScroll(it) }
+                currentTarget(value, onLegacy)?.let(land)
             }
         }
 
