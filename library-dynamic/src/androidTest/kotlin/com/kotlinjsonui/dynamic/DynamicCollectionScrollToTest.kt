@@ -198,6 +198,64 @@ class DynamicCollectionScrollToTest {
     }
 
     /**
+     * An anchor lands an off-screen cell by its own size when the cells on
+     * screen are of another size: a 300dp cell fills the 100dp list, the
+     * target (s10, 20dp) is far past it. Until KotlinJsonUI 2.43.9 the
+     * target's size was guessed as the average of the cells on screen (300):
+     * bottom and center offset it past the list's start, it was not laid out
+     * after the scroll, and the correction for a laid-out target never ran
+     * (kjui-collection-anchored-scroll-overshoots-when-target-offscreen).
+     * Both lazy routes: the one-column list (grid) and the row (LazyRow);
+     * reversed, the big cell comes first on screen too (its section emitted
+     * first), and the declared edge is the one drawn.
+     */
+    @Test
+    fun anAnchorLandsAnOffscreenCellByItsOwnSize() {
+        val big = "collection_probe_big_cell"
+        val small = "collection_probe_small_cell"
+        fun source(bigFirst: Boolean): CollectionDataSource {
+            val bigs = CollectionDataSection(cells = CollectionDataSection.CellData(big, listOf(mapOf<String, Any>("title" to "T", "key" to "t"))))
+            val smalls = CollectionDataSection(cells = CollectionDataSection.CellData(small, (0..29).map { mapOf<String, Any>("title" to "s$it", "key" to "s$it") }))
+            return CollectionDataSource(sections = if (bigFirst) listOf(bigs, smalls) else listOf(smalls, bigs))
+        }
+        val drawn = mutableListOf<String>()
+        val wanted = mutableListOf<String>()
+        for (horizontal in listOf(false, true)) {
+            for ((anchor, reverse, animated) in listOf(
+                Triple("bottom", false, false), Triple("center", false, false), Triple("top", true, false), Triple("bottom", false, true),
+            )) {
+                val name = "${if (horizontal) "row" else "list"} $anchor${if (reverse) " reverseLayout" else ""}${if (animated) " animated" else ""}"
+                val cells = if (reverse) """[{"cell": "$small"}, {"cell": "$big"}]""" else """[{"cell": "$big"}, {"cell": "$small"}]"""
+                val json = JsonParser.parseString(
+                    """{"type": "Collection", "id": "list", "items": "@{items}", "scrollTo": "@{target}", "cellIdProperty": "key",
+                        "scrollAnchor": "$anchor", "scrollAnimated": $animated, "reverseLayout": $reverse, "sections": $cells,
+                        ${if (horizontal) """"layout": "horizontal", "width": 100, "height": 300""" else """"width": 300, "height": 100"""}}"""
+                ).asJsonObject
+                val items = source(bigFirst = !reverse)
+                show(json, mapOf("items" to items, "target" to ""))
+                show(json, mapOf("items" to items, "target" to "s10"))
+                val list = listBounds()
+                val (start, end) = if (horizontal) list.left to list.right else list.top to list.bottom
+                val want = when (anchor) { "top" -> start; "bottom" -> end; else -> (start + end) / 2 }
+                // Placed and on the list: a cell the lazy list composed but did not place reads as at 0,0.
+                val got = rule.onAllNodesWithText("s10").fetchSemanticsNodes().singleOrNull()?.takeIf { it.layoutInfo.isPlaced }
+                    ?.let { Rect(it.positionInRoot, it.size.toSize()) }?.takeIf { it.overlaps(list) }?.let { r ->
+                    val (a, b) = if (horizontal) r.left to r.right else r.top to r.bottom
+                    when (anchor) { "top" -> a; "bottom" -> b; else -> (a + b) / 2 }
+                }
+                wanted += "$name: s10's $anchor at the list's $anchor"
+                drawn += "$name: " + when {
+                    got == null -> "s10 is not on the list"
+                    kotlin.math.abs(got - want) <= 2f -> "s10's $anchor at the list's $anchor"
+                    else -> "s10's $anchor ${got - want}px off"
+                }
+            }
+        }
+        println("anAnchorLandsAnOffscreenCellByItsOwnSize\n" + drawn.joinToString("\n"))
+        assertEquals(wanted.joinToString("\n"), drawn.joinToString("\n"))
+    }
+
+    /**
      * Two cells of one section sharing a key both draw: the later one's item
      * key is "k1#2". Compose threw "Key "k1" was already used" before.
      */

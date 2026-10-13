@@ -76,6 +76,24 @@ class CollectionScrollToTest {
         assertEquals(-36, DynamicCollectionComponent.anchorOffset("center", true, 100, 28))
     }
 
+    /**
+     * The scroll that lands a laid-out item by its own size and place: from
+     * offset 0, a 20px item's end goes to a 100px viewport's end by
+     * scrolling back 80; one taller than the viewport (300) centers by
+     * scrolling 100 forward. Until 2.43.9 the size of an item not laid out
+     * was the average of those on screen, and such an item landed off screen
+     * (kjui-collection-anchored-scroll-overshoots-when-target-offscreen).
+     */
+    @Test
+    fun theScrollLandsTheItemByItsOwnSizeAndPlace() {
+        assertEquals(-80, DynamicCollectionComponent.anchorShift("bottom", false, 100, 20, 0))
+        assertEquals(-40, DynamicCollectionComponent.anchorShift("center", false, 100, 20, 0))
+        assertEquals(30, DynamicCollectionComponent.anchorShift("top", false, 100, 20, 30))
+        assertEquals(-80, DynamicCollectionComponent.anchorShift("top", true, 100, 20, 0))
+        assertEquals(100, DynamicCollectionComponent.anchorShift("center", false, 100, 300, 0))
+        assertEquals(0, DynamicCollectionComponent.anchorShift("bottom", false, 100, 20, 80))
+    }
+
     /** Keys two cells of one section share are written apart; the first keeps its own. */
     @Test
     fun aSectionsSharedKeysAreWrittenApart() {

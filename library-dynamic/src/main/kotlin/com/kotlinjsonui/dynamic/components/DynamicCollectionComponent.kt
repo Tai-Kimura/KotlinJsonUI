@@ -33,6 +33,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
 import android.util.Log
 import com.kotlinjsonui.dynamic.DebugDiagnostics
 import androidx.compose.ui.unit.dp
@@ -895,33 +897,40 @@ class DynamicCollectionComponent {
         }
 
         /**
-         * Scrolls to [index] landed by [anchor] (anchorOffset). The item's
-         * size is its own when it is laid out, else the laid-out items'
-         * average for the scroll, corrected once it is laid out.
+         * How far to scroll so an item laid out at [position] (its offset in
+         * the lazy layout's info) lands by [anchor]: anchorOffset is the
+         * offset `scrollToItem` takes, so the item belongs at its negation.
+         */
+        internal fun anchorShift(anchor: String, reverse: Boolean, viewport: Int, size: Int, position: Int): Int =
+            position + anchorOffset(anchor, reverse, viewport, size)
+
+        /**
+         * Scrolls to [index] landed by [anchor] (anchorShift), by the item's
+         * own size and place: an item not laid out is scrolled to first
+         * (`scrollToItem` remeasures before it returns), then the difference
+         * is scrolled, which stops at the list's ends. Until KotlinJsonUI
+         * 2.43.9 an item not laid out was sized as the laid-out items'
+         * average; a cell taller than the viewport on screen pushed the
+         * target out of it, and the correction for a laid-out target never
+         * ran (kjui-collection-anchored-scroll-overshoots-when-target-offscreen).
          */
         private suspend fun LazyGridState.scrollToAnchored(index: Int, anchor: String, reverse: Boolean, animated: Boolean, horizontal: Boolean) {
-            fun sizeOf(info: LazyGridItemInfo) = if (horizontal) info.size.width else info.size.height
+            fun target() = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+            if (target() == null) { if (animated) animateScrollToItem(index) else scrollToItem(index) }
+            val item = target() ?: return
             val viewport = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-            val items = layoutInfo.visibleItemsInfo
-            val size = items.firstOrNull { it.index == index }?.let(::sizeOf)
-                ?: items.map(::sizeOf).average().let { if (it.isNaN()) 0 else it.toInt() }
-            val offset = anchorOffset(anchor, reverse, viewport, size)
-            if (animated) animateScrollToItem(index, offset) else scrollToItem(index, offset)
-            layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.let(::sizeOf)?.let {
-                if (it != size) scrollToItem(index, anchorOffset(anchor, reverse, viewport, it))
-            }
+            val shift = if (horizontal) anchorShift(anchor, reverse, viewport, item.size.width, item.offset.x)
+                else anchorShift(anchor, reverse, viewport, item.size.height, item.offset.y)
+            if (shift != 0) { if (animated) animateScrollBy(shift.toFloat()) else scrollBy(shift.toFloat()) }
         }
 
         private suspend fun LazyListState.scrollToAnchored(index: Int, anchor: String, reverse: Boolean, animated: Boolean) {
+            fun target() = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+            if (target() == null) { if (animated) animateScrollToItem(index) else scrollToItem(index) }
+            val item = target() ?: return
             val viewport = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-            val items = layoutInfo.visibleItemsInfo
-            val size = items.firstOrNull { it.index == index }?.size
-                ?: items.map { it.size }.average().let { if (it.isNaN()) 0 else it.toInt() }
-            val offset = anchorOffset(anchor, reverse, viewport, size)
-            if (animated) animateScrollToItem(index, offset) else scrollToItem(index, offset)
-            layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.size?.let {
-                if (it != size) scrollToItem(index, anchorOffset(anchor, reverse, viewport, it))
-            }
+            val shift = anchorShift(anchor, reverse, viewport, item.size, item.offset)
+            if (shift != 0) { if (animated) animateScrollBy(shift.toFloat()) else scrollBy(shift.toFloat()) }
         }
 
         /**
