@@ -2,6 +2,7 @@ package com.kotlinjsonui.dynamic
 
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
@@ -29,13 +30,42 @@ import com.google.gson.JsonObject
  * }
  * ```
  *
- * Priority (highest to lowest):
- *   compound (e.g. "regular-landscape") > "landscape" > "regular" > "medium" > "compact" > default
+ * One key wins, alone: the first of jsonui-cli's PRIORITY_ORDER
+ * (shared/core/responsive_resolver.rb) that is in the block and holds —
+ *   regular-landscape > medium-landscape > compact-landscape > landscape
+ *   > regular > medium > compact > default
+ * — and only its overrides go on the base, as every codegen draws it (an
+ * if / else if chain). Until 2.43.10 every key that held was applied, lowest
+ * first, so a `compact` override reached a regular window wherever the
+ * regular branch did not set the same attribute
+ * (kjui-dynamic-responsive-stacks-overrides-codegen-picks-one).
+ *
+ * Window-width conditions (jui-responsive-width-threshold-conditions): a
+ * block of `minWidth:N` (window width >= N dp) / `maxWidth:N` (< N) keys and
+ * no size class. The smallest maxWidth that holds wins, else the largest
+ * minWidth. The width is LocalWindowInfo's containerSize in dp, truncated to
+ * Int — the expression kjui codegen emits.
+ *
+ * jsonui-cli shared/core/responsive_resolution_vectors.json holds the cases
+ * (ResponsiveResolverVectorTest).
  */
 object ResponsiveResolver {
 
-    // Size class keys in ascending priority order
-    private val SIZE_CLASS_PRIORITY = listOf("compact", "medium", "regular")
+    /** jsonui-cli shared/core/responsive_resolver.rb PRIORITY_ORDER. */
+    internal val PRIORITY_ORDER = listOf(
+        "regular-landscape", "medium-landscape", "compact-landscape",
+        "landscape", "regular", "medium", "compact"
+    )
+
+    /** responsive_resolver.rb WIDTH_CONDITION. */
+    private val WIDTH_CONDITION = Regex("(minWidth|maxWidth):(0|[1-9][0-9]*)")
+
+    /** A `minWidth:N` / `maxWidth:N` key: (isMin, N); null for any other key. */
+    internal fun widthCondition(key: String): Pair<Boolean, Int>? {
+        val match = WIDTH_CONDITION.matchEntire(key) ?: return null
+        val value = match.groupValues[2].toIntOrNull() ?: return null
+        return (match.groupValues[1] == "minWidth") to value
+    }
 
     /**
      * Map the window width to the JSON key used in the responsive block,
@@ -50,53 +80,58 @@ object ResponsiveResolver {
     }
 
     /**
-     * Determine which responsive keys match the current environment,
-     * ordered from lowest to highest priority.
-     *
-     * Priority: compact < medium < regular < landscape < compound-landscape
+     * The size-class keys that hold in this window, highest priority first.
+     * A width key ("compact" / "medium" / "regular") holds in its own band
+     * only; "landscape" in any band.
      */
     internal fun resolveMatchingKeys(
         sizeClassKey: String,
         isLandscape: Boolean
-    ): List<String> {
-        val keys = mutableListOf<String>()
-
-        // Add size class keys up to and including the current one (lower priority first)
-        val currentIndex = SIZE_CLASS_PRIORITY.indexOf(sizeClassKey)
-        if (currentIndex >= 0) {
-            for (i in 0..currentIndex) {
-                keys.add(SIZE_CLASS_PRIORITY[i])
-            }
-        }
-
-        // Landscape (higher priority than plain size class)
-        if (isLandscape) {
-            keys.add("landscape")
-            // Compound key (highest priority)
-            keys.add("$sizeClassKey-landscape")
-        }
-
-        return keys
+    ): List<String> = PRIORITY_ORDER.filter { key ->
+        val landscape = key.endsWith("landscape")
+        val width = key.removeSuffix("landscape").removeSuffix("-")
+        (!landscape || isLandscape) && (width.isEmpty() || width == sizeClassKey) &&
+            !(width.isEmpty() && !landscape)
     }
 
     /**
-     * Merge overrides from the responsive block into the base JSON object.
-     * Override properties replace base properties; the "responsive" key is removed.
-     * "child" and "children" keys in overrides are ignored (only attributes are merged).
+     * The key of [responsive] that wins: the first of [matchingKeys] the block
+     * has — or, for a block of width conditions only, the most narrowing one
+     * that holds at [widthDp] (none when the width is unknown).
      */
-    internal fun mergeOverrides(base: JsonObject, responsive: JsonObject, matchingKeys: List<String>): JsonObject {
-        val result = base.deepCopy()
+    internal fun winningKey(responsive: JsonObject, matchingKeys: List<String>, widthDp: Int? = null): String? {
+        val keys = responsive.keySet()
+        val conditions = keys.mapNotNull { key -> widthCondition(key)?.let { key to it } }
+        if (conditions.isNotEmpty() && keys.none { it in PRIORITY_ORDER }) {
+            val width = widthDp ?: return null
+            val maxes = conditions.filter { !it.second.first }.sortedBy { it.second.second }
+            val mins = conditions.filter { it.second.first }.sortedByDescending { it.second.second }
+            return (maxes + mins).firstOrNull { (_, c) ->
+                if (c.first) width >= c.second else width < c.second
+            }?.first
+        }
+        return matchingKeys.firstOrNull { key -> responsive.get(key)?.isJsonObject == true }
+    }
 
-        // Apply matching overrides in priority order (lowest first, so highest wins)
-        for (key in matchingKeys) {
-            val overrideElement = responsive.get(key)
-            if (overrideElement != null && overrideElement.isJsonObject) {
-                val overrides = overrideElement.asJsonObject
-                for (entry in overrides.entrySet()) {
-                    // Do not override child/children — only attributes
-                    if (entry.key != "child" && entry.key != "children") {
-                        result.add(entry.key, entry.value.deepCopy())
-                    }
+    /**
+     * Merge the winning override of the responsive block into the base JSON
+     * object; the "responsive" key is removed. "child" and "children" keys in
+     * an override are ignored (only attributes are merged).
+     */
+    internal fun mergeOverrides(
+        base: JsonObject,
+        responsive: JsonObject,
+        matchingKeys: List<String>,
+        widthDp: Int? = null
+    ): JsonObject {
+        val result = base.deepCopy()
+        val winner = winningKey(responsive, matchingKeys, widthDp)
+        val overrides = winner?.let { responsive.getAsJsonObject(it) }
+        if (overrides != null) {
+            for (entry in overrides.entrySet()) {
+                // Do not override child/children — only attributes
+                if (entry.key != "child" && entry.key != "children") {
+                    result.add(entry.key, entry.value.deepCopy())
                 }
             }
         }
@@ -112,10 +147,12 @@ object ResponsiveResolver {
      * Returns a new JsonObject with overrides applied and "responsive" removed,
      * or the original object unchanged if no "responsive" block is present.
      */
+    @JvmOverloads
     fun resolveNode(
         json: JsonObject,
         windowSizeClass: WindowSizeClass,
-        isLandscape: Boolean
+        isLandscape: Boolean,
+        widthDp: Int? = null
     ): JsonObject {
         val responsiveElement = json.get("responsive")
         if (responsiveElement == null || !responsiveElement.isJsonObject) {
@@ -124,7 +161,7 @@ object ResponsiveResolver {
 
         val sizeClassKey = widthSizeClassKey(windowSizeClass)
         val matchingKeys = resolveMatchingKeys(sizeClassKey, isLandscape)
-        return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys)
+        return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys, widthDp)
     }
 
     /**
@@ -133,7 +170,8 @@ object ResponsiveResolver {
     internal fun resolveNode(
         json: JsonObject,
         sizeClassKey: String,
-        isLandscape: Boolean
+        isLandscape: Boolean,
+        widthDp: Int? = null
     ): JsonObject {
         val responsiveElement = json.get("responsive")
         if (responsiveElement == null || !responsiveElement.isJsonObject) {
@@ -141,7 +179,7 @@ object ResponsiveResolver {
         }
 
         val matchingKeys = resolveMatchingKeys(sizeClassKey, isLandscape)
-        return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys)
+        return mergeOverrides(json, responsiveElement.asJsonObject, matchingKeys, widthDp)
     }
 
     /**
@@ -152,26 +190,29 @@ object ResponsiveResolver {
      * (e.g., before caching). For per-node resolution during rendering,
      * use [resolveNode] instead.
      */
+    @JvmOverloads
     fun resolveTree(
         json: JsonObject,
         windowSizeClass: WindowSizeClass,
-        isLandscape: Boolean
+        isLandscape: Boolean,
+        widthDp: Int? = null
     ): JsonObject {
         val sizeClassKey = widthSizeClassKey(windowSizeClass)
-        return resolveTreeInternal(json, sizeClassKey, isLandscape)
+        return resolveTreeInternal(json, sizeClassKey, isLandscape, widthDp)
     }
 
     private fun resolveTreeInternal(
         json: JsonObject,
         sizeClassKey: String,
-        isLandscape: Boolean
+        isLandscape: Boolean,
+        widthDp: Int?
     ): JsonObject {
         // Resolve this node's responsive block
-        val resolved = resolveNode(json, sizeClassKey, isLandscape)
+        val resolved = resolveNode(json, sizeClassKey, isLandscape, widthDp)
 
         // Recursively resolve children
-        resolveChildArray(resolved, "child", sizeClassKey, isLandscape)
-        resolveChildArray(resolved, "children", sizeClassKey, isLandscape)
+        resolveChildArray(resolved, "child", sizeClassKey, isLandscape, widthDp)
+        resolveChildArray(resolved, "children", sizeClassKey, isLandscape, widthDp)
 
         return resolved
     }
@@ -180,7 +221,8 @@ object ResponsiveResolver {
         json: JsonObject,
         key: String,
         sizeClassKey: String,
-        isLandscape: Boolean
+        isLandscape: Boolean,
+        widthDp: Int?
     ) {
         val childElement = json.get(key) ?: return
 
@@ -189,7 +231,7 @@ object ResponsiveResolver {
                 val newArray = JsonArray()
                 for (element in childElement.asJsonArray) {
                     if (element.isJsonObject) {
-                        newArray.add(resolveTreeInternal(element.asJsonObject, sizeClassKey, isLandscape))
+                        newArray.add(resolveTreeInternal(element.asJsonObject, sizeClassKey, isLandscape, widthDp))
                     } else {
                         newArray.add(element)
                     }
@@ -197,7 +239,7 @@ object ResponsiveResolver {
                 json.add(key, newArray)
             }
             childElement.isJsonObject -> {
-                json.add(key, resolveTreeInternal(childElement.asJsonObject, sizeClassKey, isLandscape))
+                json.add(key, resolveTreeInternal(childElement.asJsonObject, sizeClassKey, isLandscape, widthDp))
             }
         }
     }
@@ -213,7 +255,7 @@ object ResponsiveResolver {
 fun resolveResponsiveNode(json: JsonObject): JsonObject {
     if (!json.has("responsive")) return json
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
-    return ResponsiveResolver.resolveNode(json, windowSizeClass, isWindowLandscape())
+    return ResponsiveResolver.resolveNode(json, windowSizeClass, isWindowLandscape(), windowWidthDp())
 }
 
 /**
@@ -224,7 +266,7 @@ fun resolveResponsiveNode(json: JsonObject): JsonObject {
 @Composable
 fun resolveResponsiveTree(json: JsonObject): JsonObject {
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
-    return ResponsiveResolver.resolveTree(json, windowSizeClass, isWindowLandscape())
+    return ResponsiveResolver.resolveTree(json, windowSizeClass, isWindowLandscape(), windowWidthDp())
 }
 
 /**
@@ -235,4 +277,14 @@ fun resolveResponsiveTree(json: JsonObject): JsonObject {
 private fun isWindowLandscape(): Boolean {
     val containerSize = LocalWindowInfo.current.containerSize
     return containerSize.width > containerSize.height
+}
+
+/**
+ * The window's width in dp, truncated to Int: kjui codegen's
+ * `with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp().value.toInt() }`.
+ */
+@Composable
+private fun windowWidthDp(): Int {
+    val containerSize = LocalWindowInfo.current.containerSize
+    return with(LocalDensity.current) { containerSize.width.toDp().value.toInt() }
 }

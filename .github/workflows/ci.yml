@@ -120,6 +120,8 @@ jobs:
                "shared/core/include_maps_fixture.json"),
               ("library-dynamic/src/test/resources/camel_case_vectors.json",
                "shared/core/camel_case_vectors.json"),
+              ("library-dynamic/src/test/resources/responsive_resolution_vectors.json",
+               "shared/core/responsive_resolution_vectors.json"),
               ("library-dynamic/src/test/resources/image_accessibility_vectors.json",
                "shared/core/image_accessibility_vectors.json"),
               ("library-dynamic/src/test/resources/tap_accessibility_vectors.json",

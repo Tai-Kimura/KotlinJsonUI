@@ -73,31 +73,31 @@ class ResponsiveResolverTest {
     @Test
     fun resolveMatchingKeys_medium_portrait() {
         val keys = ResponsiveResolver.resolveMatchingKeys("medium", isLandscape = false)
-        assertEquals(listOf("compact", "medium"), keys)
+        assertEquals(listOf("medium"), keys)
     }
 
     @Test
     fun resolveMatchingKeys_regular_portrait() {
         val keys = ResponsiveResolver.resolveMatchingKeys("regular", isLandscape = false)
-        assertEquals(listOf("compact", "medium", "regular"), keys)
+        assertEquals(listOf("regular"), keys)
     }
 
     @Test
     fun resolveMatchingKeys_compact_landscape() {
         val keys = ResponsiveResolver.resolveMatchingKeys("compact", isLandscape = true)
-        assertEquals(listOf("compact", "landscape", "compact-landscape"), keys)
+        assertEquals(listOf("compact-landscape", "landscape", "compact"), keys)
     }
 
     @Test
     fun resolveMatchingKeys_medium_landscape() {
         val keys = ResponsiveResolver.resolveMatchingKeys("medium", isLandscape = true)
-        assertEquals(listOf("compact", "medium", "landscape", "medium-landscape"), keys)
+        assertEquals(listOf("medium-landscape", "landscape", "medium"), keys)
     }
 
     @Test
     fun resolveMatchingKeys_regular_landscape() {
         val keys = ResponsiveResolver.resolveMatchingKeys("regular", isLandscape = true)
-        assertEquals(listOf("compact", "medium", "regular", "landscape", "regular-landscape"), keys)
+        assertEquals(listOf("regular-landscape", "landscape", "regular"), keys)
     }
 
     // ── mergeOverrides ──
@@ -117,7 +117,8 @@ class ResponsiveResolverTest {
         """).asJsonObject
 
         val responsive = base.getAsJsonObject("responsive")
-        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("medium", "regular"))
+        val result = ResponsiveResolver.mergeOverrides(
+            base, responsive, ResponsiveResolver.resolveMatchingKeys("regular", isLandscape = false))
 
         assertEquals("horizontal", result.get("orientation").asString)
         assertEquals(24, result.get("spacing").asInt)
@@ -125,7 +126,10 @@ class ResponsiveResolverTest {
     }
 
     @Test
-    fun mergeOverrides_laterKeysOverrideEarlier() {
+    // Was mergeOverrides_laterKeysOverrideEarlier (every holding key applied,
+    // lowest first): one key wins, alone
+    // (kjui-dynamic-responsive-stacks-overrides-codegen-picks-one).
+    fun mergeOverrides_onlyTheFirstKeyTheBlockHasApplies() {
         val base = JsonParser.parseString("""
             {
                 "type": "View",
@@ -140,9 +144,11 @@ class ResponsiveResolverTest {
 
         val responsive = base.getAsJsonObject("responsive")
 
-        // medium priority: compact then medium → medium wins
-        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("compact", "medium"))
+        // A medium window: medium wins; compact is not applied under it.
+        val result = ResponsiveResolver.mergeOverrides(base, responsive, listOf("medium", "compact"))
         assertEquals(12, result.get("spacing").asInt)
+        val compactOnly = ResponsiveResolver.mergeOverrides(base, responsive, listOf("compact", "medium"))
+        assertEquals(4, compactOnly.get("spacing").asInt)
     }
 
     @Test
@@ -431,16 +437,18 @@ class ResponsiveResolverTest {
 
         val result = ResponsiveResolver.resolveNode(json, "regular", isLandscape = true)
 
-        // spacing: compound wins (32)
+        // regular-landscape wins, alone: its spacing (32), and the base for
+        // what it does not set — not regular's orientation, not landscape's
+        // background (as every codegen's if / else if chain draws it).
         assertEquals(32, result.get("spacing").asInt)
-        // orientation: from regular (horizontal), not overridden by landscape or compound
-        assertEquals("horizontal", result.get("orientation").asString)
-        // background: landscape wins over regular (#DDDDDD)
-        assertEquals("#DDDDDD", result.get("background").asString)
+        assertEquals("vertical", result.get("orientation").asString)
+        assertEquals("#FFFFFF", result.get("background").asString)
     }
 
     @Test
-    fun priority_mediumIncludesCompactOverrides() {
+    // Was priority_mediumIncludesCompactOverrides: the stacking the codegen
+    // never drew (kjui-dynamic-responsive-stacks-overrides-codegen-picks-one).
+    fun priority_mediumDoesNotIncludeCompactOverrides() {
         val json = JsonParser.parseString("""
             {
                 "type": "View",
@@ -452,11 +460,11 @@ class ResponsiveResolverTest {
             }
         """).asJsonObject
 
-        // Medium device also gets compact overrides (lower priority)
+        // A medium window draws medium's overrides only.
         val result = ResponsiveResolver.resolveNode(json, "medium", isLandscape = false)
 
         assertEquals(12, result.get("spacing").asInt)
-        assertEquals(4, result.get("padding").asInt) // from compact
+        assertFalse(result.has("padding")) // compact's is not applied
     }
 
     @Test
