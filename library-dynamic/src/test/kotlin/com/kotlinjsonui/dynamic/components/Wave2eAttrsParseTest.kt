@@ -36,7 +36,7 @@ class Wave2eAttrsParseTest {
     @Test
     fun `collection scrollAnchor and orientation enums keep declared spellings`() {
         val a = parse("""{"type":"Collection","scrollAnchor":"top","orientation":"horizontal"}""")
-        assertEquals("top", TypedAttrs.enumString(a.scrollAnchor) { it.json })
+        assertEquals("top", TypedAttrs.staticEnumString(a.scrollAnchor) { it.json })
         assertEquals("horizontal", TypedAttrs.enumString(a.orientation) { it.json })
     }
 

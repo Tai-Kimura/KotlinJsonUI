@@ -56,6 +56,7 @@ import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.generated.AttrValue
 import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.generated.DimensionValue
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -363,7 +364,17 @@ class DynamicCollectionComponent {
 
             // The scrollTo request (resolveScrollTo)
             val scrollTo = resolveScrollTo(a, data)
-            val scrollAnchor = TypedAttrs.enumString(a.scrollAnchor) { it.json } ?: "bottom"
+            // scrollAnchor takes a binding (jsonui-cli 1.9.29,
+            // jui-collection-scrollto-per-request-anchor): resolved from this
+            // composition's data, which ScrollToEffect's landing reads when the
+            // scrollTo value changes — a change of the anchor alone scrolls
+            // nothing (CollectionScrollAnchor).
+            val scrollAnchor = when (val anchor = a.scrollAnchor) {
+                is AttrValue.Binding -> CollectionScrollAnchor.resolve(
+                    DataBindingContext.resolveStringInner(anchor.expression, data), collectionId, LocalContext.current
+                )
+                else -> TypedAttrs.staticEnumString(anchor) { it.json } ?: "bottom"
+            }
             val defaultAnchor = TypedAttrs.enumString(a.defaultScrollAnchor) { it.json }
             // `scrollAnimated` (declared boolean, default true): false moves
             // the list to the scrollTo target at once instead of animating —
@@ -371,7 +382,7 @@ class DynamicCollectionComponent {
             // generate_scroll_reader_close; SwiftJsonUI's dynamic
             // CollectionConverter). Every scroll here animated whatever it
             // said.
-            val scrollAnimated = a.scrollAnimated != false
+            val scrollAnimated = scrollAnimatedOf(a, data)
 
             val heightStatic = TypedAttrs.static(a.common.height)
             val heightIsWrapContent = heightStatic == DimensionValue.WrapContent
@@ -907,6 +918,18 @@ class DynamicCollectionComponent {
          * trade places. Returns the offset `scrollToItem` takes (negative
          * pushes the item toward the viewport's end).
          */
+        /**
+         * `scrollAnimated` (default true): false moves to the scrollTo target
+         * at once; a binding (declared in jsonui-cli 1.9.29) animates only
+         * when the bound value is true, as the codegens read it.
+         */
+        internal fun scrollAnimatedOf(a: CollectionAttributes, data: Map<String, Any>): Boolean =
+            when (val animated = a.scrollAnimated) {
+                null -> true
+                is AttrValue.Value -> animated.value
+                is AttrValue.Binding -> TypedAttrs.boolean(animated, data) == true
+            }
+
         internal fun anchorOffset(anchor: String, reverse: Boolean, viewport: Int, size: Int): Int {
             val effective = if (reverse) when (anchor) { "top" -> "bottom"; "bottom" -> "top"; else -> anchor } else anchor
             return when (effective) {
@@ -1281,7 +1304,7 @@ class DynamicCollectionComponent {
                 }?.takeIf { it in 0 until pageCount }
             }) { page ->
                 scrollProgrammatically {
-                    if (a.scrollAnimated != false) pagerState.animateScrollToPage(page) else pagerState.scrollToPage(page)
+                    if (scrollAnimatedOf(a, data)) pagerState.animateScrollToPage(page) else pagerState.scrollToPage(page)
                 }
             }
 

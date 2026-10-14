@@ -126,6 +126,49 @@ class DynamicCollectionScrollToTest {
 
     private val cellsAndEdges = listOf("H0", "F0", "H1") + (0..4).map { "a$it" } + (0..7).map { "b$it" }
 
+    /**
+     * A bound scrollAnchor (jsonui-cli 1.9.29,
+     * jui-collection-scrollto-per-request-anchor) on the shape of a chat
+     * list — a String scrollTo, reverseLayout, defaultScrollAnchor bottom —
+     * with cells 300 high in a 200 high list, so the last cell (m4, drawn at
+     * the visual top under reverseLayout) landed top shows its top and landed
+     * bottom shows its bottom: the two landings differ by 100dp. The anchor
+     * is read when the scrollTo value changes: a change of the anchor alone,
+     * and a value that names no cell, move nothing.
+     */
+    @Test
+    fun aBoundScrollAnchorLandsEachRequestOnTheChatShape() {
+        val chatItems = CollectionDataSource(
+            sections = listOf(
+                CollectionDataSection(cells = CollectionDataSection.CellData(cell, (0..4).map { mapOf<String, Any>("title" to "m$it", "key" to "m$it") }))
+            )
+        )
+        val chat = JsonParser.parseString(
+            """{"type": "Collection", "id": "list", "items": "@{items}", "scrollTo": "@{target}", "scrollAnchor": "@{anchor}",
+                "reverseLayout": true, "defaultScrollAnchor": "bottom", "scrollAnimated": false, "cellIdProperty": "key",
+                "cellHeight": 300, "lineSpacing": 0, "width": 200, "height": 200, "sections": [{"cell": "$cell"}]}"""
+        ).asJsonObject
+        fun step(target: String, anchor: String): Float? {
+            show(chat, mapOf("items" to chatItems, "target" to target, "anchor" to anchor))
+            return bounds("m4")?.top?.minus(listBounds().top)
+        }
+        val initial = step("", "bottom")
+        val anchorTopOnly = step("", "top")
+        val top = step("m4", "top")
+        val cleared = step("", "top")
+        val anchorBottomOnly = step("", "bottom")
+        val bottom = step("m4", "bottom")
+        val hundred = with(rule.density) { 100.dp.toPx() }
+        val report = "initial=$initial anchorTopOnly=$anchorTopOnly top=$top cleared=$cleared anchorBottomOnly=$anchorBottomOnly bottom=$bottom (100dp = $hundred px)"
+        android.util.Log.i("ScrollAnchorBound", report)
+        requireNotNull(top) { report }
+        requireNotNull(bottom) { report }
+        assertEquals(report, hundred, top - bottom, 2f)
+        assertEquals(report, initial ?: Float.NaN, anchorTopOnly ?: Float.NaN, 1f)
+        assertEquals(report, top, cleared ?: Float.NaN, 1f)
+        assertEquals(report, top, anchorBottomOnly ?: Float.NaN, 1f)
+    }
+
     @Test
     fun anIntIsACellCountedAcrossTheSections() {
         // A one-column list (the vertical grid route) and a two-column grid,
