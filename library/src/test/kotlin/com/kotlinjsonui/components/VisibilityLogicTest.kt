@@ -11,6 +11,14 @@ import org.junit.Test
 class VisibilityLogicTest {
 
     @Test
+    fun hiddenMarkerKeepsTheNameTheDriverMatches() {
+        // jsonui-test-runner's Android driver (HiddenNodes) finds the marker
+        // by this name, without depending on KotlinJsonUI: renaming it makes
+        // every invisible / hidden view read as shown to `hidden`.
+        assertEquals("JsonUIHidden", JsonUIHiddenKey.name)
+    }
+
+    @Test
     fun `visibility gone should not render`() {
         val visibility = "gone"
         assertFalse(shouldRender(visibility))

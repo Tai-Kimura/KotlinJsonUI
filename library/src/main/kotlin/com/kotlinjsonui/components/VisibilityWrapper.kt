@@ -6,7 +6,33 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.semantics
+
+/**
+ * Marks a view JsonUI keeps in the layout but does not draw — visibility
+ * "invisible" and `hidden: true` — in the semantics tree.
+ *
+ * Nothing reads it but test drivers: jsonui-test-runner's `hidden` assertion
+ * walks the app's unmerged semantics tree (it runs in the app's process) and
+ * calls an id hidden when no node carries it, or its node or an ancestor
+ * carries this key. The accessibility tree cannot answer that: Compose leaves
+ * an off-screen node, and every node under a dialog or a modal sheet, out of
+ * it, so "not drawn" and "not on screen" look the same there; and an
+ * alpha-0 node is in the semantics tree either way, so without this key
+ * "invisible" and `opacity: 0` (which is drawn, transparently) look the same.
+ * The driver matches it by name, so the name is the contract.
+ *
+ * It changes nothing that is drawn, measured or read by an accessibility
+ * service.
+ */
+val JsonUIHiddenKey = SemanticsPropertyKey<Boolean>("JsonUIHidden")
+
+private fun SemanticsPropertyReceiver.markHidden() {
+    this[JsonUIHiddenKey] = true
+}
 
 /**
  * A wrapper component that handles visibility states for KotlinJsonUI
@@ -27,7 +53,7 @@ fun VisibilityWrapper(
     if (declared == "gone") return
 
     if (declared == "invisible") {
-        Box(modifier = modifier.alpha(0f), content = content)
+        Box(modifier = modifier.alpha(0f).semantics { markHidden() }, content = content)
     } else {
         Box(modifier = modifier, content = content)
     }
@@ -53,7 +79,7 @@ fun VisibilityWrapper(
     content: @Composable BoxScope.() -> Unit
 ) {
     if (hidden) {
-        Box(modifier = modifier.alpha(0f).clearAndSetSemantics { }, content = content)
+        Box(modifier = modifier.alpha(0f).clearAndSetSemantics { markHidden() }, content = content)
     } else {
         Box(modifier = modifier, content = content)
     }
@@ -81,7 +107,7 @@ fun VisibilityWrapper(
     // Handle hidden first (takes precedence): keep space, draw nothing,
     // no semantics — do NOT collapse.
     if (hidden == true) {
-        Box(modifier = modifier.alpha(0f).clearAndSetSemantics { }, content = content)
+        Box(modifier = modifier.alpha(0f).clearAndSetSemantics { markHidden() }, content = content)
         return
     }
 
@@ -90,7 +116,7 @@ fun VisibilityWrapper(
     if (declared == "gone") return
 
     if (declared == "invisible") {
-        Box(modifier = modifier.alpha(0f), content = content)
+        Box(modifier = modifier.alpha(0f).semantics { markHidden() }, content = content)
     } else {
         Box(modifier = modifier, content = content)
     }
