@@ -13,6 +13,7 @@ import com.jsonui.testrunner.runner.FindTimeoutReport
 import com.jsonui.testrunner.runner.NodeCache
 import com.jsonui.testrunner.runner.ProjectionProbe
 import com.jsonui.testrunner.runner.ZeroSizeNodes
+import com.jsonui.testrunner.runner.HiddenNodes
 import com.jsonui.testrunner.runner.ViewModelStateProvider
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -68,6 +69,7 @@ class AssertionExecutor(
         when (assertion) {
             "visible" -> assertVisible(step, timeout)
             "notVisible" -> assertNotVisible(step, timeout)
+            "hidden" -> assertHidden(step, timeout)
             "enabled" -> assertEnabled(step, timeout)
             "disabled" -> assertDisabled(step, timeout)
             "text" -> assertText(step, timeout)
@@ -144,6 +146,27 @@ class AssertionExecutor(
             }
         }
     }
+
+    /**
+     * Not drawn, wherever it is: absent, gone, or invisible / hidden (HiddenNodes).
+     * A view off screen, under a dialog, at opacity 0 or disabled is drawn, so
+     * `hidden` fails on it — unlike `notVisible`, which is about the viewport.
+     */
+    private fun assertHidden(step: TestStep, timeout: Long) {
+        val id = step.id ?: throw IllegalArgumentException("hidden requires 'id'")
+        pollUntil(timeout, id) {
+            if (!isHidden(id)) {
+                throw AssertionError("Element '$id' should be hidden but it is shown (drawn, wherever it is) after ${timeout}ms")
+            }
+        }
+    }
+
+    /**
+     * The `hidden` predicate, once (also `when: { hidden }`). Without Compose
+     * the semantics tree cannot be read: absent from the accessibility tree is
+     * the best answer there, and it cannot tell off-screen from not drawn.
+     */
+    fun isHidden(id: String): Boolean = HiddenNodes.isHidden(id) ?: (findElement(id) == null)
 
     private fun assertEnabled(step: TestStep, timeout: Long) {
         val id = step.id ?: throw IllegalArgumentException("enabled requires 'id'")
@@ -427,19 +450,24 @@ class AssertionExecutor(
      *
      * ⚠️ The throw at timeout is `last`, the exception that ACTUALLY ended the
      * final attempt. Rethrowing a manufactured `AssertionError` would point the
-     * reader at a value comparison that never happened.
+     * reader at a value comparison that never happened. When the reason changed
+     * while waiting, [ReasonHistory.failure] wraps it: `last`'s own message
+     * first, then every reason with its span, and `last` as the cause.
      */
     private fun pollUntil(timeout: Long, searchedId: String?, check: () -> Unit) {
         val deadline = Deadline.of(timeout)
+        val history = ReasonHistory()
+        var lookedAtMs = 0L
         var debugLogged = false
 
         // One body, two catch clauses: the retry policy lives in a single place
         // so a future transient type cannot be handled one way here and another
         // way three lines down.
         fun retryOrRethrow(last: Throwable) {
+            history.observe(ReasonHistory.reasonOf(last), lookedAtMs)
             // The attempt that threw was the last look: the deadline is judged
             // after a look, never after a sleep (Deadline.poll's order).
-            if (deadline.expired()) throw last
+            if (deadline.expired()) throw history.failure(last, deadline.elapsedMs)
 
             // Debug: dump hierarchy once after 2 seconds of element polling
             if (searchedId != null && !debugLogged && deadline.elapsedMs > 2000) {
@@ -454,6 +482,7 @@ class AssertionExecutor(
         }
 
         while (true) {
+            lookedAtMs = deadline.elapsedMs
             try {
                 check()
                 return
