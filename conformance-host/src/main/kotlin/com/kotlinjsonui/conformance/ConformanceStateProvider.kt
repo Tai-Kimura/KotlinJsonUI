@@ -62,10 +62,20 @@ object ConformanceStateRegistry {
     private class ManifestIndex(
         val handlersById: Map<String, List<DeclaredHandler>>,
         val layoutById: Map<String, String>,
+        val afterFirstDrawById: Map<String, SetHandler>,
     )
 
     @Volatile
     private var index: ManifestIndex? = null
+
+    /**
+     * Manifest `state.afterFirstDraw` for [fixtureId] (jsonui-cli
+     * INTERACTIVE_HOST_CONTRACT.md "afterFirstDraw"): the one `set` the host
+     * makes itself after the first draw. Not a handler — the layout does not
+     * name it — so it is not in the data map.
+     */
+    fun afterFirstDrawFor(context: Context, fixtureId: String): SetHandler? =
+        indexFor(context).afterFirstDrawById[fixtureId]
 
     /** Manifest `state.handlers` declarations for [fixtureId] (empty for non-interactive). */
     fun handlersFor(context: Context, fixtureId: String): List<DeclaredHandler> =
@@ -183,6 +193,7 @@ object ConformanceStateRegistry {
         val fixtures = JsonParser.parseString(text).asJsonObject.getAsJsonArray("fixtures")
         val handlersById = mutableMapOf<String, List<DeclaredHandler>>()
         val layoutById = mutableMapOf<String, String>()
+        val afterFirstDrawById = mutableMapOf<String, SetHandler>()
         for (element in fixtures) {
             val fixture = element.asJsonObject
             val id = fixture.get("id")?.asString ?: continue
@@ -190,6 +201,15 @@ object ConformanceStateRegistry {
                 layoutById[id] = it
             }
             val state = fixture.get("state")?.takeIf { it.isJsonObject }?.asJsonObject ?: continue
+            state.get("afterFirstDraw")?.takeIf { it.isJsonObject }?.asJsonObject?.let { change ->
+                val set = change.get("set")?.takeIf { it.isJsonObject }?.asJsonObject
+                val name = change.get("name")?.asString
+                val varName = set?.get("var")?.asString
+                val value = set?.get("value")?.asString
+                if (name != null && varName != null && value != null) {
+                    afterFirstDrawById[id] = SetHandler(name = name, varName = varName, value = value)
+                }
+            }
             val handlers = state.get("handlers")?.takeIf { it.isJsonArray }?.asJsonArray ?: continue
             val declared = handlers.mapNotNull { h ->
                 val obj = h.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
@@ -220,7 +240,7 @@ object ConformanceStateRegistry {
             }
             if (declared.isNotEmpty()) handlersById[id] = declared
         }
-        return ManifestIndex(handlersById, layoutById)
+        return ManifestIndex(handlersById, layoutById, afterFirstDrawById)
     }
 }
 
@@ -243,6 +263,17 @@ fun rememberConformanceData(fixtureId: String): Map<String, Any> {
     // are the more specific intent) — hence collection data goes in first.
     val collectionData = remember(fixtureId) {
         ConformanceStateRegistry.collectionDataFor(context, fixtureId)
+    }
+    // afterFirstDraw (AfterFirstDraw.kt): the declared change, made through
+    // the same DataBindingContext a `set` handler writes.
+    val afterFirstDraw = remember(fixtureId) {
+        ConformanceStateRegistry.afterFirstDrawFor(context, fixtureId)
+    }
+    if (afterFirstDraw != null) {
+        ConformanceAfterFirstDraw(
+            fixtureId,
+            applied = stateData[afterFirstDraw.varName] == afterFirstDraw.value,
+        ) { bindingContext.updateValue(afterFirstDraw.varName, afterFirstDraw.value) }
     }
 
     return remember(fixtureId, stateData) {

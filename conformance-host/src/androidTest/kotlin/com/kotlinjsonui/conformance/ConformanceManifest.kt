@@ -1,6 +1,7 @@
 package com.kotlinjsonui.conformance
 
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.jsonArray
@@ -27,7 +28,13 @@ data class ManifestFixture(
      * The iOS host measured that: host=="Web" gives 5 fixtures where
      * component=="Web" gives 4.
      */
-    val host: String?
+    val host: String?,
+    /**
+     * `state.afterFirstDraw.name` (jsonui-cli INTERACTIVE_HOST_CONTRACT.md
+     * "afterFirstDraw"): the host fires the change after the first draw; the
+     * suite waits for its stamp and the landing before the screenshot.
+     */
+    val afterFirstDraw: String? = null
 ) {
     val isAlias: Boolean get() = aliasOf != null
 
@@ -55,7 +62,9 @@ data class ConformanceManifest(
                     modes = parseModes(o["mode"]),
                     layout = o.getValue("layout").jsonPrimitive.content,
                     test = o.getValue("test").jsonPrimitive.content,
-                    host = o["host"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content
+                    host = o["host"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content,
+                    afterFirstDraw = (o["state"] as? JsonObject)?.get("afterFirstDraw")
+                        ?.let { it as? JsonObject }?.get("name")?.jsonPrimitive?.content
                 )
             }
             return ConformanceManifest(fixtures)

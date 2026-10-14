@@ -1,7 +1,9 @@
 package com.kotlinjsonui.conformance
 
 import android.content.Intent
+import android.os.SystemClock
 import android.util.Log
+import kotlinx.serialization.json.put
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -384,6 +386,10 @@ class ConformanceSuiteTest {
             device.waitForIdle(settleTimeoutMs)
             Thread.sleep(150)
         }
+        // afterFirstDraw (AfterFirstDraw.kt): the host fires the declared
+        // change after the first draw; wait for its stamp, then for the
+        // picture to come to rest, before any step takes the screenshot.
+        val afterFirstDraw = fixture.afterFirstDraw?.let { awaitAfterFirstDraw(it, fixture.id) }
 
         val status = try {
             for (case in screenTest.cases) {
@@ -404,9 +410,9 @@ class ConformanceSuiteTest {
             }
             null // pass
         } catch (e: AssertionError) {
-            FixtureResult(fixture.id, "fail", brief(e), lastScreenshot, lastFrames)
+            FixtureResult(fixture.id, "fail", brief(e), lastScreenshot, lastFrames, afterFirstDraw)
         } catch (e: Exception) {
-            FixtureResult(fixture.id, "error", brief(e), lastScreenshot, lastFrames)
+            FixtureResult(fixture.id, "error", brief(e), lastScreenshot, lastFrames, afterFirstDraw)
         }
         if (status != null) return status
 
@@ -419,10 +425,71 @@ class ConformanceSuiteTest {
                 fixture.id, "error",
                 "render error: ${brief(renderErrors.joinToString("; "))}",
                 lastScreenshot,
-                lastFrames
+                lastFrames,
+                afterFirstDraw
             )
         }
-        return FixtureResult(fixture.id, "pass", "", lastScreenshot, lastFrames)
+        return FixtureResult(fixture.id, "pass", "", lastScreenshot, lastFrames, afterFirstDraw)
+    }
+
+    /**
+     * afterFirstDraw (jsonui-cli INTERACTIVE_HOST_CONTRACT.md): wait for the
+     * host's stamp of a frame drawn with the changed value (budget 10 s), then
+     * read where every testTag is drawn every 0.25 s until the reading has
+     * stood still for 1 s (budget 10 s) — the iOS host's Landing.wait shape, a
+     * bounded read rather than a fixed sleep. A host that never stamps is
+     * `not-fired`, which `jui conformance gate` fails: a first-draw screenshot
+     * cannot pass as the fixture.
+     */
+    private fun awaitAfterFirstDraw(name: String, fixtureId: String): kotlinx.serialization.json.JsonObject {
+        val deadline = SystemClock.uptimeMillis() + 10_000
+        while (SystemClock.uptimeMillis() < deadline) {
+            if (AfterFirstDrawStamp.fixtureId == fixtureId && AfterFirstDrawStamp.appliedAtMs != null) break
+            Thread.sleep(50)
+        }
+        val fired = AfterFirstDrawStamp.firedAtMs.takeIf { AfterFirstDrawStamp.fixtureId == fixtureId }
+        val applied = AfterFirstDrawStamp.appliedAtMs.takeIf { AfterFirstDrawStamp.fixtureId == fixtureId }
+        if (applied == null) {
+            val line = "AFTER_FIRST_DRAW $fixtureId: not-fired (stamp fixture=${AfterFirstDrawStamp.fixtureId} " +
+                "fired=$fired) after 10 s"
+            Log.w("ConformanceSuite", line)
+            return kotlinx.serialization.json.buildJsonObject {
+                put("name", name); put("status", "not-fired"); put("landing", line)
+            }
+        }
+        val start = SystemClock.uptimeMillis()
+        var last: String? = null
+        var since = start
+        var readings = 0
+        var outcome = "budget 10s"
+        while (true) {
+            var value = ""
+            scenario?.onActivity { activity ->
+                value = ConformanceFrames.toJson(fixtureId, ConformanceFrames.read(activity.window.decorView))
+                    .toString()
+            }
+            val now = SystemClock.uptimeMillis()
+            if (value != last) {
+                readings += 1
+                last = value
+                since = now
+            }
+            if (now - since >= 1_000) {
+                outcome = "still 1s at %.2fs".format((now - start) / 1000.0)
+                break
+            }
+            if (now - start >= 10_000) break
+            Thread.sleep(250)
+        }
+        val landing = "$readings reading(s) ($outcome)"
+        Log.i("ConformanceSuite", "AFTER_FIRST_DRAW $fixtureId: fired=$fired applied=$applied $landing")
+        return kotlinx.serialization.json.buildJsonObject {
+            put("name", name)
+            put("status", "fired")
+            fired?.let { put("firedAtMs", it) }
+            put("appliedAtMs", applied)
+            put("landing", landing)
+        }
     }
 
     private fun captureScreenshot(name: String) {

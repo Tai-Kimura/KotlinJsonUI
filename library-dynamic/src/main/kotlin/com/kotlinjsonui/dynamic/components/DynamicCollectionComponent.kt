@@ -720,7 +720,15 @@ class DynamicCollectionComponent {
                 LaunchedEffect(anchorCount) {
                     if (!anchorApplied.value && anchorCount > 0) {
                         restingAnchorCell(restingAnchor, gridScrollSections)?.let { cell ->
-                            scrollItemIndex(cell, gridScrollSections, null, gridLeadingItems)?.let { gridState.scrollToItem(it) }
+                            scrollItemIndex(cell, gridScrollSections, null, gridLeadingItems)?.let {
+                                // center: the middle cell's middle at the viewport's middle, as
+                                // iOS and the web draw a list longer than its viewport
+                                // (kjui-defaultscrollanchor-center-differs-when-content-overflows);
+                                // scrollToItem put it at the top edge, and a list that could not
+                                // get it there stopped at its end — bottom's picture.
+                                if (restingAnchor == "center") gridState.scrollToAnchored(it, "center", reverseLayout, false, isHorizontal)
+                                else gridState.scrollToItem(it)
+                            }
                         }
                         anchorApplied.value = true
                     }
@@ -1145,7 +1153,14 @@ class DynamicCollectionComponent {
                             reverse -> sectionSizes.firstOrNull { it > 0 }?.let { it - 1 } ?: (count - 1)
                             else -> count - 1
                         }
-                        scrollToPlacedCell(state, targets, cell, if (reverse) "bottom" else "top", false, horizontal, rtl, reverse)
+                        // center lands the middle cell's middle at the viewport's middle,
+                        // as iOS and the web draw it (it went to the start edge).
+                        val anchor = when {
+                            resting == "center" -> "center"
+                            reverse -> "bottom"
+                            else -> "top"
+                        }
+                        scrollToPlacedCell(state, targets, cell, anchor, false, horizontal, rtl, reverse)
                         applied.value = true
                     }
                 }
@@ -1704,7 +1719,12 @@ class DynamicCollectionComponent {
                 LaunchedEffect(anchorCount) {
                     if (!anchorApplied.value && anchorCount > 0) {
                         restingAnchorCell(restingRowAnchor, rowScrollSections)?.let { cell ->
-                            scrollItemIndex(cell, rowScrollSections, null, 0)?.let { listState.scrollToItem(it) }
+                            scrollItemIndex(cell, rowScrollSections, null, 0)?.let {
+                                // center: the middle cell's middle at the row's middle, as iOS
+                                // and the web draw a row longer than itself (it went to the start).
+                                if (restingRowAnchor == "center") listState.scrollToAnchored(it, "center", reverseLayout, false)
+                                else listState.scrollToItem(it)
+                            }
                         }
                         anchorApplied.value = true
                     }

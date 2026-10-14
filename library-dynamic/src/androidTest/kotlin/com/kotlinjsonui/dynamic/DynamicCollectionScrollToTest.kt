@@ -861,6 +861,33 @@ class DynamicCollectionScrollToTest {
      * `lazy: none` and wrapContent Columns do not move. It sat at the top (the
      * bottom when reversed).
      */
+    /**
+     * A list LONGER than its viewport with defaultScrollAnchor center starts
+     * with its middle cell's middle at the viewport's middle, as iOS and the
+     * web draw it (kjui-defaultscrollanchor-center-differs-when-content-
+     * overflows, 2026-10-14): three cells 100 high in a 200-high list put the
+     * middle one at 50. It went to the top edge, and a middle cell that could
+     * not get there stopped the list at its end — the picture bottom draws.
+     */
+    @Test
+    fun aLongListsCenterAnchorCentresItsMiddleCell() {
+        val three = CollectionDataSource(
+            sections = listOf(CollectionDataSection(cells = CollectionDataSection.CellData(cell, (0..2).map { mapOf<String, Any>("title" to "c$it") })))
+        )
+        val fifty = with(rule.density) { 50.dp.toPx() }
+        val drawn = mutableListOf<String>()
+        for ((route, extra) in listOf("grid" to "", "grid reversed" to """, "reverseLayout": true""", "eager" to """, "lazy": "eager"""")) {
+            val json = JsonParser.parseString(
+                """{"type": "Collection", "id": "list", "items": "@{items}", "width": 200, "height": 200, "cellHeight": 100,
+                    "defaultScrollAnchor": "center", "sections": [{"cell": "$cell"}] $extra}"""
+            ).asJsonObject
+            show(json, mapOf("items" to three))
+            val middle = bounds("c1") ?: error("$route: c1 is not drawn")
+            drawn += "$route: c1 at ${middle.top - listBounds().top} (50dp = $fifty)"
+            assertEquals(drawn.joinToString("; "), fifty, middle.top - listBounds().top, 2f)
+        }
+    }
+
     @Test
     fun aShortColumnWithACenterAnchorSitsInTheMiddle() {
         val routes = listOf("grid" to "", "grid reversed" to """, "reverseLayout": true""", "grid spaced" to """, "lineSpacing": 8""",

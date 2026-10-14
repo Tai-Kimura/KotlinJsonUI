@@ -224,14 +224,36 @@ entries.each_with_index do |fixture, i|
 
   generated += 1
   imports << "import #{PACKAGE}.views.#{dir_name.delete('_')}.#{name}View"
-  pairs << [fixture['id'], "#{name}View"]
+  change = (fixture['state'] || {})['afterFirstDraw']
+  if change
+    # afterFirstDraw (jsonui-cli INTERACTIVE_HOST_CONTRACT.md): the one change
+    # the host makes after the first draw, through the generated ViewModel's
+    # updateData — the codegen face's `set`. A ViewModel of this composition's
+    # own (keyed per composition) so a fixture drawn again starts from its
+    # first-draw value, not from the change a previous draw made.
+    imports << "import #{PACKAGE}.viewmodels.#{name}ViewModel"
+    set = change.fetch('set')
+    var = set.fetch('var')
+    value = set.fetch('value').to_s.inspect
+    body = "val key = androidx.compose.runtime.remember { \"#{name}-\" + System.nanoTime() }; " \
+           "val vm: #{name}ViewModel = androidx.lifecycle.viewmodel.compose.viewModel(key = key); " \
+           "#{name}View(viewModel = vm); " \
+           "val drawn = vm.data.collectAsState().value; " \
+           "ConformanceAfterFirstDraw(#{fixture['id'].inspect}, applied = drawn.#{var} == #{value}) " \
+           "{ vm.updateData(mapOf(#{var.inspect} to #{value})) }"
+    pairs << [fixture['id'], body, :raw]
+  else
+    pairs << [fixture['id'], "#{name}View"]
+  end
 end
 
 # mapOf with ~500 composable-lambda pairs risks the JVM method-size limit —
 # chunk the initializers.
 chunks = pairs.each_slice(80).to_a
 chunk_funcs = chunks.each_with_index.map do |chunk, ci|
-  body = chunk.map { |id, view| "        #{id.inspect} to { #{view}() }," }.join("\n")
+  body = chunk.map do |id, view, raw|
+    raw ? "        #{id.inspect} to { #{view} }," : "        #{id.inspect} to { #{view}() },"
+  end.join("\n")
   <<~KOTLIN
     private fun chunk#{ci}(): Map<String, @Composable () -> Unit> = mapOf(
     #{body}
@@ -244,6 +266,7 @@ registry << "// Fixture id → kjui-generated Compose view (production codegen p
 registry << "// Compiled in place of src/fallback/kotlin's empty registry (build.gradle.kts).\n\n"
 registry << "package com.kotlinjsonui.conformance\n\n"
 registry << "import androidx.compose.runtime.Composable\n"
+registry << "import androidx.compose.runtime.collectAsState\n"
 registry << imports.sort.join("\n")
 registry << "\n\nobject CodegenFixtureEntries {\n"
 registry << "    val map: Map<String, @Composable () -> Unit> =\n"

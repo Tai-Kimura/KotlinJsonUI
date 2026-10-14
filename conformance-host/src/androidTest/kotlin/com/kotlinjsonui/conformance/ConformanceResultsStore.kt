@@ -2,6 +2,7 @@ package com.kotlinjsonui.conformance
 
 import java.io.File
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
@@ -15,7 +16,12 @@ data class FixtureResult(
     val detail: String = "",
     val screenshot: String? = null,
     /** frames.json path (relative to conformance/) written beside [screenshot] */
-    val frames: String? = null
+    val frames: String? = null,
+    /**
+     * RESULTS_SCHEMA.md `afterFirstDraw`: `{name, status, firedAtMs?,
+     * appliedAtMs?, landing}` for a fixture that declares one.
+     */
+    val afterFirstDraw: JsonObject? = null
 )
 
 /**
@@ -71,7 +77,8 @@ class ConformanceResultsStore(private val outputDir: File) {
                 status = status,
                 detail = o["detail"]?.jsonPrimitive?.content ?: "",
                 screenshot = o["screenshot"]?.jsonPrimitive?.content,
-                frames = o["frames"]?.jsonPrimitive?.content
+                frames = o["frames"]?.jsonPrimitive?.content,
+                afterFirstDraw = o["afterFirstDraw"] as? JsonObject
             )
         }
         val resolved = LinkedHashMap<String, FixtureResult>()
@@ -108,6 +115,7 @@ class ConformanceResultsStore(private val outputDir: File) {
             put("detail", result.detail)
             result.screenshot?.let { put("screenshot", it) }
             result.frames?.let { put("frames", it) }
+            result.afterFirstDraw?.let { put("afterFirstDraw", it) }
         }.toString()
         progressFile.appendText(line + "\n")
     }
@@ -153,6 +161,7 @@ class ConformanceResultsStore(private val outputDir: File) {
                         put("detail", r.detail)
                         r.screenshot?.let { put("screenshot", it) }
                         r.frames?.let { put("frames", it) }
+                        r.afterFirstDraw?.let { put("afterFirstDraw", it) }
                     })
                 }
             })
