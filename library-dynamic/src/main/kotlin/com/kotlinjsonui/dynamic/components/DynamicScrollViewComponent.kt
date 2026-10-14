@@ -29,10 +29,10 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * ScrollView component → LazyColumn / LazyRow.
  * Reference: scrollview_component.rb in kjui_tools.
  *
- * Scroll direction priority:
- *   1. horizontalScroll attribute
- *   2. orientation attribute
- *   3. First child View's orientation
+ * Scroll direction: sideways when horizontalScroll is true or orientation is
+ * horizontal, vertical otherwise — never from the children, and neither key
+ * outranks the other (attribute_definitions.json ScrollView, user ruling
+ * 2026-10-14; jui build refuses a pair that disagrees, ERROR [scrollview]).
  *
  * Attribute access goes through the generated [ScrollViewAttributes]
  * extraction via the [TypedAttrs] bridge; the node itself is only passed
@@ -72,7 +72,7 @@ class DynamicScrollViewComponent {
             )
 
             // Determine scroll direction
-            val isHorizontal = determineScrollDirection(json, a)
+            val isHorizontal = scrollsHorizontally(a)
 
             // Keyboard avoidance (default true)
             val keyboardAvoidance = a.keyboardAvoidance != false
@@ -181,26 +181,19 @@ class DynamicScrollViewComponent {
             }
         }
 
-        private fun determineScrollDirection(json: JsonObject, a: ScrollViewAttributes): Boolean {
-            // 1. horizontalScroll attribute (highest priority;
-            //    undeclared legacy runtime extra)
-            TypedAttrs.undeclared(json, "horizontalScroll")?.let {
-                return it.asBoolean
-            }
-
-            // 2. orientation attribute
-            if (a.orientation != null) {
-                return TypedAttrs.enumString(a.orientation) { it.json } == "horizontal"
-            }
-
-            // 3. First child View's orientation
-            val children = DynamicContainerComponent.getChildren(json)
-            val firstView = children.firstOrNull { it.get("type")?.asString == "View" }
-            if (firstView != null) {
-                return firstView.get("orientation")?.asString == "horizontal"
-            }
-
-            return false
-        }
+        /**
+         * The scroll axis: horizontal when `horizontalScroll` is true or
+         * `orientation` is horizontal, vertical otherwise — the rule sjui /
+         * kjui codegen and rjui share. Until 2.43.11 `horizontalScroll`
+         * outranked `orientation` whenever it was written (so `false` turned
+         * an `orientation: horizontal` vertical, where the other renderers
+         * scrolled sideways — jui-scrollview-horizontalscroll-false-disagrees),
+         * and with neither written the first child View's orientation decided
+         * (jui-scrollview-axis-from-child-web-disagrees). The children never
+         * decide now: a horizontal child is laid out in a vertical scroll.
+         */
+        internal fun scrollsHorizontally(a: ScrollViewAttributes): Boolean =
+            a.horizontalScroll == true ||
+                a.orientation?.let { TypedAttrs.enumString(it) { o -> o.json } } == "horizontal"
     }
 }
