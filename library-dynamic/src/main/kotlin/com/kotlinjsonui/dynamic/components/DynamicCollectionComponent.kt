@@ -55,6 +55,7 @@ import com.kotlinjsonui.dynamic.LocalDynamicRuntimeWriter
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
+import com.kotlinjsonui.components.LocalCollectionScrollMemory
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.AttrValue
 import com.kotlinjsonui.dynamic.generated.CollectionAttributes
@@ -907,8 +908,15 @@ class DynamicCollectionComponent {
                 }
                 return
             }
-            val armed = remember { mutableStateOf(false) }
+            // The value the Collection is drawn with scrolls nowhere — unless
+            // this screen saw it with another value before it left the
+            // composition (visibility gone): then the value it comes back
+            // with is a request (CollectionScrollMemory,
+            // kjui-collection-scrollto-ignored-after-visibility-gone).
+            val memory = LocalCollectionScrollMemory.current
+            val armed = remember { mutableStateOf(memory?.isRequestOnEntry(collectionId, value) == true) }
             LaunchedEffect(value) {
+                memory?.record(collectionId, value)
                 if (!armed.value) {
                     armed.value = true
                     return@LaunchedEffect

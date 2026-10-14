@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import com.kotlinjsonui.components.ProvideCollectionScrollMemory
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -65,13 +66,17 @@ fun DynamicView(
     // renderable attribute: detect it, publish the canonicalized state to
     // the subtree via LocalLayoutCanonicalized so components can skip
     // alias-spelling fallbacks, and otherwise ignore the key silently.
-    if (json.has(Normalization.MARKER_KEY)) {
-        val canonicalized = Normalization.isCanonicalized(json)
-        CompositionLocalProvider(LocalLayoutCanonicalized provides canonicalized) {
+    // The screen's Collection scrollTo memory (CollectionScrollMemory): the
+    // outermost DynamicView provides it, an included one shares it.
+    ProvideCollectionScrollMemory {
+        if (json.has(Normalization.MARKER_KEY)) {
+            val canonicalized = Normalization.isCanonicalized(json)
+            CompositionLocalProvider(LocalLayoutCanonicalized provides canonicalized) {
+                DynamicViewContent(json, data, onError)
+            }
+        } else {
             DynamicViewContent(json, data, onError)
         }
-    } else {
-        DynamicViewContent(json, data, onError)
     }
 }
 

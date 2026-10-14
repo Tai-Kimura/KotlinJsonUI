@@ -862,6 +862,67 @@ class DynamicCollectionScrollToTest {
      * bottom when reversed).
      */
     /**
+     * A scrollTo written in the SAME update that brings a Collection back
+     * from visibility gone scrolls (kjui-collection-scrollto-ignored-after-
+     * visibility-gone, 2026-10-14). gone takes the Collection out of the
+     * composition, so the one that comes back is composed afresh, and the
+     * value it is composed with was read as "the value it is drawn with",
+     * which scrolls nowhere. The control: the same request with no gone in
+     * between.
+     */
+    @Test
+    fun aScrollToWrittenWithTheReturnFromGoneScrolls() {
+        val json = layout(""", "width": 200, "height": 40, "visibility": "@{vis}"""")
+        show(json, mapOf("items" to items, "target" to -1, "vis" to "visible"))
+        show(json, mapOf("items" to items, "target" to -1, "vis" to "gone"))
+        show(json, mapOf("items" to items, "target" to 6, "vis" to "visible"))
+        val returned = at("b1")?.y
+        // Control: visible throughout, the same request.
+        show(json, mapOf("items" to items, "target" to -1, "vis" to "visible"))
+        show(json, mapOf("items" to items, "target" to -1, "vis" to "visible", "n" to 1))
+        val stayed = landed(json, 6, cellsAndEdges)
+        assertEquals("control: b1 at the top with no gone in between", "b1", stayed)
+        assertEquals("b1 at the top when the request comes with the return from gone (y=$returned)", 0f, returned ?: -999f, 1f)
+    }
+
+    /**
+     * The client's shape (kjui-collection-scrollto-ignored-after-visibility-
+     * gone): the list opens visible and empty, a slow load shows the loader
+     * (the list gone), and its completion writes visible, the cells and the
+     * scrollTo in ONE update. The list lands on the cell.
+     */
+    @Test
+    fun aLoadThatBringsTheListBackWithItsCellsAndAKeyLandsOnTheCell() {
+        val json = layout(""", "width": 200, "height": 40, "visibility": "@{vis}", "cellIdProperty": "key"""")
+        val none = CollectionDataSource(sections = listOf(CollectionDataSection(cells = CollectionDataSection.CellData(cell, emptyList()))))
+        show(json, mapOf("items" to none, "target" to "", "vis" to "visible"))
+        show(json, mapOf("items" to none, "target" to "", "vis" to "gone"))
+        show(json, mapOf("items" to items, "target" to "x2", "vis" to "visible"))
+        assertEquals("b2 (key x2) at the top", 0f, at("b2")?.y ?: -999f, 1f)
+    }
+
+    /**
+     * The anchor of a request made with the return from gone is the anchor of
+     * that same update (Collection.scrollAnchor: read when the scrollTo value
+     * changes), and the value the screen opened with still scrolls nowhere.
+     */
+    @Test
+    fun theReturnFromGoneLandsByTheAnchorOfItsUpdate() {
+        val json = JsonParser.parseString(
+            """{"type": "Collection", "id": "list", "items": "@{items}", "scrollTo": "@{target}", "scrollAnchor": "@{anchor}",
+                "scrollAnimated": false, "width": 200, "height": 40, "visibility": "@{vis}",
+                "sections": [{"cell": "$cell", "header": "$cell", "footer": "$cell"}, {"cell": "$cell", "header": "$cell"}]}"""
+        ).asJsonObject
+        // Opened with a value: nothing scrolls, H0 at the top.
+        show(json, mapOf("items" to items, "target" to 6, "anchor" to "top", "vis" to "visible"))
+        assertEquals("the value the screen opens with scrolls nowhere", 0f, at("H0")?.y ?: -999f, 1f)
+        show(json, mapOf("items" to items, "target" to 6, "anchor" to "top", "vis" to "gone"))
+        show(json, mapOf("items" to items, "target" to 3, "anchor" to "bottom", "vis" to "visible"))
+        val a3 = bounds("a3") ?: error("a3 is not drawn: the request made with the return from gone did not run")
+        assertEquals("a3's bottom at the list's bottom (the anchor of the same update)", listBounds().bottom, a3.bottom, 1f)
+    }
+
+    /**
      * A list LONGER than its viewport with defaultScrollAnchor center starts
      * with its middle cell's middle at the viewport's middle, as iOS and the
      * web draw it (kjui-defaultscrollanchor-center-differs-when-content-
