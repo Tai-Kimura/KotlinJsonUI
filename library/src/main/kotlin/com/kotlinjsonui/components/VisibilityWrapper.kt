@@ -26,9 +26,17 @@ import androidx.compose.ui.semantics.semantics
  * The driver matches it by name, so the name is the contract.
  *
  * It changes nothing that is drawn, measured or read by an accessibility
- * service.
+ * service (measured 2026-10-15 on API 35: uiautomator dump, the
+ * AccessibilityNodeInfo tree and the screen reader's stops are the same with
+ * and without it, in the conformance host and a consumer's release build).
+ *
+ * It does not merge upward: the default merge policy takes the child's value,
+ * so a clickable row or a Button holding an invisible child read as
+ * JsonUIHidden in the MERGED tree, although the row itself is drawn. Keeping
+ * the parent's value leaves the merged tree as it was; the driver reads the
+ * unmerged tree, so its answer does not change.
  */
-val JsonUIHiddenKey = SemanticsPropertyKey<Boolean>("JsonUIHidden")
+val JsonUIHiddenKey = SemanticsPropertyKey<Boolean>("JsonUIHidden", mergePolicy = { parent, _ -> parent })
 
 private fun SemanticsPropertyReceiver.markHidden() {
     this[JsonUIHiddenKey] = true

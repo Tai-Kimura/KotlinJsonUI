@@ -19,6 +19,15 @@ class VisibilityLogicTest {
     }
 
     @Test
+    fun hiddenMarkerDoesNotMergeIntoADrawnParent() {
+        // A clickable row or Button merges its children's semantics: with the
+        // default policy an invisible child would mark the drawn row hidden in
+        // the merged tree. The parent keeps its own value (none).
+        assertEquals(null, JsonUIHiddenKey.merge(null, true))
+        assertEquals(false, JsonUIHiddenKey.merge(false, true))
+    }
+
+    @Test
     fun `visibility gone should not render`() {
         val visibility = "gone"
         assertFalse(shouldRender(visibility))
