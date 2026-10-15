@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: c82c56df4cdacca23f585a5f9425183b9f8a95ee # jsonui-cli 1.9.30 release commit (tag v1.9.30 points here); the tables, fixtures and responsive vectors were re-vendored from it (KotlinJsonUI 2.43.13)
+      JSONUI_CLI_MANIFEST_REF: e77727456d75ba0c682e4c801b977c557b4269e8 # jsonui-cli 1.9.31 release commit (tag v1.9.31 points here); the tables, fixtures and responsive vectors are unchanged since 1.9.30 (KotlinJsonUI 2.43.14 re-pins: 2.43.13 named c82c56df, a 1.9.30 stamp that was restacked before the tag and is on no branch)
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
