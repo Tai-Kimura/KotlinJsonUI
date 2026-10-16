@@ -43,7 +43,19 @@ android {
         debug {
             isMinifyEnabled = false
         }
+        // The screen-marker gate CLOSED: not debuggable and no
+        // com.kotlinjsonui.SCREEN_MARKER meta-data, as a shipped app is. Only
+        // TestBridgeRunnerE2ETest's gate-closed arm runs here
+        // (-PconformanceTestBuildType=gateClosed): the screen must apply no
+        // initialState and publish no bridge, so the driver sees no receipt.
+        create("gateClosed") {
+            initWith(getByName("debug"))
+            isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("debug")
+        }
     }
+    testBuildType = providers.gradleProperty("conformanceTestBuildType").orNull ?: "debug"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

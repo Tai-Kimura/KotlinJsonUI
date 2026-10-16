@@ -51,6 +51,22 @@ object FixtureHost {
      */
     val hostMode = MutableStateFlow("dynamic")
 
+    /**
+     * Bumped to rebuild the fixture view AND its data store in place, in the
+     * same Activity and launch (INTERACTIVE_HOST_CONTRACT.md §6 job 4,
+     * `testBridge.remount`): the composition is keyed on it.
+     */
+    val remountGeneration = MutableStateFlow(0)
+
+    fun remount() {
+        currentFixtureId.value?.let {
+            renderedIds.remove(it)
+            presentedIds.remove(it)
+            drawArmed.remove(it)
+        }
+        remountGeneration.value += 1
+    }
+
     /** Render/load errors reported by DynamicView for the current fixture. */
     val renderErrors = CopyOnWriteArrayList<String>()
 
@@ -150,6 +166,7 @@ class FixtureHostActivity : ComponentActivity() {
 
         setContent {
             val fixtureId by FixtureHost.currentFixtureId.collectAsState()
+            val generation by FixtureHost.remountGeneration.collectAsState()
             // ALWAYS_HIDDEN only applies when the window comes to the front, so
             // it cannot undo an IME raised mid-run. Dismiss on every swap too.
             LaunchedEffect(fixtureId) {
@@ -160,7 +177,7 @@ class FixtureHostActivity : ComponentActivity() {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     fixtureId?.let { id ->
-                        key(id) { FixtureScreen(id) }
+                        key(id, generation) { FixtureScreen(id) }
                     }
                 }
             }

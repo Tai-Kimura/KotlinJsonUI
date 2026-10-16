@@ -74,8 +74,13 @@ manifest.fetch('fixtures', []).each do |fixture|
   # handler called with the wrong arguments, focus handlers written with the
   # binding's braces — jsonui-cli 1.9.6's tickets) reached no compiler.
   # Compiled, not registered: the runtime registry stays the visual set.
-  compile = %w[assertable interactive].include?(fixture['class'])
-  next unless fixture['class'] == 'visual' || compile
+  #
+  # A testBridge fixture (INTERACTIVE_HOST_CONTRACT.md §6) is hosted at run
+  # time although it is interactive: it drives no input, and the generated
+  # screen view carrying the bridge is what it measures.
+  test_bridge = fixture.key?('testBridge') && !fixture['testBridge'].nil?
+  compile = %w[assertable interactive].include?(fixture['class']) && !test_bridge
+  next unless fixture['class'] == 'visual' || compile || test_bridge
   mode = fixture['mode']
   mode_values =
     case mode
@@ -214,6 +219,7 @@ end
 generated = 0
 imports = []
 pairs = []
+screen_ids = []
 entries.each_with_index do |fixture, i|
   name = format('Fx%04d', i + 1)
   dir_name = format('fx_%04d', i + 1)
@@ -225,6 +231,8 @@ entries.each_with_index do |fixture, i|
   generated += 1
   imports << "import #{PACKAGE}.views.#{dir_name.delete('_')}.#{name}View"
   change = (fixture['state'] || {})['afterFirstDraw']
+  test_bridge = !fixture['testBridge'].nil?
+  screen_ids << [fixture['id'], dir_name] if test_bridge
   if change
     # afterFirstDraw (jsonui-cli INTERACTIVE_HOST_CONTRACT.md): the one change
     # the host makes after the first draw, through the generated ViewModel's
@@ -241,6 +249,15 @@ entries.each_with_index do |fixture, i|
            "val drawn = vm.data.collectAsState().value; " \
            "ConformanceAfterFirstDraw(#{fixture['id'].inspect}, applied = drawn.#{var} == #{value}) " \
            "{ vm.updateData(mapOf(#{var.inspect} to #{value})) }"
+    pairs << [fixture['id'], body, :raw]
+  elsif test_bridge
+    # testBridge: a ViewModel of this composition's own, so a remount (§6
+    # job 4) builds a new store — the activity-scoped default would keep the
+    # values the first instance applied.
+    imports << "import #{PACKAGE}.viewmodels.#{name}ViewModel"
+    body = "val key = androidx.compose.runtime.remember { \"#{name}-\" + System.nanoTime() }; " \
+           "val vm: #{name}ViewModel = androidx.lifecycle.viewmodel.compose.viewModel(key = key); " \
+           "#{name}View(viewModel = vm)"
     pairs << [fixture['id'], body, :raw]
   else
     pairs << [fixture['id'], "#{name}View"]
@@ -272,6 +289,10 @@ registry << "\n\nobject CodegenFixtureEntries {\n"
 registry << "    val map: Map<String, @Composable () -> Unit> =\n"
 registry << "        " + (0...chunks.size).map { |ci| "chunk#{ci}()" }.join(" +\n        ") + "\n\n"
 registry << chunk_funcs.join("\n").gsub(/^/, '    ').gsub(/^    $/, '')
+registry << "\n    /** testBridge fixture id → the staged layout's screen id (its ScreenMarker / bridge). */\n"
+registry << "    val screenIds: Map<String, String> = mapOf(\n"
+registry << screen_ids.map { |id, screen| "        #{id.inspect} to #{screen.inspect}," }.join("\n")
+registry << "\n    )\n"
 registry << "}\n"
 
 registry_dir = File.join(codegen_src, 'registry', 'com', 'kotlinjsonui', 'conformance')

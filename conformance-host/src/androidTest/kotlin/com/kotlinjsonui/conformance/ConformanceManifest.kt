@@ -34,7 +34,9 @@ data class ManifestFixture(
      * "afterFirstDraw"): the host fires the change after the first draw; the
      * suite waits for its stamp and the landing before the screenshot.
      */
-    val afterFirstDraw: String? = null
+    val afterFirstDraw: String? = null,
+    /** `testBridge` (INTERACTIVE_HOST_CONTRACT.md §6), or null. */
+    val testBridge: TestBridgeSpec? = null
 ) {
     val isAlias: Boolean get() = aliasOf != null
 
@@ -43,6 +45,18 @@ data class ManifestFixture(
 
     fun modeDetail(): String = "mode: ${modes?.joinToString(",") ?: "null"}"
 }
+
+/**
+ * A fixture's `testBridge`: the payload values for its screen (absent on a
+ * fixture that only reads `state`), the receipt the screen must give, and
+ * whether the host remounts it after the receipt check.
+ */
+data class TestBridgeSpec(
+    val initialState: JsonObject?,
+    val receiptApplied: Set<String>?,
+    val receiptRejected: Set<Pair<String, String>>?,
+    val remount: Boolean
+)
 
 data class ConformanceManifest(
     val fixtures: List<ManifestFixture>
@@ -64,7 +78,19 @@ data class ConformanceManifest(
                     test = o.getValue("test").jsonPrimitive.content,
                     host = o["host"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content,
                     afterFirstDraw = (o["state"] as? JsonObject)?.get("afterFirstDraw")
-                        ?.let { it as? JsonObject }?.get("name")?.jsonPrimitive?.content
+                        ?.let { it as? JsonObject }?.get("name")?.jsonPrimitive?.content,
+                    testBridge = (o["testBridge"] as? JsonObject)?.let { tb ->
+                        val receipt = tb["receipt"] as? JsonObject
+                        TestBridgeSpec(
+                            initialState = tb["initialState"] as? JsonObject,
+                            receiptApplied = receipt?.get("applied")?.jsonArray?.map { it.jsonPrimitive.content }?.toSet(),
+                            receiptRejected = receipt?.get("rejected")?.jsonArray?.map {
+                                val r = it.jsonObject
+                                r.getValue("key").jsonPrimitive.content to r.getValue("reason").jsonPrimitive.content
+                            }?.toSet(),
+                            remount = (tb["remount"] as? kotlinx.serialization.json.JsonPrimitive)?.content == "true"
+                        )
+                    }
                 )
             }
             return ConformanceManifest(fixtures)

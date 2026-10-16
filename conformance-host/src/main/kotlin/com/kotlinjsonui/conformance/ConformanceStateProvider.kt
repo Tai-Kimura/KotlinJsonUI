@@ -256,8 +256,17 @@ fun rememberConformanceData(fixtureId: String): Map<String, Any> {
     val handlers = remember(fixtureId) {
         ConformanceStateRegistry.handlersFor(context, fixtureId)
     }
-    val bindingContext = remember(fixtureId) { DataBindingContext() }
+    // testBridge (INTERACTIVE_HOST_CONTRACT.md §6): the store starts from the
+    // declared fields' typed defaults, which the bridge publishes and an
+    // initialState overwrites.
+    val bridgeFields = remember(fixtureId) { TestBridgeHost.fieldsFor(context, fixtureId) }
+    val bindingContext = remember(fixtureId) {
+        DataBindingContext().apply { bridgeFields?.let { setData(TestBridgeHost.defaults(it)) } }
+    }
     val stateData by bindingContext.data.collectAsState()
+    if (bridgeFields != null) {
+        DynamicTestBridge(fixtureId, bridgeFields, bindingContext, stateData)
+    }
     // Requirement 4: declared CollectionDataSource entries, materialized once
     // per fixture. Interactive state wins on a name collision (declared vars
     // are the more specific intent) — hence collection data goes in first.

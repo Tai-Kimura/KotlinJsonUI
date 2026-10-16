@@ -86,6 +86,15 @@ class ConformanceSuiteTest {
     /** The fixture being executed, for the frames document. */
     private var currentFixtureId: String? = null
 
+    /** All manifest fixtures, for the testBridge payload of a launch. */
+    private var manifestFixtures: List<ManifestFixture> = emptyList()
+
+    /** The launchId of the current launch's testBridge payload, if it carried one. */
+    private var launchId: String? = null
+
+    /** The screen `state` reads for the current fixture (testBridge §6 job 3). */
+    private var stateScreen: String? = null
+
     /** current host Activity scenario (relaunched for assertable fixtures) */
     private var scenario: ActivityScenario<FixtureHostActivity>? = null
 
@@ -94,6 +103,10 @@ class ConformanceSuiteTest {
         val manifestBytes = targetContext.assets.open("conformance/manifest.json")
             .use { it.readBytes() }
         val manifest = ConformanceManifest.parse(String(manifestBytes, Charsets.UTF_8))
+        manifestFixtures = manifest.fixtures
+        // `state` with no provider reads the bridge of the screen testBridge
+        // fixtures point it at (§6 job 3).
+        assertionExecutor.bridgeState = com.jsonui.testrunner.runner.BridgeStateSource({ stateScreen })
         val manifestHash = sha256Hex(manifestBytes)
         val filter = InstrumentationRegistry.getArguments()
             .getString("conformanceFilter", "all")
@@ -243,7 +256,7 @@ class ConformanceSuiteTest {
         if (!fixture.platforms.contains("android")) {
             return FixtureResult(fixture.id, "skipped", "not applicable to android")
         }
-        if (FixtureHost.hostMode.value == "codegen" && fixture.clazz != "visual") {
+        if (FixtureHost.hostMode.value == "codegen" && fixture.clazz != "visual" && fixture.testBridge == null) {
             // Parity is a visual question (screenshot vs dynamic baseline);
             // interactive fixtures drive dynamic bindings and assert-only
             // fixtures have no screenshot to compare.
@@ -320,6 +333,14 @@ class ConformanceSuiteTest {
             scenario?.close()
             val intent = Intent(targetContext, FixtureHostActivity::class.java)
                 .putExtra(FixtureHostActivity.EXTRA_FIXTURE_ID, fixture.id)
+            // testBridge §6 job 1: this launch's payload rides the intent.
+            launchId = null
+            if (fixture.testBridge != null) {
+                testBridgePayload(manifestFixtures)?.let { (id, text) ->
+                    launchId = id
+                    intent.putExtra(com.jsonui.testrunner.runner.InitialStatePayload.EXTRA, text)
+                }
+            }
             scenario = ActivityScenario.launch(intent)
             device.waitForIdle(settleTimeoutMs)
         } else {
@@ -391,6 +412,23 @@ class ConformanceSuiteTest {
         // picture to come to rest, before any step takes the screenshot.
         val afterFirstDraw = fixture.afterFirstDraw?.let { awaitAfterFirstDraw(it, fixture.id) }
 
+        // testBridge §6 jobs 2-4: the receipt, where `state` reads, the remount.
+        stateScreen = null
+        fixture.testBridge?.let { spec ->
+            val screenId = TestBridgeHost.screenId(fixture.id)
+                ?: return FixtureResult(fixture.id, "error", "testBridge: no screen id for this fixture on this face")
+            receiptProblem(fixture, spec, screenId)?.let { problem ->
+                return FixtureResult(fixture.id, "fail", problem, lastScreenshot, lastFrames, afterFirstDraw)
+            }
+            stateScreen = screenId
+            if (spec.remount) {
+                FixtureHost.remount()
+                if (!waitForResourceId(FixtureHost.readyTag(fixture.id), readyTimeout)) {
+                    return FixtureResult(fixture.id, "error", "testBridge: the remounted fixture did not render within ${readyTimeout}ms")
+                }
+            }
+        }
+
         val status = try {
             for (case in screenTest.cases) {
                 for (step in case.steps) {
@@ -430,6 +468,51 @@ class ConformanceSuiteTest {
             )
         }
         return FixtureResult(fixture.id, "pass", "", lastScreenshot, lastFrames, afterFirstDraw)
+    }
+
+    /**
+     * testBridge §6 job 1: one payload for this launch carrying every
+     * testBridge fixture that has an initialState, each under the screen id
+     * this face gives it, with a fresh launchId. Null when none has one.
+     */
+    private fun testBridgePayload(fixtures: List<ManifestFixture>): Pair<String, String>? {
+        val screens = fixtures.mapNotNull { f ->
+            val values = f.testBridge?.initialState ?: return@mapNotNull null
+            val screenId = TestBridgeHost.screenId(f.id) ?: return@mapNotNull null
+            screenId to values.toMap()
+        }.toMap()
+        if (screens.isEmpty()) return null
+        val id = java.util.UUID.randomUUID().toString()
+        return id to com.jsonui.testrunner.runner.InitialStatePayload.encode(screens, id)
+    }
+
+    /**
+     * testBridge §6 job 2: wait (screen-ready time, 15 s) for the screen's
+     * receipt of this launch, and compare it with the declared one as sets.
+     * Null when it matches, or when the fixture declares none.
+     */
+    private fun receiptProblem(fixture: ManifestFixture, spec: TestBridgeSpec, screenId: String): String? {
+        val applied = spec.receiptApplied ?: return null
+        val rejected = spec.receiptRejected.orEmpty()
+        val launch = launchId ?: return "testBridge: the launch carried no payload"
+        val deadline = SystemClock.uptimeMillis() + 15_000
+        var last: com.jsonui.testrunner.runner.StateBridge.Reading
+        while (true) {
+            last = com.jsonui.testrunner.runner.StateBridgeReader.read(screenId)
+            val bridge = last as? com.jsonui.testrunner.runner.StateBridge.Reading.Bridge
+            val receipt = bridge?.receipt?.takeIf { bridge.launchId == launch }
+            if (receipt != null) {
+                val seenApplied = receipt.applied.toSet()
+                val seenRejected = receipt.rejected.map { it.key to it.reason }.toSet()
+                return if (seenApplied == applied && seenRejected == rejected) null
+                else "testBridge receipt of '$screenId' differs: applied $seenApplied rejected $seenRejected, " +
+                    "expected applied $applied rejected $rejected"
+            }
+            if (SystemClock.uptimeMillis() >= deadline) {
+                return com.jsonui.testrunner.runner.StateBridge.noReceiptMessage(screenId, 15_000, last)
+            }
+            Thread.sleep(200)
+        }
     }
 
     /**

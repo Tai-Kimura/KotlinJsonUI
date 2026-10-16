@@ -12,4 +12,7 @@ import androidx.compose.runtime.Composable
  */
 object CodegenFixtureEntries {
     val map: Map<String, @Composable () -> Unit> = emptyMap()
+
+    /** testBridge fixture id → the staged layout's screen id (`fx_NNNN`). */
+    val screenIds: Map<String, String> = emptyMap()
 }
