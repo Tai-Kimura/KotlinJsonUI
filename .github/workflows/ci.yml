@@ -144,6 +144,10 @@ jobs:
                "shared/core/type_synonyms.json"),
               ("library-dynamic/src/androidTest/resources/component_metadata.json",
                "shared/core/component_metadata.json"),
+              # The app-side check of a UI test's initialState (TestBridge),
+              # canon jsonui-test-runner specs/vectors/initial-state-coercion.json.
+              ("library/src/test/resources/initial_state_coercion_vectors.json",
+               "shared/core/initial_state_coercion_vectors.json"),
           ]
           # Same three exit codes as the step above: 0 compared and agreed,
           # 1 compared and diverged, 2 could not compare.

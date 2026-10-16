@@ -57,3 +57,9 @@ The manifest merger adds it to `uiTestRelease` and to nothing else, so
   `GET_META_DATA`); a debuggable app does not read it.
 - From KotlinJsonUI 2.43.8. Ticket:
   kjui-screenmarker-gated-on-debuggable-blocks-r8-ui-tests.
+- The same flag turns on the test bridge (KotlinJsonUI 2.44.0,
+  `rememberTestBridge`): the screen applies a UI test's `initialState` from
+  the Activity's intent and publishes its Data on the marker node for the
+  `state` assertion. With the flag off — a shipped build — the bridge applies
+  nothing and publishes nothing, so a test that sends an `initialState` fails
+  on the missing receipt rather than running against default values.

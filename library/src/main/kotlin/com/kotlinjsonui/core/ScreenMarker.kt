@@ -40,7 +40,7 @@ const val SCREEN_MARKER_META_DATA = "com.kotlinjsonui.SCREEN_MARKER"
 internal fun screenMarkerEnabled(debuggable: Boolean, metaDataFlag: Boolean): Boolean =
     debuggable || metaDataFlag
 
-private fun screenMarkerMetaDataFlag(context: Context): Boolean = try {
+internal fun screenMarkerMetaDataFlagOf(context: Context): Boolean = try {
     val pm = context.packageManager
     val info = if (Build.VERSION.SDK_INT >= 33) {
         pm.getApplicationInfo(
@@ -112,13 +112,17 @@ private fun screenMarkerMetaDataFlag(context: Context): Boolean = try {
  * a `Box` sizes to its largest child and a screen's content is far taller than
  * a status bar — unless a screen's whole content is shorter than the status
  * bar, which no real screen is.
+ *
+ * [bridge] is the test bridge JSON ([rememberTestBridge], jsonui-test-runner
+ * spec §10.4). It is put on this same node under [JsonUIStateKey], so the
+ * driver reads a screen's Data where it finds the screen — no other node.
  */
 @Composable
-fun ScreenMarker(screenId: String) {
+fun ScreenMarker(screenId: String, bridge: String? = null) {
     val context = LocalContext.current
     val enabled = remember(context) {
         val debuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
-        screenMarkerEnabled(debuggable, !debuggable && screenMarkerMetaDataFlag(context))
+        screenMarkerEnabled(debuggable, !debuggable && screenMarkerMetaDataFlagOf(context))
     }
     if (!enabled) return
 
@@ -135,7 +139,10 @@ fun ScreenMarker(screenId: String) {
                 .testTag(screenMarkerTag(screenId))
                 // The marker must be addressable by resource id even when the
                 // screen's own tree does not opt in anywhere above it.
-                .semantics { testTagsAsResourceId = true }
+                .semantics {
+                    testTagsAsResourceId = true
+                    if (bridge != null) set(JsonUIStateKey, bridge)
+                }
         )
     }
 }
