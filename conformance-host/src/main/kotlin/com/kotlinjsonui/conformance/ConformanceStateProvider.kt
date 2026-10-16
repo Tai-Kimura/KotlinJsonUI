@@ -253,13 +253,18 @@ object ConformanceStateRegistry {
 @Composable
 fun rememberConformanceData(fixtureId: String): Map<String, Any> {
     val context = LocalContext.current
+    // A fixture a test supplies has no manifest entry (and may run where no
+    // manifest is synced): no handlers, collections or afterFirstDraw.
+    val inline = remember(fixtureId) { FixtureHost.inlineFixtures[fixtureId] }
     val handlers = remember(fixtureId) {
-        ConformanceStateRegistry.handlersFor(context, fixtureId)
+        if (inline != null) emptyList() else ConformanceStateRegistry.handlersFor(context, fixtureId)
     }
     // testBridge (INTERACTIVE_HOST_CONTRACT.md §6): the store starts from the
     // declared fields' typed defaults, which the bridge publishes and an
     // initialState overwrites.
-    val bridgeFields = remember(fixtureId) { TestBridgeHost.fieldsFor(context, fixtureId) }
+    val bridgeFields = remember(fixtureId) {
+        if (inline != null) inline.testBridgeFields else TestBridgeHost.fieldsFor(context, fixtureId)
+    }
     val bindingContext = remember(fixtureId) {
         DataBindingContext().apply { bridgeFields?.let { setData(TestBridgeHost.defaults(it)) } }
     }
@@ -271,12 +276,12 @@ fun rememberConformanceData(fixtureId: String): Map<String, Any> {
     // per fixture. Interactive state wins on a name collision (declared vars
     // are the more specific intent) — hence collection data goes in first.
     val collectionData = remember(fixtureId) {
-        ConformanceStateRegistry.collectionDataFor(context, fixtureId)
+        if (inline != null) emptyMap() else ConformanceStateRegistry.collectionDataFor(context, fixtureId)
     }
     // afterFirstDraw (AfterFirstDraw.kt): the declared change, made through
     // the same DataBindingContext a `set` handler writes.
     val afterFirstDraw = remember(fixtureId) {
-        ConformanceStateRegistry.afterFirstDrawFor(context, fixtureId)
+        if (inline != null) null else ConformanceStateRegistry.afterFirstDrawFor(context, fixtureId)
     }
     if (afterFirstDraw != null) {
         ConformanceAfterFirstDraw(

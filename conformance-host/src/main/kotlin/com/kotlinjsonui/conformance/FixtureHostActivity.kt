@@ -67,6 +67,16 @@ object FixtureHost {
         remountGeneration.value += 1
     }
 
+    /**
+     * Fixtures a test supplies itself, by id: the layout and the testBridge
+     * fields, in place of the synced assets and manifest. For a device test
+     * that must run where the conformance fixtures are not synced (the
+     * android-library-tests job builds a clean checkout, whose
+     * src/main/assets/conformance/ is gitignored) — TestBridgeRunnerE2ETest.
+     * Dynamic face only.
+     */
+    val inlineFixtures: MutableMap<String, InlineFixture> = ConcurrentHashMap()
+
     /** Render/load errors reported by DynamicView for the current fixture. */
     val renderErrors = CopyOnWriteArrayList<String>()
 
@@ -130,6 +140,9 @@ object FixtureHost {
     fun readyTag(fixtureId: String): String =
         "conformance_ready_" + fixtureId.replace('/', '-')
 }
+
+/** A fixture supplied by a test ([FixtureHost.inlineFixtures]). */
+data class InlineFixture(val layoutJson: String, val testBridgeFields: List<TestBridgeHost.Field>?)
 
 /**
  * Single-Activity host that renders one conformance fixture at a time via
@@ -232,9 +245,10 @@ private fun FixtureScreen(fixtureId: String) {
 
     val layoutJson: JsonObject? = remember(fixtureId) {
         try {
-            context.assets.open(ConformanceStateRegistry.layoutAssetPath(context, fixtureId))
-                .bufferedReader()
-                .use { it.readText() }
+            (FixtureHost.inlineFixtures[fixtureId]?.layoutJson
+                ?: context.assets.open(ConformanceStateRegistry.layoutAssetPath(context, fixtureId))
+                    .bufferedReader()
+                    .use { it.readText() })
                 .let { JsonParser.parseString(it).asJsonObject }
         } catch (e: Exception) {
             FixtureHost.renderErrors.add("layout load failed: ${e.message}")

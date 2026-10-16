@@ -45,9 +45,10 @@ android {
         }
         // The screen-marker gate CLOSED: not debuggable and no
         // com.kotlinjsonui.SCREEN_MARKER meta-data, as a shipped app is. Only
-        // TestBridgeRunnerE2ETest's gate-closed arm runs here
-        // (-PconformanceTestBuildType=gateClosed): the screen must apply no
-        // initialState and publish no bridge, so the driver sees no receipt.
+        // TestBridgeGateClosedE2ETest runs here (-PconformanceTestBuildType=
+        // gateClosed, :conformance-host:connectedGateClosedAndroidTest with
+        // that class): the screen must apply no initialState and publish no
+        // bridge, so the driver sees no receipt.
         create("gateClosed") {
             initWith(getByName("debug"))
             isDebuggable = false
