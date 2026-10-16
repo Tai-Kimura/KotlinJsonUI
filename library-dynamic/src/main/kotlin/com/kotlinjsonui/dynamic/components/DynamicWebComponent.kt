@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.draw.clipToBounds
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -218,7 +219,16 @@ class DynamicWebComponent {
                         webView.loadUrl(currentUrl)
                     }
                 },
-                modifier = viewModifier
+                // 🔻 CLIPPED TO ITS OWN BOUNDS. An AndroidView does not clip,
+                // and a WebView paints its background over the whole window
+                // until its first frame settles (~1.3 s on conf_ci, API 35):
+                // every open of a screen with a 200dp WebView flashed white
+                // edge to edge, and conformance captured Web/html__static in
+                // either state. Clipped, the settled picture is the only one.
+                // The kjui codegen clips the same way (web_component.rb /
+                // webview_component.rb). Ticket
+                // kjui-webview-paints-the-whole-window-white-until-its-first-frame.
+                modifier = viewModifier.clipToBounds()
             )
             }
         }
