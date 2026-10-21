@@ -15,7 +15,7 @@ import java.io.File
 /**
  * A CircleImage's src is a local image name, read as Image reads it; a URL
  * belongs to NetworkImage (the SSoT's Image.src — CircleImage is an Image
- * spelling — 4f's ruling, jsonui-cli 1.9.0). The component loaded a src
+ * spelling — the orchestrator's ruling, jsonui-cli 1.9.0). The component loaded a src
  * beginning "http" from the network (AsyncImage), and read the undeclared
  * `url` / `source` the same way.
  */

@@ -36,7 +36,7 @@ import java.util.Collections
  * A Segment's `valueChange` — the selector spelling, its own attribute in the
  * definitions with no platform named — is the report where no onValueChange is
  * declared, and stands down beside one: called from the user's choice, after
- * the write and before onClick; not for the view model's writes (4f's ruling
+ * the write and before onClick; not for the view model's writes (the orchestrator's ruling
  * on control-onclick-is-called-differently-on-every-path). NOT part of the
  * conformance suite, and skipped unless requested
  * (`-e segmentValueChangeProbe 1`).

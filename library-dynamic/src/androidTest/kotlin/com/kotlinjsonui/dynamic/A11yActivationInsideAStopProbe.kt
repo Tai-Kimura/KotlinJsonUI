@@ -992,7 +992,7 @@ class A11yActivationInsideAStopProbe {
             .fetchSemanticsNode().config.getOrElseNullable(SemanticsProperties.Selected) { null } == true
 
     /**
-     * A wrapper control's items inside a stop (4f's ruling, jsonui-cli 1.9.0:
+     * A wrapper control's items inside a stop (the orchestrator's ruling, jsonui-cli 1.9.0:
      * a stopped control does not say it is operable, down to its items). The
      * control's root reads `disabled()`; each tab of a Segment and each row
      * and RadioButton of a Radio group is a node of its own with a click

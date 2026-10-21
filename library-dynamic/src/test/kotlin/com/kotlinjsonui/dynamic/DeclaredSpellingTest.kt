@@ -19,7 +19,7 @@ import org.junit.Test
 import java.io.File
 
 /**
- * An enum value is its declared spelling, case and all (4f's ruling, jsonui-cli
+ * An enum value is its declared spelling, case and all (the orchestrator's ruling, jsonui-cli
  * 1.9.0; jsonui-cli b992cee0 made the generated parses match as written and
  * publish `declaredSpellings`). The hand-written comparisons read
  * DeclaredSpelling.lowered — the lowercased value when it is declared, null

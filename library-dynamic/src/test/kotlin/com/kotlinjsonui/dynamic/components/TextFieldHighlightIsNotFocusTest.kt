@@ -7,7 +7,7 @@ import java.io.File
 
 /**
  * highlightBackground is the background while `highlighted` holds, which only
- * a View declares (4f's ruling, jsonui-cli 1.9.0). TextField and TextView read
+ * a View declares (the orchestrator's ruling, jsonui-cli 1.9.0). TextField and TextView read
  * it as their focused background (CustomTextField's highlightBackgroundColor),
  * a meaning no other path gave it — kjui's codegen stopped with jsonui-cli
  * 6f37b5c2, and SwiftJsonUI's Dynamic never read it there. They hand

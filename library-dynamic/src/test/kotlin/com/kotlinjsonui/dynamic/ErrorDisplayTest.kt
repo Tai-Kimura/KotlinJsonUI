@@ -10,7 +10,7 @@ import org.junit.Test
 /**
  * The error view DynamicView draws where it cannot draw a node is a
  * debuggable app's, and only when the app asks for it (showErrorsInDebug,
- * true by default); a release app draws its fallback, or nothing (4f's
+ * true by default); a release app draws its fallback, or nothing (the orchestrator's
  * ruling R). The flag alone decided it, so a release app drew the error box.
  */
 class ErrorDisplayTest {

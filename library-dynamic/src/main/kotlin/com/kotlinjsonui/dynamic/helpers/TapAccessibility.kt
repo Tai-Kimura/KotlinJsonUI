@@ -83,7 +83,7 @@ object TapAccessibility {
      * its operation without a tap on it — TalkBack's click on its node too
      * (ModifierBuilder.applyStoppedControl, InteractionMarking.dataAsDrawn).
      * Asked of the type it is drawn as, as [isInteractiveType] is. An app's
-     * own component is none, whatever it spells (4f's ruling, jsonui-cli
+     * own component is none, whatever it spells (the orchestrator's ruling, jsonui-cli
      * 1.9.0): it carries its own role — and [INTERACTIVE_TYPES] holds alias
      * spellings as written (Toggle, Table), which a registered type draws as
      * written.
@@ -241,7 +241,7 @@ object TapAccessibility {
      * The children a node draws: the shapes do not count a data-only one
      * (jsonui-cli `drawn_children`). It read as a child of unknown type, a
      * control, and a Label with onClick whose only child declared its data
-     * was no button (4f's ruling, jsonui-cli 1.9.0).
+     * was no button (the orchestrator's ruling, jsonui-cli 1.9.0).
      */
     fun drawnChildren(node: JsonObject): List<JsonObject> = children(node).filterNot { isDataOnly(it) }
 

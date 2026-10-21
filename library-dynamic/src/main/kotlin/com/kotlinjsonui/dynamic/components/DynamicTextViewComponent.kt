@@ -104,7 +104,7 @@ class DynamicTextViewComponent {
             // The node's background, or null: CustomTextField then takes its
             // own defaults, the focused one included — what kjui's codegen
             // hands it (backgroundColor only when declared). highlightBackground
-            // is not the focused background (4f's ruling, jsonui-cli 1.9.0): it
+            // is not the focused background (the orchestrator's ruling, jsonui-cli 1.9.0): it
             // is the colour while `highlighted` holds, which only a View
             // declares; it was read here as the focus colour, a meaning no
             // other path gave it.

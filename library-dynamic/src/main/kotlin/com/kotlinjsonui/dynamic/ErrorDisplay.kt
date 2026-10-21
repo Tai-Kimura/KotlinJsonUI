@@ -5,7 +5,7 @@ import com.kotlinjsonui.core.Configuration
 
 /**
  * What DynamicView draws where it cannot draw a node — an unknown type, a
- * node with no `type` (4f's ruling R, the rule SwiftJsonUI Dynamic follows):
+ * node with no `type` (the orchestrator's ruling R, the rule SwiftJsonUI Dynamic follows):
  * the error view ([Configuration.showErrorsInDebug]) only in a debuggable app
  * ([DebugDiagnostics], ApplicationInfo.FLAG_DEBUGGABLE — the library's own
  * BuildConfig.DEBUG is false in the published aar); otherwise the app's

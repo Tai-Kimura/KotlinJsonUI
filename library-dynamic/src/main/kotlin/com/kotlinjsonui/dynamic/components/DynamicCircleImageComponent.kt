@@ -51,7 +51,7 @@ import com.kotlinjsonui.dynamic.rememberTypedAttrs
  * - onClick/onclick: String event handler name
  *
  * A CircleImage is an Image spelling and its src is a local image name (the
- * SSoT's Image.src; 4f's ruling, jsonui-cli 1.9.0). It loaded a src beginning
+ * SSoT's Image.src; the orchestrator's ruling, jsonui-cli 1.9.0). It loaded a src beginning
  * "http" from the network, and read the undeclared `url` / `source` the same
  * way — leniency outside the declaration that no other path had.
  * contentMode as on Image (ImageContentScale), default fit — a CircleImage is
@@ -192,7 +192,7 @@ class DynamicCircleImageComponent {
 
 /**
  * A CircleImage's src is a local image name; a URL belongs to NetworkImage
- * (the SSoT's Image.src, 4f's ruling, jsonui-cli 1.9.0). The component loaded a
+ * (the SSoT's Image.src, the orchestrator's ruling, jsonui-cli 1.9.0). The component loaded a
  * src beginning "http" from the network; it now reads Image's source, so a URL
  * draws what an unresolved name draws — nothing — and a debuggable build says
  * why, once. A URL is a value with a scheme and "://" (`https://…`,

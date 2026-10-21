@@ -220,7 +220,7 @@ class DynamicSegmentComponent {
                             // definitions, no platform named): kjui build, sjui
                             // build and rjui call it so; this runtime read it
                             // not at all, so a debug build did not call what the
-                            // release build called (4f's ruling).
+                            // release build called (the orchestrator's ruling).
                             val handler = TypedAttrs.raw(a.onValueChange) as? String
                             if (handler != null && ModifierBuilder.isBinding(handler)) {
                                 ModifierBuilder.resolveEventHandler(handler, data, viewId, index)

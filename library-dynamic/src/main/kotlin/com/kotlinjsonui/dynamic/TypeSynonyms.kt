@@ -49,7 +49,7 @@ object TypeSynonyms {
     }
 
     /**
-     * Spelling → entry, as written: type names are case-sensitive (4f's
+     * Spelling → entry, as written: type names are case-sensitive (the orchestrator's
      * ruling, jsonui-cli 1.9.0; the codegens match them so). It was keyed
      * lowercase, as DynamicView's dispatch then was.
      */

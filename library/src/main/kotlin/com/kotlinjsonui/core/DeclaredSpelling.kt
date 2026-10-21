@@ -3,7 +3,7 @@ package com.kotlinjsonui.core
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * An enum attribute's value by its declared spelling, case and all (4f's
+ * An enum attribute's value by its declared spelling, case and all (the orchestrator's
  * ruling, jsonui-cli 1.9.0, as type names are). `declared` is a generated
  * attribute enum's `declaredSpellings` — every spelling
  * attribute_definitions.json declares for the attribute, its values and its

@@ -10,7 +10,7 @@ import org.junit.Test
 import java.io.File
 
 /**
- * Type names are matched as written (4f's ruling, jsonui-cli 1.9.0). A type
+ * Type names are matched as written (the orchestrator's ruling, jsonui-cli 1.9.0). A type
  * DynamicView cannot draw is named with the one sentence (UnknownComponentType)
  * jsonui-cli's validator and codegen say — held to its table
  * (shared/core/unknown_component_type_vectors.json, copied byte-identical into

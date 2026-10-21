@@ -285,7 +285,7 @@ class DynamicSelectBoxComponent {
         }
 
         /**
-         * A Date SelectBox's value is its `selectedDate` (4f's ruling,
+         * A Date SelectBox's value is its `selectedDate` (the orchestrator's ruling,
          * jsonui-cli 1.9.0: SSoT common.bind primaryValue, by selectItemType),
          * (a lone `bind` arrives as it, BindFold). It fell back to
          * `selectedItem`, which sjui and SwiftJsonUI never read; the shared

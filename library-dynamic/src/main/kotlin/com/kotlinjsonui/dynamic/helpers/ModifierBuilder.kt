@@ -876,7 +876,7 @@ object ModifierBuilder {
      * `disabled()` while the control is stopped (applyStoppedControl's
      * condition), else nothing. The control's root reads disabled on its own
      * node only; each of these is a node with its own click action, which a
-     * screen reader reached and read as enabled (4f's ruling, jsonui-cli
+     * screen reader reached and read as enabled (the orchestrator's ruling, jsonui-cli
      * 1.9.0: a stopped control does not say it is operable, down to its
      * items). What it writes is already dropped (InteractionMarking
      * .dataAsDrawn). Nothing drawn changes.

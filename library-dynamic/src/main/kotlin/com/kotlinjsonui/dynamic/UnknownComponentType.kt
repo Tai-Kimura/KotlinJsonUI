@@ -1,7 +1,7 @@
 package com.kotlinjsonui.dynamic
 
 /**
- * The sentence a node of a type this runtime cannot draw is named with (4f's
+ * The sentence a node of a type this runtime cannot draw is named with (the orchestrator's
  * ruling, jsonui-cli 1.9.0): the type as written, and — when it matches a
  * type the runtime draws but for its case — that type. Type names are matched
  * as written, as the SSoT spells them. The same sentence as jsonui-cli's

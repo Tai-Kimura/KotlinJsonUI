@@ -139,7 +139,7 @@ class SelectBoxValueChangeAsDeclaredTest {
     }
 
     /**
-     * A Date SelectBox's value is its selectedDate (4f's ruling, jsonui-cli
+     * A Date SelectBox's value is its selectedDate (the orchestrator's ruling, jsonui-cli
      * 1.9.0): selectedItem was read after it, bound and static, and
      * selectedValue / selectedIndex never were — none of the three is read
      * now. A lone bind arrives as selectedDate (BindFold).

@@ -38,7 +38,7 @@ class TypeSynonymsTest {
     @Test
     fun `a synonym is drawn as its target, as it is spelled, and anything else as itself`() {
         assertEquals("Progress", TypeSynonyms.drawnAs("ProgressBar"))
-        // type names are case-sensitive (4f's ruling, jsonui-cli 1.9.0)
+        // type names are case-sensitive (the orchestrator's ruling, jsonui-cli 1.9.0)
         assertEquals("progressbar", TypeSynonyms.drawnAs("progressbar"))
         // render_as: drawn by the converter it names, not the canonical one
         assertEquals("CircleImage", TypeSynonyms.drawnAs("CircleImageView"))
