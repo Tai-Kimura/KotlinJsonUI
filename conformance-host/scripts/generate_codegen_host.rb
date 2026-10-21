@@ -25,6 +25,7 @@
 #   KJUI_TOOLS_PATH   kjui_tools checkout (default: $CONFORMANCE_DIR/../kjui_tools)
 #
 
+require 'digest'
 require 'fileutils'
 require 'json'
 require_relative 'codegen_build_dir'
@@ -298,6 +299,9 @@ registry << "}\n"
 registry_dir = File.join(codegen_src, 'registry', 'com', 'kotlinjsonui', 'conformance')
 FileUtils.mkdir_p(File.dirname(File.join(codegen_src, 'CodegenFixtureEntries.kt')))
 File.write(File.join(codegen_src, 'CodegenFixtureEntries.kt'), registry)
+# The script that wrote this folder, by its sha256 (build.gradle.kts compares it with the script as it is now: a folder
+# an older script wrote stops the build, never builds silently — ticket 2026-10-21-kjui-conformance-host-does-not-compile)
+File.write(File.join(codegen_src, '.generator-sha256'), Digest::SHA256.file(__FILE__).hexdigest + "\n")
 
 compiled_only = compile_only.each_with_index.count do |_, i|
   File.file?(File.join(codegen_src, 'views', format('cx_%04d', i + 1), format('Cx%04dView.kt', i + 1)))

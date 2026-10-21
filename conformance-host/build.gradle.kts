@@ -1,8 +1,34 @@
+import java.security.MessageDigest
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     // Needed by the vendored jsonui-test-runner driver models (@Serializable)
     id("org.jetbrains.kotlin.plugin.serialization")
+}
+
+// The generated codegen host, if any, must be the one the generator as it is now writes: it records its own sha256 in
+// src/codegen/kotlin/.generator-sha256. A folder an older script wrote (or one with no stamp) stops this module's build
+// (preBuild: the libraries' own tasks are not held up by it): it was used silently, and compiled against code that had
+// moved on (ticket 2026-10-21-kjui-conformance-host-does-not-compile). Falling back to src/fallback instead would turn
+// a codegen run into a dynamic one without a word.
+val codegenKotlin = file("src/codegen/kotlin")
+val codegenGenerator = file("scripts/generate_codegen_host.rb")
+fun staleCodegenHost(): String? {
+    if (!codegenKotlin.exists()) return null
+    val want = MessageDigest.getInstance("SHA-256").digest(codegenGenerator.readBytes())
+        .joinToString("") { "%02x".format(it) }
+    val stamp = codegenKotlin.resolve(".generator-sha256")
+    val have = if (stamp.isFile) stamp.readText().trim() else ""
+    if (have == want) return null
+    return "conformance-host/src/codegen was written by " +
+        (if (have.isEmpty()) "a generator that did not stamp it" else "another version of the generator") +
+        " (stamp ${have.ifEmpty { "none" }}, the generator now ${want.take(12)}…). Run " +
+        "conformance-host/scripts/generate_codegen_host.rb again, or delete conformance-host/src/codegen to build the " +
+        "dynamic host."
+}
+tasks.matching { it.name == "preBuild" }.configureEach {
+    doFirst { staleCodegenHost()?.let { throw GradleException(it) } }
 }
 
 android {
