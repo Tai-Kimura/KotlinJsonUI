@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: 77249d1efbf0d97ade321a13f7e5fef871438e1c # jsonui-cli 1.9.34 release commit (tag v1.9.34 points here); the tables, fixtures, responsive vectors and the initialState coercion vector are read from it (KotlinJsonUI 2.44.0)
+      JSONUI_CLI_MANIFEST_REF: 1889b3949a94a1738d7f8c00deae7fba5ecc3c5c # jsonui-cli 2.3.15 release commit (tag v2.3.15 points here); the tables are re-vendored from it (comments name a role, not a session) — the fixtures, responsive vectors and the initialState coercion vector are read from it too
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest

@@ -59,7 +59,7 @@ data class ViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("topToBottom", "bottomToTop", "leftToRight", "rightToLeft", "none")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Direction? = when (raw) {
                 "topToBottom" -> TOP_TO_BOTTOM
                 "bottomToTop" -> BOTTOM_TO_TOP
@@ -81,7 +81,7 @@ data class ViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("fill", "fillEqually", "equalSpacing", "equalCentering")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Distribution? = when (raw) {
                 "fill" -> FILL
                 "fillEqually" -> FILL_EQUALLY
@@ -101,7 +101,7 @@ data class ViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("nowrap", "wrap", "wrap-reverse")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): FlexWrap? = when (raw) {
                 "nowrap" -> NOWRAP
                 "wrap" -> WRAP
@@ -122,7 +122,7 @@ data class ViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Vertical", "Horizontal", "Oblique", "LeftToRight", "TopToBottom", "Diagonal", "RightToLeft", "BottomToTop")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): GradientDirection? = when (raw) {
                 "Vertical", "TopToBottom" -> VERTICAL
                 "Horizontal", "LeftToRight" -> HORIZONTAL
@@ -142,7 +142,7 @@ data class ViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("horizontal", "vertical")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL

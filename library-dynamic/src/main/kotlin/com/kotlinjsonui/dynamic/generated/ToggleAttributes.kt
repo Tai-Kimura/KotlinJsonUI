@@ -55,7 +55,7 @@ data class ToggleAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("leading", "trailing")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): LabelPosition? = when (raw) {
                 "leading" -> LEADING
                 "trailing" -> TRAILING
@@ -74,7 +74,7 @@ data class ToggleAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("switch", "button", "checkbox", "default")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ToggleStyle? = when (raw) {
                 "switch" -> SWITCH
                 "button" -> BUTTON

@@ -104,7 +104,7 @@ data class CollectionAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("top", "center", "bottom")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): DefaultScrollAnchor? = when (raw) {
                 "top" -> TOP
                 "center" -> CENTER
@@ -123,7 +123,7 @@ data class CollectionAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("vertical", "horizontal", "flow", "Flow", "LeftAligned", "leftAligned")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Layout? = when (raw) {
                 "vertical" -> VERTICAL
                 "horizontal" -> HORIZONTAL
@@ -142,7 +142,7 @@ data class CollectionAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("lazy", "eager", "none")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Lazy? = when (raw) {
                 "lazy" -> LAZY
                 "eager" -> EAGER
@@ -162,7 +162,7 @@ data class CollectionAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("plain", "grouped", "insetGrouped", "sidebar")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ListStyle? = when (raw) {
                 "plain" -> PLAIN
                 "grouped" -> GROUPED
@@ -181,7 +181,7 @@ data class CollectionAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("horizontal", "vertical")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL
@@ -199,7 +199,7 @@ data class CollectionAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("top", "center", "bottom")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ScrollAnchor? = when (raw) {
                 "top" -> TOP
                 "center" -> CENTER

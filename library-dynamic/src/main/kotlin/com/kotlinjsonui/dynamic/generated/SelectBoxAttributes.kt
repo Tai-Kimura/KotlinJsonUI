@@ -79,7 +79,7 @@ data class SelectBoxAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("light", "dark")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ColorScheme? = when (raw) {
                 "light" -> LIGHT
                 "dark" -> DARK
@@ -98,7 +98,7 @@ data class SelectBoxAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("date", "time", "datetime", "dateAndTime", "countDown")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): DatePickerMode? = when (raw) {
                 "date" -> DATE
                 "time" -> TIME
@@ -121,7 +121,7 @@ data class SelectBoxAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("automatic", "wheel", "wheels", "compact", "graphical", "inline")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): DatePickerStyle? = when (raw) {
                 "automatic" -> AUTOMATIC
                 "wheel" -> WHEEL
@@ -142,7 +142,7 @@ data class SelectBoxAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Normal", "Date")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): SelectItemType? = when (raw) {
                 "Normal" -> NORMAL
                 "Date" -> DATE

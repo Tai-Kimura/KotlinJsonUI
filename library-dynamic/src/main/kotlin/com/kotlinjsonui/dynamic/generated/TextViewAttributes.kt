@@ -111,7 +111,7 @@ data class TextViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("default", "alphabet", "allphabet", "email", "number", "phone", "url", "password", "decimal", "signedDecimal", "date", "time", "datetime")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Input? = when (raw) {
                 "default" -> DEFAULT
                 "alphabet" -> ALPHABET
@@ -147,7 +147,7 @@ data class TextViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("default", "asciiCapable", "alphabet", "number", "numberPad", "decimal", "decimalPad", "phone", "phonePad", "email", "emailAddress", "URL", "webURL", "webSearch", "search", "namePhonePad", "twitter", "text", "numeric", "numbersAndPunctuation")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): KeyboardType? = when (raw) {
                 "default", "text" -> DEFAULT
                 "asciiCapable", "alphabet" -> ASCII_CAPABLE
@@ -176,7 +176,7 @@ data class TextViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): LineBreakMode? = when (raw) {
                 "Char" -> CHAR
                 "Clip" -> CLIP
@@ -199,7 +199,7 @@ data class TextViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("none", "both", "horizontal", "vertical")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Resize? = when (raw) {
                 "none" -> NONE
                 "both" -> BOTH
@@ -227,7 +227,7 @@ data class TextViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Done", "Go", "Next", "Return", "Search", "Send", "Continue", "Join", "Route", "Yahoo", "Google")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ReturnKeyType? = when (raw) {
                 "Done" -> DONE
                 "Go" -> GO
@@ -254,7 +254,7 @@ data class TextViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Left", "Center", "Right", "left", "center", "right")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): TextAlign? = when (raw) {
                 "Left", "left" -> LEFT
                 "Center", "center" -> CENTER

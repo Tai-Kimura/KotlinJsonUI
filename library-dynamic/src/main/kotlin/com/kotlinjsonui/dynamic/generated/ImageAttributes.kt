@@ -54,7 +54,7 @@ data class ImageAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("fit", "fill", "center", "top", "bottom", "left", "right", "AspectFill", "AspectFit", "Center", "ScaleToFill", "Top", "Bottom", "Left", "Right")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ContentMode? = when (raw) {
                 "fit" -> FIT
                 "fill", "ScaleToFill" -> FILL
@@ -78,7 +78,7 @@ data class ImageAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("lazy", "eager")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Loading? = when (raw) {
                 "lazy" -> LAZY
                 "eager" -> EAGER
@@ -95,7 +95,7 @@ data class ImageAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("original", "template")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): RenderingMode? = when (raw) {
                 "original" -> ORIGINAL
                 "template" -> TEMPLATE

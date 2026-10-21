@@ -28,7 +28,7 @@ data class EmbedAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("delegate", "isolated")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): NavigationMode? = when (raw) {
                 "delegate" -> DELEGATE
                 "isolated" -> ISOLATED

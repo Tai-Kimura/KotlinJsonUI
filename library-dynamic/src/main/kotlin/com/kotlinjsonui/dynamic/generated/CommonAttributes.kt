@@ -314,7 +314,7 @@ data class CommonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("topLeading", "top", "topTrailing", "leading", "center", "trailing", "bottomLeading", "bottom", "bottomTrailing")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Alignment? = when (raw) {
                 "topLeading" -> TOP_LEADING
                 "top" -> TOP
@@ -339,7 +339,7 @@ data class CommonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("solid", "dashed", "dotted")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): BorderStyle? = when (raw) {
                 "solid" -> SOLID
                 "dashed" -> DASHED
@@ -359,7 +359,7 @@ data class CommonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("fill", "fillEqually", "equalSpacing", "equalCentering")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Distribution? = when (raw) {
                 "fill" -> FILL
                 "fillEqually" -> FILL_EQUALLY
@@ -385,7 +385,7 @@ data class CommonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Light", "Dark", "ExtraLight", "Regular", "Prominent", "UltraThin", "Thin", "Thick", "Chrome", "systemMaterial", "systemUltraThinMaterial", "systemThinMaterial", "systemThickMaterial", "systemChromeMaterial")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): EffectStyle? = when (raw) {
                 "Light" -> LIGHT
                 "Dark" -> DARK
@@ -411,7 +411,7 @@ data class CommonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("none", "onlyMe", "viewsWithoutTouchEnabled", "viewsWithoutInList")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): TouchDisabledState? = when (raw) {
                 "none" -> NONE
                 "onlyMe" -> ONLY_ME
@@ -431,7 +431,7 @@ data class CommonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("visible", "invisible", "gone")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Visibility? = when (raw) {
                 "visible" -> VISIBLE
                 "invisible" -> INVISIBLE

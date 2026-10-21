@@ -81,7 +81,7 @@ data class LabelAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Char", "Clip", "Word", "Head", "Middle", "Tail")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): LineBreakMode? = when (raw) {
                 "Char" -> CHAR
                 "Clip" -> CLIP
@@ -103,7 +103,7 @@ data class LabelAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Left", "Center", "Right", "left", "center", "right")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): TextAlign? = when (raw) {
                 "Left", "left" -> LEFT
                 "Center", "center" -> CENTER
@@ -123,7 +123,7 @@ data class LabelAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("none", "capitalize", "uppercase", "lowercase")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): TextTransform? = when (raw) {
                 "none" -> NONE
                 "capitalize" -> CAPITALIZE

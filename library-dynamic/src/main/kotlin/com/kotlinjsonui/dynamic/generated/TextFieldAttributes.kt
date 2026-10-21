@@ -138,7 +138,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("none", "words", "sentences", "allCharacters", "characters")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): AutocapitalizationType? = when (raw) {
                 "none" -> NONE
                 "words" -> WORDS
@@ -158,7 +158,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("default", "yes", "no", "on", "off", "true", "false")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): AutocorrectionType? = when (raw) {
                 "default" -> DEFAULT
                 "yes", "on", "true" -> YES
@@ -178,7 +178,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("none", "line", "bezel", "roundedRect", "RoundedRect", "Line", "Bezel")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): BorderStyle? = when (raw) {
                 "none" -> NONE
                 "line", "Line" -> LINE
@@ -209,7 +209,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("username", "password", "newPassword", "oneTimeCode", "email", "emailAddress", "name", "givenName", "familyName", "telephoneNumber", "tel", "phone", "streetAddress", "postalCode", "country", "creditCardNumber", "URL")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ContentType? = when (raw) {
                 "username" -> USERNAME
                 "password" -> PASSWORD
@@ -249,7 +249,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("default", "alphabet", "allphabet", "email", "number", "phone", "url", "password", "decimal", "signedDecimal", "date", "time", "datetime")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Input? = when (raw) {
                 "default" -> DEFAULT
                 "alphabet" -> ALPHABET
@@ -282,7 +282,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("text", "number", "numberDecimal", "phone", "email", "password", "multiline", "textEmailAddress", "textPassword")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): InputType? = when (raw) {
                 "text" -> TEXT
                 "number" -> NUMBER
@@ -313,7 +313,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Done", "Go", "Next", "Return", "Search", "Send", "Continue", "Join", "Route", "Yahoo", "Google")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ReturnKeyType? = when (raw) {
                 "Done" -> DONE
                 "Go" -> GO
@@ -340,7 +340,7 @@ data class TextFieldAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Left", "Center", "Right", "left", "center", "right")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): TextAlign? = when (raw) {
                 "Left", "left" -> LEFT
                 "Center", "center" -> CENTER

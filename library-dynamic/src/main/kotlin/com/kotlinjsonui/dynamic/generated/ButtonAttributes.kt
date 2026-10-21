@@ -51,7 +51,7 @@ data class ButtonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("button", "submit", "reset")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ButtonType? = when (raw) {
                 "button" -> BUTTON
                 "submit" -> SUBMIT
@@ -70,7 +70,7 @@ data class ButtonAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Left", "Center", "Right")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): TextAlign? = when (raw) {
                 "Left" -> LEFT
                 "Center" -> CENTER

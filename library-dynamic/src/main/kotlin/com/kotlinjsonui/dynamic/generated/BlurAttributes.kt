@@ -29,7 +29,7 @@ data class BlurAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("Light", "Dark", "ExtraLight")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): EffectStyle? = when (raw) {
                 "Light" -> LIGHT
                 "Dark" -> DARK

@@ -67,7 +67,7 @@ data class ScrollViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("never", "always", "automatic", "scrollableAxes")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ContentInsetAdjustmentBehavior? = when (raw) {
                 "never" -> NEVER
                 "always" -> ALWAYS
@@ -87,7 +87,7 @@ data class ScrollViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("top", "center", "bottom")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): DefaultScrollAnchor? = when (raw) {
                 "top" -> TOP
                 "center" -> CENTER
@@ -106,7 +106,7 @@ data class ScrollViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("none", "onDrag", "interactive")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): KeyboardDismissMode? = when (raw) {
                 "none" -> NONE
                 "onDrag" -> ON_DRAG
@@ -124,7 +124,7 @@ data class ScrollViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("horizontal", "vertical")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): Orientation? = when (raw) {
                 "horizontal" -> HORIZONTAL
                 "vertical" -> VERTICAL
@@ -141,7 +141,7 @@ data class ScrollViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("auto", "smooth")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ScrollBehavior? = when (raw) {
                 "auto" -> AUTO
                 "smooth" -> SMOOTH
@@ -158,7 +158,7 @@ data class ScrollViewAttributes(
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
             val declaredSpellings: List<String> = listOf("inner", "window")
 
-            /** The declared spelling, case and all (4f's ruling, 1.9.0). */
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ScrollMode? = when (raw) {
                 "inner" -> INNER
                 "window" -> WINDOW
