@@ -19,6 +19,8 @@ data class TextFieldAttributes(
     val accessoryTextColor: String? = null,
     /** Apply liquid glass effect. SUPERSEDED by the common attribute 'glass' as of 2026-09-14. The fold from this spelling to glass belongs to the normalizer and IS NOT IMPLEMENTED YET, so both spellings are live: this one stays TextField-only, UIKit-only and backed by UIBlurEffect, while glass is declared on common for SwiftUI and UIKit. Nothing breaks while both exist - they do not overlap in platform, mode or component - but a layout should be written against glass. */
     val applyLiquidGlass: Boolean? = null,
+    /** Focuses the field when the screen appears (the keyboard opens): iOS SwiftUI sets the field's @FocusState on appear, Android Compose requests focus with a FocusRequester, web draws autoFocus. */
+    val autoFocus: Boolean? = null,
     /** Auto-capitalization type. UIKit's vocabulary, honoured on every platform (.textInputAutocapitalization / KeyboardCapitalization / the HTML autocapitalize attribute). `characters` is an accepted alias spelling of allCharacters. */
     val autocapitalizationType: AttrEnum<AutocapitalizationType>? = null,
     /** Auto-correction type. UIKit's vocabulary; `on`/`true` and `off`/`false` are accepted alias spellings of yes/no. `default` means "leave it to the platform" — web deliberately emits nothing for it. */
@@ -35,6 +37,8 @@ data class TextFieldAttributes(
     val disabledBackground: String? = null,
     /** Text of the input accessory toolbar's Done button. UIKit only (see accessoryBackground). */
     val doneText: String? = null,
+    /** false draws the input readOnly (rjui text_field_converter). */
+    val editable: Boolean? = null,
     /** Field padding */
     val fieldPadding: Double? = null,
     /** Font name or 'bold' (binding supported) */
@@ -73,6 +77,8 @@ data class TextFieldAttributes(
     val leftViewMode: String? = null,
     /** Maximum input length */
     val maxLength: Double? = null,
+    /** The input's form name attribute (rjui text_field_converter). */
+    val name: String? = null,
     /** ID of the next field to focus on submit (for focus chain) */
     val nextFocus: String? = null,
     /** Begin editing event handler */
@@ -101,6 +107,8 @@ data class TextFieldAttributes(
     val onSubmit: String? = null,
     /** Text change event handler */
     val onTextChange: String? = null,
+    /** Draws the outlined text field style (kjui textfield_component; borderColor / borderWidth also select it). */
+    val outlined: Boolean? = null,
     /** Input validation pattern */
     val pattern: String? = null,
     /** Placeholder text (alias for hint) */
@@ -360,6 +368,7 @@ data class TextFieldAttributes(
             "accessoryCornerRadius",
             "accessoryTextColor",
             "applyLiquidGlass",
+            "autoFocus",
             "autocapitalizationType",
             "autocorrectionType",
             "borderStyle",
@@ -368,6 +377,7 @@ data class TextFieldAttributes(
             "contentType",
             "disabledBackground",
             "doneText",
+            "editable",
             "fieldPadding",
             "font",
             "fontColor",
@@ -387,6 +397,7 @@ data class TextFieldAttributes(
             "leftView",
             "leftViewMode",
             "maxLength",
+            "name",
             "nextFocus",
             "onBeginEditing",
             "onBlur",
@@ -401,6 +412,7 @@ data class TextFieldAttributes(
             "onShouldReturn",
             "onSubmit",
             "onTextChange",
+            "outlined",
             "pattern",
             "placeholder",
             "required",
@@ -441,6 +453,7 @@ data class TextFieldAttributes(
             accessoryCornerRadius = AttrCoerce.number(AttrCoerce.lookup(json, "accessoryCornerRadius")),
             accessoryTextColor = AttrCoerce.string(AttrCoerce.lookup(json, "accessoryTextColor")),
             applyLiquidGlass = AttrCoerce.boolean(AttrCoerce.lookup(json, "applyLiquidGlass")),
+            autoFocus = AttrCoerce.boolean(AttrCoerce.lookup(json, "autoFocus")),
             autocapitalizationType = parseAutocapitalizationType(AttrCoerce.lookup(json, "autocapitalizationType")),
             autocorrectionType = parseAutocorrectionType(AttrCoerce.lookup(json, "autocorrectionType")),
             borderStyle = parseBorderStyle(AttrCoerce.lookup(json, "borderStyle")),
@@ -449,6 +462,7 @@ data class TextFieldAttributes(
             contentType = AttrCoerce.attrValue(AttrCoerce.lookup(json, "contentType")) { parseContentType(it) },
             disabledBackground = AttrCoerce.string(AttrCoerce.lookup(json, "disabledBackground")),
             doneText = AttrCoerce.string(AttrCoerce.lookup(json, "doneText")),
+            editable = AttrCoerce.boolean(AttrCoerce.lookup(json, "editable")),
             fieldPadding = AttrCoerce.number(AttrCoerce.lookup(json, "fieldPadding")),
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
@@ -468,6 +482,7 @@ data class TextFieldAttributes(
             leftView = AttrCoerce.obj(AttrCoerce.lookup(json, "leftView")),
             leftViewMode = AttrCoerce.string(AttrCoerce.lookup(json, "leftViewMode")),
             maxLength = AttrCoerce.number(AttrCoerce.lookup(json, "maxLength")),
+            name = AttrCoerce.string(AttrCoerce.lookup(json, "name")),
             nextFocus = AttrCoerce.string(AttrCoerce.lookup(json, "nextFocus")),
             onBeginEditing = AttrCoerce.string(AttrCoerce.lookup(json, "onBeginEditing")),
             onBlur = AttrCoerce.string(AttrCoerce.lookup(json, "onBlur")),
@@ -482,6 +497,7 @@ data class TextFieldAttributes(
             onShouldReturn = AttrCoerce.string(AttrCoerce.lookup(json, "onShouldReturn")),
             onSubmit = AttrCoerce.string(AttrCoerce.lookup(json, "onSubmit")),
             onTextChange = AttrCoerce.string(AttrCoerce.lookup(json, "onTextChange")),
+            outlined = AttrCoerce.boolean(AttrCoerce.lookup(json, "outlined")),
             pattern = AttrCoerce.string(AttrCoerce.lookup(json, "pattern")),
             placeholder = AttrCoerce.string(AttrCoerce.lookup(json, "placeholder")),
             required = AttrCoerce.boolean(AttrCoerce.lookup(json, "required")),

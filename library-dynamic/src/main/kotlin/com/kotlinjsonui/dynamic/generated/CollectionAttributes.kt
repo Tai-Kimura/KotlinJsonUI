@@ -36,6 +36,8 @@ data class CollectionAttributes(
     val currentPage: AttrValue<Any>? = null,
     /** Initial scroll position anchor (iOS 17+). Sets where the scroll view starts. On Compose (kjui codegen and KotlinJsonUI Dynamic) it is applied once, when the list first has cells, by scrolling to the middle (center) or last (bottom) CELL counted as scrollTo counts them - across the drawn sections, headers, footers and grid fillers not counted (4f ruling 2026-09-27, round 11); center lands that cell's middle at the viewport's middle, as iOS and the web draw a list longer than its viewport (kjui-defaultscrollanchor-center-differs-when-content-overflows, 2026-10-14: Compose put it at the top edge, and a list whose middle cell could not get there stopped at its end, drawing bottom's picture); until jsonui-cli 1.9.0 it counted the first data section only and scrolled to that lazy item index. Under reverseLayout a list rests at its visual bottom, so top and bottom trade places, as they do for scrollAnchor (4f ruling 2026-09-27, round 12 - where iOS lands, which draws the same order from content anchored at its bottom): bottom is where the list rests and moves nothing; top goes to the cell drawn at the visual top, the last one the content emits. Until jsonui-cli 1.9.0 bottom went to the last cell, which a reversed list draws at its visual top. A container that is not a lazy list and draws no reverseLayout (the wrapContent Column, the horizontal EAGER one) takes the middle or last cell to its top edge (round 12); the vertical EAGER one draws reverseLayout and follows the lazy list (round 13). It sets the initial position only: how a list keeps its position when its data changes with no scrollTo is each platform's own - iOS keeps the anchored edge while the list rests at it and, once a scrollTo has moved it, stays where it scrolled; Compose keeps the first visible item - so to follow new content, send scrollTo (4f ruling 2026-09-27, round 13; the iOS half measured round 14: a list resting at its bottom showed an appended cell there, and one a scrollTo had left above a cell kept it below the edge when more arrived). On Compose a list that is not reversed, with defaultScrollAnchor bottom and content shorter than its viewport, sits at its bottom, as iOS draws it (4f ruling 2026-09-27, round 14; it sat at the top). On a horizontal Collection, top / center / bottom mean the start / centre / end along the scroll axis, in reading direction, on every platform (4f ruling 2026-09-27); a horizontal list whose content is shorter than its row sits at the row's centre (center) or end (bottom) on Compose too, on the lazy and eager routes, as iOS draws it - measured on sjui codegen and SwiftJsonUI Dynamic - and a `lazy: none` row, which does not scroll, at its start, as sjui codegen draws it (4f ruling 2026-09-27, round 15; every Compose row sat at its start until jsonui-cli 1.9.0). A vertical list shorter than its viewport sits in its middle for center, on Compose too - the lazy and eager routes, reversed or not, as iOS draws them (measured 2026-09-27 on sjui codegen and SwiftJsonUI Dynamic) - and a `lazy: none` Column, which does not scroll, at its top (4f ruling 2026-09-27, round 16; it sat at the top, the bottom when reversed, until jsonui-cli 1.9.0). */
     val defaultScrollAnchor: AttrEnum<DefaultScrollAnchor>? = null,
+    /** Row alignment of a flow layout: leading (default), center, trailing/end (kjui collection_component). */
+    val flowAlignment: AttrEnum<FlowAlignment>? = null,
     /** Footer class definitions */
     val footerClasses: List<Any?>? = null,
     /** Header class definitions */
@@ -109,6 +111,27 @@ data class CollectionAttributes(
                 "top" -> TOP
                 "center" -> CENTER
                 "bottom" -> BOTTOM
+                else -> null
+            }
+        }
+    }
+
+    enum class FlowAlignment(val json: String) {
+        LEADING("leading"),
+        CENTER("center"),
+        TRAILING("trailing"),
+        END("end");
+
+        companion object {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("leading", "center", "trailing", "end")
+
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
+            fun from(raw: String): FlowAlignment? = when (raw) {
+                "leading" -> LEADING
+                "center" -> CENTER
+                "trailing" -> TRAILING
+                "end" -> END
                 else -> null
             }
         }
@@ -228,6 +251,7 @@ data class CollectionAttributes(
             "contentInsets",
             "currentPage",
             "defaultScrollAnchor",
+            "flowAlignment",
             "footerClasses",
             "headerClasses",
             "hideSeparator",
@@ -294,6 +318,7 @@ data class CollectionAttributes(
             contentInsets = AttrCoerce.lookup(json, "contentInsets"),
             currentPage = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "currentPage")),
             defaultScrollAnchor = parseDefaultScrollAnchor(AttrCoerce.lookup(json, "defaultScrollAnchor")),
+            flowAlignment = parseFlowAlignment(AttrCoerce.lookup(json, "flowAlignment")),
             footerClasses = AttrCoerce.array(AttrCoerce.lookup(json, "footerClasses")),
             headerClasses = AttrCoerce.array(AttrCoerce.lookup(json, "headerClasses")),
             hideSeparator = AttrCoerce.boolean(AttrCoerce.lookup(json, "hideSeparator")),
@@ -332,6 +357,16 @@ data class CollectionAttributes(
             }
             val near = (raw as? String)?.let { s -> DefaultScrollAnchor.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
             AttrWarnings.emit("Collection.defaultScrollAnchor: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseFlowAlignment(raw: Any?): AttrEnum<FlowAlignment>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                FlowAlignment.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            val near = (raw as? String)?.let { s -> FlowAlignment.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Collection.flowAlignment: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
 

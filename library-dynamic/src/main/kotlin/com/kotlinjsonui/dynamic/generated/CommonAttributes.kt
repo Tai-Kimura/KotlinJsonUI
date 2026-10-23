@@ -298,6 +298,8 @@ data class CommonAttributes(
     val widthWeight: AttrValue<Double>? = null,
     /** Wrap content */
     val wrapContent: Boolean? = null,
+    /** Stacking order among siblings; wins over indexAbove / indexBelow (rjui base_converter). */
+    val zIndex: Double? = null,
 ) {
     enum class Alignment(val json: String) {
         TOP_LEADING("topLeading"),
@@ -616,6 +618,7 @@ data class CommonAttributes(
             "widthRaw",
             "widthWeight",
             "wrapContent",
+            "zIndex",
         )
 
         /**
@@ -782,6 +785,7 @@ data class CommonAttributes(
             widthRaw = AttrCoerce.string(AttrCoerce.lookup(json, "widthRaw")),
             widthWeight = AttrCoerce.attrValue(AttrCoerce.lookup(json, "widthWeight")) { AttrCoerce.number(it) },
             wrapContent = AttrCoerce.boolean(AttrCoerce.lookup(json, "wrapContent")),
+            zIndex = AttrCoerce.number(AttrCoerce.lookup(json, "zIndex")),
         )
 
         private fun parseAlignment(raw: Any?): AttrEnum<Alignment>? {

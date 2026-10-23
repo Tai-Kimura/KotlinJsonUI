@@ -143,6 +143,10 @@ class DynamicTextFieldComponent {
             val focusRequester = remember { FocusRequester() }
             val composeFocusManager = LocalFocusManager.current
             var hasFocus by remember { mutableStateOf(false) }
+            // `autoFocus`: the field takes the focus (and the keyboard) at the
+            // first composition, through the same requester.
+            val autoFocus = a.autoFocus == true
+            DynamicAutoFocus(autoFocus, focusRequester)
 
             if (fieldId != null) {
                 LaunchedEffect(fieldId) {
@@ -293,7 +297,7 @@ class DynamicTextFieldComponent {
             modifier = ModifierBuilder.applyControlClickable(
                 modifier, json, data, ModifierBuilder.ControlTap.ENABLED_ON_NODE
             )
-            if (fieldId != null) {
+            if (fieldId != null || autoFocus) {
                 modifier = modifier
                     .focusRequester(focusRequester)
                     .onFocusChanged { focusState ->
@@ -333,7 +337,7 @@ class DynamicTextFieldComponent {
 
                 var textFieldModifier: Modifier = Modifier
                 textFieldModifier = ModifierBuilder.applySize(textFieldModifier, json, data = data)
-                if (fieldId != null) {
+                if (fieldId != null || autoFocus) {
                     textFieldModifier = textFieldModifier
                         .focusRequester(focusRequester)
                         .onFocusChanged { focusState ->
@@ -586,7 +590,7 @@ class DynamicTextFieldComponent {
             "autocapitalizationType", "autocorrectionType",
             "fieldPadding", "textPaddingLeft",
             "placeholderColor", "tintColor", "caretAttributes",
-            "font", "fontFamily"
+            "font", "fontFamily", "autoFocus"
         )
 
         private fun buildContentPadding(

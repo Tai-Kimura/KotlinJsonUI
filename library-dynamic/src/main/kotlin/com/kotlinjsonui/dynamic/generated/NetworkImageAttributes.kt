@@ -14,6 +14,8 @@ data class NetworkImageAttributes(
     val alt: AttrValue<String>? = null,
     /** Cache policy */
     val cachePolicy: String? = null,
+    /** Clips the image to a circle; cornerRadius is then not applied (rjui network_image_converter). */
+    val circle: Boolean? = null,
     /** Content mode (binding supported) */
     val contentMode: AttrValue<AttrEnum<ContentMode>>? = null,
     /** Default image name */
@@ -32,6 +34,8 @@ data class NetworkImageAttributes(
     val placeholder: String? = null,
     /** Rendering mode. Declared from the implementation, which already read it: sjui network_image_converter.rb:67-68 (plan 51-E). */
     val renderingMode: AttrEnum<RenderingMode>? = null,
+    /** Width and height in dp when width/height are not given (kjui networkimage_component). */
+    val size: Double? = null,
     /** Image URL (can be data binding) */
     val src: AttrValue<String>? = null,
     /** Download timeout in seconds */
@@ -112,6 +116,7 @@ data class NetworkImageAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "alt",
             "cachePolicy",
+            "circle",
             "contentMode",
             "defaultImage",
             "errorImage",
@@ -121,6 +126,7 @@ data class NetworkImageAttributes(
             "loadingImage",
             "placeholder",
             "renderingMode",
+            "size",
             "src",
             "timeout",
             "url",
@@ -150,6 +156,7 @@ data class NetworkImageAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             alt = AttrCoerce.attrValue(AttrCoerce.lookup(json, "alt", listOf("accessibilityLabel", "contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
             cachePolicy = AttrCoerce.string(AttrCoerce.lookup(json, "cachePolicy")),
+            circle = AttrCoerce.boolean(AttrCoerce.lookup(json, "circle")),
             contentMode = AttrCoerce.attrValue(AttrCoerce.lookup(json, "contentMode")) { parseContentMode(it) },
             defaultImage = AttrCoerce.string(AttrCoerce.lookup(json, "defaultImage")),
             errorImage = AttrCoerce.string(AttrCoerce.lookup(json, "errorImage")),
@@ -159,6 +166,7 @@ data class NetworkImageAttributes(
             loadingImage = AttrCoerce.string(AttrCoerce.lookup(json, "loadingImage")),
             placeholder = AttrCoerce.string(AttrCoerce.lookup(json, "placeholder")),
             renderingMode = parseRenderingMode(AttrCoerce.lookup(json, "renderingMode")),
+            size = AttrCoerce.number(AttrCoerce.lookup(json, "size")),
             src = AttrCoerce.attrValue(AttrCoerce.lookup(json, "src")) { AttrCoerce.string(it) },
             timeout = AttrCoerce.number(AttrCoerce.lookup(json, "timeout")),
             url = AttrCoerce.attrValue(AttrCoerce.lookup(json, "url", listOf("source"), canonicalOnly)) { AttrCoerce.string(it) },

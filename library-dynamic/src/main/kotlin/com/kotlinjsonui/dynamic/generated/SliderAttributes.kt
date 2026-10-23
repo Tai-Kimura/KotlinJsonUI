@@ -27,6 +27,8 @@ data class SliderAttributes(
     val range: List<Any?>? = null,
     /** Step increment value */
     val step: Double? = null,
+    /** Colour of the thumb; tintColor when absent (kjui slider_component). */
+    val thumbTintColor: String? = null,
     /** Tint color - hex string or color name from colors.json */
     val tintColor: String? = null,
     /** Colour of the unfilled track - hex string or color name from colors.json. Deprecation retracted with progressTintColor: SwiftUI Progress reaches the same result through .background(). */
@@ -48,6 +50,7 @@ data class SliderAttributes(
             "progressTintColor",
             "range",
             "step",
+            "thumbTintColor",
             "tintColor",
             "trackTintColor",
             "value",
@@ -85,6 +88,7 @@ data class SliderAttributes(
             progressTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "progressTintColor")),
             range = AttrCoerce.array(AttrCoerce.lookup(json, "range")),
             step = AttrCoerce.number(AttrCoerce.lookup(json, "step")),
+            thumbTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "thumbTintColor")),
             tintColor = AttrCoerce.string(AttrCoerce.lookup(json, "tintColor")),
             trackTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "trackTintColor")),
             value = AttrCoerce.attrValue(AttrCoerce.lookup(json, "value")) { AttrCoerce.number(it) },

@@ -10,12 +10,16 @@ package com.kotlinjsonui.dynamic.generated
 data class IconLabelAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** Accessibility description of the icon (kjui iconlabel_component). */
+    val contentDescription: String? = null,
     /** Font name */
     val font: String? = null,
     /** Text color - hex string or color name from colors.json */
     val fontColor: String? = null,
     /** Font size */
     val fontSize: Double? = null,
+    /** Weight of the label's text (kjui iconlabel_component, rjui icon_label_converter). [accepts: string | number] */
+    val fontWeight: Any? = null,
     /** Icon-text spacing */
     val iconMargin: Double? = null,
     /** Icon position relative to text */
@@ -30,10 +34,14 @@ data class IconLabelAttributes(
     val selected: AttrValue<Boolean>? = null,
     /** Selected text color - hex string or color name from colors.json */
     val selectedFontColor: String? = null,
+    /** Strikes the label's text through (rjui icon_label_converter). */
+    val strikethrough: Boolean? = null,
     /** Label text (can be data binding) */
     val text: AttrValue<String>? = null,
     /** Text shadow — same object contract as Label ({color, blur, offset: [x, y]}; the UIKit runtime passes the identical JSON to both) [accepts: string | object] */
     val textShadow: Any? = null,
+    /** Underlines the label's text (rjui icon_label_converter). */
+    val underline: Boolean? = null,
 ) {
     enum class IconPosition(val json: String) {
         LEFT("Left"),
@@ -62,9 +70,11 @@ data class IconLabelAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "contentDescription",
             "font",
             "fontColor",
             "fontSize",
+            "fontWeight",
             "iconMargin",
             "iconPosition",
             "iconSize",
@@ -72,8 +82,10 @@ data class IconLabelAttributes(
             "icon_on",
             "selected",
             "selectedFontColor",
+            "strikethrough",
             "text",
             "textShadow",
+            "underline",
         )
 
         /**
@@ -96,9 +108,11 @@ data class IconLabelAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): IconLabelAttributes = IconLabelAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            contentDescription = AttrCoerce.string(AttrCoerce.lookup(json, "contentDescription")),
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
             fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
+            fontWeight = AttrCoerce.lookup(json, "fontWeight"),
             iconMargin = AttrCoerce.number(AttrCoerce.lookup(json, "iconMargin")),
             iconPosition = parseIconPosition(AttrCoerce.lookup(json, "iconPosition")),
             iconSize = AttrCoerce.lookup(json, "iconSize"),
@@ -106,8 +120,10 @@ data class IconLabelAttributes(
             icon_on = AttrCoerce.string(AttrCoerce.lookup(json, "icon_on")),
             selected = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selected", listOf("isOn"), canonicalOnly)) { AttrCoerce.boolean(it) },
             selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor")),
+            strikethrough = AttrCoerce.boolean(AttrCoerce.lookup(json, "strikethrough")),
             text = AttrCoerce.attrValue(AttrCoerce.lookup(json, "text")) { AttrCoerce.string(it) },
             textShadow = AttrCoerce.lookup(json, "textShadow"),
+            underline = AttrCoerce.boolean(AttrCoerce.lookup(json, "underline")),
         )
 
         private fun parseIconPosition(raw: Any?): AttrEnum<IconPosition>? {

@@ -10,6 +10,8 @@ package com.kotlinjsonui.dynamic.generated
 data class GradientViewAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** Angle of a linear gradient in degrees; wins over gradientDirection (rjui gradient_view_converter). */
+    val angle: Double? = null,
     /** Child component(s). Declared from the implementation, which already read it: sjui gradient_view_converter.rb:16 (plan 51-E). A single component node (object) is accepted as a one-element array. */
     val child: List<Any?>? = null,
     /** Child components (alias for child). Declared from the implementation, which already read it: sjui gradient_view_converter.rb:16 (child || children) (plan 51-E). A single component node (object) is accepted as a one-element array. */
@@ -20,8 +22,12 @@ data class GradientViewAttributes(
     val gradient: List<Any?>? = null,
     /** Gradient direction */
     val gradientDirection: AttrEnum<GradientDirection>? = null,
+    /** linear (default) or radial (rjui gradient_view_converter). */
+    val gradientType: AttrEnum<GradientType>? = null,
     /** Color stop locations (0.0-1.0) */
     val locations: List<Any?>? = null,
+    /** How the children stack inside the gradient: vertical (default, a flex column) or horizontal (rjui gradient_view_converter). Not the gradient's direction — that is gradientDirection. */
+    val orientation: AttrEnum<Orientation>? = null,
     /** Unit coordinates in the view's own box for where the gradient starts: [x, y] or {"x": x, "y": y}, with 0 = leading/top, 0.5 = centre/middle, 1 = trailing/bottom. THREE faces read this key three incompatible ways today: sjui gradient_view_converter.rb:107-109 wants an OBJECT ({x, y}), rjui gradient_view_converter.rb:72-73 destructures an ARRAY ([x, y]), and kjui gradientview_component.rb:58-59 expects a STRING edge name ('top'). The two coordinate forms are declared because both are real coordinate spellings of the same thing; the android string form is NOT declared - it is `gradientDirection` semantics written under the wrong key, and is filed as a defect rather than blessed here. Declaring BOTH startPoint and endPoint replaces gradientDirection entirely; declaring only one is ignored and gradientDirection still decides (plan 51-E). [accepts: array | object] */
     val startPoint: Any? = null,
 ) {
@@ -44,18 +50,55 @@ data class GradientViewAttributes(
         }
     }
 
+    enum class GradientType(val json: String) {
+        LINEAR("linear"),
+        RADIAL("radial");
+
+        companion object {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("linear", "radial")
+
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
+            fun from(raw: String): GradientType? = when (raw) {
+                "linear" -> LINEAR
+                "radial" -> RADIAL
+                else -> null
+            }
+        }
+    }
+
+    enum class Orientation(val json: String) {
+        VERTICAL("vertical"),
+        HORIZONTAL("horizontal");
+
+        companion object {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("vertical", "horizontal")
+
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
+            fun from(raw: String): Orientation? = when (raw) {
+                "vertical" -> VERTICAL
+                "horizontal" -> HORIZONTAL
+                else -> null
+            }
+        }
+    }
+
     companion object {
         /**
          * Canonical attribute names declared for this component, including
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "angle",
             "child",
             "children",
             "endPoint",
             "gradient",
             "gradientDirection",
+            "gradientType",
             "locations",
+            "orientation",
             "startPoint",
         )
 
@@ -79,12 +122,15 @@ data class GradientViewAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): GradientViewAttributes = GradientViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            angle = AttrCoerce.number(AttrCoerce.lookup(json, "angle")),
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
             endPoint = AttrCoerce.lookup(json, "endPoint"),
             gradient = AttrCoerce.array(AttrCoerce.lookup(json, "gradient", listOf("colors"), canonicalOnly)),
             gradientDirection = parseGradientDirection(AttrCoerce.lookup(json, "gradientDirection")),
+            gradientType = parseGradientType(AttrCoerce.lookup(json, "gradientType")),
             locations = AttrCoerce.array(AttrCoerce.lookup(json, "locations")),
+            orientation = parseOrientation(AttrCoerce.lookup(json, "orientation")),
             startPoint = AttrCoerce.lookup(json, "startPoint"),
         )
 
@@ -95,6 +141,26 @@ data class GradientViewAttributes(
             }
             val near = (raw as? String)?.let { s -> GradientDirection.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
             AttrWarnings.emit("GradientView.gradientDirection: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseGradientType(raw: Any?): AttrEnum<GradientType>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                GradientType.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            val near = (raw as? String)?.let { s -> GradientType.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("GradientView.gradientType: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
+            return AttrEnum.Unknown(raw)
+        }
+
+        private fun parseOrientation(raw: Any?): AttrEnum<Orientation>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                Orientation.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            val near = (raw as? String)?.let { s -> Orientation.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("GradientView.orientation: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
             return AttrEnum.Unknown(raw)
         }
     }

@@ -12,20 +12,50 @@ data class WebAttributes(
     val common: CommonAttributes,
     /** Iframe allow attribute for feature policy */
     val allow: String? = null,
+    /** Adds camera to the iframe's allow list (rjui web_converter). */
+    val allowCamera: Boolean? = null,
+    /** Adds allow-downloads to the iframe's sandbox (rjui web_converter). */
+    val allowDownloads: Boolean? = null,
+    /** Adds geolocation to the iframe's allow list (rjui web_converter). */
+    val allowGeolocation: Boolean? = null,
+    /** Adds microphone to the iframe's allow list (rjui web_converter). */
+    val allowMicrophone: Boolean? = null,
+    /** Adds allow-modals to the iframe's sandbox (rjui web_converter). */
+    val allowModals: Boolean? = null,
+    /** Adds allow-popups-to-escape-sandbox to the iframe's sandbox (rjui web_converter). */
+    val allowPopupsToEscapeSandbox: Boolean? = null,
+    /** Turns the WebView's zoom controls on (kjui web_component). */
+    val allowZoom: Boolean? = null,
     /** Enable swipe navigation */
     val allowsBackForwardNavigationGestures: Boolean? = null,
+    /** fullscreen is in the iframe's allow list unless this is false (rjui web_converter). */
+    val allowsFullScreen: Boolean? = null,
+    /** Adds autoplay to the iframe's allow list (rjui web_converter). */
+    val allowsInlineMediaPlayback: Boolean? = null,
     /** Enable link preview */
     val allowsLinkPreview: Boolean? = null,
     /** HTML content */
     val html: String? = null,
+    /** Adds allow-popups to the iframe's sandbox (rjui web_converter). */
+    val javaScriptCanOpenWindowsAutomatically: Boolean? = null,
+    /** JavaScript runs unless this is false (kjui web_component: settings.javaScriptEnabled; rjui web_converter: allow-scripts in the sandbox). */
+    val javaScriptEnabled: Boolean? = null,
+    /** Draws the iframe with loading="lazy" (rjui web_converter). */
+    val lazyLoad: Boolean? = null,
     /** Handler called when the MAIN-FRAME load fails - binding only (@{functionName}), called with no arguments. A failure is either the navigation itself failing (no connection, timeout, DNS, TLS) or the main-frame response carrying HTTP 4xx/5xx. Never called for a subresource (image, CSS, script) or a subframe, and never for a navigation that was cancelled because another one replaced it - a reloadToken change during a load is exactly that (iOS reports it as NSURLErrorCancelled, which is excluded; Android excludes net::ERR_ABORTED should it be reported). At most one call per load. The page a server returns with a 4xx/5xx is still displayed; to show an error face instead, hide the Web from the handler. iOS: WKNavigationDelegate didFail / didFailProvisionalNavigation and the status in decidePolicyFor(navigationResponse:). Android: WebViewClient onReceivedError / onReceivedHttpError, both gated on request.isForMainFrame. Not declared for react: an iframe reports neither the HTTP status of its document nor a cross-origin load failure (its load event fires for the browser's error page too, and error never fires for a document), so a web face could not honour this declaration. [binding: one-way] */
     val onLoadFailed: AttrValue<Any>? = null,
     /** Binding to a plain value (declare it Int) that reloads the component's own source each time the value CHANGES - the current `url`, or `html` when there is no url. Increment it in the ViewModel to retry after onLoadFailed. The value present when the view is created loads nothing extra; only a later change does. Writing the same url back does not reload (a url is compared with the last one loaded), which is why this exists. It reloads the declared source, not a page the user navigated to inside the view. Not declared for react: an iframe could be re-keyed, but the attribute exists to retry what onLoadFailed reports and the web face has no onLoadFailed. */
     val reloadToken: AttrValue<Any>? = null,
     /** Iframe sandboxing kill-switch. `false` emits no sandbox attribute at all; otherwise the permission list is built from the other Web attributes (javaScriptEnabled, javaScriptCanOpenWindowsAutomatically, allowPopupsToEscapeSandbox, allowModals, ...) rather than from a value written here. */
     val sandbox: Boolean? = null,
+    /** false hides the iframe's overflow (rjui web_converter). */
+    val scrollEnabled: Boolean? = null,
+    /** The iframe's title, read by screen readers (rjui web_converter). */
+    val title: String? = null,
     /** Web page URL (can be data binding) */
     val url: AttrValue<String>? = null,
+    /** The WebView's user agent string (kjui web_component). */
+    val userAgent: String? = null,
 ) {
     companion object {
         /**
@@ -34,13 +64,28 @@ data class WebAttributes(
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "allow",
+            "allowCamera",
+            "allowDownloads",
+            "allowGeolocation",
+            "allowMicrophone",
+            "allowModals",
+            "allowPopupsToEscapeSandbox",
+            "allowZoom",
             "allowsBackForwardNavigationGestures",
+            "allowsFullScreen",
+            "allowsInlineMediaPlayback",
             "allowsLinkPreview",
             "html",
+            "javaScriptCanOpenWindowsAutomatically",
+            "javaScriptEnabled",
+            "lazyLoad",
             "onLoadFailed",
             "reloadToken",
             "sandbox",
+            "scrollEnabled",
+            "title",
             "url",
+            "userAgent",
         )
 
         /**
@@ -63,13 +108,28 @@ data class WebAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): WebAttributes = WebAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             allow = AttrCoerce.string(AttrCoerce.lookup(json, "allow")),
+            allowCamera = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowCamera")),
+            allowDownloads = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowDownloads")),
+            allowGeolocation = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowGeolocation")),
+            allowMicrophone = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowMicrophone")),
+            allowModals = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowModals")),
+            allowPopupsToEscapeSandbox = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowPopupsToEscapeSandbox")),
+            allowZoom = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowZoom")),
             allowsBackForwardNavigationGestures = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsBackForwardNavigationGestures")),
+            allowsFullScreen = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsFullScreen")),
+            allowsInlineMediaPlayback = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsInlineMediaPlayback")),
             allowsLinkPreview = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsLinkPreview")),
             html = AttrCoerce.string(AttrCoerce.lookup(json, "html")),
+            javaScriptCanOpenWindowsAutomatically = AttrCoerce.boolean(AttrCoerce.lookup(json, "javaScriptCanOpenWindowsAutomatically")),
+            javaScriptEnabled = AttrCoerce.boolean(AttrCoerce.lookup(json, "javaScriptEnabled")),
+            lazyLoad = AttrCoerce.boolean(AttrCoerce.lookup(json, "lazyLoad")),
             onLoadFailed = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onLoadFailed")),
             reloadToken = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "reloadToken")),
             sandbox = AttrCoerce.boolean(AttrCoerce.lookup(json, "sandbox")),
+            scrollEnabled = AttrCoerce.boolean(AttrCoerce.lookup(json, "scrollEnabled")),
+            title = AttrCoerce.string(AttrCoerce.lookup(json, "title")),
             url = AttrCoerce.attrValue(AttrCoerce.lookup(json, "url")) { AttrCoerce.string(it) },
+            userAgent = AttrCoerce.string(AttrCoerce.lookup(json, "userAgent")),
         )
     }
 }

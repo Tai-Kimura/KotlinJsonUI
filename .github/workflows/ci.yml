@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: 1889b3949a94a1738d7f8c00deae7fba5ecc3c5c # jsonui-cli 2.3.15 release commit (tag v2.3.15 points here); the tables are re-vendored from it (comments name a role, not a session) — the fixtures, responsive vectors and the initialState coercion vector are read from it too
+      JSONUI_CLI_MANIFEST_REF: ea30b22304eafd6fd515629a6e924318c4ce9c51 # jsonui-cli release/2.3.21 (v2.3.21 is cut from it); the tables are re-vendored from it (autoFocus on TextField / TextView, and the attributes declared since 2.3.15), the fixtures and the onPan exclusions match it unchanged
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest

@@ -17,8 +17,12 @@ data class ProgressAttributes(
     val hidesWhenStopped: Boolean? = null,
     /** ActivityIndicator size style. */
     val indicatorStyle: AttrEnum<IndicatorStyle>? = null,
+    /** The value that fills the bar, the <progress> max (rjui progress_converter). */
+    val maximumValue: Double? = null,
     /** Progress value (0-1, can be binding) */
     val progress: AttrValue<Double>? = null,
+    /** Height of the bar (rjui progress_converter). */
+    val progressHeight: Double? = null,
     /** Custom progress image */
     val progressImage: String? = null,
     /** Progress portion color - hex string or color name from colors.json (binding supported) */
@@ -58,7 +62,9 @@ data class ProgressAttributes(
             "color",
             "hidesWhenStopped",
             "indicatorStyle",
+            "maximumValue",
             "progress",
+            "progressHeight",
             "progressImage",
             "progressTintColor",
             "progressViewStyle",
@@ -89,7 +95,9 @@ data class ProgressAttributes(
             color = AttrCoerce.string(AttrCoerce.lookup(json, "color")),
             hidesWhenStopped = AttrCoerce.boolean(AttrCoerce.lookup(json, "hidesWhenStopped")),
             indicatorStyle = parseIndicatorStyle(AttrCoerce.lookup(json, "indicatorStyle")),
+            maximumValue = AttrCoerce.number(AttrCoerce.lookup(json, "maximumValue")),
             progress = AttrCoerce.attrValue(AttrCoerce.lookup(json, "progress")) { AttrCoerce.number(it) },
+            progressHeight = AttrCoerce.number(AttrCoerce.lookup(json, "progressHeight")),
             progressImage = AttrCoerce.string(AttrCoerce.lookup(json, "progressImage")),
             progressTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "progressTintColor")) { AttrCoerce.string(it) },
             progressViewStyle = AttrCoerce.string(AttrCoerce.lookup(json, "progressViewStyle")),

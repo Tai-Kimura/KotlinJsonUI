@@ -32,6 +32,8 @@ data class ImageAttributes(
     val minZoom: Double? = null,
     /** Rendering mode */
     val renderingMode: AttrEnum<RenderingMode>? = null,
+    /** Width and height in dp when width/height are not given (kjui image_component). */
+    val size: Double? = null,
     /** Image source name (can be data binding). On web it is passed to `<img src>` as a path, since web has no asset catalog, so a bare image name belongs in srcName there (rjui warns). */
     val src: AttrValue<String>? = null,
     /** Image source name (alias, can be data binding) */
@@ -121,6 +123,7 @@ data class ImageAttributes(
             "maxZoom",
             "minZoom",
             "renderingMode",
+            "size",
             "src",
             "srcName",
             "systemIcon",
@@ -158,6 +161,7 @@ data class ImageAttributes(
             maxZoom = AttrCoerce.number(AttrCoerce.lookup(json, "maxZoom")),
             minZoom = AttrCoerce.number(AttrCoerce.lookup(json, "minZoom")),
             renderingMode = parseRenderingMode(AttrCoerce.lookup(json, "renderingMode")),
+            size = AttrCoerce.number(AttrCoerce.lookup(json, "size")),
             src = AttrCoerce.attrValue(AttrCoerce.lookup(json, "src")) { AttrCoerce.string(it) },
             srcName = AttrCoerce.attrValue(AttrCoerce.lookup(json, "srcName")) { AttrCoerce.string(it) },
             systemIcon = AttrCoerce.boolean(AttrCoerce.lookup(json, "systemIcon")),

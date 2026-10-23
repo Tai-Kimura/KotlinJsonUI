@@ -19,6 +19,8 @@ data class BlurAttributes(
     val children: List<Any?>? = null,
     /** Blur effect style */
     val effectStyle: AttrEnum<EffectStyle>? = null,
+    /** Blur strength 0-1, drawn as a backdrop blur of intensity x 20 px (rjui blur_converter). */
+    val intensity: Double? = null,
 ) {
     enum class EffectStyle(val json: String) {
         LIGHT("Light"),
@@ -49,6 +51,7 @@ data class BlurAttributes(
             "child",
             "children",
             "effectStyle",
+            "intensity",
         )
 
         /**
@@ -74,6 +77,7 @@ data class BlurAttributes(
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
             effectStyle = parseEffectStyle(AttrCoerce.lookup(json, "effectStyle")),
+            intensity = AttrCoerce.number(AttrCoerce.lookup(json, "intensity")),
         )
 
         private fun parseEffectStyle(raw: Any?): AttrEnum<EffectStyle>? {

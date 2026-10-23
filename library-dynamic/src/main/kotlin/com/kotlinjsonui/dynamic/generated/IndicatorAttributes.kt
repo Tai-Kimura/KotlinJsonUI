@@ -14,10 +14,16 @@ data class IndicatorAttributes(
     val animating: AttrValue<Boolean>? = null,
     /** Indicator color - hex string or color name from colors.json (binding supported). `tint` folds here (sjui indicator_converter.rb:77 reads `color || tintColor || tint`). [aliases: tint] */
     val color: AttrValue<String>? = null,
+    /** Draws the spinner's ring half coloured (rjui indicator_converter). */
+    val halfSpinner: Boolean? = null,
     /** Hide when stopped. Decides SPACE: `true` collapses the stopped indicator out of the layout, `false` keeps it drawn AND laid out. Full ruling in attribute_semantics.json -> indicatorStopped. */
     val hidesWhenStopped: Boolean? = null,
     /** Indicator style: `small` / `medium` / `large` are the spinner's size and `linear` a bar instead of a spinner. Each size is the platform's own value, `small` and `large` as well as `medium` (2026-10-05 user ruling): the faces need not draw the same small or large spinner. A declared width / height wins over the style's size. The legacy spellings `style` (naming one of these values) and `size` (a length) are folded by the layout normalizer, with a warning: `style` into this attribute, `size` into width and height. */
     val indicatorStyle: AttrEnum<IndicatorStyle>? = null,
+    /** Width of the spinner's stroke (kjui indicator_component: circular only; rjui indicator_converter: border width, 2 by default). */
+    val strokeWidth: Double? = null,
+    /** Track colour of a linear indicator (kjui indicator_component). */
+    val trackColor: String? = null,
 ) {
     enum class IndicatorStyle(val json: String) {
         SMALL("small"),
@@ -48,8 +54,11 @@ data class IndicatorAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "animating",
             "color",
+            "halfSpinner",
             "hidesWhenStopped",
             "indicatorStyle",
+            "strokeWidth",
+            "trackColor",
         )
 
         /**
@@ -74,8 +83,11 @@ data class IndicatorAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             animating = AttrCoerce.attrValue(AttrCoerce.lookup(json, "animating")) { AttrCoerce.boolean(it) },
             color = AttrCoerce.attrValue(AttrCoerce.lookup(json, "color", listOf("tint"), canonicalOnly)) { AttrCoerce.string(it) },
+            halfSpinner = AttrCoerce.boolean(AttrCoerce.lookup(json, "halfSpinner")),
             hidesWhenStopped = AttrCoerce.boolean(AttrCoerce.lookup(json, "hidesWhenStopped")),
             indicatorStyle = parseIndicatorStyle(AttrCoerce.lookup(json, "indicatorStyle")),
+            strokeWidth = AttrCoerce.number(AttrCoerce.lookup(json, "strokeWidth")),
+            trackColor = AttrCoerce.string(AttrCoerce.lookup(json, "trackColor")),
         )
 
         private fun parseIndicatorStyle(raw: Any?): AttrEnum<IndicatorStyle>? {

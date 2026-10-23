@@ -15,7 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -149,6 +152,12 @@ class DynamicTextViewComponent {
             // TextFieldState sync with data binding
             val viewId = LayoutPath.viewId(json)
 
+            // `autoFocus`: the field takes the focus (and the keyboard) at the
+            // first composition; the requester sits on the field's own node.
+            val autoFocus = a.autoFocus == true
+            val autoFocusRequester = remember { FocusRequester() }
+            DynamicAutoFocus(autoFocus, autoFocusRequester)
+
             LaunchedEffect(initialText) {
                 if (textFieldState.text.toString() != initialText) {
                     textFieldState.edit { replace(0, length, initialText) }
@@ -219,6 +228,7 @@ class DynamicTextViewComponent {
                 // TextField modifier with size (default fillMaxWidth + 120dp height)
                 var textFieldModifier = buildTextViewSizeModifier(json, a)
                 textFieldModifier = ModifierBuilder.applyPadding(textFieldModifier, json, data)
+                if (autoFocus) textFieldModifier = textFieldModifier.focusRequester(autoFocusRequester)
 
                 CustomTextFieldWithMargins(
                     state = textFieldState,
@@ -270,6 +280,7 @@ class DynamicTextViewComponent {
                     modifier, json, data, ModifierBuilder.ControlTap.ENABLED_ON_NODE
                 )
                 modifier = ModifierBuilder.applyPadding(modifier, json, data)
+                if (autoFocus) modifier = modifier.focusRequester(autoFocusRequester)
 
                 CustomTextField(
                     state = textFieldState,
@@ -303,7 +314,7 @@ class DynamicTextViewComponent {
             "containerInset", "edgeInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",
-            "font", "fontFamily", "hintFont", "tintColor"
+            "font", "fontFamily", "hintFont", "tintColor", "autoFocus"
         )
 
         /**

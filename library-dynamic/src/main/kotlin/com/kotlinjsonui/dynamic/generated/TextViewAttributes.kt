@@ -13,6 +13,8 @@ data class TextViewAttributes(
     val common: CommonAttributes,
     /** Allow editing text attributes */
     val allowsEditingTextAttributes: Boolean? = null,
+    /** Focuses the field when the screen appears (the keyboard opens): iOS SwiftUI sets the field's @FocusState on appear, Android Compose requests focus with a FocusRequester, web draws autoFocus. */
+    val autoFocus: Boolean? = null,
     /** Number of visible columns */
     val cols: Double? = null,
     /** Container inset [accepts: number | array] */
@@ -57,6 +59,10 @@ data class TextViewAttributes(
     val lineBreakMode: AttrEnum<LineBreakMode>? = null,
     /** Maximum input length */
     val maxLength: Double? = null,
+    /** Most lines shown before the text scrolls (kjui textview_component). */
+    val maxLines: Double? = null,
+    /** The textarea's form name attribute (rjui text_view_converter). */
+    val name: String? = null,
     /** Begin editing event handler */
     val onBeginEditing: String? = null,
     /** Selection change event handler */
@@ -271,6 +277,7 @@ data class TextViewAttributes(
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "allowsEditingTextAttributes",
+            "autoFocus",
             "cols",
             "containerInset",
             "dataDetectorTypes",
@@ -293,6 +300,8 @@ data class TextViewAttributes(
             "keyboardType",
             "lineBreakMode",
             "maxLength",
+            "maxLines",
+            "name",
             "onBeginEditing",
             "onChangeSelection",
             "onEndEditing",
@@ -332,6 +341,7 @@ data class TextViewAttributes(
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): TextViewAttributes = TextViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             allowsEditingTextAttributes = AttrCoerce.boolean(AttrCoerce.lookup(json, "allowsEditingTextAttributes")),
+            autoFocus = AttrCoerce.boolean(AttrCoerce.lookup(json, "autoFocus")),
             cols = AttrCoerce.number(AttrCoerce.lookup(json, "cols")),
             containerInset = AttrCoerce.lookup(json, "containerInset"),
             dataDetectorTypes = AttrCoerce.string(AttrCoerce.lookup(json, "dataDetectorTypes")),
@@ -354,6 +364,8 @@ data class TextViewAttributes(
             keyboardType = parseKeyboardType(AttrCoerce.lookup(json, "keyboardType")),
             lineBreakMode = parseLineBreakMode(AttrCoerce.lookup(json, "lineBreakMode")),
             maxLength = AttrCoerce.number(AttrCoerce.lookup(json, "maxLength")),
+            maxLines = AttrCoerce.number(AttrCoerce.lookup(json, "maxLines")),
+            name = AttrCoerce.string(AttrCoerce.lookup(json, "name")),
             onBeginEditing = AttrCoerce.string(AttrCoerce.lookup(json, "onBeginEditing")),
             onChangeSelection = AttrCoerce.string(AttrCoerce.lookup(json, "onChangeSelection")),
             onEndEditing = AttrCoerce.string(AttrCoerce.lookup(json, "onEndEditing")),

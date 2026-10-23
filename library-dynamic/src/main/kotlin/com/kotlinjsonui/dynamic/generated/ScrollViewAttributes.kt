@@ -16,6 +16,8 @@ data class ScrollViewAttributes(
     val child: List<Any?>? = null,
     /** Child components. A single component node (object) is accepted as a one-element array. */
     val children: List<Any?>? = null,
+    /** Padding inside the scroll area: one, two or four values (rjui scroll_view_converter). [accepts: number | array] */
+    val contentInset: Any? = null,
     /** Content inset adjustment */
     val contentInsetAdjustmentBehavior: AttrEnum<ContentInsetAdjustmentBehavior>? = null,
     /** Initial offset [x, y] */
@@ -176,6 +178,7 @@ data class ScrollViewAttributes(
             "bounces",
             "child",
             "children",
+            "contentInset",
             "contentInsetAdjustmentBehavior",
             "contentOffset",
             "contentSize",
@@ -220,6 +223,7 @@ data class ScrollViewAttributes(
             bounces = AttrCoerce.boolean(AttrCoerce.lookup(json, "bounces")),
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
+            contentInset = AttrCoerce.lookup(json, "contentInset"),
             contentInsetAdjustmentBehavior = parseContentInsetAdjustmentBehavior(AttrCoerce.lookup(json, "contentInsetAdjustmentBehavior")),
             contentOffset = AttrCoerce.array(AttrCoerce.lookup(json, "contentOffset")),
             contentSize = AttrCoerce.array(AttrCoerce.lookup(json, "contentSize")),

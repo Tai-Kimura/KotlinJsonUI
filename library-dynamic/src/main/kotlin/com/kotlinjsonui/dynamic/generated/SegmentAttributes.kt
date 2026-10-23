@@ -15,6 +15,8 @@ data class SegmentAttributes(
     val apportionsSegmentWidthsByContent: Boolean? = null,
     /** Label color of the UNSELECTED segments - hex string or color name from colors.json [aliases: normalColor] */
     val fontColor: String? = null,
+    /** Font size of the segments' text (rjui segment_converter). */
+    val fontSize: Double? = null,
     /** Segment items array. Static labels; an entry may be a strings key, resolved at render time on every face. [required] */
     val items: List<Any?>? = null,
     /** Momentary selection mode */
@@ -38,6 +40,7 @@ data class SegmentAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "apportionsSegmentWidthsByContent",
             "fontColor",
+            "fontSize",
             "items",
             "momentary",
             "onValueChange",
@@ -72,6 +75,7 @@ data class SegmentAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             apportionsSegmentWidthsByContent = AttrCoerce.boolean(AttrCoerce.lookup(json, "apportionsSegmentWidthsByContent")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor", listOf("normalColor"), canonicalOnly)),
+            fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
             items = AttrCoerce.array(AttrCoerce.lookup(json, "items")),
             momentary = AttrCoerce.boolean(AttrCoerce.lookup(json, "momentary")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
