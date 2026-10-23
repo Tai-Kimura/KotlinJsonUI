@@ -70,7 +70,9 @@ class DynamicSliderComponent {
         private val APPLIED: Set<String> = setOf(
             "value", "enabled",
             "minimum", "minValue", "maximum", "maxValue",
-            "step", "onValueChange"
+            "step", "onValueChange",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "thumbTintColor"
         )
 
         @Composable

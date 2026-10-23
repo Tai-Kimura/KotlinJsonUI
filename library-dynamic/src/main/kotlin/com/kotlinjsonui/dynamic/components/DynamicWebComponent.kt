@@ -244,7 +244,9 @@ class DynamicWebComponent {
 
         /** Web-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "url", "html", "onLoadFailed", "reloadToken"
+            "url", "html", "onLoadFailed", "reloadToken",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "allowZoom", "javaScriptEnabled", "userAgent"
         )
     }
 }

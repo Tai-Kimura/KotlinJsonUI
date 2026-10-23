@@ -590,7 +590,9 @@ class DynamicTextFieldComponent {
             "autocapitalizationType", "autocorrectionType",
             "fieldPadding", "textPaddingLeft",
             "placeholderColor", "tintColor", "caretAttributes",
-            "font", "fontFamily", "autoFocus"
+            "font", "fontFamily", "autoFocus",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "outlined"
         )
 
         private fun buildContentPadding(

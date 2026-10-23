@@ -43,7 +43,9 @@ class DynamicCircleViewComponent {
     companion object {
         /** CircleView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "child", "children"
+            "child", "children",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "size"
         )
 
         @Composable

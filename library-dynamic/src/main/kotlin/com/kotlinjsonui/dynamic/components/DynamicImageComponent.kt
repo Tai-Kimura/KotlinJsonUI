@@ -38,7 +38,9 @@ class DynamicImageComponent {
     companion object {
         /** Image-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage", "alt"
+            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage", "alt",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "size"
         )
 
         /**

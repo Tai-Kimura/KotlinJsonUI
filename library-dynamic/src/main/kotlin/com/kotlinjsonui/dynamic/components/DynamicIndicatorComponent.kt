@@ -53,7 +53,9 @@ class DynamicIndicatorComponent {
     companion object {
         /** Indicator-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "color", "indicatorStyle"
+            "color", "indicatorStyle",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "strokeWidth", "trackColor"
         )
 
         /**

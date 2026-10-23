@@ -2799,7 +2799,9 @@ class DynamicCollectionComponent {
             "itemSpacing", "items", "layout", "lazy", "lineSpacing", "listStyle",
             "onValueChange", "orientation", "paging", "reverseLayout",
             "scrollAnchor", "scrollAnimated", "defaultScrollAnchor", "scrollEnabled", "scrollTo",
-            "onItemAppear"
+            "onItemAppear",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "flowAlignment"
         )
 
         private val loggedMisconfiguredCollections = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()

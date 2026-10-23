@@ -371,7 +371,9 @@ class DynamicSelectBoxComponent {
             "caretAttributes",
             "datePickerMode", "datePickerStyle", "dateStringFormat",
             "minuteInterval", "minimumDate", "maximumDate",
-            "onValueChange", "onValueChanged"
+            "onValueChange", "onValueChanged",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "cancelButtonBackgroundColor", "cancelButtonTextColor"
         )
 
         @Composable

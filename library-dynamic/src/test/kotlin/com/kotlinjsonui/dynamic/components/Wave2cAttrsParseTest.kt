@@ -5,7 +5,6 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.generated.EmbedAttributes
 import com.kotlinjsonui.dynamic.generated.WebAttributes
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -66,12 +65,13 @@ class Wave2cAttrsParseTest {
     }
 
     @Test
-    fun `web runtime extras stay undeclared while url is declared`() {
-        // javaScriptEnabled / userAgent / allowZoom are legacy runtime
-        // extras read via TypedAttrs.undeclared-style raw access.
-        assertFalse("javaScriptEnabled" in WebAttributes.declaredAttributes)
-        assertFalse("userAgent" in WebAttributes.declaredAttributes)
-        assertFalse("allowZoom" in WebAttributes.declaredAttributes)
+    fun `web runtime extras are declared beside url`() {
+        // javaScriptEnabled / userAgent / allowZoom were legacy runtime
+        // extras until the SSoT declared them (after jsonui-cli 2.3.15); the
+        // component still reads them raw, and lists them as applied.
+        assertTrue("javaScriptEnabled" in WebAttributes.declaredAttributes)
+        assertTrue("userAgent" in WebAttributes.declaredAttributes)
+        assertTrue("allowZoom" in WebAttributes.declaredAttributes)
         assertTrue("url" in WebAttributes.declaredAttributes)
     }
 

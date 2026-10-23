@@ -314,7 +314,9 @@ class DynamicTextViewComponent {
             "containerInset", "edgeInset", "keyboardType", "input",
             "returnKeyType", "onTextChange", "hintLineHeightMultiple",
             "hintFontSize", "hintColor", "hintAttributes", "flexible",
-            "font", "fontFamily", "hintFont", "tintColor", "autoFocus"
+            "font", "fontFamily", "hintFont", "tintColor", "autoFocus",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "maxLines"
         )
 
         /**

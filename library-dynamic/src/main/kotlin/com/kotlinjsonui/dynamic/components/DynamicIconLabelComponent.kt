@@ -81,7 +81,9 @@ class DynamicIconLabelComponent {
 
         /** IconLabel-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "text", "fontSize", "fontColor", "selectedFontColor", "iconPosition", "tintColor", "iconSize"
+            "text", "fontSize", "fontColor", "selectedFontColor", "iconPosition", "tintColor", "iconSize",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "contentDescription", "fontWeight"
         )
 
         @Composable

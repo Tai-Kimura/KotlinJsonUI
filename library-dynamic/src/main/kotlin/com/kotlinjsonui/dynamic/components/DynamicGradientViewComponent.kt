@@ -141,7 +141,9 @@ class DynamicGradientViewComponent {
 
         /** GradientView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "gradient", "gradientDirection", "locations"
+            "gradient", "gradientDirection", "locations",
+            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
+            "orientation"
         )
 
         private val DEFAULT_COLORS = listOf(Color.Black, Color.White)
