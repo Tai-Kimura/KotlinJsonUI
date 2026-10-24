@@ -176,12 +176,60 @@ object ViewportMargin {
     fun keepScrolledPosition(
         before: Int?,
         after: Int?,
-        surfaceBottom: Int
+        surfaceBottom: Int,
+        touchSlop: Int = 0
     ): Boolean {
         if (after == null) return false          // scrolled the target away
         if (before == null) return true          // it was not visible before
         val gainedBefore = surfaceBottom - before
         val gainedAfter = surfaceBottom - after
-        return gainedAfter >= gainedBefore
+        if (gainedAfter >= gainedBefore) return true
+        // 🚨 LESS THAN A TOUCH SLOP WORSE IS KEPT. Measured 2026-10-18 on a
+        // consumer phone (driver 1.17.2): the target sat at the END of its
+        // container, so the drag could not scroll it at all, and the hold's
+        // 1px moves let the content settle back 4px (2054 → 2058, and 2065 →
+        // 2069 on a second screen). "Worse" by 4px, so the step rolled back
+        // with the whole 293px drag reversed and pushed the target off the
+        // bottom. A drag that moved the target less than a slop did not
+        // scroll anything a drag could undo.
+        return after - before < touchSlop
+    }
+
+    /**
+     * The finger travel that undoes a worsening the unstick drag caused,
+     * signed like the drag's own geometry: positive moves the finger DOWN
+     * (content down — the old "same drag backwards"), negative moves
+     * it UP.
+     *
+     * 🚨 FROM WHAT THE TARGET DID, NOT FROM THE DRAG'S NOMINAL STEP. The old
+     * rollback reversed the full step, which is right only when the drag
+     * moved the content by that much. A visible target that came out WORSE
+     * moved DOWN — the content went against the drag — so reversing the
+     * drag sends it further down: 293px for a 4px slip, off the screen. Here
+     * a visible target is moved back up by what it moved down (plus the slop
+     * a drag spends before it scrolls). Only a target the drag took out of
+     * view gets the reversed step, the case the rollback was written for.
+     */
+    /**
+     * Which way to re-approach a target the edge-clearance motions lost,
+     * in [reapproachAfterLoss]'s terms: "up" for one that left through the
+     * bottom (drag up to bring it back), "down" for one that left through
+     * the top.
+     *
+     * 🚨 FROM THE MOTION THAT LOST IT, NOT FROM WHERE IT WAS LAST SEEN. The
+     * target was last seen BEFORE the drag, flush against the bottom; a drag
+     * that took it out of view moved the content UP, so it left through the
+     * top — its last position points the wrong way in exactly that case.
+     * Likewise an upward rollback (a slip being undone) can only lose it
+     * through the top. A target still visible after the drag and lost only
+     * after a downward rollback, or a case not seen, left through the bottom.
+     */
+    fun reapproachDirection(lostByDrag: Boolean, rollback: Int): String =
+        if (lostByDrag || rollback < 0) "down" else "up"
+
+    fun rollbackTravel(before: Int, after: Int?, step: Int, touchSlop: Int): Int {
+        if (after == null) return step
+        val slipped = after - before
+        return if (slipped > 0) -(slipped + touchSlop) else 0
     }
 }

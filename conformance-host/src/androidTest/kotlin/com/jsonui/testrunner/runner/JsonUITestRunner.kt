@@ -2,7 +2,6 @@ package com.jsonui.testrunner.runner
 
 import androidx.test.platform.app.InstrumentationRegistry
 import com.jsonui.testrunner.models.RunDefaultsSource
-import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import com.jsonui.testrunner.actions.ActionExecutor
 import com.jsonui.testrunner.actions.OrientationCommand
@@ -248,6 +247,8 @@ class JsonUITestRunner(
         variableStore = variables
         warningHandler = { message -> currentWarnings.add(message) }
     }
+    /** Id resolution for `when` / `while` conditions (with their `within`). */
+    private val elementLookup = ElementLookup(device)
     private val assertionExecutor = AssertionExecutor(device, config.defaultTimeout).apply {
         baselineDir = config.baselineDir
         updateBaselines = config.updateBaselines
@@ -257,6 +258,13 @@ class JsonUITestRunner(
 
     /** Test loader for file reference resolution */
     var testLoader: TestLoader? = null
+
+    /**
+     * Progress records (progress.schema.json) for `jui viz`: always on, not
+     * tied to [TestRunnerConfig.verbose], and never able to change a result
+     * (every emit swallows its sink's failure). A seam for the tests.
+     */
+    internal var progress = ProgressReporter()
 
     /** Mock server admin client; null unless mockServerUrl + mockToken are configured. */
     private val mockClient: MockClient? =
@@ -283,7 +291,12 @@ class JsonUITestRunner(
     /**
      * Run a screen test
      */
-    fun runScreenTest(test: ScreenTest, testPath: String = ""): TestSuiteResult {
+    fun runScreenTest(test: ScreenTest, testPath: String = ""): TestSuiteResult =
+        progress.run(testPath, rows = { suite: TestSuiteResult -> suite.results }) {
+            runScreenTestRows(test)
+        }.also { writeDefaultResults(it) }
+
+    private fun runScreenTestRows(test: ScreenTest): TestSuiteResult {
         val results = mutableListOf<TestResult>()
         val startTime = System.currentTimeMillis()
 
@@ -321,14 +334,14 @@ class JsonUITestRunner(
                 val suiteResult = TestSuiteResult(
                     suiteName = test.metadata.name,
                     results = test.cases.map { testCase ->
-                        TestResult(
+                        progress.row(TestResult(
                             testName = test.metadata.name,
                             caseName = testCase.name,
                             passed = true,
                             skipped = true,
                             skipReason = "platform",
                             durationMs = 0
-                        )
+                        ))
                     },
                     totalDurationMs = 0
                 )
@@ -346,7 +359,7 @@ class JsonUITestRunner(
                 requireMockClient("mocks").scenarioSet(mocks)
             } catch (e: Exception) {
                 val failed = test.cases.map {
-                    TestResult(test.metadata.name, it.name, passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0)
+                    progress.row(TestResult(test.metadata.name, it.name, passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0))
                 }
                 return TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
             }
@@ -361,7 +374,7 @@ class JsonUITestRunner(
             test.launch?.let { applyLaunchState(it) }
         } catch (e: LaunchConfigException) {
             val failed = test.cases.map {
-                TestResult(test.metadata.name, it.name, passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0)
+                progress.row(TestResult(test.metadata.name, it.name, passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0))
             }
             val suiteResult = TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
             writeResultsIfNeeded(suiteResult)
@@ -449,39 +462,45 @@ class JsonUITestRunner(
         for (testCase in test.cases) {
             val gated = gateRow(test.metadata.name, testCase)
             if (gated != null) {
-                results.add(gated)
+                results.add(progress.row(gated))
                 continue
             }
             if (setupError != null) {
-                results.add(TestResult(
+                results.add(progress.row(TestResult(
                     testName = test.metadata.name,
                     caseName = testCase.name,
                     passed = false,
                     error = "setup failed: $setupError",
                     failureReason = FailureReason.SETUP.wireValue,
                     durationMs = 0
-                ))
+                )))
                 continue
             }
             // A case-level initialState under shared has no launch to ride:
             // that case fails, the others run (spec §10.2).
             val caseFailure = plan.caseFailures.firstOrNull { it.caseName == testCase.name }
             if (caseFailure != null) {
-                results.add(TestResult(
+                results.add(progress.row(TestResult(
                     testName = test.metadata.name,
                     caseName = testCase.name,
                     passed = false,
                     error = InitialStatePlan.message(caseFailure),
                     failureReason = FailureReason.SETUP.wireValue,
                     durationMs = 0
-                ))
+                )))
                 continue
             }
+            var attempt = 0
             val (result, attempts) = CaseRetry.run(
                 retries = config.caseRetries,
                 isPass = { r: TestResult -> r.passed },
                 onRetry = { n, max -> log("  Case ${testCase.name} failed — retry attempt $n/$max") }
-            ) { runTestCase(test.metadata.name, testCase) }
+            ) {
+                attempt++
+                progress.attempt(test.metadata.name, testCase.name, attempt, isPass = { r: TestResult -> r.passed }) {
+                    runTestCase(test.metadata.name, testCase)
+                }
+            }
             results.add(result.copy(attempts = attempts))
         }
 
@@ -495,7 +514,7 @@ class JsonUITestRunner(
             } catch (e: Throwable) {
                 rethrowIfFatal(e)
                 log("Teardown failed: ${e.message}")
-                results.add(TestResult(
+                results.add(progress.row(TestResult(
                     testName = test.metadata.name,
                     caseName = "teardown",
                     passed = false,
@@ -505,7 +524,7 @@ class JsonUITestRunner(
                     // says nothing about the behaviour under test.
                     failureReason = FailureReason.TEARDOWN.wireValue,
                     durationMs = 0
-                ))
+                )))
             }
         }
 
@@ -593,7 +612,9 @@ class JsonUITestRunner(
                 stampAttempts = { r, n -> r.copy(attempts = n) },
                 rethrowIfFatal = { rethrowIfFatal(it) },
                 onRetry = { n, max -> log("  Case $currentCaseName failed — retry attempt $n/$max (re-opening)") }
-            )
+            ),
+            // Every row this loop returns gets its case lines inside it.
+            progress = ReopenedCases.Progress(progress, test.metadata.name) { it }
         ))
     }
 
@@ -631,7 +652,12 @@ class JsonUITestRunner(
     /**
      * Run a flow test
      */
-    fun runFlowTest(test: FlowTest, testPath: String = ""): TestSuiteResult {
+    fun runFlowTest(test: FlowTest, testPath: String = ""): TestSuiteResult =
+        progress.run(testPath, rows = { suite: TestSuiteResult -> suite.results }) {
+            runFlowTestRows(test)
+        }.also { writeDefaultResults(it) }
+
+    private fun runFlowTestRows(test: FlowTest): TestSuiteResult {
         val startTime = System.currentTimeMillis()
 
         // Check platform compatibility. Emit a skipped row (not results: []) so
@@ -641,14 +667,14 @@ class JsonUITestRunner(
                 log("Skipping flow test - platform mismatch")
                 val suiteResult = TestSuiteResult(
                     suiteName = test.metadata.name,
-                    results = listOf(TestResult(
+                    results = listOf(progress.row(TestResult(
                         testName = test.metadata.name,
                         caseName = "flow",
                         passed = true,
                         skipped = true,
                         skipReason = "platform",
                         durationMs = 0
-                    )),
+                    ))),
                     totalDurationMs = 0
                 )
                 writeResultsIfNeeded(suiteResult)
@@ -668,7 +694,7 @@ class JsonUITestRunner(
             try {
                 requireMockClient("mocks").scenarioSet(mocks)
             } catch (e: Exception) {
-                val failed = listOf(TestResult(test.metadata.name, "flow", passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0))
+                val failed = listOf(progress.row(TestResult(test.metadata.name, "flow", passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0)))
                 val suiteResult = TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
                 writeResultsIfNeeded(suiteResult)
                 return suiteResult
@@ -683,7 +709,7 @@ class JsonUITestRunner(
         try {
             test.launch?.let { applyLaunchState(it) }
         } catch (e: LaunchConfigException) {
-            val failed = listOf(TestResult(test.metadata.name, "flow", passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0))
+            val failed = listOf(progress.row(TestResult(test.metadata.name, "flow", passed = false, error = describeFailure(e), failureReason = FailureClassifier.wireValue(e), durationMs = 0)))
             val suiteResult = TestSuiteResult(test.metadata.name, failed, System.currentTimeMillis() - startTime)
             writeResultsIfNeeded(suiteResult)
             return suiteResult
@@ -728,30 +754,36 @@ class JsonUITestRunner(
             // verified and none for `state`: a retried body or the next flow
             // file checks its first screen again, its pending receipt included.
             flowScreens.startAttempt()
-            startCaseRecording(test.metadata.name, "flow")
 
-            try {
-                // Run setup
-                test.setup?.let { setup ->
-                    log("Running flow setup...")
-                    executeFlowSteps(setup, currentWarnings)
-                }
+            // The flow body is the one case a flow reports (its referenced
+            // screen-test cases emit nothing of their own).
+            flowError = progress.attempt(test.metadata.name, "flow", flowAttempts, isPass = { error: String? -> error == null }) {
+                startCaseRecording(test.metadata.name, "flow")
+                try {
+                    // Run setup
+                    test.setup?.let { setup ->
+                        log("Running flow setup...")
+                        executeFlowSteps(setup, currentWarnings)
+                    }
 
-                // Run flow steps
-                log("Running flow steps...")
-                executeFlowSteps(test.steps, currentWarnings)
-                finishCaseRecording(passed = true)
-            } catch (e: Throwable) {
-                rethrowIfFatal(e)
-                flowError = describeFailure(e)
-                log("Flow test failed: $flowError")
-                finishCaseRecording(passed = false)
-                // Parity with screen-test cases (and iOS/web flows): capture the
-                // failure moment — flows previously took no failure screenshot.
-                if (config.screenshotOnFailure) {
-                    takeScreenshot("failure")
+                    // Run flow steps
+                    log("Running flow steps...")
+                    executeFlowSteps(test.steps, currentWarnings)
+                    finishCaseRecording(passed = true)
+                    null
+                } catch (e: Throwable) {
+                    rethrowIfFatal(e)
+                    val error = describeFailure(e)
+                    log("Flow test failed: $error")
+                    finishCaseRecording(passed = false)
+                    // Parity with screen-test cases (and iOS/web flows): capture the
+                    // failure moment — flows previously took no failure screenshot.
+                    if (config.screenshotOnFailure) {
+                        takeScreenshot("failure")
+                    }
+                    saveHierarchyDump()
+                    error
                 }
-                saveHierarchyDump()
             }
             if (flowError == null || flowAttempts >= maxAttempts) {
                 flowWarnings.addAll(initialStateWarnings)
@@ -784,7 +816,7 @@ class JsonUITestRunner(
                 executeFlowSteps(teardown, mutableListOf())
             } catch (e: Throwable) {
                 rethrowIfFatal(e)
-                results.add(TestResult(
+                results.add(progress.row(TestResult(
                     testName = test.metadata.name,
                     caseName = "teardown",
                     passed = false,
@@ -794,7 +826,7 @@ class JsonUITestRunner(
                     // says nothing about the behaviour under test.
                     failureReason = FailureReason.TEARDOWN.wireValue,
                     durationMs = 0
-                ))
+                )))
             }
         }
 
@@ -1023,9 +1055,15 @@ class JsonUITestRunner(
         }
         condition.platform?.let { if (!it.includes(config.platform)) return false }
         condition.responsive?.let { if (!currentSizeMatches(it)) return false }
-        condition.visible?.let { if (device.findObject(By.res(it)) == null) return false }
-        condition.notVisible?.let { if (device.findObject(By.res(it)) != null) return false }
-        condition.hidden?.let { if (!assertionExecutor.isHidden(it)) return false }
+        // `within` scopes the three id keys (ElementLookup); a missing
+        // container leaves all three unmet (Within.missingContainerFails).
+        if (condition.visible != null || condition.notVisible != null || condition.hidden != null) {
+            val within = condition.within
+            if (Within.missingContainerFails(within, within?.let { elementLookup.container(it) } != null)) return false
+        }
+        condition.visible?.let { if (elementLookup.find(it, condition.within) == null) return false }
+        condition.notVisible?.let { if (elementLookup.find(it, condition.within) != null) return false }
+        condition.hidden?.let { if (!elementLookup.isHidden(it, condition.within)) return false }
         condition.state?.let {
             if (!assertionExecutor.stateMatches(it.path, it.equals)) return false
         }
@@ -1362,6 +1400,7 @@ class JsonUITestRunner(
         label = label,
         index = index,
         retryTapIfNoChange = retryTapIfNoChange,
+        within = within,
         container = container,
         variable = variable,
         times = times,
@@ -1493,11 +1532,12 @@ class JsonUITestRunner(
             // the state that needs saying out loud.
             RunNotices.once(
                 "no-results-path",
-                "resultsPath is not set, so no results JSON is written — the " +
-                    "per-case orientation pair (declaredOrientation / " +
-                    "observedOrientation), attempts, flaky and skipped records " +
-                    "are computed and then discarded. Set TestRunnerConfig." +
-                    "resultsPath to keep them."
+                "resultsPath is not set, so results (the per-case orientation " +
+                    "pair declaredOrientation / observedOrientation, attempts, " +
+                    "flaky, skipped) are written to " +
+                    "${DefaultResults.DEVICE_BASE}/<package>/ on the device, one " +
+                    "file per run (jui viz pulls them; or adb pull). Set " +
+                    "TestRunnerConfig.resultsPath to write them somewhere you choose."
             )
             return
         }
@@ -1511,12 +1551,49 @@ class JsonUITestRunner(
         }.onFailure { log("Failed to write results: ${it.message}") }
     }
 
+    /**
+     * Device folder writes for the default results ([DefaultResults]); a seam
+     * so a test can point it elsewhere or make it fail. Null = write nothing.
+     */
+    internal var defaultResultsStore: () -> DefaultResultsStore? = {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val target = instrumentation.targetContext
+        DeviceResultsStore(
+            ownArea = target.getExternalFilesDir(null),
+            automation = instrumentation.uiAutomation,
+            location = DefaultResults.deviceFolder(target.packageName)
+        )
+    }
+
+    /**
+     * When resultsPath is unset: this run's results, one new file per run,
+     * under /data/local/tmp/jsonui-test-results/<package>/ (see
+     * [DefaultResults]; JSONUI_TEST_RESULTS_DIR has no effect on the device).
+     * Called after the suite result exists — and after the artifacts mirror,
+     * which it does not depend on. Never throws, never changes the suite.
+     */
+    private fun writeDefaultResults(suite: TestSuiteResult) {
+        if (config.resultsPath != null) return
+        runCatching {
+            DefaultResults.writeIfUnset(
+                resultsPath = config.resultsPath,
+                suite = suite,
+                platform = config.platform,
+                nowMs = System.currentTimeMillis(),
+                run = progress.currentRun,
+                app = InstrumentationRegistry.getInstrumentation().targetContext.packageName,
+                file = progress.currentFile,
+                store = defaultResultsStore
+            )
+        }.onFailure { if (it is VirtualMachineError) throw it }
+    }
+
     private fun stepDescription(step: TestStep): String {
         return when {
             step.action != null -> "action=${step.action}, id=${step.id ?: step.ids?.joinToString(",") ?: "-"}"
             step.assert != null -> "assert=${step.assert}, id=${step.id ?: "-"}"
             else -> "unknown step"
-        }
+        } + (step.within?.let { ", within=$it" } ?: "")
     }
 
     /**
@@ -1561,8 +1638,14 @@ class JsonUITestRunner(
                 artifactsRoot(), currentTestName, currentCaseName, name
             )
             file.parentFile?.mkdirs()
-            device.takeScreenshot(file)
-            log("Screenshot saved: ${file.absolutePath}")
+            // Once the display has caught up with the tree the steps waited on
+            // (StableScreenshot): a capture right after them can be the frame before.
+            val outcome = StableScreenshot.capture(device, file)
+            if (outcome == null) {
+                log("Failed to take screenshot: $name")
+                return
+            }
+            log("Screenshot saved: ${file.absolutePath} (${outcome.captures} capture(s)${if (outcome.stable) "" else ", never settled"})")
         } catch (e: Exception) {
             log("Failed to take screenshot: ${e.message}")
         }
@@ -1708,6 +1791,7 @@ class JsonUITestRunner(
             name = substituteArgsInString(step.name, args),
             path = substituteArgsInString(step.path, args),
             container = substituteArgsInString(step.container, args),
+            within = substituteArgsInString(step.within, args),
             cropId = substituteArgsInString(step.cropId, args),
             equals = substituteArgsInJsonElement(step.equals, args)
         )
