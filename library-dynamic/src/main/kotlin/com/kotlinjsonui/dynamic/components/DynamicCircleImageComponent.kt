@@ -66,9 +66,9 @@ class DynamicCircleImageComponent {
     companion object {
         /** CircleImage-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "srcName", "src", "contentMode", "errorImage", "loadingImage", "alt",
-            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
-            "size"
+            "srcName", "src", "contentMode", "errorImage", "loadingImage", "alt"
+            // `size` is retired (jsonui-cli 2.3.22): the normalizer folds it into
+            // width / height, and nothing here reads it.
         )
 
         @Composable
@@ -106,9 +106,8 @@ class DynamicCircleImageComponent {
                 legacy = "Profile Image"
             )
 
-            // Parse size (default 48dp for circular images;
-            // 'size' is an undeclared legacy runtime extra)
-            val size = TypedAttrs.undeclared(json, "size")?.asFloat ?: 48f
+            // The diameter without a declared width / height.
+            val size = 48f
 
             // The standard stages in their standard order, in a circle:
             // testTag → margins → size → offset → alpha → shadow(circle) →
@@ -122,7 +121,7 @@ class DynamicCircleImageComponent {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // The declared width / height, as on every component; without
-            // them, the legacy `size`.
+            // them, the default diameter.
             modifier = if (a.common.width != null || a.common.height != null) {
                 ModifierBuilder.applySize(modifier, json, data = data)
             } else {
