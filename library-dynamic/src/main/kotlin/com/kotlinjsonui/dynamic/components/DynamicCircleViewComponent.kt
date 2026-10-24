@@ -43,9 +43,9 @@ class DynamicCircleViewComponent {
     companion object {
         /** CircleView-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "child", "children",
-            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
-            "size"
+            "child", "children"
+            // `size` is retired (jsonui-cli 2.3.22): the normalizer folds it into
+            // width / height, and nothing here reads it.
         )
 
         @Composable
@@ -64,8 +64,8 @@ class DynamicCircleViewComponent {
                 context = context
             )
 
-            // Parse size (default 20dp; undeclared legacy runtime extra)
-            val size = TypedAttrs.undeclared(json, "size")?.asFloat ?: 20f
+            // The diameter without a declared width / height.
+            val size = 20f
 
             // The standard stages in their standard order, in a circle:
             // testTag → margins → size → offset → alpha → shadow(circle) →
@@ -77,7 +77,7 @@ class DynamicCircleViewComponent {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
             // The declared width / height, as on every component; without
-            // them, the legacy `size`.
+            // them, the default diameter.
             modifier = if (a.common.width != null || a.common.height != null) {
                 ModifierBuilder.applySize(modifier, json, data = data)
             } else {

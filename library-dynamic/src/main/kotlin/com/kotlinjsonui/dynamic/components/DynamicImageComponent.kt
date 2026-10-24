@@ -3,14 +3,12 @@ package com.kotlinjsonui.dynamic.components
 import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
@@ -38,9 +36,9 @@ class DynamicImageComponent {
     companion object {
         /** Image-specific attributes this component applies (see UnappliedAttributes). */
         private val APPLIED: Set<String> = setOf(
-            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage", "alt",
-            // declared by the SSoT after jsonui-cli 2.3.15 (read here before that as undeclared extras)
-            "size"
+            "srcName", "src", "contentMode", "renderingMode", "errorImage", "loadingImage", "alt"
+            // `size` is retired (jsonui-cli 2.3.22): the normalizer folds it into
+            // width / height, and nothing here reads it.
         )
 
         /**
@@ -103,15 +101,6 @@ class DynamicImageComponent {
             // Build modifier using composite builder
             // Order: testTag -> margins -> size -> alpha -> shadow -> background -> clickable -> padding
             var modifier = ModifierBuilder.buildModifier(json, data, context = context)
-
-            // Handle "size" attribute for square dimensions (not covered by
-            // buildModifier; undeclared legacy runtime extra)
-            TypedAttrs.undeclared(json, "size")?.let { sizeElement ->
-                if (sizeElement.isJsonPrimitive && sizeElement.asJsonPrimitive.isNumber) {
-                    val s = sizeElement.asFloat
-                    modifier = modifier.size(s.dp)
-                }
-            }
 
             // A resource that is not found draws no image, and the node still
             // takes its place and its stages — its size, background, border,
