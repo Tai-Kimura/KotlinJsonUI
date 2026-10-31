@@ -12,6 +12,8 @@ package com.kotlinjsonui.dynamic.generated
 data class EditTextAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** What screen readers say for this control in place of what it shows (web aria-label, iOS accessibilityLabel, Android contentDescription): a strings.json key or text, localized like `text`, or a binding. Use it where the visible text does not say enough, as with a row's "Open" that should be read "Open the second image". Unset, the control is read as before (its text, label or value). The image's own name is `alt`, which takes these two spellings too. [aliases: contentDescription] */
+    val accessibilityLabel: AttrValue<String>? = null,
     /** Input accessory toolbar background - hex string or color name from colors.json. UIKit only: read by SJUITextField's accessory toolbar; SwiftUI has no input-accessory surface. */
     val accessoryBackground: String? = null,
     /** Accessory corner radius */
@@ -365,6 +367,7 @@ data class EditTextAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "accessibilityLabel",
             "accessoryBackground",
             "accessoryCornerRadius",
             "accessoryTextColor",
@@ -436,6 +439,7 @@ data class EditTextAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "contentDescription" to "accessibilityLabel",
             "placeholderColor" to "hintColor",
             "value" to "text",
         )
@@ -450,6 +454,7 @@ data class EditTextAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): EditTextAttributes = EditTextAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            accessibilityLabel = AttrCoerce.attrValue(AttrCoerce.lookup(json, "accessibilityLabel", listOf("contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
             accessoryBackground = AttrCoerce.string(AttrCoerce.lookup(json, "accessoryBackground")),
             accessoryCornerRadius = AttrCoerce.number(AttrCoerce.lookup(json, "accessoryCornerRadius")),
             accessoryTextColor = AttrCoerce.string(AttrCoerce.lookup(json, "accessoryTextColor")),

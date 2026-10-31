@@ -10,6 +10,8 @@ package com.kotlinjsonui.dynamic.generated
 data class LabelAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** Read out what this shows whenever it changes, where focus does not move (a progress or saved / failed line): `polite` waits for the screen reader to finish, `assertive` interrupts it, `off` (or none) reads nothing. Web aria-live with role status (polite) or alert (assertive), Android liveRegion, iOS an announcement of the Label's text when a bound text changes (a static text never changes, so it announces nothing). */
+    val accessibilityLiveRegion: AttrEnum<AccessibilityLiveRegion>? = null,
     /** Enable auto-shrink. Active only on a bounded axis (explicit size, matchParent, or a max bound) — a no-op under wrapContent, which grows to the content and leaves nothing to shrink into. Full ruling in attribute_semantics.json -> autoShrink. */
     val autoShrink: Boolean? = null,
     /** Font color when disabled - hex string or color name from colors.json (binding supported). Declared from the implementation, which already read it: sjui label_converter.rb:179-180 (plan 51-E). */
@@ -69,6 +71,25 @@ data class LabelAttributes(
     /** Underline styling: boolean for a plain line, object to style it. The object face must never draw LESS than `true` does — a platform that cannot honour lineStyle or color still draws the plain Single line in the text colour. `lineStyle: "None"` is the one object value that draws nothing, exactly like `false`. Full ruling in attribute_semantics.json -> textDecoration; do not restate it in toolchain comments. [accepts: boolean | object | array] */
     val underline: Any? = null,
 ) {
+    enum class AccessibilityLiveRegion(val json: String) {
+        POLITE("polite"),
+        ASSERTIVE("assertive"),
+        OFF("off");
+
+        companion object {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("polite", "assertive", "off")
+
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
+            fun from(raw: String): AccessibilityLiveRegion? = when (raw) {
+                "polite" -> POLITE
+                "assertive" -> ASSERTIVE
+                "off" -> OFF
+                else -> null
+            }
+        }
+    }
+
     enum class LineBreakMode(val json: String) {
         CHAR("Char"),
         CLIP("Clip"),
@@ -178,6 +199,7 @@ data class LabelAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "accessibilityLiveRegion",
             "autoShrink",
             "disabledFontColor",
             "edgeInset",
@@ -228,6 +250,7 @@ data class LabelAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): LabelAttributes = LabelAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            accessibilityLiveRegion = parseAccessibilityLiveRegion(AttrCoerce.lookup(json, "accessibilityLiveRegion")),
             autoShrink = AttrCoerce.boolean(AttrCoerce.lookup(json, "autoShrink")),
             disabledFontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "disabledFontColor")) { AttrCoerce.string(it) },
             edgeInset = AttrCoerce.lookup(json, "edgeInset"),
@@ -258,6 +281,16 @@ data class LabelAttributes(
             textTransform = parseTextTransform(AttrCoerce.lookup(json, "textTransform")),
             underline = AttrCoerce.lookup(json, "underline"),
         )
+
+        private fun parseAccessibilityLiveRegion(raw: Any?): AttrEnum<AccessibilityLiveRegion>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                AccessibilityLiveRegion.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            val near = (raw as? String)?.let { s -> AccessibilityLiveRegion.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("Label.accessibilityLiveRegion: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
+            return AttrEnum.Unknown(raw)
+        }
 
         private fun parseLineBreakMode(raw: Any?): AttrEnum<LineBreakMode>? {
             if (raw == null) return null

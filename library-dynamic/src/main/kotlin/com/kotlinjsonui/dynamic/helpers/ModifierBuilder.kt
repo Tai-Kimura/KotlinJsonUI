@@ -44,6 +44,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -141,12 +144,40 @@ object ModifierBuilder {
 
     // ── Individual Modifier Builders ─────────────────────────────────
 
-    /** build_test_tag: id → testTag + semantics */
-    fun applyTestTag(modifier: Modifier, json: JsonObject): Modifier {
-        val id = json.get("id")?.asString ?: return modifier
-        return modifier
+    /**
+     * build_test_tag: id → testTag + semantics, then the control's
+     * screen-reader name and a node's live region ([ControlAccessibility]),
+     * as kjui's build_test_tag writes them beside it.
+     */
+    fun applyTestTag(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any> = emptyMap(),
+        context: Context? = null
+    ): Modifier {
+        val id = json.get("id")?.takeIf { it.isJsonPrimitive }?.asString
+        val tagged = if (id == null) modifier else modifier
             .testTag(id)
             .semantics { testTagsAsResourceId = true }
+        return applyControlAccessibility(tagged, json, data, context)
+    }
+
+    /** accessibilityLabel → contentDescription; accessibilityLiveRegion → liveRegion. */
+    fun applyControlAccessibility(
+        modifier: Modifier,
+        json: JsonObject,
+        data: Map<String, Any>,
+        context: Context?
+    ): Modifier {
+        var result = modifier
+        ControlAccessibility.label(json, data, context)?.let { label ->
+            result = result.semantics { contentDescription = label }
+        }
+        ControlAccessibility.live(json)?.let { live ->
+            val mode = if (live == ControlAccessibility.Live.ASSERTIVE) LiveRegionMode.Assertive else LiveRegionMode.Polite
+            result = result.semantics { liveRegion = mode }
+        }
+        return result
     }
 
     /** The margins a node draws as padding around its declared size, per edge (dp). */
@@ -1643,7 +1674,7 @@ object ModifierBuilder {
         Stage("offset") { m, json, data, _, _ -> applyOffset(m, json, data) },
         // testTag inside the margins and the offset: the tagged box is the
         // drawn box (see the order at the top of this file).
-        Stage("testTag") { m, json, _, _, _ -> applyTestTag(m, json) },
+        Stage("testTag") { m, json, data, ctx, _ -> applyTestTag(m, json, data, ctx) },
         Stage("alpha") { m, json, data, _, _ -> applyAlpha(m, json, data) },
         Stage("shadow") { m, json, data, _, _ -> applyShadow(m, json, data) },
         // background folds clip + border + bg into one stage.

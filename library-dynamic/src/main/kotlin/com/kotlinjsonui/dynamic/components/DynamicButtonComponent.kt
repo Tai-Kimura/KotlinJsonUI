@@ -225,7 +225,7 @@ class DynamicButtonComponent {
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
             // testTag after offset, before alpha: the tagged box is the drawn box
             // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
+            modifier = ModifierBuilder.applyTestTag(modifier, json, data, context)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             // shadow, which the SSoT declares on every type (`common`) and
             // this chain did not apply — cast in the button's own shape.

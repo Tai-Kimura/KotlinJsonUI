@@ -11,6 +11,10 @@ package com.kotlinjsonui.dynamic.generated
 data class ViewAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** What screen readers say for this control in place of what it shows (web aria-label, iOS accessibilityLabel, Android contentDescription): a strings.json key or text, localized like `text`, or a binding. Use it where the visible text does not say enough, as with a row's "Open" that should be read "Open the second image". Unset, the control is read as before (its text, label or value). The image's own name is `alt`, which takes these two spellings too. On a View it names the View when the View operates a tap of its own (a button, or one button made of its content); a View that taps nothing, or holds a control of its own, is not one element to a screen reader, and the attribute does nothing there. [aliases: contentDescription] */
+    val accessibilityLabel: AttrValue<String>? = null,
+    /** Read out what this View holds whenever it changes, where focus does not move: `polite` waits for the screen reader to finish, `assertive` interrupts it, `off` (or none) reads nothing. Web aria-live with role status (polite) or alert (assertive), Android liveRegion. iOS has no live region, so on iOS a View's accessibilityLiveRegion has no effect: put it on the Label whose text changes. */
+    val accessibilityLiveRegion: AttrEnum<AccessibilityLiveRegion>? = null,
     /** Child component(s). A single component node (object) is accepted as a one-element array. */
     val child: List<Any?>? = null,
     /** Child components (alias for child). A single component node (object) is accepted as a one-element array. */
@@ -48,6 +52,25 @@ data class ViewAttributes(
     /** Space between children (binding supported) */
     val spacing: AttrValue<Double>? = null,
 ) {
+    enum class AccessibilityLiveRegion(val json: String) {
+        POLITE("polite"),
+        ASSERTIVE("assertive"),
+        OFF("off");
+
+        companion object {
+            /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
+            val declaredSpellings: List<String> = listOf("polite", "assertive", "off")
+
+            /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
+            fun from(raw: String): AccessibilityLiveRegion? = when (raw) {
+                "polite" -> POLITE
+                "assertive" -> ASSERTIVE
+                "off" -> OFF
+                else -> null
+            }
+        }
+    }
+
     enum class Direction(val json: String) {
         TOP_TO_BOTTOM("topToBottom"),
         BOTTOM_TO_TOP("bottomToTop"),
@@ -162,6 +185,8 @@ data class ViewAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "accessibilityLabel",
+            "accessibilityLiveRegion",
             "child",
             "children",
             "direction",
@@ -189,6 +214,7 @@ data class ViewAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "contentDescription" to "accessibilityLabel",
         )
 
         /** True when `key` is a declared canonical name or alias spelling. */
@@ -201,6 +227,8 @@ data class ViewAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): ViewAttributes = ViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            accessibilityLabel = AttrCoerce.attrValue(AttrCoerce.lookup(json, "accessibilityLabel", listOf("contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
+            accessibilityLiveRegion = parseAccessibilityLiveRegion(AttrCoerce.lookup(json, "accessibilityLiveRegion")),
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
             direction = parseDirection(AttrCoerce.lookup(json, "direction")),
@@ -220,6 +248,16 @@ data class ViewAttributes(
             safeAreaInsetPositions = AttrCoerce.array(AttrCoerce.lookup(json, "safeAreaInsetPositions")),
             spacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "spacing")) { AttrCoerce.number(it) },
         )
+
+        private fun parseAccessibilityLiveRegion(raw: Any?): AttrEnum<AccessibilityLiveRegion>? {
+            if (raw == null) return null
+            (raw as? String)?.let { s ->
+                AccessibilityLiveRegion.from(s)?.let { return AttrEnum.Known(it) }
+            }
+            val near = (raw as? String)?.let { s -> AccessibilityLiveRegion.declaredSpellings.firstOrNull { it.equals(s, ignoreCase = true) } }
+            AttrWarnings.emit("View.accessibilityLiveRegion: unknown enum value '$raw'" + (near?.let { " — did you mean '$it'?" } ?: ""))
+            return AttrEnum.Unknown(raw)
+        }
 
         private fun parseDirection(raw: Any?): AttrEnum<Direction>? {
             if (raw == null) return null

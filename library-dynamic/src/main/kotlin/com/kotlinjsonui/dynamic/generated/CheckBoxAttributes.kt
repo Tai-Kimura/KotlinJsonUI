@@ -11,6 +11,8 @@ package com.kotlinjsonui.dynamic.generated
 data class CheckBoxAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** What screen readers say for this control in place of what it shows (web aria-label, iOS accessibilityLabel, Android contentDescription): a strings.json key or text, localized like `text`, or a binding. Use it where the visible text does not say enough, as with a row's "Open" that should be read "Open the second image". Unset, the control is read as before (its text, label or value). The image's own name is `alt`, which takes these two spellings too. [aliases: contentDescription] */
+    val accessibilityLabel: AttrValue<String>? = null,
     /** Checked state alias (binding for two-way) [binding: two-way] */
     val checked: AttrValue<Boolean>? = null,
     /** Color when checked. Legacy accent spellings fold here (sjui checkbox_converter.rb:98 and kjui checkbox_component.rb:211 both read the same four spellings for this one colour). `tintColor` is deliberately NOT in the alias list: it is already declared on `common`, and an alias that is also a declared row is a silent no-op (test_no_alias_is_cancelled_by_a_declaration_of_its_own_name). On a CheckBox the common tint IS the checked colour - that is what both converters implement - so it needs no alias row. Declaring the other two also settles a live divergence: ios reads `checkedColor` first, android reads `checkColor` first, so a layout setting both drew two different colours until the normalizer began folding them (plan 51-E). [aliases: checkColor, onTintColor] */
@@ -56,6 +58,7 @@ data class CheckBoxAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "accessibilityLabel",
             "checked",
             "checkedColor",
             "enabled",
@@ -86,6 +89,7 @@ data class CheckBoxAttributes(
             "action" to "onValueChange",
             "alpha" to "opacity",
             "checkColor" to "checkedColor",
+            "contentDescription" to "accessibilityLabel",
             "fontStyle" to "fontWeight",
             "onSrc" to "selectedIcon",
             "onTintColor" to "checkedColor",
@@ -102,6 +106,7 @@ data class CheckBoxAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): CheckBoxAttributes = CheckBoxAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            accessibilityLabel = AttrCoerce.attrValue(AttrCoerce.lookup(json, "accessibilityLabel", listOf("contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
             checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
             checkedColor = AttrCoerce.string(AttrCoerce.lookup(json, "checkedColor", listOf("checkColor", "onTintColor"), canonicalOnly)),
             enabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "enabled")) { AttrCoerce.boolean(it) },

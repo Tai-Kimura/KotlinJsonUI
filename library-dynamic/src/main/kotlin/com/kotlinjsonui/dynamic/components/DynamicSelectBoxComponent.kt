@@ -502,7 +502,7 @@ class DynamicSelectBoxComponent {
             // Build modifier (default fill width). SelectBox draws its own
             // background/border/corner shape from the composable parameters,
             // so the modifier chain must not re-apply them.
-            val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp))
+            val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp), context)
 
             // paddings/padding become contentPadding (never a .padding()
             // modifier, which would inset the self-drawn border instead of
@@ -658,7 +658,7 @@ class DynamicSelectBoxComponent {
             // Build modifier (default fill width for date pickers).
             // DateSelectBox also draws its own background/border/corner
             // shape, so the modifier chain must not re-apply them.
-            val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp))
+            val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp), context)
 
             DateSelectBox(
                 value = selectedDate,
@@ -702,7 +702,8 @@ class DynamicSelectBoxComponent {
         internal fun buildSelfDrawnModifier(
             json: JsonObject,
             data: Map<String, Any>,
-            ownShape: Shape? = null
+            ownShape: Shape? = null,
+            context: android.content.Context? = null
         ): Modifier {
             var modifier: Modifier = Modifier
             modifier = ModifierBuilder.applyMargins(modifier, json, data)
@@ -715,7 +716,7 @@ class DynamicSelectBoxComponent {
             modifier = ModifierBuilder.applyOffset(modifier, json, data)
             // testTag after offset, before alpha: the tagged box is the drawn box
             // (margins and offset outside it) — ticket kjui-a11y-bounds-of-a-margined-view-include-its-margin.
-            modifier = ModifierBuilder.applyTestTag(modifier, json)
+            modifier = ModifierBuilder.applyTestTag(modifier, json, data, context)
             modifier = ModifierBuilder.applyAlpha(modifier, json, data)
             modifier = ModifierBuilder.applyShadow(modifier, json, data, ownShape)
             // A control's clickable stage: the gestures and the blocker, no
