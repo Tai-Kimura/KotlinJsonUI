@@ -121,8 +121,10 @@ class Wave1dAttrsParseTest {
     fun `circleimage url and source stay undeclared on the Image module`() {
         assertFalse(ImageAttributes.isDeclared("url"))
         assertFalse(ImageAttributes.isDeclared("source"))
-        // `size` is declared on Image by the SSoT after jsonui-cli 2.3.15
-        assertTrue(ImageAttributes.isDeclared("size"))
+        // `size` was declared on Image by the SSoT from jsonui-cli 2.3.15 and
+        // retired in 2.3.22 (the normalizer folds it into width / height with
+        // a named warning); the tables re-vendored after it no longer carry it
+        assertFalse(ImageAttributes.isDeclared("size"))
         assertTrue(ImageAttributes.isDeclared("src"))
     }
 

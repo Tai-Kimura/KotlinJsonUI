@@ -11,6 +11,8 @@ package com.kotlinjsonui.dynamic.generated
 data class SliderAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** What screen readers say for this control in place of what it shows (web aria-label, iOS accessibilityLabel, Android contentDescription): a strings.json key or text, localized like `text`, or a binding. Use it where the visible text does not say enough, as with a row's "Open" that should be read "Open the second image". Unset, the control is read as before (its text, label or value). The image's own name is `alt`, which takes these two spellings too. [aliases: contentDescription] */
+    val accessibilityLabel: AttrValue<String>? = null,
     /** Maximum value (binding supported). `maxValue` / `maximumValue` are accepted alias spellings. Defaults to 1: with no bounds declared the range is 0 .. 1, this SSoT's convention for a unitless value on a track (compare Progress.progress and opacity, both declared min 0 / max 1). Full ruling in attribute_semantics.json -> sliderRange. [default: 1; aliases: maximumValue, maxValue] */
     val maximum: AttrValue<Double>? = null,
     /** Image at maximum end */
@@ -42,6 +44,7 @@ data class SliderAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "accessibilityLabel",
             "maximum",
             "maximumValueImage",
             "minimum",
@@ -63,6 +66,7 @@ data class SliderAttributes(
          */
         val aliasMap: Map<String, String> = mapOf(
             "alpha" to "opacity",
+            "contentDescription" to "accessibilityLabel",
             "maxValue" to "maximum",
             "maximumValue" to "maximum",
             "minValue" to "minimum",
@@ -80,6 +84,7 @@ data class SliderAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): SliderAttributes = SliderAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            accessibilityLabel = AttrCoerce.attrValue(AttrCoerce.lookup(json, "accessibilityLabel", listOf("contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
             maximum = AttrCoerce.attrValue(AttrCoerce.lookup(json, "maximum", listOf("maximumValue", "maxValue"), canonicalOnly)) { AttrCoerce.number(it) },
             maximumValueImage = AttrCoerce.string(AttrCoerce.lookup(json, "maximumValueImage")),
             minimum = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minimum", listOf("minimumValue", "minValue"), canonicalOnly)) { AttrCoerce.number(it) },

@@ -14,8 +14,6 @@ data class CircleViewAttributes(
     val child: List<Any?>? = null,
     /** Child components (alias for child). A single component node (object) is accepted as a one-element array. */
     val children: List<Any?>? = null,
-    /** Diameter in dp when width/height are not given (kjui circleview_component). */
-    val size: Double? = null,
 ) {
     companion object {
         /**
@@ -25,7 +23,6 @@ data class CircleViewAttributes(
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
             "child",
             "children",
-            "size",
         )
 
         /**
@@ -49,7 +46,6 @@ data class CircleViewAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
             child = AttrCoerce.array(AttrCoerce.lookup(json, "child")),
             children = AttrCoerce.array(AttrCoerce.lookup(json, "children")),
-            size = AttrCoerce.number(AttrCoerce.lookup(json, "size")),
         )
     }
 }
