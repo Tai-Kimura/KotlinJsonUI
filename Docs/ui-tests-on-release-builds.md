@@ -48,9 +48,35 @@ android {
 The manifest merger adds it to `uiTestRelease` and to nothing else, so
 `release` — what ships — has no flag and draws no marker, as before.
 
+## 3. The keep rules, for that build type only
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    // the same version as jsonui-test-runner-android, from 1.21.0
+    "uiTestReleaseImplementation"("io.github.tai-kimura:jsonui-test-runner-android-keep:1.21.0")
+}
+```
+
+The test APK runs in the app's process and takes from it Compose, Kotlin and
+its runner's libraries; R8 removes from the app what the app itself does not
+call. The artifact holds no code, only those keep rules, on that build type's
+classpath, so `release` is built without them. The driver's own consumer rules
+cannot do this: an `androidTest` dependency's rules reach the test APK's R8
+only, never the app's. KotlinJsonUI's cannot either: they would reach `release`
+too, and keeping Kotlin and the runner's libraries there is 3.1 MB of dex in a
+small app.
+
+Without it (measured on AGP 9.5.0, Compose BOM 2026.09.00, API 35):
+
+| Rules | What happens |
+|---|---|
+| none | The runner dies before the first test: `NoClassDefFoundError: androidx.tracing.Trace` |
+| the runner's only | `initialState`, `state` and `hidden` fail naming this artifact, as does a lookup of an element with a 0 x 0 box |
+
 ## Notes
 
-- No ProGuard / R8 rule is needed. Generated screens call `ScreenMarker`
+- The marker itself needs no rule. Generated screens call `ScreenMarker`
   unconditionally and the gate reads the flag at run time, so R8 keeps the
   marker in every build; without the flag it simply draws nothing.
 - The flag is read once per screen composition (`PackageManager` with
