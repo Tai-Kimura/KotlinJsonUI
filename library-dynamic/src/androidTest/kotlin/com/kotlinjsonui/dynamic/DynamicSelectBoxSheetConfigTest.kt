@@ -78,7 +78,7 @@ class DynamicSelectBoxSheetConfigTest {
         // Cancel row: undeclared cancel background falls to the Configuration
         // sheet background (NOT the red field background = the old dynamic
         // divergence).
-        assertCenterPixel("kjui_x7q_cancel", sheetBg)
+        assertFillBesideTheWord("kjui_x7q_cancel", sheetBg)
     }
 
     private fun assertCenterPixel(tag: String, expected: Color) {
@@ -89,5 +89,22 @@ class DynamicSelectBoxSheetConfigTest {
             expected.toArgb(),
             actual.toArgb()
         )
+    }
+
+    /**
+     * The cancel word is centered in its row and follows the device's language,
+     * so the row's center lands on a letter in some languages. The Surface fills
+     * the whole row: both ends of it are the fill in every language.
+     */
+    private fun assertFillBesideTheWord(tag: String, expected: Color) {
+        val pixelMap = rule.onNodeWithTag(tag).captureToImage().toPixelMap()
+        val y = pixelMap.height / 2
+        for (x in listOf(pixelMap.width / 10, pixelMap.width * 9 / 10)) {
+            assertEquals(
+                "pixel at x=$x of ${pixelMap.width} of '$tag'",
+                expected.toArgb(),
+                pixelMap[x, y].toArgb()
+            )
+        }
     }
 }

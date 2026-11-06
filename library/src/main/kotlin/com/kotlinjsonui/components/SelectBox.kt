@@ -144,7 +144,9 @@ fun SelectBox(
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
     cancelButtonBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     cancelButtonTextColor: Color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
-    caret: SelectBoxCaret? = null
+    caret: SelectBoxCaret? = null,
+    sheetTitle: String? = null,
+    cancelButtonText: String? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(
@@ -241,7 +243,7 @@ fun SelectBox(
             ) {
                 // Title or header (optional)
                 Text(
-                    text = "選択してください",
+                    text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_option),
                     style = sheetTextStyle(
                         MaterialTheme.typography.titleMedium,
                         Configuration.SelectBox.sheetFontFamily,
@@ -373,7 +375,7 @@ fun SelectBox(
                     color = cancelButtonBackgroundColor
                 ) {
                     Text(
-                        text = "キャンセル",
+                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                         fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
@@ -411,7 +413,9 @@ fun <T> SelectBox(
     enabled: Boolean = true,
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
-    caret: SelectBoxCaret? = null
+    caret: SelectBoxCaret? = null,
+    sheetTitle: String? = null,
+    cancelButtonText: String? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -503,7 +507,7 @@ fun <T> SelectBox(
             ) {
                 // Title or header (optional)
                 Text(
-                    text = "選択してください",
+                    text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_option),
                     style = sheetTextStyle(
                         MaterialTheme.typography.titleMedium,
                         Configuration.SelectBox.sheetFontFamily,
@@ -601,7 +605,7 @@ fun <T> SelectBox(
                     color = sheetBackgroundColor
                 ) {
                     Text(
-                        text = "キャンセル",
+                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                         fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
