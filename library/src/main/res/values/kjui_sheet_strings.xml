@@ -7,7 +7,7 @@
     <string name="kjui_sheet_confirm">OK</string>
     <string name="kjui_sheet_select">Select</string>
     <string name="kjui_sheet_select_date">Select date</string>
-    <string name="kjui_sheet_select_time">Select Time</string>
+    <string name="kjui_sheet_select_time">Select time</string>
     <string name="kjui_sheet_select_date_and_time">Select date and time</string>
     <string name="kjui_sheet_year">Year</string>
     <string name="kjui_sheet_month">Month</string>
