@@ -367,6 +367,7 @@ class DynamicSelectBoxComponent {
             "selectItemType", "selectedItem", "selectedValue", "selectedIndex",
             "selectedDate",
             "items", "enabled", "prompt", "hint", "placeholder",
+            "sheetTitle", "cancelButtonText", "doneButtonText",
             "fontColor", "hintColor", "fontSize", "font", "labelAttributes",
             "caretAttributes",
             "datePickerMode", "datePickerStyle", "dateStringFormat",
@@ -442,6 +443,9 @@ class DynamicSelectBoxComponent {
                 a.placeholder != null -> ResourceResolver.resolveTextValue(a.placeholder, data, context)
                 else -> null
             }
+            // The sheet's words: the same reading as the prompt. Absent: the library's word in the app's language.
+            val sheetTitle = a.sheetTitle?.let { ResourceResolver.resolveTextValue(it, data, context) }
+            val cancelButtonText = a.cancelButtonText?.let { ResourceResolver.resolveTextValue(it, data, context) }
 
             // Parse colors
             val backgroundColor = ColorParser.parseColorStringWithBinding(
@@ -533,6 +537,8 @@ class DynamicSelectBoxComponent {
                 options = options,
                 modifier = modifier,
                 placeholder = placeholder,
+                sheetTitle = sheetTitle,
+                cancelButtonText = cancelButtonText,
                 enabled = isEnabled,
                 backgroundColor = backgroundColor,
                 borderColor = borderColor,
@@ -616,6 +622,10 @@ class DynamicSelectBoxComponent {
                 a.placeholder != null -> ResourceResolver.resolveTextValue(a.placeholder, data, context)
                 else -> null
             }
+            // The sheet's words: the same reading as the prompt. Absent: the library's word in the app's language.
+            val sheetTitle = a.sheetTitle?.let { ResourceResolver.resolveTextValue(it, data, context) }
+            val cancelButtonText = a.cancelButtonText?.let { ResourceResolver.resolveTextValue(it, data, context) }
+            val doneButtonText = a.doneButtonText?.let { ResourceResolver.resolveTextValue(it, data, context) }
 
             // Parse colors
             val backgroundColor = ColorParser.parseColorStringWithBinding(
@@ -671,6 +681,9 @@ class DynamicSelectBoxComponent {
                 maximumDate = maximumDate,
                 modifier = modifier,
                 placeholder = placeholder,
+                sheetTitle = sheetTitle,
+                cancelButtonText = cancelButtonText,
+                doneButtonText = doneButtonText,
                 enabled = isEnabled,
                 backgroundColor = backgroundColor,
                 borderColor = borderColor,

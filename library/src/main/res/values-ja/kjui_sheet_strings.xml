@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="kjui_sheet_select_option">選択してください</string>
+    <string name="kjui_sheet_cancel">キャンセル</string>
+    <string name="kjui_sheet_confirm">確定</string>
+    <string name="kjui_sheet_select">選択</string>
+    <string name="kjui_sheet_select_date">日付を選択</string>
+    <string name="kjui_sheet_select_time">時刻を選択</string>
+    <string name="kjui_sheet_select_date_and_time">日付と時刻を選択</string>
+    <string name="kjui_sheet_year">年</string>
+    <string name="kjui_sheet_month">月</string>
+    <string name="kjui_sheet_day">日</string>
+    <string name="kjui_sheet_hour">時</string>
+    <string name="kjui_sheet_minute">分</string>
+</resources>

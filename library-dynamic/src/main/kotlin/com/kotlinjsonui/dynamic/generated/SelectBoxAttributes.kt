@@ -16,6 +16,8 @@ data class SelectBoxAttributes(
     val canBack: Boolean? = null,
     /** Background colour of the picker dialog's cancel button (kjui selectbox_component). */
     val cancelButtonBackgroundColor: String? = null,
+    /** The picker sheet's cancel button (kjui). A strings.json key or a text. Absent: the library's word in the app's language (kjui_sheet_cancel). */
+    val cancelButtonText: String? = null,
     /** Text colour of the picker dialog's cancel button (kjui selectbox_component). */
     val cancelButtonTextColor: String? = null,
     /** Caret/arrow styling for the closed select. Absent: every face keeps its native indicator at its native inset (the picture each face drew before 1.8.101), so existing layouts do not move. Present: the face draws the caret itself from these keys, on every platform and mode — this object was UIKit-only (SJUISelectBox) until 1.8.101; SwiftUI codegen/dynamic, Compose codegen/dynamic and the web <select> now honour it too. `src` is optional: when it is absent the face draws its own default chevron glyph, so `{"rightMargin": 12}` alone moves the native-looking arrow away from the trailing edge. Not inherited from any other object; the multiple/list-box and Date modes have no closed-state caret and ignore it. */
@@ -30,6 +32,8 @@ data class SelectBoxAttributes(
     val dateStringFormat: String? = null,
     /** Divider styling attributes */
     val dividerAttributes: Map<String, Any?>? = null,
+    /** The button that closes the picker sheet with the choice: Done on iOS, a date sheet's confirm on Android. A strings.json key or a text. Absent: the app's own Done key in Localizable.strings (iOS) or kjui_sheet_confirm (Android), else the library's word in the app's language. */
+    val doneButtonText: String? = null,
     /** Font name */
     val font: String? = null,
     /** Font color - hex string or color name from colors.json */
@@ -74,6 +78,8 @@ data class SelectBoxAttributes(
     val selectedItem: AttrValue<String>? = null,
     /** Selected value (binding for two-way) */
     val selectedValue: AttrValue<String>? = null,
+    /** The picker sheet's title (kjui). A strings.json key or a text. Absent: the library's word in the app's language, which an app can also replace by declaring kjui_sheet_select_option (a list) or kjui_sheet_select_date (a date) in its own values. */
+    val sheetTitle: String? = null,
     /** Number of visible options */
     val size: Double? = null,
 ) {
@@ -177,6 +183,7 @@ data class SelectBoxAttributes(
             "accessibilityLabel",
             "canBack",
             "cancelButtonBackgroundColor",
+            "cancelButtonText",
             "cancelButtonTextColor",
             "caretAttributes",
             "colorScheme",
@@ -184,6 +191,7 @@ data class SelectBoxAttributes(
             "datePickerStyle",
             "dateStringFormat",
             "dividerAttributes",
+            "doneButtonText",
             "font",
             "fontColor",
             "fontSize",
@@ -206,6 +214,7 @@ data class SelectBoxAttributes(
             "selectedIndex",
             "selectedItem",
             "selectedValue",
+            "sheetTitle",
             "size",
         )
 
@@ -234,6 +243,7 @@ data class SelectBoxAttributes(
             accessibilityLabel = AttrCoerce.attrValue(AttrCoerce.lookup(json, "accessibilityLabel", listOf("contentDescription"), canonicalOnly)) { AttrCoerce.string(it) },
             canBack = AttrCoerce.boolean(AttrCoerce.lookup(json, "canBack")),
             cancelButtonBackgroundColor = AttrCoerce.string(AttrCoerce.lookup(json, "cancelButtonBackgroundColor")),
+            cancelButtonText = AttrCoerce.string(AttrCoerce.lookup(json, "cancelButtonText")),
             cancelButtonTextColor = AttrCoerce.string(AttrCoerce.lookup(json, "cancelButtonTextColor")),
             caretAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "caretAttributes")),
             colorScheme = parseColorScheme(AttrCoerce.lookup(json, "colorScheme")),
@@ -241,6 +251,7 @@ data class SelectBoxAttributes(
             datePickerStyle = parseDatePickerStyle(AttrCoerce.lookup(json, "datePickerStyle")),
             dateStringFormat = AttrCoerce.string(AttrCoerce.lookup(json, "dateStringFormat", listOf("dateFormat"), canonicalOnly)),
             dividerAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "dividerAttributes")),
+            doneButtonText = AttrCoerce.string(AttrCoerce.lookup(json, "doneButtonText")),
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
             fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
@@ -263,6 +274,7 @@ data class SelectBoxAttributes(
             selectedIndex = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedIndex")) { AttrCoerce.number(it) },
             selectedItem = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedItem")) { AttrCoerce.string(it) },
             selectedValue = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedValue")) { AttrCoerce.string(it) },
+            sheetTitle = AttrCoerce.string(AttrCoerce.lookup(json, "sheetTitle")),
             size = AttrCoerce.number(AttrCoerce.lookup(json, "size")),
         )
 

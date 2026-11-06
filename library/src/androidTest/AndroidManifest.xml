@@ -5,6 +5,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <activity
+            android:name="com.kotlinjsonui.components.SheetStringsProbeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
             android:name="com.kotlinjsonui.components.AdjustNothingEdgeToEdgeActivity"
             android:windowSoftInputMode="adjustNothing"
             android:exported="false"

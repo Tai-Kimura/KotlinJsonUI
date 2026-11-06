@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The sheets of SelectBox and DateSelectBox. An app overrides any of these by declaring the same name in its own
+     values: its resources win over a library's. -->
+<resources>
+    <string name="kjui_sheet_select_option">Select an option</string>
+    <string name="kjui_sheet_cancel">Cancel</string>
+    <string name="kjui_sheet_confirm">OK</string>
+    <string name="kjui_sheet_select">Select</string>
+    <string name="kjui_sheet_select_date">Select date</string>
+    <string name="kjui_sheet_select_time">Select Time</string>
+    <string name="kjui_sheet_select_date_and_time">Select date and time</string>
+    <string name="kjui_sheet_year">Year</string>
+    <string name="kjui_sheet_month">Month</string>
+    <string name="kjui_sheet_day">Day</string>
+    <string name="kjui_sheet_hour">Hour</string>
+    <string name="kjui_sheet_minute">Minute</string>
+</resources>

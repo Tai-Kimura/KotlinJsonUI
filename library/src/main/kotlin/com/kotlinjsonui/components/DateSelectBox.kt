@@ -65,7 +65,10 @@ fun DateSelectBox(
     fontSize: Int = 16,
     fontWeight: FontWeight = FontWeight.Normal,
     sheetBackgroundColor: Color = Configuration.DatePicker.defaultSheetBackgroundColor,
-    sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor
+    sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    sheetTitle: String? = null,
+    cancelButtonText: String? = null,
+    doneButtonText: String? = null
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(
@@ -213,7 +216,7 @@ fun DateSelectBox(
                         if (datePickerStyle == "wheels") {
                             // iOS-style wheel time picker
                             Text(
-                                text = "時刻を選択",
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_time),
                                 style = sheetTextStyle(
                                     MaterialTheme.typography.titleMedium,
                                     Configuration.DatePicker.sheetFontFamily,
@@ -261,7 +264,7 @@ fun DateSelectBox(
                                     )
                                 ) {
                                     Text(
-                                        text = "キャンセル",
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -285,7 +288,7 @@ fun DateSelectBox(
                                     )
                                 ) {
                                     Text(
-                                        text = "確定",
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -296,7 +299,7 @@ fun DateSelectBox(
                         } else {
                             // Default time picker in sheet
                             Text(
-                                text = "時刻を選択",
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_time),
                                 style = sheetTextStyle(
                                     MaterialTheme.typography.titleMedium,
                                     Configuration.DatePicker.sheetFontFamily,
@@ -345,7 +348,7 @@ fun DateSelectBox(
                                     )
                                 ) {
                                     Text(
-                                        text = "キャンセル",
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -369,7 +372,7 @@ fun DateSelectBox(
                                     )
                                 ) {
                                     Text(
-                                        text = "確定",
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -385,7 +388,7 @@ fun DateSelectBox(
                         if (datePickerStyle == "wheels") {
                             // iOS-style wheel date/time picker
                             Text(
-                                text = "日付と時刻を選択",
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_date_and_time),
                                 style = sheetTextStyle(
                                     MaterialTheme.typography.titleMedium,
                                     Configuration.DatePicker.sheetFontFamily,
@@ -435,7 +438,7 @@ fun DateSelectBox(
                                     )
                                 ) {
                                     Text(
-                                        text = "キャンセル",
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -455,7 +458,7 @@ fun DateSelectBox(
                                     modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
                                 ) {
                                     Text(
-                                        text = "確定",
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -466,7 +469,7 @@ fun DateSelectBox(
                         } else {
                             // Default date/time picker in sheet
                             Text(
-                                text = "日付と時刻を選択",
+                                text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_date_and_time),
                                 style = sheetTextStyle(
                                     MaterialTheme.typography.titleMedium,
                                     Configuration.DatePicker.sheetFontFamily,
@@ -517,7 +520,7 @@ fun DateSelectBox(
                                     )
                                 ) {
                                     Text(
-                                        text = "キャンセル",
+                                        text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -537,7 +540,7 @@ fun DateSelectBox(
                                     modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
                                 ) {
                                     Text(
-                                        text = "確定",
+                                        text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
@@ -554,7 +557,7 @@ fun DateSelectBox(
                             "wheels" -> {
                                 // iOS-style wheel date picker
                                 Text(
-                                    text = "日付を選択",
+                                    text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_date),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = sheetTextColor,
                                     modifier = Modifier
@@ -595,7 +598,7 @@ fun DateSelectBox(
                                         modifier = Modifier.weight(1f).testTag("kjui_x7q_cancel")
                                     ) {
                                         Text(
-                                            text = "キャンセル",
+                                            text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                             fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                             fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                             color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
@@ -614,7 +617,7 @@ fun DateSelectBox(
                                         modifier = Modifier.weight(1f).testTag("kjui_x7q_done")
                                     ) {
                                         Text(
-                                            text = "確定",
+                                            text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                             fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                                             fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                             color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -626,6 +629,8 @@ fun DateSelectBox(
                             "graphical", "inline" -> {
                                 // Material3 DatePicker
                                 DateCalendarPicker(
+                                    title = sheetTitle,
+                                    doneButtonText = doneButtonText,
                                     selectedDate = calendar,
                                     onDateSelected = { year, month, day ->
                                         calendar.set(year, month, day)
@@ -649,6 +654,8 @@ fun DateSelectBox(
                             else -> {
                                 // Default: calendar picker in sheet
                                 DateCalendarPicker(
+                                    title = sheetTitle,
+                                    doneButtonText = doneButtonText,
                                     selectedDate = calendar,
                                     onDateSelected = { year, month, day ->
                                         calendar.set(year, month, day)
@@ -733,7 +740,7 @@ fun DateWheelPicker(
                 onDateSelected(it, selectedMonth, selectedDay)
             },
             range = years,
-            label = "年",
+            label = sheetString(R.string.kjui_sheet_year),
             modifier = Modifier.weight(1f),
             textColor = textColor,
             testTagPrefix = if (enableTestTags) "kjui_x7q_year" else null
@@ -748,7 +755,7 @@ fun DateWheelPicker(
             },
             range = (0..11).toList(),
             labels = months,
-            label = "月",
+            label = sheetString(R.string.kjui_sheet_month),
             modifier = Modifier.weight(1f),
             textColor = textColor,
             testTagPrefix = if (enableTestTags) "kjui_x7q_month" else null
@@ -762,7 +769,7 @@ fun DateWheelPicker(
                 onDateSelected(selectedYear, selectedMonth, it)
             },
             range = days,
-            label = "日",
+            label = sheetString(R.string.kjui_sheet_day),
             modifier = Modifier.weight(1f),
             textColor = textColor,
             testTagPrefix = if (enableTestTags) "kjui_x7q_day" else null
@@ -800,7 +807,7 @@ fun TimeWheelPicker(
                 onTimeSelected(it, selectedMinute)
             },
             range = hours,
-            label = "時",
+            label = sheetString(R.string.kjui_sheet_hour),
             modifier = Modifier.weight(1f),
             textColor = textColor,
             testTagPrefix = if (enableTestTags) "kjui_x7q_hour" else null
@@ -814,7 +821,7 @@ fun TimeWheelPicker(
                 onTimeSelected(selectedHour, it)
             },
             range = minutes,
-            label = "分",
+            label = sheetString(R.string.kjui_sheet_minute),
             modifier = Modifier.weight(1f),
             textColor = textColor,
             testTagPrefix = if (enableTestTags) "kjui_x7q_minute" else null
@@ -1014,7 +1021,9 @@ fun DateCalendarPicker(
     maxDate: Calendar? = null,
     dateFormat: String,
     modifier: Modifier = Modifier,
-    sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor
+    sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor,
+    title: String? = null,
+    doneButtonText: String? = null
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDate.timeInMillis,
@@ -1027,7 +1036,7 @@ fun DateCalendarPicker(
     ) {
         // Title
         Text(
-            text = "日付を選択",
+            text = title ?: sheetString(R.string.kjui_sheet_select_date),
             style = MaterialTheme.typography.titleMedium,
             color = sheetTextColor,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -1077,7 +1086,7 @@ fun DateCalendarPicker(
             )
         ) {
             Text(
-                text = "選択",
+                text = doneButtonText ?: sheetString(R.string.kjui_sheet_select),
                 fontSize = Configuration.DatePicker.SheetButton.defaultFontSize.sp,
                 fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                 color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
