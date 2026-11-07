@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -110,9 +111,11 @@ class DynamicTextFieldComponent {
             }
 
             // Sync state → external (user typing)
+            val heldText = rememberUpdatedState(initialText)
             LaunchedEffect(textFieldState.text) {
                 val newValue = textFieldState.text.toString()
                 if (newValue != initialText) {
+                    var wrote = false
                     // Update data binding
                     if (rawText.contains("@{")) {
                         val variable = extractBindingVariable(rawText)
@@ -122,6 +125,7 @@ class DynamicTextFieldComponent {
                                 try {
                                     @Suppress("UNCHECKED_CAST")
                                     (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
+                                    wrote = true
                                 } catch (_: Exception) {}
                             }
                         }
@@ -131,6 +135,10 @@ class DynamicTextFieldComponent {
                     if (onTextChangeHandler != null) {
                         ModifierBuilder.resolveEventHandler(onTextChangeHandler, data, viewId, newValue)
                     }
+                    // The edit went to the data. A view model that took it back to
+                    // the value it held changes nothing the key above can see:
+                    // TextFieldFollowsHeldValue.
+                    if (wrote) textFieldState.followHeldValue(newValue, heldText)
                 }
             }
 

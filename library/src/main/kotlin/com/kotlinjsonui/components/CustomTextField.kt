@@ -358,10 +358,23 @@ fun rememberSyncedTextFieldState(
     }
 
     // Sync state → external (user typing)
+    val held = rememberUpdatedState(externalValue)
     LaunchedEffect(state.text) {
         val current = state.text.toString()
         if (current != externalValue) {
             onValueChange(current)
+            // A value taken back to what it was changes nothing the key above
+            // can see ("12" -> "12a" -> "12"): read it again once composition
+            // has caught up. Read at once it is still the old value and every
+            // key is taken back; one frame was enough where measured, the second
+            // is margin. A later edit cancels this; an edit that was taken leaves
+            // the cursor and the IME alone.
+            withFrameNanos { }
+            withFrameNanos { }
+            val value = held.value
+            if (state.text.toString() == current && value != current) {
+                state.edit { replace(0, length, value) }
+            }
         }
     }
 
