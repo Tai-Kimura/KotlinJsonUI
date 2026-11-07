@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -161,39 +162,49 @@ class DynamicTextViewComponent {
             val autoFocusRequester = remember { FocusRequester() }
             DynamicAutoFocus(autoFocus, autoFocusRequester)
 
+            // What composition holds is behind while keys are arriving, so a value
+            // this field sent is its own echo and is not written back: writing it put
+            // an older value over a newer key, and the next effect sent that older
+            // value out (ticket 2026-11-07-kjui-textfield-stale-value-overwrites-newer-
+            // key). A value it did not send is the view model's word.
+            val sentText = remember { ArrayDeque<String>() }
             LaunchedEffect(initialText) {
-                if (textFieldState.text.toString() != initialText) {
+                val echo = sentText.indexOf(initialText)
+                if (echo >= 0) {
+                    repeat(echo + 1) { sentText.removeFirst() }
+                } else if (textFieldState.text.toString() != initialText) {
                     textFieldState.edit { replace(0, length, initialText) }
                 }
             }
 
+            // The field's own changes, not composition's view of them: a key and a delete
+            // can come and go between two compositions.
+            val heldData = rememberUpdatedState(data)
             val heldText = rememberUpdatedState(initialText)
-            LaunchedEffect(textFieldState.text) {
-                val newValue = textFieldState.text.toString()
-                if (newValue != initialText) {
-                    var wrote = false
+            LaunchedEffect(textFieldState, rawText, a.onTextChange) {
+              snapshotFlow { textFieldState.text.toString() }.collect { newValue ->
+                if (newValue != (sentText.lastOrNull() ?: heldText.value)) {
+                    // A host that does not write the value back never echoes.
+                    if (sentText.size >= 32) sentText.removeFirst()
+                    sentText.addLast(newValue)
                     if (rawText.contains("@{")) {
                         val variable = extractBindingVariable(rawText)
                         variable?.let { varName ->
-                            val updateData = data["updateData"]
+                            val updateData = heldData.value["updateData"]
                             if (updateData is Function<*>) {
                                 try {
                                     @Suppress("UNCHECKED_CAST")
                                     (updateData as (Map<String, Any>) -> Unit)(mapOf(varName to newValue))
-                                    wrote = true
                                 } catch (_: Exception) {}
                             }
                         }
                     }
                     val onTextChangeHandler = a.onTextChange
                     if (onTextChangeHandler != null) {
-                        ModifierBuilder.resolveEventHandler(onTextChangeHandler, data, viewId, newValue)
+                        ModifierBuilder.resolveEventHandler(onTextChangeHandler, heldData.value, viewId, newValue)
                     }
-                    // The edit went to the data. A view model that took it back to
-                    // the value it held changes nothing the key above can see:
-                    // TextFieldFollowsHeldValue.
-                    if (wrote) textFieldState.followHeldValue(newValue, heldText)
                 }
+              }
             }
 
             // Placeholder. hintColor styles it (33 cross-effect: android
