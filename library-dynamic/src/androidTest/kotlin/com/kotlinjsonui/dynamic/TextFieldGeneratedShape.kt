@@ -24,6 +24,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.kotlinjsonui.components.CustomTextField
 import com.kotlinjsonui.core.Configuration
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.snapshotFlow
 
 // What kjui_tools emits for a bound TextField and TextView, written by the
 // generator (jsonui-cli kjui_tools, TextFieldComponent / TextViewComponent)
@@ -32,9 +35,32 @@ import com.kotlinjsonui.core.Configuration
 @Composable
 fun GeneratedTextFieldShape(viewModel: FieldVm, data: FieldData) {
     val textFieldState_tf = rememberTextFieldState(initialText = data.age)
-    LaunchedEffect(data.age) { if (textFieldState_tf.text.toString() != data.age) textFieldState_tf.edit { replace(0, length, data.age) } }
-    val textFieldState_tf_held = rememberUpdatedState(data.age)
-    LaunchedEffect(textFieldState_tf.text) { val newValue = textFieldState_tf.text.toString(); if (newValue != data.age) { viewModel.updateData(mapOf("age" to newValue)); data.onAgeChange?.invoke(newValue); withFrameNanos { }; withFrameNanos { }; if (textFieldState_tf.text.toString() == newValue && textFieldState_tf_held.value != newValue) textFieldState_tf.edit { replace(0, length, textFieldState_tf_held.value) } } }
+    val textFieldState_tf_sent = remember { ArrayDeque<String>() }
+    LaunchedEffect(data.age) { val held = viewModel.data.value.age; val echo = textFieldState_tf_sent.indexOf(held); if (echo >= 0) repeat(echo + 1) { textFieldState_tf_sent.removeFirst() } else if (textFieldState_tf.text.toString() != held) textFieldState_tf.edit { replace(0, length, held) } }
+    LaunchedEffect(textFieldState_tf) { snapshotFlow { textFieldState_tf.text.toString() }.collectLatest { newValue -> val data = viewModel.data.value; if (newValue != data.age) { textFieldState_tf_sent.addLast(newValue); viewModel.updateData(mapOf("age" to newValue)); data.onAgeChange?.invoke(newValue); val held = viewModel.data.first { it.age != newValue }.age; textFieldState_tf_sent.clear(); textFieldState_tf_sent.addLast(held); if (textFieldState_tf.text.toString() == newValue) textFieldState_tf.edit { replace(0, length, held) } } } }
+    val focusRequester_tf = remember { FocusRequester() }
+    val keyboardController_tf = LocalSoftwareKeyboardController.current
+    LaunchedEffect(data.tfIsFocused) { if (data.tfIsFocused) { focusRequester_tf.requestFocus(); keyboardController_tf?.show() } }
+    CustomTextField(
+        state = textFieldState_tf,
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .testTag("tf")
+            .semantics { testTagsAsResourceId = true }
+            .onFocusChanged { if (it.isFocused != data.tfIsFocused) viewModel.updateData(mapOf("tfIsFocused" to it.isFocused)) }
+            .focusRequester(focusRequester_tf),
+        textStyle = TextStyle(color = Configuration.TextField.defaultTextColor, fontSize = Configuration.TextField.defaultFontSize.sp)
+    )
+}
+
+@Composable
+fun GeneratedMaxLengthShape(viewModel: FieldVm, data: FieldData) {
+    val textFieldState_tf = rememberTextFieldState(initialText = data.age)
+    LaunchedEffect(textFieldState_tf.text) { val limit = 4; if (limit > 0 && textFieldState_tf.text.length > limit) textFieldState_tf.edit { replace(limit, length, "") } }
+    val textFieldState_tf_sent = remember { ArrayDeque<String>() }
+    LaunchedEffect(data.age) { val held = viewModel.data.value.age; val echo = textFieldState_tf_sent.indexOf(held); if (echo >= 0) repeat(echo + 1) { textFieldState_tf_sent.removeFirst() } else if (textFieldState_tf.text.toString() != held) textFieldState_tf.edit { replace(0, length, held) } }
+    LaunchedEffect(textFieldState_tf) { snapshotFlow { textFieldState_tf.text.toString() }.collectLatest { newValue -> val data = viewModel.data.value; if (newValue != data.age) { textFieldState_tf_sent.addLast(newValue); viewModel.updateData(mapOf("age" to newValue)); data.onAgeChange?.invoke(newValue); val held = viewModel.data.first { it.age != newValue }.age; textFieldState_tf_sent.clear(); textFieldState_tf_sent.addLast(held); if (textFieldState_tf.text.toString() == newValue) textFieldState_tf.edit { replace(0, length, held) } } } }
     val focusRequester_tf = remember { FocusRequester() }
     val keyboardController_tf = LocalSoftwareKeyboardController.current
     LaunchedEffect(data.tfIsFocused) { if (data.tfIsFocused) { focusRequester_tf.requestFocus(); keyboardController_tf?.show() } }
@@ -54,9 +80,9 @@ fun GeneratedTextFieldShape(viewModel: FieldVm, data: FieldData) {
 @Composable
 fun GeneratedTextViewShape(viewModel: FieldVm, data: FieldData) {
     val textFieldState_tv = rememberTextFieldState(initialText = data.age)
-    LaunchedEffect(data.age) { if (textFieldState_tv.text.toString() != data.age) textFieldState_tv.edit { replace(0, length, data.age) } }
-    val textFieldState_tv_held = rememberUpdatedState(data.age)
-    LaunchedEffect(textFieldState_tv.text) { val newValue = textFieldState_tv.text.toString(); if (newValue != data.age) { viewModel.updateData(mapOf("age" to newValue)); data.onAgeChange?.invoke(newValue); withFrameNanos { }; withFrameNanos { }; if (textFieldState_tv.text.toString() == newValue && textFieldState_tv_held.value != newValue) textFieldState_tv.edit { replace(0, length, textFieldState_tv_held.value) } } }
+    val textFieldState_tv_sent = remember { ArrayDeque<String>() }
+    LaunchedEffect(data.age) { val held = viewModel.data.value.age; val echo = textFieldState_tv_sent.indexOf(held); if (echo >= 0) repeat(echo + 1) { textFieldState_tv_sent.removeFirst() } else if (textFieldState_tv.text.toString() != held) textFieldState_tv.edit { replace(0, length, held) } }
+    LaunchedEffect(textFieldState_tv) { snapshotFlow { textFieldState_tv.text.toString() }.collectLatest { newValue -> val data = viewModel.data.value; if (newValue != data.age) { textFieldState_tv_sent.addLast(newValue); viewModel.updateData(mapOf("age" to newValue)); data.onAgeChange?.invoke(newValue); val held = viewModel.data.first { it.age != newValue }.age; textFieldState_tv_sent.clear(); textFieldState_tv_sent.addLast(held); if (textFieldState_tv.text.toString() == newValue) textFieldState_tv.edit { replace(0, length, held) } } } }
     val focusRequester_tv = remember { FocusRequester() }
     val keyboardController_tv = LocalSoftwareKeyboardController.current
     LaunchedEffect(data.tvIsFocused) { if (data.tvIsFocused) { focusRequester_tv.requestFocus(); keyboardController_tv?.show() } }

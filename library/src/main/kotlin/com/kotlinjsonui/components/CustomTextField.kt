@@ -350,32 +350,33 @@ fun rememberSyncedTextFieldState(
 ): TextFieldState {
     val state = rememberTextFieldState(initialText = externalValue)
 
-    // Sync external → state (e.g. ViewModel clears text)
+    // Sync external → state (e.g. ViewModel clears text). A value this field sent
+    // is its own echo: what composition holds is behind while keys are arriving, and
+    // writing it put an older value over a newer key.
+    val sent = remember { ArrayDeque<String>() }
     LaunchedEffect(externalValue) {
-        if (state.text.toString() != externalValue) {
+        val echo = sent.indexOf(externalValue)
+        if (echo >= 0) {
+            repeat(echo + 1) { sent.removeFirst() }
+        } else if (state.text.toString() != externalValue) {
             state.edit { replace(0, length, externalValue) }
         }
     }
 
     // Sync state → external (user typing)
-    val held = rememberUpdatedState(externalValue)
-    LaunchedEffect(state.text) {
-        val current = state.text.toString()
-        if (current != externalValue) {
-            onValueChange(current)
-            // A value taken back to what it was changes nothing the key above
-            // can see ("12" -> "12a" -> "12"): read it again once composition
-            // has caught up. Read at once it is still the old value and every
-            // key is taken back; one frame was enough where measured, the second
-            // is margin. A later edit cancels this; an edit that was taken leaves
-            // the cursor and the IME alone.
-            withFrameNanos { }
-            withFrameNanos { }
-            val value = held.value
-            if (state.text.toString() == current && value != current) {
-                state.edit { replace(0, length, value) }
-            }
+    // The field's own changes, not composition's view of them: a key and a delete can
+    // come and go between two compositions.
+    val heldValue = rememberUpdatedState(externalValue)
+    val heldChange = rememberUpdatedState(onValueChange)
+    LaunchedEffect(state) {
+      snapshotFlow { state.text.toString() }.collect { current ->
+        if (current != (sent.lastOrNull() ?: heldValue.value)) {
+            // A caller that does not write the value back never echoes.
+            if (sent.size >= 32) sent.removeFirst()
+            sent.addLast(current)
+            heldChange.value(current)
         }
+      }
     }
 
     return state
