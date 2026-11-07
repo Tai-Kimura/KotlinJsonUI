@@ -80,7 +80,7 @@ class SheetStringsLanguageTest {
     /** A language the library does not have: English, not Japanese. */
     @Test fun selectBoxInALanguageTheLibraryLacks() = selectBoxSheet("th", "Select an option", "Cancel")
 
-    @Test fun dateSheetInEnglish() = dateSheet("en", "Select Time", "Cancel", "OK")
+    @Test fun dateSheetInEnglish() = dateSheet("en", "Select time", "Cancel", "OK")
     @Test fun dateSheetInJapaneseIsAsItWas() = dateSheet("ja", "時刻を選択", "キャンセル", "確定")
     @Test fun dateSheetInFrench() = dateSheet("fr", "Sélectionner l'heure", "Annuler", "OK")
 
