@@ -20,6 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.autofill.ContentType
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -324,6 +327,9 @@ class DynamicTextFieldComponent {
                         hasFocus = focusState.isFocused
                     }
             }
+            // The declared contentType as the Autofill framework's hint, on the field's own node.
+            val autofillType = resolveAutofillContentType(a)
+            if (autofillType != null) modifier = modifier.semantics { contentType = autofillType }
 
             if (hasMarginAttributes(json)) {
                 // The same stages, split: the margins and what follows them on
@@ -364,6 +370,7 @@ class DynamicTextFieldComponent {
                             hasFocus = focusState.isFocused
                         }
                 }
+                if (autofillType != null) textFieldModifier = textFieldModifier.semantics { contentType = autofillType }
 
                 CustomTextFieldWithMargins(
                     state = textFieldState,
@@ -539,6 +546,33 @@ class DynamicTextFieldComponent {
                 autoCorrectEnabled = autoCorrect
             )
         }
+
+        /**
+         * The declared contentType as Compose's autofill hint, or null when it
+         * names nothing the framework fills (`URL`). Until 2.5.11 the field said
+         * nothing to the Autofill framework, so a username or a password was
+         * never filled from it. `usernameWebauthn` is a username to the
+         * framework: a Compose field takes no Credential Manager request, the
+         * app offers passkeys through CredentialManager.getCredential. Read as
+         * the keyboard reads it (the static spelling).
+         */
+        private fun resolveAutofillContentType(a: TextFieldAttributes): ContentType? =
+            when (DeclaredSpelling.lowered(TypedAttrs.staticEnumString(a.contentType) { it.json }, TextFieldAttributes.ContentType.declaredSpellings)) {
+                "username", "usernamewebauthn" -> ContentType.Username
+                "password" -> ContentType.Password
+                "newpassword" -> ContentType.NewPassword
+                "onetimecode" -> ContentType.SmsOtpCode
+                "email", "emailaddress" -> ContentType.EmailAddress
+                "name" -> ContentType.PersonFullName
+                "givenname" -> ContentType.PersonFirstName
+                "familyname" -> ContentType.PersonLastName
+                "telephonenumber", "tel", "phone" -> ContentType.PhoneNumber
+                "streetaddress" -> ContentType.AddressStreet
+                "postalcode" -> ContentType.PostalCode
+                "country" -> ContentType.AddressCountry
+                "creditcardnumber" -> ContentType.CreditCardNumber
+                else -> null
+            }
 
         private fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
             // contentType takes priority
