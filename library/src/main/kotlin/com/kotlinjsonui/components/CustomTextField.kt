@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.jsonUITintOrNull
@@ -57,7 +58,10 @@ fun CustomTextField(
     // back to the tint a container handed down (LocalJsonUITint), then to
     // the text colour / theme primary, which was the previous hard-wired
     // behaviour.
-    cursorColor: Color? = null
+    cursorColor: Color? = null,
+    // The outline's width. Null is Material's: 1dp, 2dp under focus. A width
+    // thinner than Material's focus width keeps that focus cue; 0 is no line.
+    borderWidth: Dp? = null
 ) {
     // Determine background colors
     val unfocusedBackground = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
@@ -101,6 +105,12 @@ fun CustomTextField(
     @Composable
     fun DecorationContent(innerTextField: @Composable () -> Unit) {
         if (isOutlined) {
+            // A 0 stroke is a hairline in Compose, not no line.
+            val outlineColor = if (borderWidth != null && borderWidth <= 0.dp) {
+                Color.Transparent
+            } else {
+                borderColor ?: Configuration.TextField.defaultBorderColor
+            }
             OutlinedTextFieldDefaults.DecorationBox(
                 value = state.text.toString(),
                 innerTextField = innerTextField,
@@ -112,8 +122,8 @@ fun CustomTextField(
                 placeholder = placeholder,
                 contentPadding = effectiveContentPadding,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
-                    unfocusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
+                    focusedBorderColor = outlineColor,
+                    unfocusedBorderColor = outlineColor,
                     focusedTextColor = effectiveTextStyle.color,
                     unfocusedTextColor = effectiveTextStyle.color,
                     focusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor,
@@ -125,12 +135,18 @@ fun CustomTextField(
                         isError = isError,
                         interactionSource = interactionSource,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
-                            unfocusedBorderColor = borderColor ?: Configuration.TextField.defaultBorderColor,
+                            focusedBorderColor = outlineColor,
+                            unfocusedBorderColor = outlineColor,
                             focusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor,
                             unfocusedContainerColor = backgroundColor ?: Configuration.TextField.defaultBackgroundColor
                         ),
-                        shape = effectiveShape
+                        shape = effectiveShape,
+                        focusedBorderThickness = when {
+                            borderWidth == null -> OutlinedTextFieldDefaults.FocusedBorderThickness
+                            borderWidth <= 0.dp -> 0.dp
+                            else -> maxOf(borderWidth, OutlinedTextFieldDefaults.FocusedBorderThickness)
+                        },
+                        unfocusedBorderThickness = borderWidth ?: OutlinedTextFieldDefaults.UnfocusedBorderThickness
                     )
                 }
             )
@@ -291,7 +307,8 @@ fun CustomTextFieldWithMargins(
     onBeginEditing: (() -> Unit)? = null,
     onEndEditing: (() -> Unit)? = null,
     enabled: Boolean = true,
-    cursorColor: Color? = null
+    cursorColor: Color? = null,
+    borderWidth: Dp? = null
 ) {
     Box(modifier = boxModifier) {
         CustomTextField(
@@ -316,7 +333,8 @@ fun CustomTextFieldWithMargins(
             onBeginEditing = onBeginEditing,
             onEndEditing = onEndEditing,
             enabled = enabled,
-            cursorColor = cursorColor
+            cursorColor = cursorColor,
+            borderWidth = borderWidth
         )
     }
 }

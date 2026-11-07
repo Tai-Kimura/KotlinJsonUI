@@ -85,7 +85,7 @@ class DynamicTextFieldComponent {
             val isHidden = TypedAttrs.static(a.fontColor)?.lowercase() == "transparent"
 
             // Parse secure field
-            val isSecure = TypedAttrs.static(a.secure) == true ||
+            val isSecure = TypedAttrs.boolean(a.secure, data) == true ||
                     DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings) == "password" ||
                     DeclaredSpelling.lowered(TypedAttrs.staticEnumString(a.contentType) { it.json }, TextFieldAttributes.ContentType.declaredSpellings)?.let {
                         it == "password" || it == "newpassword"
@@ -204,6 +204,7 @@ class DynamicTextFieldComponent {
 
             // Outlined mode
             val isOutlined = resolveIsOutlined(json, a)
+            val borderWidth = TypedAttrs.float(a.common.borderWidth, data)?.dp
 
             // Content padding
             val contentPadding = buildContentPadding(json, a, data)
@@ -357,6 +358,7 @@ class DynamicTextFieldComponent {
                     contentPadding = contentPadding,
                     backgroundColor = backgroundColor,
                     borderColor = borderColor,
+                    borderWidth = borderWidth,
                     isOutlined = isOutlined,
                     isSecure = isSecure,
                     singleLine = singleLine,
@@ -380,6 +382,7 @@ class DynamicTextFieldComponent {
                     contentPadding = contentPadding,
                     backgroundColor = backgroundColor,
                     borderColor = borderColor,
+                    borderWidth = borderWidth,
                     isOutlined = isOutlined,
                     isSecure = isSecure,
                     singleLine = singleLine,
