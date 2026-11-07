@@ -226,15 +226,18 @@ class TextFieldCorrectedValueTest {
         fun same(field: String) = if (follows) "12|2|12" else field
         fun row(name: String, want: String, start: String, answer: Answer, steps: Driver.() -> Unit): Row {
             val got = drive(surface, start, answer, steps = steps)
-            Log.i("TFFAM", "$surface | $name | want=$want | got=$got | ${if (want == got) "ok" else "DIFF"}")
-            return Row(name, want, got)
+            val ok = got in want.split(" or ")
+            Log.i("TFFAM", "$surface | $name | want=$want | got=$got | ${if (ok) "ok" else "DIFF"}")
+            return Row(name, want, if (ok) want else got)
         }
         return listOf(
             // A correction back to the value held before the edit.
             row("same, handler corrects in the call", same("12年|3|12"), "12", Answer.DIGITS_SYNC) { commit("年") },
             row("same, whole text replaced", same("12年|3|12"), "12", Answer.DIGITS_SYNC) { all(); commit("12年") },
             row("same, launched on the main dispatcher", same("12年|3|12"), "12", Answer.DIGITS_IMMEDIATE) { commit("年") },
-            row("same, launched on another thread", same("12年|3|12"), "12", Answer.DIGITS_DEFAULT) { commit("年") },
+            // Dynamic and the helper follow this one when composition saw the raw edit before the
+            // correction, and keep the edit when it did not: either, by when the other thread runs.
+            row("same, launched on another thread", if (follows) "12|2|12" else "12|2|12 or 12年|3|12", "12", Answer.DIGITS_DEFAULT) { commit("年") },
             row("same, 100 ms later", "12|2|12", "12", Answer.DIGITS_DELAYED) { commit("年") },
             // A correction to a new value: already written back.
             row("new value, handler corrects in the call", "3|1|3", "12", Answer.DIGITS_SYNC) { all(); commit("3年") },
