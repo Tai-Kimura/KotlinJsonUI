@@ -596,8 +596,12 @@ object ModifierBuilder {
             shadowElement.isJsonObject -> {
                 val obj = shadowElement.asJsonObject
                 val radius = dimen(obj.get("radius"), data) ?: 4f
+                // A bound colour is read from data, as the radius, offsets and
+                // opacity beside it are (dimen) and as codegen reads it
+                // (ColorManager.compose.color(data.x)): read as a literal, a
+                // "@{x}" parsed as no colour and the shadow fell to black.
                 val color = obj.get("color")?.takeIf { it.isJsonPrimitive }
-                    ?.let { ColorParser.parseColorString(it.asString) }
+                    ?.let { ColorParser.parseColorStringWithBinding(it.asString, data) }
                 val offsetX = dimen(obj.get("offsetX"), data) ?: 0f
                 val offsetY = dimen(obj.get("offsetY"), data) ?: 0f
                 val alpha = dimen(obj.get("opacity"), data) ?: 1f
