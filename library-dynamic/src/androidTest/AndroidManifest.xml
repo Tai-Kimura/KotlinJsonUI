@@ -4,5 +4,17 @@
      default, localhost included. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
-    <application android:usesCleartextTraffic="true" />
+    <!-- ProbeAutofillService: a test-only autofill service, so a test sees a
+         field as the Autofill framework does (ContentTypeReachesAutofillTest). -->
+    <application android:usesCleartextTraffic="true">
+        <service
+            android:name="com.kotlinjsonui.dynamic.autofill.ProbeAutofillService"
+            android:exported="true"
+            android:label="Probe autofill"
+            android:permission="android.permission.BIND_AUTOFILL_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.autofill.AutofillService" />
+            </intent-filter>
+        </service>
+    </application>
 </manifest>

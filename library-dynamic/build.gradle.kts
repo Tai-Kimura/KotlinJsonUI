@@ -101,6 +101,8 @@ dependencies {
     androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // ContentTypeReachesAutofillTest taps the autofill suggestion, a window of its own.
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 

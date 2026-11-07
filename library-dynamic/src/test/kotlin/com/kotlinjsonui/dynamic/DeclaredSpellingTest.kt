@@ -225,7 +225,7 @@ class DeclaredSpellingTest {
             c + "DynamicIconLabelComponent.kt" to 1, c + "DynamicImageComponent.kt" to 1,
             c + "DynamicNetworkImageComponent.kt" to 1, c + "DynamicScrollViewComponent.kt" to 2,
             c + "DynamicSwitchComponent.kt" to 1, c + "DynamicTextComponent.kt" to 3,
-            c + "DynamicTextFieldComponent.kt" to 8, c + "DynamicTextViewComponent.kt" to 2,
+            c + "DynamicTextFieldComponent.kt" to 9, c + "DynamicTextViewComponent.kt" to 2, // 9: + the autofill hint (2.5.11)
             c + "DynamicButtonComponent.kt" to 1, c + "DynamicCircleImageComponent.kt" to 0,
             c + "DynamicBlurViewComponent.kt" to 0,
             c + "DynamicSelectBoxComponent.kt" to 0, c + "DynamicGradientViewComponent.kt" to 2,

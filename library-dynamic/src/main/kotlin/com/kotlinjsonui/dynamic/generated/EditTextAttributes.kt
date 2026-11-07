@@ -34,7 +34,7 @@ data class EditTextAttributes(
     val caretAttributes: Map<String, Any?>? = null,
     /** Clear button mode */
     val clearButtonMode: String? = null,
-    /** Content type for autofill (binding supported). The enum is the set of tokens at least one platform actually maps: iOS to .textContentType, web to the autoComplete attribute, Android to the keyboard type. `email` (not emailAddress) and `telephoneNumber` (not tel) are the canonical spellings — the web converter only matches those two, so the alternates are normalized before conversion. Tokens no platform maps are deliberately absent: declaring UIKit's full UITextContentType list would enumerate values that cannot reach any output. */
+    /** Content type for autofill (binding supported). The enum is the set of tokens at least one platform actually maps: iOS to .textContentType, web to the autoComplete attribute, Android to the keyboard type. `email` (not emailAddress) and `telephoneNumber` (not tel) are the canonical spellings — the web converter only matches those two, so the alternates are normalized before conversion. Tokens no platform maps are deliberately absent: declaring UIKit's full UITextContentType list would enumerate values that cannot reach any output. `usernameWebauthn` is a username field that also offers passkeys: the web writes autoComplete="username webauthn" (WebAuthn conditional mediation), iOS the .username content type (the app's performAutoFillAssistedRequests brings the passkeys), and Android draws it as `username` — a Compose field takes no Credential Manager request (PendingGetCredentialRequest is View-only), so the app offers passkeys through CredentialManager.getCredential. */
     val contentType: AttrValue<AttrEnum<ContentType>>? = null,
     /** Background color when disabled - hex string or color name from colors.json */
     val disabledBackground: String? = null,
@@ -202,6 +202,7 @@ data class EditTextAttributes(
 
     enum class ContentType(val json: String) {
         USERNAME("username"),
+        USERNAME_WEBAUTHN("usernameWebauthn"),
         PASSWORD("password"),
         NEW_PASSWORD("newPassword"),
         ONE_TIME_CODE("oneTimeCode"),
@@ -218,11 +219,12 @@ data class EditTextAttributes(
 
         companion object {
             /** Every spelling this attribute accepts, as declared (values and valueAliases keys) — case-sensitive. */
-            val declaredSpellings: List<String> = listOf("username", "password", "newPassword", "oneTimeCode", "email", "emailAddress", "name", "givenName", "familyName", "telephoneNumber", "tel", "phone", "streetAddress", "postalCode", "country", "creditCardNumber", "URL")
+            val declaredSpellings: List<String> = listOf("username", "usernameWebauthn", "password", "newPassword", "oneTimeCode", "email", "emailAddress", "name", "givenName", "familyName", "telephoneNumber", "tel", "phone", "streetAddress", "postalCode", "country", "creditCardNumber", "URL")
 
             /** The declared spelling, case and all (the orchestrator's ruling, 1.9.0). */
             fun from(raw: String): ContentType? = when (raw) {
                 "username" -> USERNAME
+                "usernameWebauthn" -> USERNAME_WEBAUTHN
                 "password" -> PASSWORD
                 "newPassword" -> NEW_PASSWORD
                 "oneTimeCode" -> ONE_TIME_CODE
