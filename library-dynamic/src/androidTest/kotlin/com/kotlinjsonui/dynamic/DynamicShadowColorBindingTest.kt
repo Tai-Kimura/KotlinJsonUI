@@ -24,7 +24,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * A shadow's bound colour draws as the same colour written (ticket
+ * A shadow's bound colour draws as the same colour written, and a field left
+ * out draws as its declared default (ticket
  * 2026-11-07-declared-binding-slots-and-dynamic-shadow): the radius, offsets and
  * opacity beside it were read from data, the colour was read as the text "@{c}",
  * parsed as no colour, and the shadow fell to black.
@@ -64,5 +65,40 @@ class DynamicShadowColorBindingTest {
             assertNotEquals("$type: a green shadow drew as the blue one", 0, differing(written, other))
             assertEquals("$type: the bound colour drew differently from the same colour written", 0, differing(written, bound))
         }
+    }
+
+    private fun shadowOf(fields: String): String =
+        "{\"type\": \"View\", \"id\": \"p\", \"width\": 60, \"height\": 60, \"background\": \"#FF0000\"" +
+            (if (fields.isEmpty()) "" else ", \"shadow\": {$fields}") + "}"
+
+    /**
+     * A field left out takes its declared default (attribute_definitions
+     * common.shadow, iOS's): radius 5, offsets 0, and no colour is black at 33%
+     * with the opacity not applied. Android drew radius 4 in opaque black.
+     */
+    @Test
+    fun aFieldLeftOutDrawsAsItsDeclaredDefault() {
+        rule.setContent {
+            Box(Modifier.testTag("root").size(160.dp).background(Color.White).padding(40.dp)) {
+                DynamicView(json = JsonParser.parseString(json).asJsonObject, data = data)
+            }
+        }
+        val declared = pixels(shadowOf("\"radius\": 5, \"offsetX\": 0, \"offsetY\": 0, \"color\": \"#000000\", \"opacity\": 0.33"))
+        val leftOut = pixels(shadowOf("\"opacity\": 0.8"))
+        val oldAndroid = pixels(shadowOf("\"radius\": 4, \"color\": \"#000000\""))
+        assertNotEquals("the old default drew as the declared one", 0, differing(declared, oldAndroid))
+        assertEquals("a shadow with every field left out drew differently from the declared defaults", 0, differing(declared, leftOut))
+    }
+
+    @Test
+    fun aBoundColourThatDoesNotResolveCastsNoShadow() {
+        rule.setContent {
+            Box(Modifier.testTag("root").size(160.dp).background(Color.White).padding(40.dp)) {
+                DynamicView(json = JsonParser.parseString(json).asJsonObject, data = data)
+            }
+        }
+        val none = pixels(shadowOf(""))
+        assertEquals("an unset bound colour cast a shadow", 0, differing(none, pixels(shadowOf("\"color\": \"@{nope}\", \"radius\": 8"))))
+        assertNotEquals("a written colour cast none", 0, differing(none, pixels(shadowOf("\"color\": \"#0000FF\", \"radius\": 8"))))
     }
 }

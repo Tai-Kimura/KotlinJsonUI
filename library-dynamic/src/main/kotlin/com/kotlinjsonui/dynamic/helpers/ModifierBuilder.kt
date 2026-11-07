@@ -559,6 +559,11 @@ object ModifierBuilder {
      * default radius, a circle. The shadow is cast in it, not in a rectangle
      * under a rounded view.
      */
+    /** The declared shadow defaults (attribute_definitions common.shadow). */
+    const val SHADOW_DEFAULT_RADIUS = 5f
+    /** No colour declared: black at 33%, SwiftUI's default shadow colour. */
+    val SHADOW_DEFAULT_COLOR = Color.Black.copy(alpha = 0.33f)
+
     fun applyShadow(
         modifier: Modifier,
         json: JsonObject,
@@ -595,21 +600,29 @@ object ModifierBuilder {
             }
             shadowElement.isJsonObject -> {
                 val obj = shadowElement.asJsonObject
-                val radius = dimen(obj.get("radius"), data) ?: 4f
+                // A field left out takes its declared default
+                // (attribute_definitions common.shadow; iOS's, which the other
+                // platforms were aligned to): radius 5, offsets 0, opacity 1.
+                val radius = dimen(obj.get("radius"), data) ?: SHADOW_DEFAULT_RADIUS
                 // A bound colour is read from data, as the radius, offsets and
                 // opacity beside it are (dimen) and as codegen reads it
                 // (ColorManager.compose.color(data.x)): read as a literal, a
                 // "@{x}" parsed as no colour and the shadow fell to black.
-                val color = obj.get("color")?.takeIf { it.isJsonPrimitive }
-                    ?.let { ColorParser.parseColorStringWithBinding(it.asString, data) }
+                val declared = obj.get("color")?.takeIf { it.isJsonPrimitive }?.asString
+                val color = declared?.let { ColorParser.parseColorStringWithBinding(it, data) }
+                // A bound colour that does not resolve casts no shadow (iOS's
+                // `?? Color.clear`); a written one that does not falls to black.
+                if (declared != null && color == null && declared.startsWith("@{")) return modifier
                 val offsetX = dimen(obj.get("offsetX"), data) ?: 0f
                 val offsetY = dimen(obj.get("offsetY"), data) ?: 0f
-                val alpha = dimen(obj.get("opacity"), data) ?: 1f
+                // No colour declared: black at 33% (SwiftUI's default shadow
+                // colour), and the opacity is not applied to it.
+                val alpha = if (declared == null) 1f else dimen(obj.get("opacity"), data) ?: 1f
                 modifier.dropShadow(
                     shape = shape,
                     shadow = Shadow(
                         radius = radius.dp,
-                        color = color ?: Color.Black,
+                        color = color ?: if (declared == null) SHADOW_DEFAULT_COLOR else Color.Black,
                         offset = DpOffset(offsetX.dp, offsetY.dp),
                         alpha = alpha.coerceIn(0f, 1f)
                     )
