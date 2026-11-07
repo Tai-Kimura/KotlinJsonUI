@@ -131,6 +131,8 @@ class DynamicTextViewComponent {
 
             // isOutlined (default true for TextView)
             val isOutlined = true
+            // The outline's width, as on a TextField. Undeclared is Material's.
+            val borderWidth = TypedAttrs.float(a.common.borderWidth, data)?.dp
 
             // Max lines ('maxLines' is an undeclared legacy runtime extra;
             // default unlimited for TextView)
@@ -239,6 +241,7 @@ class DynamicTextViewComponent {
                     backgroundColor = backgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
+                    borderWidth = borderWidth,
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
@@ -290,6 +293,7 @@ class DynamicTextViewComponent {
                     backgroundColor = backgroundColor,
                     borderColor = borderColor,
                     isOutlined = isOutlined,
+                    borderWidth = borderWidth,
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
