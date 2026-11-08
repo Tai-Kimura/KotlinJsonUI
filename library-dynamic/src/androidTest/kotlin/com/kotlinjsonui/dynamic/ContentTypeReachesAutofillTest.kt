@@ -57,19 +57,43 @@ class ContentTypeReachesAutofillTest {
         return ParcelFileDescriptor.AutoCloseInputStream(fd).use { it.readBytes().decodeToString().trim() }
     }
 
+    private val probe = "${instrumentation.context.packageName}/${ProbeAutofillService::class.java.name}"
+
+    /**
+     * The service the framework uses for user 0, as `dumpsys autofill` names
+     * it ("Component: ComponentInfo{pkg/cls}"), or null when there is none.
+     */
+    private fun frameworkService(): String? =
+        Regex("""Component: ComponentInfo\{([^}]+)\}""").find(shell("dumpsys autofill"))?.groupValues?.get(1)
+
+    /**
+     * Make *component* the autofill service and wait until the framework uses
+     * it. `settings get` answers the new value at once, but system_server
+     * switches its service later, from an observer of the setting: on CI
+     * (2.5.12's conformance, API 35) a field focused 130 ms after the put
+     * opened its fill session with the service before, 52 ms before the
+     * framework switched, and the probe never had a request (ticket
+     * 2026-11-08-kjui-autofill-test-first-request-goes-to-the-old-service).
+     */
+    private fun useService(component: String?) {
+        if (component == null) shell("settings delete secure autofill_service")
+        else shell("settings put secure autofill_service $component")
+        val want = component?.let { c -> if ("/." in c) c.replace("/.", "/" + c.substringBefore("/") + ".") else c }
+        val deadline = System.currentTimeMillis() + 10_000
+        while (frameworkService() != want && System.currentTimeMillis() < deadline) Thread.sleep(100)
+        assertEquals("the framework's autofill service", want, frameworkService())
+    }
+
     @Before
     fun useTheProbeService() {
         previousService = shell("settings get secure autofill_service")
-        val component = "${instrumentation.context.packageName}/${ProbeAutofillService::class.java.name}"
-        shell("settings put secure autofill_service $component")
-        assertEquals("the probe is the autofill service", component, shell("settings get secure autofill_service"))
+        useService(probe)
         ProbeAutofillService.reset()
     }
 
     @After
     fun restoreTheService() {
-        if (previousService.isEmpty() || previousService == "null") shell("settings delete secure autofill_service")
-        else shell("settings put secure autofill_service $previousService")
+        useService(previousService.takeUnless { it.isEmpty() || it == "null" })
     }
 
     private fun dynamicField(contentType: String?) {
@@ -126,6 +150,22 @@ class ContentTypeReachesAutofillTest {
         dynamicField(null)
         focusAndWaitForARequest("f")
         assertFalse("hints: ${hints()}", "username" in hints() || "password" in hints())
+    }
+
+    /**
+     * The order CI's slow first test had: the field is on screen when the
+     * service changes, and it is focused right after. Without the wait for the
+     * framework the request went to the service before (GMS) and none came.
+     */
+    @Test
+    fun aFocusRightAfterTheSwitchReachesTheProbe() {
+        useService(previousService.takeUnless { it.isEmpty() || it == "null" })
+        dynamicField("username")
+        rule.waitForIdle()
+        useService(probe)
+        ProbeAutofillService.reset()
+        assertTrue("a fill request came", focusAndWaitForARequest("f"))
+        assertTrue("hints: ${hints()}", "username" in hints())
     }
 
     /** The codegen shape: the CustomTextField kjui emits, with the modifier it now writes. */
