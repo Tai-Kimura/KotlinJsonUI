@@ -52,10 +52,12 @@ class FieldVm(
     /** Each composition that reads the value takes this long: a screen that redraws a list. */
     val composeMillis: Long = 0,
     /** The handler takes this long on the main thread: a view model that rebuilds a list. */
-    private val handlerMillis: Long = 0
+    private val handlerMillis: Long = 0,
+    /** false: a sheet's own view model, whose data carries no handler (the screen's data carries it). */
+    withHandler: Boolean = true
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    private val _data = MutableStateFlow(FieldData(age = start, onAgeChange = ::onAgeChange))
+    private val _data = MutableStateFlow(FieldData(age = start, onAgeChange = if (withHandler) ::onAgeChange else null))
     val data = _data
 
     fun updateData(updates: Map<String, Any>) {
@@ -72,7 +74,11 @@ class FieldVm(
 
     private fun digits(v: String) = _data.update { it.copy(age = v.filter(Char::isDigit)) }
 
+    /** What the handler was called with, in order (the main thread's). */
+    val heard = java.util.Collections.synchronizedList(mutableListOf<String>())
+
     private fun onAgeChange(v: String) {
+        heard += v
         if (handlerMillis > 0) Thread.sleep(handlerMillis)
         when (answer) {
             Answer.DIGITS_SYNC -> digits(v)
