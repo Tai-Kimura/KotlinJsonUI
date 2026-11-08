@@ -206,21 +206,7 @@ object ResourceCache {
             // active palette. ResourceCache only needs to populate a usable
             // fallback so `resolveColor` works when the app hasn't wired
             // `Configuration.themedColorParser`.
-            val gson = Gson()
-            val jsonObject = gson.fromJson(jsonString, JsonObject::class.java)
-            val colors = mutableMapOf<String, String>()
-
-            val activePalette = resolveActivePalette(jsonObject)
-            if (activePalette != null) {
-                for ((key, value) in activePalette.entrySet()) {
-                    if (value.isJsonPrimitive) colors[key] = value.asString
-                }
-            } else {
-                // Legacy flat schema: entries are all primitives.
-                for ((key, value) in jsonObject.entrySet()) {
-                    if (value.isJsonPrimitive) colors[key] = value.asString
-                }
-            }
+            val colors = parseColorsJson(jsonString)
 
             colorsCache = colors
             Log.d(TAG, "Loaded ${colors.size} colors")
@@ -246,6 +232,26 @@ object ResourceCache {
             if (v.isJsonPrimitive) return v.asString
         }
         return null
+    }
+
+    /**
+     * colors.json (flat or themed) as name → colour. A key starting with `_`
+     * (`_comment`) is a note, not a colour — the rule jsonui-cli's
+     * ColorManagerCore keeps (note_key?), and the generated ColorManager has
+     * no colour of that name. It was a colour here, in a palette and at the
+     * top of a flat file. The meta keys of a file without `modes` /
+     * `fallback_mode` are not primitives' names either way.
+     */
+    internal fun parseColorsJson(jsonString: String): Map<String, String> {
+        val jsonObject = Gson().fromJson(jsonString, JsonObject::class.java) ?: return emptyMap()
+        val colors = mutableMapOf<String, String>()
+        // Themed: the active palette. Legacy flat: the top level's primitives.
+        val source = resolveActivePalette(jsonObject) ?: jsonObject
+        for ((key, value) in source.entrySet()) {
+            if (key.startsWith("_")) continue
+            if (value.isJsonPrimitive) colors[key] = value.asString
+        }
+        return colors
     }
 
     /**
