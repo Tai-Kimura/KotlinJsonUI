@@ -574,28 +574,37 @@ class DynamicTextFieldComponent {
                 else -> null
             }
 
-        private fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
-            // contentType takes priority
+        /**
+         * The keyboard: `input` first, and only when it names none (absent or
+         * `default`), `contentType`. iOS and the web take the keyboard from
+         * `input` alone; through 2.50.0 contentType came first here, and a value
+         * with no keyboard (username, usernameWebauthn, name, ...) turned
+         * `input: email` into the plain keyboard. The same order as the
+         * codegen (kjui textfield_component keyboard_options).
+         */
+        internal fun resolveKeyboardType(a: TextFieldAttributes): KeyboardType {
+            DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings)
+                ?.takeIf { it != "default" }
+                ?.let { input ->
+                    return when (input) {
+                        "email" -> KeyboardType.Email
+                        "password" -> KeyboardType.Password
+                        "number" -> KeyboardType.Number
+                        "decimal" -> KeyboardType.Decimal
+                        "phone" -> KeyboardType.Phone
+                        "url" -> KeyboardType.Uri
+                        else -> KeyboardType.Text
+                    }
+                }
             DeclaredSpelling.lowered(TypedAttrs.staticEnumString(a.contentType) { it.json }, TextFieldAttributes.ContentType.declaredSpellings)?.let { type ->
-                return when (type) {
+                when (type) {
                     "emailaddress", "email" -> KeyboardType.Email
                     "password", "newpassword" -> KeyboardType.Password
-                    "telephonenumber", "phone" -> KeyboardType.Phone
+                    "telephonenumber", "phone", "tel" -> KeyboardType.Phone
                     "url" -> KeyboardType.Uri
-                    "creditcardnumber" -> KeyboardType.Number
-                    else -> KeyboardType.Text
-                }
-            }
-            // Fallback to input
-            DeclaredSpelling.lowered(TypedAttrs.enumString(a.input) { it.json }, TextFieldAttributes.Input.declaredSpellings)?.let { input ->
-                return when (input) {
-                    "email" -> KeyboardType.Email
-                    "password" -> KeyboardType.Password
-                    "number" -> KeyboardType.Number
-                    "decimal" -> KeyboardType.Decimal
-                    "phone" -> KeyboardType.Phone
-                    else -> KeyboardType.Text
-                }
+                    "creditcardnumber", "postalcode" -> KeyboardType.Number
+                    else -> null
+                }?.let { return it }
             }
             return KeyboardType.Text
         }
