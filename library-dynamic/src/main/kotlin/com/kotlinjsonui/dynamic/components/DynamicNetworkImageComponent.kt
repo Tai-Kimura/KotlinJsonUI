@@ -116,7 +116,7 @@ class DynamicNetworkImageComponent {
                     .removeSuffix(".jpg")
                     .removeSuffix(".jpeg")
                     .removeSuffix(".webp")
-                context.resources.getIdentifier(cleanName, "drawable", context.packageName)
+                ResourceResolver.drawableIdNamed(cleanName, context)
             }?.takeIf { it != 0 }
 
             // ── Error image: errorImage, strip extension ──
@@ -127,7 +127,7 @@ class DynamicNetworkImageComponent {
                     .removeSuffix(".jpg")
                     .removeSuffix(".jpeg")
                     .removeSuffix(".webp")
-                context.resources.getIdentifier(cleanName, "drawable", context.packageName)
+                ResourceResolver.drawableIdNamed(cleanName, context)
             }?.takeIf { it != 0 }
 
             // ── Default image: what the view shows when there is no src at
@@ -140,7 +140,7 @@ class DynamicNetworkImageComponent {
                     .removeSuffix(".jpg")
                     .removeSuffix(".jpeg")
                     .removeSuffix(".webp")
-                context.resources.getIdentifier(cleanName, "drawable", context.packageName)
+                ResourceResolver.drawableIdNamed(cleanName, context)
             }?.takeIf { it != 0 }
 
             // ── Build modifier ──

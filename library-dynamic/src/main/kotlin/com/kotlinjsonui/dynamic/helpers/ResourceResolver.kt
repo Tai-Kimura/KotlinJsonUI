@@ -5,6 +5,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
+import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
 import com.kotlinjsonui.dynamic.UnresolvedResource
@@ -85,6 +86,20 @@ object ResourceResolver {
      * first; an unresolved binding, or no value, is null. [resolveDrawable]
      * looks up this name, and CircleImage checks this name for a URL.
      */
+    /**
+     * The drawable named *name* in the current colour mode: the mode's own
+     * picture `<name>__<mode>` if the app carries one, else `<name>`; 0 when
+     * neither. Every Dynamic image lookup by name comes here.
+     */
+    fun drawableIdNamed(name: String, context: Context): Int {
+        val res = context.resources
+        val modeResId = res.getIdentifier("${name}__${modeSuffix(Configuration.currentThemeMode)}", "drawable", context.packageName)
+        return if (modeResId != 0) modeResId else res.getIdentifier(name, "drawable", context.packageName)
+    }
+
+    /** A mode as jui build spells it in a drawable's name: `[a-z0-9_]`. */
+    internal fun modeSuffix(mode: String): String = mode.lowercase().replace(Regex("[^a-z0-9_]"), "_")
+
     internal fun drawableName(value: String?, data: Map<String, Any>): String? {
         if (value == null) return null
         return if (value.startsWith("@{") && value.endsWith("}")) {
@@ -109,7 +124,13 @@ object ResourceResolver {
     ): Int {
         val resolved = drawableName(value, data) ?: return 0
 
-        val resId = context.resources.getIdentifier(resolved, "drawable", context.packageName)
+        // A colour mode's own picture first: jui build writes
+        // `<name>.<mode>.svg` as the drawable `<name>__<mode>` (the mode
+        // spelled as a resource name). The mode is the library's label,
+        // which the generated ColorManager sets; it is state, so a composable
+        // that resolves here draws again when the mode changes. A name with
+        // no picture for the mode is drawn as it always was.
+        val resId = drawableIdNamed(resolved, context)
         // 0 still comes back — the caller's behaviour and the consumer's
         // rendering are unchanged. It just stops being silent in a debuggable
         // build: the codegen path spells the same name as R.drawable.<name>

@@ -152,6 +152,8 @@ class DeclaredSpellingTest {
      * generated enum (checked by reflection) is not an enum, so it stays.
      */
     private val left = listOf(
+        Left("${dyn}helpers/ResourceResolver.kt", "internal fun modeSuffix(mode: String): String = mode.lowercase().replace(Regex(\"[^a-z0-9_]\"), \"_\")",
+            "a colour mode's name spelled as jui build spells it in a drawable's name (<name>__<mode>, an Android resource name: [a-z0-9_]); not an attribute's spelling"),
         Left("${dyn}components/DynamicTextComponent.kt", "when (align.lowercase()) {",
             "Label.highlightAttributes.textAlign — $nested; hintAttributes declares no textAlign"),
         Left("${dyn}components/DynamicTextComponent.kt", "is Map<*, *> -> !\"none\".equals(declared[\"lineStyle\"] as? String, ignoreCase = true)",

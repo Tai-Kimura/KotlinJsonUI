@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.google.gson.JsonObject
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
 import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.LocalSafeAreaConfig
@@ -431,11 +432,7 @@ class DynamicTabViewComponent {
             if (iconType == "resource") {
                 // Use drawable resource
                 val context = LocalContext.current
-                val drawableId = context.resources.getIdentifier(
-                    iconName,
-                    "drawable",
-                    context.packageName
-                )
+                val drawableId = ResourceResolver.drawableIdNamed(iconName, context)
                 if (drawableId != 0) {
                     Icon(
                         painter = painterResource(id = drawableId),
