@@ -112,3 +112,7 @@ gradle.properties.kotlinjsonui.claude/
 conformance-host/src/main/assets/conformance/
 # Companion embedded-screen layouts are synced at run time (never committed)
 conformance-host/src/main/assets/Layouts/
+
+# Xcode / SwiftPM build output (a -derivedDataPath inside the tree; never tracked)
+.build/
+DerivedData/
