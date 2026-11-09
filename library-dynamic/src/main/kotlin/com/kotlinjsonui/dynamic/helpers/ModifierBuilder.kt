@@ -116,9 +116,14 @@ object ModifierBuilder {
             when {
                 valueExpr != null && viewId != null -> {
                     @Suppress("UNCHECKED_CAST")
-                    (fn as? (String, Any) -> Unit)?.invoke(viewId, valueExpr)
-                        ?: (fn as? (Any) -> Unit)?.invoke(valueExpr)
-                        ?: (fn as? () -> Unit)?.invoke()
+                    val two = fn as? (String, Any) -> Unit
+                    @Suppress("UNCHECKED_CAST")
+                    val one = fn as? (Any) -> Unit
+                    when {
+                        two != null -> withValueAsDeclared(valueExpr) { two(viewId, it) }
+                        one != null -> withValueAsDeclared(valueExpr) { one(it) }
+                        else -> @Suppress("UNCHECKED_CAST") (fn as? () -> Unit)?.invoke()
+                    }
                 }
                 viewId != null -> {
                     @Suppress("UNCHECKED_CAST")
@@ -129,8 +134,9 @@ object ModifierBuilder {
                     // Payload without an id (e.g. onPan/onPinch on an id-less
                     // node): (T) -> Unit gets the payload, () -> Unit ignores it.
                     @Suppress("UNCHECKED_CAST")
-                    (fn as? (Any) -> Unit)?.invoke(valueExpr)
-                        ?: (fn as? () -> Unit)?.invoke()
+                    val one = fn as? (Any) -> Unit
+                    if (one != null) withValueAsDeclared(valueExpr) { one(it) }
+                    else @Suppress("UNCHECKED_CAST") (fn as? () -> Unit)?.invoke()
                 }
                 else -> {
                     @Suppress("UNCHECKED_CAST")
@@ -139,6 +145,24 @@ object ModifierBuilder {
             }
         } catch (_: Exception) {
             // Signature mismatch – silently skip
+        }
+    }
+
+    /**
+     * A Float value (a Slider's, a pinch's scale) for a handler declared
+     * `(Double)`: SwiftUI hands the same declaration a Double (or a CGFloat,
+     * which Swift passes to a Double), so a layout declares Double. The type
+     * is erased here; the handler's own bridge rejects the Float before its
+     * body runs (ClassCastException), and the value is handed again as a
+     * Double. Until 2.53.x the rejection was swallowed and the handler never
+     * called (ticket kjui-slider-on-value-change-passes-float-to-double-handler).
+     * Any other exception — the handler's own — is not retried.
+     */
+    private inline fun withValueAsDeclared(value: Any, call: (Any) -> Unit) {
+        try {
+            call(value)
+        } catch (e: ClassCastException) {
+            if (value is Float && e.message.orEmpty().contains("java.lang.Double")) call(value.toDouble()) else throw e
         }
     }
 
