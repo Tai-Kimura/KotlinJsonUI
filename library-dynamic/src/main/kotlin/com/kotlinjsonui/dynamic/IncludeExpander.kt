@@ -120,6 +120,18 @@ object IncludeExpander {
             includedJson
         }
 
+        // A constraint between two elements of this partial names its target
+        // by the id the partial wrote; the element's id gets this include's
+        // prefix below, so the target gets it too — before the include
+        // element's own properties are merged in, which name the including
+        // layout's elements and stay as written (jsonui-cli ticket
+        // rjui-include-root-sibling-constraint-dropped, row D4; the codegen
+        // expanders' prefix_constraint_targets, answer for answer —
+        // src/test/resources/include_constraint_targets_fixture.json).
+        if (newPrefix != null) {
+            prefixConstraintTargets(styledJson, newPrefix, declaredIds(styledJson).toSet())
+        }
+
         // Merge properties from include element (except 'include' and 'id')
         includeJson.entrySet().forEach { (key, value) ->
             if (key != "include" && key != "id") {
@@ -226,6 +238,62 @@ object IncludeExpander {
     /**
      * Apply ID prefix to all ids, data names, and @{} bindings
      */
+    /**
+     * The attributes that name another element of the same container as a
+     * constraint's target (common.json align*OfView / align*View /
+     * alignCenter*View).
+     */
+    internal val constraintTargetKeys = listOf(
+        "alignTopOfView", "alignBottomOfView", "alignLeftOfView", "alignRightOfView",
+        "alignTopView", "alignBottomView", "alignLeftView", "alignRightView",
+        "alignCenterVerticalView", "alignCenterHorizontalView"
+    )
+
+    /**
+     * The ids a partial declares itself: its elements' ids, not the ids inside
+     * a partial it includes and not an include element's id (a prefix, not an
+     * element).
+     */
+    internal fun declaredIds(element: JsonElement?): List<String> = when {
+        element == null -> emptyList()
+        element.isJsonArray -> element.asJsonArray.flatMap { declaredIds(it) }
+        element.isJsonObject -> {
+            val obj = element.asJsonObject
+            if (obj.has("include")) {
+                emptyList()
+            } else {
+                val own = obj.get("id")?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isString }?.asString
+                listOfNotNull(own) + declaredIds(obj.get("child") ?: obj.get("children"))
+            }
+        }
+        else -> emptyList()
+    }
+
+    /**
+     * Prefixes, in place, each constraint target in [element] that names one of
+     * [ids], the way the ids themselves are prefixed. An include element's own
+     * properties are read (they land on its root); the partial it names is not
+     * entered.
+     */
+    internal fun prefixConstraintTargets(element: JsonElement?, prefix: String, ids: Set<String>) {
+        when {
+            element == null -> return
+            element.isJsonArray -> element.asJsonArray.forEach { prefixConstraintTargets(it, prefix, ids) }
+            element.isJsonObject -> {
+                val obj = element.asJsonObject
+                constraintTargetKeys.forEach { key ->
+                    val target = obj.get(key)
+                    if (target != null && target.isJsonPrimitive && target.asJsonPrimitive.isString && target.asString in ids) {
+                        obj.addProperty(key, combineWithPrefix(prefix, target.asString))
+                    }
+                }
+                if (obj.has("include")) return
+                prefixConstraintTargets(obj.get("child"), prefix, ids)
+                prefixConstraintTargets(obj.get("children"), prefix, ids)
+            }
+        }
+    }
+
     private fun applyIdPrefix(json: JsonObject, prefix: String): JsonObject {
         // Apply prefix to data definitions
         if (json.has("data") && json.get("data").isJsonArray) {
