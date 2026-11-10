@@ -286,7 +286,7 @@ data class CommonAttributes(
     val userInteractionEnabled: AttrValue<Boolean>? = null,
     /** Variables for include The SwiftUI codegen DOES read this (base_view_converter.rb), but only to echo it back as a `// variables: ...` comment — nothing reaches the rendered view, so `mode: uikit` stands. Recorded because the 2026-08-05 mode audit flags the read and the next auditor would otherwise re-derive it: the read is real, the effect is not. */
     val variables: Map<String, Any?>? = null,
-    /** View visibility state (can be data binding) */
+    /** View visibility state (can be data binding). gone collapses: no size and no position, and a constraint that names a gone element does not apply (attribute_semantics visibility.goneModel); invisible keeps its space. */
     val visibility: AttrValue<AttrEnum<Visibility>>? = null,
     /** Shorthand for widthWeight (binding supported) [accepts: number | string] */
     val weight: AttrValue<Any>? = null,
