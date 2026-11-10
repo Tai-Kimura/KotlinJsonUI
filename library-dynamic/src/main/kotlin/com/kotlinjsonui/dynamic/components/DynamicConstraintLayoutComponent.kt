@@ -212,27 +212,28 @@ class DynamicConstraintLayoutComponent {
             // The anchor's padding-drawn margin on one edge (0 when none).
             fun pad(id: String, edge: (ModifierBuilder.MarginPaddings) -> Float): Float = pads[id]?.let(edge) ?: 0f
             with(scope) {
-                // Extract margins
-                var topMargin = ModifierBuilder.dimen(childNode.get("topMargin"), data)?.toInt() ?: 0
-                var bottomMargin = ModifierBuilder.dimen(childNode.get("bottomMargin"), data)?.toInt() ?: 0
-                var leftMargin = ModifierBuilder.dimen(childNode.get("leftMargin"), data)?.toInt() ?: 0
-                var rightMargin = ModifierBuilder.dimen(childNode.get("rightMargin"), data)?.toInt() ?: 0
-
-                // Handle margins array
-                childNode.get("margins")?.asJsonArray?.let { margins ->
-                    if (margins.size() == 4) {
-                        val arrayTopMargin = ModifierBuilder.dimen(margins[0], data)?.toInt() ?: 0
-                        val arrayRightMargin = ModifierBuilder.dimen(margins[1], data)?.toInt() ?: 0
-                        val arrayBottomMargin = ModifierBuilder.dimen(margins[2], data)?.toInt() ?: 0
-                        val arrayLeftMargin = ModifierBuilder.dimen(margins[3], data)?.toInt() ?: 0
-
-                        // Use array values if individual margins not specified
-                        if (!childNode.has("topMargin")) topMargin = arrayTopMargin
-                        if (!childNode.has("bottomMargin")) bottomMargin = arrayBottomMargin
-                        if (!childNode.has("leftMargin")) leftMargin = arrayLeftMargin
-                        if (!childNode.has("rightMargin")) rightMargin = arrayRightMargin
-                    }
-                }
+                // This child's own margins are drawn as padding around its
+                // declared size (DynamicView -> applyMargins), so its ref box
+                // already holds them: a link puts the BOX on the line and the
+                // margin is the space between the box's edge and what it
+                // draws. A link that added the margin again drew it twice
+                // (alignTop/Bottom/Left/Right and align*OfView: the margin
+                // twice), and one that took it away drew none (align*View).
+                // Ticket kjui-dynamic-relative-container-bottom-margin-applied-twice
+                // (family table 2026-11-10, 14 rows, against iOS, web and the
+                // margins.offsetModel declaration).
+                //
+                // A centred axis takes no margin (margins.offsetModel: "an
+                // explicit center declaration disables that axis margin"):
+                // the box is centred between lines moved out by its own
+                // margins, which puts what it draws at the centre. Centring
+                // the box itself put it half a margin off (ticket
+                // relative-center-with-margin-diverges-from-declaration).
+                val own = ModifierBuilder.marginPaddings(childNode, data)
+                val ownTop = own?.top ?: 0f
+                val ownBottom = own?.bottom ?: 0f
+                val ownStart = own?.start ?: 0f
+                val ownEnd = own?.end ?: 0f
 
                 // Position relative to other views
                 childNode.get("alignTopOfView")?.asString?.let { targetId ->
@@ -241,103 +242,96 @@ class DynamicConstraintLayoutComponent {
                         // `bottom.linkTo(a.top, m)` is a.top - m, the drawn
                         // top is a.top + its margin (ticket
                         // kjui-relative-align-view-measures-the-anchor-with-its-margin).
-                        bottom.linkTo(targetRef.top, margin = (bottomMargin - pad(targetId) { it.top }).dp)
+                        bottom.linkTo(targetRef.top, margin = (-pad(targetId) { it.top }).dp)
                     }
                 }
 
                 childNode.get("alignBottomOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        top.linkTo(targetRef.bottom, margin = (topMargin - pad(targetId) { it.bottom }).dp)
+                        top.linkTo(targetRef.bottom, margin = (-pad(targetId) { it.bottom }).dp)
                     }
                 }
 
                 childNode.get("alignLeftOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        end.linkTo(targetRef.start, margin = (rightMargin - pad(targetId) { it.start }).dp)
+                        end.linkTo(targetRef.start, margin = (-pad(targetId) { it.start }).dp)
                     }
                 }
 
                 childNode.get("alignRightOfView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        start.linkTo(targetRef.end, margin = (leftMargin - pad(targetId) { it.end }).dp)
+                        start.linkTo(targetRef.end, margin = (-pad(targetId) { it.end }).dp)
                     }
                 }
 
-                // Align edges with other views
+                // Align edges with other views: the box's edge on the
+                // anchor's drawn edge; the own margin then sits inside it.
                 childNode.get("alignTopView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        // For edge alignment, negative margin moves in expected direction
-                        // The anchor's drawn edge, then the own margin pulled inward.
-                        top.linkTo(targetRef.top, margin = (pad(targetId) { it.top } - (if (topMargin > 0) topMargin else 0)).dp)
+                        top.linkTo(targetRef.top, margin = pad(targetId) { it.top }.dp)
                     }
                 }
 
                 childNode.get("alignBottomView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        bottom.linkTo(targetRef.bottom, margin = (pad(targetId) { it.bottom } - (if (bottomMargin > 0) bottomMargin else 0)).dp)
+                        bottom.linkTo(targetRef.bottom, margin = pad(targetId) { it.bottom }.dp)
                     }
                 }
 
                 childNode.get("alignLeftView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        start.linkTo(targetRef.start, margin = (pad(targetId) { it.start } - (if (leftMargin > 0) leftMargin else 0)).dp)
+                        start.linkTo(targetRef.start, margin = pad(targetId) { it.start }.dp)
                     }
                 }
 
                 childNode.get("alignRightView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        end.linkTo(targetRef.end, margin = (pad(targetId) { it.end } - (if (rightMargin > 0) rightMargin else 0)).dp)
+                        end.linkTo(targetRef.end, margin = pad(targetId) { it.end }.dp)
                     }
                 }
 
-                // Center with other views
+                // Center with other views: between the anchor's drawn edges,
+                // moved out by the own margins.
                 childNode.get("alignCenterVerticalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        // Between the anchor's drawn edges.
-                        top.linkTo(targetRef.top, margin = pad(targetId) { it.top }.dp)
-                        bottom.linkTo(targetRef.bottom, margin = pad(targetId) { it.bottom }.dp)
+                        top.linkTo(targetRef.top, margin = (pad(targetId) { it.top } - ownTop).dp)
+                        bottom.linkTo(targetRef.bottom, margin = (pad(targetId) { it.bottom } - ownBottom).dp)
                     }
                 }
 
                 childNode.get("alignCenterHorizontalView")?.asString?.let { targetId ->
                     refs[targetId]?.let { targetRef ->
-                        start.linkTo(targetRef.start, margin = pad(targetId) { it.start }.dp)
-                        end.linkTo(targetRef.end, margin = pad(targetId) { it.end }.dp)
+                        start.linkTo(targetRef.start, margin = (pad(targetId) { it.start } - ownStart).dp)
+                        end.linkTo(targetRef.end, margin = (pad(targetId) { it.end } - ownEnd).dp)
                     }
                 }
 
-                // Parent constraints
+                // Parent constraints: the box on the parent's edge.
                 if (ResourceResolver.resolveBoolean(childNode, "alignTop", data, default = false)) {
-                    top.linkTo(parent.top, margin = topMargin.dp)
+                    top.linkTo(parent.top)
                 }
 
                 if (ResourceResolver.resolveBoolean(childNode, "alignBottom", data, default = false)) {
-                    bottom.linkTo(parent.bottom, margin = bottomMargin.dp)
+                    bottom.linkTo(parent.bottom)
                 }
 
                 if (ResourceResolver.resolveBoolean(childNode, "alignLeft", data, default = false)) {
-                    start.linkTo(parent.start, margin = leftMargin.dp)
+                    start.linkTo(parent.start)
                 }
 
                 if (ResourceResolver.resolveBoolean(childNode, "alignRight", data, default = false)) {
-                    end.linkTo(parent.end, margin = rightMargin.dp)
-                }
-
-                if (ResourceResolver.resolveBoolean(childNode, "centerHorizontal", data, default = false)) {
-                    start.linkTo(parent.start)
                     end.linkTo(parent.end)
                 }
 
-                if (ResourceResolver.resolveBoolean(childNode, "centerVertical", data, default = false)) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
+                val centerAll = ResourceResolver.resolveBoolean(childNode, "centerInParent", data, default = false)
+                if (centerAll || ResourceResolver.resolveBoolean(childNode, "centerHorizontal", data, default = false)) {
+                    start.linkTo(parent.start, margin = (-ownStart).dp)
+                    end.linkTo(parent.end, margin = (-ownEnd).dp)
                 }
 
-                if (ResourceResolver.resolveBoolean(childNode, "centerInParent", data, default = false)) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
+                if (centerAll || ResourceResolver.resolveBoolean(childNode, "centerVertical", data, default = false)) {
+                    top.linkTo(parent.top, margin = (-ownTop).dp)
+                    bottom.linkTo(parent.bottom, margin = (-ownBottom).dp)
                 }
             }
         }
