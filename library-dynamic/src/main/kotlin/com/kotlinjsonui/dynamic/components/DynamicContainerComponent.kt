@@ -19,6 +19,7 @@ import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.ViewAttributes
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
+import com.kotlinjsonui.dynamic.helpers.ResourceResolver
 import com.kotlinjsonui.dynamic.helpers.SafeAreaEdges
 import com.kotlinjsonui.dynamic.processDataBinding
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
@@ -436,6 +437,7 @@ class DynamicContainerComponent {
 
             var childModifier: Modifier = Modifier
             if (alignment is Alignment) childModifier = childModifier.align(alignment)
+            centredMarginOffset(child, data)?.let { (dx, dy) -> childModifier = childModifier.offset(x = dx.dp, y = dy.dp) }
 
             if (visibility != null) {
                 VisibilityWrapper(visibility = visibility, modifier = childModifier) {
@@ -448,6 +450,33 @@ class DynamicContainerComponent {
             } else {
                 DynamicView(drawn, data)
             }
+        }
+
+        /**
+         * The offset that puts what a Box child draws at the centre of an axis
+         * the child itself centres on, or null when there is none.
+         *
+         * The child's margins are drawn as padding around its declared size
+         * (DynamicView -> applyMargins), so `.align` centres the box with the
+         * margins in it, and what it draws sat half the difference of the two
+         * margins off the centre. margins.offsetModel: "an explicit center
+         * declaration disables that axis margin" — iOS draws it at the centre
+         * (ticket relative-center-with-margin-diverges-from-declaration,
+         * family table 2026-11-10: 45 rows off on Android, none on iOS).
+         * Only the child's own centerHorizontal / centerVertical /
+         * centerInParent: a child the container's gravity centres declares
+         * no center. Equal margins need nothing. `offset` follows the layout
+         * direction, as the start / end margins do.
+         */
+        internal fun centredMarginOffset(child: JsonObject, data: Map<String, Any>): Pair<Float, Float>? {
+            val all = ResourceResolver.resolveBoolean(child, "centerInParent", data, default = false)
+            val x = all || ResourceResolver.resolveBoolean(child, "centerHorizontal", data, default = false)
+            val y = all || ResourceResolver.resolveBoolean(child, "centerVertical", data, default = false)
+            if (!x && !y) return null
+            val m = ModifierBuilder.marginPaddings(child, data) ?: return null
+            val dx = if (x) (m.end - m.start) / 2f else 0f
+            val dy = if (y) (m.bottom - m.top) / 2f else 0f
+            return if (dx == 0f && dy == 0f) null else dx to dy
         }
 
         // ── Where the container places an over-constrained child ──
