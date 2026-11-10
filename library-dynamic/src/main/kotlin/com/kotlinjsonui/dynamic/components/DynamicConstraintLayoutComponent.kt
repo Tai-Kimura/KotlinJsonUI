@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.dynamic.processDataBinding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -107,6 +108,16 @@ class DynamicConstraintLayoutComponent {
             // Build modifier using composite buildModifier (handles background internally via applyBackground)
             val modifier = ModifierBuilder.buildModifier(json, data, context = context, defaultFillMaxWidth = true)
 
+            // The children that are gone: gone takes no size and no position,
+            // so a constraint that names one does not apply and the child
+            // is placed as it would be without it (attribute_semantics
+            // goneModel, 2026-11-10; ticket
+            // relative-constraint-to-gone-anchor-keeps-its-place). It was
+            // linked to the box the anchor's own constraints still placed,
+            // as if it were there. A binding is read now, as DynamicView
+            // reads it to draw the child.
+            val gone = goneIds(childrenArray, data, context)
+
             // Create constraint set from children
             val constraintSet = ConstraintSet {
                 // Create refs for all children
@@ -141,7 +152,7 @@ class DynamicConstraintLayoutComponent {
 
                         constrain(ref) {
                             // Apply relative positioning constraints
-                            applyRelativePositioning(childJson, this@ConstraintSet, this, refs, pads, data)
+                            applyRelativePositioning(childJson, this@ConstraintSet, this, refs.filterKeys { it !in gone }, pads, data)
 
                             // Apply dimension constraints
                             applyDimensionConstraints(childJson, this)
@@ -168,6 +179,19 @@ class DynamicConstraintLayoutComponent {
                     }
                 }
             }
+        }
+
+        /** The ids of the children whose visibility resolves to `gone`. */
+        internal fun goneIds(children: JsonArray, data: Map<String, Any>, context: android.content.Context): Set<String> {
+            val ids = mutableSetOf<String>()
+            children.forEachIndexed { index, element ->
+                if (!element.isJsonObject) return@forEachIndexed
+                val child = element.asJsonObject
+                val raw = child.get("visibility")?.takeIf { it.isJsonPrimitive }?.asString ?: return@forEachIndexed
+                val resolved = processDataBinding(raw, data, context)
+                if (resolved.equals("gone", ignoreCase = true)) ids += child.get("id")?.asString ?: "view_$index"
+            }
+            return ids
         }
 
         /**
