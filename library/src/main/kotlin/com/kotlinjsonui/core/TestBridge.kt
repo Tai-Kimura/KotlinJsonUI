@@ -65,8 +65,13 @@ object JsonUITestValue {
         data class ListOf(val element: Base) : Shape
         data object AnyPrimitiveList : Shape
         data object PrimitiveMap : Shape
+        /** `visible` / `invisible` / `gone`, a String on the generated Data. Never a list element. */
+        data object Visibility : Shape
         data object Unsupported : Shape
     }
+
+    private val VISIBILITY_SPELLINGS = setOf("Visibility", "visibility")
+    private val VISIBILITY_VALUES = setOf("visible", "invisible", "gone")
 
     private val BASE_SPELLINGS = mapOf(
         "String" to Base.STRING,
@@ -83,6 +88,7 @@ object JsonUITestValue {
 
     private fun shape(spelling: String): Shape {
         base(spelling)?.let { return Shape.Primitive(it) }
+        if (spelling in VISIBILITY_SPELLINGS) return Shape.Visibility
         // A closure type is unsupported whatever else it looks like.
         if (spelling.contains("->")) return Shape.Unsupported
         val element = Regex("""^Array\((.+)\)$""").find(spelling)?.groupValues?.get(1)
@@ -132,6 +138,7 @@ object JsonUITestValue {
                 ?.map { plain(it) }
             Shape.PrimitiveMap -> (value as? Map<*, *>)?.takeIf { map -> map.values.all { isPrimitive(it) } }
                 ?.entries?.associate { (k, v) -> k.toString() to plain(v) }
+            Shape.Visibility -> (value as? String)?.takeIf { it in VISIBILITY_VALUES }
             Shape.Unsupported -> null
         }
         return if (converted == null || converted === MISMATCH) TestValueVerdict.Rejected("type mismatch: expected $declaredClass")

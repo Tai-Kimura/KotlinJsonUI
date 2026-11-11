@@ -108,6 +108,22 @@ class TestBridgeTest {
         assertFalse(JsonUITestValue.publishes("Color"))
     }
 
+    /** A Visibility is the String the Data holds: applied as it is, and published back. */
+    @Test
+    fun aVisibilityIsAppliedAsItsWordAndPublished() {
+        var updated: Map<String, Any?> = emptyMap()
+        val rejected = JsonUITestValue.applyAll(
+            mapOf("v" to "gone", "w" to "hidden", "o" to null),
+            mapOf("v" to "Visibility", "w" to "visibility", "o" to "Visibility?"),
+            update = { updated = it }
+        )
+        assertEquals(mapOf("v" to "gone", "o" to null), updated)
+        assertEquals(listOf(RejectedKey("w", "type mismatch: expected visibility")), rejected)
+        assertEquals(mapOf("v" to "visible"), JsonUITestValue.snapshot(mapOf("v" to "visible"), mapOf("v" to "Visibility")))
+        assertEquals(TestValueVerdict.Rejected("unsupported type Array(Visibility)"),
+            JsonUITestValue.check(json("[\"gone\"]"), "Array(Visibility)"))
+    }
+
     /** Without updateData nothing is applied, and every value the check accepts says why. */
     @Test
     fun withoutUpdateDataEveryAcceptedKeyIsRejectedWithTheReason() {
