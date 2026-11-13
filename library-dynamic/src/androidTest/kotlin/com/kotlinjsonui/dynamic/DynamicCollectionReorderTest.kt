@@ -116,4 +116,37 @@ class DynamicCollectionReorderTest {
         rule.runOnIdle { actions!![1].action() }
         assertEquals(listOf(listOf(0, 1, 2)), moves)
     }
+
+    // onReorderStart (section, index) / onReorderEnd (section) through the layout's bindings (shared/core/
+    // reorder_vectors.json rule.callbacks; ticket jui-collection-reorder-start-callback-missing): a drag that moves, a drag
+    // let go where it started, and the screen reader's move - each in the order the rule gives.
+    private val events = mutableListOf<List<Any>>()
+
+    private fun callbackData(n: Int) = mapOf(
+        "items" to items(n), "editing" to true,
+        "onReorder" to { s: Int, f: Int, t: Int -> events.add(listOf("reorder", s, f, t)) },
+        "onReorderStart" to { s: Int, i: Int -> events.add(listOf("start", s, i)) },
+        "onReorderEnd" to { s: Int -> events.add(listOf("end", s)) },
+    )
+
+    private val withCallbacks = ", \"onReorderStart\": \"@{onReorderStart}\", \"onReorderEnd\": \"@{onReorderEnd}\""
+
+    @Test fun the_callbacks_come_around_a_drag_that_moves() {
+        show(collection("lazy", withCallbacks), callbackData(30))
+        drag("rows_item_1", 2.2f)
+        assertEquals(listOf(listOf("start", 0, 1), listOf("reorder", 0, 1, 3), listOf("end", 0)), events)
+    }
+
+    @Test fun the_callbacks_come_alone_when_the_row_is_let_go_where_it_started() {
+        show(collection("none", withCallbacks), callbackData(6), outerScroll = true)
+        drag("rows_item_1", 0.2f)
+        assertEquals(listOf(listOf("start", 0, 1), listOf("end", 0)), events)
+    }
+
+    @Test fun the_screen_readers_move_calls_start_reorder_end() {
+        show(collection("lazy", withCallbacks), callbackData(5))
+        val actions = rule.onNodeWithTag("rows_item_1").fetchSemanticsNode().config.getOrNull(SemanticsActions.CustomActions)
+        rule.runOnIdle { actions!![1].action() }
+        assertEquals(listOf(listOf("start", 0, 1), listOf("reorder", 0, 1, 2), listOf("end", 0)), events)
+    }
 }

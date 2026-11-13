@@ -158,6 +158,16 @@ class DynamicCollectionComponent {
                 reorderHandlerOf(DataBindingContext.evaluateExpression(expr, data))
             }
             val reorderOn = reorderHandler != null && TypedAttrs.boolean(a.reorderable, data) == true
+            // onReorderStart (section, index) / onReorderEnd (section) (shared/core/reorder_vectors.json
+            // rule.callbacks): the binding or the bare name, as onReorder.
+            val reorderStartHandler: ((Int, Int) -> Unit)? = run {
+                val expr = ModifierBuilder.handlerExpression(a.onReorderStart?.rawRepresentation() as? String) ?: return@run null
+                reorderStartHandlerOf(DataBindingContext.evaluateExpression(expr, data))
+            }
+            val reorderEndHandler: ((Int) -> Unit)? = run {
+                val expr = ModifierBuilder.handlerExpression(a.onReorderEnd?.rawRepresentation() as? String) ?: return@run null
+                indexHandler(DataBindingContext.evaluateExpression(expr, data))
+            }
 
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
@@ -608,7 +618,7 @@ class DynamicCollectionComponent {
                 // Reorder: the vertical single-column rows of an EAGER or NONE column (ticket
                 // jui-collection-drag-to-reorder). The column is the container; NONE rides an outer scroll.
                 val columnReorder = rememberCollectionReorder(
-                    if (reorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler) else null,
+                    if (reorderOn) CollectionReorder(true, a.reorderHandle != null, onReorderStart = reorderStartHandler, onReorderEnd = reorderEndHandler, onReorder = reorderHandler) else null,
                     scrollsItself = columnScrolls,
                 )
                 CollectionReorderScope(columnReorder) {
@@ -814,7 +824,7 @@ class DynamicCollectionComponent {
                 // the grid is the container and scrolls itself.
                 val gridReorderOn = reorderOn && gridColumns == 1
                 val gridReorder = rememberCollectionReorder(
-                    if (gridReorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler) else null,
+                    if (gridReorderOn) CollectionReorder(true, a.reorderHandle != null, onReorderStart = reorderStartHandler, onReorderEnd = reorderEndHandler, onReorder = reorderHandler) else null,
                 )
                 CollectionReorderScope(gridReorder) {
                 LazyVerticalGrid(
@@ -2505,6 +2515,13 @@ class DynamicCollectionComponent {
                 return cellCounts.indices.map { s -> if (s == 0) rows(all, sectionColumns.firstOrNull() ?: 1) else emptyList() }
             }
             return cellCounts.mapIndexed { s, n -> rows((0 until n).map { s to it }, sectionColumns.getOrElse(s) { 1 }) }
+        }
+
+        /** onReorderStart's handler as the data holds it: (section, index). */
+        @Suppress("UNCHECKED_CAST")
+        internal fun reorderStartHandlerOf(value: Any?): ((Int, Int) -> Unit)? = when (value) {
+            is Function2<*, *, *> -> { s: Int, i: Int -> (value as (Int, Int) -> Unit)(s, i) }
+            else -> null
         }
 
         @Suppress("UNCHECKED_CAST")

@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: v2.5.34 # jsonui-cli v2.5.34: Collection's reorder attributes and shared/core/reorder_vectors.json (ticket jui-collection-drag-to-reorder)
+      JSONUI_CLI_MANIFEST_REF: 6cc3dcd251d3db4b64f78141afc3713bc6fea651 # jsonui-cli feat/reorder-items-guard: onReorderStart / onReorderEnd (CollectionAttributes, reorder_vectors.json callbacks) (move to v2.5.37 at integration)
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
@@ -124,6 +124,9 @@ jobs:
                "shared/core/camel_case_vectors.json"),
               # A reorderable Collection's rule (CollectionReorderRulesVectorsTest).
               ("library/src/test/resources/reorder_vectors.json",
+               "shared/core/reorder_vectors.json"),
+              # The callbacks' order on a device (CollectionReorderTest callbacks_*).
+              ("library/src/androidTest/resources/reorder_vectors.json",
                "shared/core/reorder_vectors.json"),
               ("library-dynamic/src/test/resources/responsive_resolution_vectors.json",
                "shared/core/responsive_resolution_vectors.json"),

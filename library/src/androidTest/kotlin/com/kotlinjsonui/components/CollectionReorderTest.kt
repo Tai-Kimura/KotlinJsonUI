@@ -50,8 +50,15 @@ class CollectionReorderTest {
     private val moves = mutableListOf<Triple<Int, Int, Int>>()
     private val clicks = mutableListOf<Int>()
 
-    private fun reorder(usesHandle: Boolean = false) =
-        CollectionReorder(isEnabled = true, usesHandle = usesHandle) { s, f, t -> moves.add(Triple(s, f, t)) }
+    /** onReorderStart, onReorder and onReorderEnd in the order they came, as reorder_vectors.json's callbacks write them. */
+    private val events = mutableListOf<List<Any>>()
+
+    private fun reorder(usesHandle: Boolean = false) = CollectionReorder(
+        isEnabled = true, usesHandle = usesHandle,
+        onReorder = { s, f, t -> moves.add(Triple(s, f, t)); events.add(listOf("reorder", s, f, t)) },
+        onReorderStart = { s, i -> events.add(listOf("start", s, i)) },
+        onReorderEnd = { s -> events.add(listOf("end", s)) },
+    )
 
     /** The handle's visibility per row (VisibilityWrapper's words); a row not listed draws its handle. */
     private var handleVisibility: Map<Int, String> = emptyMap()
@@ -303,5 +310,66 @@ class CollectionReorderTest {
         assertEquals("the rebuild was made", null, pendingChange)
         assertTrue("moves $moves", moves.isEmpty())
         assertEquals(null, dragState?.drag(0)?.dragging)
+    }
+
+    // shared/core/reorder_vectors.json callbacks (rule.callbacks; ticket jui-collection-reorder-start-callback-missing):
+    // each scenario's onReorderStart / onReorder / onReorderEnd, in the order the table gives (a copy in the test's
+    // resources, compared with jsonui-cli's by CI's vendored-attr-guard).
+    private fun expected(name: String): List<List<Any>> {
+        val text = requireNotNull(javaClass.classLoader?.getResourceAsStream("reorder_vectors.json")) { "reorder_vectors.json" }
+            .reader(Charsets.UTF_8).use { it.readText() }
+        val cases = org.json.JSONObject(text).getJSONArray("callbacks")
+        for (c in 0 until cases.length()) {
+            val case = cases.getJSONObject(c)
+            if (case.getString("name") != name) continue
+            val ev = case.getJSONArray("events")
+            return (0 until ev.length()).map { e -> val a = ev.getJSONArray(e); (0 until a.length()).map { a.get(it) } }
+        }
+        throw AssertionError("no callbacks case named $name")
+    }
+
+    private fun assertCallbacks(name: String) = assertEquals(name, expected(name), events)
+
+    @Test fun callbacks_moved() {
+        lazy(8)
+        drag("row_1", 2.3f, holdMs = 500)
+        assertCallbacks("moved")
+    }
+
+    @Test fun callbacks_let_go_where_it_started() {
+        lazy(8)
+        drag("row_1", 0.2f, holdMs = 300)
+        assertCallbacks("let go where it started")
+    }
+
+    @Test fun callbacks_released_outside_the_collection() {
+        columnInAScroll(4)
+        drag("row_1", 7f)
+        assertCallbacks("released outside the Collection")
+    }
+
+    @Test fun callbacks_the_rows_changed_under_it() {
+        rebuilt()
+        dragWhileRebuilt("row_1", 2.2f) { rowIds = listOf("id7") + rowIds.filter { it != "id7" } }
+        assertEquals("the rebuild was made", null, pendingChange)
+        assertCallbacks("the rows changed under it")
+    }
+
+    @Test fun callbacks_a_locked_row_pressed() {
+        lazy(8, locked = setOf(2))
+        drag("row_2", 1.3f, holdMs = 300)
+        assertCallbacks("a locked row pressed")
+    }
+
+    @Test fun callbacks_screen_reader_move_up() {
+        lazy(6)
+        assertTrue(rule.onNodeWithTag("row_2").action(CollectionReorderText.moveUp(null)))
+        assertCallbacks("screen reader move up")
+    }
+
+    @Test fun callbacks_screen_reader_move_down() {
+        lazy(6)
+        assertTrue(rule.onNodeWithTag("row_0").action(CollectionReorderText.moveDown(null)))
+        assertCallbacks("screen reader move down")
     }
 }

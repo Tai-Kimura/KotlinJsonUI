@@ -50,11 +50,20 @@ import java.util.Locale
  * [collectionReorderHandle] only — follows the finger, and on release [onReorder] is called once with the section,
  * the index it had and the index it holds after the move ([CollectionReorderRules]). The rows are not reordered here:
  * the view model reorders its items, and the Collection draws them again.
+ *
+ * [onReorderStart] / [onReorderEnd] (`onReorderStart`, `onReorderEnd`; shared/core/reorder_vectors.json rule.callbacks,
+ * ticket jui-collection-reorder-start-callback-missing): start when a row is picked up, with its section and index; end
+ * once when that drag is over, after [onReorder] when the row moved, alone when it was let go where it started, outside
+ * the Collection, or cancelled because the rows changed under it. A row that cannot be picked up (locked, fixed) calls
+ * neither. The screen reader's move up / move down call start, [onReorder] and end in a row.
  */
 @Stable
 class CollectionReorder(
     val isEnabled: Boolean,
     val usesHandle: Boolean = false,
+    val onReorderStart: ((section: Int, index: Int) -> Unit)? = null,
+    val onReorderEnd: ((section: Int) -> Unit)? = null,
+    // Last, so the generated code and an app's `CollectionReorder(true) { s, f, t -> }` keep their trailing lambda.
     val onReorder: (section: Int, from: Int, to: Int) -> Unit,
 )
 
@@ -374,12 +383,19 @@ fun Modifier.collectionReorderActions(): Modifier = composed {
     // With a reorderHandle, a row whose handle is not drawn is fixed (rule.fixed).
     val fixed = if (reorder.usesHandle && !ctx.handleDrawn) drag.fixed + ctx.index else drag.fixed
     val (up, down) = CollectionReorderRules.accessibilityMoves(ctx.index, drag.count, drag.locked, fixed)
-    val onReorder by rememberUpdatedState(reorder.onReorder)
+    val current by rememberUpdatedState(reorder)
     val context = LocalContext.current
+    // start, onReorder, end in a row (rule.callbacks): a move by the screen reader is a drag that begins and ends at once.
+    fun move(to: Int): Boolean {
+        current.onReorderStart?.invoke(ctx.section, ctx.index)
+        current.onReorder(ctx.section, ctx.index, to)
+        current.onReorderEnd?.invoke(ctx.section)
+        return true
+    }
     this.semantics(mergeDescendants = true) {
         customActions = listOfNotNull(
-            if (up) CustomAccessibilityAction(CollectionReorderText.moveUp(context)) { onReorder(ctx.section, ctx.index, ctx.index - 1); true } else null,
-            if (down) CustomAccessibilityAction(CollectionReorderText.moveDown(context)) { onReorder(ctx.section, ctx.index, ctx.index + 1); true } else null,
+            if (up) CustomAccessibilityAction(CollectionReorderText.moveUp(context)) { move(ctx.index - 1) } else null,
+            if (down) CustomAccessibilityAction(CollectionReorderText.moveDown(context)) { move(ctx.index + 1) } else null,
         )
     }
 }
@@ -418,6 +434,8 @@ private fun Modifier.reorderGesture(ctx: RowContext): Modifier = composed {
                 drag.fingerY = startRootY
                 drag.started = drag.rowsNow()
                 drag.dragging = ctx.index
+                // Picked up (rule.callbacks): a row that cannot be picked up returned above and calls neither.
+                state.reorder?.onReorderStart?.invoke(ctx.section, ctx.index)
             },
             onDrag = { change, amount ->
                 if (drag.dragging != ctx.index) return@detectDragGesturesAfterLongPress
@@ -456,6 +474,9 @@ private fun finish(state: CollectionReorderState, drag: CollectionReorderDrag, s
         drag.committed = true
         state.reorder?.onReorder?.invoke(section, from, to)
     }
+    // The drag is over, whatever ended it (released, cancelled, let go where it started, the rows changed under it):
+    // end once, after onReorder when the row moved (rule.callbacks).
+    state.reorder?.onReorderEnd?.invoke(section)
 }
 
 /** While a row is dragged near the container's visible edge, scroll its parent each frame (a nested scroll). */
