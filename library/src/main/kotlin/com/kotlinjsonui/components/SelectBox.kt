@@ -1,6 +1,7 @@
 package com.kotlinjsonui.components
 
 import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUILineHeight
 import com.kotlinjsonui.core.jsonUIFontSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -266,6 +267,7 @@ fun SelectBox(
                 color = if (value.isNotEmpty()) textColor else hintColor,
                 fontSize = jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale),
                 letterSpacing = jsonUILetterSpacing(fontScaling, maxFontScale),
+                lineHeight = jsonUILineHeight(jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale), fontScaling, maxFontScale),
                 fontWeight = fontWeight,
                 modifier = Modifier.weight(1f)
             )
@@ -439,6 +441,7 @@ fun SelectBox(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                         fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
                         letterSpacing = jsonUILetterSpacing(),
+                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp)),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = cancelButtonTextColor,
@@ -670,6 +673,7 @@ fun <T> SelectBox(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                         fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
                         letterSpacing = jsonUILetterSpacing(),
+                        lineHeight = jsonUILineHeight(jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp)),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
