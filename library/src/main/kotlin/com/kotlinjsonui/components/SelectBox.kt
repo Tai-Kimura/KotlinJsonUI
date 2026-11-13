@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.jsonUIFontSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -139,6 +140,10 @@ fun SelectBox(
     cornerRadius: Int = 8,
     fontSize: Int = 16,
     fontWeight: FontWeight = FontWeight.Normal,
+    /** Whether the text follows the system text size (null: Configuration.Font.scaling); see FontScaling. */
+    fontScaling: Boolean? = null,
+    /** At most fontSize × this when following (null: Configuration.Font.maxScale); see FontScaling. */
+    maxFontScale: Float? = null,
     contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
@@ -190,7 +195,7 @@ fun SelectBox(
             Text(
                 text = if (value.isNotEmpty()) value else (placeholder ?: ""),
                 color = if (value.isNotEmpty()) textColor else hintColor,
-                fontSize = fontSize.sp,
+                fontSize = jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale),
                 fontWeight = fontWeight,
                 modifier = Modifier.weight(1f).padding(end = textEndReserve)
             )
@@ -244,12 +249,12 @@ fun SelectBox(
                 // Title or header (optional)
                 Text(
                     text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_option),
-                    style = sheetTextStyle(
+                    style = sheetFontScaled(sheetTextStyle(
                         MaterialTheme.typography.titleMedium,
                         Configuration.SelectBox.sheetFontFamily,
                         Configuration.SelectBox.sheetTitleFontSize,
                         null
-                    ),
+                    )),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 16.dp)
@@ -260,12 +265,12 @@ fun SelectBox(
                 // Option-row style: MaterialTheme bodyLarge with the
                 // Configuration sheet-typography overrides merged in (null
                 // overrides = the style the sheet has always had).
-                val itemStyle = sheetTextStyle(
+                val itemStyle = sheetFontScaled(sheetTextStyle(
                     MaterialTheme.typography.bodyLarge,
                     Configuration.SelectBox.sheetFontFamily,
                     Configuration.SelectBox.sheetItemFontSize,
                     Configuration.SelectBox.sheetItemFontWeight
-                )
+                ))
 
                 // Scrollable list of options
                 LazyColumn(
@@ -376,7 +381,7 @@ fun SelectBox(
                 ) {
                     Text(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
-                        fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
+                        fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = cancelButtonTextColor,
@@ -508,12 +513,12 @@ fun <T> SelectBox(
                 // Title or header (optional)
                 Text(
                     text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_option),
-                    style = sheetTextStyle(
+                    style = sheetFontScaled(sheetTextStyle(
                         MaterialTheme.typography.titleMedium,
                         Configuration.SelectBox.sheetFontFamily,
                         Configuration.SelectBox.sheetTitleFontSize,
                         null
-                    ),
+                    )),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 16.dp)
@@ -526,12 +531,12 @@ fun <T> SelectBox(
                 // scheme — this overload used primaryContainer/surface until
                 // 2.22.0, a face split with no design behind it) and carry
                 // the Configuration typography overrides.
-                val itemStyle = sheetTextStyle(
+                val itemStyle = sheetFontScaled(sheetTextStyle(
                     MaterialTheme.typography.bodyLarge,
                     Configuration.SelectBox.sheetFontFamily,
                     Configuration.SelectBox.sheetItemFontSize,
                     Configuration.SelectBox.sheetItemFontWeight
-                )
+                ))
 
                 // Scrollable list of options
                 LazyColumn(
@@ -606,7 +611,7 @@ fun <T> SelectBox(
                 ) {
                     Text(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
-                        fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
+                        fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,
