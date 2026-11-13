@@ -14,10 +14,14 @@ import org.junit.Test
 class CollectionReorderRulesTest {
     private val rows = (0 until 6).map { RowSpan(it * 60f, it * 60f + 60f) }
 
-    @Test fun a_row_lands_past_every_centre_its_own_centre_crossed() {
-        assertEquals(1, CollectionReorderRules.target(1, 59f, rows, emptySet()))
-        assertEquals(1, CollectionReorderRules.target(1, 60f, rows, emptySet()))    // exactly on a centre: not past
-        assertEquals(2, CollectionReorderRules.target(1, 61f, rows, emptySet()))
+    /** A row is passed when the dragged centre crosses its edge on the dragged row's side (iOS 27's standard). */
+    @Test fun a_row_lands_past_every_edge_its_own_centre_crossed() {
+        assertEquals(1, CollectionReorderRules.target(1, 29f, rows, emptySet()))
+        assertEquals(1, CollectionReorderRules.target(1, 30f, rows, emptySet()))    // exactly on row 2's top: not past
+        assertEquals(2, CollectionReorderRules.target(1, 31f, rows, emptySet()))
+        assertEquals(2, CollectionReorderRules.target(1, 61f, rows, emptySet()))    // the old centre rule's step: still 2
+        assertEquals(3, CollectionReorderRules.target(3, -30f, rows, emptySet()))   // exactly on row 2's bottom: not past
+        assertEquals(2, CollectionReorderRules.target(3, -31f, rows, emptySet()))
         assertEquals(0, CollectionReorderRules.target(3, -500f, rows, emptySet()))  // above the first row: first
         assertEquals(5, CollectionReorderRules.target(1, 900f, rows, emptySet()))   // below the last row: last
     }

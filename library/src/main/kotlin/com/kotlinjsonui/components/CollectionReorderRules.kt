@@ -16,8 +16,10 @@ object CollectionReorderRules {
     }
 
     /**
-     * Where the row grabbed at [from] lands while it is dragged [dy]: past every neighbour whose centre its own centre
-     * has crossed (exactly on a centre is not past it), and never onto or past a locked row.
+     * Where the row grabbed at [from] lands while it is dragged [dy]: past every neighbour whose edge on its side its own
+     * centre has crossed — a row below once the centre is below its top, a row above once it is above its bottom
+     * (exactly on an edge is not past it) — and never onto or past a locked row. The gap is under the dragged centre,
+     * as iOS 27's standard reorderable draws it (ticket jui-collection-reorder-target-lags-one-row-behind-finger).
      */
     fun target(from: Int, dy: Float, rows: List<RowSpan>, locked: Set<Int>): Int {
         if (from !in rows.indices) return from
@@ -25,10 +27,10 @@ object CollectionReorderRules {
         var to = from
         if (dy > 0) {
             var j = from + 1
-            while (j < rows.size && j !in locked && center > rows[j].center) { to = j; j++ }
+            while (j < rows.size && j !in locked && center > rows[j].top) { to = j; j++ }
         } else if (dy < 0) {
             var j = from - 1
-            while (j >= 0 && j !in locked && center < rows[j].center) { to = j; j-- }
+            while (j >= 0 && j !in locked && center < rows[j].bottom) { to = j; j-- }
         }
         return to
     }
