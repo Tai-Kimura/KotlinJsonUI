@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: a4e5c98e38451ee14f1cd2b118760afffd32364d # jsonui-cli feat/collection-reorder-base: Collection's reorder attributes and shared/core/reorder_vectors.json (move to the release tag that ships them)
+      JSONUI_CLI_MANIFEST_REF: 1ff03c8c80dc714182a63a83ee67ed135dd6d293 # jsonui-cli integrate/2.5.34: Collection's reorder attributes and shared/core/reorder_vectors.json (move to v2.5.34 once tagged)
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
