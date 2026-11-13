@@ -6,6 +6,7 @@ import com.kotlinjsonui.dynamic.TypeSynonyms
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.generated.ButtonAttributes
 import com.kotlinjsonui.dynamic.generated.CheckBoxAttributes
+import com.kotlinjsonui.dynamic.generated.IconLabelAttributes
 import com.kotlinjsonui.dynamic.generated.LabelAttributes
 import com.kotlinjsonui.dynamic.generated.RadioAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
@@ -27,6 +28,9 @@ import com.kotlinjsonui.dynamic.generated.ViewAttributes
  *   ([TapAccessibility.shape] BUTTON / COMBINE).
  * - `accessibilityLiveRegion` (polite / assertive / off) on a Label or a
  *   View: `liveRegion`, read out whenever what it shows changes.
+ * - `accessibilitySelected` (a boolean or a binding) on a Button, or a View /
+ *   IconLabel that is one button: `selected = true` while it is true; false
+ *   tells nothing, as on iOS (shared/core/control_accessibility_vectors.json).
  */
 object ControlAccessibility {
     enum class Live { POLITE, ASSERTIVE }
@@ -59,6 +63,21 @@ object ControlAccessibility {
     /** The name TalkBack reads, resolved and localized, or null. */
     fun label(json: JsonObject, data: Map<String, Any>, context: Context?): String? =
         writtenLabel(json)?.let { ResourceResolver.resolveTextValue(it, data, context) }
+
+    /** The accessibilitySelected as written where it takes effect (a Button, or a View / IconLabel that is one button), or null. */
+    fun writtenSelected(json: JsonObject): com.kotlinjsonui.dynamic.generated.AttrValue<Boolean>? {
+        val m = TypedAttrs.toAttrMap(json)
+        return when (section(json)) {
+            "Button" -> ButtonAttributes.parse(m).accessibilitySelected
+            "View" -> if (isOneButton(json)) ViewAttributes.parse(m).accessibilitySelected else null
+            "IconLabel" -> if (isOneButton(json)) IconLabelAttributes.parse(m).accessibilitySelected else null
+            else -> null
+        }
+    }
+
+    /** Whether TalkBack is told the control is the selected one: true only while it resolves true. */
+    fun selected(json: JsonObject, data: Map<String, Any>): Boolean =
+        TypedAttrs.boolean(writtenSelected(json), data) == true
 
     /** A Label's or a View's live region; null for off or none. */
     fun live(json: JsonObject): Live? {

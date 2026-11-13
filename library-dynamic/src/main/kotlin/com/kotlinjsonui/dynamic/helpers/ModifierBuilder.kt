@@ -49,6 +49,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.gson.JsonObject
@@ -188,7 +189,7 @@ object ModifierBuilder {
         return applyControlAccessibility(tagged, json, data, context)
     }
 
-    /** accessibilityLabel → contentDescription; accessibilityLiveRegion → liveRegion. */
+    /** accessibilityLabel → contentDescription; accessibilityLiveRegion → liveRegion; accessibilitySelected → selected. */
     fun applyControlAccessibility(
         modifier: Modifier,
         json: JsonObject,
@@ -202,6 +203,9 @@ object ModifierBuilder {
         ControlAccessibility.live(json)?.let { live ->
             val mode = if (live == ControlAccessibility.Live.ASSERTIVE) LiveRegionMode.Assertive else LiveRegionMode.Polite
             result = result.semantics { liveRegion = mode }
+        }
+        if (ControlAccessibility.selected(json, data)) {
+            result = result.semantics { selected = true }
         }
         return result
     }
