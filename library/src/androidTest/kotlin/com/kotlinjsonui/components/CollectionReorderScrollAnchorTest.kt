@@ -111,7 +111,7 @@ class CollectionReorderScrollAnchorTest {
     private fun moveDown(index: Int) {
         val node = rule.onNodeWithTag("row_$index").fetchSemanticsNode()
         val action = node.config.getOrNull(SemanticsActions.CustomActions).orEmpty()
-            .first { it.label == CollectionReorderText.moveDown }
+            .first { it.label == CollectionReorderText.moveDown(null) }
         rule.runOnUiThread { action.action() }
         rule.waitForIdle()
     }

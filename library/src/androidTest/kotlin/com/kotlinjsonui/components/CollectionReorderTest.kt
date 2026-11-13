@@ -177,8 +177,8 @@ class CollectionReorderTest {
 
     @Test fun the_accessibility_moves_report_one_step_and_stop_at_the_ends_and_at_a_locked_row() {
         lazy(6, locked = setOf(3))
-        val up = CollectionReorderText.moveUp
-        val down = CollectionReorderText.moveDown
+        val up = CollectionReorderText.moveUp(null)
+        val down = CollectionReorderText.moveDown(null)
         assertTrue(rule.onNodeWithTag("row_1").action(down))
         assertTrue(rule.onNodeWithTag("row_1").action(up))
         assertEquals(listOf(Triple(0, 1, 2), Triple(0, 1, 0)), moves)

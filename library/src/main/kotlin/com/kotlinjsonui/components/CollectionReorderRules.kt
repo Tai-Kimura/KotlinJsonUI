@@ -42,8 +42,12 @@ object CollectionReorderRules {
     fun releaseCommits(fingerY: Float, containerTop: Float, containerBottom: Float): Boolean =
         fingerY >= containerTop && fingerY < containerBottom
 
-    /** Whether the row at [from] can be picked up at all: a locked row never is. */
-    fun canPickUp(from: Int, locked: Set<Int>): Boolean = from !in locked
+    /**
+     * Whether the row at [from] can be picked up at all: a locked row never is, nor a fixed one (reorderFixedProperty,
+     * or a row whose reorderHandle is not drawn; ticket jui-collection-reorder-fixed-row-vs-barrier-row). A fixed row
+     * is not a bound: other rows pass it ([target] and [clampedTo] read only [locked]).
+     */
+    fun canPickUp(from: Int, locked: Set<Int>, fixed: Set<Int> = emptySet()): Boolean = from !in locked && from !in fixed
 
     /**
      * Why a move from [from] to [to] in [count] rows is refused, or null when it is a move: "no-move" (to == from),
@@ -51,9 +55,10 @@ object CollectionReorderRules {
      * The library's own drag and the accessibility moves never make a refused move; this is the table's reading of
      * one, as any move reported to the view model must pass it.
      */
-    fun refusal(count: Int, from: Int, to: Int, locked: Set<Int>): String? = when {
+    fun refusal(count: Int, from: Int, to: Int, locked: Set<Int>, fixed: Set<Int> = emptySet()): String? = when {
         from !in 0 until count || to !in 0 until count -> "out-of-range"
         crossesLocked(from, to, locked) -> "locked"
+        from in fixed -> "fixed"
         from == to -> "no-move"
         else -> null
     }
@@ -99,9 +104,12 @@ object CollectionReorderRules {
         return if (upward) -speed else speed
     }
 
-    /** The accessibility moves a row offers: up unless first, the row above locked, or locked itself; down likewise. */
-    fun accessibilityMoves(index: Int, count: Int, locked: Set<Int>): Pair<Boolean, Boolean> {
-        if (index in locked || index < 0 || index >= count) return false to false
+    /**
+     * The accessibility moves a row offers: up unless first, the row above locked, or locked or fixed itself; down
+     * likewise. A fixed neighbour is passed like any row.
+     */
+    fun accessibilityMoves(index: Int, count: Int, locked: Set<Int>, fixed: Set<Int> = emptySet()): Pair<Boolean, Boolean> {
+        if (index in locked || index in fixed || index < 0 || index >= count) return false to false
         return (index > 0 && (index - 1) !in locked) to (index < count - 1 && (index + 1) !in locked)
     }
 }
