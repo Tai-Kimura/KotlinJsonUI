@@ -18,5 +18,11 @@
             android:windowSoftInputMode="adjustResize"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <!-- The reorder demo (ticket jui-collection-drag-to-reorder): a screen for the video, launched from adb
+             (am start), so exported; it lives in the test APK only. -->
+        <activity
+            android:name="com.kotlinjsonui.components.ReorderDemoActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 </manifest>
