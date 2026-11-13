@@ -50,6 +50,9 @@ class CollectionReorderTest {
     private fun reorder(usesHandle: Boolean = false) =
         CollectionReorder(isEnabled = true, usesHandle = usesHandle) { s, f, t -> moves.add(Triple(s, f, t)) }
 
+    /** The handle's visibility per row (VisibilityWrapper's words); a row not listed draws its handle. */
+    private var handleVisibility: Map<Int, String> = emptyMap()
+
     @Composable
     private fun Cell(index: Int, withHandle: Boolean = false) {
         Row(
@@ -58,16 +61,18 @@ class CollectionReorderTest {
                 .clickable { clicks.add(index) },
         ) {
             Text("row $index", Modifier.weight(1f))
-            Box(Modifier.size(48.dp).testTag("handle_$index").background(Color.Gray)
-                .then(if (withHandle) Modifier.collectionReorderHandle() else Modifier))
+            VisibilityWrapper(handleVisibility[index] ?: "visible") {
+                Box(Modifier.size(48.dp).testTag("handle_$index").background(Color.Gray)
+                    .then(if (withHandle) Modifier.collectionReorderHandle() else Modifier))
+            }
         }
     }
 
-    private fun lazy(n: Int, locked: Set<Int> = emptySet(), usesHandle: Boolean = false) = rule.setContent {
+    private fun lazy(n: Int, locked: Set<Int> = emptySet(), usesHandle: Boolean = false, fixed: Set<Int> = emptySet()) = rule.setContent {
         CollectionReorderContainer(reorder(usesHandle), Modifier.fillMaxSize()) {
             val state = rememberCollectionReorderState()
             LazyColumn(Modifier.fillMaxSize().testTag("list"), state = rememberLazyListState()) {
-                collectionReorderRows(state, 0, (0 until n).map { "id$it" }, locked) { i -> Cell(i, usesHandle) }
+                collectionReorderRows(state, 0, (0 until n).map { "id$it" }, locked, fixed) { i -> Cell(i, usesHandle) }
             }
         }
     }
@@ -185,5 +190,40 @@ class CollectionReorderTest {
         assertTrue(!rule.onNodeWithTag("row_0").action(up))       // the first row: no up
         assertTrue(!rule.onNodeWithTag("row_2").action(down))     // the row below is locked
         assertTrue(!rule.onNodeWithTag("row_3").action(up))       // locked: no move at all
+    }
+
+    // Ticket jui-collection-reorder-fixed-row-vs-barrier-row: a fixed row (reorderFixedProperty) is not picked up and
+    // has no accessibility move, but the other rows pass it.
+    @Test fun a_fixed_row_is_passed_but_not_picked_up_and_has_no_accessibility_move() {
+        lazy(8, fixed = setOf(3))
+        drag("row_0", 6f)
+        assertEquals("passed the fixed row (6 rows on the dot is not past row 6's centre)", listOf(Triple(0, 0, 5)), moves)
+        moves.clear()
+        drag("row_3", -2f)
+        assertTrue("moves $moves", moves.isEmpty())
+        val up = CollectionReorderText.moveUp(null)
+        val down = CollectionReorderText.moveDown(null)
+        assertTrue(!rule.onNodeWithTag("row_3").action(up))
+        assertTrue(!rule.onNodeWithTag("row_3").action(down))
+        assertTrue(rule.onNodeWithTag("row_2").action(down))      // next to the fixed row: it is passed
+        assertEquals(listOf(Triple(0, 2, 3)), moves)
+    }
+
+    // With a reorderHandle, a row whose handle is not drawn (invisible, gone) is fixed: not picked up, no
+    // accessibility move, passed by the others.
+    @Test fun with_a_handle_a_row_whose_handle_is_not_drawn_is_fixed() {
+        handleVisibility = mapOf(2 to "invisible", 4 to "gone")
+        lazy(8, usesHandle = true)
+        drag("handle_2", 2.2f, holdMs = 300)
+        drag("row_4", -1.2f, holdMs = 300)
+        assertTrue("moves $moves", moves.isEmpty())
+        val up = CollectionReorderText.moveUp(null)
+        val down = CollectionReorderText.moveDown(null)
+        for (row in listOf(2, 4)) {
+            assertTrue("row $row up", !rule.onNodeWithTag("row_$row").action(up))
+            assertTrue("row $row down", !rule.onNodeWithTag("row_$row").action(down))
+        }
+        drag("handle_1", 2.2f)                                     // passes the invisible-handle row 2
+        assertEquals(listOf(Triple(0, 1, 3)), moves)
     }
 }
