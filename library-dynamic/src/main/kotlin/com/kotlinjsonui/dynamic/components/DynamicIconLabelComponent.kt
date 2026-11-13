@@ -241,11 +241,11 @@ class DynamicIconLabelComponent {
                     // a Label is 26). With none it stays the theme's line.
                     val themeBase = androidx.compose.material3.LocalTextStyle.current
                     val labelBase = a.fontSize?.let {
-                        themeBase.copy(lineHeight = (it.toFloat() * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp)
+                        themeBase.copy(lineHeight = json.fontSized((it.toFloat() * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp))
                     } ?: themeBase
                     Text(
                         text = text,
-                        fontSize = fontSize.sp,
+                        fontSize = json.fontSized(fontSize.sp),
                         color = fontColor,
                         fontWeight = fontWeight,
                         style = shadowStyle?.let { labelBase.merge(it) } ?: labelBase

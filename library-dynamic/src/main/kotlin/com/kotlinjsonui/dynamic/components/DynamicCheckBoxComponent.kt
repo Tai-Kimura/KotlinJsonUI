@@ -277,7 +277,7 @@ class DynamicCheckBoxComponent {
                 if (fontSize != null || fontColor != null || fontWeightValue != null) {
                     Text(
                         text = labelText,
-                        fontSize = fontSize?.sp ?: 16.sp,
+                        fontSize = json.fontSized(fontSize?.sp ?: 16.sp),
                         color = fontColor ?: Color.Unspecified,
                         fontWeight = fontWeightValue ?: FontWeight.Normal
                     )

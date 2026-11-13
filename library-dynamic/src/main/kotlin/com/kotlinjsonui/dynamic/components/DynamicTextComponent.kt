@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.DeclaredSpelling
 import android.content.Context
 import androidx.compose.foundation.text.TextAutoSize
@@ -254,7 +255,8 @@ class DynamicTextComponent {
             val overrideLineHeightMultiple = (hl?.get("lineHeightMultiple") as? Number)?.toFloat()
             val style = buildTextStyle(
                 a, data, fontSize,
-                overrideLineHeightMultiple = overrideLineHeightMultiple
+                overrideLineHeightMultiple = overrideLineHeightMultiple,
+                json = json
             )
             // lineSpacing goes between lines only; a lineHeightMultiple wins
             // over it, as in buildTextStyle.
@@ -290,7 +292,7 @@ class DynamicTextComponent {
                 onTextLayout = { lineState?.layout = it },
                 // No declared size inherits LocalTextStyle (the codegen emit
                 // is `resolved.size ?: TextUnit.Unspecified` — same rule).
-                fontSize = fontSize?.sp ?: TextUnit.Unspecified,
+                fontSize = json.fontSized(fontSize?.sp ?: TextUnit.Unspecified),
                 color = fontColor ?: Color.Unspecified,
                 fontWeight = fontWeight,
                 fontFamily = fontFamily,
@@ -307,7 +309,7 @@ class DynamicTextComponent {
                 autoSize = if (useAutoSize) TextAutoSize.StepBased(
                     minFontSize = ((fontSize ?: 14f) *
                         (TypedAttrs.float(a.minimumScaleFactor, data) ?: 0.5f)).sp,
-                    maxFontSize = (fontSize ?: 14f).sp
+                    maxFontSize = json.fontSized((fontSize ?: 14f).sp)
                 ) else null,
                 style = style ?: LocalTextStyle.current,
                 modifier = modifier
@@ -334,6 +336,8 @@ class DynamicTextComponent {
                 modifier = modifier,
                 style = style,
                 linksEnabled = linksEnabled(json, data),
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr(),
                 // tintColor is the links' colour — the accent of what can be
                 // operated, not the text's (4f ruling, 2026-09-26); without
                 // one, Configuration.Colors.linkColor as before
@@ -406,7 +410,9 @@ class DynamicTextComponent {
                 partialAttributes = partialAttributes,
                 modifier = modifier,
                 style = style,
-                linksEnabled = linksEnabled(json, data)
+                linksEnabled = linksEnabled(json, data),
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr()
             )
         }
 
@@ -648,7 +654,8 @@ class DynamicTextComponent {
             a: LabelAttributes,
             data: Map<String, Any>,
             fontSize: Float?,
-            overrideLineHeightMultiple: Float? = null
+            overrideLineHeightMultiple: Float? = null,
+            json: JsonObject? = null
         ): TextStyle? {
             // Derive from the CURRENT text style, never a bare TextStyle():
             // the bare one discards the Material defaults — letterSpacing
@@ -673,12 +680,13 @@ class DynamicTextComponent {
             val lineHeightMultiple = overrideLineHeightMultiple
                 ?: TypedAttrs.float(a.lineHeightMultiple, data)
             val lineSpacing = TypedAttrs.float(a.lineSpacing, data)
+            // The line height follows the text size as the font size does (fontScaling / maxFontScale).
             val lineHeight = when {
                 lineHeightMultiple != null -> LabelLineHeight.multiple(fontSize, lineHeightMultiple, base, density)
                 lineSpacing != null -> LabelLineHeight.spaced(fontSize, lineSpacing, base, density)
                 fontSize != null -> (fontSize * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp
                 else -> null
-            }
+            }?.let { json?.fontSized(it) ?: jsonUIFontSize(it) }
             lineHeight?.let { style = (style ?: base).copy(lineHeight = it) }
 
             // Text shadow
@@ -724,7 +732,7 @@ class DynamicTextComponent {
             var style = androidx.compose.material3.LocalTextStyle.current
 
             fontSize?.let {
-                style = style.copy(fontSize = it.sp)
+                style = style.copy(fontSize = json?.fontSized(it.sp) ?: jsonUIFontSize(it.sp))
             }
 
             ColorParser.parseColorStringWithBinding(

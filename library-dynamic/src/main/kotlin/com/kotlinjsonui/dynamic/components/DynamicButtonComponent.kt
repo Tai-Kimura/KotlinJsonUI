@@ -280,7 +280,7 @@ class DynamicButtonComponent {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = text,
-                            fontSize = fontSize.sp,
+                            fontSize = json.fontSized(fontSize.sp),
                             fontWeight = fontWeight,
                             fontFamily = fontFamily,
                             textAlign = textAlign
@@ -296,7 +296,7 @@ class DynamicButtonComponent {
                     // and filling would stretch it to its parent.
                     Text(
                         text = text,
-                        fontSize = fontSize.sp,
+                        fontSize = json.fontSized(fontSize.sp),
                         fontWeight = fontWeight,
                         fontFamily = fontFamily,
                         textAlign = textAlign,

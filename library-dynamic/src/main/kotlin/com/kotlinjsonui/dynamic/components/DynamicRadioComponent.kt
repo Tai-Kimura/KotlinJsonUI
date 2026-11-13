@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.jsonUITintOr
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -632,7 +633,10 @@ class DynamicRadioComponent {
          * spelling of the colour, read after it). The items group drew no
          * fontSize and the options group neither fontSize nor fontColor.
          */
-        internal data class LabelStyle(val color: Color?, val weight: FontWeight?, val size: Float?)
+        internal data class LabelStyle(
+            val color: Color?, val weight: FontWeight?, val size: Float?,
+            val fontScaling: Boolean? = null, val maxFontScale: Float? = null,
+        )
 
         // `font` is declared `["string","binding"]` and `rawString` returns
         // `"@{expr}"` verbatim, so a local table could only match the static
@@ -649,7 +653,9 @@ class DynamicRadioComponent {
                     TypedAttrs.undeclared(json, "textColor")?.asString, data, context
                 ),
             weight = ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data)),
-            size = TypedAttrs.float(a.fontSize, data)
+            size = TypedAttrs.float(a.fontSize, data),
+            fontScaling = json.fontScalingAttr(),
+            maxFontScale = json.maxFontScaleAttr()
         )
 
         /** A Radio's label. `fallbackColor` is the path's colour when none is declared. */
@@ -659,7 +665,7 @@ class DynamicRadioComponent {
                 text = text,
                 color = style.color ?: fallbackColor,
                 fontWeight = style.weight,
-                fontSize = style.size?.sp ?: TextUnit.Unspecified
+                fontSize = jsonUIFontSize(style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale)
             )
         }
 
