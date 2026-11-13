@@ -268,6 +268,7 @@ class DynamicSwitchComponent {
                         modifier = labelModifier,
                         fontSize = json.fontSized(fontSize?.sp ?: 16.sp),
                         letterSpacing = json.letterSpaced(),
+                        lineHeight = json.lineHeighted(json.fontSized(fontSize?.sp ?: 16.sp)),
                         color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
                         fontWeight = fontWeightValue
                     )

@@ -34,8 +34,13 @@ internal fun sheetTextStyle(
  */
 @androidx.compose.runtime.Composable
 @androidx.compose.runtime.ReadOnlyComposable
-internal fun sheetFontScaled(style: TextStyle): TextStyle =
-    style.copy(
-        fontSize = com.kotlinjsonui.core.jsonUIFontSize(style.fontSize),
-        letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing()
+internal fun sheetFontScaled(style: TextStyle): TextStyle {
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val drawn = com.kotlinjsonui.core.jsonUIFontSize(style.fontSize)
+    return style.copy(
+        fontSize = drawn,
+        letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing(),
+        // The sheet style's own line height, by the same rule as its size (jsonUILineHeight reads LocalTextStyle).
+        lineHeight = com.kotlinjsonui.core.FontScaling.lineHeight(density, style.lineHeight, drawn, null, null)
     )
+}
