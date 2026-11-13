@@ -493,7 +493,9 @@ class DynamicTextViewComponent {
                     ?: declaredFontSize?.toFloat()
                     ?: (if (base.fontSize != androidx.compose.ui.unit.TextUnit.Unspecified) base.fontSize.value else 16f)
                 val drawnHint = hintFontSize?.let { json.fontSized(it.sp) } ?: androidx.compose.ui.unit.TextUnit.Unspecified
-                val lineHeight = json.lineHeighted(
+                // By the text size rule where the hint is drawn by it (a hint size) or has a line of its own; an
+                // undeclared hint size follows the system, and so does its line.
+                val lineHeight = if (hintLineHeightMultiple == null && hintFontSize == null) base.lineHeight else json.lineHeighted(
                     drawnHint,
                     hintLineHeightMultiple?.let { (multipleBasis * it).sp } ?: androidx.compose.ui.unit.TextUnit.Unspecified
                 )
