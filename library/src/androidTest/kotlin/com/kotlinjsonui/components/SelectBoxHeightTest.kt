@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -75,6 +76,34 @@ class SelectBoxHeightTest {
         val text = rule.onAllNodesWithText(long, useUnmergedTree = true).fetchSemanticsNodes()
             .map { it.boundsInRoot }.minBy { kotlin.math.abs(it.center.y - box.center.y) }
         assertEquals("the text centred in the fixed height", box.center.y, text.center.y, 2f * rule.density.density)
+    }
+
+    /**
+     * With no height and no paddings, a select is one line of its text: no padding above or below (SelectBoxDefaults,
+     * the three faces' default of 0) and no height of its own — measured against a Text of the same size alone.
+     */
+    @Test fun with_no_height_and_no_paddings_a_select_is_one_line_of_its_text() {
+        rule.setContent {
+            Column(Modifier.width(320.dp)) {
+                androidx.compose.material3.Text("A", fontSize = 16.sp, modifier = Modifier.testTag("line"))
+                SelectBox(value = "A", onValueChange = {}, options = listOf("A"), modifier = Modifier.fillMaxWidth().testTag("select"))
+                DateSelectBox(value = "2026-11-13", onValueChange = {}, modifier = Modifier.fillMaxWidth().testTag("date"))
+            }
+        }
+        rule.waitForIdle()
+        val d = rule.density.density
+        val line = height("line")
+        assertEquals("SelectBox: one line", line, height("select"), 2f * d)
+        assertEquals("DateSelectBox: one line", line, height("date"), 2f * d)
+        // The text from 12 dp after the leading edge to 36 dp before the trailing one: 12 dp to the arrow's box, its
+        // 16 dp, 8 dp between (SelectBoxDefaults, the three faces' layout).
+        for ((tag, text) in listOf("select" to "A", "date" to "2026-11-13")) {
+            val box = rule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
+            val t = rule.onAllNodesWithText(text, useUnmergedTree = true).fetchSemanticsNodes().map { it.boundsInRoot }
+                .first { it.center.y > box.top && it.center.y < box.bottom && it.left >= box.left }
+            assertEquals("$tag: text starts 12 dp in", box.left + 12f * d, t.left, 1f)
+            assertEquals("$tag: text stops 36 dp before the edge", box.right - 36f * d, t.right, 1f)
+        }
     }
 
     @Test fun a_date_select_box_is_as_tall_as_its_layout_says() {

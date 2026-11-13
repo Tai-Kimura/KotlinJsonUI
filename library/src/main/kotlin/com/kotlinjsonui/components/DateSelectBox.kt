@@ -69,6 +69,10 @@ fun DateSelectBox(
     fontScaling: Boolean? = null,
     /** At most fontSize × this when following (null: Configuration.Font.maxScale); see FontScaling. */
     maxFontScale: Float? = null,
+    /** The select's own padding (SelectBoxDefaults: 12 dp at the sides, none above and below). */
+    contentPadding: PaddingValues = SelectBoxDefaults.contentPadding,
+    /** The arrow when the layout styles it (caretAttributes); null draws the chevron. */
+    caret: SelectBoxCaret? = null,
     sheetBackgroundColor: Color = Configuration.DatePicker.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.DatePicker.defaultSheetTextColor,
     sheetTitle: String? = null,
@@ -167,10 +171,18 @@ fun DateSelectBox(
                 shape = RoundedCornerShape(cornerRadius.dp)
             )
     ) {
+        // As SelectBox: text, 8 dp, the arrow's box (a chevron, as the three faces draw a select's arrow;
+        // the app's own picture through caretAttributes); the end padding is the edge-to-box distance.
+        val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(
+                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    top = contentPadding.calculateTopPadding(),
+                    end = selectBoxRowEnd(caret, contentPadding.calculateEndPadding(layoutDirection)),
+                    bottom = contentPadding.calculateBottomPadding()
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -180,11 +192,7 @@ fun DateSelectBox(
                 fontWeight = fontWeight,
                 modifier = Modifier.weight(1f)
             )
-            Icon(
-                painter = painterResource(iconRes),
-                contentDescription = if (datePickerMode == "time") "Time" else "Calendar",
-                tint = textColor
-            )
+            SelectBoxArrow(caret, defaultTint = textColor)
         }
     }
     

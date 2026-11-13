@@ -550,7 +550,7 @@ class DynamicSelectBoxComponent {
                 // cross-effect: android rendered default size/weight).
                 fontSize = fontSize?.toInt() ?: 16,
                 fontWeight = fontWeight,
-                contentPadding = contentPadding ?: PaddingValues(horizontal = 16.dp),
+                contentPadding = contentPadding ?: com.kotlinjsonui.components.SelectBoxDefaults.contentPadding,
                 // Undeclared cancel colors fall to the SAME Configuration
                 // defaults the codegen face reaches by omitting the params
                 // (generated code emits these only when declared). The old
@@ -689,7 +689,10 @@ class DynamicSelectBoxComponent {
                 borderColor = borderColor,
                 textColor = textColor,
                 hintColor = hintColor,
-                cornerRadius = cornerRadius
+                cornerRadius = cornerRadius,
+                // paddings / padding as the select's own padding, as on SelectBox (SelectBoxDefaults when none)
+                contentPadding = ModifierBuilder.parseContentPadding(json, data)
+                    ?: com.kotlinjsonui.components.SelectBoxDefaults.contentPadding
             )
         }
 
