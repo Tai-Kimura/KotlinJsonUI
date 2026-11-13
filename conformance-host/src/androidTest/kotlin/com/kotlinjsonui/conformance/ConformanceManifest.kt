@@ -36,7 +36,12 @@ data class ManifestFixture(
      */
     val afterFirstDraw: String? = null,
     /** `testBridge` (INTERACTIVE_HOST_CONTRACT.md §6), or null. */
-    val testBridge: TestBridgeSpec? = null
+    val testBridge: TestBridgeSpec? = null,
+    /**
+     * `textScale`: the text size the fixture is drawn at (the font scale; absent: 1.0) — the fontScaling /
+     * maxFontScale fixtures and their controls (ticket sjui-label-font-size-ignores-dynamic-type).
+     */
+    val textScale: Float? = null
 ) {
     val isAlias: Boolean get() = aliasOf != null
 
@@ -79,6 +84,7 @@ data class ConformanceManifest(
                     host = o["host"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.content,
                     afterFirstDraw = (o["state"] as? JsonObject)?.get("afterFirstDraw")
                         ?.let { it as? JsonObject }?.get("name")?.jsonPrimitive?.content,
+                    textScale = (o["textScale"] as? kotlinx.serialization.json.JsonPrimitive)?.content?.toFloatOrNull(),
                     testBridge = (o["testBridge"] as? JsonObject)?.let { tb ->
                         val receipt = tb["receipt"] as? JsonObject
                         TestBridgeSpec(

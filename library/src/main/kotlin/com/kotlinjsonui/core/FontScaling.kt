@@ -1,5 +1,6 @@
 package com.kotlinjsonui.core
 
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalDensity
@@ -48,8 +49,16 @@ object FontScaling {
  * A component's font size as the rule draws it (FontScaling): [size] is the declared fontSize as sp, [fontScaling] /
  * [maxFontScale] the component's declarations (null: the app's defaults in Configuration.Font). The generated code
  * and the library's components pass every text size through this.
+ *
+ * A component with no fontSize that declares fontScaling or maxFontScale has the rule applied to the size it draws
+ * without one — the current text style's (a Label's Material3 bodyLarge, 16 sp unless the app's theme says
+ * otherwise; a TextField / TextView pass Configuration.TextField.defaultFontSize, so theirs is specified already):
+ * shared/core/font_scale_vectors.json noFontSize. Declaring nothing, an unspecified size stays the theme's.
  */
 @Composable
 @ReadOnlyComposable
-fun jsonUIFontSize(size: TextUnit, fontScaling: Boolean? = null, maxFontScale: Float? = null): TextUnit =
-    FontScaling.apply(LocalDensity.current, size, fontScaling, maxFontScale)
+fun jsonUIFontSize(size: TextUnit, fontScaling: Boolean? = null, maxFontScale: Float? = null): TextUnit {
+    val declared = fontScaling != null || maxFontScale != null
+    val base = if (!size.isSpecified && declared) LocalTextStyle.current.fontSize else size
+    return FontScaling.apply(LocalDensity.current, base, fontScaling, maxFontScale)
+}

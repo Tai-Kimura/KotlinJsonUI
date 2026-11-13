@@ -77,6 +77,14 @@ object FixtureHost {
      */
     val inlineFixtures: MutableMap<String, InlineFixture> = ConcurrentHashMap()
 
+    /**
+     * The text size each fixture is drawn at, from the manifest's `textScale` (absent: the device's own): the
+     * fixture is composed with a Density of that font scale. Measured on an API 35 emulator,
+     * `Density(density, fontScale)` converts sp exactly as the device set to that font scale does — Android 14+'s
+     * non-linear conversion included (15 sp at 2.0: 70.875 px both ways).
+     */
+    val textScales: MutableMap<String, Float> = ConcurrentHashMap()
+
     /** Render/load errors reported by DynamicView for the current fixture. */
     val renderErrors = CopyOnWriteArrayList<String>()
 
@@ -229,7 +237,7 @@ private fun FixtureScreen(fixtureId: String) {
                 }
         ) {
             if (entry != null) {
-                entry()
+                TextScaled(fixtureId) { entry() }
             } else {
                 // Same channel a dynamic load failure uses, so the suite
                 // reports a fixture the registry does not carry as an error
@@ -273,16 +281,32 @@ private fun FixtureScreen(fixtureId: String) {
             }
     ) {
         layoutJson?.let { json ->
-            DynamicView(
-                json = json,
-                // Generic conformanceState provider (INTERACTIVE_HOST_CONTRACT.md):
-                // manifest-declared handler closures + two-way write-back state.
-                // Empty for non-interactive fixtures apart from `updateData`.
-                data = rememberConformanceData(fixtureId),
-                onError = { e ->
-                    FixtureHost.renderErrors.add(e.message ?: e.javaClass.simpleName)
-                }
-            )
+            TextScaled(fixtureId) {
+                DynamicView(
+                    json = json,
+                    // Generic conformanceState provider (INTERACTIVE_HOST_CONTRACT.md):
+                    // manifest-declared handler closures + two-way write-back state.
+                    // Empty for non-interactive fixtures apart from `updateData`.
+                    data = rememberConformanceData(fixtureId),
+                    onError = { e ->
+                        FixtureHost.renderErrors.add(e.message ?: e.javaClass.simpleName)
+                    }
+                )
+            }
         }
     }
+}
+
+/** [content] drawn at the fixture's text size (FixtureHost.textScales), or as it is when the manifest gives none. */
+@Composable
+private fun TextScaled(fixtureId: String, content: @Composable () -> Unit) {
+    val scale = FixtureHost.textScales[fixtureId]
+    if (scale == null) {
+        content()
+        return
+    }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    androidx.compose.runtime.CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, fontScale = scale),
+    ) { content() }
 }

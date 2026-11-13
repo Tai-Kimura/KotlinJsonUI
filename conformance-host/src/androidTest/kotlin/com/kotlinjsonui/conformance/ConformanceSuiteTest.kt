@@ -104,6 +104,9 @@ class ConformanceSuiteTest {
             .use { it.readBytes() }
         val manifest = ConformanceManifest.parse(String(manifestBytes, Charsets.UTF_8))
         manifestFixtures = manifest.fixtures
+        // A fixture with a textScale is drawn at that text size (FixtureHost.textScales).
+        FixtureHost.textScales.clear()
+        manifest.fixtures.forEach { f -> f.textScale?.let { FixtureHost.textScales[f.id] = it } }
         // `state` with no provider reads the bridge of the screen testBridge
         // fixtures point it at (§6 job 3).
         assertionExecutor.bridgeState = com.jsonui.testrunner.runner.BridgeStateSource({ stateScreen })
