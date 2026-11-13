@@ -262,14 +262,18 @@ class DynamicSwitchComponent {
                 ) ?: "leading"
 
                 val labelModifier = if (labelFillsRow(json)) Modifier.weight(1f) else Modifier
+                // Through the app's fontProvider whatever the label declares (P1); a null slot draws as before.
+                val labelFont = ResourceResolver.providerFont(weight = fontWeightValue, size = fontSize?.sp)
                 val label: @Composable RowScope.() -> Unit = {
                     Text(
                         text = labelText,
                         modifier = labelModifier,
-                        fontSize = json.fontSized(fontSize?.sp ?: 16.sp),
+                        fontSize = json.fontSized(labelFont.size ?: fontSize?.sp ?: 16.sp),
                         letterSpacing = json.letterSpaced(),
                         color = fontColor ?: androidx.compose.ui.graphics.Color.Unspecified,
-                        fontWeight = fontWeightValue
+                        fontWeight = labelFont.weight ?: fontWeightValue,
+                        fontFamily = labelFont.family,
+                        fontStyle = labelFont.style
                     )
                 }
                 if (labelPosition != "trailing") label()

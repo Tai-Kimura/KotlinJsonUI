@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.components.SelectBoxCaret
@@ -550,6 +551,12 @@ class DynamicSelectBoxComponent {
                 // cross-effect: android rendered default size/weight).
                 fontSize = fontSize?.toInt() ?: 16,
                 fontWeight = fontWeight,
+                // Through the app's fontProvider whatever the box declares (P1); a null slot draws fontSize /
+                // fontWeight as before.
+                resolvedFont = ResourceResolver.providerFont(
+                    weight = fontWeight,
+                    size = fontSize?.sp,
+                ),
                 contentPadding = selectContentPadding(json, data),
                 // Undeclared cancel colors fall to the SAME Configuration
                 // defaults the codegen face reaches by omitting the params
@@ -671,6 +678,9 @@ class DynamicSelectBoxComponent {
             val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp), context)
 
             DateSelectBox(
+                // Through the app's fontProvider (P1): the date box forwards no font attribute, so FontSpec is
+                // empty and a null slot draws as before.
+                resolvedFont = ResourceResolver.providerFont(weight = FontWeight.Normal),
                 value = selectedDate,
                 onValueChange = onValueChange,
                 datePickerMode = datePickerMode,
