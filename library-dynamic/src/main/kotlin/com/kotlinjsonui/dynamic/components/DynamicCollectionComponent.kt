@@ -608,7 +608,7 @@ class DynamicCollectionComponent {
                 // Reorder: the vertical single-column rows of an EAGER or NONE column (ticket
                 // jui-collection-drag-to-reorder). The column is the container; NONE rides an outer scroll.
                 val columnReorder = rememberCollectionReorder(
-                    if (reorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler!!) else null,
+                    if (reorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler) else null,
                     scrollsItself = columnScrolls,
                 )
                 CollectionReorderScope(columnReorder) {
@@ -813,7 +813,7 @@ class DynamicCollectionComponent {
                 // the grid is the container and scrolls itself.
                 val gridReorderOn = reorderOn && gridColumns == 1
                 val gridReorder = rememberCollectionReorder(
-                    if (gridReorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler!!) else null,
+                    if (gridReorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler) else null,
                 )
                 CollectionReorderScope(gridReorder) {
                 LazyVerticalGrid(
