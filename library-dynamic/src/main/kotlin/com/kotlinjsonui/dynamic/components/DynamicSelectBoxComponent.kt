@@ -557,6 +557,10 @@ class DynamicSelectBoxComponent {
                     weight = fontWeight,
                     size = fontSize?.sp,
                 ),
+                // The select's text by its own fontScaling / maxFontScale (the text size rule), as the generated
+                // SelectBox passes them: the Dynamic face handed the size alone, so the text followed the system.
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr(),
                 contentPadding = selectContentPadding(json, data),
                 // Undeclared cancel colors fall to the SAME Configuration
                 // defaults the codegen face reaches by omitting the params
@@ -701,7 +705,9 @@ class DynamicSelectBoxComponent {
                 hintColor = hintColor,
                 cornerRadius = cornerRadius,
                 // paddings / padding as the select's own padding, as on SelectBox (SelectBoxDefaults when none)
-                contentPadding = selectContentPadding(json, data)
+                contentPadding = selectContentPadding(json, data),
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr()
             )
         }
 
