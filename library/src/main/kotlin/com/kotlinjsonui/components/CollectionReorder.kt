@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -89,6 +90,28 @@ class CollectionReorderDrag internal constructor() {
     /** Rows that are not picked up but are passed (reorderFixedProperty); a row whose handle is not drawn joins them. */
     internal var fixed: Set<Int> = emptySet()
     internal var count = 0
+    /** Each row's id (its key), by index, as the rows last drew themselves. */
+    internal val idAt = HashMap<Int, String?>()
+    /** Each row's handle, by index: false when it is not drawn (the row is fixed). */
+    internal val handleOffAt = HashMap<Int, Boolean>()
+    /** The rows as the drag read them when it began (rule.itemsChange): ids, locked, fixed. */
+    internal var started: Triple<List<String?>, Set<Int>, Set<Int>>? = null
+
+    /** The rows now, in the shape [started] keeps them. */
+    internal fun rowsNow(): Triple<List<String?>, Set<Int>, Set<Int>> =
+        Triple((0 until count).map { idAt[it] }, locked, fixed + (0 until count).filter { handleOffAt[it] == true })
+
+    /**
+     * Whether the rows changed since [started] (rule.itemsChange). A lazy list draws only the rows in sight, so an id
+     * is compared where it was known both when the drag began and now (a row scrolled into sight by the auto-scroll
+     * is not a change); the number of rows, the locked rows and the fixed rows are compared whole.
+     */
+    internal fun rowsChanged(): Boolean {
+        val began = started ?: return false
+        val now = rowsNow()
+        if (began.first.size != now.first.size || began.second != now.second || began.third != now.third) return true
+        return began.first.indices.any { i -> began.first[i] != null && now.first[i] != null && began.first[i] != now.first[i] }
+    }
     /**
      * True from a committed move until the next drag begins. The data has moved, so each row is laid out where it
      * was drawn: the rows the drag shifted take their place at once. Animated back instead, a row that had made room
@@ -218,7 +241,7 @@ fun CollectionReorderRows(
     val state = LocalCollectionReorder.current
     ids.forEachIndexed { index, id ->
         key(id) {
-            if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, ids.size, locked, fixed) { content(index) }
+            if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, ids.size, locked, fixed, id) { content(index) }
             else content(index)
         }
     }
@@ -234,7 +257,7 @@ fun LazyListScope.collectionReorderRows(
     itemContent: @Composable LazyItemScope.(Int) -> Unit,
 ) {
     items(ids.size, key = { "s$section:${ids[it]}" }) { index ->
-        if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, ids.size, locked, fixed) { itemContent(index) }
+        if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, ids.size, locked, fixed, ids[index]) { itemContent(index) }
         else itemContent(index)
     }
 }
@@ -256,9 +279,11 @@ fun CollectionReorderRow(
     count: Int,
     locked: Set<Int> = emptySet(),
     fixed: Set<Int> = emptySet(),
+    /** The row's id (its key): the drag compares the rows' ids when they change under it (rule.itemsChange). */
+    id: String? = null,
     content: @Composable () -> Unit,
 ) {
-    if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, count, locked, fixed, content) else content()
+    if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, count, locked, fixed, id, content) else content()
 }
 
 @Composable
@@ -269,12 +294,20 @@ private fun ReorderRow(
     count: Int,
     locked: Set<Int>,
     fixed: Set<Int>,
+    id: String? = null,
     content: @Composable () -> Unit,
 ) {
     val drag = state.drag(section)
     drag.count = count
     drag.locked = locked
     drag.fixed = fixed
+    drag.idAt[index] = id
+    // The rows changed under a drag (rule.itemsChange: ids in another number or order, locked or fixed rows
+    // otherwise): its indexes would name other rows, so it is cancelled at once - the rows go back and onReorder is
+    // not called. Checked after each composition; a text or colour rebuilt alone changes none of them.
+    SideEffect {
+        if (drag.dragging != null && drag.rowsChanged()) finish(state, drag, section, cancelled = true)
+    }
     val reorder = state.reorder ?: return content()
     val isDragged = drag.dragging == index
     // A cancelled drag slides the rows it shifted back; a committed one leaves them where the data put them.
@@ -282,6 +315,8 @@ private fun ReorderRow(
     val shift = remember { Animatable(0f) }
     LaunchedEffect(target, drag.committed) { if (drag.committed) shift.snapTo(0f) else shift.animateTo(target) }
     val ctx = remember(state, section, index) { RowContext(state, section, index) }
+    // With a handle, whether this row's handle is drawn, while the row is (a row out of sight keeps what it said).
+    drag.handleOffAt[index] = reorder.usesHandle && !ctx.handleDrawn
     val rowGesture = if (!reorder.usesHandle && CollectionReorderRules.canPickUp(index, locked, fixed)) Modifier.reorderGesture(ctx) else Modifier
     // The auto-scroll goes from the dragged row up to whatever scrolls it (nested scroll), and a lazy list keeps the
     // dragged row composed while it is scrolled out of sight (pinned): its gesture would end with it otherwise.
@@ -381,6 +416,7 @@ private fun Modifier.reorderGesture(ctx: RowContext): Modifier = composed {
                 drag.dy = 0f
                 startRootY = (drag.spans[ctx.index]?.top ?: 0f) + offset.y
                 drag.fingerY = startRootY
+                drag.started = drag.rowsNow()
                 drag.dragging = ctx.index
             },
             onDrag = { change, amount ->
@@ -402,7 +438,9 @@ private fun Modifier.reorderGesture(ctx: RowContext): Modifier = composed {
 private fun finish(state: CollectionReorderState, drag: CollectionReorderDrag, section: Int, cancelled: Boolean) {
     val from = drag.dragging ?: return
     val to = drag.target()
-    val commits = !cancelled &&
+    val changed = drag.rowsChanged()
+    drag.started = null
+    val commits = !cancelled && !changed &&
         CollectionReorderRules.releaseCommits(drag.fingerY, state.containerTop, state.containerBottom)
     drag.autoScrollVelocity = 0f
     drag.dragging = null

@@ -104,4 +104,19 @@ class CollectionReorderRulesVectorsTest {
             if (want) assertEquals(c["name"].asString, c["to"].asInt, if (c["action"].asString == "up") from - 1 else from + 1)
         }
     }
+
+    @Test fun every_items_change_case() {
+        val all = cases("itemsChange")
+        assertTrue(all.isNotEmpty())
+        for (c in all) {
+            val start = c.getAsJsonObject("start")
+            val now = c.getAsJsonObject("release")
+            fun ids(o: JsonObject) = o.getAsJsonArray("ids").map { it.asString }
+            val changed = CollectionReorderRules.itemsChanged(
+                ids(start), ints(start.getAsJsonArray("locked")).toSet(), ints(start.getAsJsonArray("fixed")).toSet(),
+                ids(now), ints(now.getAsJsonArray("locked")).toSet(), ints(now.getAsJsonArray("fixed")).toSet(),
+            )
+            assertEquals(c["name"].asString, c["cancelled"].asBoolean, changed)
+        }
+    }
 }

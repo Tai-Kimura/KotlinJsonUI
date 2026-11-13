@@ -1678,7 +1678,7 @@ class DynamicCollectionComponent {
                                         // Keyed by the cell's key, so a moved row keeps its own state.
                                         key(reorderKey(item, cellIdProperty, cellIndex)) {
                                             CollectionReorderRow(reorderState, s, cellIndex, cells.size, reorderLocked(cells, reorderLockedProperty),
-                                                reorderLocked(cells, reorderFixedProperty)) { cellBox() }
+                                                reorderLocked(cells, reorderFixedProperty), id = reorderKey(item, cellIdProperty, cellIndex)) { cellBox() }
                                         }
                                     } else cellBox()
                                 } else {
@@ -2118,6 +2118,8 @@ class DynamicCollectionComponent {
                                                 reorderState, sectionIndex, identified.index, cellData.data.size,
                                                 if (reorderState != null) reorderLocked(cellData.data, reorderLockedProperty) else emptySet(),
                                                 if (reorderState != null) reorderLocked(cellData.data, reorderFixedProperty) else emptySet(),
+                                                // The row's id: the drag compares the rows' ids when the data changes under it (itemsChange).
+                                                id = identified.id,
                                             ) {
                                                 renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome, collectionId = collectionId,
                                                     reorderRoot = reorderState != null, reorderHandle = reorderHandle)

@@ -114,4 +114,13 @@ object CollectionReorderRules {
         if (index in locked || index in fixed || index < 0 || index >= count) return false to false
         return (index > 0 && (index - 1) !in locked) to (index < count - 1 && (index + 1) !in locked)
     }
+
+    /**
+     * Whether a drag let go with the rows now is cancelled, having read the rows when it began (rule.itemsChange): the
+     * ids differ in number or order, or the locked or the fixed rows differ.
+     */
+    fun itemsChanged(
+        startIds: List<String>, startLocked: Set<Int>, startFixed: Set<Int>,
+        nowIds: List<String>, nowLocked: Set<Int>, nowFixed: Set<Int>,
+    ): Boolean = startIds != nowIds || startLocked != nowLocked || startFixed != nowFixed
 }

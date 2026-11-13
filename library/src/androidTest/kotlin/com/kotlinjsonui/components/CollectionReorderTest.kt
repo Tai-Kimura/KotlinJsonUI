@@ -15,6 +15,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -197,7 +200,7 @@ class CollectionReorderTest {
     @Test fun a_fixed_row_is_passed_but_not_picked_up_and_has_no_accessibility_move() {
         lazy(8, fixed = setOf(3))
         drag("row_0", 6f)
-        assertEquals("passed the fixed row (6 rows on the dot is not past row 6's centre)", listOf(Triple(0, 0, 5)), moves)
+        assertEquals("passed the fixed row (6 rows on the dot is past row 6's top edge)", listOf(Triple(0, 0, 6)), moves)
         moves.clear()
         drag("row_3", -2f)
         assertTrue("moves $moves", moves.isEmpty())
@@ -225,5 +228,80 @@ class CollectionReorderTest {
         }
         drag("handle_1", 2.2f)                                     // passes the invisible-handle row 2
         assertEquals(listOf(Triple(0, 1, 3)), moves)
+    }
+
+    // Ticket jui-collection-reorder-start-callback-missing (rule.itemsChange): the data rebuilt while a row is held.
+    // Let go, a change of ids (number or order) or of the locked rows cancels the drag - nothing is reported, the
+    // next drag works - and a rebuild of the text alone does not.
+    private var rowIds by mutableStateOf((0 until 8).map { "id$it" })
+    private var rowLocked by mutableStateOf(emptySet<Int>())
+    private var dragState: CollectionReorderState? = null
+    /** The rebuild to make once the held row has moved a row's height (written by the screen, mid-gesture). */
+    private var pendingChange: (() -> Unit)? = null
+
+    private fun rebuilt() = rule.setContent {
+        CollectionReorderContainer(reorder(), Modifier.fillMaxSize()) {
+            val state = rememberCollectionReorderState()
+            dragState = state
+            val d = state?.drag(0)
+            if (d != null && d.dragging != null && kotlin.math.abs(d.dy) > 64 * rule.density.density) {
+                androidx.compose.runtime.SideEffect { pendingChange?.let { pendingChange = null; it() } }
+            }
+            LazyColumn(Modifier.fillMaxSize().testTag("list"), state = rememberLazyListState()) {
+                collectionReorderRows(state, 0, rowIds, rowLocked) { i -> Cell(rowIds[i].removePrefix("id").toInt()) }
+            }
+        }
+    }
+
+    /** Hold row [tag], move it [rows] down, rebuild the data halfway ([change]), move on and let go. */
+    // One gesture: a held drag never lets the composition idle (the auto-scroll's frame loop runs while it is held),
+    // and the gesture's block is built before it is sent - so the screen makes the rebuild itself once the held row
+    // has moved a row (pendingChange), and frames pass before the finger lets go.
+    private fun dragWhileRebuilt(tag: String, rows: Float, change: () -> Unit) {
+        pendingChange = change
+        rule.onNodeWithTag(tag, true).performTouchInput {
+            down(center)
+            advanceEventTime(viewConfiguration.longPressTimeoutMillis + 100)
+            val step = 64.dp.toPx() * rows / 20
+            repeat(10) { moveBy(Offset(0f, step)); advanceEventTime(16) }
+            repeat(10) { moveBy(Offset(0f, 0f)); advanceEventTime(32) }
+            repeat(10) { moveBy(Offset(0f, step)); advanceEventTime(16) }
+            up()
+        }
+        rule.waitForIdle()
+    }
+
+    @Test fun a_rebuild_of_the_text_alone_under_a_drag_commits() {
+        rebuilt()
+        dragWhileRebuilt("row_1", 2.2f) { rowIds = rowIds.toList() }
+        assertEquals("the rebuild was made", null, pendingChange)
+        assertEquals(listOf(Triple(0, 1, 3)), moves)
+    }
+
+    @Test fun a_row_added_above_under_a_drag_cancels_it_and_the_next_drag_works() {
+        rebuilt()
+        dragWhileRebuilt("row_1", 2.2f) { rowIds = listOf("id7") + rowIds.filter { it != "id7" } }
+        assertEquals("the rebuild was made", null, pendingChange)
+        assertTrue("moves $moves", moves.isEmpty())
+        assertEquals("nothing is left dragged", null, dragState?.drag(0)?.dragging)
+        drag("row_2", 1.3f)
+        assertEquals(1, moves.size)
+    }
+
+    // The held row keeps its index (a row below it goes): the old drag went on and reported its stale indexes.
+    @Test fun a_row_removed_below_under_a_drag_cancels_it() {
+        rebuilt()
+        dragWhileRebuilt("row_1", 2.2f) { rowIds = rowIds.filter { it != "id6" } }
+        assertEquals("the rebuild was made", null, pendingChange)
+        assertTrue("moves $moves", moves.isEmpty())
+        assertEquals(null, dragState?.drag(0)?.dragging)
+    }
+
+    @Test fun a_row_locked_under_a_drag_cancels_it() {
+        rebuilt()
+        dragWhileRebuilt("row_1", 2.2f) { rowLocked = setOf(6) }
+        assertEquals("the rebuild was made", null, pendingChange)
+        assertTrue("moves $moves", moves.isEmpty())
+        assertEquals(null, dragState?.drag(0)?.dragging)
     }
 }
