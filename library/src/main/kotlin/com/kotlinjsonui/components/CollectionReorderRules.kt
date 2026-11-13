@@ -1,41 +1,90 @@
 package com.kotlinjsonui.components
 
 /**
- * Where a dragged row lands in a reorderable Collection (`reorderable` / `onReorder`), apart from any drawing: the
- * rules every face follows, held to shared/core's reorder vectors (jsonui-cli; ticket jui-collection-drag-to-reorder,
- * the iOS 27 reorderable's reading):
+ * The rule a reorderable Collection follows (`reorderable` / `onReorder`; ticket jui-collection-drag-to-reorder), as
+ * plain functions. The same rule is written for iOS (SwiftJsonUI CollectionReorderRule) and web, and jsonui-cli's
+ * shared/core/reorder_vectors.json pins all three; the names and answers here are SwiftJsonUI's, one to one.
  *
- *  1. released inside the Collection's container (the part that holds the rows, its header and footer with them),
- *     the row lands at the slot under the finger;
- *  2. above the first row it lands first, below the last row it lands last;
- *  3. released outside the container, the move is cancelled;
- *  4. a locked row (`reorderLockedProperty`) neither moves nor is passed: a move across one stops just before it.
- *
- * Indices are the section's, before the move; the answer is the row's index after it.
+ * Positions are in the rows' content coordinates (a scroll moves the rows and the finger alike, so it is part of the
+ * drag's dy). Indexes are within one section; `to` is the index the row holds AFTER the move.
  */
 object CollectionReorderRules {
-    /**
-     * The first and last index *from* may land at: the run of rows between the locked rows around it. null when the
-     * row at *from* is locked itself (it cannot be picked up).
-     */
-    fun range(count: Int, from: Int, locked: (Int) -> Boolean): IntRange? {
-        if (from !in 0 until count || locked(from)) return null
-        var lo = from
-        while (lo - 1 >= 0 && !locked(lo - 1)) lo--
-        var hi = from
-        while (hi + 1 < count && !locked(hi + 1)) hi++
-        return lo..hi
+
+    /** The top and bottom of one row, in content coordinates. */
+    data class RowSpan(val top: Float, val bottom: Float) {
+        val center: Float get() = (top + bottom) / 2
     }
 
     /**
-     * The index the row lands at, or null for no move (cancelled, outside the container, locked, or back where it
-     * was). *slot*: the slot under the finger when it was released (any Int: one past either end is clamped by rule
-     * 2), or null when the finger left the container (rule 3).
+     * Where the row grabbed at [from] lands while it is dragged [dy]: past every neighbour whose centre its own centre
+     * has crossed (exactly on a centre is not past it), and never onto or past a locked row.
      */
-    fun land(count: Int, from: Int, slot: Int?, locked: (Int) -> Boolean): Int? {
-        val run = range(count, from, locked) ?: return null
-        if (slot == null) return null
-        val to = slot.coerceIn(0, count - 1).coerceIn(run.first, run.last)
-        return if (to == from) null else to
+    fun target(from: Int, dy: Float, rows: List<RowSpan>, locked: Set<Int>): Int {
+        if (from !in rows.indices) return from
+        val center = rows[from].center + dy
+        var to = from
+        if (dy > 0) {
+            var j = from + 1
+            while (j < rows.size && j !in locked && center > rows[j].center) { to = j; j++ }
+        } else if (dy < 0) {
+            var j = from - 1
+            while (j >= 0 && j !in locked && center < rows[j].center) { to = j; j-- }
+        }
+        return to
+    }
+
+    /**
+     * Whether letting go commits the move: the finger is inside the Collection's container (the part that holds the
+     * rows, its header and footer included). Above the first row the row lands first, below the last row last
+     * ([target] gives that); only outside the container is the move cancelled (ruling 2026-11-13, iOS 27's reading).
+     */
+    fun releaseCommits(fingerY: Float, containerTop: Float, containerBottom: Float): Boolean =
+        fingerY >= containerTop && fingerY <= containerBottom
+
+    /** `onReorder` is called only for a real move. */
+    fun shouldReport(from: Int, to: Int): Boolean = from != to
+
+    /** Whether a move crosses a locked row (or starts on one). */
+    fun crossesLocked(from: Int, to: Int, locked: Set<Int>): Boolean {
+        if (from in locked) return true
+        if (from == to) return false
+        val range = if (from < to) (from + 1)..to else to..(from - 1)
+        return range.any { it in locked }
+    }
+
+    /** Where a move ends short of the first locked row in its way; null when the row itself is locked. */
+    fun clampedTo(from: Int, to: Int, locked: Set<Int>): Int? {
+        if (from in locked) return null
+        if (to > from) locked.filter { it > from && it <= to }.minOrNull()?.let { return it - 1 }
+        if (to < from) locked.filter { it < from && it >= to }.maxOrNull()?.let { return it + 1 }
+        return to
+    }
+
+    /** The edge band and the fastest auto-scroll, in dp and dp a second (SwiftJsonUI's points). */
+    const val AUTO_SCROLL_BAND = 48f
+    const val AUTO_SCROLL_MAX_SPEED = 800f
+
+    /**
+     * The auto-scroll velocity for a finger at [fingerY] in a viewport from [viewportTop] to [viewportBottom] (all in
+     * dp): negative up, positive down, 0 outside both bands; faster the deeper into the band. In a viewport shorter
+     * than two bands the nearer edge wins.
+     */
+    fun autoScrollVelocity(fingerY: Float, viewportTop: Float, viewportBottom: Float): Float {
+        val band = AUTO_SCROLL_BAND
+        val fromTop = fingerY - viewportTop
+        val fromBottom = viewportBottom - fingerY
+        val inTop = fromTop < band
+        val inBottom = fromBottom < band
+        if (!inTop && !inBottom) return 0f
+        val upward = inTop && (!inBottom || fromTop <= fromBottom)
+        val depth = if (upward) band - maxOf(0f, fromTop) else band - maxOf(0f, fromBottom)
+        val speed = AUTO_SCROLL_MAX_SPEED * minOf(1f, maxOf(0f, depth / band))
+        return if (upward) -speed else speed
+    }
+
+    /** The accessibility moves a row offers: up unless first, the row above locked, or locked itself; down likewise. */
+    fun accessibilityMoves(index: Int, count: Int, locked: Set<Int>): Pair<Boolean, Boolean> {
+        if (index in locked || index < 0 || index >= count) return false to false
+        return (index > 0 && (index - 1) !in locked) to (index < count - 1 && (index + 1) !in locked)
     }
 }

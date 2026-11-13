@@ -1,34 +1,55 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.components.CollectionReorderRules.RowSpan
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** The four rules of a release (CollectionReorderRules), before shared/core's vectors arrive to hold them too. */
+/**
+ * The rule (CollectionReorderRules), on hand-picked cases until shared/core/reorder_vectors.json arrives to hold the
+ * three faces to one table. Six rows of 60, from 0.
+ */
 class CollectionReorderRulesTest {
-    private val none: (Int) -> Boolean = { false }
+    private val rows = (0 until 6).map { RowSpan(it * 60f, it * 60f + 60f) }
 
-    @Test fun released_inside_lands_at_the_slot_under_the_finger() {
-        assertEquals(3, CollectionReorderRules.land(6, 1, 3, none))
-        assertEquals(0, CollectionReorderRules.land(6, 4, 0, none))
+    @Test fun a_row_lands_past_every_centre_its_own_centre_crossed() {
+        assertEquals(1, CollectionReorderRules.target(1, 59f, rows, emptySet()))
+        assertEquals(1, CollectionReorderRules.target(1, 60f, rows, emptySet()))    // exactly on a centre: not past
+        assertEquals(2, CollectionReorderRules.target(1, 61f, rows, emptySet()))
+        assertEquals(0, CollectionReorderRules.target(3, -500f, rows, emptySet()))  // above the first row: first
+        assertEquals(5, CollectionReorderRules.target(1, 900f, rows, emptySet()))   // below the last row: last
     }
 
-    @Test fun above_the_first_row_lands_first_and_below_the_last_lands_last() {
-        assertEquals(0, CollectionReorderRules.land(6, 3, -4, none))
-        assertEquals(5, CollectionReorderRules.land(6, 1, 99, none))
+    @Test fun a_row_never_lands_on_or_past_a_locked_one() {
+        assertEquals(2, CollectionReorderRules.target(0, 900f, rows, setOf(3)))
+        assertEquals(4, CollectionReorderRules.target(5, -900f, rows, setOf(3)))
+        assertEquals(2, CollectionReorderRules.clampedTo(0, 5, setOf(3)))
+        assertEquals(4, CollectionReorderRules.clampedTo(5, 0, setOf(3)))
+        assertNull(CollectionReorderRules.clampedTo(3, 0, setOf(3)))
+        assertTrue(CollectionReorderRules.crossesLocked(0, 4, setOf(3)))
+        assertFalse(CollectionReorderRules.crossesLocked(0, 2, setOf(3)))
     }
 
-    @Test fun released_outside_the_container_is_cancelled_and_back_in_place_is_no_move() {
-        assertNull(CollectionReorderRules.land(6, 2, null, none))
-        assertNull(CollectionReorderRules.land(6, 2, 2, none))
+    @Test fun only_a_release_outside_the_container_is_cancelled_and_only_a_real_move_is_reported() {
+        assertTrue(CollectionReorderRules.releaseCommits(10f, 0f, 400f))
+        assertTrue(CollectionReorderRules.releaseCommits(0f, 0f, 400f))
+        assertFalse(CollectionReorderRules.releaseCommits(401f, 0f, 400f))
+        assertFalse(CollectionReorderRules.shouldReport(2, 2))
+        assertTrue(CollectionReorderRules.shouldReport(2, 3))
     }
 
-    @Test fun a_locked_row_is_never_passed_and_never_picked_up() {
-        val locked: (Int) -> Boolean = { it == 3 }
-        assertEquals(2, CollectionReorderRules.land(6, 0, 5, locked))      // stops just before the locked row
-        assertEquals(4, CollectionReorderRules.land(6, 5, 0, locked))      // from below, just after it
-        assertEquals(0..2, CollectionReorderRules.range(6, 1, locked))
-        assertNull(CollectionReorderRules.land(6, 3, 0, locked))           // the locked row itself does not move
-        assertNull(CollectionReorderRules.land(6, 2, 99, locked))          // already at the end of its run
+    @Test fun auto_scroll_is_faster_deeper_into_the_edge_band() {
+        assertEquals(0f, CollectionReorderRules.autoScrollVelocity(200f, 0f, 400f))
+        assertEquals(-800f, CollectionReorderRules.autoScrollVelocity(0f, 0f, 400f))
+        assertEquals(400f, CollectionReorderRules.autoScrollVelocity(376f, 0f, 400f))
+    }
+
+    @Test fun the_accessibility_moves_stop_at_the_ends_and_at_locked_rows() {
+        assertEquals(false to true, CollectionReorderRules.accessibilityMoves(0, 6, emptySet()))
+        assertEquals(true to false, CollectionReorderRules.accessibilityMoves(5, 6, emptySet()))
+        assertEquals(false to true, CollectionReorderRules.accessibilityMoves(4, 6, setOf(3)))
+        assertEquals(false to false, CollectionReorderRules.accessibilityMoves(3, 6, setOf(3)))
     }
 }
