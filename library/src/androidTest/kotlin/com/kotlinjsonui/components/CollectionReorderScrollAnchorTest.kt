@@ -147,6 +147,14 @@ class CollectionReorderScrollAnchorTest {
         assertEquals("row 3 after row 0 moved to 2 by the data alone (px)", before, top(3), 1f)
     }
 
+    // A row dropped and picked up again at once (its index just changed) lands where the finger lets go.
+    @Test fun a_row_moved_back_right_after_its_move_lands_where_it_was() {
+        lazy(12)
+        drag(2, 1.3f)
+        drag(3, -1.3f)
+        assertEquals((0 until 12).map { "id$it" }, ids.toList())
+    }
+
     @Test fun an_eager_column_holds_still_when_row_0_is_dragged_down() { eager(12); holds(3, 0, 2) { drag(0, 2.2f) } }
     @Test fun an_eager_column_holds_still_when_its_last_row_is_dragged_up() { eager(8); holds(4, 7, 5) { drag(7, -2.2f) } }
 

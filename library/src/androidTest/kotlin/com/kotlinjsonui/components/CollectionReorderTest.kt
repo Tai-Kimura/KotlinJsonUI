@@ -98,6 +98,17 @@ class CollectionReorderTest {
         rule.waitForIdle()
     }
 
+    // The row lands where the finger lets go, up as down: dy is the finger's own travel (ticket
+    // jui-collection-drag-to-reorder; jsonui-test-runner's moveItem landed an upward move one row further).
+    @Test fun up_and_down_the_row_lands_where_the_finger_lets_go() {
+        lazy(30)
+        for ((rows, to) in listOf(-1.3f to 2, -2.3f to 1, 1.3f to 4, 2.3f to 5)) {
+            moves.clear()
+            drag("row_3", rows, holdMs = 500)
+            assertEquals("row 3 dragged $rows rows", listOf(Triple(0, 3, to)), moves)
+        }
+    }
+
     @Test fun a_tap_is_the_rows_click_and_a_quick_swipe_scrolls_and_neither_moves_a_row() {
         lazy(30)
         rule.onNodeWithTag("row_3").performClick()
