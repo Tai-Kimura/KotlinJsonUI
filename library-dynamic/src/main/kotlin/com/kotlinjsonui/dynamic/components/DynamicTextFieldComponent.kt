@@ -233,7 +233,12 @@ class DynamicTextFieldComponent {
             val contentPadding = buildContentPadding(json, a, data)
 
             // Text style
-            val textStyle = buildTextStyle(a, textColor, json.fontSized(fontSize.sp), json.letterSpaced(), context, data)
+            // Through the app's fontProvider whatever the field declares (P1, as the generated TextField does): the
+            // provider's size, when it gives one, is drawn by the same declarations as the field's own.
+            val fieldFont = providedFieldFont(a, context, data)
+            val textStyle = buildTextStyle(
+                a, textColor, json.fontSized(fieldFont.size ?: fontSize.sp), json.letterSpaced(), context, data, fieldFont
+            )
 
             // Keyboard options
             val keyboardOptions = buildKeyboardOptions(a, nextFocusId)
@@ -469,6 +474,26 @@ class DynamicTextFieldComponent {
                     a.common.borderWidth != null
         }
 
+        /**
+         * Configuration.Font.resolve of what the field declares (family name, weight, size; none when it declares
+         * none), the family the provider leaves null falling to the res/font lookup (P1).
+         */
+        private fun providedFieldFont(
+            a: TextFieldAttributes,
+            context: android.content.Context,
+            data: Map<String, Any>
+        ): com.kotlinjsonui.core.ResolvedFont {
+            val fontSpelling = TypedAttrs.string(a.font, data)
+            val familyName = TypedAttrs.string(a.fontFamily, data)
+                ?: fontSpelling?.takeIf { ResourceResolver.fontWeightFor(it) == null }
+            return ResourceResolver.providerFont(
+                family = familyName,
+                weight = ResourceResolver.fontWeightFor(fontSpelling),
+                size = TypedAttrs.int(a.fontSize, data)?.sp,
+                fallbackFamily = ResourceResolver.resolveFontFamily(TypedAttrs.string(a.fontFamily, data), fontSpelling, context),
+            )
+        }
+
         private fun buildTextStyle(
             a: TextFieldAttributes,
             textColor: androidx.compose.ui.graphics.Color,
@@ -477,7 +502,9 @@ class DynamicTextFieldComponent {
             /** The theme's letter spacing drawn by the same declarations (json.letterSpaced). */
             letterSpacing: androidx.compose.ui.unit.TextUnit,
             context: android.content.Context,
-            data: Map<String, Any>
+            data: Map<String, Any>,
+            /** The app's font for the field (providedFieldFont): its family / weight / style win where it gives one. */
+            provided: com.kotlinjsonui.core.ResolvedFont? = null
         ): TextStyle {
             // `fontFamily` reached nothing on this component (34:
             // `TextField/fontFamily` pixel-identical to its control). `font`
@@ -488,10 +515,11 @@ class DynamicTextFieldComponent {
                 fontSize = fontSize,
                 letterSpacing = letterSpacing,
                 color = textColor,
-                fontWeight = ResourceResolver.fontWeightFor(fontSpelling),
-                fontFamily = ResourceResolver.resolveFontFamily(
+                fontWeight = provided?.weight ?: ResourceResolver.fontWeightFor(fontSpelling),
+                fontFamily = provided?.family ?: ResourceResolver.resolveFontFamily(
                     TypedAttrs.string(a.fontFamily, data), fontSpelling, context
-                )
+                ),
+                fontStyle = provided?.style
             )
 
             // Text alignment
