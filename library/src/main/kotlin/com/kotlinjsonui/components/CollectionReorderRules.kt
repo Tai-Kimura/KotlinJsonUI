@@ -37,9 +37,26 @@ object CollectionReorderRules {
      * Whether letting go commits the move: the finger is inside the Collection's container (the part that holds the
      * rows, its header and footer included). Above the first row the row lands first, below the last row last
      * ([target] gives that); only outside the container is the move cancelled (ruling 2026-11-13, iOS 27's reading).
+     * The container's bottom edge itself is outside it (reorder_vectors.json, release).
      */
     fun releaseCommits(fingerY: Float, containerTop: Float, containerBottom: Float): Boolean =
-        fingerY >= containerTop && fingerY <= containerBottom
+        fingerY >= containerTop && fingerY < containerBottom
+
+    /** Whether the row at [from] can be picked up at all: a locked row never is. */
+    fun canPickUp(from: Int, locked: Set<Int>): Boolean = from !in locked
+
+    /**
+     * Why a move from [from] to [to] in [count] rows is refused, or null when it is a move: "no-move" (to == from),
+     * "out-of-range" (either index outside the rows), "locked" (the row is locked, or the move passes a locked row).
+     * The library's own drag and the accessibility moves never make a refused move; this is the table's reading of
+     * one, as any move reported to the view model must pass it.
+     */
+    fun refusal(count: Int, from: Int, to: Int, locked: Set<Int>): String? = when {
+        from !in 0 until count || to !in 0 until count -> "out-of-range"
+        crossesLocked(from, to, locked) -> "locked"
+        from == to -> "no-move"
+        else -> null
+    }
 
     /** `onReorder` is called only for a real move. */
     fun shouldReport(from: Int, to: Int): Boolean = from != to
