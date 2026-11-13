@@ -40,6 +40,8 @@ import androidx.compose.ui.input.pointer.PointerEventTimeoutCancellationExceptio
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import com.kotlinjsonui.components.collectionReorderActions
+import com.kotlinjsonui.components.collectionReorderHandle
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
@@ -1749,14 +1751,23 @@ object ModifierBuilder {
         val node = if (handles.isEmpty()) json else JsonObject().also { copy ->
             for ((key, value) in json.entrySet()) if (key !in handles) copy.add(key, value)
         }
-        return standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
+        val built = standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
             if (control != null && stage.name == "clickable") {
                 applyControlClickable(modifier, node, data, control)
             } else {
                 stage.apply(modifier, node, data, context, defaultFillMaxWidth)
             }
         }
+        // A reorderable row's cell (DynamicCollectionComponent.withReorderMarks): the accessibility moves on its
+        // root, the drag on its handle. Outside a reorderable row both do nothing.
+        return built
+            .then(if (json.has(REORDER_ROOT_MARK)) Modifier.collectionReorderActions() else Modifier)
+            .then(if (json.has(REORDER_HANDLE_MARK)) Modifier.collectionReorderHandle() else Modifier)
     }
+
+    /** The marks DynamicCollectionComponent puts in a reorderable row's cell layout (never in a layout file). */
+    const val REORDER_ROOT_MARK = "__juiReorderRoot"
+    const val REORDER_HANDLE_MARK = "__juiReorderHandle"
 
     // ── Lifecycle Effects ────────────────────────────────────────────
 

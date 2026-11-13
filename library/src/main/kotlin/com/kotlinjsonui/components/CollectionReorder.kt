@@ -64,6 +64,7 @@ class CollectionReorderState internal constructor() {
     internal var viewportTop = 0f
     internal var viewportBottom = Float.MAX_VALUE
     internal var density = 1f
+    internal var scrollsItself = true
     private val drags = HashMap<Int, CollectionReorderDrag>()
 
     internal fun drag(section: Int): CollectionReorderDrag = drags.getOrPut(section) { CollectionReorderDrag() }
@@ -110,11 +111,46 @@ class CollectionReorderDrag internal constructor() {
 val LocalCollectionReorder = compositionLocalOf<CollectionReorderState?> { null }
 
 /**
- * Wraps the Collection's container (the part that holds the rows, its header and footer with them): its bounds decide
- * whether a release commits (only outside it is the move cancelled), and the auto-scroll is handed from here to the
- * scrolling parent — the LazyColumn, the EAGER column's scroll, or an outer scroll around a NONE column — as a nested
- * scroll from the dragged row, so one way serves all three. [scrollsItself]: false for a NONE column, whose
- * auto-scroll bands are the window's edges (an outer scroll carries it). A null [reorder] (or one not enabled) draws [content] as it is.
+ * The state of one Collection's reorder, kept where the Collection is composed. [scrollsItself]: false for a NONE
+ * column, whose auto-scroll bands are the window's edges (an outer scroll carries it); true for a LAZY list and an
+ * EAGER column, whose visible part is the band's frame.
+ */
+@Composable
+fun rememberCollectionReorder(reorder: CollectionReorder?, scrollsItself: Boolean = true): CollectionReorderState {
+    val state = remember { CollectionReorderState() }
+    state.reorder = reorder
+    state.scrollsItself = scrollsItself
+    state.density = LocalDensity.current.density
+    return state
+}
+
+/**
+ * On the Collection's container (the node that holds the rows, its header and footer with them): its bounds decide
+ * whether a release commits (only outside it is the move cancelled) and where the auto-scroll's bands are. No layout
+ * node is added: the container keeps its own modifiers (a weight in its parent's scope among them).
+ */
+fun Modifier.collectionReorderContainer(state: CollectionReorderState): Modifier = this.onGloballyPositioned { c ->
+    val b = c.boundsInRoot()
+    val windowBottom = c.findRootCoordinates().size.height.toFloat()
+    state.containerTop = b.top
+    state.containerBottom = b.bottom
+    // What the auto-scroll's bands are measured against: the part of a container that scrolls itself (LAZY, EAGER)
+    // that can be seen; for one that an outer scroll carries (NONE), the window — the container's own bottom there is
+    // no edge to scroll at (a short list's last row sat in its band, measured).
+    state.viewportTop = if (state.scrollsItself) maxOf(0f, b.top) else 0f
+    state.viewportBottom = if (state.scrollsItself) minOf(windowBottom, b.bottom) else windowBottom
+}
+
+/** Hands [state] to the rows composed under [content] (a CompositionLocal: no layout node). */
+@Composable
+fun CollectionReorderScope(state: CollectionReorderState, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalCollectionReorder provides state) { content() }
+}
+
+/**
+ * The three above in one Box, for a container that may take one. The auto-scroll is handed to the scrolling parent
+ * — the LazyColumn, the EAGER column's scroll, or an outer scroll around a NONE column — as a nested scroll from the
+ * dragged row, so one way serves all three.
  */
 @Composable
 fun CollectionReorderContainer(
@@ -123,25 +159,8 @@ fun CollectionReorderContainer(
     scrollsItself: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val state = remember { CollectionReorderState() }
-    state.reorder = reorder
-    state.density = LocalDensity.current.density
-    Box(
-        modifier
-            .onGloballyPositioned { c ->
-                val b = c.boundsInRoot()
-                val windowBottom = c.findRootCoordinates().size.height.toFloat()
-                state.containerTop = b.top
-                state.containerBottom = b.bottom
-                // What the auto-scroll's bands are measured against: the part of a container that scrolls itself
-                // (LAZY, EAGER) that can be seen; for one that an outer scroll carries (NONE), the window — the
-                // container's own bottom there is no edge to scroll at (a short list's last row sat in its band).
-                state.viewportTop = if (scrollsItself) maxOf(0f, b.top) else 0f
-                state.viewportBottom = if (scrollsItself) minOf(windowBottom, b.bottom) else windowBottom
-            },
-    ) {
-        CompositionLocalProvider(LocalCollectionReorder provides state) { content() }
-    }
+    val state = rememberCollectionReorder(reorder, scrollsItself)
+    Box(modifier.collectionReorderContainer(state)) { CollectionReorderScope(state, content) }
 }
 
 /** The library's words for the two actions, in the app's language (ja, else en) — SwiftJsonUI's CollectionReorderText. */
@@ -189,6 +208,23 @@ fun LazyListScope.collectionReorderRows(
 @Composable
 fun rememberCollectionReorderState(): CollectionReorderState? = LocalCollectionReorder.current
 
+/**
+ * One row of a reorderable section, for a caller that emits its rows itself (the Dynamic renderer's grid items and
+ * column): [count] rows in the section, [locked] the indexes that neither move nor are passed. Without an enabled
+ * reorder it draws [content] as it is.
+ */
+@Composable
+fun CollectionReorderRow(
+    state: CollectionReorderState?,
+    section: Int,
+    index: Int,
+    count: Int,
+    locked: Set<Int> = emptySet(),
+    content: @Composable () -> Unit,
+) {
+    if (state?.reorder?.isEnabled == true) ReorderRow(state, section, index, count, locked, content) else content()
+}
+
 @Composable
 private fun ReorderRow(
     state: CollectionReorderState,
@@ -235,6 +271,14 @@ private fun ReorderRow(
         CompositionLocalProvider(LocalReorderRow provides ctx) { content() }
     }
 }
+
+/**
+ * For a lazy grid's item, whose root is the caller's own (it carries animateItem): the dragged row is drawn over the
+ * others only when the item's ROOT is raised, so the caller puts this on it.
+ */
+fun Modifier.collectionReorderLayer(state: CollectionReorderState?, section: Int, index: Int): Modifier =
+    if (state?.reorder?.isEnabled != true) this
+    else this.zIndex(if (state.drag(section).dragging == index) 1f else 0f)
 
 /**
  * "Move up" / "Move down" on a row, as the rule allows them ([CollectionReorderRules.accessibilityMoves]) — on the

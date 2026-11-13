@@ -15,6 +15,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import androidx.compose.runtime.rememberCoroutineScope
@@ -62,6 +63,13 @@ import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.generated.DimensionValue
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import com.kotlinjsonui.components.CollectionStackMode
+import com.kotlinjsonui.components.CollectionReorder
+import com.kotlinjsonui.components.CollectionReorderRow
+import com.kotlinjsonui.components.CollectionReorderScope
+import com.kotlinjsonui.components.CollectionReorderState
+import com.kotlinjsonui.components.collectionReorderContainer
+import com.kotlinjsonui.components.collectionReorderLayer
+import com.kotlinjsonui.components.rememberCollectionReorder
 import com.kotlinjsonui.components.ReversedColumn
 import com.kotlinjsonui.dynamic.helpers.ContentInsetBehavior
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -142,6 +150,14 @@ class DynamicCollectionComponent {
                 val expr = ModifierBuilder.handlerExpression(TypedAttrs.rawString(a.onItemAppear)) ?: return@run null
                 indexHandler(DataBindingContext.evaluateExpression(expr, data))
             }
+
+            // Reorder (ticket jui-collection-drag-to-reorder): the handler and whether it is on. Which routes draw it
+            // is decided below (v1: the vertical single-column routes).
+            val reorderHandler: ((Int, Int, Int) -> Unit)? = run {
+                val expr = ModifierBuilder.handlerExpression(a.onReorder?.rawRepresentation() as? String) ?: return@run null
+                reorderHandlerOf(DataBindingContext.evaluateExpression(expr, data))
+            }
+            val reorderOn = reorderHandler != null && TypedAttrs.boolean(a.reorderable, data) == true
 
             // Check if sections are defined
             val sections = json.get("sections")?.asJsonArray
@@ -589,7 +605,17 @@ class DynamicCollectionComponent {
                         reverse = columnReversed
                     )
                 }
+                // Reorder: the vertical single-column rows of an EAGER or NONE column (ticket
+                // jui-collection-drag-to-reorder). The column is the container; NONE rides an outer scroll.
+                val columnReorder = rememberCollectionReorder(
+                    if (reorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler!!) else null,
+                    scrollsItself = columnScrolls,
+                )
+                CollectionReorderScope(columnReorder) {
                 renderNonLazy(
+                    reorderState = if (reorderOn) columnReorder else null,
+                    reorderHandle = a.reorderHandle,
+                    reorderLockedProperty = a.reorderLockedProperty,
                     chrome = listChrome,
                     sections = columnSections,
                     legacyHeader = plan.headerFor(CellRoute.NON_LAZY_COLUMN),
@@ -600,7 +626,7 @@ class DynamicCollectionComponent {
                     collectionDataSource = collectionDataSource,
                     cellIdProperty = cellIdProperty,
                     data = data,
-                    modifier = columnModifier,
+                    modifier = if (reorderOn) columnModifier.collectionReorderContainer(columnReorder) else columnModifier,
                     lineSpacing = lineSpacing,
                     contentPadding = contentPadding,
                     cellHeight = cellHeight,
@@ -617,6 +643,7 @@ class DynamicCollectionComponent {
                         columnContentAlignment(defaultAnchor, columnReversed)
                     } else Alignment.Top
                 )
+                }
                 return
             }
 
@@ -782,10 +809,16 @@ class DynamicCollectionComponent {
                     )
                 }
             } else {
-                // Vertical grid (default)
+                // Vertical grid (default). Reorder: one column only (v1; ticket jui-collection-drag-to-reorder) —
+                // the grid is the container and scrolls itself.
+                val gridReorderOn = reorderOn && gridColumns == 1
+                val gridReorder = rememberCollectionReorder(
+                    if (gridReorderOn) CollectionReorder(true, a.reorderHandle != null, reorderHandler!!) else null,
+                )
+                CollectionReorderScope(gridReorder) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(gridColumns),
-                    modifier = modifier,
+                    modifier = if (gridReorderOn) modifier.collectionReorderContainer(gridReorder) else modifier,
                     state = gridState,
                     reverseLayout = reverseLayout,
                     userScrollEnabled = scrollEnabled,
@@ -811,6 +844,9 @@ class DynamicCollectionComponent {
                         }
                     }
                     generateCollectionItems(
+                        reorderState = if (gridReorderOn) gridReorder else null,
+                        reorderHandle = a.reorderHandle,
+                        reorderLockedProperty = a.reorderLockedProperty,
                         sections = plan.sectionsFor(CellRoute.LAZY_VERTICAL_GRID),
                         breakRowsBetweenSections = plan.hasDeclaredSections,
                         collectionDataSource = collectionDataSource,
@@ -834,6 +870,7 @@ class DynamicCollectionComponent {
                             }
                         }
                     }
+                }
                 }
             }
         }
@@ -1543,6 +1580,9 @@ class DynamicCollectionComponent {
          */
         @Composable
         private fun renderNonLazy(
+            reorderState: CollectionReorderState? = null,
+            reorderHandle: String? = null,
+            reorderLockedProperty: String? = null,
             sections: JsonArray?,
             legacyHeader: String? = null,
             legacyFooter: String? = null,
@@ -1617,16 +1657,26 @@ class DynamicCollectionComponent {
                             rowsHere.forEach { row ->
                                 if (row.columns == 1) {
                                     val (s, cellIndex) = row.cells.single()
-                                    val item = collectionDataSource.sections[s].cells!!.data[cellIndex]
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
-                                            .then(placeOf(s, cellIndex)),
-                                        contentAlignment = gravityAlignment
-                                    ) {
-                                        renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                    val cells = collectionDataSource.sections[s].cells!!.data
+                                    val item = cells[cellIndex]
+                                    val cellBox: @Composable () -> Unit = {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
+                                                .then(placeOf(s, cellIndex)),
+                                            contentAlignment = gravityAlignment
+                                        ) {
+                                            renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                reorderRoot = reorderState != null, reorderHandle = reorderHandle)
+                                        }
                                     }
+                                    if (reorderState != null) {
+                                        // Keyed by the cell's key, so a moved row keeps its own state.
+                                        key(reorderKey(item, cellIdProperty, cellIndex)) {
+                                            CollectionReorderRow(reorderState, s, cellIndex, cells.size, reorderLocked(cells, reorderLockedProperty)) { cellBox() }
+                                        }
+                                    } else cellBox()
                                 } else {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
@@ -1921,6 +1971,9 @@ class DynamicCollectionComponent {
         }
 
         private fun LazyGridScope.generateCollectionItems(
+            reorderState: CollectionReorderState? = null,
+            reorderHandle: String? = null,
+            reorderLockedProperty: String? = null,
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
             cellClassName: String?,
@@ -2052,10 +2105,17 @@ class DynamicCollectionComponent {
                                                     if (cellWidth != null || cellHeight != null) Modifier.clipToBounds()
                                                     else Modifier.fillMaxSize()
                                                 )
-                                                .animateItem(),
+                                                .animateItem()
+                                                .collectionReorderLayer(reorderState, sectionIndex, identified.index),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome, collectionId = collectionId)
+                                            CollectionReorderRow(
+                                                reorderState, sectionIndex, identified.index, cellData.data.size,
+                                                if (reorderState != null) reorderLocked(cellData.data, reorderLockedProperty) else emptySet(),
+                                            ) {
+                                                renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome, collectionId = collectionId,
+                                                    reorderRoot = reorderState != null, reorderHandle = reorderHandle)
+                                            }
                                         }
                                     }
                                 } else {
@@ -2439,6 +2499,20 @@ class DynamicCollectionComponent {
             return cellCounts.mapIndexed { s, n -> rows((0 until n).map { s to it }, sectionColumns.getOrElse(s) { 1 }) }
         }
 
+        @Suppress("UNCHECKED_CAST")
+        internal fun reorderHandlerOf(value: Any?): ((Int, Int, Int) -> Unit)? = when (value) {
+            is Function3<*, *, *, *> -> { s: Int, f: Int, t: Int -> (value as (Int, Int, Int) -> Unit)(s, f, t) }
+            else -> null
+        }
+
+        /**
+         * A reorderable section's rows (ticket jui-collection-drag-to-reorder): each cell's key (cellId, the
+         * cellIdProperty's value, else its index) and the indexes whose reorderLockedProperty value is true.
+         */
+        internal fun reorderLocked(cells: List<Map<String, Any>>, lockedProperty: String?): Set<Int> =
+            if (lockedProperty.isNullOrEmpty()) emptySet()
+            else cells.indices.filter { cells[it][lockedProperty] == true }.toSet()
+
         /**
          * An index handler (onItemAppear's cell index, the pager's page) as
          * the data holds it: one parameter is called with the index, none
@@ -2575,11 +2649,41 @@ class DynamicCollectionComponent {
             data: Map<String, Any>,
             onItemAppear: ((Int) -> Unit)? = null,
             chrome: ListChrome? = null,
-            collectionId: String? = null
+            collectionId: String? = null,
+            reorderRoot: Boolean = false,
+            reorderHandle: String? = null,
         ) {
             ChromedCell(chrome) {
-                renderCellViewInner(cellClassName, item, index, data, onItemAppear, collectionId)
+                renderCellViewInner(cellClassName, item, index, data, onItemAppear, collectionId, reorderRoot, reorderHandle)
             }
+        }
+
+        /** A reorderable row's key: its cellId, its cellIdProperty value, else its index (ticket jui-collection-drag-to-reorder). */
+        internal fun reorderKey(item: Any?, cellIdProperty: String?, index: Int): String {
+            val m = item as? Map<*, *>
+            return (m?.get("cellId") as? String) ?: (cellIdProperty?.let { m?.get(it)?.toString() }) ?: index.toString()
+        }
+
+        /**
+         * A reorderable row's cell: its root marked for the accessibility moves and its handle (the element whose id
+         * is reorderHandle) for the drag, read by ModifierBuilder.buildModifier — the one place every component's
+         * modifier passes, so no component's entry point changes (ticket jui-collection-drag-to-reorder).
+         */
+        internal fun withReorderMarks(cellJson: JsonObject, handle: String?): JsonObject {
+            val copy = cellJson.deepCopy()
+            copy.addProperty(ModifierBuilder.REORDER_ROOT_MARK, true)
+            if (!handle.isNullOrEmpty()) {
+                fun mark(node: JsonObject) {
+                    if (node.get("id")?.takeIf { it.isJsonPrimitive }?.asString == handle) node.addProperty(ModifierBuilder.REORDER_HANDLE_MARK, true)
+                    for (k in listOf("child", "children")) {
+                        val c = node.get(k) ?: continue
+                        if (c.isJsonArray) c.asJsonArray.forEach { if (it.isJsonObject) mark(it.asJsonObject) }
+                        else if (c.isJsonObject) mark(c.asJsonObject)
+                    }
+                }
+                mark(copy)
+            }
+            return copy
         }
 
         /// `{collectionId}_item_{index}` — the address `tapItem` and
@@ -2630,7 +2734,9 @@ class DynamicCollectionComponent {
             index: Int,
             data: Map<String, Any>,
             onItemAppear: ((Int) -> Unit)? = null,
-            collectionId: String? = null
+            collectionId: String? = null,
+            reorderRoot: Boolean = false,
+            reorderHandle: String? = null,
         ) {
             // Call onItemAppear callback when this cell appears
             if (onItemAppear != null) {
@@ -2688,7 +2794,8 @@ class DynamicCollectionComponent {
 
                 // Render the cell view with item data, addressed the way the
                 // test drivers address it.
-                CellRoot(withCellAddress(cellJson, collectionId, index), cellData)
+                val addressed = withCellAddress(cellJson, collectionId, index)
+                CellRoot(if (reorderRoot) withReorderMarks(addressed, reorderHandle) else addressed, cellData)
             } else {
                 // Fallback - display error
                 Card(
