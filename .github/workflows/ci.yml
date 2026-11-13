@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: 1ff03c8c80dc714182a63a83ee67ed135dd6d293 # jsonui-cli integrate/2.5.34: Collection's reorder attributes and shared/core/reorder_vectors.json (move to v2.5.34 once tagged)
+      JSONUI_CLI_MANIFEST_REF: 34c63cffebeb48cdffba02884951f4d3c2461828 # jsonui-cli feat/font-scaling-base: fontScaling / maxFontScale and shared/core/font_scale_vectors.json (move to the release tag that ships them)
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
@@ -122,6 +122,9 @@ jobs:
                "shared/core/include_maps_fixture.json"),
               ("library-dynamic/src/test/resources/camel_case_vectors.json",
                "shared/core/camel_case_vectors.json"),
+              # Text size following (FontScaleRuleVectorsTest).
+              ("library/src/test/resources/font_scale_vectors.json",
+               "shared/core/font_scale_vectors.json"),
               # A reorderable Collection's rule (CollectionReorderRulesVectorsTest).
               ("library/src/test/resources/reorder_vectors.json",
                "shared/core/reorder_vectors.json"),

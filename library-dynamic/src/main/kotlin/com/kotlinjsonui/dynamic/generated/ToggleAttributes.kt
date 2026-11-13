@@ -20,6 +20,8 @@ data class ToggleAttributes(
     val enabled: AttrValue<Boolean>? = null,
     /** Text color - hex string or color name from colors.json (binding supported). Declared from the implementation, which already read it: sjui toggle_converter.rb:62-63,71-72 (plan 51-E). */
     val fontColor: AttrValue<String>? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. */
+    val fontScaling: Boolean? = null,
     /** Font size (binding supported). Declared from the implementation, which already read it: sjui toggle_converter.rb hands the whole component to the shared apply_font_modifiers helper, so the size was honoured with no declaration behind it (plan 51-E). */
     val fontSize: AttrValue<Double>? = null,
     /** Switch state (binding for two-way) [binding: two-way] */
@@ -30,6 +32,8 @@ data class ToggleAttributes(
     val labelAttributes: Map<String, Any?>? = null,
     /** Label position relative to the Switch. */
     val labelPosition: AttrEnum<LabelPosition>? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Off tint color - hex string or color name from colors.json (binding supported) */
     val offTintColor: AttrValue<String>? = null,
     /** Track color when on - hex string or color name from colors.json */
@@ -97,11 +101,13 @@ data class ToggleAttributes(
             "checked",
             "enabled",
             "fontColor",
+            "fontScaling",
             "fontSize",
             "isOn",
             "label",
             "labelAttributes",
             "labelPosition",
+            "maxFontScale",
             "offTintColor",
             "onTintColor",
             "onValueChange",
@@ -139,11 +145,13 @@ data class ToggleAttributes(
             checked = AttrCoerce.attrValue(AttrCoerce.lookup(json, "checked")) { AttrCoerce.boolean(it) },
             enabled = AttrCoerce.attrValue(AttrCoerce.lookup(json, "enabled")) { AttrCoerce.boolean(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
             isOn = AttrCoerce.attrValue(AttrCoerce.lookup(json, "isOn")) { AttrCoerce.boolean(it) },
             label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label", listOf("text"), canonicalOnly)) { AttrCoerce.string(it) },
             labelAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "labelAttributes")),
             labelPosition = parseLabelPosition(AttrCoerce.lookup(json, "labelPosition")),
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             offTintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "offTintColor")) { AttrCoerce.string(it) },
             onTintColor = AttrCoerce.string(AttrCoerce.lookup(json, "onTintColor")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange", listOf("onToggle"), canonicalOnly)),

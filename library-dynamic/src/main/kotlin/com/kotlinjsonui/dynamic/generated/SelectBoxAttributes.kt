@@ -38,6 +38,8 @@ data class SelectBoxAttributes(
     val font: String? = null,
     /** Font color - hex string or color name from colors.json */
     val fontColor: String? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. */
+    val fontScaling: Boolean? = null,
     /** Font size */
     val fontSize: Double? = null,
     /** Hint text (alias for prompt) */
@@ -52,6 +54,8 @@ data class SelectBoxAttributes(
     val items: AttrValue<List<Any?>>? = null,
     /** Label styling attributes */
     val labelAttributes: Map<String, Any?>? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Maximum date (yyyy-MM-dd format, binding supported) */
     val maximumDate: AttrValue<String>? = null,
     /** Minimum date (yyyy-MM-dd format, binding supported) */
@@ -194,6 +198,7 @@ data class SelectBoxAttributes(
             "doneButtonText",
             "font",
             "fontColor",
+            "fontScaling",
             "fontSize",
             "hint",
             "hintColor",
@@ -201,6 +206,7 @@ data class SelectBoxAttributes(
             "includePromptWhenDataBinding",
             "items",
             "labelAttributes",
+            "maxFontScale",
             "maximumDate",
             "minimumDate",
             "minuteInterval",
@@ -254,6 +260,7 @@ data class SelectBoxAttributes(
             doneButtonText = AttrCoerce.string(AttrCoerce.lookup(json, "doneButtonText")),
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
             hint = AttrCoerce.string(AttrCoerce.lookup(json, "hint")),
             hintColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "hintColor")) { AttrCoerce.string(it) },
@@ -261,6 +268,7 @@ data class SelectBoxAttributes(
             includePromptWhenDataBinding = AttrCoerce.boolean(AttrCoerce.lookup(json, "includePromptWhenDataBinding")),
             items = AttrCoerce.attrValue(AttrCoerce.lookup(json, "items")) { AttrCoerce.array(it) },
             labelAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "labelAttributes")),
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             maximumDate = AttrCoerce.attrValue(AttrCoerce.lookup(json, "maximumDate")) { AttrCoerce.string(it) },
             minimumDate = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minimumDate")) { AttrCoerce.string(it) },
             minuteInterval = AttrCoerce.number(AttrCoerce.lookup(json, "minuteInterval")),

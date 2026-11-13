@@ -20,6 +20,8 @@ data class RadioAttributes(
     val font: AttrValue<String>? = null,
     /** Text color - hex string or color name from colors.json (binding supported) */
     val fontColor: AttrValue<String>? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. */
+    val fontScaling: Boolean? = null,
     /** Font size (binding supported) */
     val fontSize: AttrValue<Double>? = null,
     /** Radio group name [required] */
@@ -34,6 +36,8 @@ data class RadioAttributes(
     val items: AttrValue<List<Any?>>? = null,
     /** Radio label (can be data binding) */
     val label: AttrValue<String>? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Value change handler - binding only (@{functionName}) */
     val onValueChange: AttrValue<Any>? = null,
     /** Selected icon name [aliases: selected_icon] */
@@ -60,6 +64,7 @@ data class RadioAttributes(
             "checkedColor",
             "font",
             "fontColor",
+            "fontScaling",
             "fontSize",
             "group",
             "icon",
@@ -67,6 +72,7 @@ data class RadioAttributes(
             "iconSize",
             "items",
             "label",
+            "maxFontScale",
             "onValueChange",
             "selectedIcon",
             "selectedValue",
@@ -103,6 +109,7 @@ data class RadioAttributes(
             checkedColor = AttrCoerce.string(AttrCoerce.lookup(json, "checkedColor")),
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
             group = AttrCoerce.string(AttrCoerce.lookup(json, "group")),
             icon = AttrCoerce.string(AttrCoerce.lookup(json, "icon")),
@@ -110,6 +117,7 @@ data class RadioAttributes(
             iconSize = AttrCoerce.number(AttrCoerce.lookup(json, "iconSize")),
             items = AttrCoerce.attrValue(AttrCoerce.lookup(json, "items")) { AttrCoerce.array(it) },
             label = AttrCoerce.attrValue(AttrCoerce.lookup(json, "label")) { AttrCoerce.string(it) },
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             onValueChange = AttrCoerce.bindingValue(AttrCoerce.lookup(json, "onValueChange")),
             selectedIcon = AttrCoerce.string(AttrCoerce.lookup(json, "selectedIcon", listOf("selected_icon"), canonicalOnly)),
             selectedValue = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selectedValue")) { AttrCoerce.string(it) },
