@@ -169,10 +169,13 @@ fun SelectBox(
     } else 0.dp
     
     // Custom SelectBox field that looks like OutlinedTextField
+    // The select is as tall as its layout says: a fixed height (the text centred, as before), or, with wrapContent
+    // or no height, its content and paddings — a value folded to 2 lines grows it. No height of its own (ticket
+    // kjui-selectbox-fixed-56dp-ignores-wrap-content-height: .height(56.dp) after the caller's modifier won).
     Box(
+        contentAlignment = Alignment.CenterStart,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
             .clickable(enabled = enabled) { 
                 showBottomSheet = true
             }
@@ -188,7 +191,7 @@ fun SelectBox(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(contentPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
