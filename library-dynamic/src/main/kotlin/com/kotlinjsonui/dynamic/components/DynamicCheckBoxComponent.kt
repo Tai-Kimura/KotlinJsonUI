@@ -274,7 +274,11 @@ class DynamicCheckBoxComponent {
                     ResourceResolver.fontWeightOf(a.fontWeight)
                         ?: ResourceResolver.fontWeightFor(TypedAttrs.string(a.font, data))
 
-                if (fontSize != null || fontColor != null || fontWeightValue != null) {
+                // fontScaling / maxFontScale alone take the styled branch too: the plain Text(label) followed the
+                // system's text size whatever the CheckBox declared (conformance CheckBox/fontScaling__false).
+                if (fontSize != null || fontColor != null || fontWeightValue != null ||
+                    json.fontScalingAttr() != null || json.maxFontScaleAttr() != null
+                ) {
                     Text(
                         text = labelText,
                         fontSize = json.fontSized(fontSize?.sp ?: 16.sp),
