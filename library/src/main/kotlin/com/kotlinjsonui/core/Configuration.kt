@@ -140,6 +140,22 @@ object Configuration {
         var size: Int = 14
 
         /**
+         * Whether a text follows the system text size (Settings → Font size) when its component declares no
+         * `fontScaling` (ticket sjui-label-font-size-ignores-dynamic-type; jsonui-cli
+         * shared/core/font_scale_vectors.json). True by default: KotlinJsonUI's texts have always been `.sp`.
+         * The same setting as SwiftJsonUI's `SwiftJsonUIConfiguration.shared.font.scaling`.
+         */
+        var scaling: Boolean = true
+
+        /**
+         * The largest factor a following text grows by when its component declares no `maxFontScale`: drawn at
+         * most `fontSize × maxScale` (dp). Null: no cap beyond the system's own (Android caps the font scale at
+         * 2.0, and Android 14+ grows large sizes less). An app whose screens break at large sizes sets 2.0 here
+         * in one line, as on iOS (`SwiftJsonUIConfiguration.shared.font.maxScale`).
+         */
+        var maxScale: Float? = null
+
+        /**
          * Custom font provider function.
          *
          * Receives a [FontSpec] (family-name string, weight, size, italic flag) and
