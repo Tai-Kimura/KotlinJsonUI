@@ -78,6 +78,8 @@ data class CollectionAttributes(
     val orientation: AttrEnum<Orientation>? = null,
     /** Enable paging */
     val paging: Boolean? = null,
+    /** A key of the cell data: a row whose value for it is true does not move and has no screen reader move up / down, but other rows are moved past it (a cancelled or skipped row). A row of a Collection with a reorderHandle whose handle is not drawn is fixed the same way. reorderLockedProperty wins when a row is both (ticket jui-collection-reorder-fixed-row-vs-barrier-row, ruling 2026-11-14). */
+    val reorderFixedProperty: String? = null,
     /** The id of an element in the cell layout that starts the drag when long-pressed (e.g. a grip at the row's right edge). Without it, a long press anywhere on the row starts it. The rest of the row keeps its taps (ticket jui-collection-drag-to-reorder, ruling B 2026-11-13). */
     val reorderHandle: String? = null,
     /** A key of the cell data: a row whose value for it is true does not move, and no other row is moved past it (a divider row). Section headers and footers are not rows and never move (ticket jui-collection-drag-to-reorder, ruling B 2026-11-13). */
@@ -278,6 +280,7 @@ data class CollectionAttributes(
             "onValueChange",
             "orientation",
             "paging",
+            "reorderFixedProperty",
             "reorderHandle",
             "reorderLockedProperty",
             "reorderable",
@@ -349,6 +352,7 @@ data class CollectionAttributes(
             onValueChange = AttrCoerce.attrValue(AttrCoerce.lookup(json, "onValueChange", listOf("onValueChanged", "onPageChanged"), canonicalOnly)) { AttrCoerce.string(it) },
             orientation = parseOrientation(AttrCoerce.lookup(json, "orientation")),
             paging = AttrCoerce.boolean(AttrCoerce.lookup(json, "paging")),
+            reorderFixedProperty = AttrCoerce.string(AttrCoerce.lookup(json, "reorderFixedProperty")),
             reorderHandle = AttrCoerce.string(AttrCoerce.lookup(json, "reorderHandle")),
             reorderLockedProperty = AttrCoerce.string(AttrCoerce.lookup(json, "reorderLockedProperty")),
             reorderable = AttrCoerce.attrValue(AttrCoerce.lookup(json, "reorderable")) { AttrCoerce.boolean(it) },

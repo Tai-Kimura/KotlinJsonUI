@@ -616,6 +616,7 @@ class DynamicCollectionComponent {
                     reorderState = if (reorderOn) columnReorder else null,
                     reorderHandle = a.reorderHandle,
                     reorderLockedProperty = a.reorderLockedProperty,
+                    reorderFixedProperty = a.reorderFixedProperty,
                     chrome = listChrome,
                     sections = columnSections,
                     legacyHeader = plan.headerFor(CellRoute.NON_LAZY_COLUMN),
@@ -847,6 +848,7 @@ class DynamicCollectionComponent {
                         reorderState = if (gridReorderOn) gridReorder else null,
                         reorderHandle = a.reorderHandle,
                         reorderLockedProperty = a.reorderLockedProperty,
+                        reorderFixedProperty = a.reorderFixedProperty,
                         sections = plan.sectionsFor(CellRoute.LAZY_VERTICAL_GRID),
                         breakRowsBetweenSections = plan.hasDeclaredSections,
                         collectionDataSource = collectionDataSource,
@@ -1583,6 +1585,7 @@ class DynamicCollectionComponent {
             reorderState: CollectionReorderState? = null,
             reorderHandle: String? = null,
             reorderLockedProperty: String? = null,
+            reorderFixedProperty: String? = null,
             sections: JsonArray?,
             legacyHeader: String? = null,
             legacyFooter: String? = null,
@@ -1674,7 +1677,8 @@ class DynamicCollectionComponent {
                                     if (reorderState != null) {
                                         // Keyed by the cell's key, so a moved row keeps its own state.
                                         key(reorderKey(item, cellIdProperty, cellIndex)) {
-                                            CollectionReorderRow(reorderState, s, cellIndex, cells.size, reorderLocked(cells, reorderLockedProperty)) { cellBox() }
+                                            CollectionReorderRow(reorderState, s, cellIndex, cells.size, reorderLocked(cells, reorderLockedProperty),
+                                                reorderLocked(cells, reorderFixedProperty)) { cellBox() }
                                         }
                                     } else cellBox()
                                 } else {
@@ -1974,6 +1978,7 @@ class DynamicCollectionComponent {
             reorderState: CollectionReorderState? = null,
             reorderHandle: String? = null,
             reorderLockedProperty: String? = null,
+            reorderFixedProperty: String? = null,
             sections: JsonArray?,
             collectionDataSource: CollectionDataSource?,
             cellClassName: String?,
@@ -2112,6 +2117,7 @@ class DynamicCollectionComponent {
                                             CollectionReorderRow(
                                                 reorderState, sectionIndex, identified.index, cellData.data.size,
                                                 if (reorderState != null) reorderLocked(cellData.data, reorderLockedProperty) else emptySet(),
+                                                if (reorderState != null) reorderLocked(cellData.data, reorderFixedProperty) else emptySet(),
                                             ) {
                                                 renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome, collectionId = collectionId,
                                                     reorderRoot = reorderState != null, reorderHandle = reorderHandle)
@@ -2507,7 +2513,8 @@ class DynamicCollectionComponent {
 
         /**
          * A reorderable section's rows (ticket jui-collection-drag-to-reorder): each cell's key (cellId, the
-         * cellIdProperty's value, else its index) and the indexes whose reorderLockedProperty value is true.
+         * cellIdProperty's value, else its index) and the indexes whose reorderLockedProperty value is true (also
+         * read for reorderFixedProperty: the rows that do not move but are passed).
          */
         internal fun reorderLocked(cells: List<Map<String, Any>>, lockedProperty: String?): Set<Int> =
             if (lockedProperty.isNullOrEmpty()) emptySet()
