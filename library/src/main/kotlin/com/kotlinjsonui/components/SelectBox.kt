@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.jsonUILetterSpacing
 import com.kotlinjsonui.core.jsonUIFontSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -264,6 +265,7 @@ fun SelectBox(
                 text = if (value.isNotEmpty()) value else (placeholder ?: ""),
                 color = if (value.isNotEmpty()) textColor else hintColor,
                 fontSize = jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale),
+                letterSpacing = jsonUILetterSpacing(fontScaling, maxFontScale),
                 fontWeight = fontWeight,
                 modifier = Modifier.weight(1f)
             )
@@ -436,6 +438,7 @@ fun SelectBox(
                     Text(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                         fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
+                        letterSpacing = jsonUILetterSpacing(),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = cancelButtonTextColor,
@@ -666,6 +669,7 @@ fun <T> SelectBox(
                     Text(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                         fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
+                        letterSpacing = jsonUILetterSpacing(),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,

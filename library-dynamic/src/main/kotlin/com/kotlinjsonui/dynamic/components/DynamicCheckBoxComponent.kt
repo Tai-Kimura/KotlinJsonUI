@@ -278,6 +278,7 @@ class DynamicCheckBoxComponent {
                     Text(
                         text = labelText,
                         fontSize = json.fontSized(fontSize?.sp ?: 16.sp),
+                        letterSpacing = json.letterSpaced(),
                         color = fontColor ?: Color.Unspecified,
                         fontWeight = fontWeightValue ?: FontWeight.Normal
                     )

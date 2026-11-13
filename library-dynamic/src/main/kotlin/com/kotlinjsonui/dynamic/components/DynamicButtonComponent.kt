@@ -281,6 +281,7 @@ class DynamicButtonComponent {
                         Text(
                             text = text,
                             fontSize = json.fontSized(fontSize.sp),
+                            letterSpacing = json.letterSpaced(),
                             fontWeight = fontWeight,
                             fontFamily = fontFamily,
                             textAlign = textAlign
@@ -297,6 +298,7 @@ class DynamicButtonComponent {
                     Text(
                         text = text,
                         fontSize = json.fontSized(fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
                         fontWeight = fontWeight,
                         fontFamily = fontFamily,
                         textAlign = textAlign,

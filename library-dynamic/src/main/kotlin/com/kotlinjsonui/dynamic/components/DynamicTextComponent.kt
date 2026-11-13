@@ -293,6 +293,7 @@ class DynamicTextComponent {
                 // No declared size inherits LocalTextStyle (the codegen emit
                 // is `resolved.size ?: TextUnit.Unspecified` — same rule).
                 fontSize = json.fontSized(fontSize?.sp ?: TextUnit.Unspecified),
+                letterSpacing = json.letterSpaced(),
                 color = fontColor ?: Color.Unspecified,
                 fontWeight = fontWeight,
                 fontFamily = fontFamily,
@@ -732,7 +733,10 @@ class DynamicTextComponent {
             var style = androidx.compose.material3.LocalTextStyle.current
 
             fontSize?.let {
-                style = style.copy(fontSize = json?.fontSized(it.sp) ?: jsonUIFontSize(it.sp))
+                style = style.copy(
+                    fontSize = json?.fontSized(it.sp) ?: jsonUIFontSize(it.sp),
+                    letterSpacing = json?.letterSpaced() ?: com.kotlinjsonui.core.jsonUILetterSpacing()
+                )
             }
 
             ColorParser.parseColorStringWithBinding(

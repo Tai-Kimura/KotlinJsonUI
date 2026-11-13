@@ -246,6 +246,7 @@ class DynamicIconLabelComponent {
                     Text(
                         text = text,
                         fontSize = json.fontSized(fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
                         color = fontColor,
                         fontWeight = fontWeight,
                         style = shadowStyle?.let { labelBase.merge(it) } ?: labelBase

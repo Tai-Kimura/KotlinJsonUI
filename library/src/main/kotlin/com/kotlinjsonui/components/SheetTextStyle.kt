@@ -35,4 +35,7 @@ internal fun sheetTextStyle(
 @androidx.compose.runtime.Composable
 @androidx.compose.runtime.ReadOnlyComposable
 internal fun sheetFontScaled(style: TextStyle): TextStyle =
-    style.copy(fontSize = com.kotlinjsonui.core.jsonUIFontSize(style.fontSize))
+    style.copy(
+        fontSize = com.kotlinjsonui.core.jsonUIFontSize(style.fontSize),
+        letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing()
+    )

@@ -233,7 +233,7 @@ class DynamicTextFieldComponent {
             val contentPadding = buildContentPadding(json, a, data)
 
             // Text style
-            val textStyle = buildTextStyle(a, textColor, json.fontSized(fontSize.sp), context, data)
+            val textStyle = buildTextStyle(a, textColor, json.fontSized(fontSize.sp), json.letterSpaced(), context, data)
 
             // Keyboard options
             val keyboardOptions = buildKeyboardOptions(a, nextFocusId)
@@ -256,6 +256,7 @@ class DynamicTextFieldComponent {
                         text = placeholderText,
                         color = placeholderColor,
                         fontSize = json.fontSized((hintFontSize ?: fontSize).sp),
+                        letterSpacing = json.letterSpaced(),
                         fontWeight = if ((ResourceResolver.nestedString(a.hintAttributes, "font")
                                 ?: a.hintFont) == "bold") {
                             androidx.compose.ui.text.font.FontWeight.Bold
@@ -473,6 +474,8 @@ class DynamicTextFieldComponent {
             textColor: androidx.compose.ui.graphics.Color,
             /** The declared size drawn by the component's fontScaling / maxFontScale (json.fontSized). */
             fontSize: androidx.compose.ui.unit.TextUnit,
+            /** The theme's letter spacing drawn by the same declarations (json.letterSpaced). */
+            letterSpacing: androidx.compose.ui.unit.TextUnit,
             context: android.content.Context,
             data: Map<String, Any>
         ): TextStyle {
@@ -483,6 +486,7 @@ class DynamicTextFieldComponent {
             val fontSpelling = TypedAttrs.string(a.font, data)
             var style = TextStyle(
                 fontSize = fontSize,
+                letterSpacing = letterSpacing,
                 color = textColor,
                 fontWeight = ResourceResolver.fontWeightFor(fontSpelling),
                 fontFamily = ResourceResolver.resolveFontFamily(

@@ -31,7 +31,8 @@ object FontScaling {
 
     /** [size] (sp, as declared) drawn by the rule in [density]. An unspecified size stays unspecified. */
     fun apply(density: Density, size: TextUnit, fontScaling: Boolean?, maxFontScale: Float?): TextUnit {
-        if (!size.isSpecified) return size
+        // Unspecified stays unspecified; an em size is relative to the font size, which the rule has drawn already.
+        if (!size.isSpecified || !size.isSp) return size
         val follows = fontScaling ?: Configuration.Font.scaling
         val max = maxFontScale ?: Configuration.Font.maxScale
         val value = size.value
@@ -62,3 +63,15 @@ fun jsonUIFontSize(size: TextUnit, fontScaling: Boolean? = null, maxFontScale: F
     val base = if (!size.isSpecified && declared) LocalTextStyle.current.fontSize else size
     return FontScaling.apply(LocalDensity.current, base, fontScaling, maxFontScale)
 }
+
+/**
+ * A component's letter spacing by the same rule as its size: the text style's letterSpacing (Material's is in sp,
+ * which the system grows with the font scale) drawn as the rule draws a size — the declared spacing in dp when the
+ * text does not follow, at most spacing × maxFontScale when capped — so a text that does not follow keeps its look
+ * at every text size, its spacing included (ruling 2026-11-14). An em spacing follows the drawn size by itself.
+ * Every Text whose size goes through [jsonUIFontSize] takes this as its letterSpacing.
+ */
+@Composable
+@ReadOnlyComposable
+fun jsonUILetterSpacing(fontScaling: Boolean? = null, maxFontScale: Float? = null): TextUnit =
+    FontScaling.apply(LocalDensity.current, LocalTextStyle.current.letterSpacing, fontScaling, maxFontScale)

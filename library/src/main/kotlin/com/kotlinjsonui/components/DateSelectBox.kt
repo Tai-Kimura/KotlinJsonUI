@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.jsonUILetterSpacing
 import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.AppLocale
 import com.kotlinjsonui.core.DateFormats
@@ -189,6 +190,7 @@ fun DateSelectBox(
                 text = if (displayText.isNotEmpty()) displayText else (placeholder ?: ""),
                 color = if (displayText.isNotEmpty()) textColor else hintColor,
                 fontSize = jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale),
+                letterSpacing = jsonUILetterSpacing(fontScaling, maxFontScale),
                 fontWeight = fontWeight,
                 modifier = Modifier.weight(1f)
             )
@@ -282,6 +284,7 @@ fun DateSelectBox(
                                     Text(
                                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
@@ -306,6 +309,7 @@ fun DateSelectBox(
                                     Text(
                                         text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -366,6 +370,7 @@ fun DateSelectBox(
                                     Text(
                                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
@@ -390,6 +395,7 @@ fun DateSelectBox(
                                     Text(
                                         text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -456,6 +462,7 @@ fun DateSelectBox(
                                     Text(
                                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
@@ -476,6 +483,7 @@ fun DateSelectBox(
                                     Text(
                                         text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -538,6 +546,7 @@ fun DateSelectBox(
                                     Text(
                                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
@@ -558,6 +567,7 @@ fun DateSelectBox(
                                     Text(
                                         text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                         fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                        letterSpacing = jsonUILetterSpacing(),
                                         fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                         fontFamily = Configuration.DatePicker.sheetFontFamily,
                                         color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
@@ -616,6 +626,7 @@ fun DateSelectBox(
                                         Text(
                                             text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
                                             fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                            letterSpacing = jsonUILetterSpacing(),
                                             fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                             color = Configuration.DatePicker.SheetButton.defaultCancelButtonTextColor
                                         )
@@ -635,6 +646,7 @@ fun DateSelectBox(
                                         Text(
                                             text = doneButtonText ?: sheetString(R.string.kjui_sheet_confirm),
                                             fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                                            letterSpacing = jsonUILetterSpacing(),
                                             fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                                             color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
                                         )
@@ -1104,6 +1116,7 @@ fun DateCalendarPicker(
             Text(
                 text = doneButtonText ?: sheetString(R.string.kjui_sheet_select),
                 fontSize = jsonUIFontSize(Configuration.DatePicker.SheetButton.defaultFontSize.sp),
+                letterSpacing = jsonUILetterSpacing(),
                 fontWeight = FontWeight(Configuration.DatePicker.SheetButton.defaultFontWeight),
                 color = Configuration.DatePicker.SheetButton.defaultButtonTextColor
             )

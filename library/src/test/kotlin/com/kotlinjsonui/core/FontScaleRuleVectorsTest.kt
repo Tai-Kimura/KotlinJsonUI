@@ -76,6 +76,15 @@ class FontScaleRuleVectorsTest {
         assertEquals(17f, dp(d, FontScaling.apply(d, 17.sp, false, null)), 1e-3f)
     }
 
+    @Test fun a_letter_spacing_in_sp_takes_the_rule_and_one_in_em_is_left_to_the_size() {
+        val d = density(2f)
+        // Material's bodyLarge letterSpacing, 0.5 sp: held at 0.5 dp when the text does not follow.
+        assertEquals(0.5f, dp(d, FontScaling.apply(d, 0.5.sp, false, null)), 1e-3f)
+        assertEquals(minOf(system(d, 1) * 0.5f, 0.65f), dp(d, FontScaling.apply(d, 0.5.sp, true, 1.3f)), 1e-2f)
+        val em = androidx.compose.ui.unit.TextUnit(0.03f, androidx.compose.ui.unit.TextUnitType.Em)
+        assertTrue(FontScaling.apply(d, em, false, 1.3f) == em)
+    }
+
     @Test fun an_unspecified_size_stays_unspecified() {
         assertTrue(FontScaling.apply(density(2f), TextUnit.Unspecified, false, 1.5f) == TextUnit.Unspecified)
     }

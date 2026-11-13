@@ -1,5 +1,6 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.jsonUILetterSpacing
 import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.DateFormats
 import android.app.DatePickerDialog
@@ -94,6 +95,7 @@ fun SimpleDateSelectBox(
                 text = if (displayText.isNotEmpty()) displayText else (placeholder ?: ""),
                 color = if (displayText.isNotEmpty()) textColor else hintColor,
                 fontSize = jsonUIFontSize(16.sp),
+                letterSpacing = jsonUILetterSpacing(),
                 modifier = Modifier.weight(1f)
             )
             Icon(

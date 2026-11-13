@@ -266,6 +266,7 @@ class DynamicTextViewComponent {
                     singleLine = false,
                     textStyle = TextStyle(
                         fontSize = json.fontSized(fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
                         color = textColor,
                         fontWeight = fieldFontWeight,
                         fontFamily = fieldFontFamily
@@ -318,6 +319,7 @@ class DynamicTextViewComponent {
                     singleLine = false,
                     textStyle = TextStyle(
                         fontSize = json.fontSized(fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
                         color = textColor,
                         fontWeight = fieldFontWeight,
                         fontFamily = fieldFontFamily
@@ -498,6 +500,7 @@ class DynamicTextViewComponent {
                     style = base.copy(
                         color = hintColor ?: base.color,
                         fontSize = effectiveSize,
+                        letterSpacing = json.letterSpaced(),
                         fontWeight = hintFontWeight ?: base.fontWeight,
                         lineHeight = lineHeight
                     )
