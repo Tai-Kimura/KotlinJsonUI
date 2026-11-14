@@ -1503,7 +1503,8 @@ class DynamicCollectionComponent {
                                     ),
                                 contentAlignment = gravityAlignment
                             ) {
-                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, collectionId = collectionId)
+                                renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, collectionId = collectionId,
+                                    address = cellBase + cellIndex)
                             }
                         }
                     }
@@ -1681,7 +1682,7 @@ class DynamicCollectionComponent {
                                             contentAlignment = gravityAlignment
                                         ) {
                                             renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
-                                                reorderRoot = reorderState != null, reorderHandle = reorderHandle)
+                                                reorderRoot = reorderState != null, reorderHandle = reorderHandle, address = cellBase[s] + cellIndex)
                                         }
                                     }
                                     if (reorderState != null) {
@@ -1705,7 +1706,8 @@ class DynamicCollectionComponent {
                                                     .then(placeOf(s, cellIndex)),
                                                 contentAlignment = gravityAlignment
                                             ) {
-                                                renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                                renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                    address = cellBase[s] + cellIndex)
                                             }
                                         }
                                         // A short last row keeps the grid's column width.
@@ -1831,7 +1833,8 @@ class DynamicCollectionComponent {
                                             renderCellView(
                                                 cellViewName, cellData.data[cellIndex], cellIndex,
                                                 data, onItemAppear, chrome,
-                                                collectionId = collectionId
+                                                collectionId = collectionId,
+                                                address = cellsBefore(collectionDataSource, sectionIndex) + cellIndex
                                             )
                                         }
                                     }
@@ -1916,7 +1919,8 @@ class DynamicCollectionComponent {
                                                         .then(placeOf(cellIndex)),
                                                     contentAlignment = gravityAlignment
                                                 ) {
-                                                    renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                                    renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                        address = cellBase + cellIndex)
                                                 }
                                             }
                                         }
@@ -1929,7 +1933,8 @@ class DynamicCollectionComponent {
                                                 .then(placeOf(cellIndex)),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                            renderCellView(cellViewName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                        address = cellBase + cellIndex)
                                         }
                                     }
                                     }
@@ -2132,7 +2137,8 @@ class DynamicCollectionComponent {
                                                 id = identified.id,
                                             ) {
                                                 renderCellView(cellViewName ?: cellClassName, identified.data, identified.index, data, onItemAppear, chrome, collectionId = collectionId,
-                                                    reorderRoot = reorderState != null, reorderHandle = reorderHandle)
+                                                    reorderRoot = reorderState != null, reorderHandle = reorderHandle,
+                                                    address = cellsBefore(collectionDataSource, sectionIndex) + identified.index)
                                             }
                                         }
                                     }
@@ -2157,7 +2163,8 @@ class DynamicCollectionComponent {
                                                 ),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId)
+                                            renderCellView(cellViewName ?: cellClassName, item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                address = cellsBefore(collectionDataSource, sectionIndex) + cellIndex)
                                         }
                                     }
                                 }
@@ -2678,11 +2685,19 @@ class DynamicCollectionComponent {
             collectionId: String? = null,
             reorderRoot: Boolean = false,
             reorderHandle: String? = null,
+            address: Int = index,
         ) {
             ChromedCell(chrome) {
-                renderCellViewInner(cellClassName, item, index, data, onItemAppear, collectionId, reorderRoot, reorderHandle)
+                renderCellViewInner(cellClassName, item, index, data, onItemAppear, collectionId, reorderRoot, reorderHandle, address)
             }
         }
+
+        /**
+         * The cells of the data sections before [sectionIndex], in section order: what a lazy route's cell adds to its
+         * index for its address, as [scrollItemIndex] counts a scrollTo Int on that route.
+         */
+        internal fun cellsBefore(collectionDataSource: CollectionDataSource, sectionIndex: Int): Int =
+            (0 until sectionIndex).sumOf { collectionDataSource.sections.getOrNull(it)?.cells?.data?.size ?: 0 }
 
         /** A reorderable row's key: its cellId, its cellIdProperty value, else its index (ticket jui-collection-drag-to-reorder). */
         internal fun reorderKey(item: Any?, cellIdProperty: String?, index: Int): String {
@@ -2712,8 +2727,14 @@ class DynamicCollectionComponent {
             return copy
         }
 
-        /// `{collectionId}_item_{index}` — the address `tapItem` and
+        /// `{collectionId}_item_{n}` — the address `tapItem` and
         /// `waitFor` resolve, and the spelling the static codegen emits.
+        /// `n` counts the cells of the drawn sections before the cell's own,
+        /// then its index there — the n a scrollTo Int names on the same
+        /// route (jsonui-cli 2.5.39, ruling (a2)). Until then a second
+        /// section's cells took `_item_0`, `_item_1`, ... again, the first
+        /// section's ids, on every route but the pager (whose page already
+        /// counted across the sections).
         /// Dynamic emitted nothing here, on any layout, so a fixture (which
         /// always runs through Dynamic) could never check the contract the
         /// codegen is expected to keep.
@@ -2763,6 +2784,7 @@ class DynamicCollectionComponent {
             collectionId: String? = null,
             reorderRoot: Boolean = false,
             reorderHandle: String? = null,
+            address: Int = index,
         ) {
             // Call onItemAppear callback when this cell appears
             if (onItemAppear != null) {
@@ -2820,7 +2842,7 @@ class DynamicCollectionComponent {
 
                 // Render the cell view with item data, addressed the way the
                 // test drivers address it.
-                val addressed = withCellAddress(cellJson, collectionId, index)
+                val addressed = withCellAddress(cellJson, collectionId, address)
                 CellRoot(if (reorderRoot) withReorderMarks(addressed, reorderHandle) else addressed, cellData)
             } else {
                 // Fallback - display error
