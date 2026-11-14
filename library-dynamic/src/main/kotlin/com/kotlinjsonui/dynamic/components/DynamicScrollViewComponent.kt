@@ -105,14 +105,18 @@ class DynamicScrollViewComponent {
             // needing code are the opposite ones. Same mapping the codegen
             // emits (ContentInsetHelper), because the two renders of one
             // layout have to inset by the same amount.
-            val safeInset = ContentInsetBehavior.safeAreaPadding(
+            val safeOverlap = ContentInsetBehavior.overlap(
                 // as declared (ScrollView's row is an enum; Collection's is a string)
                 DeclaredSpelling.lowered(
                     TypedAttrs.enumString(a.contentInsetAdjustmentBehavior) { it.json },
                     ScrollViewAttributes.ContentInsetAdjustmentBehavior.declaredSpellings
                 ),
                 horizontal = isHorizontal
-            ) ?: PaddingValues(0.dp)
+            )
+            // The part of the safe area this ScrollView's frame overlaps
+            // (ContentInsetBehavior.overlap), measured from the frame below.
+            safeOverlap?.let { modifier = modifier.then(it.modifier) }
+            val safeInset = safeOverlap?.contentPadding() ?: PaddingValues(0.dp)
 
             // defaultScrollAnchor — where the scroll STARTS. Everything sits
             // in ONE lazy item here, so indices cannot anchor; scrollBy is
