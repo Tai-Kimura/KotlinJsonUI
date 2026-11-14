@@ -154,6 +154,114 @@ if ! adb_alive; then
   exit 1
 fi
 
+# 2c. a11y projection probe + boot re-roll — BEFORE the environment (step 3).
+# A reboot discards what step 3 sets up on the boot it runs on: SystemUI demo
+# mode (the frozen 12:00 status bar), the settled taskbar and the chrome
+# fingerprint. With this block after step 3, every job that re-rolled ran its
+# whole suite on an environment nobody had set up — measured over the nine
+# all-fixture runs of 2026-11-11..14: 5 of 18 Android jobs rebooted here and
+# all 5 captured a live clock (status-bar hash != the frozen one), while the
+# 13 that did not reboot all carried the frozen bar. One of the five
+# (run 43379878694, codegen) also drew common/effectStyle__light's blur layer
+# as a flat #DDDDDD after the emulator logged a GL context preemption, the
+# only codegen-parity deviation of those runs. Re-rolling first makes step 3
+# apply to the boot the suite actually runs on.
+#
+# CONFORMANCE_FORCE_REROLL=1 fails roll 1 on purpose, so the reboot path —
+# which a healthy boot never takes — can be exercised on demand.
+#
+# Original note: Run 30762153614 (first
+# instrumented recurrence of the CI-only all-fixtures render-timeout): the
+# app renders, input and lifecycle stay healthy, but
+# AccessibilityManagerService never completes window registration ("wait for
+# adding window timeout") for the WHOLE boot — UIAutomator is globally blind
+# and the a11y-dependent fixture classes grind 8s timeouts for hours. The
+# wedge is per-boot and probabilistic, so: probe a fresh app window through
+# the same a11y channel UIAutomator uses; on failure REBOOT the device to
+# re-roll the race (up to 3 reboots) instead of paying 20-min attempts.
+# Visual fixtures don't need this (in-process readiness + SurfaceFlinger
+# screenshots) — the probe protects the assertable/interactive classes.
+a11y_probe() {
+  adbsh "am start -W -n $APP_PKG/.FixtureHostActivity" >/dev/null 2>&1 || return 1
+  sleep 2
+  adbsh "rm -f /sdcard/a11y_probe.xml; uiautomator dump /sdcard/a11y_probe.xml" >/dev/null 2>&1 || return 1
+  adbsh "grep -q \"package=[\\\"']$APP_PKG\" /sdcard/a11y_probe.xml" || return 1
+  adbsh "am force-stop $APP_PKG" >/dev/null 2>&1 || true
+  return 0
+}
+# After a reboot only: does this boot still draw a blur layer? A boot that
+# came up behind a GL context preemption drew common/effectStyle__light's
+# blurred target as a flat #DDDDDD (blur_probe.py says how that is told) —
+# re-roll it like an a11y wedge, inside the same three reboots. A healthy
+# first boot is not probed: the flat picture has only been seen after a
+# reboot, and the probe costs a launch and a capture.
+BLUR_PROBE_FIXTURE="common/effectStyle__light"
+blur_probe() {
+  local raw density rc
+  raw="$(mktemp)"
+  adbsh "am start -W -n $APP_PKG/.FixtureHostActivity --es fixtureId $BLUR_PROBE_FIXTURE" >/dev/null 2>&1 || { rm -f "$raw"; return 2; }
+  sleep 3
+  timeout 30 "$ADB" exec-out screencap > "$raw" 2>/dev/null || true
+  density="$(adbsh wm density 2>/dev/null | tr -d '\r' | awk -F': ' '/Override/{o=$2} /Physical/{p=$2} END{print (o ? o : p)}')"
+  adbsh "am force-stop $APP_PKG" >/dev/null 2>&1 || true
+  [[ -n "$density" ]] || { rm -f "$raw"; return 2; }
+  rc=0
+  python3 -I "$SCRIPT_DIR/blur_probe.py" "$raw" "$density" || rc=$?
+  rm -f "$raw"
+  return $rc
+}
+rebooted=0
+for roll in 1 2 3 4; do
+  forced=0
+  [[ "${CONFORMANCE_FORCE_REROLL:-0}" == "1" && $roll -eq 1 ]] && forced=1
+  if [[ $forced -eq 0 ]] && a11y_probe; then
+    echo "a11y projection probe: OK (roll $roll)"
+    if [[ $rebooted -eq 0 ]]; then
+      break
+    fi
+    blur_rc=0
+    blur_probe || blur_rc=$?
+    if [[ $blur_rc -eq 0 ]]; then
+      echo "blur probe: OK after reboot (roll $roll, $BLUR_PROBE_FIXTURE draws its blur layer)"
+      break
+    fi
+    if [[ $blur_rc -eq 2 ]]; then
+      echo "warning: blur probe NOT MEASURED after reboot (roll $roll) — the capture could not be read; continuing on this boot" >&2
+      break
+    fi
+    if [[ $roll -eq 4 ]]; then
+      echo "warning: blur probe FAILED through 3 reboots — $BLUR_PROBE_FIXTURE draws its blur layer flat on this emulator; continuing, and blurred fixtures may deviate (codegen parity)" >&2
+      break
+    fi
+    echo "blur probe FAILED after reboot (roll $roll) — $BLUR_PROBE_FIXTURE drew its blur layer flat; rebooting to re-roll..."
+    "$ADB" reboot
+    for i in $(seq 1 60); do
+      booted="$(adbsh getprop sys.boot_completed 2>/dev/null | tr -d '[:space:]' || true)"
+      [[ "$booted" == "1" ]] && break
+      sleep 5
+    done
+    sleep 10
+    continue
+  fi
+  if [[ $roll -eq 4 ]]; then
+    echo "error: a11y projection stayed wedged through 3 reboots — giving up this emulator" >&2
+    exit 1
+  fi
+  if [[ $forced -eq 1 ]]; then
+    echo "a11y projection probe SKIPPED (roll $roll, CONFORMANCE_FORCE_REROLL=1) — rebooting to exercise the re-roll path..."
+  else
+    echo "a11y projection probe FAILED (roll $roll) — rebooting to re-roll the boot race..."
+  fi
+  "$ADB" reboot
+  rebooted=1
+  for i in $(seq 1 60); do
+    booted="$(adbsh getprop sys.boot_completed 2>/dev/null | tr -d '[:space:]' || true)"
+    [[ "$booted" == "1" ]] && break
+    sleep 5
+  done
+  sleep 10
+done
+
 # 3. Stable test environment
 adbsh settings put global window_animation_scale 0
 adbsh settings put global transition_animation_scale 0
@@ -322,44 +430,6 @@ fi
 # value here — it is the cheapest way to tell "the renders diverged" from "the
 # system chrome moved" when a later baseline diff looks suspiciously whole-suite.
 echo "chrome fingerprint (idle screen): $(screen_hash)"
-
-# 3c. a11y projection probe + boot re-roll. Run 30762153614 (first
-# instrumented recurrence of the CI-only all-fixtures render-timeout): the
-# app renders, input and lifecycle stay healthy, but
-# AccessibilityManagerService never completes window registration ("wait for
-# adding window timeout") for the WHOLE boot — UIAutomator is globally blind
-# and the a11y-dependent fixture classes grind 8s timeouts for hours. The
-# wedge is per-boot and probabilistic, so: probe a fresh app window through
-# the same a11y channel UIAutomator uses; on failure REBOOT the device to
-# re-roll the race (up to 3 reboots) instead of paying 20-min attempts.
-# Visual fixtures don't need this (in-process readiness + SurfaceFlinger
-# screenshots) — the probe protects the assertable/interactive classes.
-a11y_probe() {
-  adbsh "am start -W -n $APP_PKG/.FixtureHostActivity" >/dev/null 2>&1 || return 1
-  sleep 2
-  adbsh "rm -f /sdcard/a11y_probe.xml; uiautomator dump /sdcard/a11y_probe.xml" >/dev/null 2>&1 || return 1
-  adbsh "grep -q \"package=[\\\"']$APP_PKG\" /sdcard/a11y_probe.xml" || return 1
-  adbsh "am force-stop $APP_PKG" >/dev/null 2>&1 || true
-  return 0
-}
-for roll in 1 2 3 4; do
-  if a11y_probe; then
-    echo "a11y projection probe: OK (roll $roll)"
-    break
-  fi
-  if [[ $roll -eq 4 ]]; then
-    echo "error: a11y projection stayed wedged through 3 reboots — giving up this emulator" >&2
-    exit 1
-  fi
-  echo "a11y projection probe FAILED (roll $roll) — rebooting to re-roll the boot race..."
-  "$ADB" reboot
-  for i in $(seq 1 60); do
-    booted="$(adbsh getprop sys.boot_completed 2>/dev/null | tr -d '[:space:]' || true)"
-    [[ "$booted" == "1" ]] && break
-    sleep 5
-  done
-  sleep 10
-done
 
 # 4. Run instrumentation; restart after process crashes until the final
 #    results file exists (progress.jsonl makes reruns resume, and dangling
