@@ -104,6 +104,23 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        // A consumer app may build with allWarningsAsErrors (one of the
+        // distribution lanes does), so what kjui generates must compile with
+        // no warning: this host compiles every conformance fixture's
+        // generated code (android-codegen) and is where that is measured.
+        // Through KotlinJsonUI 2.57.0 the host built with warnings, and a
+        // Map / List data binding's unchecked cast and unnecessary safe call
+        // reached the codegen host unseen (jsonui-cli
+        // kjui-map-list-data-bindings-warn-under-all-warnings-as-errors).
+        // The main compilation only (the generated code and the host): the
+        // androidTest sources — the vendored test-runner driver among them —
+        // are not what a consumer compiles.
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    if (!name.contains("AndroidTest") && !name.contains("UnitTest")) {
+        compilerOptions.allWarningsAsErrors.set(true)
     }
 }
 

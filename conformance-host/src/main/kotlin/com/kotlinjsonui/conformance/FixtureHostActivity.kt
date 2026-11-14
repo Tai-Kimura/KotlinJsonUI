@@ -244,7 +244,6 @@ private fun FixtureScreen(fixtureId: String) {
                 // rather than asserting against a blank screen.
                 remember(fixtureId) {
                     FixtureHost.renderErrors.add("no generated view for fixture: $fixtureId")
-                    true
                 }
             }
         }
