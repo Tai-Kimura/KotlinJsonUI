@@ -16,6 +16,8 @@ data class IconLabelAttributes(
     val font: String? = null,
     /** Text color - hex string or color name from colors.json */
     val fontColor: String? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. Declared without a fontSize, the face's default size stands in for it. On the web, with the app default set to false, a component that declares neither fontSize nor fontScaling still follows the browser's font size. */
+    val fontScaling: Boolean? = null,
     /** Font size */
     val fontSize: Double? = null,
     /** Weight of the label's text (kjui iconlabel_component, rjui icon_label_converter). [accepts: string | number] */
@@ -30,6 +32,8 @@ data class IconLabelAttributes(
     val icon_off: String? = null,
     /** Selected icon */
     val icon_on: String? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Selected state (binding supported). Chooses icon_on over icon_off and selectedFontColor over fontColor, so every platform declaring those needs this too. `isOn` folds here — the legacy spelling for the same state. IconLabelConverter.swift:145-151 says so in as many words ("Pre-SSoT layouts that spelled it `isOn` keep working") and reads it out of rawData because no typed slot existed; sjui icon_label_converter.rb:130 reads the canonical `selected` (plan 51-E). [aliases: isOn] */
     val selected: AttrValue<Boolean>? = null,
     /** Selected text color - hex string or color name from colors.json */
@@ -73,6 +77,7 @@ data class IconLabelAttributes(
             "contentDescription",
             "font",
             "fontColor",
+            "fontScaling",
             "fontSize",
             "fontWeight",
             "iconMargin",
@@ -80,6 +85,7 @@ data class IconLabelAttributes(
             "iconSize",
             "icon_off",
             "icon_on",
+            "maxFontScale",
             "selected",
             "selectedFontColor",
             "strikethrough",
@@ -111,6 +117,7 @@ data class IconLabelAttributes(
             contentDescription = AttrCoerce.string(AttrCoerce.lookup(json, "contentDescription")),
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.number(AttrCoerce.lookup(json, "fontSize")),
             fontWeight = AttrCoerce.lookup(json, "fontWeight"),
             iconMargin = AttrCoerce.number(AttrCoerce.lookup(json, "iconMargin")),
@@ -118,6 +125,7 @@ data class IconLabelAttributes(
             iconSize = AttrCoerce.lookup(json, "iconSize"),
             icon_off = AttrCoerce.string(AttrCoerce.lookup(json, "icon_off")),
             icon_on = AttrCoerce.string(AttrCoerce.lookup(json, "icon_on")),
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             selected = AttrCoerce.attrValue(AttrCoerce.lookup(json, "selected", listOf("isOn"), canonicalOnly)) { AttrCoerce.boolean(it) },
             selectedFontColor = AttrCoerce.string(AttrCoerce.lookup(json, "selectedFontColor")),
             strikethrough = AttrCoerce.boolean(AttrCoerce.lookup(json, "strikethrough")),

@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -215,7 +216,7 @@ class DynamicTextViewComponent {
                     ?: TypedAttrs.rawString(a.hintColor), data, context
             )
             val placeholder: @Composable (() -> Unit)? = if (placeholderText.isNotEmpty()) {
-                buildPlaceholder(a, placeholderText, TypedAttrs.int(a.fontSize, data), hintColor)
+                buildPlaceholder(a, placeholderText, TypedAttrs.int(a.fontSize, data), hintColor, json)
             } else null
 
             // Check margins
@@ -264,7 +265,8 @@ class DynamicTextViewComponent {
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
-                        fontSize = fontSize.sp,
+                        fontSize = json.fontSized(fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
                         color = textColor,
                         fontWeight = fieldFontWeight,
                         fontFamily = fieldFontFamily
@@ -316,7 +318,8 @@ class DynamicTextViewComponent {
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
-                        fontSize = fontSize.sp,
+                        fontSize = json.fontSized(fontSize.sp),
+                        letterSpacing = json.letterSpaced(),
                         color = textColor,
                         fontWeight = fieldFontWeight,
                         fontFamily = fieldFontFamily
@@ -451,7 +454,8 @@ class DynamicTextViewComponent {
             a: TextViewAttributes,
             text: String,
             declaredFontSize: Int?,
-            hintColor: androidx.compose.ui.graphics.Color? = null
+            hintColor: androidx.compose.ui.graphics.Color? = null,
+            json: JsonObject
         ): @Composable () -> Unit {
             // The nested bag wins over every flat hint* spelling — the same
             // cascade the codegen placeholder reads
@@ -481,7 +485,7 @@ class DynamicTextViewComponent {
                 // style size) — the codegen placeholder does the same, and
                 // the old TextView-fontSize basis measurably desynced them.
                 val base = LocalTextStyle.current
-                val effectiveSize = hintFontSize?.sp ?: base.fontSize
+                val effectiveSize = hintFontSize?.let { json.fontSized(it.sp) } ?: base.fontSize
                 // Multiple basis: hint size, else the field's DECLARED size,
                 // else the inherited M3 size — the exact chain the codegen
                 // placeholder resolves at generation time.
@@ -496,6 +500,7 @@ class DynamicTextViewComponent {
                     style = base.copy(
                         color = hintColor ?: base.color,
                         fontSize = effectiveSize,
+                        letterSpacing = json.letterSpaced(),
                         fontWeight = hintFontWeight ?: base.fontWeight,
                         lineHeight = lineHeight
                     )

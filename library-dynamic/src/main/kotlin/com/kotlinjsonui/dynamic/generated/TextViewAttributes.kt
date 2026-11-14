@@ -35,6 +35,8 @@ data class TextViewAttributes(
     val fontColor: AttrValue<String>? = null,
     /** Font family name (e.g., 'Noto Sans JP'). Passed as the `family` field of `FontSpec` to `Configuration.Font.fontProvider`. Coexists with `font` (weight) and `fontSize` which are passed in the same FontSpec. */
     val fontFamily: AttrValue<String>? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. Declared without a fontSize, the face's default size stands in for it. On the web, with the app default set to false, a component that declares neither fontSize nor fontScaling still follows the browser's font size. */
+    val fontScaling: Boolean? = null,
     /** Font size (binding supported) */
     val fontSize: AttrValue<Double>? = null,
     /** Hide placeholder when focused [default: true] */
@@ -57,6 +59,8 @@ data class TextViewAttributes(
     val keyboardType: AttrEnum<KeyboardType>? = null,
     /** Truncation mode. Same vocabulary as Label.lineBreakMode — the two were the same concept declared twice, once enumerated and once as a bare string. */
     val lineBreakMode: AttrEnum<LineBreakMode>? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Maximum input length */
     val maxLength: Double? = null,
     /** Most lines shown before the text scrolls (kjui textview_component). */
@@ -288,6 +292,7 @@ data class TextViewAttributes(
             "font",
             "fontColor",
             "fontFamily",
+            "fontScaling",
             "fontSize",
             "hideOnFocused",
             "hint",
@@ -299,6 +304,7 @@ data class TextViewAttributes(
             "input",
             "keyboardType",
             "lineBreakMode",
+            "maxFontScale",
             "maxLength",
             "maxLines",
             "name",
@@ -352,6 +358,7 @@ data class TextViewAttributes(
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
             fontFamily = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontFamily")) { AttrCoerce.string(it) },
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
             hideOnFocused = AttrCoerce.boolean(AttrCoerce.lookup(json, "hideOnFocused")),
             hint = AttrCoerce.string(AttrCoerce.lookup(json, "hint")),
@@ -363,6 +370,7 @@ data class TextViewAttributes(
             input = parseInput(AttrCoerce.lookup(json, "input")),
             keyboardType = parseKeyboardType(AttrCoerce.lookup(json, "keyboardType")),
             lineBreakMode = parseLineBreakMode(AttrCoerce.lookup(json, "lineBreakMode")),
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             maxLength = AttrCoerce.number(AttrCoerce.lookup(json, "maxLength")),
             maxLines = AttrCoerce.number(AttrCoerce.lookup(json, "maxLines")),
             name = AttrCoerce.string(AttrCoerce.lookup(json, "name")),

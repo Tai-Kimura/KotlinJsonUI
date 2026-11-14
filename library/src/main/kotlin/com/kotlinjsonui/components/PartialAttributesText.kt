@@ -1,5 +1,7 @@
 package com.kotlinjsonui.components
 
+import androidx.compose.ui.platform.LocalDensity
+import com.kotlinjsonui.core.FontScaling
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
@@ -116,7 +118,10 @@ fun PartialAttributesText(
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
     linksEnabled: Boolean = true,
-    linkColor: Color = Color.Unspecified
+    linkColor: Color = Color.Unspecified,
+    /** The component's fontScaling / maxFontScale: the ranges' sizes follow them (FontScaling). */
+    fontScaling: Boolean? = null,
+    maxFontScale: Float? = null
 ) {
     val operable = linksEnabled && !LocalInteractionStopped.current
     val ranges = if (operable) partialAttributes else partialAttributes.map { it.copy(onClick = null) }
@@ -127,14 +132,18 @@ fun PartialAttributesText(
             modifier = modifier,
             style = style,
             linksEnabled = operable,
-            linkColor = linkColor.takeOrElse { Configuration.Colors.linkColor }
+            linkColor = linkColor.takeOrElse { Configuration.Colors.linkColor },
+            fontScaling = fontScaling,
+            maxFontScale = maxFontScale
         )
     } else {
         PartialAttributesTextImpl(
             text = text,
             partialAttributes = ranges,
             modifier = modifier,
-            style = style
+            style = style,
+            fontScaling = fontScaling,
+            maxFontScale = maxFontScale
         )
     }
 }
@@ -144,9 +153,12 @@ private fun PartialAttributesTextImpl(
     text: String,
     partialAttributes: List<PartialAttribute>,
     modifier: Modifier = Modifier,
-    style: TextStyle = LocalTextStyle.current
+    style: TextStyle = LocalTextStyle.current,
+    fontScaling: Boolean? = null,
+    maxFontScale: Float? = null
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     val annotatedString = buildAnnotatedString {
         append(text)
 
@@ -160,7 +172,7 @@ private fun PartialAttributesTextImpl(
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
-                    fontSize = attr.fontSize?.sp ?: style.fontSize,
+                    fontSize = attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) } ?: style.fontSize,
                     fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = when {
@@ -200,9 +212,12 @@ private fun LinkablePartialAttributesText(
     modifier: Modifier = Modifier,
     style: TextStyle = LocalTextStyle.current,
     linksEnabled: Boolean = true,
-    linkColor: Color = Configuration.Colors.linkColor
+    linkColor: Color = Configuration.Colors.linkColor,
+    fontScaling: Boolean? = null,
+    maxFontScale: Float? = null
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     // Define patterns for linkable content
     val urlPattern = """https?://[^\s]+""".toRegex()
@@ -223,7 +238,7 @@ private fun LinkablePartialAttributesText(
                 // Build SpanStyle
                 val spanStyle = SpanStyle(
                     color = attr.fontColor?.let { resolveColorString(it, context) } ?: style.color,
-                    fontSize = attr.fontSize?.sp ?: style.fontSize,
+                    fontSize = attr.fontSize?.let { FontScaling.apply(density, it.sp, fontScaling, maxFontScale) } ?: style.fontSize,
                     fontWeight = parseFontWeight(attr.fontWeight) ?: style.fontWeight,
                     background = attr.background?.let { resolveColorString(it, context) } ?: Color.Transparent,
                     textDecoration = when {

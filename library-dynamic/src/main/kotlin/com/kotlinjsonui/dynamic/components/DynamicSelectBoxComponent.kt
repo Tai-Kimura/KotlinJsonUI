@@ -1,5 +1,7 @@
 package com.kotlinjsonui.dynamic.components
 
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -508,10 +510,8 @@ class DynamicSelectBoxComponent {
             // so the modifier chain must not re-apply them.
             val modifier = buildSelfDrawnModifier(json, data, RoundedCornerShape(cornerRadius.dp), context)
 
-            // paddings/padding become contentPadding (never a .padding()
-            // modifier, which would inset the self-drawn border instead of
-            // the content). Fallback mirrors the composable default.
-            val contentPadding = ModifierBuilder.parseContentPadding(json, data)
+            // paddings / padding / the side keys become contentPadding (never a .padding() modifier, which would inset
+            // the self-drawn border instead of the content): selectContentPadding, below.
 
             // caretAttributes → the library's SelectBoxCaret. `src` resolves as
             // a drawable name (Image's path: resolveDrawable, 0 = not found →
@@ -550,7 +550,11 @@ class DynamicSelectBoxComponent {
                 // cross-effect: android rendered default size/weight).
                 fontSize = fontSize?.toInt() ?: 16,
                 fontWeight = fontWeight,
-                contentPadding = contentPadding ?: PaddingValues(horizontal = 16.dp),
+                // The select's text by its own fontScaling / maxFontScale (the text size rule), as the generated
+                // SelectBox passes them: the Dynamic face handed the size alone, so the text followed the system.
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr(),
+                contentPadding = selectContentPadding(json, data),
                 // Undeclared cancel colors fall to the SAME Configuration
                 // defaults the codegen face reaches by omitting the params
                 // (generated code emits these only when declared). The old
@@ -689,11 +693,38 @@ class DynamicSelectBoxComponent {
                 borderColor = borderColor,
                 textColor = textColor,
                 hintColor = hintColor,
-                cornerRadius = cornerRadius
+                cornerRadius = cornerRadius,
+                // paddings / padding as the select's own padding, as on SelectBox (SelectBoxDefaults when none)
+                contentPadding = selectContentPadding(json, data),
+                fontScaling = json.fontScalingAttr(),
+                maxFontScale = json.maxFontScaleAttr()
             )
         }
 
         // ── Helpers ──
+
+        /**
+         * A select's content padding side by side (the three faces' rule, ticket kjui-selectbox-fixed-56dp-ignores-
+         * wrap-content-height; kjui's select_content_padding): SelectBoxDefaults (12 / 0 / 12 / 0), then `paddings`
+         * or `padding`, then each side's own key — paddingStart before paddingLeft, paddingEnd before paddingRight,
+         * as ModifierBuilder reads them. A side nothing writes keeps the default.
+         */
+        internal fun selectContentPadding(json: JsonObject, data: Map<String, Any>): PaddingValues {
+            val d = com.kotlinjsonui.components.SelectBoxDefaults.contentPadding
+            val ltr = androidx.compose.ui.unit.LayoutDirection.Ltr
+            var start = d.calculateStartPadding(ltr); var top = d.calculateTopPadding()
+            var end = d.calculateEndPadding(ltr); var bottom = d.calculateBottomPadding()
+            ModifierBuilder.parseContentPadding(json, data)?.let { p ->
+                start = p.calculateStartPadding(ltr); top = p.calculateTopPadding()
+                end = p.calculateEndPadding(ltr); bottom = p.calculateBottomPadding()
+            }
+            fun side(vararg keys: String) = keys.firstNotNullOfOrNull { ModifierBuilder.dimen(json.get(it), data) }?.dp
+            side("paddingTop")?.let { top = it }
+            side("paddingBottom")?.let { bottom = it }
+            side("paddingStart", "paddingLeft")?.let { start = it }
+            side("paddingEnd", "paddingRight")?.let { end = it }
+            return PaddingValues(start = start, top = top, end = end, bottom = bottom)
+        }
 
         /**
          * Modifier chain for a component that draws its own decoration —

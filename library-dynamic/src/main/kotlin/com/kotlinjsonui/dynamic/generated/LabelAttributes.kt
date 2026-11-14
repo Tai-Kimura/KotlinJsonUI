@@ -24,6 +24,8 @@ data class LabelAttributes(
     val fontColor: AttrValue<String>? = null,
     /** Font family name (e.g., 'Noto Sans JP'). Passed as the `family` field of `FontSpec` to `Configuration.Font.fontProvider`. Coexists with `font` (weight) and `fontSize` which are passed in the same FontSpec. */
     val fontFamily: AttrValue<String>? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. Declared without a fontSize, the face's default size stands in for it. On the web, with the app default set to false, a component that declares neither fontSize nor fontScaling still follows the browser's font size. */
+    val fontScaling: Boolean? = null,
     /** Font size. Passed as the `size` field of `FontSpec` to `Configuration.Font.fontProvider`. Can be a data binding. */
     val fontSize: AttrValue<Double>? = null,
     /** Font weight (e.g., 'bold', 'semibold', '500', 600) [accepts: string | number] */
@@ -50,6 +52,8 @@ data class LabelAttributes(
     val lines: AttrValue<Double>? = null,
     /** Enable URL/phone detection. Auto-links BARE http(s) URLs and phone numbers found in the text. It does not parse markdown, and relative paths are deliberately never linked: a path like "/guides/x" only means something to a web router, so linkifying it would produce a control that is dead on iOS and Android. Express a cross-document reference with partialAttributes 'range' + 'onClick', where the handler performs the navigation itself — including scrolling to the target position, which an href cannot express on mobile anyway. */
     val linkable: AttrValue<Boolean>? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Minimum scale factor for auto-shrink (binding supported) */
     val minimumScaleFactor: AttrValue<Double>? = null,
     /** Partial text styling: apply font/size/color/underline/shadow to a substring selected by 'range' (a [start, end] pair, a text pattern, or a binding), and optionally make it tappable with 'onClick' (alias 'onclick'). This is the supported way to get emphasis or a link inside a Label, since 'text' is plain text and markdown is not interpreted, and it is the portable way to express a cross-reference: the handler navigates (and scrolls to the target) in host code, so the same layout works everywhere, where a URL-based link would only work on web. All three platforms resolve partials at RUNTIME against the resolved string, so a pattern range and a localized or bound 'text' both work. Semantics, identical across platforms and verified against each runtime: an array range is [start, end) with the end exclusive; a string range is the FIRST occurrence and the partial is skipped (not an error) when the pattern is absent; a range that is out of bounds or inverted is skipped; partials apply in declaration order and MERGE where they overlap, later declarations winning per property. */
@@ -206,6 +210,7 @@ data class LabelAttributes(
             "font",
             "fontColor",
             "fontFamily",
+            "fontScaling",
             "fontSize",
             "fontWeight",
             "highlightAttributes",
@@ -219,6 +224,7 @@ data class LabelAttributes(
             "lineSpacing",
             "lines",
             "linkable",
+            "maxFontScale",
             "minimumScaleFactor",
             "partialAttributes",
             "placeholder",
@@ -257,6 +263,7 @@ data class LabelAttributes(
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
             fontFamily = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontFamily")) { AttrCoerce.string(it) },
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
             fontWeight = AttrCoerce.lookup(json, "fontWeight"),
             highlightAttributes = AttrCoerce.obj(AttrCoerce.lookup(json, "highlightAttributes")),
@@ -270,6 +277,7 @@ data class LabelAttributes(
             lineSpacing = AttrCoerce.attrValue(AttrCoerce.lookup(json, "lineSpacing")) { AttrCoerce.number(it) },
             lines = AttrCoerce.attrValue(AttrCoerce.lookup(json, "lines")) { AttrCoerce.number(it) },
             linkable = AttrCoerce.attrValue(AttrCoerce.lookup(json, "linkable")) { AttrCoerce.boolean(it) },
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             minimumScaleFactor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "minimumScaleFactor")) { AttrCoerce.number(it) },
             partialAttributes = AttrCoerce.array(AttrCoerce.lookup(json, "partialAttributes")),
             placeholder = AttrCoerce.string(AttrCoerce.lookup(json, "placeholder")),

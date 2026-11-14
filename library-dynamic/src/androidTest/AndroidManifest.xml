@@ -7,6 +7,11 @@
     <!-- ProbeAutofillService: a test-only autofill service, so a test sees a
          field as the Autofill framework does (ContentTypeReachesAutofillTest). -->
     <application android:usesCleartextTraffic="true">
+        <!-- The text size following video (test APK only): started from adb (am start), so exported. -->
+        <activity
+            android:name="com.kotlinjsonui.dynamic.demo.FontScalingDemoActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
         <service
             android:name="com.kotlinjsonui.dynamic.autofill.ProbeAutofillService"
             android:exported="true"

@@ -1,5 +1,6 @@
 package com.kotlinjsonui.dynamic.components
 
+import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -232,7 +233,7 @@ class DynamicTextFieldComponent {
             val contentPadding = buildContentPadding(json, a, data)
 
             // Text style
-            val textStyle = buildTextStyle(a, textColor, fontSize, context, data)
+            val textStyle = buildTextStyle(a, textColor, json.fontSized(fontSize.sp), json.letterSpaced(), context, data)
 
             // Keyboard options
             val keyboardOptions = buildKeyboardOptions(a, nextFocusId)
@@ -254,14 +255,15 @@ class DynamicTextFieldComponent {
                     Text(
                         text = placeholderText,
                         color = placeholderColor,
-                        fontSize = (hintFontSize ?: fontSize).sp,
+                        fontSize = json.fontSized((hintFontSize ?: fontSize).sp),
+                        letterSpacing = json.letterSpaced(),
                         fontWeight = if ((ResourceResolver.nestedString(a.hintAttributes, "font")
                                 ?: a.hintFont) == "bold") {
                             androidx.compose.ui.text.font.FontWeight.Bold
                         } else null,
                         style = if (hintMultiple != null) {
                             androidx.compose.material3.LocalTextStyle.current.copy(
-                                lineHeight = ((hintFontSize ?: fontSize) * hintMultiple).sp
+                                lineHeight = json.fontSized(((hintFontSize ?: fontSize) * hintMultiple).sp)
                             )
                         } else androidx.compose.material3.LocalTextStyle.current
                     )
@@ -470,7 +472,10 @@ class DynamicTextFieldComponent {
         private fun buildTextStyle(
             a: TextFieldAttributes,
             textColor: androidx.compose.ui.graphics.Color,
-            fontSize: Int,
+            /** The declared size drawn by the component's fontScaling / maxFontScale (json.fontSized). */
+            fontSize: androidx.compose.ui.unit.TextUnit,
+            /** The theme's letter spacing drawn by the same declarations (json.letterSpaced). */
+            letterSpacing: androidx.compose.ui.unit.TextUnit,
             context: android.content.Context,
             data: Map<String, Any>
         ): TextStyle {
@@ -480,7 +485,8 @@ class DynamicTextFieldComponent {
             // the same `fontFamily || font` order sjui reads.
             val fontSpelling = TypedAttrs.string(a.font, data)
             var style = TextStyle(
-                fontSize = fontSize.sp,
+                fontSize = fontSize,
+                letterSpacing = letterSpacing,
                 color = textColor,
                 fontWeight = ResourceResolver.fontWeightFor(fontSpelling),
                 fontFamily = ResourceResolver.resolveFontFamily(

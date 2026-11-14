@@ -42,8 +42,8 @@ class RadioEveryPathTakesTheStyleTest {
             return out
         }
         fun bareTexts(code: String) = calls(code, "Text(").filterNot { t ->
-            // RadioLabel's own Text, which takes the style
-            "color = style.color" in t && "fontSize = style.size" in t
+            // RadioLabel's own Text, which takes the style (its size drawn by the text size rule, FontScaling)
+            "color = style.color" in t && Regex("""fontSize = [^\n]*\bstyle\.size\b""").containsMatchIn(t)
         }.filterNot { it.startsWith("RadioLabel") }
         fun uncoloured(code: String) = calls(code, "RadioButton(").filterNot { "colors = " in it }
         // the scan tells them apart

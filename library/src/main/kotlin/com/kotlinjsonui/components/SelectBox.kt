@@ -1,5 +1,7 @@
 package com.kotlinjsonui.components
 
+import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUIFontSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -53,9 +55,9 @@ import kotlinx.coroutines.launch
 data class SelectBoxCaret(
     /** The caret image. Null draws the default drop-down glyph. */
     val painter: Painter? = null,
-    /** Caret box width in dp. Null: the default glyph's 24dp. */
+    /** Caret box width in dp. Null: 16 dp on the String SelectBox and DateSelectBox (SelectBoxDefaults.arrowBox), the generic overload's 24 dp glyph. */
     val width: Int? = null,
-    /** Caret box height in dp. Null: the default glyph's 24dp. */
+    /** Caret box height in dp. Null: 16 dp on the String SelectBox and DateSelectBox (SelectBoxDefaults.arrowBox), the generic overload's 24 dp glyph. */
     val height: Int? = null,
     /**
      * Glyph tint. Null keeps the tint the native arrow had (the text color)
@@ -113,6 +115,73 @@ private fun SelectBoxCaretIndicator(
 }
 
 /**
+ * A select's own layout when its layout JSON declares none, the same on the three faces (ruling 2026-11-13, ticket
+ * kjui-selectbox-fixed-56dp-ignores-wrap-content-height): 12 dp from the leading edge to the text, 12 dp from the
+ * trailing edge to the arrow's box, nothing above or below - so a select with no height, or wrapContent, is its
+ * text's own height; the arrow a 16 x 16 box holding a downward chevron, 8 dp after the text. One place for
+ * SelectBox, DateSelectBox and the Dynamic face.
+ */
+object SelectBoxDefaults {
+    val contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp)
+    val arrowBox = 16.dp
+    val arrowGap = 8.dp
+}
+
+/**
+ * The end padding of a select's row: from the trailing edge to the arrow's box - the caret's rightMargin when the
+ * layout styles it, else [contentEnd] (the content padding's end).
+ */
+internal fun selectBoxRowEnd(caret: SelectBoxCaret?, contentEnd: Dp): Dp = caret?.rightMargin?.dp ?: contentEnd
+
+/**
+ * A select's trailing arrow, 8 dp after its text: a [SelectBoxDefaults.arrowBox] box (the caret's width / height
+ * when it gives them, filled with its background) holding a downward chevron, or the caret's own image.
+ */
+@Composable
+internal fun RowScope.SelectBoxArrow(caret: SelectBoxCaret?, defaultTint: Color) {
+    Spacer(Modifier.width(SelectBoxDefaults.arrowGap))
+    Box(
+        modifier = Modifier
+            .size(
+                width = caret?.width?.dp ?: SelectBoxDefaults.arrowBox,
+                height = caret?.height?.dp ?: SelectBoxDefaults.arrowBox
+            )
+            .background(caret?.background ?: Color.Transparent),
+        contentAlignment = Alignment.Center
+    ) {
+        val painter = caret?.painter
+        if (painter != null) {
+            Icon(
+                painter = painter,
+                contentDescription = "Dropdown",
+                tint = caret.tintColor ?: Color.Unspecified,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            val tint = caret?.tintColor ?: defaultTint
+            androidx.compose.foundation.Canvas(Modifier.fillMaxSize()) {
+                // A downward chevron across the middle of the box.
+                val w = size.width
+                val h = size.height
+                val path = androidx.compose.ui.graphics.Path().apply {
+                    moveTo(w * 0.2f, h * 0.36f)
+                    lineTo(w * 0.5f, h * 0.66f)
+                    lineTo(w * 0.8f, h * 0.36f)
+                }
+                drawPath(
+                    path, tint,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(
+                        width = 1.75.dp.toPx(),
+                        cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                        join = androidx.compose.ui.graphics.StrokeJoin.Round
+                    )
+                )
+            }
+        }
+    }
+}
+
+/**
  * A reusable SelectBox component for KotlinJsonUI
  * 
  * @param value The currently selected value
@@ -121,7 +190,7 @@ private fun SelectBoxCaretIndicator(
  * @param modifier Modifier for the component
  * @param placeholder Optional placeholder text when no value is selected
  * @param enabled Whether the component is enabled
- * @param caret The closed select's caret when the layout styles it; null keeps the native arrow
+ * @param caret The closed select's caret when the layout styles it; null draws the chevron (SelectBoxArrow)
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,7 +208,11 @@ fun SelectBox(
     cornerRadius: Int = 8,
     fontSize: Int = 16,
     fontWeight: FontWeight = FontWeight.Normal,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
+    /** Whether the text follows the system text size (null: Configuration.Font.scaling); see FontScaling. */
+    fontScaling: Boolean? = null,
+    /** At most fontSize × this when following (null: Configuration.Font.maxScale); see FontScaling. */
+    maxFontScale: Float? = null,
+    contentPadding: PaddingValues = SelectBoxDefaults.contentPadding,
     sheetBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
     sheetTextColor: Color = Configuration.SelectBox.defaultSheetTextColor,
     cancelButtonBackgroundColor: Color = Configuration.SelectBox.defaultSheetBackgroundColor,
@@ -153,21 +226,16 @@ fun SelectBox(
         skipPartiallyExpanded = true  // Always expand to full height
     )
     val scope = rememberCoroutineScope()
-    // A self-drawn caret sits outside the content padding (positioned from
-    // the select's edge), so the text reserves its footprint explicitly.
-    val textEndReserve = if (caret != null) {
-        caretTextReserve(
-            caretWidth = (caret.width ?: DEFAULT_CARET_GLYPH_DP).dp,
-            rightMargin = caret.rightMargin.dp,
-            endInset = contentPadding.calculateEndPadding(LocalLayoutDirection.current)
-        )
-    } else 0.dp
+    val layoutDirection = LocalLayoutDirection.current
     
     // Custom SelectBox field that looks like OutlinedTextField
+    // The select is as tall as its layout says: a fixed height (the text centred, as before), or, with wrapContent
+    // or no height, its content and paddings — a value folded to 2 lines grows it. No height of its own (ticket
+    // kjui-selectbox-fixed-56dp-ignores-wrap-content-height: .height(56.dp) after the caller's modifier won).
     Box(
+        contentAlignment = Alignment.CenterStart,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp)
             .clickable(enabled = enabled) { 
                 showBottomSheet = true
             }
@@ -181,34 +249,27 @@ fun SelectBox(
                 shape = RoundedCornerShape(cornerRadius.dp)
             )
     ) {
+        // Text, 8 dp, the arrow's box; the row's end padding is the edge-to-box distance (SelectBoxDefaults).
         Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
+                .fillMaxWidth()
+                .padding(
+                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    top = contentPadding.calculateTopPadding(),
+                    end = selectBoxRowEnd(caret, contentPadding.calculateEndPadding(layoutDirection)),
+                    bottom = contentPadding.calculateBottomPadding()
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = if (value.isNotEmpty()) value else (placeholder ?: ""),
                 color = if (value.isNotEmpty()) textColor else hintColor,
-                fontSize = fontSize.sp,
+                fontSize = jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale),
+                letterSpacing = jsonUILetterSpacing(fontScaling, maxFontScale),
                 fontWeight = fontWeight,
-                modifier = Modifier.weight(1f).padding(end = textEndReserve)
+                modifier = Modifier.weight(1f)
             )
-            if (caret == null) {
-                // No caretAttributes: the native indicator, unchanged.
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_drop_down),
-                    contentDescription = "Dropdown",
-                    tint = textColor
-                )
-            }
-        }
-        if (caret != null) {
-            SelectBoxCaretIndicator(
-                caret = caret,
-                defaultTint = textColor,
-                modifier = Modifier.align(Alignment.CenterEnd)
-            )
+            SelectBoxArrow(caret, defaultTint = textColor)
         }
     }
     
@@ -244,12 +305,12 @@ fun SelectBox(
                 // Title or header (optional)
                 Text(
                     text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_option),
-                    style = sheetTextStyle(
+                    style = sheetFontScaled(sheetTextStyle(
                         MaterialTheme.typography.titleMedium,
                         Configuration.SelectBox.sheetFontFamily,
                         Configuration.SelectBox.sheetTitleFontSize,
                         null
-                    ),
+                    )),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 16.dp)
@@ -260,12 +321,12 @@ fun SelectBox(
                 // Option-row style: MaterialTheme bodyLarge with the
                 // Configuration sheet-typography overrides merged in (null
                 // overrides = the style the sheet has always had).
-                val itemStyle = sheetTextStyle(
+                val itemStyle = sheetFontScaled(sheetTextStyle(
                     MaterialTheme.typography.bodyLarge,
                     Configuration.SelectBox.sheetFontFamily,
                     Configuration.SelectBox.sheetItemFontSize,
                     Configuration.SelectBox.sheetItemFontWeight
-                )
+                ))
 
                 // Scrollable list of options
                 LazyColumn(
@@ -376,7 +437,8 @@ fun SelectBox(
                 ) {
                     Text(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
-                        fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
+                        fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
+                        letterSpacing = jsonUILetterSpacing(),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = cancelButtonTextColor,
@@ -508,12 +570,12 @@ fun <T> SelectBox(
                 // Title or header (optional)
                 Text(
                     text = sheetTitle ?: sheetString(R.string.kjui_sheet_select_option),
-                    style = sheetTextStyle(
+                    style = sheetFontScaled(sheetTextStyle(
                         MaterialTheme.typography.titleMedium,
                         Configuration.SelectBox.sheetFontFamily,
                         Configuration.SelectBox.sheetTitleFontSize,
                         null
-                    ),
+                    )),
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = 16.dp)
@@ -526,12 +588,12 @@ fun <T> SelectBox(
                 // scheme — this overload used primaryContainer/surface until
                 // 2.22.0, a face split with no design behind it) and carry
                 // the Configuration typography overrides.
-                val itemStyle = sheetTextStyle(
+                val itemStyle = sheetFontScaled(sheetTextStyle(
                     MaterialTheme.typography.bodyLarge,
                     Configuration.SelectBox.sheetFontFamily,
                     Configuration.SelectBox.sheetItemFontSize,
                     Configuration.SelectBox.sheetItemFontWeight
-                )
+                ))
 
                 // Scrollable list of options
                 LazyColumn(
@@ -606,7 +668,8 @@ fun <T> SelectBox(
                 ) {
                     Text(
                         text = cancelButtonText ?: sheetString(R.string.kjui_sheet_cancel),
-                        fontSize = Configuration.SelectBox.SheetButton.defaultFontSize.sp,
+                        fontSize = jsonUIFontSize(Configuration.SelectBox.SheetButton.defaultFontSize.sp),
+                        letterSpacing = jsonUILetterSpacing(),
                         fontWeight = FontWeight(Configuration.SelectBox.SheetButton.defaultFontWeight),
                         fontFamily = Configuration.SelectBox.sheetFontFamily,
                         color = Configuration.SelectBox.SheetButton.defaultCancelButtonTextColor,

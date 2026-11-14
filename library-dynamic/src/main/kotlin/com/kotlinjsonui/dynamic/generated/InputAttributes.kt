@@ -50,6 +50,8 @@ data class InputAttributes(
     val fontColor: AttrValue<String>? = null,
     /** Font family name (e.g., 'Noto Sans JP'). Passed as the `family` field of `FontSpec` to `Configuration.Font.fontProvider`. Coexists with `font` (weight) and `fontSize` which are passed in the same FontSpec. */
     val fontFamily: AttrValue<String>? = null,
+    /** Whether this component's text follows the OS / browser text size (iOS Dynamic Type, Android font scale, the browser's font size). Absent: the app default (Configuration font scaling, true unless the app sets it). false: the declared fontSize is drawn at that size at every text size (iOS pins the component to the standard size; Android reads fontSize as dp; web as px). The faces grow differently up to their caps: Android 14+ grows small text more than large (non-linear, up to 2x); iOS grows linearly with .body (x2.82 at AX5 on iOS 27.2); the web linearly with the root font size. Applies to partialAttributes' sizes too. Declared without a fontSize, the face's default size stands in for it. On the web, with the app default set to false, a component that declares neither fontSize nor fontScaling still follows the browser's font size. */
+    val fontScaling: Boolean? = null,
     /** Font size (binding supported) */
     val fontSize: AttrValue<Double>? = null,
     /** Glass effect style. SUPERSEDED by glass.style as of 2026-09-14. As with applyLiquidGlass, the normalizer fold is NOT IMPLEMENTED YET and both spellings are live. */
@@ -78,6 +80,8 @@ data class InputAttributes(
     val leftView: Map<String, Any?>? = null,
     /** Left view display mode */
     val leftViewMode: String? = null,
+    /** The largest size this component's text is drawn at, as a multiple of its declared fontSize (>= 1): drawn <= fontSize x maxFontScale on every face. Only with fontScaling (declared or the app default) true; absent: no cap beyond the OS one. iOS rounds it down to a Dynamic Type step (the largest step whose .body ratio is at most it); Android caps after its non-linear conversion; the web draws min(rem, px x maxFontScale). */
+    val maxFontScale: Double? = null,
     /** Maximum input length */
     val maxLength: Double? = null,
     /** The input's form name attribute (rjui text_field_converter). */
@@ -388,6 +392,7 @@ data class InputAttributes(
             "font",
             "fontColor",
             "fontFamily",
+            "fontScaling",
             "fontSize",
             "glassEffectStyle",
             "hasContainer",
@@ -402,6 +407,7 @@ data class InputAttributes(
             "inputType",
             "leftView",
             "leftViewMode",
+            "maxFontScale",
             "maxLength",
             "name",
             "nextFocus",
@@ -475,6 +481,7 @@ data class InputAttributes(
             font = AttrCoerce.attrValue(AttrCoerce.lookup(json, "font")) { AttrCoerce.string(it) },
             fontColor = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontColor")) { AttrCoerce.string(it) },
             fontFamily = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontFamily")) { AttrCoerce.string(it) },
+            fontScaling = AttrCoerce.boolean(AttrCoerce.lookup(json, "fontScaling")),
             fontSize = AttrCoerce.attrValue(AttrCoerce.lookup(json, "fontSize")) { AttrCoerce.number(it) },
             glassEffectStyle = AttrCoerce.string(AttrCoerce.lookup(json, "glassEffectStyle")),
             hasContainer = AttrCoerce.boolean(AttrCoerce.lookup(json, "hasContainer")),
@@ -489,6 +496,7 @@ data class InputAttributes(
             inputType = parseInputType(AttrCoerce.lookup(json, "inputType")),
             leftView = AttrCoerce.obj(AttrCoerce.lookup(json, "leftView")),
             leftViewMode = AttrCoerce.string(AttrCoerce.lookup(json, "leftViewMode")),
+            maxFontScale = AttrCoerce.number(AttrCoerce.lookup(json, "maxFontScale")),
             maxLength = AttrCoerce.number(AttrCoerce.lookup(json, "maxLength")),
             name = AttrCoerce.string(AttrCoerce.lookup(json, "name")),
             nextFocus = AttrCoerce.string(AttrCoerce.lookup(json, "nextFocus")),
