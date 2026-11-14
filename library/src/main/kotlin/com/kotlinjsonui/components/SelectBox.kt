@@ -45,8 +45,8 @@ import kotlinx.coroutines.launch
  * it drew before the parameter existed, so existing layouts do not move.
  *
  * Present: the component draws the caret itself — a box of [width] x [height]
- * dp filled with [background], the glyph ([painter], or the default drop-down
- * arrow when null) tinted with [tintColor], placed [rightMargin] dp from the
+ * dp filled with [background], the glyph ([painter] in its own colours, or the
+ * default drop-down arrow tinted with [tintColor] when null), placed [rightMargin] dp from the
  * select's trailing edge (0 = flush against the edge, the UIKit contract this
  * object came from). The native indicator is not drawn.
  *
@@ -62,8 +62,9 @@ data class SelectBoxCaret(
     /** Caret box height in dp. Null: 16 dp on the String SelectBox and DateSelectBox (SelectBoxDefaults.arrowBox), the generic overload's 24 dp glyph. */
     val height: Int? = null,
     /**
-     * Glyph tint. Null keeps the tint the native arrow had (the text color)
-     * for the default glyph, and draws a supplied [painter] untinted.
+     * The default glyph's tint. Null keeps the tint the native arrow had (the
+     * text color). A supplied [painter] is never tinted: the app's picture keeps
+     * its own colours (the requester's ruling 2026-11-14, the three faces alike).
      */
     val tintColor: Color? = null,
     /** Fill of the caret's own box (width x height), not of the select. */
@@ -108,7 +109,8 @@ private fun SelectBoxCaretIndicator(
         Icon(
             painter = caret.painter ?: painterResource(R.drawable.ic_arrow_drop_down),
             contentDescription = "Dropdown",
-            tint = caret.tintColor ?: if (caret.painter == null) defaultTint else Color.Unspecified,
+            // tintColor paints the default glyph only; the app's picture keeps its own colours.
+            tint = if (caret.painter == null) caret.tintColor ?: defaultTint else Color.Unspecified,
             // The box IS the declared size; the glyph fills it (Icon's own
             // 24dp default would leave a 32x32 box with a 24dp arrow inside).
             modifier = Modifier.fillMaxSize()
@@ -153,10 +155,13 @@ internal fun RowScope.SelectBoxArrow(caret: SelectBoxCaret?, defaultTint: Color)
     ) {
         val painter = caret?.painter
         if (painter != null) {
+            // The app's own picture keeps its own colours: tintColor paints the default chevron only (the
+            // requester's ruling 2026-11-14, the three faces alike; ticket
+            // kjui-date-selectbox-caret-attributes-not-emitted).
             Icon(
                 painter = painter,
                 contentDescription = "Dropdown",
-                tint = caret.tintColor ?: Color.Unspecified,
+                tint = Color.Unspecified,
                 modifier = Modifier.fillMaxSize()
             )
         } else {
