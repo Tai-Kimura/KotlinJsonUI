@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: 869342b61edc24e80ba13028af919fe3bb654efe # jsonui-cli fix/item-address-across-sections (2.5.39, not tagged yet): a cell's address counts across the sections; move to the v2.5.39 tag
+      JSONUI_CLI_MANIFEST_REF: v2.5.39 # jsonui-cli v2.5.39: a cell address counts across sections, a grid row sizes to its tallest matchParent cell, the conformance host compiles under allWarningsAsErrors
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
