@@ -240,15 +240,18 @@ class DynamicIconLabelComponent {
                     // 20sp font (an IconLabel at fontSize 20 was 24 high where
                     // a Label is 26). With none it stays the theme's line.
                     val themeBase = androidx.compose.material3.LocalTextStyle.current
-                    val labelBase = a.fontSize?.let {
-                        themeBase.copy(lineHeight = json.lineHeighted(json.fontSized(fontSize.sp), (it.toFloat() * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp))
-                    } ?: themeBase.copy(lineHeight = json.lineHeighted(json.fontSized(fontSize.sp)))
                     // Through the app's fontProvider whatever the text declares (P1): FontSpec carries the declared
                     // weight and size (none when undeclared), and a null slot draws as before.
                     val font = ResourceResolver.providerFont(
-                        weight = fontWeight ?: labelBase.fontWeight,
+                        weight = fontWeight ?: themeBase.fontWeight,
                         size = a.fontSize?.toFloat()?.sp,
                     )
+                    // The line follows the size the text is drawn at - the provider's when it gives one - as every
+                    // other text's does (ruling 2026-11-14).
+                    val drawnSize = font.size ?: fontSize.sp
+                    val labelBase = a.fontSize?.let {
+                        themeBase.copy(lineHeight = json.lineHeighted(json.fontSized(drawnSize), (drawnSize.value * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp))
+                    } ?: themeBase.copy(lineHeight = json.lineHeighted(json.fontSized(drawnSize)))
                     Text(
                         text = text,
                         fontSize = json.fontSized(font.size ?: fontSize.sp),

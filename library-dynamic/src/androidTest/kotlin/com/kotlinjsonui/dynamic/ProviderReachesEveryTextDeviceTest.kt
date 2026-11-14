@@ -175,6 +175,24 @@ class ProviderReachesEveryTextDeviceTest {
         }
     }
 
+    /**
+     * The line follows the size the text is drawn at, the provider's when it gives one (ruling 2026-11-14): an IconLabel
+     * whose provider answers 40sp draws a line of at least 40sp, as its text does. Its line was taken from the declared
+     * size (16) and drew 40sp text on a line for 16.
+     */
+    @Test
+    fun an_icon_labels_line_follows_the_providers_size() {
+        Configuration.Font.fontProvider = { spec -> ResolvedFont(size = 40.sp) }
+        rule.setContent { Box { DynamicView(json = JsonParser.parseString("""{"type":"IconLabel","text":"IconText","fontSize":16}""").asJsonObject) } }
+        rule.waitForIdle()
+        val nodes = rule.onAllNodesWithText("IconText", substring = true, useUnmergedTree = true)
+        val l = (0 until nodes.fetchSemanticsNodes().size).firstNotNullOfOrNull { layout(nodes[it]) }
+        assertTrue("IconLabel drew no text layout", l != null)
+        val style = l!!.layoutInput.style
+        assertEquals("size", 40f, style.fontSize.value, 0.01f)
+        assertTrue("line ${style.lineHeight} under the 40sp text", style.lineHeight.value >= 40f)
+    }
+
     @Test
     fun without_a_provider_each_draws_its_own_size_control() {
         Configuration.Font.fontProvider = null
