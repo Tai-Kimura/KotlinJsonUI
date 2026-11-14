@@ -59,6 +59,7 @@ import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.components.LocalCollectionScrollMemory
 import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.IncludeExpander
 import com.kotlinjsonui.dynamic.generated.AttrValue
 import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.generated.DimensionValue
@@ -717,13 +718,19 @@ class DynamicCollectionComponent {
             // The grid's sections as it emits them (scrollItemIndex's walk),
             // for scrollTo and defaultScrollAnchor alike.
             val gridRoute = if (isHorizontal) CellRoute.LAZY_HORIZONTAL_GRID else CellRoute.LAZY_VERTICAL_GRID
+            // The vertical grid's sections whose cells fill their row's height,
+            // drawn a full-width item per row (gridRowColumns).
+            // Not with a bound column count, as the codegen face (it cannot know the row's width in cells).
+            val rowColumns = if (isHorizontal || a.columns is AttrValue.Binding) emptyMap()
+                else gridRowColumns(plan.sectionsFor(gridRoute), cellClassName, defaultColumns)
             val gridScrollSections = emittedScrollSections(
                 sections = plan.sectionsFor(gridRoute),
                 collectionDataSource = collectionDataSource,
                 gridColumns = gridColumns,
                 defaultColumns = defaultColumns,
                 reverseLayout = reverseLayout,
-                breakRowsBetweenSections = plan.hasDeclaredSections
+                breakRowsBetweenSections = plan.hasDeclaredSections,
+                rowColumns = rowColumns
             )
             val gridLeadingItems = if (!isHorizontal && plan.headerFor(CellRoute.LAZY_VERTICAL_GRID) != null) 1 else 0
 
@@ -859,6 +866,8 @@ class DynamicCollectionComponent {
                         reorderFixedProperty = a.reorderFixedProperty,
                         sections = plan.sectionsFor(CellRoute.LAZY_VERTICAL_GRID),
                         breakRowsBetweenSections = plan.hasDeclaredSections,
+                        rowColumns = rowColumns,
+                        rowColumnSpacing = columnSpacing,
                         collectionDataSource = collectionDataSource,
                         cellClassName = cellClassName,
                         cellIdProperty = cellIdProperty,
@@ -1693,7 +1702,10 @@ class DynamicCollectionComponent {
                                 } else {
                                     // A cell root of height matchParent fills the ROW, at its
                                     // tallest cell, not what the screen has left (GridRowHeight).
-                                    val equalizes = GridRowHeight.equalizes(row.cells.map { (s, _) -> cellRootOf(cellNameOf(s)) })
+                                    val rowMode = GridRowHeight.mode(row.cells.map { (s, _) -> cellRootOf(cellNameOf(s)) })
+                                    val equalizes = rowMode == GridRowHeight.Mode.FILL
+                                    // A cell holding an image its picture sizes: its own height (GridRowHeight.Mode.OWN).
+                                    val ownHeight = rowMode == GridRowHeight.Mode.OWN
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                             .then(if (equalizes) Modifier.height(IntrinsicSize.Min) else Modifier),
@@ -1706,6 +1718,7 @@ class DynamicCollectionComponent {
                                                     .weight(1f)
                                                     .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
                                                     .then(if (equalizes) Modifier.fillMaxHeight() else Modifier)
+                                                    .then(if (ownHeight) Modifier.wrapContentHeight(Alignment.Top, unbounded = true) else Modifier)
                                                     .then(placeOf(s, cellIndex)),
                                                 contentAlignment = gravityAlignment
                                             ) {
@@ -2012,6 +2025,8 @@ class DynamicCollectionComponent {
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
             breakRowsBetweenSections: Boolean = false,
+            rowColumns: Map<Int, Int> = emptyMap(),
+            rowColumnSpacing: androidx.compose.ui.unit.Dp = 0.dp,
         ) {
 
             when {
@@ -2042,7 +2057,7 @@ class DynamicCollectionComponent {
                     // already starts one. The legacy shape's stand-in
                     // sections stay one grid, as sjui's legacy grid is.
                     val breakSpans = if (breakRowsBetweenSections) {
-                        orderedBreakSpans(orderedSections, collectionDataSource, gridColumns, defaultColumns)
+                        orderedBreakSpans(orderedSections, collectionDataSource, gridColumns, defaultColumns, rowColumns)
                     } else null
                     orderedSections.forEachIndexed { orderIndex, (sectionIndex, sectionJson) ->
                         val sectionObj = sectionJson.asJsonObject
@@ -2073,7 +2088,44 @@ class DynamicCollectionComponent {
                             }
 
                             // Render cells
-                            section.cells?.let { cellData ->
+                            val perRow = rowColumns[sectionIndex] ?: 0
+                            if (perRow > 0) section.cells?.let { cellData ->
+                                // Cells that fill their row's height (gridRowColumns): a
+                                // full-width item per row, the row a Row the height of its
+                                // tallest cell, as the non-lazy grid draws it. Each cell keeps
+                                // its index, address and onItemAppear.
+                                val rowKeys = if (cellIdProperty != null) {
+                                    val ids = uniqueKeys(cellData.data.mapIndexed { index, item ->
+                                        (item["cellId"] as? String) ?: (item[cellIdProperty] as? String) ?: index.toString()
+                                    }).map { if (sectionIndex == 0) it else "$sectionIndex:$it" }
+                                    ids
+                                } else null
+                                items(
+                                    count = (cellData.data.size + perRow - 1) / perRow,
+                                    key = rowKeys?.let { keys -> { row: Int -> (row * perRow until minOf((row + 1) * perRow, keys.size)).joinToString("|") { keys[it] } } },
+                                    span = { GridItemSpan(maxLineSpan) }
+                                ) { rowIndex ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                                        horizontalArrangement = Arrangement.spacedBy(rowColumnSpacing)
+                                    ) {
+                                        for (columnIndex in 0 until perRow) {
+                                            val cellIndex = rowIndex * perRow + columnIndex
+                                            if (cellIndex < cellData.data.size) {
+                                                Box(
+                                                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                                                    contentAlignment = gravityAlignment
+                                                ) {
+                                                    renderCellView(cellViewName ?: cellClassName, cellData.data[cellIndex], cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                        address = cellsBefore(collectionDataSource, sectionIndex) + cellIndex)
+                                                }
+                                            } else {
+                                                Spacer(Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
+                                }
+                            } else section.cells?.let { cellData ->
                                 // Build identified items if cellIdProperty is set
                                 // The item key: the cell's key in section 0,
                                 // "<section>:<key>" in a later one. One lazy
@@ -2326,7 +2378,7 @@ class DynamicCollectionComponent {
         }
 
         /** What a section puts into the vertical grid, for [sectionBreakSpans]. */
-        internal data class SectionShape(val cells: Int, val itemSpan: Int, val header: Boolean, val footer: Boolean)
+        internal data class SectionShape(val cells: Int, val itemSpan: Int, val header: Boolean, val footer: Boolean, val rowColumns: Int = 0)
 
         /**
          * Before each section, in drawing order, the span of an empty item
@@ -2342,7 +2394,8 @@ class DynamicCollectionComponent {
             return shapes.map { s ->
                 if (!s.header && !s.footer && s.cells == 0) return@map 0
                 val filler = if (!s.header && used != 0) gridColumns - used else 0
-                used = if (s.footer) 0 else (s.cells * s.itemSpan) % gridColumns
+                // A section drawn a full-width item per row (rowColumns) leaves no row part filled.
+                used = if (s.footer || s.rowColumns > 0) 0 else (s.cells * s.itemSpan) % gridColumns
                 filler
             }
         }
@@ -2353,6 +2406,7 @@ class DynamicCollectionComponent {
             collectionDataSource: CollectionDataSource,
             gridColumns: Int,
             defaultColumns: Int,
+            rowColumns: Map<Int, Int> = emptyMap(),
         ): List<Int> = sectionBreakSpans(
             orderedSections.map { (sectionIndex, sectionJson) ->
                 val obj = sectionJson.asJsonObject
@@ -2361,7 +2415,8 @@ class DynamicCollectionComponent {
                     cells = section?.cells?.data?.size ?: 0,
                     itemSpan = gridColumns / (obj.get("columns")?.asInt ?: defaultColumns),
                     header = obj.get("header") != null && section?.header != null,
-                    footer = obj.get("footer") != null && section?.footer != null
+                    footer = obj.get("footer") != null && section?.footer != null,
+                    rowColumns = rowColumns[sectionIndex] ?: 0
                 )
             },
             gridColumns
@@ -2379,6 +2434,8 @@ class DynamicCollectionComponent {
             val header: Boolean,
             val cells: List<Map<String, Any>>?,
             val footer: Boolean,
+            /** Cells per row when the section is drawn a full-width item per row (gridRowColumns), else 0. */
+            val rowColumns: Int = 0,
         )
 
         /** The grid's sections as [generateCollectionItems] emits them. */
@@ -2389,11 +2446,12 @@ class DynamicCollectionComponent {
             defaultColumns: Int,
             reverseLayout: Boolean,
             breakRowsBetweenSections: Boolean,
+            rowColumns: Map<Int, Int> = emptyMap(),
         ): List<ScrollSection> {
             if (sections == null || collectionDataSource == null) return emptyList()
             val indexed = sections.toList().mapIndexed { idx, section -> idx to section }
             val ordered = if (reverseLayout) indexed.reversed() else indexed
-            val breaks = if (breakRowsBetweenSections) orderedBreakSpans(ordered, collectionDataSource, gridColumns, defaultColumns) else null
+            val breaks = if (breakRowsBetweenSections) orderedBreakSpans(ordered, collectionDataSource, gridColumns, defaultColumns, rowColumns) else null
             return ordered.mapIndexed { orderIndex, (sectionIndex, sectionJson) ->
                 val obj = sectionJson.asJsonObject
                 val section = collectionDataSource.sections.getOrNull(sectionIndex)
@@ -2402,7 +2460,8 @@ class DynamicCollectionComponent {
                     breakBefore = (breaks?.get(orderIndex) ?: 0) > 0,
                     header = section != null && sectionViewName(obj, "header") != null && section.header != null,
                     cells = section?.cells?.data,
-                    footer = section != null && sectionViewName(obj, "footer") != null && section.footer != null
+                    footer = section != null && sectionViewName(obj, "footer") != null && section.footer != null,
+                    rowColumns = rowColumns[sectionIndex] ?: 0
                 )
             }
         }
@@ -2448,8 +2507,10 @@ class DynamicCollectionComponent {
             for (s in emitted) {
                 if (s.breakBefore) item += 1
                 if (s.header) item += 1
-                if (s === target) return item + rest
-                item += s.cells?.size ?: 0
+                // A section drawn a row per item: the cell's row is the item.
+                if (s === target) return item + if (s.rowColumns > 0) rest / s.rowColumns else rest
+                val size = s.cells?.size ?: 0
+                item += if (s.rowColumns > 0) (size + s.rowColumns - 1) / s.rowColumns else size
                 if (s.footer) item += 1
             }
             return null
@@ -2788,13 +2849,39 @@ class DynamicCollectionComponent {
          * (DynamicView applies a node's style when it draws it, so a height
          * the style gives is the height the cell has). Null for no class or no file.
          */
+        /**
+         * The sections of a vertical lazy grid whose cells fill their row's height — a cell root of height
+         * matchParent holding no SubcomposeLayout (GridRowHeight), more than one column — by section index, with
+         * their columns. A LazyVerticalGrid measures each item on its own, the height unbounded, and stretches none
+         * to its line (Compose foundation 1.10, LazyGridMeasuredLineProvider.childConstraints), so such a cell stayed
+         * its own height where iOS's LazyVGrid draws the row's (jsonui-cli ticket kjui-collection-lazy-grid-and-
+         * flow-rows-do-not-align-cell-heights). These sections are drawn a full-width item per row instead, as the
+         * non-lazy grid draws its rows; kjui's codegen does the same (lazy_grid_row_columns).
+         */
+        @Composable
+        private fun gridRowColumns(sections: JsonArray?, cellClassName: String?, defaultColumns: Int): Map<Int, Int> {
+            if (sections == null) return emptyMap()
+            val out = mutableMapOf<Int, Int>()
+            sections.forEachIndexed { index, element ->
+                val obj = element as? JsonObject ?: return@forEachIndexed
+                val columns = obj.get("columns")?.asInt ?: defaultColumns
+                val root = cellRootOf(sectionViewName(obj, "cell") ?: cellClassName)
+                if (columns > 1 && GridRowHeight.equalizes(listOf(root))) out[index] = columns
+            }
+            return out
+        }
+
         @Composable
         private fun cellRootOf(cellClassName: String?): JsonObject? {
             if (cellClassName == null) return null
             val context = LocalContext.current
             return remember(cellClassName) {
                 DynamicLayoutLoader.init(context)
-                DynamicLayoutLoader.loadLayout(cellJsonNameOf(cellClassName))?.let { cellWithStyles(context, it) }
+                DynamicLayoutLoader.loadLayout(cellJsonNameOf(cellClassName))?.let {
+                    // Includes expanded first, so an image an included layout holds is seen (GridRowHeight).
+                    IncludeExpander.init(context)
+                    cellWithStyles(context, IncludeExpander.processIncludes(it.deepCopy()))
+                }
             }
         }
 

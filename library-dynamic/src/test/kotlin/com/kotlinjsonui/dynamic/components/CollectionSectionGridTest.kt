@@ -107,4 +107,15 @@ class CollectionSectionGridTest {
             rows(listOf(1, 2), listOf(2, 2), oneGrid = true)
         )
     }
+
+    // ── a section drawn a full-width item per row leaves no row part filled ──
+
+    /** [a0 a1 a2] in rows (the last row short), then b: no filler before b — the row item was full width. */
+    @Test
+    fun aRowSectionLeavesNoRowPartFilled() {
+        val rows = SectionShape(cells = 3, itemSpan = 1, header = false, footer = false, rowColumns = 2)
+        assertEquals(listOf(0, 0), breaks(2, rows, cells(2)))
+        // Before a row section, a part-filled row is still closed first.
+        assertEquals(listOf(0, 1), breaks(2, cells(1), rows))
+    }
 }

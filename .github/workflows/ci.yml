@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: v2.5.39 # jsonui-cli v2.5.39: a cell address counts across sections, a grid row sizes to its tallest matchParent cell, the conformance host compiles under allWarningsAsErrors
+      JSONUI_CLI_MANIFEST_REF: 5776a689aeb90152b7ddf37a5707570cb7346eb5 # jsonui-cli fix/lazy-grid-row-height (2.5.40, not tagged yet): shared/core/grid_row_height.json; move to the v2.5.40 tag
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
@@ -114,6 +114,9 @@ jobs:
           COPIES = [
               ("library-dynamic/src/test/resources/binding_vectors.json",
                "shared/core/binding_vectors.json"),
+              # Which grid cells sit their row's height (GridRowHeight; kjui's CollectionComponent reads the same).
+              ("library-dynamic/src/main/resources/com/kotlinjsonui/dynamic/grid_row_height.json",
+               "shared/core/grid_row_height.json"),
               ("library-dynamic/src/test/resources/include_ids_fixture.json",
                "shared/core/include_ids_fixture.json"),
               ("library-dynamic/src/test/resources/include_constraint_targets_fixture.json",

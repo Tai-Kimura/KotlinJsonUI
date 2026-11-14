@@ -25,9 +25,55 @@ import com.google.gson.JsonObject
  */
 internal object GridRowHeight {
 
+    /**
+     * How a grid row's cells sit in it:
+     * - [Mode.FILL] the row takes `height(IntrinsicSize.Min)` and its cell boxes `fillMaxHeight()`;
+     * - [Mode.OWN] a cell root of height matchParent holds an image whose height its picture decides
+     *   (jsonui-cli shared/core/grid_row_height.json, vendored as [RESOURCE]): IntrinsicSize.Min would take the
+     *   picture's own pixel height (a 128 px placeholder, a 600 px picture, measured on an emulator), so each cell
+     *   is its own height — its box measures it with no height bound, not the parent's remaining height. The row is
+     *   not aligned on Android, where iOS aligns it (jsonui-cli ticket kjui-collection-lazy-grid-and-flow-rows-do-
+     *   not-align-cell-heights). kjui's codegen reads the same table (CollectionComponent.cell_row_mode);
+     * - [Mode.NONE] as it was: no root of height matchParent, or a SubcomposeLayout in a cell.
+     */
+    enum class Mode { FILL, OWN, NONE }
+
+    fun mode(cellRoots: List<JsonObject?>): Mode {
+        if (cellRoots.none { rootFillsHeight(it) }) return Mode.NONE
+        if (cellRoots.any { it != null && subcomposes(it) }) return Mode.NONE
+        return if (cellRoots.any { it != null && contentSizedImage(it) }) Mode.OWN else Mode.FILL
+    }
+
     /** The row takes `height(IntrinsicSize.Min)` and its cell boxes `fillMaxHeight()`. */
-    fun equalizes(cellRoots: List<JsonObject?>): Boolean =
-        cellRoots.any { rootFillsHeight(it) } && cellRoots.none { it != null && subcomposes(it) }
+    fun equalizes(cellRoots: List<JsonObject?>): Boolean = mode(cellRoots) == Mode.FILL
+
+    /** Where the vendored table sits among this library's Java resources. */
+    const val RESOURCE: String = "/com/kotlinjsonui/dynamic/grid_row_height.json"
+
+    private val imageTypes: Set<String> by lazy {
+        val stream = GridRowHeight::class.java.getResourceAsStream(RESOURCE)
+            ?: throw IllegalStateException("KotlinJsonUI: $RESOURCE is not on the classpath (it ships inside library-dynamic)")
+        val root = stream.use { com.google.gson.JsonParser.parseReader(java.io.InputStreamReader(it, Charsets.UTF_8)) }.asJsonObject
+        root.getAsJsonObject("contentSizedImages").getAsJsonArray("types").map { it.asString }.toSet()
+    }
+
+    private val fixedHeight = Regex("""\A\d+(\.\d+)?\z""")
+
+    /**
+     * An image whose height its picture decides at or below [node] (styles merged and includes expanded by the
+     * caller): its type, read as its canonical type (TypeSynonyms), is in the table, and its height (or
+     * frame.height) is not a fixed number.
+     */
+    fun contentSizedImage(node: JsonObject): Boolean {
+        val type = stringOf(node, "type")
+        if (type != null && (com.kotlinjsonui.dynamic.TypeSynonyms.entries[type]?.canonical ?: type) in imageTypes) {
+            val height = node.get("height") ?: (node.get("frame") as? JsonObject)?.get("height")
+            val fixed = height != null && height.isJsonPrimitive &&
+                (height.asJsonPrimitive.isNumber || (height.asJsonPrimitive.isString && fixedHeight.matches(height.asString)))
+            if (!fixed) return true
+        }
+        return listOf("child", "children").any { key -> children(node.get(key)).any { contentSizedImage(it) } }
+    }
 
     fun rootFillsHeight(root: JsonObject?): Boolean {
         if (root == null) return false
