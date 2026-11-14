@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: 5b40f24b341e79276aea5d2f254207e4962ed9ca # jsonui-cli fix/lazy-grid-row-height (2.5.40, not tagged yet): shared/core/grid_row_height.json; move to the v2.5.40 tag
+      JSONUI_CLI_MANIFEST_REF: v2.5.40 # jsonui-cli v2.5.40: safe-area overlap for contentInset, lazy grid rows size to the tallest matchParent cell, cellWidth and cellHeight on every non-paging route
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
