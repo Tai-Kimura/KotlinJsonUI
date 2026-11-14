@@ -514,23 +514,7 @@ class DynamicSelectBoxComponent {
             // paddings / padding / the side keys become contentPadding (never a .padding() modifier, which would inset
             // the self-drawn border instead of the content): selectContentPadding, below.
 
-            // caretAttributes → the library's SelectBoxCaret. `src` resolves as
-            // a drawable name (Image's path: resolveDrawable, 0 = not found →
-            // the default glyph, reported by UnresolvedResource in debug
-            // builds); colours go through the same parser as the field's.
-            // The Date branch never reads this — a date picker has no
-            // closed-state caret (SSoT).
-            val caret = caretSpecOf(a)?.let { spec ->
-                val resId = spec.src?.let { ResourceResolver.resolveDrawable(it, data, context) } ?: 0
-                SelectBoxCaret(
-                    painter = if (resId != 0) painterResource(id = resId) else null,
-                    width = spec.width,
-                    height = spec.height,
-                    tintColor = ColorParser.parseColorStringWithBinding(spec.tintColor, data, context),
-                    background = ColorParser.parseColorStringWithBinding(spec.background, data, context),
-                    rightMargin = spec.rightMargin
-                )
-            }
+            val caret = selectBoxCaret(a, data, context)
 
             SelectBox(
                 value = selectedValue,
@@ -707,11 +691,36 @@ class DynamicSelectBoxComponent {
                 // paddings / padding as the select's own padding, as on SelectBox (SelectBoxDefaults when none)
                 contentPadding = selectContentPadding(json, data),
                 fontScaling = json.fontScalingAttr(),
-                maxFontScale = json.maxFontScaleAttr()
+                maxFontScale = json.maxFontScaleAttr(),
+                // The same closed-state caret as the list box's (DateSelectBox draws SelectBoxArrow since 2.5.36);
+                // caretAttributes reached SwiftJsonUI's date box and the web date input, not this one (ticket
+                // kjui-date-selectbox-caret-attributes-not-emitted).
+                caret = selectBoxCaret(a, data, context)
             )
         }
 
         // ── Helpers ──
+
+        /**
+         * caretAttributes → the library's SelectBoxCaret, for the list box and the Date box alike (SSoT
+         * SelectBox.caretAttributes: only the multiple / list-box mode has no closed-state caret). `src` resolves as a
+         * drawable name (Image's path: resolveDrawable, 0 = not found → the default glyph, reported by
+         * UnresolvedResource in debug builds); colours go through the same parser as the field's. Null when the
+         * object is absent: the library's own chevron.
+         */
+        @Composable
+        internal fun selectBoxCaret(a: SelectBoxAttributes, data: Map<String, Any>, context: android.content.Context): SelectBoxCaret? =
+            caretSpecOf(a)?.let { spec ->
+                val resId = spec.src?.let { ResourceResolver.resolveDrawable(it, data, context) } ?: 0
+                SelectBoxCaret(
+                    painter = if (resId != 0) painterResource(id = resId) else null,
+                    width = spec.width,
+                    height = spec.height,
+                    tintColor = ColorParser.parseColorStringWithBinding(spec.tintColor, data, context),
+                    background = ColorParser.parseColorStringWithBinding(spec.background, data, context),
+                    rightMargin = spec.rightMargin
+                )
+            }
 
         /**
          * A select's content padding side by side (the three faces' rule, ticket kjui-selectbox-fixed-56dp-ignores-
