@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: 7a09c2a253ecd80ff75c38f641c4ab8ebdae7ee8 # jsonui-cli fix/lazy-grid-row-height (2.5.40, not tagged yet): shared/core/grid_row_height.json; move to the v2.5.40 tag
+      JSONUI_CLI_MANIFEST_REF: 5776a689aeb90152b7ddf37a5707570cb7346eb5 # jsonui-cli fix/lazy-grid-row-height (2.5.40, not tagged yet): shared/core/grid_row_height.json; move to the v2.5.40 tag
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
