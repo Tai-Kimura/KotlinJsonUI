@@ -47,8 +47,8 @@ import kotlinx.coroutines.launch
  * Present: the component draws the caret itself — a box of [width] x [height]
  * dp filled with [background], the glyph ([painter] in its own colours, or the
  * default drop-down arrow tinted with [tintColor] when null), placed [rightMargin] dp from the
- * select's trailing edge (0 = flush against the edge, the UIKit contract this
- * object came from). The native indicator is not drawn.
+ * select's trailing edge (absent: where the default arrow sits, so the
+ * object's presence never moves it). The native indicator is not drawn.
  *
  * Both faces resolve `src` to a [Painter] before calling: the codegen emits
  * `painterResource(R.drawable.<name>)`, dynamic mode goes through
@@ -69,12 +69,20 @@ data class SelectBoxCaret(
     val tintColor: Color? = null,
     /** Fill of the caret's own box (width x height), not of the select. */
     val background: Color? = null,
-    /** Distance from the select's trailing edge to the caret's trailing edge, dp. */
-    val rightMargin: Int = 0
+    /**
+     * Distance from the select's trailing edge to the caret's trailing edge, dp. Null: where the default arrow sits
+     * without caretAttributes (the content padding's end; this overload's 16 dp row inset on the generic one), so
+     * the object's presence never moves the caret (the requester's ruling 2026-11-14, the three faces alike; ticket
+     * jui-selectbox-caret-right-margin-absent-differs-by-face). It was 0, flush against the edge, on Android alone.
+     */
+    val rightMargin: Int? = null
 )
 
 /** The default drop-down glyph is a 24dp vector (res/drawable/ic_arrow_drop_down.xml). */
 internal const val DEFAULT_CARET_GLYPH_DP = 24
+
+/** The generic overload's row inset, where its default arrow sits from the trailing edge. */
+internal const val GENERIC_ROW_INSET_DP = 16
 
 /**
  * How far the closed-state text must stop short of the row's end so it never
@@ -98,7 +106,7 @@ private fun SelectBoxCaretIndicator(
 ) {
     Box(
         modifier = modifier
-            .padding(end = caret.rightMargin.dp)
+            .padding(end = (caret.rightMargin ?: GENERIC_ROW_INSET_DP).dp)
             .size(
                 width = (caret.width ?: DEFAULT_CARET_GLYPH_DP).dp,
                 height = (caret.height ?: DEFAULT_CARET_GLYPH_DP).dp
@@ -504,7 +512,7 @@ fun <T> SelectBox(
     val textEndReserve = if (caret != null) {
         caretTextReserve(
             caretWidth = (caret.width ?: DEFAULT_CARET_GLYPH_DP).dp,
-            rightMargin = caret.rightMargin.dp,
+            rightMargin = (caret.rightMargin ?: GENERIC_ROW_INSET_DP).dp,
             endInset = 16.dp
         )
     } else 0.dp

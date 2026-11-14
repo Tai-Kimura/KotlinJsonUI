@@ -22,7 +22,7 @@ class SelectBoxCaretReserveTest {
 
     @Test
     fun aDefaultGlyphFlushAtTheEdgeStillNeedsRoomBeyondTheInset() {
-        // `{}`: 24dp glyph, rightMargin 0. The 16dp inset covers 16 of it.
+        // A 24dp glyph written flush at the edge (rightMargin 0). The 16dp inset covers 16 of it.
         assertEquals(8.dp, caretTextReserve(caretWidth = DEFAULT_CARET_GLYPH_DP.dp, rightMargin = 0.dp, endInset = 16.dp))
     }
 

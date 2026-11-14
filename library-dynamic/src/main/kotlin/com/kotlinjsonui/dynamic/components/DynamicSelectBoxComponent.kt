@@ -81,8 +81,8 @@ internal data class SelectBoxCaretSpec(
     val height: Int?,
     val tintColor: String?,
     val background: String?,
-    /** Absent: 0 — flush against the trailing edge, the UIKit contract. */
-    val rightMargin: Int
+    /** Absent: null - the library places the caret where the default arrow sits (SelectBoxCaret.rightMargin). */
+    val rightMargin: Int?
 )
 
 class DynamicSelectBoxComponent {
@@ -353,7 +353,7 @@ class DynamicSelectBoxComponent {
                 height = ResourceResolver.nestedNumber(bag, "height")?.toInt(),
                 tintColor = ResourceResolver.nestedString(bag, "tintColor"),
                 background = ResourceResolver.nestedString(bag, "background"),
-                rightMargin = ResourceResolver.nestedNumber(bag, "rightMargin")?.toInt() ?: 0
+                rightMargin = ResourceResolver.nestedNumber(bag, "rightMargin")?.toInt()
             )
         }
 

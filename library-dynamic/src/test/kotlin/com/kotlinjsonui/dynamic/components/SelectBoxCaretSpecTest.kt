@@ -46,12 +46,13 @@ class SelectBoxCaretSpecTest {
     }
 
     @Test
-    fun anEmptyObjectIsPresentWithEveryDefaultAndRightMarginZero() {
+    fun anEmptyObjectIsPresentWithEveryDefaultAndNoRightMargin() {
         // `{"rightMargin": 12}` alone is the SSoT's motivating shape; `{}` is
-        // its limit: the face draws its own caret, flush at the edge.
+        // its limit: the face draws its own caret where the default arrow sits
+        // (ticket jui-selectbox-caret-right-margin-absent-differs-by-face).
         val a = attrs("""{"type":"SelectBox","items":["One"],"caretAttributes":{}}""")
         assertEquals(
-            SelectBoxCaretSpec(null, null, null, null, null, rightMargin = 0),
+            SelectBoxCaretSpec(null, null, null, null, null, rightMargin = null),
             DynamicSelectBoxComponent.caretSpecOf(a)
         )
     }
@@ -70,6 +71,6 @@ class SelectBoxCaretSpecTest {
         val spec = DynamicSelectBoxComponent.caretSpecOf(a)!!
         assertNull(spec.width)
         assertNull("a blank src is no src", spec.src)
-        assertEquals("rightMargin falls to the contract default", 0, spec.rightMargin)
+        assertNull("rightMargin is absent: the library's default place", spec.rightMargin)
     }
 }
