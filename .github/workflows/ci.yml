@@ -133,6 +133,9 @@ jobs:
                "shared/core/reorder_vectors.json"),
               ("library-dynamic/src/test/resources/responsive_resolution_vectors.json",
                "shared/core/responsive_resolution_vectors.json"),
+              # accessibilitySelected (ControlAccessibilitySelectedVectorsTest).
+              ("library-dynamic/src/test/resources/control_accessibility_vectors.json",
+               "shared/core/control_accessibility_vectors.json"),
               ("library-dynamic/src/test/resources/image_accessibility_vectors.json",
                "shared/core/image_accessibility_vectors.json"),
               ("library-dynamic/src/test/resources/tap_accessibility_vectors.json",

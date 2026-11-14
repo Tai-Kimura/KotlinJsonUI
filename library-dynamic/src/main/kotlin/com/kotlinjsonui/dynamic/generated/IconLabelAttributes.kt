@@ -10,6 +10,8 @@ package com.kotlinjsonui.dynamic.generated
 data class IconLabelAttributes(
     /** Attributes shared across all components. */
     val common: CommonAttributes,
+    /** Whether screen readers are told this control is the selected one (iOS the .isSelected trait, Android semantics selected, web aria-pressed): a boolean or a binding, as with two buttons of which one is chosen. `false` tells nothing, on all three platforms (VoiceOver says nothing of a control that is not selected; the other two follow it). It takes effect where the control is one button to a screen reader: a Button, and a View or IconLabel whose onClick makes it one button (it holds no control of its own: the tap rule's button / combine shape, as accessibilityLabel's View). Elsewhere the build warns and nothing is told. Radio, CheckBox, Switch, Segment, TabView and SelectBox say their own state. */
+    val accessibilitySelected: AttrValue<Boolean>? = null,
     /** Accessibility description of the icon (kjui iconlabel_component). */
     val contentDescription: String? = null,
     /** Font name */
@@ -74,6 +76,7 @@ data class IconLabelAttributes(
          * the shared `common` set (public metadata contract).
          */
         val declaredAttributes: Set<String> = CommonAttributes.declaredAttributes + setOf(
+            "accessibilitySelected",
             "contentDescription",
             "font",
             "fontColor",
@@ -114,6 +117,7 @@ data class IconLabelAttributes(
          */
         fun parse(json: Map<String, Any?>, canonicalOnly: Boolean = false): IconLabelAttributes = IconLabelAttributes(
             common = CommonAttributes.parse(json, canonicalOnly),
+            accessibilitySelected = AttrCoerce.attrValue(AttrCoerce.lookup(json, "accessibilitySelected")) { AttrCoerce.boolean(it) },
             contentDescription = AttrCoerce.string(AttrCoerce.lookup(json, "contentDescription")),
             font = AttrCoerce.string(AttrCoerce.lookup(json, "font")),
             fontColor = AttrCoerce.string(AttrCoerce.lookup(json, "fontColor")),
