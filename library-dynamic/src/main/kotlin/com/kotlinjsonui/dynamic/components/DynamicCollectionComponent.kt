@@ -59,6 +59,7 @@ import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.components.LocalCollectionScrollMemory
 import com.kotlinjsonui.dynamic.UnappliedAttributes
+import com.kotlinjsonui.dynamic.IncludeExpander
 import com.kotlinjsonui.dynamic.generated.AttrValue
 import com.kotlinjsonui.dynamic.generated.CollectionAttributes
 import com.kotlinjsonui.dynamic.generated.DimensionValue
@@ -1704,7 +1705,10 @@ class DynamicCollectionComponent {
                                 } else {
                                     // A cell root of height matchParent fills the ROW, at its
                                     // tallest cell, not what the screen has left (GridRowHeight).
-                                    val equalizes = GridRowHeight.equalizes(row.cells.map { (s, _) -> cellRootOf(cellNameOf(s)) })
+                                    val rowMode = GridRowHeight.mode(row.cells.map { (s, _) -> cellRootOf(cellNameOf(s)) })
+                                    val equalizes = rowMode == GridRowHeight.Mode.FILL
+                                    // A cell holding an image its picture sizes: its own height (GridRowHeight.Mode.OWN).
+                                    val ownHeight = rowMode == GridRowHeight.Mode.OWN
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                             .then(if (equalizes) Modifier.height(IntrinsicSize.Min) else Modifier),
@@ -1717,6 +1721,7 @@ class DynamicCollectionComponent {
                                                     .weight(1f)
                                                     .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
                                                     .then(if (equalizes) Modifier.fillMaxHeight() else Modifier)
+                                                    .then(if (ownHeight) Modifier.wrapContentHeight(Alignment.Top, unbounded = true) else Modifier)
                                                     .then(placeOf(s, cellIndex)),
                                                 contentAlignment = gravityAlignment
                                             ) {
@@ -2875,7 +2880,11 @@ class DynamicCollectionComponent {
             val context = LocalContext.current
             return remember(cellClassName) {
                 DynamicLayoutLoader.init(context)
-                DynamicLayoutLoader.loadLayout(cellJsonNameOf(cellClassName))?.let { cellWithStyles(context, it) }
+                DynamicLayoutLoader.loadLayout(cellJsonNameOf(cellClassName))?.let {
+                    // Includes expanded first, so an image an included layout holds is seen (GridRowHeight).
+                    IncludeExpander.init(context)
+                    cellWithStyles(context, IncludeExpander.processIncludes(it.deepCopy()))
+                }
             }
         }
 
