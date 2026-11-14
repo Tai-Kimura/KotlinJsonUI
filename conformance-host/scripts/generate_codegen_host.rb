@@ -188,19 +188,31 @@ File.write(File.join(build_dir, 'kjui.config.json'), JSON.pretty_generate(
   'compose' => { 'output_directory' => 'kotlin/generated' }
 ) + "\n")
 
-puts "[codegen-host] running kjui build (#{kjui_tools})"
-build_log = File.join(host_dir, 'codegen-build.log')
-ok = system({ 'PWD' => build_dir }, RbConfig.ruby, kjui_bin, 'build',
-            chdir: build_dir, out: build_log, err: %i[child out])
-abort "error: kjui build failed — see #{build_log}" unless ok
+# Nothing staged — an `only` whose fixtures none applies to Android (a web-
+# or iOS-only fixture) — leaves kjui nothing to build, and it writes no
+# kotlin: the script stopped there and the android-codegen job failed on a
+# run with no Android fixture in it. The host is then the empty registry
+# below (jsonui-cli ticket kjui-codegen-host-empty-registry-on-an-assertable-
+# only-run, its family).
+nothing_staged = entries.empty? && compile_only.empty? && cell_companions.empty?
+if nothing_staged
+  puts "[codegen-host] no layout staged — kjui build skipped, the registry is empty"
+  FileUtils.mkdir_p(codegen_src)
+else
+  puts "[codegen-host] running kjui build (#{kjui_tools})"
+  build_log = File.join(host_dir, 'codegen-build.log')
+  ok = system({ 'PWD' => build_dir }, RbConfig.ruby, kjui_bin, 'build',
+              chdir: build_dir, out: build_log, err: %i[child out])
+  abort "error: kjui build failed — see #{build_log}" unless ok
 
-rewrite_cell_wrappers(cell_companions, build_dir, PACKAGE)
+  rewrite_cell_wrappers(cell_companions, build_dir, PACKAGE)
 
-# Copy the whole generated kotlin tree (views/data/viewmodels/generated).
-FileUtils.mkdir_p(codegen_src)
-src_kotlin = File.join(build_dir, 'src', 'kotlin')
-abort "error: kjui build produced no kotlin output" unless File.directory?(src_kotlin)
-FileUtils.cp_r(File.join(src_kotlin, '.'), codegen_src)
+  # Copy the whole generated kotlin tree (views/data/viewmodels/generated).
+  FileUtils.mkdir_p(codegen_src)
+  src_kotlin = File.join(build_dir, 'src', 'kotlin')
+  abort "error: kjui build produced no kotlin output" unless File.directory?(src_kotlin)
+  FileUtils.cp_r(File.join(src_kotlin, '.'), codegen_src)
+end
 
 # Generated resources (extracted strings/colors): the generated views
 # reference R.string.* / R.color.*, so the staged res tree rides along
@@ -288,7 +300,11 @@ registry << "import androidx.compose.runtime.collectAsState\n"
 registry << imports.sort.join("\n")
 registry << "\n\nobject CodegenFixtureEntries {\n"
 registry << "    val map: Map<String, @Composable () -> Unit> =\n"
-registry << "        " + (0...chunks.size).map { |ci| "chunk#{ci}()" }.join(" +\n        ") + "\n\n"
+# No visual fixture staged (an `only` of assertable / interactive fixtures,
+# which are compiled but not drawn) leaves no chunk: the sum of none was an
+# empty right-hand side and the registry did not compile (jsonui-cli ticket
+# kjui-codegen-host-empty-registry-on-an-assertable-only-run).
+registry << "        " + (chunks.empty? ? 'emptyMap()' : (0...chunks.size).map { |ci| "chunk#{ci}()" }.join(" +\n        ")) + "\n\n"
 registry << chunk_funcs.join("\n").gsub(/^/, '    ').gsub(/^    $/, '')
 registry << "\n    /** testBridge fixture id → the staged layout's screen id (its ScreenMarker / bridge). */\n"
 registry << "    val screenIds: Map<String, String> = mapOf(\n"
