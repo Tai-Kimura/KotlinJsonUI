@@ -661,11 +661,18 @@ class DynamicRadioComponent {
         /** A Radio's label. `fallbackColor` is the path's colour when none is declared. */
         @Composable
         private fun RadioLabel(text: String, style: LabelStyle, fallbackColor: Color = Color.Black) {
+            // Through the app's fontProvider whatever the label declares (P1); a null slot draws as before.
+            val font = ResourceResolver.providerFont(
+                weight = style.weight ?: androidx.compose.material3.LocalTextStyle.current.fontWeight,
+                size = style.size?.sp,
+            )
             Text(
                 text = text,
                 color = style.color ?: fallbackColor,
-                fontWeight = style.weight,
-                fontSize = jsonUIFontSize(style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale),
+                fontWeight = font.weight ?: style.weight,
+                fontFamily = font.family,
+                fontStyle = font.style,
+                fontSize = jsonUIFontSize(font.size ?: style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale),
                 letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing(style.fontScaling, style.maxFontScale)
             )
         }

@@ -116,6 +116,16 @@ class DynamicButtonComponent {
             val fontFamily = ResourceResolver.resolveFontResource(
                 TypedAttrs.string(a.fontFamily, data), context
             )
+            // Through the app's fontProvider whatever the button declares (P1, as the generated Button does):
+            // FontSpec carries the family name, weight and size it declares; the family the provider leaves null is
+            // the res/font lookup above, the other null slots the button's own.
+            val providedFont = ResourceResolver.providerFont(
+                family = TypedAttrs.string(a.fontFamily, data),
+                // The weight the button draws (its default when none is declared): the provider returns that file.
+                weight = fontWeight,
+                size = a.fontSize?.toFloat()?.sp,
+                fallbackFamily = fontFamily,
+            )
 
             // Colors (supports @{binding})
             val textColor = ColorParser.parseColorStringWithBinding(
@@ -280,10 +290,11 @@ class DynamicButtonComponent {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = text,
-                            fontSize = json.fontSized(fontSize.sp),
+                            fontSize = json.fontSized(providedFont.size ?: fontSize.sp),
                             letterSpacing = json.letterSpaced(),
-                            fontWeight = fontWeight,
-                            fontFamily = fontFamily,
+                            fontWeight = providedFont.weight ?: fontWeight,
+                            fontFamily = providedFont.family,
+                            fontStyle = providedFont.style,
                             textAlign = textAlign
                         )
                     }
@@ -297,10 +308,11 @@ class DynamicButtonComponent {
                     // and filling would stretch it to its parent.
                     Text(
                         text = text,
-                        fontSize = json.fontSized(fontSize.sp),
+                        fontSize = json.fontSized(providedFont.size ?: fontSize.sp),
                         letterSpacing = json.letterSpaced(),
-                        fontWeight = fontWeight,
-                        fontFamily = fontFamily,
+                        fontWeight = providedFont.weight ?: fontWeight,
+                        fontFamily = providedFont.family,
+                        fontStyle = providedFont.style,
                         textAlign = textAlign,
                         modifier = if (textAlign != null && ownsWidth(json)) Modifier.fillMaxWidth() else Modifier
                     )

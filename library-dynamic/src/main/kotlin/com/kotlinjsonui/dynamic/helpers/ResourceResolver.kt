@@ -5,7 +5,10 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import com.google.gson.JsonObject
+import androidx.compose.ui.unit.TextUnit
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.FontSpec
+import com.kotlinjsonui.core.ResolvedFont
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.ResourceCache
 import com.kotlinjsonui.dynamic.UnresolvedResource
@@ -382,6 +385,23 @@ object ResourceResolver {
     /** A nested bag's key as Double, or null when absent or another type. */
     fun nestedNumber(bag: Map<String, Any?>?, key: String): Double? =
         (bag?.get(key) as? Number)?.toDouble()
+
+    /**
+     * The app's font for a Dynamic text, whatever the component declares (the requester's P1, ticket
+     * jui-font-provider-not-reached-without-font-attributes-android-web): Configuration.Font.resolve of the
+     * family name, weight and size it declares (all null when it declares none), as the generated code calls it.
+     * A family the provider leaves null falls to [fallbackFamily] (the `res/font` lookup the component did before);
+     * the other null slots are the component's own, as before.
+     */
+    fun providerFont(
+        family: String? = null,
+        weight: FontWeight? = null,
+        size: TextUnit? = null,
+        fallbackFamily: FontFamily? = null,
+    ): ResolvedFont {
+        val resolved = Configuration.Font.resolve(FontSpec(family = family, weight = weight, size = size, italic = false))
+        return if (resolved.family == null && fallbackFamily != null) resolved.copy(family = fallbackFamily) else resolved
+    }
 
     /**
      * The family for a component declaring `fontFamily` and/or `font`:

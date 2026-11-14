@@ -106,6 +106,16 @@ class DynamicTextViewComponent {
             val fieldFontFamily = ResourceResolver.resolveFontFamily(
                 TypedAttrs.string(a.fontFamily, data), fieldFontSpelling, context
             )
+            // Through the app's fontProvider whatever the view declares (P1, as the generated TextView does):
+            // FontSpec carries the family name, weight and size it declares; the family the provider leaves null is
+            // the res/font lookup above, the other null slots the view's own.
+            val providedFont = ResourceResolver.providerFont(
+                family = TypedAttrs.string(a.fontFamily, data)
+                    ?: fieldFontSpelling?.takeIf { ResourceResolver.fontWeightFor(it) == null },
+                weight = fieldFontWeight,
+                size = TypedAttrs.int(a.fontSize, data)?.sp,
+                fallbackFamily = fieldFontFamily,
+            )
 
             // The node's background, or null: CustomTextField then takes its
             // own defaults, the focused one included — what kjui's codegen
@@ -265,11 +275,12 @@ class DynamicTextViewComponent {
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
-                        fontSize = json.fontSized(fontSize.sp),
+                        fontSize = json.fontSized(providedFont.size ?: fontSize.sp),
                         letterSpacing = json.letterSpaced(),
                         color = textColor,
-                        fontWeight = fieldFontWeight,
-                        fontFamily = fieldFontFamily
+                        fontWeight = providedFont.weight ?: fieldFontWeight,
+                        fontFamily = providedFont.family,
+                        fontStyle = providedFont.style
                     ),
                     keyboardOptions = keyboardOptions,
                     contentPadding = contentPadding,
@@ -318,11 +329,12 @@ class DynamicTextViewComponent {
                     maxLines = maxLines,
                     singleLine = false,
                     textStyle = TextStyle(
-                        fontSize = json.fontSized(fontSize.sp),
+                        fontSize = json.fontSized(providedFont.size ?: fontSize.sp),
                         letterSpacing = json.letterSpaced(),
                         color = textColor,
-                        fontWeight = fieldFontWeight,
-                        fontFamily = fieldFontFamily
+                        fontWeight = providedFont.weight ?: fieldFontWeight,
+                        fontFamily = providedFont.family,
+                        fontStyle = providedFont.style
                     ),
                     keyboardOptions = keyboardOptions,
                     contentPadding = contentPadding,

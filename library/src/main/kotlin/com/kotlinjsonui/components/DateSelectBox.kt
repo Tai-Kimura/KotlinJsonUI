@@ -6,6 +6,7 @@ import com.kotlinjsonui.core.AppLocale
 import com.kotlinjsonui.core.DateFormats
 import androidx.compose.foundation.background
 import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.ResolvedFont
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -66,6 +67,11 @@ fun DateSelectBox(
     cornerRadius: Int = 8,
     fontSize: Int = 16,
     fontWeight: FontWeight = FontWeight.Normal,
+    /**
+     * The app's font for the text (Configuration.Font.resolve of the component's FontSpec): its family, weight,
+     * size and style win where it gives one; null, or a null slot, draws [fontSize] / [fontWeight] as before.
+     */
+    resolvedFont: ResolvedFont? = null,
     /** Whether the text follows the system text size (null: Configuration.Font.scaling); see FontScaling. */
     fontScaling: Boolean? = null,
     /** At most fontSize × this when following (null: Configuration.Font.maxScale); see FontScaling. */
@@ -189,9 +195,11 @@ fun DateSelectBox(
             Text(
                 text = if (displayText.isNotEmpty()) displayText else (placeholder ?: ""),
                 color = if (displayText.isNotEmpty()) textColor else hintColor,
-                fontSize = jsonUIFontSize(fontSize.sp, fontScaling, maxFontScale),
+                fontSize = jsonUIFontSize(resolvedFont?.size ?: fontSize.sp, fontScaling, maxFontScale),
+                fontFamily = resolvedFont?.family,
+                fontStyle = resolvedFont?.style,
                 letterSpacing = jsonUILetterSpacing(fontScaling, maxFontScale),
-                fontWeight = fontWeight,
+                fontWeight = resolvedFont?.weight ?: fontWeight,
                 modifier = Modifier.weight(1f)
             )
             SelectBoxArrow(caret, defaultTint = textColor)

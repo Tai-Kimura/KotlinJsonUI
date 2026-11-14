@@ -243,12 +243,20 @@ class DynamicIconLabelComponent {
                     val labelBase = a.fontSize?.let {
                         themeBase.copy(lineHeight = json.fontSized((it.toFloat() * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp))
                     } ?: themeBase
+                    // Through the app's fontProvider whatever the text declares (P1): FontSpec carries the declared
+                    // weight and size (none when undeclared), and a null slot draws as before.
+                    val font = ResourceResolver.providerFont(
+                        weight = fontWeight ?: labelBase.fontWeight,
+                        size = a.fontSize?.toFloat()?.sp,
+                    )
                     Text(
                         text = text,
-                        fontSize = json.fontSized(fontSize.sp),
+                        fontSize = json.fontSized(font.size ?: fontSize.sp),
                         letterSpacing = json.letterSpaced(),
                         color = fontColor,
-                        fontWeight = fontWeight,
+                        fontWeight = font.weight ?: fontWeight,
+                        fontFamily = font.family,
+                        fontStyle = font.style,
                         style = shadowStyle?.let { labelBase.merge(it) } ?: labelBase
                     )
                 }

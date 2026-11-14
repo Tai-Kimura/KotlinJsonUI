@@ -14,6 +14,7 @@ import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
 import com.kotlinjsonui.dynamic.helpers.ColorParser
 import com.kotlinjsonui.dynamic.helpers.ResourceResolver
+import androidx.compose.ui.unit.TextUnit
 import com.kotlinjsonui.dynamic.rememberTypedAttrs
 import android.content.Context
 import androidx.compose.ui.platform.LocalContext
@@ -232,13 +233,23 @@ class DynamicSegmentComponent {
                             onClick?.invoke()
                         },
                         text = {
+                            // Resolved here, where the tab's text style (its weight) is the current one (P1).
+                            val segmentFont = ResourceResolver.providerFont(
+                                weight = androidx.compose.material3.LocalTextStyle.current.fontWeight
+                            )
                             Text(
                                 text = segment,
                                 color = if (selectedIndex == index) {
                                     selectedColor ?: Color.Unspecified
                                 } else {
                                     normalColor ?: Color.Unspecified
-                                }
+                                },
+                                // Through the app's fontProvider (P1): a Segment declares no font attribute, so
+                                // FontSpec is empty and a null slot draws the tab's style as before.
+                                fontFamily = segmentFont.family,
+                                fontWeight = segmentFont.weight,
+                                fontSize = segmentFont.size ?: TextUnit.Unspecified,
+                                fontStyle = segmentFont.style
                             )
                         }
                     )

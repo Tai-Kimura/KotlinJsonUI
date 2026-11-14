@@ -192,6 +192,15 @@ class DynamicTextComponent {
                 hlFont != null -> resolveFontFamilyAttr(a, context, data)
                 else -> resolveFontFamily(a, context, data)
             }
+            // Through the app's fontProvider whatever the label declares (P1, as the generated Label always did):
+            // FontSpec carries the family name, weight and size it declares; the family the provider leaves null is
+            // the res/font lookup above, the other null slots the label's own.
+            val providedFont = ResourceResolver.providerFont(
+                family = declaredFamilyName(a, hlFont, data),
+                weight = fontWeight,
+                size = fontSize?.sp,
+                fallbackFamily = fontFamily,
+            )
 
             // Text decoration
             // The object face's colour/offset (the drawBehind seam): a face
@@ -292,11 +301,12 @@ class DynamicTextComponent {
                 onTextLayout = { lineState?.layout = it },
                 // No declared size inherits LocalTextStyle (the codegen emit
                 // is `resolved.size ?: TextUnit.Unspecified` — same rule).
-                fontSize = json.fontSized(fontSize?.sp ?: TextUnit.Unspecified),
+                fontSize = json.fontSized(providedFont.size ?: fontSize?.sp ?: TextUnit.Unspecified),
                 letterSpacing = json.letterSpaced(),
                 color = fontColor ?: Color.Unspecified,
-                fontWeight = fontWeight,
-                fontFamily = fontFamily,
+                fontWeight = providedFont.weight ?: fontWeight,
+                fontFamily = providedFont.family,
+                fontStyle = providedFont.style,
                 textAlign = textAlign,
                 textDecoration = textDecoration,
                 maxLines = maxLines,
@@ -494,6 +504,17 @@ class DynamicTextComponent {
                 return DataBindingContext.resolveString(s, data)
             }
             return s
+        }
+
+        /** The family name the label declares (fontFamily, else a `font` that is not a weight), for FontSpec. */
+        private fun declaredFamilyName(a: LabelAttributes, hlFont: String?, data: Map<String, Any>): String? {
+            TypedAttrs.string(a.fontFamily, data)?.let { return it }
+            val font = hlFont ?: TypedAttrs.string(a.font, data) ?: return null
+            // The same weight-name test resolveFontFamily makes below.
+            if (!WEIGHT_NAMES.containsKey(font.lowercase())) {
+                return font
+            }
+            return null
         }
 
         private fun resolveFontFamily(
@@ -731,6 +752,13 @@ class DynamicTextComponent {
             // height than its codegen twin wherever the app theme sets one
             // (downstream hour rows, 2026-08-10).
             var style = androidx.compose.material3.LocalTextStyle.current
+            // Through the app's fontProvider (P1): a slot it gives wins over the declared one below.
+            val provided = ResourceResolver.providerFont(
+                family = declaredFamilyName(a, null, data),
+                weight = resolveFontWeight(a, data),
+                size = fontSize?.sp,
+                fallbackFamily = resolveFontFamily(a, context, data),
+            )
 
             fontSize?.let {
                 style = style.copy(
@@ -751,6 +779,15 @@ class DynamicTextComponent {
 
             resolveFontFamily(a, context, data)?.let {
                 style = style.copy(fontFamily = it)
+            }
+            provided.family?.let { style = style.copy(fontFamily = it) }
+            provided.weight?.let { style = style.copy(fontWeight = it) }
+            provided.style?.let { if (it != style.fontStyle) style = style.copy(fontStyle = it) }
+            provided.size?.takeIf { it != fontSize?.sp }?.let { size ->
+                style = style.copy(
+                    fontSize = json?.fontSized(size) ?: jsonUIFontSize(size),
+                    letterSpacing = json?.letterSpaced() ?: com.kotlinjsonui.core.jsonUILetterSpacing()
+                )
             }
 
             resolveTextAlign(a, json)?.let {

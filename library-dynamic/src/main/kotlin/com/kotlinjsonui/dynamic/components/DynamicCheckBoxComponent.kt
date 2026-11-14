@@ -22,6 +22,7 @@ import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.google.gson.JsonObject
 import com.kotlinjsonui.dynamic.TypedAttrs
@@ -276,18 +277,33 @@ class DynamicCheckBoxComponent {
 
                 // fontScaling / maxFontScale alone take the styled branch too: the plain Text(label) followed the
                 // system's text size whatever the CheckBox declared (conformance CheckBox/fontScaling__false).
-                if (fontSize != null || fontColor != null || fontWeightValue != null ||
+                // Through the app's fontProvider whatever the label declares (P1); a null slot draws as before.
+                // The weight handed over is the one the label draws when it declares none (P1: the provider then
+                // returns the font file it drew before).
+                val styled = fontSize != null || fontColor != null || fontWeightValue != null ||
                     json.fontScalingAttr() != null || json.maxFontScaleAttr() != null
-                ) {
+                val labelFont = ResourceResolver.providerFont(
+                    weight = fontWeightValue ?: if (styled) FontWeight.Normal else androidx.compose.material3.LocalTextStyle.current.fontWeight,
+                    size = fontSize?.sp,
+                )
+                if (styled) {
                     Text(
                         text = labelText,
-                        fontSize = json.fontSized(fontSize?.sp ?: 16.sp),
+                        fontSize = json.fontSized(labelFont.size ?: fontSize?.sp ?: 16.sp),
                         letterSpacing = json.letterSpaced(),
                         color = fontColor ?: Color.Unspecified,
-                        fontWeight = fontWeightValue ?: FontWeight.Normal
+                        fontWeight = labelFont.weight ?: fontWeightValue ?: FontWeight.Normal,
+                        fontFamily = labelFont.family,
+                        fontStyle = labelFont.style
                     )
                 } else {
-                    Text(text = labelText)
+                    Text(
+                        text = labelText,
+                        fontSize = labelFont.size ?: TextUnit.Unspecified,
+                        fontWeight = labelFont.weight,
+                        fontFamily = labelFont.family,
+                        fontStyle = labelFont.style
+                    )
                 }
             }
         }
