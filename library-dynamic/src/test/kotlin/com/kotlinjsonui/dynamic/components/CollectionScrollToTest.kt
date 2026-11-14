@@ -280,4 +280,39 @@ class CollectionScrollToTest {
             cases.map { (anchor, reverse) -> DynamicCollectionComponent.columnContentAlignment(anchor, reverse) }
         )
     }
+
+    // ── a section drawn a full-width item per row (gridRowColumns) ─────
+    // jsonui-cli kjui-collection-lazy-grid-and-flow-rows-do-not-align-cell-heights: the cell's row is the item.
+
+    /** [a0 a1 a2 a3 a4] in rows of 2 (three items), then b in cells: a2 is in item 1, b0 is item 3. */
+    @Test
+    fun aRowSectionCountsItsRows() {
+        val rows = listOf(
+            ScrollSection(0, breakBefore = false, header = false, cells = a, footer = false, rowColumns = 2),
+            ScrollSection(1, breakBefore = false, header = false, cells = b, footer = false),
+        )
+        assertEquals(listOf(0, 0, 1, 1, 2, 3, 4), listOf(0, 1, 2, 3, 4, 5, 6).map { item(it, rows) })
+    }
+
+    /** Cells first, then rows of 3 after a header: b0..b2 are item 7 (H a0..a4 F H, then row 0), b7 item 9. */
+    @Test
+    fun aRowSectionAfterACellSection() {
+        val rows = listOf(
+            ScrollSection(0, breakBefore = false, header = true, cells = a, footer = true),
+            ScrollSection(1, breakBefore = false, header = true, cells = b, footer = false, rowColumns = 3),
+        )
+        assertEquals(listOf(1, 5, 8, 8, 8, 9, 10), listOf(0, 4, 5, 6, 7, 8, 12).map { item(it, rows) })
+    }
+
+    /** Both sections in rows of 2, and a key names its cell's row. */
+    @Test
+    fun twoRowSectionsAndAKey() {
+        val rows = listOf(
+            ScrollSection(0, breakBefore = false, header = false, cells = a, footer = false, rowColumns = 2),
+            ScrollSection(1, breakBefore = false, header = false, cells = b, footer = false, rowColumns = 2),
+        )
+        assertEquals(listOf(0, 2, 3, 6), listOf(0, 4, 5, 12).map { item(it, rows) })
+        assertEquals(1, item("k3", rows, key = "key"))
+        assertEquals(4, item("x2", rows, key = "key"))
+    }
 }
