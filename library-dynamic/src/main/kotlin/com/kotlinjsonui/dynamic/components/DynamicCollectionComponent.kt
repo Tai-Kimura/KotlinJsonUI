@@ -640,6 +640,7 @@ class DynamicCollectionComponent {
                     lineSpacing = lineSpacing,
                     contentPadding = contentPadding,
                     cellHeight = cellHeight,
+                    cellWidth = cellWidth,
                     gravityAlignment = gravityAlignment,
                     onItemAppear = onItemAppear,
                     collectionId = collectionId,
@@ -1598,6 +1599,33 @@ class DynamicCollectionComponent {
          * Non-lazy Column-based collection for wrapContent height.
          * Avoids crash from nesting LazyVerticalGrid inside another Lazy container.
          */
+        /**
+         * The declared cell size (cellWidth / cellHeight) on the vertical non-lazy routes (lazy none,
+         * wrapContent, the non-lazy grid), as the lazy routes draw it: the cell anchored topStart at the
+         * declared size and clipped there (jsonui-cli ticket collection-cellwidth-cellheight-unread-on-
+         * some-routes; these routes read cellHeight alone until then, and cellWidth not at all). Neither
+         * declared: the cell as it was.
+         */
+        @Composable
+        private fun DeclaredCellFrame(
+            cellWidth: androidx.compose.ui.unit.Dp?,
+            cellHeight: androidx.compose.ui.unit.Dp?,
+            content: @Composable () -> Unit,
+        ) {
+            if (cellWidth == null && cellHeight == null) {
+                content()
+                return
+            }
+            Box(
+                modifier = Modifier
+                    .wrapContentSize(align = Alignment.TopStart)
+                    .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
+                    .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
+                    .clipToBounds(),
+                contentAlignment = Alignment.TopStart
+            ) { content() }
+        }
+
         @Composable
         private fun renderNonLazy(
             reorderState: CollectionReorderState? = null,
@@ -1620,6 +1648,7 @@ class DynamicCollectionComponent {
             gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null
         ,
+            cellWidth: androidx.compose.ui.unit.Dp? = null,
             chrome: ListChrome? = null,
             collectionId: String? = null,
             scrollTargets: FlowScrollTargets? = null,
@@ -1688,8 +1717,10 @@ class DynamicCollectionComponent {
                                                 .then(placeOf(s, cellIndex)),
                                             contentAlignment = gravityAlignment
                                         ) {
-                                            renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
-                                                reorderRoot = reorderState != null, reorderHandle = reorderHandle, address = cellBase[s] + cellIndex)
+                                            DeclaredCellFrame(cellWidth, cellHeight) {
+                                                renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                    reorderRoot = reorderState != null, reorderHandle = reorderHandle, address = cellBase[s] + cellIndex)
+                                            }
                                         }
                                     }
                                     if (reorderState != null) {
@@ -1722,8 +1753,10 @@ class DynamicCollectionComponent {
                                                     .then(placeOf(s, cellIndex)),
                                                 contentAlignment = gravityAlignment
                                             ) {
-                                                renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
-                                                    address = cellBase[s] + cellIndex)
+                                                DeclaredCellFrame(cellWidth, cellHeight) {
+                                                    renderCellView(cellNameOf(s), item, cellIndex, data, onItemAppear, chrome, collectionId = collectionId,
+                                                        address = cellBase[s] + cellIndex)
+                                                }
                                             }
                                         }
                                         // A short last row keeps the grid's column width.
