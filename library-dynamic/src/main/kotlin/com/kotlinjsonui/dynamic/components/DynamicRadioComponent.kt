@@ -673,7 +673,11 @@ class DynamicRadioComponent {
                 fontFamily = font.family,
                 fontStyle = font.style,
                 fontSize = jsonUIFontSize(font.size ?: style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale),
-                letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing(style.fontScaling, style.maxFontScale)
+                letterSpacing = com.kotlinjsonui.core.jsonUILetterSpacing(style.fontScaling, style.maxFontScale),
+                lineHeight = com.kotlinjsonui.core.jsonUILineHeight(
+                    jsonUIFontSize(font.size ?: style.size?.sp ?: TextUnit.Unspecified, style.fontScaling, style.maxFontScale),
+                    style.fontScaling, style.maxFontScale
+                )
             )
         }
 

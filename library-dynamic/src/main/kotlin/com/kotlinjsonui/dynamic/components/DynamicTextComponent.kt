@@ -703,12 +703,20 @@ class DynamicTextComponent {
                 ?: TypedAttrs.float(a.lineHeightMultiple, data)
             val lineSpacing = TypedAttrs.float(a.lineSpacing, data)
             // The line height follows the text size as the font size does (fontScaling / maxFontScale).
-            val lineHeight = when {
+            val ownLineHeight = when {
                 lineHeightMultiple != null -> LabelLineHeight.multiple(fontSize, lineHeightMultiple, base, density)
                 lineSpacing != null -> LabelLineHeight.spaced(fontSize, lineSpacing, base, density)
                 fontSize != null -> (fontSize * LabelLineHeight.DECLARED_FONT_SIZE_RATIO).sp
                 else -> null
-            }?.let { json?.fontSized(it) ?: jsonUIFontSize(it) }
+            }
+            // Its own line height or, with none, the theme's — as the line box the rule gives, relative to the drawn
+            // size (jsonUILineHeight; ticket kjui-theme-line-height-scales-under-font-scaling-false).
+            val lineHeight = if (json != null) {
+                json.lineHeighted(
+                    fontSize?.let { json.fontSized(it.sp) } ?: TextUnit.Unspecified,
+                    ownLineHeight ?: TextUnit.Unspecified
+                ).takeIf { ownLineHeight != null || it != base.lineHeight }
+            } else ownLineHeight?.let { jsonUIFontSize(it) }
             lineHeight?.let { style = (style ?: base).copy(lineHeight = it) }
 
             // Text shadow
@@ -766,6 +774,8 @@ class DynamicTextComponent {
                     letterSpacing = json?.letterSpaced() ?: com.kotlinjsonui.core.jsonUILetterSpacing()
                 )
             }
+            val drawnSize = fontSize?.let { json?.fontSized(it.sp) ?: jsonUIFontSize(it.sp) } ?: TextUnit.Unspecified
+            style = style.copy(lineHeight = json?.lineHeighted(drawnSize) ?: com.kotlinjsonui.core.jsonUILineHeight(drawnSize))
 
             ColorParser.parseColorStringWithBinding(
                 TypedAttrs.rawString(a.fontColor), data, context

@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.kotlinjsonui.core.jsonUIFontSize
 import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUILineHeight
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -38,10 +39,13 @@ class FontScalingDrawnTest {
         androidx.compose.material3.MaterialTheme {
         CompositionLocalProvider(LocalDensity provides Density(d.density, fontScale = scale.value)) {
             Column {
-                Text(text, fontSize = jsonUIFontSize(17.sp), letterSpacing = jsonUILetterSpacing(), modifier = Modifier.testTag("follows"))
+                Text(text, fontSize = jsonUIFontSize(17.sp), letterSpacing = jsonUILetterSpacing(), lineHeight = jsonUILineHeight(jsonUIFontSize(17.sp)),
+                    modifier = Modifier.testTag("follows"))
                 Text(text, fontSize = jsonUIFontSize(17.sp, fontScaling = false), letterSpacing = jsonUILetterSpacing(fontScaling = false),
+                    lineHeight = jsonUILineHeight(jsonUIFontSize(17.sp, fontScaling = false), fontScaling = false),
                     modifier = Modifier.testTag("fixed"))
                 Text(text, fontSize = jsonUIFontSize(17.sp, maxFontScale = 1.3f), letterSpacing = jsonUILetterSpacing(maxFontScale = 1.3f),
+                    lineHeight = jsonUILineHeight(jsonUIFontSize(17.sp, maxFontScale = 1.3f), maxFontScale = 1.3f),
                     modifier = Modifier.testTag("capped"))
             }
         }
@@ -53,6 +57,24 @@ class FontScalingDrawnTest {
         rule.waitForIdle()
         fun width(tag: String) = rule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.width
         return Triple(width("follows"), width("fixed"), width("capped"))
+    }
+
+    /** Each text's height (its line box): the theme's line height is sp, so it grows with the system unless the
+     *  rule draws it too (ticket kjui-theme-line-height-scales-under-font-scaling-false). */
+    private fun heights(at: Float): Triple<Float, Float, Float> {
+        rule.runOnIdle { scale.value = at }
+        rule.waitForIdle()
+        fun height(tag: String) = rule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.height
+        return Triple(height("follows"), height("fixed"), height("capped"))
+    }
+
+    @Test fun at_2_0_the_fixed_text_is_as_tall_as_at_1_0_the_capped_at_most_its_cap() {
+        content()
+        val (followsAt1, fixedAt1, cappedAt1) = heights(1f)
+        val (follows, fixed, capped) = heights(2f)
+        assertEquals("fontScaling false: its line box as at 1.0", fixedAt1, fixed, 1f)
+        assertTrue("capped at 1.3: its line box at most 1.3 x ($capped vs $cappedAt1)", capped <= cappedAt1 * 1.3f + 1f)
+        assertTrue("following grows: $follows vs $followsAt1", follows > followsAt1 * 1.3f)
     }
 
     @Test fun at_2_0_the_fixed_text_is_as_wide_as_at_1_0_the_following_wider_the_capped_between() {

@@ -7,6 +7,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 
@@ -30,6 +31,22 @@ object FontScaling {
     }
 
     /** [size] (sp, as declared) drawn by the rule in [density]. An unspecified size stays unspecified. */
+    /**
+     * [line] (an sp line height) as the line box the rule gives, in em of [drawnFont] (the size the text is drawn at,
+     * from [apply]): unchanged when the text follows with no cap (see jsonUILineHeight for why em).
+     */
+    fun lineHeight(density: Density, line: TextUnit, drawnFont: TextUnit, fontScaling: Boolean?, maxFontScale: Float?): TextUnit {
+        if (!line.isSpecified || !line.isSp) return line
+        val follows = fontScaling ?: Configuration.Font.scaling
+        val max = maxFontScale ?: Configuration.Font.maxScale
+        if (follows && max == null) return line
+        if (!drawnFont.isSpecified || !drawnFont.isSp || drawnFont.value <= 0f) return apply(density, line, fontScaling, maxFontScale)
+        return with(density) {
+            val box = if (!follows) line.value.dp else minOf(line.toDp(), (line.value * max!!).dp)
+            (box.value / drawnFont.toDp().value).em
+        }
+    }
+
     fun apply(density: Density, size: TextUnit, fontScaling: Boolean?, maxFontScale: Float?): TextUnit {
         // Unspecified stays unspecified; an em size is relative to the font size, which the rule has drawn already.
         if (!size.isSpecified || !size.isSp) return size
@@ -75,3 +92,38 @@ fun jsonUIFontSize(size: TextUnit, fontScaling: Boolean? = null, maxFontScale: F
 @ReadOnlyComposable
 fun jsonUILetterSpacing(fontScaling: Boolean? = null, maxFontScale: Float? = null): TextUnit =
     FontScaling.apply(LocalDensity.current, LocalTextStyle.current.letterSpacing, fontScaling, maxFontScale)
+
+/**
+ * A component's line height by the same rule as its size (ticket kjui-theme-line-height-scales-under-font-scaling-false;
+ * iOS and web keep it so): the text style's lineHeight (Material's is sp) as the line box the rule gives — the same
+ * as at 1.0 when the text does not follow, at most lineHeight x maxFontScale when capped. A text that follows keeps the
+ * style's line height unchanged.
+ *
+ * [lineHeight]: a line height of the text's own (sp, as at 1.0) in place of the style's — a declared size's line, a
+ * lineHeightMultiple's — drawn by the same rule; drawing it through [jsonUIFontSize] was off under a cap for the same
+ * reason (a Label of 17 capped at 1.3 drew a line 1.49 x).
+ *
+ * Returned in em of [fontSize], the size the text is drawn at (what [jsonUIFontSize] gave it; unspecified: the text
+ * style's, by the same declarations): Compose draws an sp line height scaled by the ratio its font size was scaled by,
+ * not through the font scale's own table, so a line box in sp cannot be pinned (measured: a capped 31.2dp asked as
+ * 18.6sp was drawn 37.3dp at 2.0). Relative to the drawn font, it is the line box asked for at every scale.
+ */
+@Composable
+@ReadOnlyComposable
+fun jsonUILineHeight(
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontScaling: Boolean? = null,
+    maxFontScale: Float? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified
+): TextUnit {
+    val style = LocalTextStyle.current
+    // A line height of the text's own (a declared size x 1.3, lineHeightMultiple) or, unspecified, the style's.
+    val line = if (lineHeight.isSpecified) lineHeight else style.lineHeight
+    if (!line.isSpecified || !line.isSp) return line
+    val follows = fontScaling ?: Configuration.Font.scaling
+    val max = maxFontScale ?: Configuration.Font.maxScale
+    if (follows && max == null) return line
+    val density = LocalDensity.current
+    val font = if (fontSize.isSpecified) fontSize else FontScaling.apply(density, style.fontSize, fontScaling, maxFontScale)
+    return FontScaling.lineHeight(density, line, font, fontScaling, maxFontScale)
+}

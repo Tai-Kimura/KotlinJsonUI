@@ -268,9 +268,9 @@ class DynamicTextFieldComponent {
                         } else null,
                         style = if (hintMultiple != null) {
                             androidx.compose.material3.LocalTextStyle.current.copy(
-                                lineHeight = json.fontSized(((hintFontSize ?: fontSize) * hintMultiple).sp)
+                                lineHeight = json.lineHeighted(json.fontSized((hintFontSize ?: fontSize).sp), ((hintFontSize ?: fontSize) * hintMultiple).sp)
                             )
-                        } else androidx.compose.material3.LocalTextStyle.current
+                        } else androidx.compose.material3.LocalTextStyle.current.copy(lineHeight = json.lineHeighted(json.fontSized((hintFontSize ?: fontSize).sp)))
                     )
                 }
             } else null
