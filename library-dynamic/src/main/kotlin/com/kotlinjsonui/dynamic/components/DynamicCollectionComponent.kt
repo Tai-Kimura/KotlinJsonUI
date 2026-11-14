@@ -289,18 +289,11 @@ class DynamicCollectionComponent {
             // declared insets replaced the other two (plan 49 lane C, #4, whose
             // reason — "the author named an exact value" — adding keeps too).
             val paddingSides = collectionPaddingSides(a, json, data)
-            val safeArea = ContentInsetBehavior.safeAreaPadding(a.contentInsetAdjustmentBehavior, horizontal = isHorizontal)
-            val paddingDirection = LocalLayoutDirection.current
-            val contentPadding = when {
-                safeArea == null -> paddingSides?.let { paddingOfSides(it) } ?: PaddingValues(0.dp)
-                paddingSides == null -> safeArea
-                else -> PaddingValues(
-                    start = safeArea.calculateStartPadding(paddingDirection) + paddingSides[3].dp,
-                    top = safeArea.calculateTopPadding() + paddingSides[0].dp,
-                    end = safeArea.calculateEndPadding(paddingDirection) + paddingSides[1].dp,
-                    bottom = safeArea.calculateBottomPadding() + paddingSides[2].dp
-                )
-            }
+            // The safe area is the part of it the Collection's frame overlaps
+            // (ContentInsetBehavior.overlap), read when the content measures.
+            val safeOverlap = ContentInsetBehavior.overlap(a.contentInsetAdjustmentBehavior, horizontal = isHorizontal)
+            val ownPadding = paddingSides?.let { paddingOfSides(it) } ?: PaddingValues(0.dp)
+            val contentPadding = safeOverlap?.contentPadding(ownPadding) ?: ownPadding
 
             // Parse spacing
             // lineSpacing: vertical spacing between rows (minimumLineSpacing in iOS)
@@ -345,6 +338,10 @@ class DynamicCollectionComponent {
                     )
                 }
             }
+
+            // The frame the safe-area overlap is measured from: the Collection's
+            // own, inside its margins and listStyle chrome.
+            safeOverlap?.let { modifier = modifier.then(it.modifier) }
 
             // Get cell height/width if specified ('cellHeight'/'cellWidth' are
             // undeclared legacy runtime extras)
