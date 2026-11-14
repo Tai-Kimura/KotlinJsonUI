@@ -16,8 +16,10 @@ object CollectionReorderRules {
     }
 
     /**
-     * Where the row grabbed at [from] lands while it is dragged [dy]: past every neighbour whose centre its own centre
-     * has crossed (exactly on a centre is not past it), and never onto or past a locked row.
+     * Where the row grabbed at [from] lands while it is dragged [dy]: past every neighbour whose edge on its side its own
+     * centre has crossed — a row below once the centre is below its top, a row above once it is above its bottom
+     * (exactly on an edge is not past it) — and never onto or past a locked row. The gap is under the dragged centre,
+     * as iOS 27's standard reorderable draws it (ticket jui-collection-reorder-target-lags-one-row-behind-finger).
      */
     fun target(from: Int, dy: Float, rows: List<RowSpan>, locked: Set<Int>): Int {
         if (from !in rows.indices) return from
@@ -25,10 +27,10 @@ object CollectionReorderRules {
         var to = from
         if (dy > 0) {
             var j = from + 1
-            while (j < rows.size && j !in locked && center > rows[j].center) { to = j; j++ }
+            while (j < rows.size && j !in locked && center > rows[j].top) { to = j; j++ }
         } else if (dy < 0) {
             var j = from - 1
-            while (j >= 0 && j !in locked && center < rows[j].center) { to = j; j-- }
+            while (j >= 0 && j !in locked && center < rows[j].bottom) { to = j; j-- }
         }
         return to
     }
@@ -42,8 +44,12 @@ object CollectionReorderRules {
     fun releaseCommits(fingerY: Float, containerTop: Float, containerBottom: Float): Boolean =
         fingerY >= containerTop && fingerY < containerBottom
 
-    /** Whether the row at [from] can be picked up at all: a locked row never is. */
-    fun canPickUp(from: Int, locked: Set<Int>): Boolean = from !in locked
+    /**
+     * Whether the row at [from] can be picked up at all: a locked row never is, nor a fixed one (reorderFixedProperty,
+     * or a row whose reorderHandle is not drawn; ticket jui-collection-reorder-fixed-row-vs-barrier-row). A fixed row
+     * is not a bound: other rows pass it ([target] and [clampedTo] read only [locked]).
+     */
+    fun canPickUp(from: Int, locked: Set<Int>, fixed: Set<Int> = emptySet()): Boolean = from !in locked && from !in fixed
 
     /**
      * Why a move from [from] to [to] in [count] rows is refused, or null when it is a move: "no-move" (to == from),
@@ -51,9 +57,10 @@ object CollectionReorderRules {
      * The library's own drag and the accessibility moves never make a refused move; this is the table's reading of
      * one, as any move reported to the view model must pass it.
      */
-    fun refusal(count: Int, from: Int, to: Int, locked: Set<Int>): String? = when {
+    fun refusal(count: Int, from: Int, to: Int, locked: Set<Int>, fixed: Set<Int> = emptySet()): String? = when {
         from !in 0 until count || to !in 0 until count -> "out-of-range"
         crossesLocked(from, to, locked) -> "locked"
+        from in fixed -> "fixed"
         from == to -> "no-move"
         else -> null
     }
@@ -99,9 +106,21 @@ object CollectionReorderRules {
         return if (upward) -speed else speed
     }
 
-    /** The accessibility moves a row offers: up unless first, the row above locked, or locked itself; down likewise. */
-    fun accessibilityMoves(index: Int, count: Int, locked: Set<Int>): Pair<Boolean, Boolean> {
-        if (index in locked || index < 0 || index >= count) return false to false
+    /**
+     * The accessibility moves a row offers: up unless first, the row above locked, or locked or fixed itself; down
+     * likewise. A fixed neighbour is passed like any row.
+     */
+    fun accessibilityMoves(index: Int, count: Int, locked: Set<Int>, fixed: Set<Int> = emptySet()): Pair<Boolean, Boolean> {
+        if (index in locked || index in fixed || index < 0 || index >= count) return false to false
         return (index > 0 && (index - 1) !in locked) to (index < count - 1 && (index + 1) !in locked)
     }
+
+    /**
+     * Whether a drag let go with the rows now is cancelled, having read the rows when it began (rule.itemsChange): the
+     * ids differ in number or order, or the locked or the fixed rows differ.
+     */
+    fun itemsChanged(
+        startIds: List<String>, startLocked: Set<Int>, startFixed: Set<Int>,
+        nowIds: List<String>, nowLocked: Set<Int>, nowFixed: Set<Int>,
+    ): Boolean = startIds != nowIds || startLocked != nowLocked || startFixed != nowFixed
 }

@@ -4,6 +4,8 @@ import com.kotlinjsonui.core.DeclaredSpelling
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -38,6 +40,13 @@ import androidx.compose.ui.semantics.semantics
  */
 val JsonUIHiddenKey = SemanticsPropertyKey<Boolean>("JsonUIHidden", mergePolicy = { parent, _ -> parent })
 
+/**
+ * True inside content that is laid out but not drawn (visibility "invisible", `hidden: true`). A reorderable row's
+ * handle reads it: a handle that is not drawn picks nothing up, and its row is fixed
+ * (Modifier.collectionReorderHandle; ticket jui-collection-reorder-fixed-row-vs-barrier-row).
+ */
+val LocalJsonUINotDrawn = compositionLocalOf { false }
+
 private fun SemanticsPropertyReceiver.markHidden() {
     this[JsonUIHiddenKey] = true
 }
@@ -61,7 +70,9 @@ fun VisibilityWrapper(
     if (declared == "gone") return
 
     if (declared == "invisible") {
-        Box(modifier = modifier.alpha(0f).semantics { markHidden() }, content = content)
+        CompositionLocalProvider(LocalJsonUINotDrawn provides true) {
+            Box(modifier = modifier.alpha(0f).semantics { markHidden() }, content = content)
+        }
     } else {
         Box(modifier = modifier, content = content)
     }
@@ -87,7 +98,9 @@ fun VisibilityWrapper(
     content: @Composable BoxScope.() -> Unit
 ) {
     if (hidden) {
-        Box(modifier = modifier.alpha(0f).clearAndSetSemantics { markHidden() }, content = content)
+        CompositionLocalProvider(LocalJsonUINotDrawn provides true) {
+            Box(modifier = modifier.alpha(0f).clearAndSetSemantics { markHidden() }, content = content)
+        }
     } else {
         Box(modifier = modifier, content = content)
     }
@@ -115,7 +128,9 @@ fun VisibilityWrapper(
     // Handle hidden first (takes precedence): keep space, draw nothing,
     // no semantics — do NOT collapse.
     if (hidden == true) {
-        Box(modifier = modifier.alpha(0f).clearAndSetSemantics { markHidden() }, content = content)
+        CompositionLocalProvider(LocalJsonUINotDrawn provides true) {
+            Box(modifier = modifier.alpha(0f).clearAndSetSemantics { markHidden() }, content = content)
+        }
         return
     }
 
@@ -124,7 +139,9 @@ fun VisibilityWrapper(
     if (declared == "gone") return
 
     if (declared == "invisible") {
-        Box(modifier = modifier.alpha(0f).semantics { markHidden() }, content = content)
+        CompositionLocalProvider(LocalJsonUINotDrawn provides true) {
+            Box(modifier = modifier.alpha(0f).semantics { markHidden() }, content = content)
+        }
     } else {
         Box(modifier = modifier, content = content)
     }

@@ -30,8 +30,9 @@ class CollectionReorderRulesVectorsTest {
         assertTrue(all.isNotEmpty())
         for (c in all) {
             val locked = ints(c.getAsJsonArray("locked")).toSet()
+            val fixed = ints(c.getAsJsonArray("fixed")).toSet()
             if (c["to"].isJsonNull) {                     // not dragged at all
-                assertTrue(c["name"].asString, !CollectionReorderRules.canPickUp(c["from"].asInt, locked))
+                assertTrue(c["name"].asString, !CollectionReorderRules.canPickUp(c["from"].asInt, locked, fixed))
                 continue
             }
             val to = CollectionReorderRules.target(c["from"].asInt, c["dy"].asFloat, spans(ints(c.getAsJsonArray("heights"))), locked)
@@ -44,6 +45,7 @@ class CollectionReorderRulesVectorsTest {
             val rows = c.getAsJsonArray("rows").map { it.asString }.toMutableList()
             val refused = CollectionReorderRules.refusal(
                 rows.size, c["from"].asInt, c["to"].asInt, ints(c.getAsJsonArray("locked")).toSet(),
+                ints(c.getAsJsonArray("fixed")).toSet(),
             )
             assertEquals(c["name"].asString, c["refused"]?.asString, refused)
             if (refused != null) continue
@@ -67,6 +69,11 @@ class CollectionReorderRulesVectorsTest {
             val commits = CollectionReorderRules.releaseCommits(finger, 0f, bottom)
             val cancelled = c.has("cancelled") && c["cancelled"].asBoolean
             assertEquals(c["name"].asString, !cancelled, commits)
+            val fixed = ints(c.getAsJsonArray("fixed")).toSet()
+            if (!cancelled && c["to"].isJsonNull) {       // a row that is not picked up
+                assertTrue(c["name"].asString, !CollectionReorderRules.canPickUp(from, ints(c.getAsJsonArray("locked")).toSet(), fixed))
+                continue
+            }
             if (!cancelled) {
                 val to = CollectionReorderRules.target(from, dy, rows, ints(c.getAsJsonArray("locked")).toSet())
                 assertEquals(c["name"].asString, c["to"].asInt, to)
@@ -88,11 +95,28 @@ class CollectionReorderRulesVectorsTest {
         assertTrue(all.isNotEmpty())
         for (c in all) {
             val from = c["from"].asInt
-            val (up, down) = CollectionReorderRules.accessibilityMoves(from, c["rows"].asInt, ints(c.getAsJsonArray("locked")).toSet())
+            val (up, down) = CollectionReorderRules.accessibilityMoves(
+                from, c["rows"].asInt, ints(c.getAsJsonArray("locked")).toSet(), ints(c.getAsJsonArray("fixed")).toSet(),
+            )
             val offered = if (c["action"].asString == "up") up else down
             val want = c.has("to") && !c["to"].isJsonNull
             assertEquals(c["name"].asString, want, offered)
             if (want) assertEquals(c["name"].asString, c["to"].asInt, if (c["action"].asString == "up") from - 1 else from + 1)
+        }
+    }
+
+    @Test fun every_items_change_case() {
+        val all = cases("itemsChange")
+        assertTrue(all.isNotEmpty())
+        for (c in all) {
+            val start = c.getAsJsonObject("start")
+            val now = c.getAsJsonObject("release")
+            fun ids(o: JsonObject) = o.getAsJsonArray("ids").map { it.asString }
+            val changed = CollectionReorderRules.itemsChanged(
+                ids(start), ints(start.getAsJsonArray("locked")).toSet(), ints(start.getAsJsonArray("fixed")).toSet(),
+                ids(now), ints(now.getAsJsonArray("locked")).toSet(), ints(now.getAsJsonArray("fixed")).toSet(),
+            )
+            assertEquals(c["name"].asString, c["cancelled"].asBoolean, changed)
         }
     }
 }

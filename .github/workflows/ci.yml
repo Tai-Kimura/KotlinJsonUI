@@ -128,6 +128,9 @@ jobs:
               # A reorderable Collection's rule (CollectionReorderRulesVectorsTest).
               ("library/src/test/resources/reorder_vectors.json",
                "shared/core/reorder_vectors.json"),
+              # The callbacks' order on a device (CollectionReorderTest callbacks_*).
+              ("library/src/androidTest/resources/reorder_vectors.json",
+               "shared/core/reorder_vectors.json"),
               ("library-dynamic/src/test/resources/responsive_resolution_vectors.json",
                "shared/core/responsive_resolution_vectors.json"),
               ("library-dynamic/src/test/resources/image_accessibility_vectors.json",
