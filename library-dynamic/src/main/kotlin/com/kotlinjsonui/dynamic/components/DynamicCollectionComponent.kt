@@ -54,6 +54,7 @@ import com.kotlinjsonui.dynamic.DynamicView
 import com.kotlinjsonui.dynamic.DynamicRuntimeScope
 import com.kotlinjsonui.dynamic.LocalDynamicRuntimeWriter
 import com.kotlinjsonui.dynamic.DynamicLayoutLoader
+import com.kotlinjsonui.dynamic.DynamicStyleLoader
 import com.kotlinjsonui.dynamic.DataBindingContext
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.components.LocalCollectionScrollMemory
@@ -1693,8 +1694,12 @@ class DynamicCollectionComponent {
                                         }
                                     } else cellBox()
                                 } else {
+                                    // A cell root of height matchParent fills the ROW, at its
+                                    // tallest cell, not what the screen has left (GridRowHeight).
+                                    val equalizes = GridRowHeight.equalizes(row.cells.map { (s, _) -> cellRootOf(cellNameOf(s)) })
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(),
+                                        modifier = Modifier.fillMaxWidth()
+                                            .then(if (equalizes) Modifier.height(IntrinsicSize.Min) else Modifier),
                                         horizontalArrangement = Arrangement.spacedBy(columnSpacing)
                                     ) {
                                         row.cells.forEach { (s, cellIndex) ->
@@ -1703,6 +1708,7 @@ class DynamicCollectionComponent {
                                                 modifier = Modifier
                                                     .weight(1f)
                                                     .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier)
+                                                    .then(if (equalizes) Modifier.fillMaxHeight() else Modifier)
                                                     .then(placeOf(s, cellIndex)),
                                                 contentAlignment = gravityAlignment
                                             ) {
@@ -2774,6 +2780,43 @@ class DynamicCollectionComponent {
             }
         }
 
+        /** A cell class's layout file name: `SuggestionCardCell` → `suggestion_card_cell`. */
+        internal fun cellJsonNameOf(cellClassName: String): String = cellClassName
+            .replace(Regex("([a-z])([A-Z])")) { "${it.groupValues[1]}_${it.groupValues[2].lowercase()}" }
+            .lowercase()
+
+        /**
+         * The root of a cell class's layout as it is drawn: loaded as
+         * renderCellViewInner loads it, with every node's `style` applied
+         * (DynamicView applies a node's style when it draws it, so a height
+         * the style gives is the height the cell has). Null for no class or no file.
+         */
+        @Composable
+        private fun cellRootOf(cellClassName: String?): JsonObject? {
+            if (cellClassName == null) return null
+            val context = LocalContext.current
+            return remember(cellClassName) {
+                DynamicLayoutLoader.init(context)
+                DynamicLayoutLoader.loadLayout(cellJsonNameOf(cellClassName))?.let { cellWithStyles(context, it) }
+            }
+        }
+
+        private fun cellWithStyles(context: android.content.Context, node: JsonObject): JsonObject {
+            val own = if (node.has("style")) DynamicStyleLoader.applyStyle(context, node) else node
+            for (key in listOf("child", "children")) {
+                val e = own.get(key) ?: continue
+                when {
+                    e.isJsonObject -> own.add(key, cellWithStyles(context, e.asJsonObject))
+                    e.isJsonArray -> {
+                        val out = com.google.gson.JsonArray()
+                        e.asJsonArray.forEach { out.add(if (it.isJsonObject) cellWithStyles(context, it.asJsonObject) else it) }
+                        own.add(key, out)
+                    }
+                }
+            }
+            return own
+        }
+
         @Composable
         private fun renderCellViewInner(
             cellClassName: String?,
@@ -2807,9 +2850,7 @@ class DynamicCollectionComponent {
             }
 
             // Convert cell class name to JSON file name
-            val cellJsonName = cellClassName
-                .replace(Regex("([a-z])([A-Z])")) { "${it.groupValues[1]}_${it.groupValues[2].lowercase()}" }
-                .lowercase()
+            val cellJsonName = cellJsonNameOf(cellClassName)
 
             // Initialize DynamicLayoutLoader with context
             val context = LocalContext.current
