@@ -64,4 +64,40 @@ class GridRowHeightTest {
         )
         cases.forEach { (node, expected) -> assertEquals(node, expected, GridRowHeight.subcomposes(json(node))) }
     }
+
+    // ── a cell holding an image its picture sizes: its own height (jsonui-cli kjui-collection-lazy-grid-and-flow-
+    // rows-do-not-align-cell-heights; the table is shared/core/grid_row_height.json, vendored) ──
+
+    private fun withImage(image: String) =
+        json("""{"type":"View","height":"matchParent","child":[{"type":"View","height":"matchParent","child":[$image]}]}""")
+
+    @Test
+    fun anImageItsPictureSizesMakesTheCellsItsOwnHeight() {
+        val network = withImage("""{"type":"NetworkImage","width":"matchParent","height":"matchParent","src":"@{u}"}""")
+        assertEquals(GridRowHeight.Mode.OWN, GridRowHeight.mode(listOf(network, network)))
+        assertEquals(GridRowHeight.Mode.OWN, GridRowHeight.mode(listOf(fills, network)))
+        assertFalse(GridRowHeight.equalizes(listOf(network)))
+        listOf(
+            """{"type":"Image","width":"matchParent","srcName":"x"}""",
+            """{"type":"ImageView","height":"wrapContent","srcName":"x"}""",
+            """{"type":"CircleImage","width":40,"height":"matchParent","src":"@{u}"}""",
+            """{"type":"AsyncImage","width":"matchParent","height":"@{h}","src":"@{u}"}""",
+        ).forEach { assertEquals(it, GridRowHeight.Mode.OWN, GridRowHeight.mode(listOf(withImage(it)))) }
+    }
+
+    @Test
+    fun anImageOfAFixedHeightLeavesTheRowAligned() {
+        listOf("120", "\"120\"", "\"96.5\"").forEach { h ->
+            val cell = withImage("""{"type":"NetworkImage","width":"matchParent","height":$h,"src":"@{u}"}""")
+            assertEquals(h, GridRowHeight.Mode.FILL, GridRowHeight.mode(listOf(cell)))
+        }
+    }
+
+    @Test
+    fun aRowWithNoMatchParentRootOrASubcomposeLayoutIsAsItWas() {
+        val network = """{"type":"NetworkImage","height":"matchParent","src":"@{u}"}"""
+        assertEquals(GridRowHeight.Mode.NONE, GridRowHeight.mode(listOf(json("""{"type":"View","height":"wrapContent","child":[$network]}"""))))
+        val lazy = json("""{"type":"View","height":"matchParent","child":[$network,{"type":"Collection","items":"@{rows}"}]}""")
+        assertEquals(GridRowHeight.Mode.NONE, GridRowHeight.mode(listOf(lazy)))
+    }
 }

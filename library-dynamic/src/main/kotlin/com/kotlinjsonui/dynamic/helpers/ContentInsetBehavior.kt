@@ -1,12 +1,9 @@
 package com.kotlinjsonui.dynamic.helpers
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.runtime.Composable
+import com.kotlinjsonui.components.SafeAreaOverlap
+import com.kotlinjsonui.components.rememberSafeAreaOverlap
 
 /**
  * `contentInsetAdjustmentBehavior` for the Compose scrollables.
@@ -28,25 +25,21 @@ import androidx.compose.runtime.Composable
 object ContentInsetBehavior {
 
     /**
-     * The safe-area padding this declaration asks for, or null when nothing
-     * should be applied.
-     *
-     * `horizontal` picks the axis for `scrollableAxes`.
-     *
-     * A Collection adds its own content padding to it, side by side
-     * (DynamicCollectionComponent; rounds 16 and 17).
+     * The safe area this declaration asks for, as the part of the window's
+     * safe area the scrollable's frame OVERLAPS (UIKit's `.always`): attach
+     * its `modifier` to the scrollable and pass `contentPadding(own)`. Null
+     * when nothing should be applied. The same helper the codegen calls
+     * (com.kotlinjsonui.components.rememberSafeAreaOverlap), so the two
+     * renders of one layout inset by the same amount. [safeAreaPadding] —
+     * the whole window's inset wherever the scrollable sits — drew a band of
+     * the status bar's height inside a SafeAreaView (jsonui-cli ticket
+     * kjui-collection-content-inset-always-adds-whole-window-insets).
      */
     @Composable
-    fun safeAreaPadding(value: String?, horizontal: Boolean = false): PaddingValues? =
+    fun overlap(value: String?, horizontal: Boolean = false): SafeAreaOverlap? =
         when (value?.trim()?.lowercase()) {
-            // Compose has no "depending on context", so automatic is always.
-            "always", "automatic" -> WindowInsets.safeDrawing.asPaddingValues()
-            "scrollableaxes" -> WindowInsets.safeDrawing
-                .only(if (horizontal) WindowInsetsSides.Horizontal else WindowInsetsSides.Vertical)
-                .asPaddingValues()
-            // `never` — and anything undeclared — emits nothing, which is
-            // Compose's own default and is what keeps every existing screen
-            // exactly where it is.
+            "always", "automatic" -> rememberSafeAreaOverlap()
+            "scrollableaxes" -> rememberSafeAreaOverlap(if (horizontal) WindowInsetsSides.Horizontal else WindowInsetsSides.Vertical)
             else -> null
         }
 
