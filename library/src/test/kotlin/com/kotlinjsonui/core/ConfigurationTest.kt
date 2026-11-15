@@ -49,7 +49,6 @@ class ConfigurationTest {
     @Test
     fun `Sizes object has correct default values`() {
         assertEquals(14, Configuration.Sizes.fontSize)
-        assertEquals(8, Configuration.Sizes.cornerRadius)
         assertEquals(16, Configuration.Sizes.padding)
         assertEquals(8, Configuration.Sizes.spacing)
         assertEquals(4f, Configuration.Sizes.shadowElevation, 0.01f)
@@ -68,7 +67,6 @@ class ConfigurationTest {
         assertEquals(Configuration.Colors.border, Configuration.TextField.defaultBorderColor)
         assertEquals(44, Configuration.TextField.defaultHeight)
         assertEquals(Configuration.Sizes.fontSize, Configuration.TextField.defaultFontSize)
-        assertEquals(Configuration.Sizes.cornerRadius, Configuration.TextField.defaultCornerRadius)
     }
 
     @Test
@@ -79,7 +77,8 @@ class ConfigurationTest {
         assertEquals(Color.Gray, Configuration.Button.defaultDisabledTextColor)
         assertEquals(44, Configuration.Button.defaultHeight)
         assertEquals(Configuration.Sizes.fontSize, Configuration.Button.defaultFontSize)
-        assertEquals(Configuration.Sizes.cornerRadius, Configuration.Button.defaultCornerRadius)
+        // No cornerRadius is square (the requester's ruling 2026-11-15); kept for code kjui generated before 2.5.44.
+        assertEquals(0, Configuration.Button.defaultCornerRadius)
     }
 
     @Test
@@ -96,7 +95,6 @@ class ConfigurationTest {
         assertEquals(Configuration.Colors.placeholder, Configuration.SelectBox.defaultPlaceholderColor)
         assertEquals(Configuration.Colors.border, Configuration.SelectBox.defaultBorderColor)
         assertEquals(44, Configuration.SelectBox.defaultHeight)
-        assertEquals(Configuration.Sizes.cornerRadius, Configuration.SelectBox.defaultCornerRadius)
     }
 
     @Test
@@ -140,7 +138,6 @@ class ConfigurationTest {
         assertEquals(Configuration.Colors.primary, Configuration.Segment.defaultSelectedBackgroundColor)
         assertEquals(Color.White, Configuration.Segment.defaultSelectedTextColor)
         assertEquals(Configuration.Colors.border, Configuration.Segment.defaultBorderColor)
-        assertEquals(Configuration.Sizes.cornerRadius, Configuration.Segment.defaultCornerRadius)
         assertEquals(44, Configuration.Segment.defaultHeight)
 
         // Test customization

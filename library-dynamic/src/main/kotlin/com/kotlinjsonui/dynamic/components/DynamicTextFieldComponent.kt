@@ -221,8 +221,9 @@ class DynamicTextFieldComponent {
                 ?: a.hintFontSize?.toInt()
 
             // Shape
-            val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)
-                ?: Configuration.TextField.defaultCornerRadius.toFloat()
+            // No cornerRadius: square, as on iOS and the web (the requester's ruling 2026-11-15,
+            // jsonui-cli ticket jui-button-default-corner-radius-differs; it was 8).
+            val cornerRadius = TypedAttrs.float(a.common.cornerRadius, data) ?: 0f
             val shape = RoundedCornerShape(cornerRadius.dp)
 
             // Outlined mode
