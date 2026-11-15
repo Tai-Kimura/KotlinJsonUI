@@ -93,7 +93,7 @@ object KjuiImageLoadTable {
                 // main thread delivers requesting / responded; flushed with those, they were
                 // delivered ahead of them.
                 val end = event is KjuiImageLoadEvent.Finished || event is KjuiImageLoadEvent.Failed ||
-                    event is KjuiImageLoadEvent.Cancelled
+                    event is KjuiImageLoadEvent.Cancelled || event is KjuiImageLoadEvent.Retrying
                 if (end) flushProgress(load)
                 load.deliver(event)
                 if (event is KjuiImageLoadEvent.Responded) flushProgress(load)
