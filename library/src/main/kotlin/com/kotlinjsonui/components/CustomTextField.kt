@@ -98,7 +98,9 @@ fun CustomTextField(
 
     // Default content padding if not specified
     val effectiveContentPadding = contentPadding ?: TextFieldDefaults.contentPaddingWithoutLabel()
-    val effectiveShape = shape ?: RoundedCornerShape(Configuration.TextField.defaultCornerRadius.dp)
+    // No cornerRadius: square, as on iOS and the web (the requester's ruling 2026-11-15, jsonui-cli
+    // ticket jui-button-default-corner-radius-differs; it was 8).
+    val effectiveShape = shape ?: RoundedCornerShape(0.dp)
     val effectiveTextStyle = textStyle.copy(color = textStyle.color.takeIf { it != Color.Unspecified } ?: Color.Black)
 
     // Shared decoration logic extracted to a composable

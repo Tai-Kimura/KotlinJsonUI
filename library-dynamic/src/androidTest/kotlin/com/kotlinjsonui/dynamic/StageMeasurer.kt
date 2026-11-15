@@ -283,6 +283,8 @@ internal class StageMeasurer(private val rule: ComposeContentTestRule) {
 
         /** A circle clips a radius away: judged by the element it adds. */
         private val CIRCLES = setOf("CircleImage", "CircleView")
+        /** Drawn rounded when no cornerRadius is declared. */
+        private val ROUNDED = setOf("Segment")
 
         /** The page draws differently each time: their pixel diffs are not read. */
         private val UNSTEADY = setOf("WebView", "Web")
@@ -310,7 +312,11 @@ internal class StageMeasurer(private val rule: ComposeContentTestRule) {
                 "cornerRadius" -> {
                     val b1 = m.backgroundPx.second
                     val r1 = m.radiusPx
-                    if (b1 != null && b1 > 0 && r1 != null && m.type !in CIRCLES) {
+                    if (b1 != null && b1 > 0 && r1 != null && m.type in ROUNDED) {
+                        // A capsule by default (Segment, the ruling 2026-11-15): the declared radius
+                        // changes the corner, whichever way.
+                        (r1 != b1) to "background $b1 px, with the radius $r1 px"
+                    } else if (b1 != null && b1 > 0 && r1 != null && m.type !in CIRCLES) {
                         (r1 < b1) to "background $b1 px, with the radius $r1 px"
                     } else m.added(stage, "background").isNotEmpty() to "elements over background"
                 }

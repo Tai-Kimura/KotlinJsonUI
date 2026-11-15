@@ -83,11 +83,20 @@ class SegmentResolutionTest {
     // ── containerColor default ──
 
     @Test
-    fun `containerColor defaults to transparent when backgroundColor is absent`() {
+    fun `containerColor is null when no background is written - the Segment draws iOS's track`() {
         val node = json("""{"type":"Segment","items":["a","b"]}""")
         assertEquals(
-            Color.Transparent,
+            null,
             DynamicSegmentComponent.resolveContainerColor(node, emptyMap(), context = null)
+        )
+    }
+
+    @Test
+    fun `containerColor uses the declared background`() {
+        val node = json("""{"type":"Segment","background":"@{bg}"}""")
+        assertEquals(
+            Color(0xFF00FF00),
+            DynamicSegmentComponent.resolveContainerColor(node, mapOf("bg" to Color(0xFF00FF00)), context = null)
         )
     }
 

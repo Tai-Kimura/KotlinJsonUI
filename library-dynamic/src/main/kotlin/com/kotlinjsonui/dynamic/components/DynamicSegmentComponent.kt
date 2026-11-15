@@ -1,11 +1,13 @@
 package com.kotlinjsonui.dynamic.components
 
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import com.google.gson.JsonObject
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import com.kotlinjsonui.components.Segment
+import com.kotlinjsonui.components.SegmentTab
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
@@ -31,8 +33,8 @@ import androidx.compose.ui.platform.LocalContext
  *   Not a binding: SSoT declares Segment.items as type "array" only. The
  *   'segments' alias and the @{variable} form were both removed 2026-09-04.
  * - enabled: Boolean or @{variable} to enable/disable
- * - backgroundColor: Color for container (containerColor); defaults to
- *   Color.Transparent when unspecified (matching the static codegen)
+ * - background / backgroundColor: the track (containerColor); iOS's when neither is written
+ *   (it was Color.Transparent, under Material's TabRow).
  * - fontColor: Color for unselected text (contentColor); normalColor is a
  *   declared alias the extraction resolves
  * - selectedFontColor: Color for selected text (selectedContentColor), falling
@@ -174,8 +176,10 @@ class DynamicSegmentComponent {
             // Build modifier: the standard stages; the clickable stage is a
             // control's (onClick from each tab's selection), and the Segment
             // carries the tag while each Tab carries `enabled` (WRAPPER).
+            // `background` is the track (containerColor), drawn inside the Segment's capsule, as the
+            // codegen draws it; not a rectangle behind the capsule.
             val modifier = ModifierBuilder.buildModifier(
-                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER, handles = setOf("background")
             )
 
             // Handle tab click with binding update + event handler
@@ -193,10 +197,12 @@ class DynamicSegmentComponent {
                 containerColor = containerColor,
                 contentColor = normalColor,
                 selectedContentColor = selectedColor,
-                indicatorColor = indicatorColor
+                indicatorColor = indicatorColor,
+                // The declared cornerRadius is the track's corner; none, a capsule.
+                cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)?.dp
             ) {
                 segments.forEachIndexed { index, segment ->
-                    Tab(
+                    SegmentTab(
                         // Each tab is a node of its own: it reads the stop
                         // too (stoppedItem). With an id it carries
                         // `<id>_tab_<n>` (tabTestTag).
@@ -249,7 +255,10 @@ class DynamicSegmentComponent {
                                 fontFamily = segmentFont.family,
                                 fontWeight = segmentFont.weight,
                                 fontSize = segmentFont.size ?: TextUnit.Unspecified,
-                                fontStyle = segmentFont.style
+                                fontStyle = segmentFont.style,
+                                // One line, as iOS draws a segment's label (the ruling 2026-11-15).
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     )
@@ -260,18 +269,17 @@ class DynamicSegmentComponent {
         // ── Helpers ──
 
         /**
-         * Container background: parsed `backgroundColor`, defaulting to
-         * [Color.Transparent] when unspecified. The static codegen emits
-         * `containerColor = Color.Transparent` for the no-background case
-         * (segment_component.rb); passing null instead would fall through
-         * to the Material3 TabRow surface default (an opaque band).
+         * The track: the declared `background` (or the legacy `backgroundColor`); null when
+         * neither is written, and the Segment draws iOS's track (the requester's ruling
+         * 2026-11-15, jsonui-cli ticket jui-segment-android-draws-no-track). It was
+         * Color.Transparent, under Material's TabRow.
          */
         internal fun resolveContainerColor(
             json: JsonObject,
             data: Map<String, Any>,
             context: Context?
-        ): Color = ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
-            ?: Color.Transparent
+        ): Color? = ColorParser.parseColorWithBinding(json, "background", data, context)
+            ?: ColorParser.parseColorWithBinding(json, "backgroundColor", data, context)
 
         internal fun parseSegments(
             json: JsonObject,
