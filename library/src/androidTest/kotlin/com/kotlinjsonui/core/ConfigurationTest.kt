@@ -85,10 +85,10 @@ class ConfigurationTest {
 
     @Test
     fun configuration_segmentDefaults() {
-        assertEquals(Color.White, Configuration.Segment.defaultBackgroundColor)
-        assertEquals(Color.Black, Configuration.Segment.defaultTextColor)
-        assertEquals(Configuration.Colors.primary, Configuration.Segment.defaultSelectedBackgroundColor)
-        assertEquals(Color.White, Configuration.Segment.defaultSelectedTextColor)
+        assertEquals(null, Configuration.Segment.defaultBackgroundColor)
+        assertEquals(null, Configuration.Segment.defaultTextColor)
+        assertEquals(null, Configuration.Segment.defaultSelectedBackgroundColor)
+        assertEquals(null, Configuration.Segment.defaultSelectedTextColor)
         assertEquals(44, Configuration.Segment.defaultHeight)
     }
 

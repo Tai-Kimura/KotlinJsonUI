@@ -324,10 +324,14 @@ object Configuration {
 
     // Segment (TabLayout) specific defaults
     object Segment {
-        var defaultBackgroundColor = Color.White
-        var defaultTextColor = Color.Black
-        var defaultSelectedBackgroundColor = Colors.primary
-        var defaultSelectedTextColor = Color.White
+        // The app's own Segment colours; null (the default) is iOS's, by the theme: the track the
+        // system's translucent grey, the selected fill white / 99,99,102, the labels black / white
+        // (the requester's ruling 2026-11-15, Segment drawn as iOS draws it). A layout's
+        // background / tintColor / fontColor / selectedFontColor wins over them.
+        var defaultBackgroundColor: Color? = null
+        var defaultTextColor: Color? = null
+        var defaultSelectedBackgroundColor: Color? = null
+        var defaultSelectedTextColor: Color? = null
         var defaultBorderColor = Colors.border
         const val defaultHeight = 44
     }

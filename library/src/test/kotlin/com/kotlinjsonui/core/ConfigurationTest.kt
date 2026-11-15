@@ -133,10 +133,11 @@ class ConfigurationTest {
     @Test
     fun `Segment defaults are customizable`() {
         // Test defaults
-        assertEquals(Color.White, Configuration.Segment.defaultBackgroundColor)
-        assertEquals(Color.Black, Configuration.Segment.defaultTextColor)
-        assertEquals(Configuration.Colors.primary, Configuration.Segment.defaultSelectedBackgroundColor)
-        assertEquals(Color.White, Configuration.Segment.defaultSelectedTextColor)
+        // Null: iOS's colours, by the theme (the Segment draws them).
+        assertEquals(null, Configuration.Segment.defaultBackgroundColor)
+        assertEquals(null, Configuration.Segment.defaultTextColor)
+        assertEquals(null, Configuration.Segment.defaultSelectedBackgroundColor)
+        assertEquals(null, Configuration.Segment.defaultSelectedTextColor)
         assertEquals(Configuration.Colors.border, Configuration.Segment.defaultBorderColor)
         assertEquals(44, Configuration.Segment.defaultHeight)
 
@@ -145,7 +146,7 @@ class ConfigurationTest {
         assertEquals(Color.Gray, Configuration.Segment.defaultBackgroundColor)
 
         // Reset
-        Configuration.Segment.defaultBackgroundColor = Color.White
+        Configuration.Segment.defaultBackgroundColor = null
     }
 
     @Test
