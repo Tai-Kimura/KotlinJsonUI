@@ -362,11 +362,17 @@ class StaticValuedControlsProbeTest {
         for (id in controls) {
             val d = diff(declared, chosen, id)
             // A text input's caret can move pixels on its own: an input is judged by its text.
-            changed[id] = if (group == "inputs") declared.nodes[id] != chosen.nodes[id] && chosen.nodes[id] !in setOf("no-node", "no-range") else d > 16
+            // A Segment is judged by its node as well: drawn as iOS draws it (2.5.44), the selection
+            // with no tintColor is white on the 12% grey track, under 40 a channel, and both labels
+            // are black — a tap that moved it changed 0 pixels by this measure (measured on API 35,
+            // 2026-11-16: sy.selected false -> true, tap_pixels=0).
+            changed[id] = if (group == "inputs") declared.nodes[id] != chosen.nodes[id] && chosen.nodes[id] !in setOf("no-node", "no-range")
+                else d > 16 || (id == "seg" && declared.nodes[id] == "sy.selected=false" && chosen.nodes[id] == "sy.selected=true")
             // It started at the static value (a dropped seed starts elsewhere).
             declaredReading[id]?.let { want -> if (declared.nodes[id] != want) unseeded += "$path $id: ${declared.nodes[id]}" }
             // After the unrelated change the control still shows the choice.
-            val kept = if (group == "inputs") afterUnrelated.nodes[id] == chosen.nodes[id] else diff(chosen, afterUnrelated, id) in 0..16
+            val kept = if (group == "inputs") afterUnrelated.nodes[id] == chosen.nodes[id]
+                else diff(chosen, afterUnrelated, id) in 0..16 && (id != "seg" || afterUnrelated.nodes[id] == chosen.nodes[id])
             if (changed.getValue(id) && !kept) lost += "$path $id"
             println("STATICVALUED $group $path $id tap_pixels=$d node ${declared.nodes[id]} -> ${chosen.nodes[id]}" +
                 (if (changed.getValue(id)) "" else " TAP_DID_NOT_CHANGE_IT") +

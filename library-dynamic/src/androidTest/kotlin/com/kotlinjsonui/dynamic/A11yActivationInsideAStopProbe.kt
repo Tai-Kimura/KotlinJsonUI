@@ -955,6 +955,15 @@ class A11yActivationInsideAStopProbe {
      * every control, "as many as with no stop" unreachable — and with no stop
      * a Segment counted 1 of its 2 tabs, a Radio 3 of its 2 rows and 2
      * RadioButtons.
+     *
+     * An item with a test tag is paired with the walk's node of that resource
+     * id first: a Segment's tab (`<id>_tab_<n>`, 27 dp inside a 31 dp track)
+     * is shorter than the 48 dp touch target, so its walk node takes the touch
+     * bounds (cut where the window ends), and a node with a Role gets a child
+     * of the layout bounds that carries no action (Compose's node for the
+     * role): the smallest centred node was that child, read as a tab offering
+     * no click (measured on API 35, 2026-11-16). A 48 dp material Tab had
+     * both at the same bounds and the first, the tab, won.
      */
     private fun items(tag: String): List<Pair<SemanticsNode, AccessibilityNodeInfo?>> {
         reveal(tag, null)
@@ -968,6 +977,9 @@ class A11yActivationInsideAStopProbe {
             val (dx, dy) = windowOffset()
             val walk = descendants(root)
             paired = nodes.map { n ->
+                n.config.getOrElseNullable(SemanticsProperties.TestTag) { null }?.let { t ->
+                    walk.firstOrNull { it.viewIdResourceName == t }?.let { return@map n to it }
+                }
                 val b = n.boundsInWindow
                 // The walk gives a node its touch bounds (a RadioButton's
                 // 20 dp glyph reads 48 dp there): the node centred on the

@@ -46,7 +46,7 @@ import org.junit.runner.RunWith
  *
  * Each case is drawn on magenta; the corner is read from the top-left of what was drawn (the
  * first non-magenta pixel on its middle row and column, then along the diagonal: an arc of
- * radius r leaves r(1 - 1/√2) clear). Read to the nearest dp.
+ * radius r leaves r(1 - 1/√2) clear). Read to the nearest dp, judged within 1 dp.
  */
 @RunWith(AndroidJUnit4::class)
 class DefaultCornerRadiusTest {
@@ -135,7 +135,13 @@ class DefaultCornerRadiusTest {
             "static TextField" to 0, "static TextField border" to 0, "static TextView" to 0, "static SelectBox" to 8,
             "dynamic Button" to 0, "dynamic Button background" to 0, "dynamic Button border" to 0, "dynamic Button cornerRadius 12" to 12,
             "dynamic TextField" to 0, "dynamic TextField border" to 0, "dynamic TextView" to 0, "dynamic SelectBox" to 8,
-        ).joinToString("\n") { (n, r) -> "$n :: corner $r dp" }
-        assertEquals(expected, table)
+        )
+        // Within 1 dp: the corner is read in whole pixels off an antialiased arc, so a radius
+        // reads a dp either side by density (an 8 dp SelectBox read 7 on CI's emulator,
+        // conformance-mobile 2026-11-16); 0, 8 and 12 stay 4 dp apart.
+        val got = rows.associate { r -> r.substringBefore(" :: ") to Regex("""corner (\d+) dp""").find(r)?.groupValues?.get(1)?.toInt() }
+        val off = expected.filter { (n, want) -> got[n]?.let { kotlin.math.abs(it - want) <= 1 } != true }
+        assertEquals("corners off by more than 1 dp: $off\n$table", emptyList<Pair<String, Int>>(), off)
+        assertEquals(expected.map { it.first }, rows.map { it.substringBefore(" :: ") })
     }
 }

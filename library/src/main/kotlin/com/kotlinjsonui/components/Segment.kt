@@ -3,10 +3,10 @@ package com.kotlinjsonui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -28,9 +28,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -116,7 +113,9 @@ fun Segment(
 
 /**
  * One segment of a [Segment], in place of Material's Tab (the same parameters kjui writes): its
- * label in the middle of the segment, in the Segment's label colours.
+ * label in the middle of the segment, in the Segment's label colours. A selectable node with the
+ * Tab role, as Material's Tab is: it says whether it is selected, a click selects it, and
+ * [enabled] false reads disabled and takes no click.
  */
 @Composable
 fun SegmentTab(
@@ -129,8 +128,7 @@ fun SegmentTab(
     val labels = LocalSegmentLabels.current
     Box(
         modifier
-            .semantics { this.selected = selected; role = Role.Tab }
-            .clickable(enabled = enabled, onClick = onClick)
+            .selectable(selected = selected, enabled = enabled, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 6.dp),
         contentAlignment = Alignment.Center,
     ) {

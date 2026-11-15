@@ -1,6 +1,7 @@
 // Pasted from what `kjui build` emits for the static layouts of StaticValuedControlsProbeTest —
 // kjui_tools of jsonui-cli triage/selectbox-item-binding 43e735a3 (rel/v1.8.121 = 621d3136 merged in): a static value seeds the control's own state (ticket
-// static-valued-controls-do-not-change-on-a-users-tap). Changed from the output: the package
+// static-valued-controls-do-not-change-on-a-users-tap). The Segment re-pasted from kjui_tools of
+// jsonui-cli c76bf9090 (2.5.44: SegmentTab, the capsule track and fill). Changed from the output: the package
 // (com.kotlinjsonui.probe.* → com.kotlinjsonui.conformance.staticvalued) and the unused
 // `import com.kotlinjsonui.probe.R`.
 package com.kotlinjsonui.conformance.staticvalued
@@ -38,6 +39,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kotlinjsonui.components.SafeDynamicView
 import com.kotlinjsonui.components.Segment
+import com.kotlinjsonui.components.SegmentTab
+import com.kotlinjsonui.core.Configuration
+import com.kotlinjsonui.core.FontSpec
+import com.kotlinjsonui.core.jsonUIFontSize
+import com.kotlinjsonui.core.jsonUILetterSpacing
+import com.kotlinjsonui.core.jsonUILineHeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.font.FontStyle
 import com.kotlinjsonui.components.SelectBox
 import com.kotlinjsonui.core.DynamicModeManager
 import com.kotlinjsonui.core.ScreenMarker
@@ -342,24 +352,41 @@ private fun Section10(
             var seeded by remember { mutableStateOf(0) }
             Segment(
                 selectedTabIndex = seeded,
-                containerColor = Color.Transparent,
                 modifier = Modifier
                     .testTag("seg")
                     .semantics { testTagsAsResourceId = true }
             ) {
-                Tab(
+                SegmentTab(
+                    modifier = Modifier.testTag("seg_tab_0"),
                     selected = (seeded == 0),
                     onClick = {
                         seeded = 0
                     },
-                    text = { Text("sx") }
+                    text = {
+                        val segmentFont = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = LocalTextStyle.current.fontWeight,
+                            size = null,
+                            italic = false
+                        ))
+                        Text("sx", fontFamily = segmentFont.family, fontWeight = segmentFont.weight, fontSize = jsonUIFontSize(segmentFont.size ?: TextUnit.Unspecified), letterSpacing = jsonUILetterSpacing(), lineHeight = jsonUILineHeight(jsonUIFontSize(segmentFont.size ?: TextUnit.Unspecified)), fontStyle = segmentFont.style ?: FontStyle.Normal, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 )
-                Tab(
+                SegmentTab(
+                    modifier = Modifier.testTag("seg_tab_1"),
                     selected = (seeded == 1),
                     onClick = {
                         seeded = 1
                     },
-                    text = { Text("sy") }
+                    text = {
+                        val segmentFont = Configuration.Font.resolve(FontSpec(
+                            family = null,
+                            weight = LocalTextStyle.current.fontWeight,
+                            size = null,
+                            italic = false
+                        ))
+                        Text("sy", fontFamily = segmentFont.family, fontWeight = segmentFont.weight, fontSize = jsonUIFontSize(segmentFont.size ?: TextUnit.Unspecified), letterSpacing = jsonUILetterSpacing(), lineHeight = jsonUILineHeight(jsonUIFontSize(segmentFont.size ?: TextUnit.Unspecified)), fontStyle = segmentFont.style ?: FontStyle.Normal, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 )
             }
         }
