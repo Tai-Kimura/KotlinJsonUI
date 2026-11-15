@@ -7,9 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.kotlinjsonui.image.KjuiNetworkImage
+import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.google.gson.JsonObject
@@ -214,7 +214,22 @@ class DynamicNetworkImageComponent {
                 else -> tint?.let { ColorFilter.tint(it) }
             }
 
-            AsyncImage(
+            // loadingRenderer (a binding may hand "" to turn it off), loadingDelay,
+            // transitionDuration and onLoadStateChange, read as the codegen's
+            // KjuiNetworkImage takes them (ticket jui-networkimage-load-listener).
+            val loadingRenderer = TypedAttrs.string(a.loadingRenderer, data)
+            val loadingDelay = a.loadingDelay?.toInt() ?: 200
+            val transition = a.transitionDuration?.toInt() ?: -1
+            val stateHandler = TypedAttrs.raw(a.onLoadStateChange) as? String
+            val onLoadStateChange: ((String) -> Unit)? = stateHandler
+                ?.takeIf { ModifierBuilder.isBinding(it) }
+                ?.let { handler ->
+                    val viewId = LayoutPath.viewId(json)
+                    val call: (String) -> Unit = { state -> ModifierBuilder.resolveEventHandler(handler, data, viewId, state) }
+                    call
+                }
+
+            KjuiNetworkImage(
                 model = ImageRequest.Builder(context)
                     .data(imageUrl.takeIf { it.isNotEmpty() })
                     .crossfade(true)
@@ -222,11 +237,15 @@ class DynamicNetworkImageComponent {
                 contentDescription = contentDescription,
                 contentScale = contentScale,
                 alignment = contentAlignment,
-                placeholder = placeholderResId?.let { painterResource(it) },
-                error = effectiveErrorResId?.let { painterResource(it) },
-                fallback = effectiveFallbackResId?.let { painterResource(it) },
+                placeholder = placeholderResId ?: 0,
+                error = effectiveErrorResId ?: 0,
+                fallback = effectiveFallbackResId ?: 0,
                 colorFilter = colorFilter,
-                modifier = modifier
+                modifier = modifier,
+                loadingRenderer = loadingRenderer,
+                loadingDelayMillis = loadingDelay,
+                transitionMillis = transition,
+                onLoadStateChange = onLoadStateChange,
             )
         }
 
