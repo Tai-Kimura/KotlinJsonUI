@@ -319,7 +319,12 @@ class DynamicCollectionScrollToTest {
         assertEquals("b1 at the flow's top", listBounds().top, cell.top, 1f)
     }
 
-    /** The pager scrolls to the page the cell is (it read no scrollTo before 1.9.0). */
+    /**
+     * The pager scrolls to the page the cell is (it read no scrollTo before 1.9.0).
+     * The cell is narrower than the page, so it sits in the middle of the page (the
+     * requester's ruling 2026-11-15): the page shown is the one whose cell's centre
+     * is the pager's centre.
+     */
     @Test
     fun thePagerScrollsToThePage() {
         val pager = JsonParser.parseString(
@@ -327,7 +332,11 @@ class DynamicCollectionScrollToTest {
                 "items": "@{items}", "scrollTo": "@{target}", "scrollAnimated": false,
                 "sections": [{"cell": "$cell"}, {"cell": "$cell"}]}"""
         ).asJsonObject
-        assertEquals("b1", landed(pager, 6, cellsAndEdges, horizontal = true))
+        show(pager, mapOf("items" to items, "target" to -1))
+        show(pager, mapOf("items" to items, "target" to 6))
+        val middle = listBounds().center.x
+        val shown = cellsAndEdges.filter { t -> bounds(t)?.let { kotlin.math.abs(it.center.x - middle) < 1f } == true }
+        assertEquals("b1", shown.joinToString(" ").ifEmpty { "none" })
     }
 
     /**

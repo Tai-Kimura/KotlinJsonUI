@@ -148,17 +148,30 @@ class DynamicCollectionInsetsTest {
         show(pager)
         val top0 = cellTop()
         val left0 = cellLeft()
+        // Each case's padding, side by side: top, left (the start), bottom, right (the end).
+        // The cell is narrower and shorter than the page, so it sits in the middle of the
+        // padded page (the requester's ruling 2026-11-15, jsonui-cli ticket
+        // collection-cellwidth-cellheight-unread-on-some-routes): it moves from the unpadded
+        // page's middle by half of (top - bottom) down and half of (left - right) across.
+        // The pager sits at the top of the screen, so `always` meets the safe area's top and
+        // left only.
         val cases = listOf(
-            """, "insets": [0, 0, 0, 30]""" to (0f to px(30)),
-            """, "insets": [0, 30, 0, 30]""" to (0f to px(30)),
-            """, "insets": 12""" to (px(12) to px(12)),
-            """, "insets": "8|4|12|6"""" to (px(8) to px(6)),
-            """, "insets": [8, 4], "insetHorizontal": 10, "insetVertical": 2""" to (px(10) to px(14)),
-            """, "insets": ["@{t}", 0, 0, 0], "insetVertical": 4""" to (px(24) to 0f),
-            """, "insets": [0, 0, 0, 30], "contentInsetAdjustmentBehavior": "always"""" to (safeTop to safeLeft + px(30)),
+            """, "insets": [0, 0, 0, 30]""" to listOf(0f, px(30), 0f, 0f),
+            """, "insets": [0, 30, 0, 30]""" to listOf(0f, px(30), 0f, px(30)),
+            """, "insets": 12""" to listOf(px(12), px(12), px(12), px(12)),
+            """, "insets": "8|4|12|6"""" to listOf(px(8), px(6), px(12), px(4)),
+            """, "insets": [8, 4], "insetHorizontal": 10, "insetVertical": 2""" to listOf(px(10), px(14), px(10), px(14)),
+            """, "insets": ["@{t}", 0, 0, 0], "insetVertical": 4""" to listOf(px(24), 0f, px(4), 0f),
+            """, "insets": [0, 0, 0, 30], "contentInsetAdjustmentBehavior": "always"""" to listOf(safeTop, safeLeft + px(30), 0f, 0f),
         )
-        val drawn = cases.map { (extra, _) -> show(pager + extra); "%.0f,%.0f".format(cellTop() - top0, cellLeft() - left0) }
-        assertEquals(cases.map { "%.0f,%.0f".format(it.second.first, it.second.second) }, drawn)
+        // Halving can land between pixels (a density of 2.625): a pixel either way is the same place.
+        val drawn = cases.map { (extra, _) -> show(pager + extra); (cellTop() - top0) to (cellLeft() - left0) }
+        val expected = cases.map { (_, p) -> (p[0] - p[2]) / 2 to (p[1] - p[3]) / 2 }
+        val text = { l: List<Pair<Float, Float>> -> l.map { "%.0f,%.0f".format(it.first, it.second) } }
+        assertTrue(
+            "expected ${text(expected)} but was ${text(drawn)}",
+            drawn.zip(expected).all { (d, e) -> kotlin.math.abs(d.first - e.first) <= 1f && kotlin.math.abs(d.second - e.second) <= 1f },
+        )
 
         show(pager + """, "insets": [0, 30, 0, 30]""")
         val listLeft = rule.onNodeWithTag("list", useUnmergedTree = true).fetchSemanticsNode().positionInRoot.x

@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -29,6 +30,10 @@ import org.junit.runner.RunWith
  *
  * Each case shows the pager at a bound `currentPage` and reads the cell
  * drawn there (`collection_probe_title_cell`: a Label of the item's title).
+ * The Label is narrower than the page, so it sits in the middle of the page
+ * (the requester's ruling 2026-11-15, jsonui-cli ticket
+ * collection-cellwidth-cellheight-unread-on-some-routes): the page shown is
+ * the one whose cell's centre is the pager's centre.
  */
 @RunWith(AndroidJUnit4::class)
 class DynamicPagingSectionsTest {
@@ -59,10 +64,13 @@ class DynamicPagingSectionsTest {
         }
         rule.runOnIdle { shown = json to mapOf("items" to items, "page" to page) }
         rule.waitForIdle()
+        val middle = pagerMiddle()
         return listOf("a0", "a1", "b0", "b1", "c0").filter {
-            rule.onAllNodesWithText(it).fetchSemanticsNodes().any { node -> node.positionInRoot.x in -1f..1f }
+            rule.onAllNodesWithText(it).fetchSemanticsNodes().any { node -> node.boundsInRoot.center.x in middle - 1f..middle + 1f }
         }
     }
+
+    private fun pagerMiddle(): Float = rule.onNodeWithTag("pager", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot.center.x
 
     @Test
     fun moreDataSectionsThanDeclaredPagesTheDeclaredOnes() {
@@ -96,7 +104,7 @@ class DynamicPagingSectionsTest {
         assertEquals(listOf("b0"), drawnAt(two, items, 2))
         val tagged = rule.onAllNodesWithTag("pager_item_2", useUnmergedTree = true).fetchSemanticsNodes()
         assertEquals("one node answers pager_item_2", 1, tagged.size)
-        assertEquals(0f, tagged.single().positionInRoot.x, 1f)
+        assertEquals(pagerMiddle(), tagged.single().boundsInRoot.center.x, 1f)
     }
 
     @Test
