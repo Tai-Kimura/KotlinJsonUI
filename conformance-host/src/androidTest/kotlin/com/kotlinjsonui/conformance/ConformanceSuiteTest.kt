@@ -396,7 +396,13 @@ class ConformanceSuiteTest {
         // covers post-first-frame settling (shadows, flexible heights) that a
         // single committed frame does not.
         if (fixture.clazz == "visual") {
-            waitForPresented(fixture.id, readyTimeout)
+            // The frame-commit signal (FixtureHost.markDrawn). A timeout used
+            // to pass silently into the capture; it is named now, and every
+            // fixture logs how long its frame took to reach the compositor.
+            val presented = waitForPresented(fixture.id, readyTimeout)
+            val timing = FixtureHost.presentTimings[fixture.id]
+            log("PRESENT ${fixture.id}: presented=$presented nextFrameMs=${timing?.first} commitMs=${timing?.second}")
+            if (!presented) Log.w("ConformanceSuite", "frame never committed within ${readyTimeout}ms: ${fixture.id}")
             // 🔻 A `WebView` IS IN THE HIERARCHY BEFORE IT HAS PAINTED, so the
             // frame-committed signal above is satisfied while the page is
             // still loading. Keyed on the manifest's DECLARED host rather than
