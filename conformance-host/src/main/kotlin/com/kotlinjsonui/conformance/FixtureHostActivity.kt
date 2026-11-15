@@ -1,7 +1,10 @@
 package com.kotlinjsonui.conformance
 
+import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.Choreographer
+import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
@@ -21,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -62,6 +66,7 @@ object FixtureHost {
         currentFixtureId.value?.let {
             renderedIds.remove(it)
             presentedIds.remove(it)
+            presentTimings.remove(it)
             drawArmed.remove(it)
         }
         remountGeneration.value += 1
@@ -111,18 +116,46 @@ object FixtureHost {
      * distance <= 1 — layout had signalled, the screenshot went through
      * SurfaceFlinger, and the frame on the display was still the other one.
      *
-     * [markDrawn] runs in the draw phase; the Choreographer callback it posts
-     * fires at the start of the NEXT frame, by which point the drawn frame has
-     * been submitted. That is the signal a SurfaceFlinger capture needs.
+     * [markDrawn] runs in the draw phase. The Choreographer callback it posts
+     * fires when the UI thread starts the NEXT frame, which says nothing about
+     * the RenderThread: a frame it is still drawing has not reached the
+     * compositor. A blur (RenderEffect) drawn for the first time is such a
+     * frame — run 43684339304 captured common/effectStyle__light byte-identical
+     * to the fixture before it, common/tintColor__binding, after this signal,
+     * the 150 ms beat and two agreeing captures 100 ms apart had all passed.
+     *
+     * So on API 29+ the signal is a frame commit: in that next frame the
+     * callback asks for one more frame (invalidate) and registers a
+     * ViewTreeObserver frame-commit callback, which runs once that frame has
+     * been rendered and submitted to the swap chain. The RenderThread renders
+     * frames in order, so the drawn frame was submitted before it. Below 29
+     * the Choreographer callback stays the signal.
      */
     val presentedIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
 
-    fun markDrawn(fixtureId: String) {
+    /**
+     * Per fixture, ms from the draw to the Choreographer callback and to the
+     * frame commit (null below API 29), read by the suite for its log line.
+     */
+    val presentTimings: MutableMap<String, Pair<Long, Long?>> = ConcurrentHashMap()
+
+    fun markDrawn(fixtureId: String, view: View?) {
         // Draw runs every frame; only the first one per fixture needs to arm
         // the callback, and `add` returning false makes that check free.
         if (!drawArmed.add(fixtureId)) return
+        val drawnAt = SystemClock.uptimeMillis()
         Choreographer.getInstance().postFrameCallback {
-            presentedIds.add(fixtureId)
+            val nextFrameMs = SystemClock.uptimeMillis() - drawnAt
+            if (view == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q || !view.isAttachedToWindow) {
+                presentTimings[fixtureId] = nextFrameMs to null
+                presentedIds.add(fixtureId)
+                return@postFrameCallback
+            }
+            view.viewTreeObserver.registerFrameCommitCallback {
+                presentTimings[fixtureId] = nextFrameMs to (SystemClock.uptimeMillis() - drawnAt)
+                presentedIds.add(fixtureId)
+            }
+            view.invalidate()
         }
     }
 
@@ -134,6 +167,7 @@ object FixtureHost {
         fixtureId?.let {
             renderedIds.remove(it)
             presentedIds.remove(it)
+            presentTimings.remove(it)
             drawArmed.remove(it)
         }
         currentFixtureId.value = fixtureId
@@ -213,6 +247,7 @@ class FixtureHostActivity : ComponentActivity() {
 @Composable
 private fun FixtureScreen(fixtureId: String) {
     val context = LocalContext.current
+    val hostView = LocalView.current
     val hostMode by FixtureHost.hostMode.collectAsState()
 
     if (hostMode == "codegen") {
@@ -233,7 +268,7 @@ private fun FixtureScreen(fixtureId: String) {
                 .onGloballyPositioned { FixtureHost.markRendered(fixtureId) }
                 .drawWithContent {
                     drawContent()
-                    FixtureHost.markDrawn(fixtureId)
+                    FixtureHost.markDrawn(fixtureId, hostView)
                 }
         ) {
             if (entry != null) {
@@ -276,7 +311,7 @@ private fun FixtureScreen(fixtureId: String) {
             .onGloballyPositioned { FixtureHost.markRendered(fixtureId) }
             .drawWithContent {
                 drawContent()
-                FixtureHost.markDrawn(fixtureId)
+                FixtureHost.markDrawn(fixtureId, hostView)
             }
     ) {
         layoutJson?.let { json ->
