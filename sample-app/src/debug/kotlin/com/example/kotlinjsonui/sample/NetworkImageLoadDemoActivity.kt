@@ -176,10 +176,16 @@ private object SlowImageServer {
         }
     }
 
-    private fun serve(client: Socket) = client.use { s ->
+    private fun serve(client: Socket) {
+        client.use { s -> respond(s) }
+    }
+
+    private fun respond(s: Socket) {
         val reader = s.getInputStream().bufferedReader()
         val line = reader.readLine() ?: return
-        while (reader.readLine()?.isNotEmpty() == true) Unit
+        while (true) {
+            if (reader.readLine().isNullOrEmpty()) break
+        }
         val i = Regex("/img/(\\d+)").find(line)?.groupValues?.get(1)?.toInt() ?: 0
         val body = image(i)
         val out = s.getOutputStream()
