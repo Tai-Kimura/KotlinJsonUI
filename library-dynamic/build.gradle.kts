@@ -85,8 +85,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     // coil3 (see library/build.gradle.kts); the network fetcher arrives on the
     // runtime classpath through :library.
-    implementation("io.coil-kt.coil3:coil-compose:3.5.0")
-    implementation("com.squareup.okhttp3:okhttp:5.1.0")
+    implementation("io.coil-kt.coil3:coil-compose:3.6.3")
+    implementation("com.squareup.okhttp3:okhttp:5.5.1")
 
     // Test dependencies
     testImplementation("junit:junit:4.13.2")
@@ -98,7 +98,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     // CoilNetworkFetcherTest: a local HTTP image server, so the "does a URL
     // image load at all" measurement needs no internet from the emulator.
-    androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     // ContentTypeReachesAutofillTest taps the autofill suggestion, a window of its own.

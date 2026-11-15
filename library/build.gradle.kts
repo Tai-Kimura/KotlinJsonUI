@@ -176,9 +176,13 @@ dependencies {
     // coil3's core has NO network fetcher — without coil-network-okhttp on
     // the runtime classpath every URL image silently becomes its error
     // painter (CoilNetworkFetcherTest pins the artifact's presence).
-    implementation("io.coil-kt.coil3:coil:3.5.0")
-    api("io.coil-kt.coil3:coil-compose:3.5.0")
-    api("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
+    // 3.6.3: the NetworkClient / ConcurrentRequestStrategy shapes
+    // KjuiImageLoaderFactory builds on (com.kotlinjsonui.image) — the request's
+    // extras reach the NetworkClient, and DeDupeConcurrentRequestStrategy reads
+    // one URL once. The version the distribution lanes already declare.
+    implementation("io.coil-kt.coil3:coil:3.6.3")
+    api("io.coil-kt.coil3:coil-compose:3.6.3")
+    api("io.coil-kt.coil3:coil-network-okhttp:3.6.3")
     
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.3")
@@ -191,14 +195,20 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     
-    // Networking (for HotLoader)
-    implementation("com.squareup.okhttp3:okhttp:5.1.0")
+    // Networking (HotLoader, and the image loader's EventListener: 5.5 has
+    // dispatcherQueueStart / dispatcherQueueEnd, the queued event; 5.1 did not).
+    // The version the distribution lanes already declare.
+    implementation("com.squareup.okhttp3:okhttp:5.5.1")
     
     // Testing
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // KjuiNetworkImageTest: a slow image server on the device.
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
     // EmbedViewModelLifetimeTest: an Embed inside a NavHost destination.
     androidTestImplementation("androidx.navigation:navigation-compose:2.9.3")
     
