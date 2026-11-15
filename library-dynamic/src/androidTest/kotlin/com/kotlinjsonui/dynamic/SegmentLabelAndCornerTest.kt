@@ -168,9 +168,29 @@ class SegmentLabelAndCornerTest {
             val fillClear = !white((fillRight - 1 * dp).toInt(), (3 * dp).toInt())
             rows += "cornerRadius $corner :: track corner ${if (trackClear) "clear" else "filled"}, fill corner ${if (fillClear) "clear" else "filled"}"
         }
+        // A declared border, and a background, follow the capsule too (the ruling 2026-11-16: the
+        // border, the shadow and the clip are the capsule's, the declared cornerRadius unused).
+        for (corner in listOf("none", "4")) {
+            val radius = if (corner == "none") "" else """, "cornerRadius": $corner"""
+            show(dynamic("""$radius, "background": "#FFCC00", "borderWidth": 2, "borderColor": "#FF0000""""))
+            val map = rule.onNodeWithTag("seg", useUnmergedTree = true).captureToImage().toPixelMap()
+            val dp = rule.density.density
+            val p = (1.6f * dp).toInt()
+            fun at(x: Int, y: Int) = map[x, y].let {
+                when {
+                    it.red > 0.97f && it.green > 0.97f && it.blue > 0.97f -> "clear"
+                    it.red > 0.8f && it.green < 0.3f && it.blue < 0.3f -> "border"
+                    else -> "(%d,%d,%d)".format((it.red * 255).toInt(), (it.green * 255).toInt(), (it.blue * 255).toInt())
+                }
+            }
+            // 1.6 dp in from the corner: outside the capsule (clear), on a square or 4 dp corner's
+            // border; and the left end's middle, on the capsule's border.
+            rows += "border, cornerRadius $corner :: corner ${at(p, p)}, left end ${at(p, map.height / 2)}"
+        }
         val table = rows.joinToString("\n")
         Log.i("KjuiSegmentCorner", "\n$table")
-        val expected = listOf("none", "0", "4", "100").joinToString("\n") { "cornerRadius $it :: track corner clear, fill corner clear" }
+        val expected = (listOf("none", "0", "4", "100").map { "cornerRadius $it :: track corner clear, fill corner clear" } +
+            listOf("none", "4").map { "border, cornerRadius $it :: corner clear, left end border" }).joinToString("\n")
         assertEquals(expected, table)
     }
 }

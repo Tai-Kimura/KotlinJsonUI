@@ -11,6 +11,7 @@ import com.kotlinjsonui.components.SegmentTab
 import com.kotlinjsonui.dynamic.TypedAttrs
 import com.kotlinjsonui.dynamic.UnappliedAttributes
 import com.kotlinjsonui.dynamic.generated.SegmentAttributes
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.platform.testTag
 import com.kotlinjsonui.dynamic.helpers.LayoutPath
 import com.kotlinjsonui.dynamic.helpers.ModifierBuilder
@@ -179,7 +180,10 @@ class DynamicSegmentComponent {
             // `background` is the track (containerColor), drawn inside the Segment's capsule, as the
             // codegen draws it; not a rectangle behind the capsule.
             val modifier = ModifierBuilder.buildModifier(
-                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER, handles = setOf("background")
+                json, data, context = context, control = ModifierBuilder.ControlTap.WRAPPER, handles = setOf("background"),
+                // The shadow, the clip and a declared border follow the capsule; the declared
+                // cornerRadius is not read (the ruling 2026-11-16, as iOS and the web draw it).
+                ownShape = RoundedCornerShape(percent = 50)
             )
 
             // Handle tab click with binding update + event handler

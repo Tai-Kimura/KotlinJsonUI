@@ -673,7 +673,8 @@ object ModifierBuilder {
         modifier: Modifier,
         json: JsonObject,
         data: Map<String, Any>,
-        context: Context?
+        context: Context?,
+        ownShape: Shape? = null
     ): Modifier {
         var result = modifier
         val cornerRadius = dimen(json.get("cornerRadius"), data)
@@ -682,14 +683,17 @@ object ModifierBuilder {
         val borderWidth = dimen(json.get("borderWidth"), data)
         val borderStyle = json.get("borderStyle")?.asString ?: "solid"
 
-        // Clip with corner radius
-        if (cornerRadius != null) {
+        // Clip with corner radius — or with the component's own shape, which no cornerRadius
+        // changes (a Segment's capsule, [ownShape]).
+        if (ownShape != null) {
+            result = result.clip(ownShape)
+        } else if (cornerRadius != null) {
             result = result.clip(RoundedCornerShape(cornerRadius.dp))
         }
 
         // Border
         if (borderColor != null && borderWidth != null) {
-            val borderShape = if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
+            val borderShape = ownShape ?: if (cornerRadius != null) RoundedCornerShape(cornerRadius.dp) else RectangleShape
             result = when (borderStyle) {
                 "dashed" -> result.dashedBorder(borderWidth.dp, borderColor, borderShape)
                 "dotted" -> result.dottedBorder(borderWidth.dp, borderColor, borderShape)
@@ -1740,6 +1744,11 @@ object ModifierBuilder {
      * — read here as if the node did not set them, so they are not applied a
      * second time. Empty (the default): every stage, as before. kjui's codegen
      * leaves the same ones to an app's converter that calls them itself.
+     *
+     * `ownShape`: the shape the component draws itself in, whatever its
+     * cornerRadius says — the shadow is cast in it and the background stage
+     * clips to it and draws the border in it (a Segment's capsule, the ruling
+     * 2026-11-16). Null (the default): the node's cornerRadius, as before.
      */
     fun buildModifier(
         json: JsonObject,
@@ -1748,7 +1757,8 @@ object ModifierBuilder {
         context: Context? = null,
         defaultFillMaxWidth: Boolean = false,
         control: ControlTap? = null,
-        handles: Set<String> = emptySet()
+        handles: Set<String> = emptySet(),
+        ownShape: Shape? = null
     ): Modifier {
         // The node being drawn got its common stages (AppComponentStages).
         AppComponentStages.markApplied()
@@ -1758,6 +1768,10 @@ object ModifierBuilder {
         val built = standardOrder.fold<Stage, Modifier>(Modifier) { modifier, stage ->
             if (control != null && stage.name == "clickable") {
                 applyControlClickable(modifier, node, data, control)
+            } else if (ownShape != null && stage.name == "shadow") {
+                applyShadow(modifier, node, data, ownShape = ownShape)
+            } else if (ownShape != null && stage.name == "background") {
+                applyBackground(modifier, node, data, context, ownShape)
             } else {
                 stage.apply(modifier, node, data, context, defaultFillMaxWidth)
             }
