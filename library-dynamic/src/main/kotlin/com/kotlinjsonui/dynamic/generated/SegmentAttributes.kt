@@ -33,7 +33,7 @@ data class SegmentAttributes(
     val selectedFontColor: String? = null,
     /** Initially selected index (binding for two-way). `selectedTabIndex` folds here (sjui segment_converter.rb:16), matching the alias TabView already declares. [aliases: selectedTabIndex; binding: two-way] */
     val selectedIndex: AttrValue<Double>? = null,
-    /** Accent color of the SELECTED segment - a background fill on ios/web, the indicator on Compose. Hex string or color name from colors.json. `selectedSegmentTintColor` folds here (sjui segment_converter.rb:128 reads `selectedSegmentTintColor || tintColor`). [aliases: selectedSegmentTintColor] */
+    /** Accent color of the SELECTED segment - a background fill over the segment track on every platform (Compose draws the same capsule track and fill as iOS since the requester's ruling 2026-11-15; before it, Compose drew a TabRow indicator). Hex string or color name from colors.json. `selectedSegmentTintColor` folds here (sjui segment_converter.rb:128 reads `selectedSegmentTintColor || tintColor`). [aliases: selectedSegmentTintColor] */
     val tintColor: String? = null,
     /** Value change event */
     val valueChange: String? = null,

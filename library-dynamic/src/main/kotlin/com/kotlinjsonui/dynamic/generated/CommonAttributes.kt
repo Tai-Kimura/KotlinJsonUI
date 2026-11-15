@@ -82,7 +82,7 @@ data class CommonAttributes(
     val compressVertical: String? = null,
     /** Confirmation dialog configuration (iOS 15+) */
     val confirmationDialog: Map<String, Any?>? = null,
-    /** Corner radius (can be data binding) */
+    /** Corner radius (can be data binding). Unwritten, a Button, TextField or TextView draws square corners (0) and a SelectBox 8 on every platform (the requester's ruling 2026-11-15); the default is fixed by the library, not by an app setting. */
     val cornerRadius: AttrValue<Double>? = null,
     /** Data model definitions for binding: an array of declarations ({name, class, defaultValue}). On an include node an array is declarations merged into the included layout's, and an object is a map laid over the including layout's data for the included layout, after `shared_data` — `data` wins on a key both set (see `include`). */
     val data: List<Any?>? = null,
