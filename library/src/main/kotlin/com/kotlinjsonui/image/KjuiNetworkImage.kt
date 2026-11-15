@@ -72,6 +72,12 @@ fun KjuiNetworkImage(
     onLoadStateChange: ((String) -> Unit)? = null,
     onLoadEvent: ((KjuiImageLoadEvent) -> Unit)? = null,
 ) {
+    // No src — null, "" or only spaces — draws `fallback` (defaultImage: networkImage.noSrc in
+    // shared/core/attribute_semantics.json) and reads nothing, so nothing is reported, as
+    // SwiftJsonUI's NetworkImage does with no URL (jsonui-cli ticket
+    // kjui-networkimage-empty-src-draws-error-image). coil takes `fallback` for null data
+    // only; "" and spaces were read, failed and drew `error`.
+    val src = noSrcAsNull(model)
     val context = LocalContext.current
     val debug = remember(context) { context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0 }
     val factory = KjuiLoadingRenderers.resolve(loadingRenderer, debug)
@@ -82,12 +88,12 @@ fun KjuiNetworkImage(
     }
     val tracked = factory != null || t > 0 || onLoadStateChange != null || onLoadEvent != null ||
         KjuiImageLoadTable.hasObservers
-    val key = modelKey(model)
+    val key = modelKey(src)
 
     if (!tracked || key == null) {
         // As before: coil's AsyncImage, nothing added.
         AsyncImage(
-            model = model,
+            model = src,
             contentDescription = contentDescription,
             modifier = modifier,
             placeholder = placeholder.takeIf { it != 0 }?.let { painterResource(it) },
@@ -113,7 +119,7 @@ fun KjuiNetworkImage(
     frame.onState = { stateCallback.value?.invoke(it) }
     frame.onEvent = { eventCallback.value?.invoke(it) }
 
-    val request = remember(model, frame) { frame.request(model, context) }
+    val request = remember(src, frame) { frame.request(src, context) }
     val alpha = frame.alpha
     // With a renderer the generated modifier goes on the outer box, which hands its own
     // minimum size down (propagateMinConstraints): the image is sized as AsyncImage was.
@@ -149,6 +155,16 @@ fun KjuiNetworkImage(
             image()
         }
     }
+}
+
+/** null for no src: null, a blank String, or an ImageRequest whose data is one of those. */
+internal fun noSrcAsNull(model: Any?): Any? = when (model) {
+    is CharSequence -> model.takeIf { it.isNotBlank() }
+    is ImageRequest -> when (val data = model.data) {
+        is CharSequence -> if (data.isBlank()) model.newBuilder().data(null).build() else model
+        else -> model
+    }
+    else -> model
 }
 
 private fun modelKey(model: Any?): String? = when (model) {

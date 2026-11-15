@@ -190,8 +190,9 @@ class DynamicNetworkImageComponent {
             // networkimage_component.rb, and the two must agree or the same
             // layout draws differently on the two paths).
             //
-            // Empty url becomes null so Coil takes the fallback path instead
-            // of treating "" as a failing request.
+            // An empty or blank url becomes null so Coil takes the fallback path
+            // instead of treating it as a failing request (jsonui-cli ticket
+            // kjui-networkimage-empty-src-draws-error-image).
             val effectiveErrorResId = errorSlot(errorResId, defaultResId)
             val effectiveFallbackResId = fallbackSlot(defaultResId)
 
@@ -231,7 +232,7 @@ class DynamicNetworkImageComponent {
 
             KjuiNetworkImage(
                 model = ImageRequest.Builder(context)
-                    .data(imageUrl.takeIf { it.isNotEmpty() })
+                    .data(imageUrl.takeIf { it.isNotBlank() })
                     .crossfade(true)
                     .build(),
                 contentDescription = contentDescription,
