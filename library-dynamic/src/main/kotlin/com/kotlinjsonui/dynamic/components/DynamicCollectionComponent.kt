@@ -673,7 +673,6 @@ class DynamicCollectionComponent {
                     pageSpacing = scrollAxisSpacing,
                     cellWidth = cellWidth,
                     cellHeight = cellHeight,
-                    gravityAlignment = gravityAlignment,
                     onItemAppear = onItemAppear,
                     collectionId = collectionId,
                     userScrollEnabled = scrollEnabled
@@ -1265,7 +1264,6 @@ class DynamicCollectionComponent {
             pageSpacing: androidx.compose.ui.unit.Dp,
             cellWidth: androidx.compose.ui.unit.Dp?,
             cellHeight: androidx.compose.ui.unit.Dp?,
-            gravityAlignment: Alignment,
             onItemAppear: ((Int) -> Unit)? = null,
             collectionId: String? = null,
             userScrollEnabled: Boolean = true,
@@ -1430,13 +1428,18 @@ class DynamicCollectionComponent {
                 // scrollEnabled false stops the user's paging only (round 13).
                 userScrollEnabled = userScrollEnabled
             ) { pageIndex ->
+                // A cell smaller than the page sits in the middle of the page (the requester's ruling
+                // 2026-11-15, jsonui-cli ticket collection-cellwidth-cellheight-unread-on-some-routes), as
+                // SwiftJsonUI's TabView page centres its cell and kjui's codegen pager does. A declared
+                // cellWidth / cellHeight draws the cell at that size (anchored topStart and clipped there,
+                // as every other route draws it). Until then the size came after fillMaxSize, which had
+                // already fixed the page's size, and a cell of its own smaller size sat at the gravity's
+                // corner (topStart unless declared), where the other pagers centred it.
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(contentPadding)
-                        .then(if (cellWidth != null) Modifier.width(cellWidth) else Modifier)
-                        .then(if (cellHeight != null) Modifier.height(cellHeight) else Modifier),
-                    contentAlignment = gravityAlignment
+                        .padding(contentPadding),
+                    contentAlignment = Alignment.Center
                 ) {
                     when {
                         pageItems.isNotEmpty() -> {
@@ -1446,7 +1449,9 @@ class DynamicCollectionComponent {
                             // across the sections, as the codegen pager's page and
                             // SwiftJsonUI's do (4f ruling 2026-09-26, round 7).
                             // They restarted per section until then.
-                            renderCellView(pageItem.cellViewName, pageItem.itemData, pageIndex, data, onItemAppear, collectionId = collectionId)
+                            DeclaredCellFrame(cellWidth, cellHeight) {
+                                renderCellView(pageItem.cellViewName, pageItem.itemData, pageIndex, data, onItemAppear, collectionId = collectionId)
+                            }
                         }
                     }
                 }
@@ -1601,7 +1606,7 @@ class DynamicCollectionComponent {
          */
         /**
          * The declared cell size (cellWidth / cellHeight) on the vertical non-lazy routes (lazy none,
-         * wrapContent, the non-lazy grid), as the lazy routes draw it: the cell anchored topStart at the
+         * wrapContent, the non-lazy grid) and on the pager's page (centred there), as the lazy routes draw it: the cell anchored topStart at the
          * declared size and clipped there (jsonui-cli ticket collection-cellwidth-cellheight-unread-on-
          * some-routes; these routes read cellHeight alone until then, and cellWidth not at all). Neither
          * declared: the cell as it was.
