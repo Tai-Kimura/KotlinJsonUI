@@ -54,7 +54,15 @@ class KjuiImageLoad internal constructor(
         val n: Int
         synchronized(lock) {
             if (phase == KjuiImagePhase.FINISHED) return
-            if (callSeen) attempt += 1
+            if (callSeen) {
+                attempt += 1
+                // A new attempt reads from 0 bytes, as on iOS: what an earlier one received or
+                // was told to expect is not this one's.
+                received = 0L
+                expected = null
+                respondedAt = null
+                lastSentReceived = 0L
+            }
             callSeen = true
             n = attempt
         }
@@ -84,6 +92,13 @@ class KjuiImageLoad internal constructor(
         lastByteAt = now
         phase = KjuiImagePhase.RECEIVING
         if (due) dispatch.progress(this)
+    }
+
+    /** A passing failure: the next attempt, [next], is read after a wait. */
+    internal fun retrying(next: Int) {
+        if (phase.isTerminal) return
+        phase = KjuiImagePhase.RETRYING
+        dispatch.send(this, KjuiImageLoadEvent.Retrying(next))
     }
 
     // ── from coil's result (main thread) ──

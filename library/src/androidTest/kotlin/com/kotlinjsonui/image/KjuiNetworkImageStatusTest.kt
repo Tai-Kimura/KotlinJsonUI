@@ -73,6 +73,8 @@ class KjuiNetworkImageStatusTest {
 
     @Before
     fun setUp() {
+        // The retries' waits shortened (KjuiNetworkImageRetryTest measures the real 2 s and 4 s).
+        retryStepMillis = 50L
         server = MockWebServer()
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
@@ -110,14 +112,18 @@ class KjuiNetworkImageStatusTest {
     }
 
     @After
-    fun tearDown() = server.shutdown()
+    fun tearDown() {
+        server.shutdown()
+        retryStepMillis = 2_000L
+    }
 
     private var shown by mutableStateOf<String?>(null)
     private var composed = false
 
     /** Shows [path] in a fresh frame and returns its row: the events, then the states. */
-    private fun row(path: String, query: String = ""): String {
-        val url = server.url(path).toString() + query
+    private fun row(path: String, query: String = ""): String = rowAt(server.url(path).toString() + query)
+
+    private fun rowAt(url: String): String {
         val events = Collections.synchronizedList(mutableListOf<String>())
         val states = Collections.synchronizedList(mutableListOf<String>())
         val sinks = events to states
@@ -159,7 +165,9 @@ class KjuiNetworkImageStatusTest {
         is KjuiImageLoadEvent.Responded -> "responded(${e.expected})"
         is KjuiImageLoadEvent.Progress -> "progress(${e.received}/${e.expected})"
         is KjuiImageLoadEvent.Finished -> "finished(${e.source})"
-        is KjuiImageLoadEvent.Failed -> "failed(${e.error?.javaClass?.simpleName})"
+        // A cut connection fails as SocketException or a plain IOException, by when the cut lands.
+        is KjuiImageLoadEvent.Failed -> "failed(${if (e.error is java.net.SocketException) "IOException" else e.error?.javaClass?.simpleName})"
+        is KjuiImageLoadEvent.Retrying -> "retrying(${e.attempt})"
         KjuiImageLoadEvent.Cancelled -> "cancelled"
     }
 
@@ -197,30 +205,42 @@ class KjuiNetworkImageStatusTest {
         rows["200 HTML (not an image)"] = row("/page.jpg")
         rows["404 with a PNG body"] = row("/missing-png.jpg")
         rows["503, 503, 200"] = row("/busy.jpg")
+        // A connection cut before any answer: its own server, the cut queued (a Dispatcher's
+        // DISCONNECT_AT_START is read from peek(), which answers an empty 200 by default).
+        val cut = MockWebServer().apply {
+            repeat(6) { enqueue(MockResponse().setSocketPolicy(okhttp3.mockwebserver.SocketPolicy.DISCONNECT_AT_START)) }
+            start()
+        }
+        try { rows["connection cut"] = rowAt(cut.url("/cut.jpg").toString()) } finally { cut.shutdown() }
         val table = rows.entries.joinToString("\n") { (k, v) -> "$k :: $v" }
         Log.i("KjuiStatusTable", "\n$table\nIf-None-Match seen: $etagSeen\nrequests: ${server.requestCount}")
 
         // How many Progress a frame is told depends on the reads' timing: compared without the count.
         val image = "requesting(0) responded(IMG) progress(IMG/IMG) finished(NETWORK) | loading loaded | IMG"
         val failed = "requesting(0) failed(HttpException) | loading failed | 0"
+        val retried = "requesting(0) retrying(1) requesting(1) retrying(2) requesting(2) failed(HttpException) | loading failed | 0"
         val expected = linkedMapOf(
             "200" to image,
             "200 (ETag, no-cache)" to image,
             // coil's CacheStrategy.DEFAULT reads its disk cache without asking the server.
             "again from disk (ETag)" to "finished(DISK) | loading loaded | 0",
             // coil asks again without its cache, then fails: two calls, neither the image.
-            "304 unasked" to "requesting(0) requesting(1) failed(IllegalStateException) | loading failed | 0",
+            // It fails at once (the requester's ruling 2026-11-15); coil asked again without its cache.
+            "304 unasked" to "requesting(0) failed(IOException) | loading failed | 0",
             "302 -> 200" to image,
             "302 -> 404" to failed,
             "404 (9 B)" to failed,
             "404 (20 KB HTML, slow)" to failed,
-            "500" to failed,
+            // A passing failure is read twice more (ticket jui-networkimage-retry-rules-differ-by-os).
+            "500" to retried,
             // A 2xx is the image's response: its bytes are counted; the decode fails.
             "200 HTML (not an image)" to "requesting(0) responded(19988) progress(19988/19988) failed(DecodeException) | loading failed | 19988",
             // coil fails a 4xx whatever its body is: no image is drawn from an error response.
             "404 with a PNG body" to failed,
             // coil does not retry: the first 503 fails the load.
-            "503, 503, 200" to failed,
+            "503, 503, 200" to "requesting(0) retrying(1) requesting(1) retrying(2) requesting(2) responded(IMG) progress(IMG/IMG) finished(NETWORK) | loading loaded | IMG",
+            // A cut connection: no response at all, so nothing is responded.
+            "connection cut" to "requesting(0) retrying(1) requesting(1) retrying(2) requesting(2) failed(IOException) | loading failed | 0",
         )
         val drawn = rows.mapValues { (_, v) -> v.replace(Regex("progress×\\d+\\("), "progress(") }
         assertEquals("the table\n$table", expected.entries.joinToString("\n") { "${it.key} :: ${it.value}" },

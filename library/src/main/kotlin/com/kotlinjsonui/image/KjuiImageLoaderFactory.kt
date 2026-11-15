@@ -15,6 +15,7 @@ import coil3.network.NetworkResponse
 import coil3.network.NetworkResponseBody
 import coil3.network.CacheStrategy
 import coil3.network.ConnectivityChecker
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
 import okhttp3.Callback
@@ -28,6 +29,7 @@ import okio.Buffer
 import okio.ForwardingSource
 import okio.buffer
 import java.io.IOException
+import java.net.UnknownHostException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -46,7 +48,9 @@ internal val KjuiImageLoadKey: Extras.Key<KjuiImageLoad?> = Extras.Key(default =
  * SingletonImageLoader.setSafe(KjuiImageLoaderFactory())
  * ```
  * Without it NetworkImage still works and a renderer still draws; it is told only
- * requesting / finished / failed (from coil's request listener), never progress.
+ * requesting / finished / failed (from coil's request listener), never progress, and a failed
+ * read is not read again: the retries after a passing failure (5xx, 408, 429, a cut connection;
+ * 2 s and 4 s, `Retrying(n)` before each wait) are this factory's NetworkClient's.
  *
  * @param baseClient the OkHttpClient to build from (its interceptors, timeouts and pool are
  *   kept; the event listener is replaced).
@@ -140,7 +144,34 @@ internal class KjuiNetworkClient(private val client: Call.Factory) : NetworkClie
         builder.method(request.method, body)
         if (load != null) builder.tag(KjuiImageLoad::class.java, load)
 
-        val response = client.newCall(builder.build()).await()
+        val call = builder.build()
+        var attempt = 0
+        var response: Response
+        while (true) {
+            // A passing failure — 5xx, 408, 429, a cut connection — is read again after 2 s and
+            // after 4 s, the load told `retrying(n)` before each wait; a 4xx but 408 and 429 is the
+            // request's own fault and fails at once (the requester's ruling 2026-11-15, ticket
+            // jui-networkimage-retry-rules-differ-by-os), as SwiftJsonUI's NetworkImage does.
+            val outcome = try {
+                client.newCall(call).await()
+            } catch (e: IOException) {
+                if (e is UnknownHostException || attempt >= MAX_RETRIES) throw e
+                null
+            }
+            if (outcome != null) {
+                // A 304 nobody asked for has no image and no body: it fails, and is not read again
+                // (coil would ask once more without its cache).
+                if (outcome.code == 304 && !outcome.isTheImage()) {
+                    outcome.close()
+                    throw IOException("HTTP 304 to a request that was not conditional")
+                }
+                if (!outcome.isPassingFailure() || attempt >= MAX_RETRIES) { response = outcome; break }
+                outcome.close()
+            }
+            attempt += 1
+            load?.retrying(attempt)
+            delay(attempt * retryStepMillis)
+        }
         return response.use { r ->
             val headers = NetworkHeaders.Builder().apply { r.headers.forEach { (n, v) -> add(n, v) } }.build()
             // coil reads a 4xx's body too (an error page): it is not the image's bytes.
@@ -165,6 +196,15 @@ internal class KjuiNetworkClient(private val client: Call.Factory) : NetworkClie
         }
     }
 }
+
+/** Retries after a passing failure (iOS's maxRetries). */
+internal const val MAX_RETRIES = 2
+
+/** The wait before retry n is n × this (2 s, as on iOS); tests shorten it. */
+@Volatile internal var retryStepMillis: Long = 2_000L
+
+/** A failure another read may not meet: 5xx, 408 (timeout), 429 (too many requests). */
+internal fun Response.isPassingFailure(): Boolean = code in 500..599 || code == 408 || code == 429
 
 private suspend fun Call.await(): Response = suspendCancellableCoroutine { cont ->
     cont.invokeOnCancellation { cancel() }
