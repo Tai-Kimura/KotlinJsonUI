@@ -31,6 +31,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.platform.LocalDensity
 import com.kotlinjsonui.core.Configuration
 import com.kotlinjsonui.core.jsonUITintOrNull
 
@@ -47,11 +50,12 @@ import com.kotlinjsonui.core.jsonUITintOrNull
  * - [contentColor] / [selectedContentColor]: the unselected / selected label (`fontColor` /
  *   `selectedFontColor`); null is iOS's: black (light) / white (dark).
  *
- * - [cornerRadius]: the layout's cornerRadius, the track's corner (the fill's is 2dp less);
- *   null is a capsule, as iOS draws it.
+ * - [cornerRadius]: not read. The track and the selected fill are capsules whatever the layout
+ *   declares, as iOS draws them (the requester's ruling 2026-11-16: a Segment does not read
+ *   cornerRadius). Kept so code kjui generated before still compiles.
  *
- * The segments are [SegmentTab]s; their labels are Medium, as Material's Tab drew them (an app's
- * fontProvider is asked with that weight).
+ * The segments are [SegmentTab]s; their labels are iOS's: 13 dp at every font scale, Medium on the
+ * selected segment and Regular on the others (an app's fontProvider is asked with that weight).
  */
 @Composable
 fun Segment(
@@ -75,7 +79,7 @@ fun Segment(
     val position by animateFloatAsState(selectedTabIndex.toFloat(), tween(200), label = "segment")
     val count = remember { IntArray(1) }
     val inset = 2.dp
-    val pill = cornerRadius?.let { RoundedCornerShape(it) } ?: RoundedCornerShape(percent = 50)
+    val pill = RoundedCornerShape(percent = 50)
 
     CompositionLocalProvider(LocalSegmentLabels provides SegmentLabels(label, selectedLabel)) {
         Layout(
@@ -90,7 +94,7 @@ fun Segment(
                     val i = inset.toPx()
                     val w = (size.width - 2 * i) / n
                     val h = size.height - 2 * i
-                    val r = cornerRadius?.let { (it.toPx() - i).coerceAtLeast(0f) } ?: (h / 2)
+                    val r = h / 2
                     drawRoundRect(fill, Offset(i + w * position, i), Size(w, h), CornerRadius(r, r))
                 },
         ) { measurables, constraints ->
@@ -132,12 +136,28 @@ fun SegmentTab(
             .padding(horizontal = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
+        // iOS's label (UISegmentedControl's own font, measured on iOS 27.2 for jsonui-cli ticket
+        // kjui-segment-label-font-larger-than-ios): 13 pt, Medium on the selected segment and Regular
+        // on the others, the same 13 at every Dynamic Type size (small to AX5). So 13 dp here, the
+        // same at every font scale (asked in sp as 13 dp is at this density), the line the font's own
+        // and no letter spacing: Material's bodyLarge drew 16 sp Medium with a 24 sp line, and a
+        // label iOS fits in a 156 wide Segment ran to "…".
+        val density = LocalDensity.current
         CompositionLocalProvider(
             LocalContentColor provides if (selected) labels.selected else labels.normal,
-            LocalTextStyle provides LocalTextStyle.current.merge(TextStyle(fontWeight = FontWeight.Medium)),
+            // copy, not merge: merge keeps the theme's line height when the other's is unspecified.
+            LocalTextStyle provides LocalTextStyle.current.copy(
+                fontSize = with(density) { LABEL_SIZE.toSp() },
+                fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
+                lineHeight = TextUnit.Unspecified,
+                letterSpacing = 0.sp,
+            ),
         ) { text() }
     }
 }
+
+/** iOS's segment label size (UISegmentedControl, 13 pt at every Dynamic Type size). */
+private val LABEL_SIZE = 13.dp
 
 internal data class SegmentLabels(val normal: Color, val selected: Color)
 

@@ -198,8 +198,8 @@ class DynamicSegmentComponent {
                 contentColor = normalColor,
                 selectedContentColor = selectedColor,
                 indicatorColor = indicatorColor,
-                // The declared cornerRadius is the track's corner; none, a capsule.
-                cornerRadius = TypedAttrs.float(a.common.cornerRadius, data)?.dp
+                // No cornerRadius: the track and the fill are capsules whatever the layout declares,
+                // as iOS draws them (the requester's ruling 2026-11-16).
             ) {
                 segments.forEachIndexed { index, segment ->
                     SegmentTab(
