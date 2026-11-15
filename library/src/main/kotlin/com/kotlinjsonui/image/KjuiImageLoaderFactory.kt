@@ -104,10 +104,22 @@ internal object KjuiImageEventListener : EventListener() {
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
+        // Only the image's own response (jsonui-cli ticket
+        // jui-networkimage-error-response-reported-as-progress): a redirect's head is not it,
+        // and a 4xx / 5xx brings an error page. The renderer hears requesting, then failed.
+        if (!response.isTheImage()) return
         val length = response.header("Content-Length")?.toLongOrNull()
         call.load()?.responded(length, KjuiImageLoadTable.clock())
     }
 }
+
+/**
+ * The response is the image: a 2xx, or a 304 answering a conditional request (the cached
+ * copy is the image). A 304 nobody asked for is not (coil fails it).
+ */
+internal fun Response.isTheImage(): Boolean =
+    code in 200..299 ||
+        (code == 304 && (request.header("If-None-Match") != null || request.header("If-Modified-Since") != null))
 
 /**
  * coil's NetworkClient over OkHttp, as coil-network-okhttp's own, plus: the call carries
@@ -131,10 +143,12 @@ internal class KjuiNetworkClient(private val client: Call.Factory) : NetworkClie
         val response = client.newCall(builder.build()).await()
         return response.use { r ->
             val headers = NetworkHeaders.Builder().apply { r.headers.forEach { (n, v) -> add(n, v) } }.build()
+            // coil reads a 4xx's body too (an error page): it is not the image's bytes.
+            val counted = if (r.isTheImage()) load else null
             val source = object : ForwardingSource(r.body.source()) {
                 override fun read(sink: Buffer, byteCount: Long): Long {
                     val n = super.read(sink, byteCount)
-                    if (n > 0) load?.bytes(n, KjuiImageLoadTable.clock())
+                    if (n > 0) counted?.bytes(n, KjuiImageLoadTable.clock())
                     return n
                 }
             }.buffer()

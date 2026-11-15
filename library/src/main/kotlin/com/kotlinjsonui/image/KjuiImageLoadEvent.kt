@@ -16,9 +16,15 @@ sealed interface KjuiImageLoadEvent {
     /** The call started (connecting included). Again, with `attempt` + 1, when a new call reads the same URL. */
     data class Requesting(val attempt: Int) : KjuiImageLoadEvent
 
-    /** The response's head arrived. `expected` is its Content-Length, null when not sent. */
+    /**
+     * The image's response head arrived: a 2xx, or a 304 answering a conditional request.
+     * `expected` is its Content-Length, null when not sent. A redirect's head and a 4xx / 5xx
+     * are not the image: neither is told here nor counted as [Progress] (the load goes on to
+     * the redirect's target, or to [Failed]).
+     */
     data class Responded(val expected: Long?) : KjuiImageLoadEvent
 
+    /** The image's bytes read so far (an error page's are not counted). */
     data class Progress(val received: Long, val expected: Long?) : KjuiImageLoadEvent
 
     /** Decoded and ready to draw. */

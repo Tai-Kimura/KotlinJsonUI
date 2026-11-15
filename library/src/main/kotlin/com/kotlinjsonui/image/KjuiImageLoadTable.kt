@@ -88,8 +88,15 @@ object KjuiImageLoadTable {
 
         override fun send(load: KjuiImageLoad, event: KjuiImageLoadEvent) {
             handler.post {
-                flushProgress(load)
+                // Progress comes after responded and before an end (the last bytes, then
+                // finished / failed / cancelled). The body's first bytes can be read before the
+                // main thread delivers requesting / responded; flushed with those, they were
+                // delivered ahead of them.
+                val end = event is KjuiImageLoadEvent.Finished || event is KjuiImageLoadEvent.Failed ||
+                    event is KjuiImageLoadEvent.Cancelled
+                if (end) flushProgress(load)
                 load.deliver(event)
+                if (event is KjuiImageLoadEvent.Responded) flushProgress(load)
             }
         }
 
