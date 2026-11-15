@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      JSONUI_CLI_MANIFEST_REF: v2.5.41 # jsonui-cli v2.5.41: paging cells centre on the page, NetworkImage loadingRenderer / loadingDelay / transitionDuration / onLoadStateChange
+      JSONUI_CLI_MANIFEST_REF: v2.5.43 # jsonui-cli v2.5.43: NetworkImage — only the image's own response is responded and counted as progress; no src (null, "" or only spaces) draws defaultImage
     steps:
       - uses: actions/checkout@v4
       - name: Verify sha256 against pinned manifest
