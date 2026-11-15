@@ -207,6 +207,8 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    // KjuiNetworkImageTest: a slow image server on the device.
+    androidTestImplementation("com.squareup.okhttp3:mockwebserver:5.5.1")
     // EmbedViewModelLifetimeTest: an Embed inside a NavHost destination.
     androidTestImplementation("androidx.navigation:navigation-compose:2.9.3")
     

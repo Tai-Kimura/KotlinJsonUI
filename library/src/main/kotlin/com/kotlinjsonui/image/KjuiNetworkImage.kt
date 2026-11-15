@@ -247,8 +247,19 @@ internal class KjuiImageFrame(val key: String) : KjuiLoadingClock.Waiter, Rememb
         onState(s)
     }
 
-    /** This frame's own success / error: the fade starts now; the renderer is told now. */
+    /**
+     * This frame's own success / error. coil calls its listener on a worker thread: the
+     * image's opacity drops to 0 here, before the image can be drawn (snapshot state takes a
+     * write from any thread), and the rest runs on the main thread.
+     */
     private fun ended(result: KjuiLoadEnd.Result, source: KjuiImageSource?, error: Throwable?) {
+        if (source != KjuiImageSource.MEMORY && transitionMillis > 0) alpha.floatValue = 0f
+        if (Looper.myLooper() == Looper.getMainLooper()) endedOnMain(result, source, error)
+        else main.post { endedOnMain(result, source, error) }
+    }
+
+    /** The fade starts now; the renderer is told now. */
+    private fun endedOnMain(result: KjuiLoadEnd.Result, source: KjuiImageSource?, error: Throwable?) {
         val now = KjuiLoadingClock.now()
         val l = load
         if (result == KjuiLoadEnd.Result.LOADED) l?.finished(source!!) else l?.failed(error)
