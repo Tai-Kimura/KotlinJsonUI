@@ -101,8 +101,16 @@ fun Segment(
             val n = measurables.size
             count[0] = n
             val i = inset.roundToPx()
-            val width = if (constraints.hasBoundedWidth) constraints.maxWidth
-                else measurables.maxOfOrNull { it.maxIntrinsicWidth(Constraints.Infinity) }?.let { it * n + 2 * i } ?: 0
+            // Its own width is the longest label's segment times n, plus the inset, as iOS's
+            // UISegmentedControl and the web draw a Segment of wrapContent width (equal segments,
+            // each as wide as the longest label needs). A fixed width (matchParent, a number, a
+            // weight) is taken whole; a loose one (wrapContent) bounds the own width at its max.
+            val ownWidth = (measurables.maxOfOrNull { it.maxIntrinsicWidth(Constraints.Infinity) } ?: 0) * n + 2 * i
+            val width = when {
+                constraints.hasFixedWidth -> constraints.maxWidth
+                constraints.hasBoundedWidth -> ownWidth.coerceIn(constraints.minWidth, constraints.maxWidth)
+                else -> ownWidth.coerceAtLeast(constraints.minWidth)
+            }
             val segment = if (n > 0) (width - 2 * i) / n else 0
             val natural = (measurables.maxOfOrNull { it.minIntrinsicHeight(segment) } ?: 0) + 2 * i
             val height = maxOf(natural, 31.dp.roundToPx()).coerceIn(constraints.minHeight, constraints.maxHeight)
